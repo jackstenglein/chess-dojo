@@ -2,27 +2,19 @@ import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import KeyboardShortcuts from './KeyboardShortcuts';
-import { ShortcutAction } from './ShortcutAction';
 
-export interface DisplayKeyboardShortcutsDialogProps {
+export interface ViewKeyboardShortcutsDialogProps {
     /** Whether the dialog is open. */
     open: boolean;
     /** Callback to open/close the dialog. */
     setOpen: (open: boolean) => void;
-    /** The actions to display. Defaults to all actions. that are optional */
-    actions?: ShortcutAction[];
 }
 
 /**
  * A dialog that renders the full KeyboardShortcuts editor.
- * Accepts open/setOpen for controlled visibility and an optional actions
- * filter that is forwarded to KeyboardShortcuts
+ * Accepts open/setOpen for controlled visibility
  */
-const DisplayKeyboardShortcutsDialog = ({
-    open,
-    setOpen,
-    actions,
-}: DisplayKeyboardShortcutsDialogProps) => {
+const ViewKeyboardShortcutsDialog = ({ open, setOpen }: ViewKeyboardShortcutsDialogProps) => {
     return (
         <Dialog
             open={open}
@@ -45,10 +37,10 @@ const DisplayKeyboardShortcutsDialog = ({
             </DialogTitle>
 
             <DialogContent dividers>
-                <KeyboardShortcuts actions={actions} />
+                <KeyboardShortcuts />
             </DialogContent>
         </Dialog>
     );
 };
 
-export default DisplayKeyboardShortcutsDialog;
+export default ViewKeyboardShortcutsDialog;

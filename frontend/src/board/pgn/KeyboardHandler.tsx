@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { EventType, Move } from '@jackstenglein/chess';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -11,13 +10,13 @@ import {
     matchAction,
     modifierKeys,
 } from './boardTools/underboard/settings/KeyboardShortcuts';
+import ViewKeyboardShortcutsDialog from './boardTools/underboard/settings/ShortCutKeyBoardDialog';
 import { ShortcutAction, ShortcutBindings } from './boardTools/underboard/settings/ShortcutAction';
 import {
     ScrollToMove,
     VariationBehavior,
     VariationBehaviorKey,
 } from './boardTools/underboard/settings/ViewerSettings';
-import DisplayKeyboardShortcutsDialog from './boardTools/underboard/settings/ShortCutKeyBoardDialog';
 
 const SCROLL_THROTTLE_DELAY = 250; // milliseconds
 
@@ -122,8 +121,6 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                     addEngineMove: addEngineMoveRef?.current || undefined,
                 },
             });
-
-            console.log(viewKeyDialog);
         },
         [
             board,
@@ -133,7 +130,6 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             toggleOrientation,
             variationBehavior,
             setVariationDialogMove,
-            viewKeyDialog,
             setViewKeyDialog,
             underboardRef,
             reconcile,
@@ -215,15 +211,14 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
         };
     }, [onKeyDown, onKeyUp, onWheel, boardRef]);
 
-
     return (
-    <>
-        {variationDialogMove && (
-            <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />
-        )}
-        <DisplayKeyboardShortcutsDialog open={viewKeyDialog} setOpen={setViewKeyDialog} />
-    </>
-);
+        <>
+            {variationDialogMove && (
+                <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />
+            )}
+            <ViewKeyboardShortcutsDialog open={viewKeyDialog} setOpen={setViewKeyDialog} />
+        </>
+    );
 };
 
 export default KeyboardHandler;

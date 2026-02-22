@@ -68,7 +68,7 @@ export enum ShortcutAction {
     /** Goes to the next puzzle. */
     NextPuzzle = 'NEXT_PUZZLE',
 
-    ViewKey = 'VIEW_KEYS'
+    ViewKey = 'VIEW_KEYS',
 }
 
 export interface KeyBinding {

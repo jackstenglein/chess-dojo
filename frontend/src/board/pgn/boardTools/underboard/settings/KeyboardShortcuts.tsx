@@ -74,7 +74,7 @@ function displayShortcutAction(action: ShortcutAction): string {
         case ShortcutAction.NextPuzzle:
             return 'Next Puzzle';
         case ShortcutAction.ViewKey:
-            return 'View Keys Dialog'    
+            return 'View Keys Dialog';
     }
 }
 
@@ -130,7 +130,7 @@ function shortcutActionDescription(action: ShortcutAction): string {
         case ShortcutAction.NextPuzzle:
             return 'Goes to the next puzzle (has no effect outside of puzzles).';
         case ShortcutAction.ViewKey:
-            return 'Opens shortcut keys dialog'    
+            return 'Opens shortcut keys dialog';
     }
 }
 
@@ -368,11 +368,11 @@ function handleInsertNullMove({ chess, reconcile }: ShortcutHandlerProps) {
 function handleInsertEngineMove({ opts }: ShortcutHandlerProps) {
     opts?.addEngineMove?.();
 }
-
+/**
+ * Hands opening the view keys dialog
+ */
 function handleViewKeyAction({ opts }: ShortcutHandlerProps) {
-    // eslint-disable-next-line no-console
-    console.log('triggered')
-    opts?.setViewKeysDialog?.(true)
+    opts?.setViewKeysDialog?.(true);
 }
 
 /**
@@ -444,8 +444,6 @@ export function matchAction(
             matchedAction = action;
         }
     }
-    // eslint-disable-next-line no-console
-    console.log('action', matchedAction);
     return matchedAction;
 }
 
