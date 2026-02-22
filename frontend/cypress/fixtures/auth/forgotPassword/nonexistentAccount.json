@@ -1,4 +1,0 @@
-{
-    "__type": "UserNotFoundException",
-    "message": "Username/client id combination not found."
-}

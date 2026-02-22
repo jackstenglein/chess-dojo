@@ -70,6 +70,17 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
             await filterPrivateItems(directory, userInfo.username);
         }
 
+        for (const id of directory.itemIds) {
+            const item = directory.items[id];
+            if (item?.type === DirectoryItemTypes.DIRECTORY) {
+                item.metadata.gameCount = await getRecursiveGameCount(
+                    directory.owner,
+                    id,
+                    userInfo.username,
+                );
+            }
+        }
+
         return success({ directory, accessRole });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
@@ -98,6 +109,62 @@ export async function fetchDirectory(owner: string, id: string): Promise<Directo
 
     const directory = unmarshall(getItemOutput.Item);
     return DirectorySchema.parse(directory);
+}
+
+/**
+ * Recursively counts the games in the given directory (and its subdirectories)
+ * that are visible to the provided username.
+ * @param owner The owner of the directory tree.
+ * @param directoryId The id of the directory to count games in.
+ * @param username The username of the viewer.
+ * @returns The number of games visible to the viewer.
+ */
+async function getRecursiveGameCount(
+    owner: string,
+    directoryId: string,
+    username: string,
+): Promise<number> {
+    const directory = await fetchDirectory(owner, directoryId);
+    if (!directory) {
+        return 0;
+    }
+
+    const accessRole = await getAccessRole({ owner, id: directoryId, username, directory });
+    const isViewer = compareRoles(DirectoryAccessRole.Viewer, accessRole);
+
+    if (directory.visibility === DirectoryVisibility.PRIVATE && !isViewer) {
+        return 0;
+    }
+
+    let count = 0;
+
+    for (const id of directory.itemIds) {
+        const item = directory.items[id];
+        if (!item) {
+            continue;
+        }
+
+        if (item.type === DirectoryItemTypes.DIRECTORY) {
+            if (
+                item.metadata.visibility === DirectoryVisibility.PUBLIC ||
+                (await checkAccess({
+                    owner,
+                    id,
+                    role: DirectoryAccessRole.Viewer,
+                    skipRecursion: true,
+                    username,
+                }))
+            ) {
+                count += await getRecursiveGameCount(owner, id, username);
+            }
+        } else {
+            if (isViewer || !item.metadata.unlisted) {
+                count++;
+            }
+        }
+    }
+
+    return count;
 }
 
 /**
