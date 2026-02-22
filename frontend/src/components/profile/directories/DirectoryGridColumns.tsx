@@ -37,7 +37,9 @@ export const publicColumns: GridColDef<DirectoryItem>[] = [
                     <Badge
                         badgeContent={item.metadata.gameCount}
                         color='secondary'
-                        sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 16, height: 16 } }}
+                        sx={{
+                            '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 16, height: 16 },
+                        }}
                     >
                         <Folder sx={{ height: 1 }} />
                     </Badge>
