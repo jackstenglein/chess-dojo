@@ -1,8 +1,10 @@
 import { useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
 import { Edit } from '@mui/icons-material';
-import { Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Chip, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
+import { useLocalStorage } from 'usehooks-ts';
+import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import ClockTextField from './ClockTextField';
 import { formatTime } from './ClockUsage';
 import { TimeControlDescription } from './TimeControlDescription';
@@ -38,6 +40,10 @@ const ClockEditor = ({
     setShowTimeControlEditor: (v: boolean) => void;
 }) => {
     const { chess } = useChess();
+    const [clockFieldFormat] = useLocalStorage<string>(
+        ClockFieldFormatKey,
+        ClockFieldFormat.SingleField,
+    );
 
     if (!chess) {
         return null;
@@ -94,6 +100,11 @@ const ClockEditor = ({
                     <br />
                     Moves left blank will use the last-set clock time.
                 </Typography>
+                <Stack direction='row' justifyContent='center'>
+                    {clockFieldFormat === ClockFieldFormat.SingleFieldInTotalMinutes && (
+                        <Chip label='Total Minutes mode active' size='small' sx={{ mt: 1 }} />
+                    )}
+                </Stack>
             </Grid>
             {grid}
         </Grid>

@@ -25,6 +25,6 @@ test.describe('Rating Conversions Tab', () => {
 
         // Verify table has rows (at least 2: header + data)
         const rowCount = await page.locator('tr').count();
-        expect(rowCount).toBe(getEnv('numCohorts', true) + 1);
+        expect(rowCount).toBe(getEnv('numCohorts') + 1);
     });
 });
