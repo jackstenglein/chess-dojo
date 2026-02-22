@@ -43,7 +43,6 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Mock an API endpoint with a fixture or response.
- * Replaces Cypress cy.interceptApi(method, url, response)
  */
 export async function interceptApi(
     page: Page,
@@ -91,7 +90,7 @@ export async function waitForNavigation(
 export async function useFreeTier(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         const response = await route.fetch();
-        const body = await response.json();
+        const body = (await response.json()) as object;
         await route.fulfill({
             response,
             contentType: 'application/json',
@@ -111,7 +110,7 @@ export async function useFreeTier(page: Page) {
 export async function useAdminUser(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         const response = await route.fetch();
-        const body = await response.json();
+        const body = (await response.json()) as object;
         await route.fulfill({
             response,
             contentType: 'application/json',
@@ -121,4 +120,5 @@ export async function useAdminUser(page: Page) {
             }),
         });
     });
+    await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }
