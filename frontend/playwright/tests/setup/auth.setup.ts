@@ -16,7 +16,6 @@ setup('authenticate', async ({ page }) => {
 
     // Navigate directly to the signin page
     await page.goto('/signin');
-    // await page.waitForLoadState('networkidle');
 
     console.debug('On signin page, entering credentials...');
 

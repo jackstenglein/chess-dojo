@@ -14,8 +14,6 @@ import { Game, PositionComment } from '@/database/game';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
-import { isAxiosError } from 'axios';
-import { notFound } from 'next/navigation';
 import { Chess, EventType as ChessEventType, Move } from '@jackstenglein/chess';
 import {
     GameHeader,
@@ -24,6 +22,8 @@ import {
     UpdateGameRequest,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Box } from '@mui/material';
+import { isAxiosError } from 'axios';
+import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
 import PgnErrorBoundary from './PgnErrorBoundary';
@@ -65,7 +65,11 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
         return <LoadingPage />;
     }
 
-    if (request.isFailure() && isAxiosError(request.error) && request.error.response?.status === 404) {
+    if (
+        request.isFailure() &&
+        isAxiosError(request.error) &&
+        request.error.response?.status === 404
+    ) {
         notFound();
     }
 

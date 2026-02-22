@@ -14,7 +14,7 @@ const FAKE_NOTIFICATION = {
 
 function mockNotifications(
     page: import('@playwright/test').Page,
-    notifications: typeof FAKE_NOTIFICATION[] = [],
+    notifications: (typeof FAKE_NOTIFICATION)[] = [],
 ) {
     return page.route('**/user/notifications', (route) => {
         if (route.request().method() === 'GET') {
