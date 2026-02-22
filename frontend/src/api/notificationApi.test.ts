@@ -1,40 +1,37 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// Mock axiosService before importing the module under test
+// Mock axiosService before importing the module under test (hoist mock refs so expect() receives standalone functions, not unbound methods)
+const { mockGet, mockDelete } = vi.hoisted(() => ({
+    mockGet: vi.fn(),
+    mockDelete: vi.fn(),
+}));
 vi.mock('./axiosService', () => ({
     axiosService: {
-        get: vi.fn(),
-        delete: vi.fn(),
+        get: mockGet,
+        delete: mockDelete,
     },
 }));
 
-import { axiosService } from './axiosService';
 import { deleteAllNotifications, deleteNotification, listNotifications } from './notificationApi';
 
 describe('notificationApi', () => {
     describe('listNotifications', () => {
         it('calls GET /user/notifications with auth header', () => {
             void listNotifications('test-token');
-            expect(axiosService.get.bind(axiosService)).toHaveBeenCalledWith(
-                '/user/notifications',
-                {
-                    params: { startKey: undefined },
-                    headers: { Authorization: 'Bearer test-token' },
-                    functionName: 'listNotifications',
-                },
-            );
+            expect(mockGet).toHaveBeenCalledWith('/user/notifications', {
+                params: { startKey: undefined },
+                headers: { Authorization: 'Bearer test-token' },
+                functionName: 'listNotifications',
+            });
         });
 
         it('passes startKey as a query param', () => {
             void listNotifications('test-token', 'some-key');
-            expect(axiosService.get.bind(axiosService)).toHaveBeenCalledWith(
-                '/user/notifications',
-                {
-                    params: { startKey: 'some-key' },
-                    headers: { Authorization: 'Bearer test-token' },
-                    functionName: 'listNotifications',
-                },
-            );
+            expect(mockGet).toHaveBeenCalledWith('/user/notifications', {
+                params: { startKey: 'some-key' },
+                headers: { Authorization: 'Bearer test-token' },
+                functionName: 'listNotifications',
+            });
         });
     });
 
@@ -43,26 +40,20 @@ describe('notificationApi', () => {
             const id = 'GAME_COMMENT|2000-2100|abc123';
             const encodedId = btoa(id);
             void deleteNotification('test-token', id);
-            expect(axiosService.delete.bind(axiosService)).toHaveBeenCalledWith(
-                `/user/notifications/${encodedId}`,
-                {
-                    headers: { Authorization: 'Bearer test-token' },
-                    functionName: 'deleteNotification',
-                },
-            );
+            expect(mockDelete).toHaveBeenCalledWith(`/user/notifications/${encodedId}`, {
+                headers: { Authorization: 'Bearer test-token' },
+                functionName: 'deleteNotification',
+            });
         });
     });
 
     describe('deleteAllNotifications', () => {
         it('calls DELETE /user/notifications with auth header', () => {
             void deleteAllNotifications('test-token');
-            expect(axiosService.delete.bind(axiosService)).toHaveBeenCalledWith(
-                '/user/notifications',
-                {
-                    headers: { Authorization: 'Bearer test-token' },
-                    functionName: 'deleteAllNotifications',
-                },
-            );
+            expect(mockDelete).toHaveBeenCalledWith('/user/notifications', {
+                headers: { Authorization: 'Bearer test-token' },
+                functionName: 'deleteAllNotifications',
+            });
         });
     });
 });

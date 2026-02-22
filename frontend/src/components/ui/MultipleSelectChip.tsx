@@ -89,7 +89,6 @@ export default function MultipleSelectChip({
                                 key={value}
                                 label={options.find((o) => o.value === value)?.label}
                                 size={size}
-                                onClick={() => null} // Cypress tests throw an exception without this, likely due to a MUI bug
                             />
                         ))}
                         {selected.length === 0 && !!displayEmpty && (
