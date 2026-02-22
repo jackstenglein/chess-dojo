@@ -120,4 +120,5 @@ export async function useAdminUser(page: Page) {
             }),
         });
     });
+    await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }

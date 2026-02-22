@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { getEnv } from '../../../../lib/env';
 import { getBySel, interceptApi } from '../../../../lib/helpers';
 
 test.describe('Training Plan', () => {
@@ -18,6 +19,7 @@ test.describe('Training Plan', () => {
             body: {
                 username: 'test',
                 subscriptionStatus: 'SUBSCRIBED',
+                subscriptionTier: 'BASIC',
                 displayName: 'Test Account',
                 ratingSystem: 'CHESSCOM',
                 ratings: {
@@ -76,8 +78,14 @@ test.describe('Training Plan', () => {
                 weekStart: 0,
             },
         });
-        await page.goto('/profile?view=progress');
+        await page.route(`${getEnv('apiBaseUrl')}/user`, (route) => {
+            if (route.request().method() === 'PUT') {
+                return route.abort();
+            }
+            return route.continue();
+        });
 
+        await page.goto('/profile?view=progress');
         await expect(
             getBySel(page, 'training-plan-today').getByText('Read Tal-Botvinnik 1960').first(),
         ).toBeVisible();
