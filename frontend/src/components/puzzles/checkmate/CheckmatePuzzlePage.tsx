@@ -450,6 +450,9 @@ function CheckmatePuzzleUnderboard({
     const [showRating] = useLocalStorage(SHOW_RATING_KEY, true);
     const [showStreak] = useLocalStorage(SHOW_STREAK_KEY, true);
 
+    const animatedKey = `animated_${puzzle?.id}`;
+    const [hasAnimated, setHasAnimated] = useLocalStorage(animatedKey, false);
+
     const [pieceStyle] = useLocalStorage<PieceStyle>(PieceStyleKey, PieceStyle.Standard);
     const pieceSx = getPieceSx(pieceStyle);
 
@@ -459,6 +462,13 @@ function CheckmatePuzzleUnderboard({
 
     useEffect(() => {
         if (!rated || displayedRating === rating + ratingChange || animationFrameRef.current) {
+            return;
+        }
+
+        // If the animation of the rating change already took place,
+        if (hasAnimated) {
+            // show the final rating directly, without animating it again.
+            setDisplayedRating(rating + ratingChange);
             return;
         }
 
@@ -485,6 +495,7 @@ function CheckmatePuzzleUnderboard({
         };
 
         animationFrameRef.current = requestAnimationFrame(animate);
+        setHasAnimated(true);
     }, [displayedRating, rating, ratingChange, rated]);
 
     const successfulPlays = (puzzle?.successfulPlays ?? 0) + (result === 'win' ? 1 : 0);
