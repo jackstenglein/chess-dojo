@@ -3,13 +3,11 @@ import { expect, test } from '@playwright/test';
 test.describe('Default Time Control (localStorage)', () => {
     test.beforeEach(async ({ page }) => {
         // Clear the default time control from localStorage before each test
+        await page.goto('/games/analysis');
         await page.evaluate(() => localStorage.removeItem('defaultTimeControl'));
     });
 
     test('saves time control to localStorage when edited', async ({ page }) => {
-        // Navigate to games analysis page
-        await page.goto('/games/analysis');
-
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();
 
@@ -45,9 +43,6 @@ test.describe('Default Time Control (localStorage)', () => {
         await page.evaluate(() => {
             localStorage.setItem('defaultTimeControl', '"5400+30"');
         });
-
-        // Navigate to import page first
-        await page.goto('/games/analysis');
 
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();
