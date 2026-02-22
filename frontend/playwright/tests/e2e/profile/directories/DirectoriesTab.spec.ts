@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../../../../lib/env';
 import { getBySel, interceptApi } from '../../../../lib/helpers';
 
@@ -9,7 +10,24 @@ test.describe('Directories', () => {
         await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
     });
 
-    test('displays home directory', async ({ page }) => {
+    test('displays empty home directory', async ({ page }) => {
+        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`, {
+            statusCode: 200,
+            body: {
+                directory: {
+                    owner: getEnv('username'),
+                    id: 'home',
+                    parent: '00000000-0000-0000-0000-000000000000',
+                    name: 'Home',
+                    visibility: 'PUBLIC',
+                    items: {},
+                    itemIds: [],
+                },
+                accessRole: 'OWNER',
+            },
+        });
+        await page.goto('/profile?view=games');
+
         await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
         await expect(page.getByText('No rows')).toBeVisible();
     });
@@ -109,15 +127,18 @@ test.describe('Directories', () => {
     });
 
     test('creates and deletes directory', async ({ page }) => {
+        const name = uuidv4();
+
         await page.getByRole('button', { name: 'Add' }).click();
         await page.getByText('New Folder').click();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill('Test');
+        await getBySel(page, 'update-directory-name').locator('input').fill(name);
         await getBySel(page, 'update-directory-save-button').click();
         await expect(getBySel(page, 'update-directory-form')).not.toBeVisible();
+        await expect(getBySel(page, 'directories-data-grid').getByText(name).last()).toBeVisible();
 
         await getBySel(page, 'directories-data-grid')
-            .getByText('Test')
+            .getByText(name)
             .last()
             .click({ button: 'right' });
         await page.getByText('Delete').click();
@@ -126,6 +147,8 @@ test.describe('Directories', () => {
         await getBySel(page, 'delete-directory-button').click();
 
         await expect(getBySel(page, 'delete-directory-form')).not.toBeVisible();
-        await expect(getBySel(page, 'directories-data-grid').getByText('No rows')).toBeVisible();
+        await expect(
+            getBySel(page, 'directories-data-grid').getByText(name).last(),
+        ).not.toBeAttached();
     });
 });
