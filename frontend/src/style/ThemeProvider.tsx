@@ -91,6 +91,7 @@ declare module '@mui/material/styles' {
         trainingPlanTaskComplete?: Palette['primary'];
         DataGrid: {
             bg: string;
+            headerBg: string;
         };
 
         // Calendar colors
@@ -163,7 +164,7 @@ declare module '@mui/material' {
 const defaultTheme = createTheme({});
 
 const defaultPalette = {
-    DataGrid: { bg: 'transparent' },
+    DataGrid: { bg: 'transparent', headerBg: 'var(--mui-palette-background-paper)' },
     meet: defaultTheme.palette.augmentColor({
         color: {
             main: '#93a84f',

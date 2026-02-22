@@ -13,7 +13,7 @@ import {
     DirectoryVisibility,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Folder, Visibility, VisibilityOff } from '@mui/icons-material';
-import { Stack, Tooltip, Typography } from '@mui/material';
+import { Badge, Stack, Tooltip, Typography } from '@mui/material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid-pro';
 
 export const publicColumns: GridColDef<DirectoryItem>[] = [
@@ -33,7 +33,17 @@ export const publicColumns: GridColDef<DirectoryItem>[] = [
             const item = params.row;
 
             if (item.type === DirectoryItemTypes.DIRECTORY) {
-                return <Folder sx={{ height: 1 }} />;
+                return (
+                    <Badge
+                        badgeContent={item.metadata.gameCount}
+                        color='secondary'
+                        sx={{
+                            '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 16, height: 16 },
+                        }}
+                    >
+                        <Folder sx={{ height: 1 }} />
+                    </Badge>
+                );
             }
 
             let value = item.metadata.cohort;

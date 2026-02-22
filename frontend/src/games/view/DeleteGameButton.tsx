@@ -7,9 +7,11 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     IconButton,
     IconButtonProps,
+    TextField,
     Tooltip,
 } from '@mui/material';
 import { useState } from 'react';
@@ -85,10 +87,12 @@ export function DeleteGamesDialog({
     const api = useApi();
     const request = useRequest();
     const router = useRouter();
+    const [confirmText, setConfirmText] = useState('');
 
     const handleClose = () => {
         onClose();
         request.reset();
+        setConfirmText('');
     };
 
     const onDelete = async () => {
@@ -126,9 +130,24 @@ export function DeleteGamesDialog({
                 Permanently Delete{games.length !== 1 ? ` ${games.length}` : ''} Game
                 {games.length !== 1 ? 's' : ''}?
             </DialogTitle>
-            <DialogContent>
-                Are you sure you want to delete {games.length === 1 ? 'this game' : 'these games'}?
-                This action cannot be undone.
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <DialogContentText>
+                    Are you sure you want to delete{' '}
+                    {games.length === 1 ? 'this game' : 'these games'}? This action cannot be
+                    undone.
+                </DialogContentText>
+                <DialogContentText variant='body2' color='text.secondary'>
+                    Games added to multiple folders share a single copy. Deleting this game will
+                    remove it from all folders it appears in.
+                </DialogContentText>
+                <TextField
+                    label='Type "delete" to confirm'
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    fullWidth
+                    size='small'
+                    autoComplete='off'
+                />
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={handleClose}>
@@ -138,6 +157,7 @@ export function DeleteGamesDialog({
                     data-cy='delete-game-confirm-button'
                     color='error'
                     loading={request.isLoading()}
+                    disabled={confirmText !== 'delete'}
                     onClick={onDelete}
                 >
                     Delete
