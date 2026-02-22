@@ -1,7 +1,8 @@
 import { ChessDbMove } from '@/api/cache/chessdb';
-import { Box, Button, CircularProgress, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Stack, Tooltip, Typography } from '@mui/material';
 import { useReconcile } from '../../Board';
 import { useChess } from '../PgnBoard';
+import LoadingPage from '@/loading/LoadingPage';
 
 interface ChessDBTabProps {
     moves: ChessDbMove[];
@@ -15,9 +16,9 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
     const { chess } = useChess();
     const reconcile = useReconcile();
 
-    if (loading) return <CircularProgress sx={{ mt: 2 }} />;
+    if (loading) return <LoadingPage/>
 
-    if (error)
+    if (error){
         return (
             <Stack mt={2} spacing={1} alignItems='center'>
                 <Typography color='error'>{error}</Typography>
@@ -26,9 +27,10 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                 </Button>
             </Stack>
         );
+    }
 
-    if (moves.length === 0)
-        return (
+    if (moves.length === 0){
+         return (
             <Stack mt={2} spacing={1} alignItems='center'>
                 <Typography>Position not in ChessDB.</Typography>
                 <Button onClick={requestAnalysis} variant='outlined' size='small'>
@@ -36,15 +38,17 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                 </Button>
             </Stack>
         );
+    }
+       
 
     const bestMove = moves[0];
-    const totalGames = moves.length;
+    const totalMoves = moves.length;
 
     return (
         <Stack mt={2} spacing={1}>
             {moves.map((move, i) => {
                 const widthPct =
-                    totalGames > 0 ? Math.max(10, ((totalGames - i) / totalGames) * 100) : 0;
+                    totalMoves > 0 ? Math.max(10, ((totalMoves - i) / totalMoves) * 100) : 0;
 
                 return (
                     <Tooltip
