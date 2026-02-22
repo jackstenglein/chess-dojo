@@ -104,6 +104,12 @@ export const DirectoryItemSchema = z.discriminatedUnion('type', [
 
             /** The description of the directory. */
             description: z.string().trim().max(100).optional(),
+
+            /**
+             * The recursive count of games in this directory and its subdirectories
+             * visible to the viewer. Computed server-side at fetch time; not stored in DynamoDB.
+             */
+            gameCount: z.number().optional(),
         }),
     }),
     z.object({
