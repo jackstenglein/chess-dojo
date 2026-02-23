@@ -21,9 +21,12 @@ import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
+import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
+import { MIN_GAMES_FOR_ELO } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
-import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Card, CardContent, Chip, Grid, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
@@ -147,6 +150,8 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
     const ratingSystemName = user.ratings[user.ratingSystem]?.name;
 
+    const timeManagementRating = user.ratings[RatingSystem.TimeManagement];
+
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
             <CardContent>
@@ -188,6 +193,33 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                             </Stack>
                         </Grid>
                     )}
+
+                    {timeManagementRating && timeManagementRating.currentRating > 0 && (
+                            <Grid size={12}>
+                                <Stack direction='row' alignItems='center' gap={0.5}>
+                                    <AccessTimeIcon sx={{ fontSize: 15 }} />
+                                    <Typography
+                                        variant='body2'
+                                        color='text.secondary'
+                                        sx={{ fontWeight: 'bold' }}
+                                    >
+                                        Time Management
+                                    </Typography>
+                                    <Typography variant='body2' color='text.secondary'>
+                                        {timeManagementRating.currentRating}
+                                    </Typography>
+                                    {(timeManagementRating.numGames ?? 0) < MIN_GAMES_FOR_ELO && (
+                                        <Chip
+                                            label='Provisional'
+                                            size='small'
+                                            variant='outlined'
+                                            color='warning'
+                                            sx={{ height: 20, fontSize: '0.7rem' }}
+                                        />
+                                    )}
+                                </Stack>
+                            </Grid>
+                        )}
 
                     {classicalGamesTask && (
                         <ClassicalGamesProgressBar
