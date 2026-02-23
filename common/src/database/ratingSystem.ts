@@ -11,4 +11,5 @@ export enum RatingSystem {
     Custom = 'CUSTOM',
     Custom2 = 'CUSTOM_2',
     Custom3 = 'CUSTOM_3',
+    TimeManagement = 'TIME_MANAGEMENT',
 }
