@@ -100,8 +100,6 @@ export const RatingSystemIcon = ({
         case RatingSystem.Custom3:
             return <SlGraph size={size === 'small' ? 15 : 30} />;
         case RatingSystem.TimeManagement:
-            return (
-                <AccessTimeIcon sx={{ fontSize: size === 'small' ? 15 : 30 }} />
-            );
+            return <AccessTimeIcon sx={{ fontSize: size === 'small' ? 15 : 30 }} />;
     }
 };

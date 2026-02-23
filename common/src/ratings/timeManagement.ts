@@ -4,6 +4,9 @@ export const MIN_GAMES_FOR_ELO = 10;
 /** The K-factor used for USCF-style Elo draw calculations. */
 const K_FACTOR = 32;
 
+/** The score assigned to a draw in the Elo system. */
+const DRAW_SCORE = 0.5;
+
 /** The current state of a user's time management aggregate. */
 export interface TimeManagementAggregate {
     /** The current aggregate rating. */
@@ -34,8 +37,7 @@ export function calculateDrawEloAdjustment(
     gameRating: number,
 ): number {
     const expected = expectedScore(currentRating, gameRating);
-    // A draw scores 0.5
-    return Math.round(currentRating + K_FACTOR * (0.5 - expected));
+    return Math.round(currentRating + K_FACTOR * (DRAW_SCORE - expected));
 }
 
 /**
