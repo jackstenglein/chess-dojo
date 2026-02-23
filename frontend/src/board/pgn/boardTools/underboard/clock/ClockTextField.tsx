@@ -17,10 +17,9 @@ const defaultDateTime = DateTime.fromJSDate(d);
 interface ClockTextFieldProps {
     move: Move;
     label?: string;
-    forceSingleField?: boolean;
 }
 
-const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label, forceSingleField }) => {
+const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
     const { chess } = useChess();
     const [clockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
@@ -38,7 +37,7 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label, forceSingl
         return (
             <TextField
                 id={BlockBoardKeyboardShortcuts}
-                label={label}
+                label={label || 'Clock (total minutes)'}
                 placeholder='Total minutes'
                 value={displayValue}
                 disabled={!move}
@@ -66,11 +65,11 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label, forceSingl
         );
     }
 
-    if (clockFieldFormat === ClockFieldFormat.SingleField || forceSingleField) {
+    if (clockFieldFormat === ClockFieldFormat.SingleField) {
         return (
             <TimeField
                 id={BlockBoardKeyboardShortcuts}
-                label={label}
+                label={label || 'Clock (hh:mm:ss)'}
                 format='HH:mm:ss'
                 value={
                     convertSecondsToDateTime(clockToSeconds(move.commentDiag?.clk)) ||
