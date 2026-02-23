@@ -2,7 +2,7 @@ import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { getTimerSeconds } from '@/components/navigation/navbar/TimerButton';
+import { getTimerSeconds, useTimer } from '@/components/navigation/navbar/TimerButton';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import {
     CustomTask,
@@ -52,6 +52,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
 }) => {
     const { user } = useAuth();
     const api = useApi();
+    const { onClear } = useTimer();
     const { entries, onNewEntry } = useTimelineContext();
 
     const totalCount = requirement.counts[cohort] || 0;
@@ -138,6 +139,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                     incremental_minutes: addedTime,
                 });
                 onNewEntry(resp.data.timelineEntry);
+                onClear();
                 onClose();
                 setHours('');
                 setMinutes('');

@@ -16,7 +16,9 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
-import { AccessAlarm, Check, Lock, Loop, Scoreboard } from '@mui/icons-material';
+import { AccessAlarm, Check, Lock, Loop, Scoreboard, PlayArrow, Stop } from '@mui/icons-material';
+import { useTimer } from '@/components/navigation/navbar/TimerButton';
+import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import {
     Box,
     Button,
@@ -135,6 +137,8 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const [showDeleter, setShowDeleter] = useState(false);
     const isFreeTier = useFreeTier();
 
+    const { isRunning, timerSeconds, onStart, onPause } = useTimer();
+    
     const selectedCohort = useMemo(() => {
         if (!task) {
             return cohort || user?.dojoCohort;
@@ -296,8 +300,32 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         ))}
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ flexWrap: 'wrap' }}>
+<DialogActions sx={{ flexWrap: 'wrap' }}>
                 <Button onClick={onClose}>Cancel</Button>
+                
+                {isRunning ? (
+                    <Button 
+                        variant="contained" 
+                        color="error" 
+                        startIcon={<Stop />} 
+                        onClick={() => {
+                            onPause();
+                            setView(TaskDialogView.Progress);
+                        }}
+                    >
+                        Stop Timer ({formatTime(timerSeconds)})
+                    </Button>
+                ) : (
+                    <Button 
+                        variant="contained" 
+                        color="secondary" 
+                        startIcon={<PlayArrow />} 
+                        onClick={onStart}
+                    >
+                        Start Timer
+                    </Button>
+                )}
+
                 <Button onClick={() => setView(TaskDialogView.Progress)}>Update Progress</Button>
                 <Button onClick={() => setView(TaskDialogView.History)}>Show History</Button>
             </DialogActions>

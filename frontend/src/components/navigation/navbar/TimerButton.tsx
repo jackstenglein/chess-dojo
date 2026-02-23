@@ -107,7 +107,7 @@ interface Timer {
     onClear: () => void;
 }
 
-function useTimer(): Timer {
+export function useTimer(): Timer {
     const { user, updateUser } = useAuth();
     const api = useApi();
     const [timerSeconds, setTimerSeconds] = useState(() => getTimerSeconds(user));
