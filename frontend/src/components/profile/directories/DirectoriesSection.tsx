@@ -19,7 +19,7 @@ import {
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Folder, Visibility, VisibilityOff } from '@mui/icons-material';
-import { Grid, Stack, SxProps, Typography, useMediaQuery } from '@mui/material';
+import { Badge, Grid, Stack, SxProps, Typography, useMediaQuery } from '@mui/material';
 import {
     DataGridPro,
     GridColumnVisibilityModel,
@@ -339,9 +339,25 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
 
     return (
         <Stack height={1} justifyContent='center' py={1}>
-            <Grid container>
+            <Grid container columnSpacing={0.5}>
                 <Grid size={1} display='flex' justifyContent='center'>
-                    <Folder />
+                    <Badge
+                        badgeContent={params.row.metadata.gameCount || 0}
+                        color='secondary'
+                        sx={{
+                            alignSelf: 'flex-start',
+                            '& .MuiBadge-badge': {
+                                fontSize: '0.65rem',
+                                minWidth: 16,
+                                height: 16,
+                                ml: '4px',
+                            },
+                        }}
+                        showZero
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                    >
+                        <Folder />
+                    </Badge>
                 </Grid>
                 <Grid size={11}>
                     <Stack
