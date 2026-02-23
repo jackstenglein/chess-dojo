@@ -3,7 +3,11 @@
         "baseUrl": ".",
         "target": "ES2015",
         "useDefineForClassFields": true,
-        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "lib": [
+            "ESNext",
+            "DOM",
+            "DOM.Iterable"
+        ],
         "module": "ESNext",
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -26,8 +30,14 @@
             }
         ],
         "paths": {
-            "@/*": ["src/*"]
-        }
+            "@/*": [
+                "src/*"
+            ]
+        },
+        "types": [
+            "vitest/globals",
+            "node"
+        ],
     },
     "include": [
         "src",

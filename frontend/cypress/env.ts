@@ -12,6 +12,7 @@ export const EnvSchema = z.object({
     codeCoverage: z.object({
         exclude: z.string(),
     }),
+    dev_username: z.string()
 });
 
 export type Env = z.infer<typeof EnvSchema>;
