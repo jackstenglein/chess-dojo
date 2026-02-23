@@ -28,7 +28,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
 import { useState } from 'react';
-import InputSlider from './InputSlider';
+import NumberSpinner from './NumberSpinner';
 import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
@@ -153,10 +153,9 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
             <DialogContent>
                 <Stack spacing={3} sx={{ mt: isMinutes || isNonDojo ? 1 : undefined }}>
                     {isSlider && (
-                        <InputSlider
+                        <NumberSpinner
                             value={value}
                             setValue={setValue}
-                            max={totalCount}
                             min={requirement.startCount || 0}
                             suffix={requirement.progressBarSuffix}
                         />
