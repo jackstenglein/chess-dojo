@@ -19,6 +19,12 @@ export interface NotificationApiContextType {
      * @returns An empty AxiosResponse.
      */
     deleteNotification: (id: string) => Promise<AxiosResponse<null>>;
+
+    /**
+     * deleteAllNotifications deletes all Notifications for the current signed-in user.
+     * @returns An empty AxiosResponse.
+     */
+    deleteAllNotifications: () => Promise<AxiosResponse<null>>;
 }
 
 /**
@@ -60,5 +66,18 @@ export function deleteNotification(idToken: string, id: string) {
             Authorization: 'Bearer ' + idToken,
         },
         functionName: 'deleteNotification',
+    });
+}
+
+/**
+ * deleteAllNotifications deletes all Notifications for the current signed-in user.
+ * @param idToken The id token of the current signed-in user.
+ */
+export function deleteAllNotifications(idToken: string) {
+    return axiosService.delete<null>(`/user/notifications`, {
+        headers: {
+            Authorization: 'Bearer ' + idToken,
+        },
+        functionName: 'deleteAllNotifications',
     });
 }

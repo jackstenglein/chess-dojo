@@ -106,6 +106,9 @@ type TimelineGraduationInfo struct {
 
 	// The amount of time spent in minutes on non-dojo tasks in the cohort
 	NonDojoMinutes int `dynamodbav:"nonDojoMinutes" json:"nonDojoMinutes"`
+
+	// The number of games annotated at the time of graduation.
+	GamesAnnotated int `dynamodbav:"gamesAnnotated,omitempty" json:"gamesAnnotated,omitempty"`
 }
 
 // The info on game submission that is copied into the timeline entry
