@@ -292,6 +292,8 @@ export interface Rating {
     currentRating: number;
     name?: string;
     isProvisional?: boolean;
+    /** Number of games included in the aggregate (used by TimeManagement). */
+    numGames?: number;
 }
 
 export interface RatingHistory {

@@ -5,6 +5,7 @@ import {
     DynamoDBClient,
     GetItemCommand,
     PutItemCommand,
+    UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
@@ -20,8 +21,13 @@ import {
     GameOrientation,
     GameOrientations,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
+import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
 import { User } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
+import {
+    TimeManagementAggregate,
+    updateTimeManagementAggregate,
+} from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import {
     APIGatewayProxyEventV2,
     APIGatewayProxyHandlerV2,
@@ -33,6 +39,7 @@ import { addDirectoryItems } from '../../directoryService/addItems';
 import { ApiError, errToApiGatewayProxyResultV2, parseBody } from '../../directoryService/api';
 import { getChesscomAnalysis, getChesscomGame } from './chesscom';
 import { getLichessChapter, getLichessGame, getLichessStudy } from './lichess';
+import { calculateTimeManagementRatings } from './timeManagement';
 import { Game, GameImportHeaders, isMissingData, isValidDate, isValidResult } from './types';
 
 export const dynamo = new DynamoDBClient({ region: 'us-east-1' });
@@ -99,6 +106,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         const updated = await batchPutGames(games);
+
+        await updateUserTimeManagementRating(user, games);
 
         if (request.directory) {
             await addGamesToDirectory(request.directory.owner, request.directory.id, games);
@@ -338,6 +347,14 @@ export function getGame(
             game.timelineId = `${game.publishedAt.split('T')[0]}_${uuidv4()}`;
         }
 
+        const tmRatings = calculateTimeManagementRatings(chess);
+        if (tmRatings.white !== undefined) {
+            game.timeManagementRatingWhite = tmRatings.white;
+        }
+        if (tmRatings.black !== undefined) {
+            game.timeManagementRatingBlack = tmRatings.black;
+        }
+
         return game;
     } catch (err) {
         throw new ApiError({
@@ -480,5 +497,97 @@ export async function createTimelineEntry(game: Game) {
         );
     } catch (err) {
         console.error('Failed to create timeline entry: ', err);
+    }
+}
+
+/**
+ * Updates the user's aggregate time management rating based on newly created games.
+ * Uses an incremental model: stores only currentRating + numGames on the user record.
+ * - Provisional (< 10 games): running average
+ * - Established (>= 10 games): USCF Elo draw adjustment (K=32)
+ * @param user The user who created the games.
+ * @param games The newly created games.
+ */
+async function updateUserTimeManagementRating(user: User, games: Game[]): Promise<void> {
+    const newRatings: number[] = [];
+
+    for (const game of games) {
+        const ownerRating =
+            game.orientation === 'black'
+                ? game.timeManagementRatingBlack
+                : game.timeManagementRatingWhite;
+
+        if (ownerRating !== undefined) {
+            newRatings.push(ownerRating);
+        }
+    }
+
+    if (newRatings.length === 0) {
+        return;
+    }
+
+    try {
+        // Build the current aggregate from the user's existing TM rating
+        const existingTm = user.ratings?.[RatingSystem.TimeManagement];
+        let aggregate: TimeManagementAggregate | undefined;
+        if (existingTm && existingTm.currentRating > 0) {
+            aggregate = {
+                currentRating: existingTm.currentRating,
+                numGames: existingTm.numGames ?? 0,
+            };
+        }
+
+        // Incrementally apply each new game rating
+        for (const gameRating of newRatings) {
+            aggregate = updateTimeManagementAggregate(aggregate, gameRating);
+        }
+
+        const tmRatingValue = {
+            hideUsername: true,
+            startRating: aggregate.currentRating,
+            currentRating: aggregate.currentRating,
+            numGames: aggregate.numGames,
+        };
+
+        if (user.ratings) {
+            // ratings map exists — safe to set nested path
+            await dynamo.send(
+                new UpdateItemCommand({
+                    Key: { username: { S: user.username } },
+                    TableName: usersTable,
+                    UpdateExpression: 'SET #ratings.#tm = :tmRating',
+                    ExpressionAttributeNames: {
+                        '#ratings': 'ratings',
+                        '#tm': RatingSystem.TimeManagement,
+                    },
+                    ExpressionAttributeValues: marshall(
+                        { ':tmRating': tmRatingValue },
+                        { removeUndefinedValues: true },
+                    ),
+                }),
+            );
+        } else {
+            // ratings map doesn't exist — set the entire map
+            await dynamo.send(
+                new UpdateItemCommand({
+                    Key: { username: { S: user.username } },
+                    TableName: usersTable,
+                    UpdateExpression: 'SET #ratings = :ratings',
+                    ExpressionAttributeNames: {
+                        '#ratings': 'ratings',
+                    },
+                    ExpressionAttributeValues: marshall(
+                        {
+                            ':ratings': {
+                                [RatingSystem.TimeManagement]: tmRatingValue,
+                            },
+                        },
+                        { removeUndefinedValues: true },
+                    ),
+                }),
+            );
+        }
+    } catch (err) {
+        console.error('Failed to update user time management rating: ', err);
     }
 }

@@ -313,6 +313,12 @@ export interface GameInfo extends GameKey {
 
     /** The time class of the game. Currently set only on master games. */
     timeClass?: string;
+
+    /** The time management rating for white in this game. */
+    timeManagementRatingWhite?: number;
+
+    /** The time management rating for black in this game. */
+    timeManagementRatingBlack?: number;
 }
 
 export interface CommentOwner {
