@@ -104,18 +104,33 @@ test('updateTimeManagementAggregate Elo moves rating toward game ratings over mu
 });
 
 // --- calculateDrawEloAdjustment tests ---
+// Hand-computed with K=32, draw score=0.5, expected=1/(1+10^((opponent-player)/400))
 
-test('calculateDrawEloAdjustment increases rating when game rating is higher', () => {
-    const newRating = calculateDrawEloAdjustment(2000, 2200);
-    assert.isAbove(newRating, 2000);
+test('calculateDrawEloAdjustment returns exact value for 200-point gap upward', () => {
+    // expected = 1/(1+10^(200/400)) ≈ 0.2403
+    // 2000 + 32*(0.5 - 0.2403) = 2008.31 → 2008
+    assert.equal(calculateDrawEloAdjustment(2000, 2200), 2008);
 });
 
-test('calculateDrawEloAdjustment decreases rating when game rating is lower', () => {
-    const newRating = calculateDrawEloAdjustment(2000, 1800);
-    assert.isBelow(newRating, 2000);
+test('calculateDrawEloAdjustment returns exact value for 200-point gap downward', () => {
+    // expected = 1/(1+10^(-200/400)) ≈ 0.7597
+    // 2000 + 32*(0.5 - 0.7597) = 1991.69 → 1992
+    assert.equal(calculateDrawEloAdjustment(2000, 1800), 1992);
 });
 
-test('calculateDrawEloAdjustment stays same for equal ratings', () => {
-    const newRating = calculateDrawEloAdjustment(2000, 2000);
-    assert.equal(newRating, 2000);
+test('calculateDrawEloAdjustment returns same rating for equal ratings', () => {
+    // expected = 0.5, 2000 + 32*(0.5 - 0.5) = 2000
+    assert.equal(calculateDrawEloAdjustment(2000, 2000), 2000);
+});
+
+test('calculateDrawEloAdjustment returns exact value for 500-point gap upward', () => {
+    // expected = 1/(1+10^(500/400)) ≈ 0.0535
+    // 1500 + 32*(0.5 - 0.0535) = 1514.29 → 1514
+    assert.equal(calculateDrawEloAdjustment(1500, 2000), 1514);
+});
+
+test('calculateDrawEloAdjustment returns exact value for 500-point gap downward', () => {
+    // expected = 1/(1+10^(-500/400)) ≈ 0.9465
+    // 2000 + 32*(0.5 - 0.9465) = 1985.71 → 1986
+    assert.equal(calculateDrawEloAdjustment(2000, 1500), 1986);
 });
