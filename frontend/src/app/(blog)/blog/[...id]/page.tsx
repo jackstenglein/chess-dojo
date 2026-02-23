@@ -3,6 +3,7 @@ import { Stack } from '@mui/material';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BlogMarkdown } from '../../../(scoreboard)/admin/blog/[...id]/MarkdownEditor';
+import BlogComments from './BlogComments';
 import { Container } from '../common/Container';
 import { Footer } from '../common/Footer';
 import { Header } from '../common/Header';
@@ -48,6 +49,11 @@ export default async function BlogPage({ params }: PageProps<'/blog/[...id]'>) {
             <Stack mt={3}>
                 <BlogMarkdown>{blog.content}</BlogMarkdown>
                 <Footer utmCampaign={`blog-${id}`} />
+                <BlogComments
+                    comments={blog.comments ?? null}
+                    owner={BLOG_OWNER}
+                    id={id}
+                />
             </Stack>
         </Container>
     );

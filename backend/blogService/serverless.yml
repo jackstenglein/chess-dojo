@@ -86,6 +86,25 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  createComment:
+    handler: createComment.handler
+    events:
+      - httpApi:
+          path: /blog/{owner}/{id+}/comments
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: !GetAtt BlogsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   update:
     handler: update.handler
     events:

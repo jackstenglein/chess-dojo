@@ -34,6 +34,8 @@ export const BlogSchema = z.object({
     updatedAt: z.string(),
     /** The status of the blog post. */
     status: BlogStatusSchema,
+    /** Comments on the blog post. */
+    comments: z.array(z.any()).nullish(),
 });
 
 /** A blog post. */
@@ -110,3 +112,16 @@ export const updateBlogRequestSchema = z.object({
 
 /** A request to update a blog post. */
 export type UpdateBlogRequest = z.infer<typeof updateBlogRequestSchema>;
+
+/** Verifies the type of a request to create a comment on a blog post. */
+export const createBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string(),
+    /** The id of the blog post. */
+    id: z.string(),
+    /** The text content of the comment. */
+    content: z.string().min(1),
+});
+
+/** A request to create a comment on a blog post. */
+export type CreateBlogCommentRequest = z.infer<typeof createBlogCommentRequestSchema>;
