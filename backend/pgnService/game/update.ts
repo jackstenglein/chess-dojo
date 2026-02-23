@@ -102,6 +102,8 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
         update.date = game.date;
         update.pgn = game.pgn;
         update.headers = game.headers;
+        update.timeManagementRatingWhite = game.timeManagementRatingWhite;
+        update.timeManagementRatingBlack = game.timeManagementRatingBlack;
 
         const result = game.headers['Result'];
         const missingDataErr = isMissingData({ ...update, result });
