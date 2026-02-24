@@ -24,6 +24,7 @@ import { TimeProgressChip } from '../TimeProgressChip';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
+import { useLocalStorage } from 'usehooks-ts';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
@@ -38,7 +39,7 @@ export function WeeklyTrainingPlan() {
         timeline,
     });
 
-    const [expanded, setExpanded] = useState<boolean>(true);
+    const [expanded, setExpanded] = useLocalStorage<boolean>("training-plan-weekly-expanded",true);
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
