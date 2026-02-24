@@ -16,13 +16,11 @@
 import {
     AttributeValue,
     DynamoDBClient,
-    GetItemCommand,
     ScanCommand,
     UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
-import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
 import {
     TimeManagementAggregate,
     updateTimeManagementAggregate,
@@ -65,7 +63,9 @@ async function main() {
 
     try {
         do {
-            console.log(`\nScan page | processed: ${gamesProcessed} | updated: ${gamesUpdated} | skipped: ${gamesSkipped}`);
+            console.log(
+                `\nScan page | processed: ${gamesProcessed} | updated: ${gamesUpdated} | skipped: ${gamesSkipped}`,
+            );
 
             const scanOutput = await dynamo.send(
                 new ScanCommand({
@@ -121,7 +121,9 @@ async function main() {
         } while (startKey);
     } catch (err) {
         console.error('Fatal error during scan:', err);
-        console.log(`  Progress: processed=${gamesProcessed} updated=${gamesUpdated} skipped=${gamesSkipped}`);
+        console.log(
+            `  Progress: processed=${gamesProcessed} updated=${gamesUpdated} skipped=${gamesSkipped}`,
+        );
         console.log(`  Last start key: ${JSON.stringify(startKey)}`);
         process.exit(1);
     }
@@ -179,11 +181,7 @@ function accumulateUserAggregate(
 /**
  * Writes per-game TM ratings to the game record.
  */
-async function updateGameRatings(
-    game: GameRecord,
-    white?: number,
-    black?: number,
-): Promise<void> {
+async function updateGameRatings(game: GameRecord, white?: number, black?: number): Promise<void> {
     const names: Record<string, string> = {};
     const values: Record<string, unknown> = {};
     const setClauses: string[] = [];
@@ -213,67 +211,31 @@ async function updateGameRatings(
 }
 
 /**
- * Writes the rebuilt TM aggregate to a user's ratings map.
- * Checks whether the ratings map exists first to avoid overwriting.
+ * Writes the rebuilt TM aggregate to the user's top-level timeManagementRating field.
  */
 async function updateUserAggregate(
     owner: string,
     aggregate: TimeManagementAggregate,
 ): Promise<void> {
-    const tmRatingValue = {
-        hideUsername: true,
-        startRating: aggregate.currentRating,
-        currentRating: aggregate.currentRating,
-        numGames: aggregate.numGames,
-    };
-
-    // Check if the user's ratings map exists
-    const getResult = await dynamo.send(
-        new GetItemCommand({
+    await dynamo.send(
+        new UpdateItemCommand({
             Key: marshall({ username: owner }),
             TableName: usersTable,
-            ProjectionExpression: 'ratings',
+            UpdateExpression: 'SET #tmr = :tmRating',
+            ExpressionAttributeNames: {
+                '#tmr': 'timeManagementRating',
+            },
+            ExpressionAttributeValues: marshall(
+                {
+                    ':tmRating': {
+                        currentRating: aggregate.currentRating,
+                        numGames: aggregate.numGames,
+                    },
+                },
+                { removeUndefinedValues: true },
+            ),
         }),
     );
-
-    const hasRatings = getResult.Item?.ratings?.M !== undefined;
-
-    if (hasRatings) {
-        await dynamo.send(
-            new UpdateItemCommand({
-                Key: marshall({ username: owner }),
-                TableName: usersTable,
-                UpdateExpression: 'SET #ratings.#tm = :tmRating',
-                ExpressionAttributeNames: {
-                    '#ratings': 'ratings',
-                    '#tm': RatingSystem.TimeManagement,
-                },
-                ExpressionAttributeValues: marshall(
-                    { ':tmRating': tmRatingValue },
-                    { removeUndefinedValues: true },
-                ),
-            }),
-        );
-    } else {
-        await dynamo.send(
-            new UpdateItemCommand({
-                Key: marshall({ username: owner }),
-                TableName: usersTable,
-                UpdateExpression: 'SET #ratings = :ratings',
-                ExpressionAttributeNames: {
-                    '#ratings': 'ratings',
-                },
-                ExpressionAttributeValues: marshall(
-                    {
-                        ':ratings': {
-                            [RatingSystem.TimeManagement]: tmRatingValue,
-                        },
-                    },
-                    { removeUndefinedValues: true },
-                ),
-            }),
-        );
-    }
 }
 
 main();
