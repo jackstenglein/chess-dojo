@@ -1,4 +1,4 @@
-# chess-dojo-scheduler
+# chess-dojo
 
 This repository contains the code for the Chess Dojo Scheduler app, located at https://www.dojoscoreboard.com.
 
