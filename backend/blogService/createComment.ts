@@ -98,8 +98,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 publicMessage: 'Failed to retrieve updated blog post',
             });
         }
-        const blog = unmarshall(output.Attributes) as Blog;
-        return success(blog);
+        const updatedBlog = unmarshall(output.Attributes) as Blog;
+        return success(updatedBlog);
     } catch (err) {
         if (err instanceof ConditionalCheckFailedException) {
             return errToApiGatewayProxyResultV2(
