@@ -14,6 +14,7 @@ import {
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, compareCohorts, dojoCohorts, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -215,6 +216,39 @@ interface HistoryItemError {
     count?: string;
     hours?: string;
     minutes?: string;
+}
+
+function createNewEntry(
+    requirement: Requirement | CustomTask,
+    cohort: string,
+    index: number,
+): HistoryItem {
+    const now = DateTime.now();
+    return {
+        date: now,
+        count: '',
+        hours: '',
+        minutes: '',
+        notes: '',
+        cohort,
+        index,
+        deleted: false,
+        entry: {
+            id: `new-${now.toMillis()}-${index}`,
+            requirementId: requirement.id,
+            cohort,
+            scoreboardDisplay: requirement.scoreboardDisplay,
+            createdAt: now.toUTC().toISO() ?? '',
+            date: now.toUTC().toISO() ?? '',
+            previousCount: 0,
+            newCount: 0,
+            dojoPoints: 0,
+            totalDojoPoints: 0,
+            minutesSpent: 0,
+            totalMinutesSpent: 0,
+            notes: '',
+        } as TimelineEntry,
+    };
 }
 
 function getTimelineUpdate(
@@ -428,6 +462,19 @@ export function useProgressHistoryEditor({
         [setItems],
     );
 
+    const addItems = useCallback(
+        (count: number) => {
+            if (!requirement) return;
+            setItems((prevItems) => {
+                const newEntries: HistoryItem[] = Array.from({ length: count }, (_, i) =>
+                    createNewEntry(requirement, cohort, prevItems.length + i),
+                );
+                return [...prevItems, ...newEntries];
+            });
+        },
+        [requirement, cohort],
+    );
+
     const onSubmit = () => {
         setErrors(update.errors);
         if (Object.values(update.errors).length > 0) {
@@ -474,9 +521,59 @@ export function useProgressHistoryEditor({
         totalTime,
         getUpdateItem,
         getDeleteItem,
+        addItems,
         onSubmit,
     };
 }
+
+interface AddEntriesControlProps {
+    onAdd: (count: number) => void;
+    disabled?: boolean;
+}
+
+const AddEntriesControl = ({ onAdd, disabled }: AddEntriesControlProps) => {
+    const [bulkCount, setBulkCount] = useState('1');
+
+    const handleAdd = () => {
+        const count = parseInt(bulkCount);
+        if (!isNaN(count) && count > 0) {
+            onAdd(count);
+        }
+    };
+
+    return (
+        <Stack direction='row' spacing={1} alignItems='center'>
+            <TextField
+                label='# of entries'
+                value={bulkCount}
+                onChange={(e) => {
+                    if (NUMBER_REGEX.test(e.target.value)) {
+                        setBulkCount(e.target.value);
+                    }
+                }}
+                size='small'
+                sx={{ width: '110px' }}
+                slotProps={{
+                    htmlInput: {
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*',
+                        min: 1,
+                    },
+                }}
+                disabled={disabled}
+            />
+            <Button
+                startIcon={<AddIcon />}
+                variant='outlined'
+                onClick={handleAdd}
+                disabled={disabled || !bulkCount || parseInt(bulkCount) < 1}
+                data-cy='task-history-add-entries-button'
+            >
+                Add {parseInt(bulkCount) > 1 ? `${bulkCount} Entries` : 'Entry'}
+            </Button>
+        </Stack>
+    );
+};
 
 interface ProgressHistoryProps {
     requirement: Requirement | CustomTask;
@@ -498,6 +595,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         totalTime,
         getUpdateItem,
         getDeleteItem,
+        addItems,
         onSubmit,
     } = useProgressHistoryEditor({
         requirement,
@@ -515,29 +613,50 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         );
     }
 
+    const activeItems = items.filter((item) => !item.deleted);
+
     return (
         <>
             <DialogContent>
-                {items.length === 0 ? (
-                    <DialogContentText>You have no history for this requirement.</DialogContentText>
-                ) : (
-                    <Stack spacing={3} mt={1} width={1}>
-                        {items.map((_, idx, array) => {
-                            const reversedIdx = array.length - 1 - idx;
-                            const item = array[reversedIdx];
-                            return (
-                                <ProgressHistoryItem
-                                    key={item.entry.id}
-                                    requirement={requirement}
-                                    item={item}
-                                    error={errors[reversedIdx] || {}}
-                                    updateItem={getUpdateItem(reversedIdx)}
-                                    deleteItem={getDeleteItem(reversedIdx)}
-                                />
-                            );
-                        })}
+                <Stack spacing={2}>
+                    <Stack
+                        direction='row'
+                        justifyContent='space-between'
+                        alignItems='center'
+                        flexWrap='wrap'
+                        gap={1}
+                    >
+                        <Typography variant='body2' color='text.secondary'>
+                            {activeItems.length === 0
+                                ? 'No entries yet. Add one below.'
+                                : `${activeItems.length} entr${activeItems.length === 1 ? 'y' : 'ies'}`}
+                        </Typography>
+                        <AddEntriesControl onAdd={addItems} disabled={request.isLoading()} />
                     </Stack>
-                )}
+
+                    {activeItems.length === 0 ? (
+                        <DialogContentText>
+                            Use the controls above to add progress entries.
+                        </DialogContentText>
+                    ) : (
+                        <Stack spacing={3} mt={1} width={1}>
+                            {items.map((_, idx, array) => {
+                                const reversedIdx = array.length - 1 - idx;
+                                const item = array[reversedIdx];
+                                return (
+                                    <ProgressHistoryItem
+                                        key={item.entry.id}
+                                        requirement={requirement}
+                                        item={item}
+                                        error={errors[reversedIdx] || {}}
+                                        updateItem={getUpdateItem(reversedIdx)}
+                                        deleteItem={getDeleteItem(reversedIdx)}
+                                    />
+                                );
+                            })}
+                        </Stack>
+                    )}
+                </Stack>
             </DialogContent>
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
