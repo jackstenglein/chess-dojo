@@ -14,7 +14,7 @@ import { useChess } from '../PgnBoard';
 import { getBackgroundColor } from './Database';
 
 const CHESSDB_INFO =
-    'Chess Cloud Database (aka "CDB") is a massive chess knowledge database, including an opening book and endgame tablebases.\n\nIn contrast to traditional opening book building from game results, CDB is built entirely from analyzing individual moves using chess engines while overcoming their problems such as aggressive pruning and blind spots.\n\nCDB attempts to explore and define new chess opening theories, currently it includes most of the popular opening lines and yet still refining the results.';
+    'Chess Cloud Database (aka "CDB") is a massive chess knowledge database with close to 60 billion positions, including an opening book and endgame tablebases.\n\nIn contrast to traditional opening book building from game results, CDB is built entirely from analyzing individual moves using chess engines while overcoming their problems such as aggressive pruning and blind spots.\n\nCDB attempts to explore and define new chess opening theories, currently it includes most of the popular opening lines and yet still refining the results.';
 
 const StyledDataGrid = styled(DataGridPro<ChessDbMove>)(({ theme }) => ({
     '& .chessdb--best': {
