@@ -1,15 +1,15 @@
 import { ChessDbPv } from '@/api/cache/chessdb';
+import { normalizeChessDBScore } from '@/api/chessdbService';
 import Board from '@/board/Board';
 import { CLOUD_EVAL_ENABLED, EngineInfo, LineEval } from '@/stockfish/engine/engine';
 import CloudIcon from '@mui/icons-material/Cloud';
 import { List, Paper, Popper, Tooltip } from '@mui/material';
+import { Chess } from 'chess.js';
 import { Key } from 'chessground/types';
 import { useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ChessContext, useChess } from '../../PgnBoard';
 import LineEvaluation from './LineEval';
-import {Chess} from "chess.js"
-import { normalizeChessDBScore } from '@/api/chessdbService';
 
 interface HoverMove {
     fen: string;
