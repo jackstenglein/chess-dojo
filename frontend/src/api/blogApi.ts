@@ -1,8 +1,11 @@
 import {
     Blog,
+    CreateBlogCommentRequest,
     CreateBlogRequest,
+    DeleteBlogCommentRequest,
     GetBlogRequest,
     ListBlogsRequest,
+    UpdateBlogCommentRequest,
     UpdateBlogRequest,
 } from '@jackstenglein/chess-dojo-common/src/blog/api';
 import { AxiosResponse } from 'axios';
@@ -89,7 +92,7 @@ export function updateBlog(request: UpdateBlogRequest): Promise<AxiosResponse<Bl
 }
 
 export function createBlogComment(
-    props: { owner: string; id: string; parentId?: string },
+    props: Pick<CreateBlogCommentRequest, 'owner' | 'id' | 'parentId'>,
     content: string,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.post<Blog>(
@@ -100,7 +103,7 @@ export function createBlogComment(
 }
 
 export function updateBlogComment(
-    props: { owner: string; id: string; commentId: string },
+    props: Pick<UpdateBlogCommentRequest, 'owner' | 'id' | 'commentId'>,
     content: string,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.put<Blog>(
@@ -111,7 +114,7 @@ export function updateBlogComment(
 }
 
 export function deleteBlogComment(
-    props: { owner: string; id: string },
+    props: Pick<DeleteBlogCommentRequest, 'owner' | 'id'>,
     commentId: string,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.delete<Blog>(`/blog/comments/${props.owner}/${props.id}`, {

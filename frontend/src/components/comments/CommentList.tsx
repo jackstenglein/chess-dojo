@@ -151,6 +151,10 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
         checkClamped();
     }, [checkClamped, comment.content]);
 
+    useEffect(() => {
+        setExpanded(false);
+    }, [comment.content]);
+
     const createdAt = new Date(comment.createdAt);
     const isEdited = comment.updatedAt !== comment.createdAt;
 

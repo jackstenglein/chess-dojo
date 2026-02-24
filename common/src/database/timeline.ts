@@ -1,3 +1,4 @@
+import { type Comment } from '../blog/api';
 import { ScoreboardDisplay } from './requirement';
 
 export { type Comment } from '../blog/api';
