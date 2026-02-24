@@ -141,13 +141,13 @@ export type UpdateBlogRequest = z.infer<typeof updateBlogRequestSchema>;
 /** Verifies the type of a request to create a comment on a blog post. */
 export const createBlogCommentRequestSchema = z.object({
     /** The username of the blog owner. */
-    owner: z.string(),
+    owner: z.string().min(1),
     /** The id of the blog post. */
-    id: z.string(),
+    id: z.string().min(1),
     /** The text content of the comment. */
-    content: z.string().min(1).max(10000),
+    content: z.string().trim().min(1).max(10000),
     /** The id of the comment being replied to. The backend resolves this to the root top-level comment. */
-    parentId: z.string().optional(),
+    parentId: z.string().min(1).optional(),
 });
 
 /** A request to create a comment on a blog post. */
@@ -156,13 +156,13 @@ export type CreateBlogCommentRequest = z.infer<typeof createBlogCommentRequestSc
 /** Verifies the type of a request to update a comment on a blog post. */
 export const updateBlogCommentRequestSchema = z.object({
     /** The username of the blog owner. */
-    owner: z.string(),
+    owner: z.string().min(1),
     /** The id of the blog post. */
-    id: z.string(),
+    id: z.string().min(1),
     /** The id of the comment to update. */
-    commentId: z.string(),
+    commentId: z.string().min(1),
     /** The new text content of the comment. */
-    content: z.string().min(1).max(10000),
+    content: z.string().trim().min(1).max(10000),
 });
 
 /** A request to update a comment on a blog post. */
@@ -171,11 +171,11 @@ export type UpdateBlogCommentRequest = z.infer<typeof updateBlogCommentRequestSc
 /** Verifies the type of a request to delete a comment on a blog post. */
 export const deleteBlogCommentRequestSchema = z.object({
     /** The username of the blog owner. */
-    owner: z.string(),
+    owner: z.string().min(1),
     /** The id of the blog post. */
-    id: z.string(),
+    id: z.string().min(1),
     /** The id of the comment to delete. */
-    commentId: z.string(),
+    commentId: z.string().min(1),
 });
 
 /** A request to delete a comment on a blog post. */

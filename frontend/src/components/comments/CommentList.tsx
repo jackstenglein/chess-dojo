@@ -230,7 +230,10 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                         <Tooltip title='Delete'>
                                             <IconButton
                                                 size='small'
-                                                onClick={() => setDeleteDialogOpen(true)}
+                                                onClick={() => {
+                                                    deleteRequest.reset();
+                                                    setDeleteDialogOpen(true);
+                                                }}
                                             >
                                                 <DeleteIcon fontSize='small' />
                                             </IconButton>
