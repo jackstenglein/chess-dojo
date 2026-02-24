@@ -10,7 +10,7 @@ import {
     matchAction,
     modifierKeys,
 } from './boardTools/underboard/settings/KeyboardShortcuts';
-import ViewKeyboardShortcutsDialog from './boardTools/underboard/settings/ShortCutKeyBoardDialog';
+import { KeyboardShortcutsDialog } from './boardTools/underboard/settings/KeyboardShortcutsDialog';
 import { ShortcutAction, ShortcutBindings } from './boardTools/underboard/settings/ShortcutAction';
 import {
     ScrollToMove,
@@ -30,7 +30,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
     const reconcile = useReconcile();
     const [variationBehavior] = useLocalStorage(VariationBehaviorKey, VariationBehavior.Dialog);
     const [variationDialogMove, setVariationDialogMove] = useState<Move | null>(null);
-    const [viewKeyDialog, setViewKeyDialog] = useState<boolean>(false);
+    const [keyboardShortcutsDialogOpen, setKeyboardShortcutsDialogOpen] = useState<boolean>(false);
     const [keyBindings] = useLocalStorage(ShortcutBindings.key, ShortcutBindings.default);
     const [scrollToMove] = useLocalStorage(ScrollToMove.key, ScrollToMove.default);
 
@@ -113,7 +113,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                 opts: {
                     underboardApi: underboardRef.current,
                     toggleOrientation,
-                    setViewKeysDialog: setViewKeyDialog,
+                    setKeyboardShortcutsDialogOpen,
                     setVariationDialogMove:
                         variationBehavior === VariationBehavior.Dialog
                             ? setVariationDialogMove
@@ -130,7 +130,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             toggleOrientation,
             variationBehavior,
             setVariationDialogMove,
-            setViewKeyDialog,
+            setKeyboardShortcutsDialogOpen,
             underboardRef,
             reconcile,
             addEngineMoveRef,
@@ -216,7 +216,12 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             {variationDialogMove && (
                 <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />
             )}
-            <ViewKeyboardShortcutsDialog open={viewKeyDialog} setOpen={setViewKeyDialog} />
+            {keyboardShortcutsDialogOpen && (
+                <KeyboardShortcutsDialog
+                    open={keyboardShortcutsDialogOpen}
+                    setOpen={setKeyboardShortcutsDialogOpen}
+                />
+            )}
         </>
     );
 };

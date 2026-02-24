@@ -35,11 +35,14 @@ export const publicColumns: GridColDef<DirectoryItem>[] = [
             if (item.type === DirectoryItemTypes.DIRECTORY) {
                 return (
                     <Badge
-                        badgeContent={item.metadata.gameCount}
+                        badgeContent={item.metadata.gameCount || 0}
                         color='secondary'
                         sx={{
                             '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 16, height: 16 },
                         }}
+                        showZero
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        overlap='circular'
                     >
                         <Folder sx={{ height: 1 }} />
                     </Badge>
