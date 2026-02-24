@@ -8,7 +8,7 @@ import { ChessDbMove, ChessDbPv } from './cache/chessdb';
  * @param turn current turn
  * @returns normalized score
  */
-function normalizeChessDBScore(score: number, turn: Color): number {
+export function normalizeChessDBScore(score: number, turn: Color): number {
     if (turn === 'b') {
         return -score;
     }

@@ -8,6 +8,8 @@ import { useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ChessContext, useChess } from '../../PgnBoard';
 import LineEvaluation from './LineEval';
+import {Chess} from "chess.js"
+import { normalizeChessDBScore } from '@/api/chessdbService';
 
 interface HoverMove {
     fen: string;
@@ -15,11 +17,18 @@ interface HoverMove {
     to: Key;
 }
 
+/**
+ * Converts a given chessDB pv into Line eval, again we have to normalize cp to match engine lines
+ * @param pv ChessDv pv
+ * @param fen current FEN
+ * @returns converted Line eval
+ */
 function chessDbPvToLineEval(pv: ChessDbPv, fen: string): LineEval {
+    const side = new Chess(fen).turn();
     return {
         fen,
         depth: pv.depth,
-        cp: pv.score,
+        cp: normalizeChessDBScore(pv.score, side),
         mate: undefined,
         pv: pv.pv,
         multiPv: 1,
