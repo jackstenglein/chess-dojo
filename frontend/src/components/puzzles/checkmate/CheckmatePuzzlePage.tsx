@@ -226,6 +226,11 @@ function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
     const [puzzleOverview, setPuzzleOverview] = useState(getPuzzleOverview(user, 'OVERALL'));
     const [ratingChange, setRatingChange] = useState(0);
 
+    const [rated] = useLocalStorage(RATED_KEY, true);
+    const [displayedRating, setDisplayedRating] = useState(puzzleOverview.rating);
+    const animationFrameRef = useRef<number>(undefined);
+    const startTimeRef = useRef<number>(undefined);
+
     useEffect(() => {
         if (!requestTracker.isSent()) {
             void fetchNextPuzzle({
@@ -356,6 +361,45 @@ function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
     };
 
     const orientation = playerColor === Color.white ? 'white' : 'black';
+
+    useEffect(() => {
+        if (
+            !rated ||
+            displayedRating === puzzleOverview.rating + ratingChange ||
+            animationFrameRef.current
+        ) {
+            return;
+        }
+
+        const duration = 750;
+        const start = displayedRating;
+        const target = puzzleOverview.rating + ratingChange;
+
+        const animate = (timestamp: number) => {
+            if (!startTimeRef.current) {
+                startTimeRef.current = timestamp;
+            }
+            const progress = timestamp - startTimeRef.current;
+            const percentage = Math.min(progress / duration, 1);
+            const value = Math.floor(start + percentage * (target - start));
+
+            setDisplayedRating(value);
+
+            if (percentage < 1) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+                startTimeRef.current = undefined;
+                animationFrameRef.current = undefined;
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+    }, [displayedRating, puzzleOverview.rating, ratingChange, rated]);
+
+    useEffect(() => {
+        setDisplayedRating(puzzleOverview.rating);
+    }, [currentPuzzle]);
+
     return (
         <Container maxWidth={false} sx={{ py: 4 }}>
             <PgnBoard
@@ -372,7 +416,7 @@ function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
                                 puzzle={currentPuzzle}
                                 seconds={seconds}
                                 orientation={orientation}
-                                rating={puzzleOverview.rating}
+                                displayedRating={displayedRating}
                                 ratingDeviation={puzzleOverview.ratingDeviation}
                                 ratingChange={Math.round(ratingChange)}
                                 result={result}
@@ -421,7 +465,7 @@ function CheckmatePuzzleUnderboard({
     puzzle,
     seconds,
     orientation,
-    rating,
+    displayedRating,
     ratingDeviation,
     ratingChange,
     result,
@@ -433,8 +477,8 @@ function CheckmatePuzzleUnderboard({
     seconds: number;
     /** The color the user is playing. */
     orientation: 'white' | 'black';
-    /** The user's rating before taking the puzzle. */
-    rating: number;
+    /** The rating as shown to the user */
+    displayedRating: number;
     /** The user's rating deviation before/after taking the puzzle. */
     ratingDeviation: number;
     /** The user's rating change after taking the puzzle. */
@@ -452,40 +496,6 @@ function CheckmatePuzzleUnderboard({
 
     const [pieceStyle] = useLocalStorage<PieceStyle>(PieceStyleKey, PieceStyle.Standard);
     const pieceSx = getPieceSx(pieceStyle);
-
-    const [displayedRating, setDisplayedRating] = useState(rating);
-    const animationFrameRef = useRef<number>(undefined);
-    const startTimeRef = useRef<number>(undefined);
-
-    useEffect(() => {
-        if (!rated || displayedRating === rating + ratingChange || animationFrameRef.current) {
-            return;
-        }
-
-        const duration = 750;
-        const start = displayedRating;
-        const target = rating + ratingChange;
-
-        const animate = (timestamp: number) => {
-            if (!startTimeRef.current) {
-                startTimeRef.current = timestamp;
-            }
-            const progress = timestamp - startTimeRef.current;
-            const percentage = Math.min(progress / duration, 1);
-            const value = Math.floor(start + percentage * (target - start));
-
-            setDisplayedRating(value);
-
-            if (percentage < 1) {
-                animationFrameRef.current = requestAnimationFrame(animate);
-            } else {
-                startTimeRef.current = undefined;
-                animationFrameRef.current = undefined;
-            }
-        };
-
-        animationFrameRef.current = requestAnimationFrame(animate);
-    }, [displayedRating, rating, ratingChange, rated]);
 
     const successfulPlays = (puzzle?.successfulPlays ?? 0) + (result === 'win' ? 1 : 0);
     let streak = 0;

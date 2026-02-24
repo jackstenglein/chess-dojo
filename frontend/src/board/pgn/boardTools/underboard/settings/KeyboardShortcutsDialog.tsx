@@ -3,7 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import KeyboardShortcuts from './KeyboardShortcuts';
 
-export interface ViewKeyboardShortcutsDialogProps {
+export interface KeyboardShortcutsDialogProps {
     /** Whether the dialog is open. */
     open: boolean;
     /** Callback to open/close the dialog. */
@@ -14,7 +14,7 @@ export interface ViewKeyboardShortcutsDialogProps {
  * A dialog that renders the full KeyboardShortcuts editor.
  * Accepts open/setOpen for controlled visibility
  */
-const ViewKeyboardShortcutsDialog = ({ open, setOpen }: ViewKeyboardShortcutsDialogProps) => {
+export const KeyboardShortcutsDialog = ({ open, setOpen }: KeyboardShortcutsDialogProps) => {
     return (
         <Dialog
             open={open}
@@ -42,5 +42,3 @@ const ViewKeyboardShortcutsDialog = ({ open, setOpen }: ViewKeyboardShortcutsDia
         </Dialog>
     );
 };
-
-export default ViewKeyboardShortcutsDialog;
