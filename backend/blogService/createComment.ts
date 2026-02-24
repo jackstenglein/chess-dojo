@@ -4,6 +4,7 @@ import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     Blog,
+    BlogStatuses,
     createBlogCommentRequestSchema,
 } from '@jackstenglein/chess-dojo-common/src/blog/api';
 import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
@@ -52,17 +53,21 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const user = await getUser(userInfo.username);
         const request = parseEvent(event, createBlogCommentRequestSchema);
 
-        let resolvedParentId: string | undefined;
-        if (request.parentId) {
-            const blog = await getBlog(request.owner, request.id);
-            if (!blog) {
-                throw new ApiError({
-                    statusCode: 404,
-                    publicMessage: `Blog post not found: ${request.owner}/${request.id}`,
-                });
-            }
-            resolvedParentId = resolveParentId(blog.comments, request.parentId);
+        const blog = await getBlog(request.owner, request.id);
+        if (!blog) {
+            throw new ApiError({
+                statusCode: 404,
+                publicMessage: `Blog post not found: ${request.owner}/${request.id}`,
+            });
         }
+        if (blog.status !== BlogStatuses.PUBLISHED) {
+            throw new ApiError({
+                statusCode: 403,
+                publicMessage: 'Comments are not allowed on unpublished posts',
+            });
+        }
+
+        const resolvedParentId = resolveParentId(blog.comments, request.parentId);
 
         const now = new Date().toISOString();
         const comment: Comment = {

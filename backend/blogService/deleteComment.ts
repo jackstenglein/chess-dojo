@@ -77,13 +77,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             builder.remove(['comments', idx]);
         }
 
+        // Validate that every index we're removing still holds the expected comment.
+        // If another request modified the array between our read and this update,
+        // DynamoDB will reject with ConditionalCheckFailedException.
+        const conditions = [attributeExists('id')];
+        for (const idx of indicesToRemove) {
+            conditions.push(equal(['comments', idx, 'id'], comments[idx].id));
+        }
+
         const input = builder
-            .condition(
-                and(
-                    attributeExists('id'),
-                    equal(['comments', commentIndex, 'id'], request.commentId),
-                ),
-            )
+            .condition(and(...conditions))
             .table(blogTable)
             .return('ALL_NEW')
             .build();
