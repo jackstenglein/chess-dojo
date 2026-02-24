@@ -89,12 +89,12 @@ export function updateBlog(request: UpdateBlogRequest): Promise<AxiosResponse<Bl
 }
 
 export function createBlogComment(
-    props: { owner: string; id: string },
+    props: { owner: string; id: string; parentId?: string },
     content: string,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.post<Blog>(
         `/blog/comments/${props.owner}/${props.id}`,
-        { content },
+        { content, ...(props.parentId && { parentId: props.parentId }) },
         { functionName: 'createBlogComment' },
     );
 }

@@ -1,5 +1,6 @@
 'use strict';
 
+import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     Blog,
@@ -13,7 +14,7 @@ import {
     requireUserInfo,
     success,
 } from '../directoryService/api';
-import { attributeExists, blogTable, dynamo, getUser, UpdateItemBuilder } from './database';
+import { and, attributeExists, blogTable, dynamo, equal, getUser, UpdateItemBuilder } from './database';
 import { getBlog } from './get';
 
 /**
@@ -61,7 +62,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             .key('id', request.id)
             .set(['comments', commentIndex, 'content'], request.content)
             .set(['comments', commentIndex, 'updatedAt'], now)
-            .condition(attributeExists('id'))
+            .condition(
+                and(
+                    attributeExists('id'),
+                    equal(['comments', commentIndex, 'id'], request.commentId),
+                ),
+            )
             .table(blogTable)
             .return('ALL_NEW')
             .build();
@@ -76,6 +82,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const updatedBlog = unmarshall(output.Attributes) as Blog;
         return success(updatedBlog);
     } catch (err) {
+        if (err instanceof ConditionalCheckFailedException) {
+            return errToApiGatewayProxyResultV2(
+                new ApiError({
+                    statusCode: 409,
+                    publicMessage:
+                        'Comment was modified by another request. Please refresh and try again.',
+                    cause: err,
+                }),
+            );
+        }
         return errToApiGatewayProxyResultV2(err);
     }
 };

@@ -17,10 +17,32 @@ import {
     success,
 } from '../directoryService/api';
 import { attributeExists, blogTable, dynamo, getUser, UpdateItemBuilder } from './database';
+import { getBlog } from './get';
+
+/**
+ * Resolves the root top-level comment id for a reply. If the target comment
+ * is itself a reply, returns its parentId (the root). Otherwise returns the
+ * target's own id.
+ */
+function resolveParentId(
+    comments: Comment[] | null | undefined,
+    parentId: string | undefined,
+): string | undefined {
+    if (!parentId) return undefined;
+
+    const target = (comments ?? []).find((c) => c.id === parentId);
+    if (!target) {
+        throw new ApiError({
+            statusCode: 404,
+            publicMessage: 'Parent comment not found',
+        });
+    }
+    return target.parentId ?? target.id;
+}
 
 /**
  * Handles requests to create a comment on a blog post.
- * Path parameters: owner, id. Body: content.
+ * Path parameters: owner, id. Body: content, optional parentId.
  */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
@@ -29,6 +51,18 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const userInfo = requireUserInfo(event);
         const user = await getUser(userInfo.username);
         const request = parseEvent(event, createBlogCommentRequestSchema);
+
+        let resolvedParentId: string | undefined;
+        if (request.parentId) {
+            const blog = await getBlog(request.owner, request.id);
+            if (!blog) {
+                throw new ApiError({
+                    statusCode: 404,
+                    publicMessage: `Blog post not found: ${request.owner}/${request.id}`,
+                });
+            }
+            resolvedParentId = resolveParentId(blog.comments, request.parentId);
+        }
 
         const now = new Date().toISOString();
         const comment: Comment = {
@@ -40,6 +74,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             content: request.content,
             createdAt: now,
             updatedAt: now,
+            ...(resolvedParentId && { parentId: resolvedParentId }),
         };
 
         const input = new UpdateItemBuilder()

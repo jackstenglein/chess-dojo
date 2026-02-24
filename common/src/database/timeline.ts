@@ -83,6 +83,8 @@ export interface Comment {
     updatedAt: string;
     /** The text content of the comment. */
     content: string;
+    /** The id of the root top-level comment this is a reply to. Absent for top-level comments. */
+    parentId?: string;
 }
 
 /** Metadata for a graduation timeline entry. */

@@ -7,6 +7,7 @@ import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline'
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import ReplyIcon from '@mui/icons-material/Reply';
 import SaveIcon from '@mui/icons-material/Save';
 import {
     Button,
@@ -23,6 +24,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { groupCommentsIntoThreads } from './threadComments';
 
 interface CommentListProps {
     comments: Comment[] | null;
@@ -30,6 +32,8 @@ interface CommentListProps {
     viewCommentsLink?: string;
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
+    threaded?: boolean;
+    onReply?: (parentCommentId: string) => void;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -38,9 +42,51 @@ const CommentList: React.FC<CommentListProps> = ({
     viewCommentsLink,
     onEdit,
     onDelete,
+    threaded,
+    onReply,
 }) => {
     if (!comments) {
         return null;
+    }
+
+    if (threaded) {
+        const threads = groupCommentsIntoThreads(comments);
+        const displayThreads = maxComments
+            ? threads.slice(Math.max(0, threads.length - maxComments))
+            : threads;
+        const hiddenThreads = threads.length - displayThreads.length;
+
+        return (
+            <Stack spacing={2} width={1} alignItems='start' mb={2}>
+                {hiddenThreads > 0 && viewCommentsLink && (
+                    <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
+                        View {hiddenThreads} earlier comment
+                        {hiddenThreads !== 1 ? 's' : ''}
+                    </Link>
+                )}
+
+                {displayThreads.map((thread) => (
+                    <Stack key={thread.root.id} spacing={1} width={1}>
+                        <CommentListItem
+                            comment={thread.root}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            onReply={onReply}
+                        />
+                        {thread.replies.map((reply) => (
+                            <Stack key={reply.id} pl='52px' width={1}>
+                                <CommentListItem
+                                    comment={reply}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onReply={onReply}
+                                />
+                            </Stack>
+                        ))}
+                    </Stack>
+                ))}
+            </Stack>
+        );
     }
 
     const displayComments = maxComments
@@ -73,9 +119,15 @@ interface CommentListItemProps {
     comment: Comment;
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
+    onReply?: (parentCommentId: string) => void;
 }
 
-const CommentListItem: React.FC<CommentListItemProps> = ({ comment, onEdit, onDelete }) => {
+const CommentListItem: React.FC<CommentListItemProps> = ({
+    comment,
+    onEdit,
+    onDelete,
+    onReply,
+}) => {
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
@@ -209,11 +261,23 @@ const CommentListItem: React.FC<CommentListItemProps> = ({ comment, onEdit, onDe
                         )}
                     </Stack>
                 </Paper>
-                <Typography variant='caption' color='text.secondary'>
-                    {toDojoDateString(createdAt, timezone)} •{' '}
-                    {toDojoTimeString(createdAt, timezone, timeFormat)}
-                    {isEdited && ' • (edited)'}
-                </Typography>
+                <Stack direction='row' alignItems='center' spacing={1}>
+                    <Typography variant='caption' color='text.secondary'>
+                        {toDojoDateString(createdAt, timezone)} •{' '}
+                        {toDojoTimeString(createdAt, timezone, timeFormat)}
+                        {isEdited && ' • (edited)'}
+                    </Typography>
+                    {onReply && user && (
+                        <Button
+                            size='small'
+                            startIcon={<ReplyIcon fontSize='small' />}
+                            onClick={() => onReply(comment.id)}
+                            sx={{ textTransform: 'none', minWidth: 0, py: 0 }}
+                        >
+                            Reply
+                        </Button>
+                    )}
+                </Stack>
             </Stack>
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

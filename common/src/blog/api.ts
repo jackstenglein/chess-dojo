@@ -21,6 +21,8 @@ export const CommentSchema = z.object({
     updatedAt: z.string(),
     /** The text content of the comment. */
     content: z.string(),
+    /** The id of the root top-level comment this is a reply to. Absent for top-level comments. */
+    parentId: z.string().optional(),
 });
 
 /** A comment on a blog post. */
@@ -144,6 +146,8 @@ export const createBlogCommentRequestSchema = z.object({
     id: z.string(),
     /** The text content of the comment. */
     content: z.string().min(1).max(10000),
+    /** The id of the comment being replied to. The backend resolves this to the root top-level comment. */
+    parentId: z.string().optional(),
 });
 
 /** A request to create a comment on a blog post. */
