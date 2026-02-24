@@ -23,8 +23,10 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { groupCommentsIntoThreads } from './threadComments';
+
+const COMMENT_LINE_CLAMP = 4;
 
 interface CommentListProps {
     comments: Comment[] | null;
@@ -131,9 +133,23 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
+    const [expanded, setExpanded] = useState(false);
+    const [isClamped, setIsClamped] = useState(false);
+    const contentRef = useRef<HTMLElement>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const editRequest = useRequest();
     const deleteRequest = useRequest();
+
+    const checkClamped = useCallback(() => {
+        const el = contentRef.current;
+        if (el) {
+            setIsClamped(el.scrollHeight > el.clientHeight);
+        }
+    }, []);
+
+    useEffect(() => {
+        checkClamped();
+    }, [checkClamped, comment.content]);
 
     const createdAt = new Date(comment.createdAt);
     const isEdited = comment.updatedAt !== comment.createdAt;
@@ -255,9 +271,36 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                 </Stack>
                             </Stack>
                         ) : (
-                            <Typography sx={{ whiteSpace: 'pre-line' }}>
-                                {comment.content}
-                            </Typography>
+                            <>
+                                <Typography
+                                    ref={contentRef}
+                                    sx={{
+                                        whiteSpace: 'pre-line',
+                                        ...(!expanded && {
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: COMMENT_LINE_CLAMP,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                        }),
+                                    }}
+                                >
+                                    {comment.content}
+                                </Typography>
+                                {isClamped && (
+                                    <Button
+                                        size='small'
+                                        onClick={() => setExpanded(!expanded)}
+                                        sx={{
+                                            textTransform: 'none',
+                                            p: 0,
+                                            minWidth: 0,
+                                            alignSelf: 'flex-start',
+                                        }}
+                                    >
+                                        {expanded ? 'Show less' : 'Show more'}
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </Stack>
                 </Paper>
