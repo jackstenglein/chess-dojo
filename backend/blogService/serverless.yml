@@ -90,7 +90,7 @@ functions:
     handler: createComment.handler
     events:
       - httpApi:
-          path: /blog/{owner}/{id+}/comments
+          path: /blog/comments/{owner}/{id+}
           method: post
           authorizer:
             type: jwt

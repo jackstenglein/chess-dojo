@@ -93,7 +93,7 @@ export function createBlogComment(
     content: string,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.post<Blog>(
-        `/blog/${props.owner}/${props.id}/comments`,
+        `/blog/comments/${props.owner}/${props.id}`,
         { content },
         { functionName: 'createBlogComment' },
     );

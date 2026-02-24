@@ -3,6 +3,29 @@ import { z } from 'zod';
 /** The username of the blog owner for the Chess Dojo blog. */
 export const DOJO_BLOG_OWNER = 'chessdojo';
 
+/** Verifies the shape of a Comment on a blog post. */
+export const CommentSchema = z.object({
+    /** The username of the person that posted the comment. */
+    owner: z.string(),
+    /** The display name of the person that posted the comment. */
+    ownerDisplayName: z.string(),
+    /** The cohort of the person that posted the comment. */
+    ownerCohort: z.string(),
+    /** The previous cohort of the person that posted the comment. */
+    ownerPreviousCohort: z.string(),
+    /** The id of the comment. */
+    id: z.string(),
+    /** The time the comment was created, in ISO 8601. */
+    createdAt: z.string(),
+    /** The time the comment was updated, in ISO 8601. */
+    updatedAt: z.string(),
+    /** The text content of the comment. */
+    content: z.string(),
+});
+
+/** A comment on a blog post. */
+export type Comment = z.infer<typeof CommentSchema>;
+
 /** Blog post status. */
 export const BlogStatusSchema = z.enum(['DRAFT', 'PUBLISHED']);
 /** Blog post status values (e.g. BlogStatuses.DRAFT, BlogStatuses.PUBLISHED). */
@@ -35,7 +58,7 @@ export const BlogSchema = z.object({
     /** The status of the blog post. */
     status: BlogStatusSchema,
     /** Comments on the blog post. */
-    comments: z.array(z.any()).nullish(),
+    comments: z.array(CommentSchema).nullish(),
 });
 
 /** A blog post. */
@@ -120,7 +143,7 @@ export const createBlogCommentRequestSchema = z.object({
     /** The id of the blog post. */
     id: z.string(),
     /** The text content of the comment. */
-    content: z.string().min(1),
+    content: z.string().min(1).max(10000),
 });
 
 /** A request to create a comment on a blog post. */
