@@ -279,7 +279,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
-        Resource: 
+        Resource:
           - ${param:GamesTableArn}
           - ${param:NotificationsTableArn}
       - Effect: Allow
@@ -287,6 +287,23 @@ functions:
         Resource: ${param:NotificationEventQueueArn}
     environment:
       notificationEventSqsUrl: ${param:NotificationEventQueueUrl}
+
+  adminFeatureGame:
+    handler: game/feature/main.go
+    events:
+      - httpApi:
+          path: /game/feature
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action: dynamodb:UpdateItem
+        Resource: ${param:GamesTableArn}
 
 resources:
   Resources:

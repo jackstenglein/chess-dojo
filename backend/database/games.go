@@ -327,6 +327,13 @@ type GameCommenter interface {
 	PutComment(cohort, id string, comment *PositionComment, skipMapCreation bool) (*Game, error)
 }
 
+type GameFeaturer interface {
+	UserGetter
+
+	// SetGameFeatured marks or unmarks the provided game as well annotated.
+	SetGameFeatured(cohort, id string, isFeatured string, featuredAt string) (*Game, error)
+}
+
 // GetGame returns the game object with the provided cohort and id.
 func (repo *dynamoRepository) GetGame(cohort, id string) (*Game, error) {
 	input := &dynamodb.GetItemInput{
@@ -596,22 +603,31 @@ func (repo *dynamoRepository) listColorGames(player string, color PlayerColor, s
 }
 
 // ListFeaturedGames returns a list of Games featured more recently than the provided date.
+// If date is empty, all featured games are returned regardless of when they were featured.
 func (repo *dynamoRepository) ListFeaturedGames(date, startKey string) ([]*Game, string, error) {
+	keyConditionExpression := "#f = :true"
+	expressionAttributeNames := map[string]*string{
+		"#f":        aws.String("isFeatured"),
+		"#unlisted": aws.String("unlisted"),
+	}
+	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
+		":true":     {S: aws.String("true")},
+		":unlisted": {BOOL: aws.Bool(true)},
+	}
+
+	if date != "" {
+		keyConditionExpression += " AND #d >= :d"
+		expressionAttributeNames["#d"] = aws.String("featuredAt")
+		expressionAttributeValues[":d"] = &dynamodb.AttributeValue{S: aws.String(date)}
+	}
+
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#f = :true AND #d >= :d"),
-		FilterExpression:       aws.String("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
-		ExpressionAttributeNames: map[string]*string{
-			"#f":        aws.String("isFeatured"),
-			"#d":        aws.String("featuredAt"),
-			"#unlisted": aws.String("unlisted"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true":     {S: aws.String("true")},
-			":d":        {S: aws.String(date)},
-			":unlisted": {BOOL: aws.Bool(true)},
-		},
-		IndexName: aws.String(gameTableFeaturedIndex),
-		TableName: aws.String(gameTable),
+		KeyConditionExpression:    aws.String(keyConditionExpression),
+		FilterExpression:          aws.String("attribute_not_exists(unlisted) OR #unlisted <> :unlisted"),
+		ExpressionAttributeNames:  expressionAttributeNames,
+		ExpressionAttributeValues: expressionAttributeValues,
+		IndexName:                 aws.String(gameTableFeaturedIndex),
+		TableName:                 aws.String(gameTable),
 	}
 
 	var games []*Game
@@ -966,6 +982,49 @@ func (repo *dynamoRepository) SetGameReview(cohort, id string, review *GameRevie
 
 	game := Game{}
 	err = repo.updateItem(input, &game)
+	if err != nil {
+		if aerr, ok := err.(*dynamodb.ConditionalCheckFailedException); ok {
+			return nil, errors.Wrap(400, "Invalid request: game not found", "DynamoDB conditional check failed", aerr)
+		}
+		return nil, errors.Wrap(500, "Temporary server error", "DynamoDB UpdateItem failure", err)
+	}
+	return &game, nil
+}
+
+// SetGameFeatured marks or unmarks the provided game as well annotated.
+// If isFeatured is "true", featuredAt is set to the provided timestamp.
+// If isFeatured is "false", featuredAt is removed from the item.
+func (repo *dynamoRepository) SetGameFeatured(cohort, id string, isFeatured string, featuredAt string) (*Game, error) {
+	var updateExpression string
+	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
+		":isFeatured": {S: aws.String(isFeatured)},
+	}
+
+	if isFeatured == "true" {
+		updateExpression = "SET #isFeatured = :isFeatured, #featuredAt = :featuredAt"
+		expressionAttributeValues[":featuredAt"] = &dynamodb.AttributeValue{S: aws.String(featuredAt)}
+	} else {
+		updateExpression = "SET #isFeatured = :isFeatured REMOVE #featuredAt"
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"cohort": {S: aws.String(cohort)},
+			"id":     {S: aws.String(id)},
+		},
+		ConditionExpression: aws.String("attribute_exists(id)"),
+		UpdateExpression:    aws.String(updateExpression),
+		ExpressionAttributeNames: map[string]*string{
+			"#isFeatured": aws.String("isFeatured"),
+			"#featuredAt": aws.String("featuredAt"),
+		},
+		ExpressionAttributeValues: expressionAttributeValues,
+		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 aws.String(gameTable),
+	}
+
+	game := Game{}
+	err := repo.updateItem(input, &game)
 	if err != nil {
 		if aerr, ok := err.(*dynamodb.ConditionalCheckFailedException); ok {
 			return nil, errors.Wrap(400, "Invalid request: game not found", "DynamoDB conditional check failed", aerr)
