@@ -11,7 +11,6 @@ import { useChess } from '@/board/pgn/PgnBoard';
 import { validateFen } from 'chess.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-
 export function useChessDB() {
     const { chess } = useChess();
     const [data, setData] = useState<ChessDbMove[]>([]);
@@ -25,49 +24,54 @@ export function useChessDB() {
     const fen = chess?.fen() ?? '';
     const chessDbService = useMemo(() => new ChessDBService(), []);
 
-    const queueAnalysis = useCallback(async (fenString: string): Promise<void> => {
-        if (!fenString.trim() || !validateFen(fenString)) return;
-        setQueueing(true);
-        try {
-            await chessDbService.queueAnalysis(fen);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to queue analysis');
-        } finally {
-            setQueueing(false);
-        }
-    }, [chessDbService, fen]);
-
-    const fetchPv = useCallback(async (fenString: string): Promise<ChessDbPv | null> => {
-        if (!fenString.trim() || !validateFen(fenString)) return null;
-
-        setPvLoading(true);
-        setPvError(null);
-
-        try {
-            const cached = await getChessDbCache(fenString);
-            if (cached?.pv) {
-                setPv(cached.pv);
-                return cached.pv;
+    const queueAnalysis = useCallback(
+        async (fenString: string): Promise<void> => {
+            if (!fenString.trim() || !validateFen(fenString)) return;
+            setQueueing(true);
+            try {
+                await chessDbService.queueAnalysis(fen);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to queue analysis');
+            } finally {
+                setQueueing(false);
             }
+        },
+        [chessDbService, fen],
+    );
 
-            const pvData = await chessDbService.getPv(fenString)
+    const fetchPv = useCallback(
+        async (fenString: string): Promise<ChessDbPv | null> => {
+            if (!fenString.trim() || !validateFen(fenString)) return null;
 
-            if(pvData.data){
-            await setChessDbPvCache(fenString, pvData.data);
-            setPv(pvData.data);
-            return pvData.data;
-            }else{
-                throw new Error(pvData.error);
+            setPvLoading(true);
+            setPvError(null);
+
+            try {
+                const cached = await getChessDbCache(fenString);
+                if (cached?.pv) {
+                    setPv(cached.pv);
+                    return cached.pv;
+                }
+
+                const pvData = await chessDbService.getPv(fenString);
+
+                if (pvData.data) {
+                    await setChessDbPvCache(fenString, pvData.data);
+                    setPv(pvData.data);
+                    return pvData.data;
+                } else {
+                    throw new Error(pvData.error);
+                }
+            } catch (err) {
+                setPvError(err instanceof Error ? err.message : 'Failed to fetch PV');
+                setPv(null);
+                return null;
+            } finally {
+                setPvLoading(false);
             }
-            
-        } catch (err) {
-            setPvError(err instanceof Error ? err.message : 'Failed to fetch PV');
-            setPv(null);
-            return null;
-        } finally {
-            setPvLoading(false);
-        }
-    }, [chessDbService]);
+        },
+        [chessDbService],
+    );
 
     const fetchChessDBData = useCallback(
         async (fenString: string): Promise<ChessDbMove[]> => {
@@ -94,15 +98,14 @@ export function useChessDB() {
 
                 const chessDbMoves = await chessDbService.getAnalysis(fenString);
 
-                if(chessDbMoves.data){
+                if (chessDbMoves.data) {
                     await setChessDbMovesCache(fenString, chessDbMoves.data.moves);
                     setData(chessDbMoves.data.moves);
                     return chessDbMoves.data.moves;
-                }else{
+                } else {
                     await queueAnalysis(fenString);
                     throw new Error(chessDbMoves.error);
                 }
-
             } catch (err) {
                 setData([]);
                 setError(err instanceof Error ? err.message : 'Failed to fetch data');

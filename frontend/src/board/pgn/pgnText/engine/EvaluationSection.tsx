@@ -1,5 +1,5 @@
 import { ChessDbPv } from '@/api/cache/chessdb';
-import Board  from '@/board/Board';
+import Board from '@/board/Board';
 import { CLOUD_EVAL_ENABLED, EngineInfo, LineEval } from '@/stockfish/engine/engine';
 import CloudIcon from '@mui/icons-material/Cloud';
 import { List, Paper, Popper, Tooltip } from '@mui/material';
@@ -69,7 +69,11 @@ export const EvaluationSection = ({
                 onMouseLeave={onMouseLeave}
             >
                 {cloudEvalEnabled && (
-                    <CloudEvalSection pv={chessDbpv} loading={chessDbLoading} engineInfo={engineInfo} />
+                    <CloudEvalSection
+                        pv={chessDbpv}
+                        loading={chessDbLoading}
+                        engineInfo={engineInfo}
+                    />
                 )}
                 {Array.from({ length: maxLines }).map((_, i) => (
                     <LineEvaluation
@@ -139,16 +143,17 @@ function CloudEvalSection({
         return null;
     }
 
-  
     const line = pv
         ? chessDbPvToLineEval(pv, currentFen)
-        : { fen: currentFen, depth: 0, pv: [], cp: undefined, mate: undefined, multiPv: 1, resultPercentages: undefined };
+        : {
+              fen: currentFen,
+              depth: 0,
+              pv: [],
+              cp: undefined,
+              mate: undefined,
+              multiPv: 1,
+              resultPercentages: undefined,
+          };
 
-    return (
-        <LineEvaluation
-            engineInfo={engineInfo}
-            line={line}
-            icon={cloudIcon}
-        />
-    );
+    return <LineEvaluation engineInfo={engineInfo} line={line} icon={cloudIcon} />;
 }

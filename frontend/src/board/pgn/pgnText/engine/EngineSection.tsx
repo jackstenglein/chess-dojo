@@ -1,10 +1,5 @@
 import { useChess } from '@/board/pgn/PgnBoard';
-import {
-    ENGINE_LINE_COUNT,
-    ENGINE_NAME,
-    engines,
-    LineEval,
-} from '@/stockfish/engine/engine';
+import { ENGINE_LINE_COUNT, ENGINE_NAME, engines, LineEval } from '@/stockfish/engine/engine';
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
@@ -42,9 +37,6 @@ export default function EngineSection() {
           })) as LineEval[]);
 
     const resultPercentages = engineLines[0]?.resultPercentages;
-;
- 
-
     return (
         <Paper
             elevation={6}
@@ -114,7 +106,6 @@ export default function EngineSection() {
                                     {engineInfo.tech}
                                 </Typography>
                             </Tooltip>
-
                         </Stack>
 
                         <Box

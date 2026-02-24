@@ -14,7 +14,6 @@ import { ReactElement, useCallback, useEffect } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
 
-
 interface Props {
     line: LineEval;
     engineInfo: EngineInfo;

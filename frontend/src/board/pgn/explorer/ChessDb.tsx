@@ -1,6 +1,5 @@
 import { ChessDbMove } from '@/api/cache/chessdb';
 import LoadingPage from '@/loading/LoadingPage';
-import { getBackgroundColor } from './Database';
 import { Help } from '@mui/icons-material';
 import { Box, Button, Grid, Stack, Tooltip, Typography, styled } from '@mui/material';
 import {
@@ -12,6 +11,7 @@ import {
 } from '@mui/x-data-grid-pro';
 import { useReconcile } from '../../Board';
 import { useChess } from '../PgnBoard';
+import { getBackgroundColor } from './Database';
 
 const CHESSDB_INFO =
     'Chess Cloud Database (aka "CDB") is a massive chess knowledge database, including an opening book and endgame tablebases.\n\nIn contrast to traditional opening book building from game results, CDB is built entirely from analyzing individual moves using chess engines while overcoming their problems such as aggressive pruning and blind spots.\n\nCDB attempts to explore and define new chess opening theories, currently it includes most of the popular opening lines and yet still refining the results.';
@@ -56,11 +56,7 @@ const columns: GridColDef<ChessDbMove>[] = [
         align: 'left',
         headerAlign: 'left',
         flex: 1,
-        renderCell: (params: GridRenderCellParams<ChessDbMove, string>) => (
-            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', fontStyle: 'italic' }}>
-                {params.value}
-            </Typography>
-        ),
+        renderCell: (params: GridRenderCellParams<ChessDbMove, string>) => params.value,
     },
 ];
 
@@ -134,14 +130,11 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                     columns={columns}
                     rows={moves}
                     getRowId={(row: GridRowModel<ChessDbMove>) => row.san}
-                    getRowClassName={(params) =>
-                        params.row.rank === '1' ? 'chessdb--best' : ''
-                    }
+                    getRowClassName={(params) => (params.row.rank === '1' ? 'chessdb--best' : '')}
                     onRowClick={onClickMove}
                     sx={{ fontSize: '0.8rem' }}
                 />
             </Grid>
-
         </Grid>
     );
 }
