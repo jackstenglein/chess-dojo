@@ -32,4 +32,4 @@ Commits to `main` deploy automatically to the production instance of the website
 
 ## Style Guide
 
-You can view our style guide [here](docs/style.md).
+You can view our style guide [here](style.md).
