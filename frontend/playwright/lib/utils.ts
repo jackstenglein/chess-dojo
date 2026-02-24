@@ -1,6 +1,5 @@
 /**
  * Shared utilities for Playwright tests.
- * Mirrors the Cypress e2e/util.ts functionality.
  */
 
 /** Clock for tournaments tests - fixed date for consistency */
@@ -14,7 +13,8 @@ export const tournamentsClock = new Date('2023-09-13T05:00:00.000Z');
 function getSunday(d: Date): Date {
     const day = d.getUTCDay();
     const diff = d.getUTCDate() - day;
-    return new Date(d.setUTCDate(diff));
+    const result = new Date(d.setUTCDate(diff));
+    return result;
 }
 
 /**

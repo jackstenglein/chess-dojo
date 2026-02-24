@@ -1,42 +1,27 @@
 import { expect, test as setup } from '@playwright/test';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getEnv } from '../../lib/env';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables
-dotenv.config({
-    path: [
-        path.join(__dirname, '../../../.env.test.local'),
-        path.join(__dirname, '../../../.env.local'),
-        path.join(__dirname, '../../../.env.test'),
-        path.join(__dirname, '../../../.env'),
-    ],
-});
-
 const authFile = path.join(__dirname, '../../.auth/user.json');
 
 setup('authenticate', async ({ page }) => {
-    const username = process.env.AWS_COGNITO_USERNAME ?? '';
-    const password = process.env.AWS_COGNITO_PASSWORD ?? '';
+    const email = getEnv('email');
+    const password = getEnv('password');
 
-    if (!username || !password) {
-        throw new Error('Missing AWS_COGNITO_USERNAME or AWS_COGNITO_PASSWORD in .env.test.local');
-    }
-
-    console.log(`Authenticating as: ${username}`);
+    console.debug(`Authenticating as: ${email}`);
 
     // Navigate directly to the signin page
     await page.goto('/signin');
-    await page.waitForLoadState('networkidle');
 
-    console.log('On signin page, entering credentials...');
+    console.debug('On signin page, entering credentials...');
 
     // Fill in email/username
     const emailInput = page.getByRole('textbox', { name: 'Email' });
-    await emailInput.fill(username);
+    await emailInput.fill(email);
 
     // Fill in password
     const passwordInput = page.getByRole('textbox', { name: 'Password' });
@@ -53,7 +38,7 @@ setup('authenticate', async ({ page }) => {
     await page.goto('/profile');
     await expect(page).toHaveURL('/profile', { timeout: 15000 });
 
-    console.log('Authentication successful, saving storage state');
+    console.debug('Authentication successful, saving storage state');
 
     // Save storage state (cookies and localStorage)
     await page.context().storageState({ path: authFile });

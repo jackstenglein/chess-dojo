@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { getBySel, interceptApi } from '../../../lib/helpers';
 
-// Match the Cypress test: freeze time at Sept 6, 2023 so the fixture dates fall within range
+// Freeze time at Sept 6, 2023 so the fixture dates fall within range
 const fixedDate = new Date(2023, 8, 6); // month is 0-indexed
 
 test.describe('Graduations', () => {
@@ -14,7 +14,15 @@ test.describe('Graduations', () => {
     });
 
     test('displays correct columns for graduation', async ({ page }) => {
-        const columns = ['Name', 'Graduated', 'Old Cohort', 'New Cohort', 'Dojo Score', 'Date'];
+        const columns = [
+            'Name',
+            'Graduated',
+            'Old Cohort',
+            'New Cohort',
+            'Dojo Score',
+            'Games Annotated',
+            'Date',
+        ];
         for (const col of columns) {
             await expect(page.getByText(col, { exact: true })).toBeVisible();
         }
