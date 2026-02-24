@@ -124,7 +124,6 @@ const Explorer = () => {
                         loading={chessDbLoading}
                         error={chessDbError}
                         requestAnalysis={chessDbRequestAnalysis}
-                        fen={fen}
                     />
                 );
             default:
@@ -181,7 +180,7 @@ const Explorer = () => {
                             data-cy='explorer-tab-button-masters'
                         />
                         <Tab
-                            label='ChessDB'
+                            label='CloudDB'
                             value={ExplorerDatabaseType.ChessDB}
                             icon={<CloudIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'

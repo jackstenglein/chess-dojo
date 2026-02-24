@@ -1,29 +1,30 @@
 import { ChessDbPv } from '@/api/cache/chessdb';
-import Board, { useReconcile } from '@/board/Board';
-import { logger } from '@/logging/logger';
+import Board  from '@/board/Board';
 import { CLOUD_EVAL_ENABLED, EngineInfo, LineEval } from '@/stockfish/engine/engine';
-import { Chess, Color, Move } from '@jackstenglein/chess';
 import CloudIcon from '@mui/icons-material/Cloud';
-import {
-    Box,
-    List,
-    ListItem,
-    Paper,
-    Popper,
-    Skeleton,
-    styled,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { List, Paper, Popper, Tooltip } from '@mui/material';
 import { Key } from 'chessground/types';
 import { useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ChessContext, useChess } from '../../PgnBoard';
 import LineEvaluation from './LineEval';
+
 interface HoverMove {
     fen: string;
     from: Key;
     to: Key;
+}
+
+function chessDbPvToLineEval(pv: ChessDbPv, fen: string): LineEval {
+    return {
+        fen,
+        depth: pv.depth,
+        cp: pv.score,
+        mate: undefined,
+        pv: pv.pv,
+        multiPv: 1,
+        resultPercentages: undefined,
+    };
 }
 
 export const EvaluationSection = ({
@@ -67,7 +68,9 @@ export const EvaluationSection = ({
                 onMouseOver={onMouseOver}
                 onMouseLeave={onMouseLeave}
             >
-                {cloudEvalEnabled && <CloudEvalSection pv={chessDbpv} loading={chessDbLoading} />}
+                {cloudEvalEnabled && (
+                    <CloudEvalSection pv={chessDbpv} loading={chessDbLoading} engineInfo={engineInfo} />
+                )}
                 {Array.from({ length: maxLines }).map((_, i) => (
                     <LineEvaluation
                         engineInfo={engineInfo}
@@ -114,176 +117,38 @@ export const EvaluationSection = ({
     );
 };
 
-const CloudMoveLabel = styled('span')(({ theme }) => ({
-    textWrap: 'nowrap',
-    marginLeft: '6px',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    '&:hover': {
-        color: theme.palette.primary.main,
-    },
-}));
+const cloudIcon = (
+    <Tooltip title='Chess Cloud Database' disableInteractive>
+        <CloudIcon sx={{ fontSize: '0.75rem' }} />
+    </Tooltip>
+);
 
-function cloudPvToMoves(fen: string, pvUci: string[]): (Move | null)[] {
-    const game = new Chess({ fen });
-    return pvUci.map((uci) => {
-        try {
-            return game.move(uci);
-        } catch (e) {
-            logger.error?.(`CDB: Failed to convert UCI ${uci}: `, e);
-            return null;
-        }
-    });
-}
-
-function moveToLabel(move: Move): string {
-    let label = '';
-    if (!move.previous || move.color === Color.white) {
-        label = `${Math.ceil(move.ply / 2)}.`;
-        if (move.color === Color.black) {
-            label += '..';
-        }
-        label += ' ';
-    }
-    label += move.san;
-    return label;
-}
-
-function CloudEvalSection({ pv, loading }: { pv: ChessDbPv | null; loading: boolean }) {
+function CloudEvalSection({
+    pv,
+    loading,
+    engineInfo,
+}: {
+    pv: ChessDbPv | null;
+    loading: boolean;
+    engineInfo: EngineInfo;
+}) {
     const { chess } = useChess();
-    const reconcile = useReconcile();
     const currentFen = chess?.fen() ?? '';
 
-    const scoreNum = pv?.score ?? 0;
-    const isBlack = scoreNum < 0;
-    const scoreLabel = !pv ? '?' : `${scoreNum > 0 ? '+' : ''}${(scoreNum / 100).toFixed(2)}`;
+    if (!loading && !pv) {
+        return null;
+    }
 
-    const moves = pv && currentFen ? cloudPvToMoves(currentFen, pv.pv) : [];
-    const lastMove = moves.filter(Boolean).at(-1);
-
-    const addCloudMove = (index: number) => {
-        if (!chess || !pv || currentFen !== chess.fen()) return;
-
-        let existingOnly = true;
-        for (let i = 0; i <= index; i++) {
-            const move = chess.move(pv.pv[i], { existingOnly });
-            if (move === null) {
-                existingOnly = false;
-                i--;
-            } else if (!existingOnly) {
-                chess.setCommand('dojoEngine', 'true', move);
-            }
-        }
-
-        reconcile();
-    };
-
-    const onClickEval = () => {
-        if (pv && pv.pv.length > 0) {
-            addCloudMove(pv.pv.length - 1);
-        }
-    };
+  
+    const line = pv
+        ? chessDbPvToLineEval(pv, currentFen)
+        : { fen: currentFen, depth: 0, pv: [], cp: undefined, mate: undefined, multiPv: 1, resultPercentages: undefined };
 
     return (
-        <ListItem
-            disablePadding
-            sx={{
-                overflowX: 'clip',
-                alignItems: 'center',
-                mt: 0.5,
-                pt: 0.5,
-                borderTop: '1px solid',
-                borderTopColor: 'divider',
-                minHeight: '31px',
-            }}
-        >
-            <Tooltip title='Chess Cloud Database' disableInteractive>
-                <CloudIcon
-                    sx={{
-                        whiteSpace: 'nowrap',
-                        mr: 0.5,
-                        fontSize: '0.75rem',
-                    }}
-                />
-            </Tooltip>
-
-            {loading ? (
-                <>
-                    <Skeleton
-                        variant='rounded'
-                        animation='wave'
-                        sx={{ color: 'transparent', mr: 0.5, minWidth: '45px', height: '23px' }}
-                    >
-                        placeholder
-                    </Skeleton>
-                    <Skeleton variant='rounded' animation='wave' sx={{ flexGrow: 1 }} />
-                </>
-            ) : !pv ? (
-                <Typography variant='caption' sx={{ color: 'text.disabled' }}>
-                    Not in cloud database
-                </Typography>
-            ) : (
-                <>
-                    <Tooltip title={`Depth ${pv.depth}`} disableInteractive>
-                        <Box
-                            onClick={onClickEval}
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                mr: 0.5,
-                                my: 0.5,
-                                py: '1px',
-                                width: '45px',
-                                minWidth: '45px',
-                                height: '23px',
-                                minHeight: '23px',
-                                backgroundColor: isBlack ? 'black' : 'white',
-                                borderRadius: '5px',
-                                border: '1px solid',
-                                borderColor: '#424242',
-                                cursor: 'pointer',
-                                '&:hover': { opacity: 0.85 },
-                            }}
-                            data-fen={lastMove?.after}
-                            data-from={lastMove?.from}
-                            data-to={lastMove?.to}
-                        >
-                            <Typography
-                                component='span'
-                                sx={{
-                                    pt: '2px',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold',
-                                    color: isBlack ? 'white' : 'black',
-                                }}
-                                data-fen={lastMove?.after}
-                                data-from={lastMove?.from}
-                                data-to={lastMove?.to}
-                            >
-                                {scoreLabel}
-                            </Typography>
-                        </Box>
-                    </Tooltip>
-
-                    <Box sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {moves.map((move, idx) => {
-                            if (!move) return null;
-                            return (
-                                <CloudMoveLabel
-                                    key={idx}
-                                    data-fen={move.after}
-                                    data-from={move.from}
-                                    data-to={move.to}
-                                    onClick={() => addCloudMove(idx)}
-                                >
-                                    {moveToLabel(move)}
-                                </CloudMoveLabel>
-                            );
-                        })}
-                    </Box>
-                </>
-            )}
-        </ListItem>
+        <LineEvaluation
+            engineInfo={engineInfo}
+            line={line}
+            icon={cloudIcon}
+        />
     );
 }

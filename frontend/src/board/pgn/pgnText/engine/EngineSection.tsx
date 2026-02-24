@@ -1,6 +1,5 @@
 import { useChess } from '@/board/pgn/PgnBoard';
 import {
-    CLOUD_EVAL_ENABLED,
     ENGINE_LINE_COUNT,
     ENGINE_NAME,
     engines,
@@ -24,7 +23,6 @@ export default function EngineSection() {
     }
 
     const [linesNumber] = useLocalStorage(ENGINE_LINE_COUNT.Key, ENGINE_LINE_COUNT.Default);
-    const [showCloudEval] = useLocalStorage(CLOUD_EVAL_ENABLED.Key, CLOUD_EVAL_ENABLED.Default);
 
     const [enabled, setEnabled] = useState(false);
     const evaluation = useEval(enabled, engineInfo.name);
@@ -44,12 +42,8 @@ export default function EngineSection() {
           })) as LineEval[]);
 
     const resultPercentages = engineLines[0]?.resultPercentages;
-
-    const cloudScoreNum = chessDbPv?.score ?? null;
-    const cloudScoreLabel =
-        cloudScoreNum !== null
-            ? `${cloudScoreNum > 0 ? '+' : ''}${(cloudScoreNum / 100).toFixed(2)}`
-            : null;
+;
+ 
 
     return (
         <Paper
@@ -121,31 +115,6 @@ export default function EngineSection() {
                                 </Typography>
                             </Tooltip>
 
-                            {showCloudEval && !isGameOver && cloudScoreLabel && (
-                                <Tooltip
-                                    title={`Chess Cloud DB eval (depth ${chessDbPv?.depth ?? '?'})`}
-                                    disableInteractive
-                                >
-                                    <Typography
-                                        variant='caption'
-                                        sx={{
-                                            ml: 1,
-                                            px: 0.5,
-                                            borderRadius: '3px',
-                                            backgroundColor:
-                                                (cloudScoreNum ?? 0) < 0 ? 'black' : 'white',
-                                            color: (cloudScoreNum ?? 0) < 0 ? 'white' : 'black',
-                                            border: '1px solid',
-                                            borderColor: '#424242',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.75rem',
-                                            whiteSpace: 'nowrap',
-                                        }}
-                                    >
-                                        CDB {cloudScoreLabel}
-                                    </Typography>
-                                </Tooltip>
-                            )}
                         </Stack>
 
                         <Box

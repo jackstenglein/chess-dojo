@@ -6,35 +6,11 @@ import {
     setChessDbMovesCache,
     setChessDbPvCache,
 } from '@/api/cache/chessdb';
+import { ChessDBService } from '@/api/chessdbService';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { validateFen } from 'chess.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-interface ChessDbResponse {
-    status: string;
-    moves: ChessDbMove[];
-}
-
-interface ChessDbPvResponse {
-    status: string;
-    score: number;
-    depth: number;
-    pv: string[];
-    pvSAN: string[];
-}
-
-export function getChessDbNoteWord(note: string): string {
-    switch (note) {
-        case '!':
-            return 'Best';
-        case '*':
-            return 'Good';
-        case '?':
-            return 'Bad';
-        default:
-            return 'unknown';
-    }
-}
 
 export function useChessDB() {
     const { chess } = useChess();
@@ -47,27 +23,19 @@ export function useChessDB() {
     const [pvError, setPvError] = useState<string | null>(null);
 
     const fen = chess?.fen() ?? '';
+    const chessDbService = useMemo(() => new ChessDBService(), []);
 
     const queueAnalysis = useCallback(async (fenString: string): Promise<void> => {
         if (!fenString.trim() || !validateFen(fenString)) return;
         setQueueing(true);
         try {
-            const encodedFen = encodeURIComponent(fenString);
-            const queueUrl = `https://www.chessdb.cn/cdb.php?action=queue&board=${encodedFen}&json=1`;
-            const response = await fetch(queueUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Failed to queue analysis`);
-            }
-            const responseData = (await response.json()) as { status: string };
-            if (responseData.status !== 'ok') {
-                throw new Error(`Failed to queue position: ${responseData.status}`);
-            }
+            await chessDbService.queueAnalysis(fen);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to queue analysis');
         } finally {
             setQueueing(false);
         }
-    }, []);
+    }, [chessDbService, fen]);
 
     const fetchPv = useCallback(async (fenString: string): Promise<ChessDbPv | null> => {
         if (!fenString.trim() || !validateFen(fenString)) return null;
@@ -82,29 +50,16 @@ export function useChessDB() {
                 return cached.pv;
             }
 
-            const encodedFen = encodeURIComponent(fenString);
-            const pvUrl = `https://www.chessdb.cn/cdb.php?action=querypv&board=${encodedFen}&stable=1&json=1`;
-            const response = await fetch(pvUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Failed to fetch PV`);
+            const pvData = await chessDbService.getPv(fenString)
+
+            if(pvData.data){
+            await setChessDbPvCache(fenString, pvData.data);
+            setPv(pvData.data);
+            return pvData.data;
+            }else{
+                throw new Error(pvData.error);
             }
-
-            const responseData = (await response.json()) as ChessDbPvResponse;
-            if (responseData.status !== 'ok') {
-                setPv(null);
-                return null;
-            }
-
-            const pvData: ChessDbPv = {
-                score: responseData.score,
-                depth: responseData.depth,
-                pv: responseData.pv ?? [],
-                pvSAN: responseData.pvSAN ?? [],
-            };
-
-            await setChessDbPvCache(fenString, pvData);
-            setPv(pvData);
-            return pvData;
+            
         } catch (err) {
             setPvError(err instanceof Error ? err.message : 'Failed to fetch PV');
             setPv(null);
@@ -112,7 +67,7 @@ export function useChessDB() {
         } finally {
             setPvLoading(false);
         }
-    }, []);
+    }, [chessDbService]);
 
     const fetchChessDBData = useCallback(
         async (fenString: string): Promise<ChessDbMove[]> => {
@@ -137,42 +92,17 @@ export function useChessDB() {
                     return cached.moves;
                 }
 
-                const encodedFen = encodeURIComponent(fenString);
-                const apiUrl = `https://www.chessdb.cn/cdb.php?action=queryall&board=${encodedFen}&json=1`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: Failed to fetch data`);
-                }
+                const chessDbMoves = await chessDbService.getAnalysis(fenString);
 
-                const responseData = (await response.json()) as ChessDbResponse;
-                if (responseData.status !== 'ok') {
+                if(chessDbMoves.data){
+                    await setChessDbMovesCache(fenString, chessDbMoves.data.moves);
+                    setData(chessDbMoves.data.moves);
+                    return chessDbMoves.data.moves;
+                }else{
                     await queueAnalysis(fenString);
-                    return [];
+                    throw new Error(chessDbMoves.error);
                 }
 
-                const moves = responseData.moves;
-                if (!Array.isArray(moves) || moves.length === 0) {
-                    setData([]);
-                    return [];
-                }
-
-                const processedMoves: ChessDbMove[] = moves.map((move: ChessDbMove) => {
-                    const scoreNum = Number(move.score);
-                    const scoreStr = isNaN(scoreNum) ? 'N/A' : (scoreNum / 100).toFixed(2);
-                    return {
-                        uci: move.uci || 'N/A',
-                        san: move.san || 'N/A',
-                        score: scoreStr,
-                        winrate: move.winrate || 'N/A',
-                        rank: move.rank,
-                        note: getChessDbNoteWord(move.note.split(' ')[0] ?? ''),
-                        rawEval: scoreNum,
-                    };
-                });
-
-                await setChessDbMovesCache(fenString, processedMoves);
-                setData(processedMoves);
-                return processedMoves;
             } catch (err) {
                 setData([]);
                 setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -181,7 +111,7 @@ export function useChessDB() {
                 setLoading(false);
             }
         },
-        [queueAnalysis],
+        [queueAnalysis, chessDbService],
     );
 
     useEffect(() => {
