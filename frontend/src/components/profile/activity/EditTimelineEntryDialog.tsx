@@ -26,17 +26,15 @@ export function EditTimelinEntryDialog({
     const isCustom = entry.isCustomRequirement;
 
     const customTask = isCustom
-        ? user?.customTasks?.find(t => t.id === entry.requirementId)
+        ? user?.customTasks?.find((t) => t.id === entry.requirementId)
         : undefined;
 
     const { requirement: fetchedRequirement } = useRequirement(
-        isCustom ? undefined : entry.requirementId
+        isCustom ? undefined : entry.requirementId,
     );
 
-    const requirement = isCustom
-        ? customTask
-        : fetchedRequirement;
-    
+    const requirement = isCustom ? customTask : fetchedRequirement;
+
     const {
         errors,
         request,
