@@ -21,7 +21,6 @@ import {
     GameOrientation,
     GameOrientations,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
-import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
 import { User } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import {
@@ -528,65 +527,32 @@ async function updateUserTimeManagementRating(user: User, games: Game[]): Promis
 
     try {
         // Build the current aggregate from the user's existing TM rating
-        const existingTm = user.ratings?.[RatingSystem.TimeManagement];
-        let aggregate: TimeManagementAggregate | undefined;
-        if (existingTm && existingTm.currentRating > 0) {
-            aggregate = {
-                currentRating: existingTm.currentRating,
-                numGames: existingTm.numGames ?? 0,
-            };
-        }
+        let aggregate: TimeManagementAggregate | undefined = user.timeManagementRating;
 
         // Incrementally apply each new game rating
         for (const gameRating of newRatings) {
             aggregate = updateTimeManagementAggregate(aggregate, gameRating);
         }
 
-        const tmRatingValue = {
-            hideUsername: true,
-            startRating: aggregate.currentRating,
-            currentRating: aggregate.currentRating,
-            numGames: aggregate.numGames,
-        };
-
-        if (user.ratings) {
-            // ratings map exists — safe to set nested path
-            await dynamo.send(
-                new UpdateItemCommand({
-                    Key: { username: { S: user.username } },
-                    TableName: usersTable,
-                    UpdateExpression: 'SET #ratings.#tm = :tmRating',
-                    ExpressionAttributeNames: {
-                        '#ratings': 'ratings',
-                        '#tm': RatingSystem.TimeManagement,
-                    },
-                    ExpressionAttributeValues: marshall(
-                        { ':tmRating': tmRatingValue },
-                        { removeUndefinedValues: true },
-                    ),
-                }),
-            );
-        } else {
-            // ratings map doesn't exist — set the entire map
-            await dynamo.send(
-                new UpdateItemCommand({
-                    Key: { username: { S: user.username } },
-                    TableName: usersTable,
-                    UpdateExpression: 'SET #ratings = :ratings',
-                    ExpressionAttributeNames: {
-                        '#ratings': 'ratings',
-                    },
-                    ExpressionAttributeValues: marshall(
-                        {
-                            ':ratings': {
-                                [RatingSystem.TimeManagement]: tmRatingValue,
-                            },
+        await dynamo.send(
+            new UpdateItemCommand({
+                Key: { username: { S: user.username } },
+                TableName: usersTable,
+                UpdateExpression: 'SET #tmr = :tmRating',
+                ExpressionAttributeNames: {
+                    '#tmr': 'timeManagementRating',
+                },
+                ExpressionAttributeValues: marshall(
+                    {
+                        ':tmRating': {
+                            currentRating: aggregate.currentRating,
+                            numGames: aggregate.numGames,
                         },
-                        { removeUndefinedValues: true },
-                    ),
-                }),
-            );
-        }
+                    },
+                    { removeUndefinedValues: true },
+                ),
+            }),
+        );
     } catch (err) {
         console.error('Failed to update user time management rating: ', err);
     }

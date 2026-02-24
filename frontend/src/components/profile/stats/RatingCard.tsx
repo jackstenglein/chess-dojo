@@ -49,7 +49,6 @@ export function getMemberLink(ratingSystem: RatingSystem, username: string): str
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
-        case RatingSystem.TimeManagement:
             return '';
     }
 }

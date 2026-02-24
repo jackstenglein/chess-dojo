@@ -44,7 +44,6 @@ export function getUsernameLabel(rs: RatingSystem): string {
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
-        case RatingSystem.TimeManagement:
             return '';
     }
 }
@@ -61,7 +60,6 @@ export function getHelperText(rs: RatingSystem): React.ReactNode | undefined {
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
-        case RatingSystem.TimeManagement:
             return undefined;
 
         case RatingSystem.Dwz:
@@ -97,7 +95,6 @@ export function getUsernameType(rs: RatingSystem): string {
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
-        case RatingSystem.TimeManagement:
             return '';
     }
 }

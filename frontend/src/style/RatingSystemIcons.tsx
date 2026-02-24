@@ -1,5 +1,4 @@
 import { RatingSystem } from '@/database/user';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Image from 'next/image';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { SlGraph } from 'react-icons/sl';
@@ -99,7 +98,5 @@ export const RatingSystemIcon = ({
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
             return <SlGraph size={size === 'small' ? 15 : 30} />;
-        case RatingSystem.TimeManagement:
-            return <AccessTimeIcon sx={{ fontSize: size === 'small' ? 15 : 30 }} />;
     }
 };

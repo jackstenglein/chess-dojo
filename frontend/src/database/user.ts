@@ -101,8 +101,6 @@ export function formatRatingSystem(ratingSystem: RatingSystem | string): string 
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
             return 'Custom';
-        case RatingSystem.TimeManagement:
-            return 'Time Management';
     }
     return ratingSystem;
 }

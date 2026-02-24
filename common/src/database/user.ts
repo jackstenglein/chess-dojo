@@ -1,4 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
+import { TimeManagementAggregate } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -32,6 +33,9 @@ export interface User {
     ratingSystem: RatingSystem;
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
+
+    /** The user's time management rating aggregate. */
+    timeManagementRating?: TimeManagementAggregate;
 
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
@@ -292,8 +296,6 @@ export interface Rating {
     currentRating: number;
     name?: string;
     isProvisional?: boolean;
-    /** Number of games included in the aggregate (used by TimeManagement). */
-    numGames?: number;
 }
 
 export interface RatingHistory {

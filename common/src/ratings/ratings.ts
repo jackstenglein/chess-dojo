@@ -103,7 +103,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '300-400': {
         [RatingSystem.Chesscom]: 650,
@@ -118,7 +117,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '400-500': {
         [RatingSystem.Chesscom]: 750,
@@ -133,7 +131,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '500-600': {
         [RatingSystem.Chesscom]: 850,
@@ -148,7 +145,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '600-700': {
         [RatingSystem.Chesscom]: 950,
@@ -163,7 +159,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '700-800': {
         [RatingSystem.Chesscom]: 1050,
@@ -178,7 +173,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '800-900': {
         [RatingSystem.Chesscom]: 1150,
@@ -193,7 +187,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '900-1000': {
         [RatingSystem.Fide]: 1450,
@@ -208,7 +201,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1000-1100': {
         [RatingSystem.Fide]: 1500,
@@ -223,7 +215,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1100-1200': {
         [RatingSystem.Fide]: 1550,
@@ -238,7 +229,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1200-1300': {
         [RatingSystem.Fide]: 1600,
@@ -253,7 +243,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1300-1400': {
         [RatingSystem.Fide]: 1650,
@@ -268,7 +257,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1400-1500': {
         [RatingSystem.Fide]: 1700,
@@ -283,7 +271,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1500-1600': {
         [RatingSystem.Fide]: 1750,
@@ -298,7 +285,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1600-1700': {
         [RatingSystem.Fide]: 1800,
@@ -313,7 +299,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1700-1800': {
         [RatingSystem.Fide]: 1850,
@@ -328,7 +313,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1800-1900': {
         [RatingSystem.Fide]: 1910,
@@ -343,7 +327,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '1900-2000': {
         [RatingSystem.Fide]: 2000,
@@ -358,7 +341,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '2000-2100': {
         [RatingSystem.Fide]: 2100,
@@ -373,7 +355,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '2100-2200': {
         [RatingSystem.Fide]: 2200,
@@ -388,7 +369,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '2200-2300': {
         [RatingSystem.Fide]: 2300,
@@ -403,7 +383,6 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
     '2300-2400': {
         [RatingSystem.Fide]: 2400,
@@ -418,6 +397,5 @@ export const ratingBoundaries: Record<string, Record<RatingSystem, number>> = {
         [RatingSystem.Custom]: -1,
         [RatingSystem.Custom2]: -1,
         [RatingSystem.Custom3]: -1,
-        [RatingSystem.TimeManagement]: -1,
     },
 };

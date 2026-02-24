@@ -21,7 +21,6 @@ import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
-import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
 import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { MIN_GAMES_FOR_ELO } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -148,7 +147,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
         currentRating > 0;
     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
 
-    const timeManagementRating = user.ratings[RatingSystem.TimeManagement];
+    const timeManagementRating = user.timeManagementRating;
 
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>

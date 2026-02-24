@@ -110,7 +110,6 @@ const (
 	Custom         RatingSystem = "CUSTOM"
 	Custom2        RatingSystem = "CUSTOM_2"
 	Custom3        RatingSystem = "CUSTOM_3"
-	TimeManagement RatingSystem = "TIME_MANAGEMENT"
 )
 
 // IsCustom returns true if the rating system is a custom rating system.
@@ -131,7 +130,6 @@ var ratingSystems = []RatingSystem{
 	Custom,
 	Custom2,
 	Custom3,
-	TimeManagement,
 }
 
 type Rating struct {
