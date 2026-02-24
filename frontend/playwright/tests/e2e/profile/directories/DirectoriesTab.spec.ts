@@ -101,7 +101,10 @@ test.describe('Directories', () => {
     });
 
     test('requires confirmation to delete directory', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`,
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
             mockHomeWithTestDir(),
         );
         await page.goto('/profile?view=games');
@@ -120,7 +123,10 @@ test.describe('Directories', () => {
     });
 
     test('displays move directory dialog', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`,
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
             mockHomeWithTestDir(),
         );
         await page.goto('/profile?view=games');
@@ -135,7 +141,10 @@ test.describe('Directories', () => {
     });
 
     test('disables renaming directory to empty/same name', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`,
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
             mockHomeWithTestDir(),
         );
         await page.goto('/profile?view=games');
