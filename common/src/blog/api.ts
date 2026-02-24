@@ -148,3 +148,31 @@ export const createBlogCommentRequestSchema = z.object({
 
 /** A request to create a comment on a blog post. */
 export type CreateBlogCommentRequest = z.infer<typeof createBlogCommentRequestSchema>;
+
+/** Verifies the type of a request to update a comment on a blog post. */
+export const updateBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string(),
+    /** The id of the blog post. */
+    id: z.string(),
+    /** The id of the comment to update. */
+    commentId: z.string(),
+    /** The new text content of the comment. */
+    content: z.string().min(1).max(10000),
+});
+
+/** A request to update a comment on a blog post. */
+export type UpdateBlogCommentRequest = z.infer<typeof updateBlogCommentRequestSchema>;
+
+/** Verifies the type of a request to delete a comment on a blog post. */
+export const deleteBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string(),
+    /** The id of the blog post. */
+    id: z.string(),
+    /** The id of the comment to delete. */
+    commentId: z.string(),
+});
+
+/** A request to delete a comment on a blog post. */
+export type DeleteBlogCommentRequest = z.infer<typeof deleteBlogCommentRequestSchema>;

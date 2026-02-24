@@ -105,6 +105,46 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  updateComment:
+    handler: updateComment.handler
+    events:
+      - httpApi:
+          path: /blog/comments/{owner}/{id+}
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt BlogsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  deleteComment:
+    handler: deleteComment.handler
+    events:
+      - httpApi:
+          path: /blog/comments/{owner}/{id+}
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt BlogsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   update:
     handler: update.handler
     events:

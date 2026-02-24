@@ -98,3 +98,24 @@ export function createBlogComment(
         { functionName: 'createBlogComment' },
     );
 }
+
+export function updateBlogComment(
+    props: { owner: string; id: string; commentId: string },
+    content: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.put<Blog>(
+        `/blog/comments/${props.owner}/${props.id}`,
+        { commentId: props.commentId, content },
+        { functionName: 'updateBlogComment' },
+    );
+}
+
+export function deleteBlogComment(
+    props: { owner: string; id: string },
+    commentId: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.delete<Blog>(`/blog/comments/${props.owner}/${props.id}`, {
+        data: { commentId },
+        functionName: 'deleteBlogComment',
+    });
+}
