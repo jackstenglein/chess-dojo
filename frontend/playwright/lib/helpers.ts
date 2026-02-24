@@ -43,7 +43,6 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Mock an API endpoint with a fixture or response.
- * Replaces Cypress cy.interceptApi(method, url, response)
  */
 export async function interceptApi(
     page: Page,
@@ -91,13 +90,33 @@ export async function waitForNavigation(
 export async function useFreeTier(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         const response = await route.fetch();
-        const body = await response.json();
+        const body = (await response.json()) as object;
         await route.fulfill({
             response,
             contentType: 'application/json',
             body: JSON.stringify({
                 ...body,
                 subscriptionStatus: 'NOT_SUBSCRIBED',
+            }),
+        });
+    });
+    await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+}
+
+/**
+ * Intercepts the /user API request to add isAdmin: true so that admin-only
+ * pages (e.g. blog editor) are accessible in tests.
+ */
+export async function useAdminUser(page: Page) {
+    await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
+        const response = await route.fetch();
+        const body = (await response.json()) as object;
+        await route.fulfill({
+            response,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                ...body,
+                isAdmin: true,
             }),
         });
     });

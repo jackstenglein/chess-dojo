@@ -97,6 +97,8 @@ export interface TimelineGraduationInfo {
     dojoMinutes: number;
     /** The user's non dojo time spent when graduating. */
     nonDojoMinutes: number;
+    /** The number of games annotated when graduating. */
+    gamesAnnotated?: number;
 }
 
 /** Metadata for a published game timeline entry. */

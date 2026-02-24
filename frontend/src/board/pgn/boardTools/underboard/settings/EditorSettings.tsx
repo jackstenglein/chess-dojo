@@ -16,6 +16,7 @@ export const ClockFieldFormatKey = 'clockFieldFormat';
 export enum ClockFieldFormat {
     SingleField = 'SINGLE_FIELD',
     ThreeField = 'THREE_FIELD',
+    SingleFieldInTotalMinutes = 'SINGLE_FIELD_IN_TOTAL_MINUTES',
 }
 
 export const WarnBeforeDelete = {
@@ -47,6 +48,9 @@ const EditorSettings = () => {
             >
                 <MenuItem value={ClockFieldFormat.SingleField}>Single Field</MenuItem>
                 <MenuItem value={ClockFieldFormat.ThreeField}>Three Fields</MenuItem>
+                <MenuItem value={ClockFieldFormat.SingleFieldInTotalMinutes}>
+                    Total Minutes
+                </MenuItem>
             </TextField>
 
             <FormGroup sx={{ px: 1 }}>

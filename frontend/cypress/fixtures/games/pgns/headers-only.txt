@@ -1,2 +1,0 @@
-[White "bestieboots"]
-[Black "test2"]
