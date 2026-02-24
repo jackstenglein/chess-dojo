@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Button, Grid, InputBase, Slider, Stack, Typography } from '@mui/material';
+import { useEffect } from 'react';
 
 interface InputSliderProps {
     value: number;
@@ -11,6 +12,12 @@ interface InputSliderProps {
 }
 
 const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, suffix }) => {
+    useEffect(() => {
+        if (value < min) {
+            setValue(min);
+        }
+    }, []);
+
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setValue(newValue as number);
     };
