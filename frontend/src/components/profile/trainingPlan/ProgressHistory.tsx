@@ -612,7 +612,6 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
         timelineRequest,
         isTimeOnly,
         items,
-        newItemCount,
         cohortCount,
         cohortTime,
         totalCount,
@@ -646,24 +645,24 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
     }
 
     const activeItems = items.filter((item) => !item.deleted);
-    const hasChanges = items.some(
-        (item) => (item.isNew && !item.deleted) || (item.deleted && !item.isNew),
-    );
+  
 
     return (
         <>
             <DialogContent sx={{ position: 'relative' }}>
-                <Tooltip title='Add New'>
-                    <IconButton
+                    <Button
                         data-cy='task-history-add-new-button'
                         onClick={handleAddAnother}
                         disabled={request.isLoading()}
                         size='small'
+                        startIcon={<AddIcon />}
+                        title='Add New'
                         sx={{ position: 'absolute', top: 8, right: 16, zIndex: 1 }}
                     >
-                        <AddIcon />
-                    </IconButton>
-                </Tooltip>
+                     
+                    </Button>
+             
+            
 
                 <Stack spacing={3} ref={topRef}>
                     {activeItems.length === 0 ? (
@@ -727,9 +726,9 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                     data-cy='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
-                    disabled={!hasChanges}
+                   
                 >
-                    {newItemCount > 0 ? `Save (${newItemCount} new)` : 'Save'}
+                    Save
                 </LoadingButton>
             </DialogActions>
 
