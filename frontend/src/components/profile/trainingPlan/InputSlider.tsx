@@ -16,7 +16,8 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
         if (value < min) {
             setValue(min);
         }
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [min, setValue]);
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setValue(newValue as number);
