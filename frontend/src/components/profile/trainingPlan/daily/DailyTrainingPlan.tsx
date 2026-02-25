@@ -11,7 +11,14 @@ import { shouldPromptGraduation } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { themeRequirementCategory } from '@/style/ThemeProvider';
 import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
-import { Check, Help, NotInterested, PushPin, PushPinOutlined } from '@mui/icons-material';
+import {
+    Check,
+    ExpandMore,
+    Help,
+    NotInterested,
+    PushPin,
+    PushPinOutlined,
+} from '@mui/icons-material';
 import {
     Box,
     Card,
@@ -19,6 +26,7 @@ import {
     CardActions,
     CardContent,
     Chip,
+    Collapse,
     Grid,
     IconButton,
     Stack,
@@ -26,6 +34,7 @@ import {
     Typography,
 } from '@mui/material';
 import { use, useMemo, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
@@ -38,6 +47,8 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 import { GraduationTask } from './GraduationTask';
 
 export function DailyTrainingPlan() {
+    const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
+
     const [startDate, endDate] = useMemo(() => {
         const startDate = new Date();
         startDate.setHours(0, 0, 0, 0);
@@ -57,10 +68,25 @@ export function DailyTrainingPlan() {
         timeline,
     });
 
+    const toggleExpanded = () => {
+        setExpanded((v) => !v);
+    };
+
     return (
         <Stack data-cy='training-plan-today' spacing={2} width={1}>
-            <Stack direction='row' alignItems='center' spacing={2}>
-                <Typography variant='h5' fontWeight='bold'>
+            <Stack direction='row' alignItems='center'>
+                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                    <IconButton onClick={toggleExpanded}>
+                        <ExpandMore
+                            sx={{
+                                transform: expanded ? 'rotate(180deg)' : undefined,
+                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+                            }}
+                        />
+                    </IconButton>
+                </Tooltip>
+
+                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
                     Today
                 </Typography>
 
@@ -73,15 +99,17 @@ export function DailyTrainingPlan() {
                 />
             </Stack>
 
-            {isLoading ? (
-                <LoadingPage />
-            ) : (
-                <DailyTrainingPlanInternal
-                    startDate={startDate}
-                    endDate={endDate}
-                    extraTaskIds={extraTaskIds}
-                />
-            )}
+            <Collapse in={expanded}>
+                {isLoading ? (
+                    <LoadingPage />
+                ) : (
+                    <DailyTrainingPlanInternal
+                        startDate={startDate}
+                        endDate={endDate}
+                        extraTaskIds={extraTaskIds}
+                    />
+                )}
+            </Collapse>
         </Stack>
     );
 }

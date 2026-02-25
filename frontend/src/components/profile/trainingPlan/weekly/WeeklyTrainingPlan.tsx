@@ -4,16 +4,16 @@ import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider'
 import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { Check, ExpandMore } from '@mui/icons-material';
 import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
     alpha,
     Box,
     ButtonBase,
     Card,
     Chip,
+    Collapse,
     Grid,
+    IconButton,
     Stack,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { use, useMemo, useState } from 'react';
@@ -54,64 +54,53 @@ export function WeeklyTrainingPlan() {
         setTaskDialogView(undefined);
     };
 
-    const handleAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
-        setExpanded(isExpanded);
+    const toggleExpanded = () => {
+        setExpanded((v) => !v);
     };
 
     return (
         <Stack spacing={2} width={1}>
-            <Accordion
-                expanded={expanded}
-                onChange={handleAccordionChange}
-                sx={{
-                    '&:before': {
-                        display: 'none',
-                    },
-                    boxShadow: 'none',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                }}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                    sx={{
-                        '& .MuiAccordionSummary-content': {
-                            alignItems: 'center',
-                        },
-                    }}
-                >
-                    <Stack direction='row' alignItems='center' spacing={2} width={1}>
-                        <Typography variant='h5' fontWeight='bold'>
-                            This Week
-                        </Typography>
-
-                        <WorkGoalSettingsEditor
-                            currentGoal={goalTime}
-                            currentValue={workedTime}
-                            disabled={!isCurrentUser}
-                            initialWeekStart={user.weekStart}
-                            workGoal={user.workGoal}
+            <Stack direction='row' alignItems='center' width={1}>
+                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                    <IconButton onClick={toggleExpanded}>
+                        <ExpandMore
+                            sx={{
+                                transform: expanded ? 'rotate(180deg)' : undefined,
+                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+                            }}
                         />
-                    </Stack>
-                </AccordionSummary>
+                    </IconButton>
+                </Tooltip>
 
-                <AccordionDetails>
-                    {isLoading ? (
-                        <LoadingPage />
-                    ) : (
-                        <Grid container columns={7}>
-                            {days.map((_, i) => (
-                                <Grid key={i} size={1}>
-                                    <WeeklyTrainingPlanDay
-                                        dayIndex={(i + user.weekStart) % 7}
-                                        onOpenTask={onOpenTask}
-                                    />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
-                </AccordionDetails>
-            </Accordion>
+                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
+                    This Week
+                </Typography>
+
+                <WorkGoalSettingsEditor
+                    currentGoal={goalTime}
+                    currentValue={workedTime}
+                    disabled={!isCurrentUser}
+                    initialWeekStart={user.weekStart}
+                    workGoal={user.workGoal}
+                />
+            </Stack>
+
+            <Collapse in={expanded}>
+                {isLoading ? (
+                    <LoadingPage />
+                ) : (
+                    <Grid container columns={7}>
+                        {days.map((_, i) => (
+                            <Grid key={i} size={1}>
+                                <WeeklyTrainingPlanDay
+                                    dayIndex={(i + user.weekStart) % 7}
+                                    onOpenTask={onOpenTask}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
+            </Collapse>
 
             {taskDialogView && selectedTask && (
                 <TaskDialog
