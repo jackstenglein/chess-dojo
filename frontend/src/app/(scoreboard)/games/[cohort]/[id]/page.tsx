@@ -19,7 +19,12 @@ export async function generateMetadata({
     params: Promise<{ cohort: string; id: string }>;
 }): Promise<Metadata> {
     const { cohort, id } = await params;
-    const response = await getGame(cohort, id);
+    let response;
+    try {
+        response = await getGame(cohort, id);
+    } catch {
+        return defaultMetadata;
+    }
     const game = response.data;
 
     const chess = new Chess({ pgn: game.pgn });

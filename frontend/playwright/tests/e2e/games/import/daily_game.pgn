@@ -1,0 +1,50 @@
+[Event "Let\\'s Play!"]
+[Site "Chess.com"]
+[Date "2026.02.05"]
+[Round "?"]
+[White "JackStenglein"]
+[Black "carson2626"]
+[Result "1-0"]
+[TimeControl "1/86400"]
+[WhiteElo "1653"]
+[BlackElo "1149"]
+[Termination "JackStenglein won by resignation"]
+[ECO "A50"]
+[EndDate "2026.02.09"]
+[Link "https://www.chess.com/game/daily/926728269"]
+
+1. c4 {[%clk 0:00:15][%timestamp 150]} 1... Nf6 {[%clk 0:35:26][%timestamp
+21260]} 2. d4 {[%clk 1:02:08][%timestamp 37280]} 2... g6 {[%clk
+2:54:59][%timestamp 104990]} 3. Nc3 {[%clk 2:21:41][%timestamp 85010]} 3... Bg7
+{[%clk 8:21:45][%timestamp 301050]} 4. e4 {[%clk 2:51:54][%timestamp 103140]}
+4... d6 {[%clk 1:05:50][%timestamp 39500]} 5. Nf3 {[%clk 0:02:20][%timestamp
+1400]} 5... O-O {[%clk 0:09:49][%timestamp 5890]} 6. Bd3 {[%clk
+0:02:13][%timestamp 1330]} 6... Re8 {[%clk 0:25:38][%timestamp 15380]} 7. O-O
+{[%clk 0:00:45][%timestamp 450]} 7... e5 {[%clk 0:04:54][%timestamp 2940]} 8. d5
+{[%clk 0:29:26][%timestamp 17660]} 8... Nbd7 {[%clk 1:39:51][%timestamp 59910]}
+9. b4 {[%clk 0:00:59][%timestamp 590]} 9... c5 {[%clk 0:40:55][%timestamp
+24550]} 10. a3 {[%clk 1:51:00][%timestamp 66600]} 10... Nf8 {[%clk
+0:04:04][%timestamp 2440]} 11. bxc5 {[%clk 0:03:43][%timestamp 2230]} 11... dxc5
+{[%clk 1:37:08][%timestamp 58280]} 12. a4 {[%clk 0:35:48][%timestamp 21480]}
+12... Qa5 {[%clk 16:34:21][%timestamp 596610]} 13. Qb3 {[%clk
+0:20:30][%timestamp 12300]} 13... a6 {[%clk 0:29:32][%timestamp 17720]} 14. Bd2
+{[%clk 1:00:32][%timestamp 36320]} 14... Qc7 {[%clk 1:05:19][%timestamp 39190]}
+15. a5 {[%clk 1:15:02][%timestamp 45020]} 15... Bg4 {[%clk 3:09:56][%timestamp
+113960]} 16. Ne1 {[%clk 0:00:58][%timestamp 580]} 16... Rab8 {[%clk
+0:52:01][%timestamp 31210]} 17. Na4 {[%clk 0:35:01][%timestamp 21010]} 17... Bd7
+{[%clk 0:35:44][%timestamp 21440]} 18. Nb6 {[%clk 0:43:57][%timestamp 26370]}
+18... Qd8 {[%clk 0:51:11][%timestamp 30710]} 19. Be3 {[%clk 0:51:13][%timestamp
+30730]} 19... Qe7 {[%clk 8:10:41][%timestamp 294410]} 20. Qa3 {[%clk
+2:08:22][%timestamp 77020]} 20... Ng4 {[%clk 2:55:58][%timestamp 105580]} 21.
+Bxc5 {[%clk 6:39:01][%timestamp 239410]} 21... Qf6 {[%clk 0:12:47][%timestamp
+7670]} 22. Bxf8 {[%clk 0:02:10][%timestamp 1300]} 22... Bxf8 {[%clk
+0:17:50][%timestamp 10700]} 23. Nxd7 {[%clk 0:15:43][%timestamp 9430]} 23...
+Qxf2+ {[%clk 0:29:12][%timestamp 17520]} 24. Rxf2 {[%clk 0:18:24][%timestamp
+11040]} 24... Bxa3 {[%clk 11:53:26][%timestamp 428060]} 25. Rxa3 {[%clk
+0:20:58][%timestamp 12580]} 25... Nxf2 {[%clk 0:08:17][%timestamp 4970]} 26.
+Nxb8 {[%clk 0:00:10][%timestamp 100]} 26... Nxd3 {[%clk 0:02:14][%timestamp
+1340]} 27. Nxd3 {[%clk 0:00:08][%timestamp 80]} 27... Rxb8 {[%clk
+1:25:32][%timestamp 51320]} 28. Rb3 {[%clk 0:05:34][%timestamp 3340]} 28... f6
+{[%clk 1:49:32][%timestamp 65720]} 29. Rb6 {[%clk 0:05:15][%timestamp 3150]}
+29... Kg7 {[%clk 1:10:17][%timestamp 42170]} 30. Nc5 {[%clk 0:03:18][%timestamp
+1980]} 1-0

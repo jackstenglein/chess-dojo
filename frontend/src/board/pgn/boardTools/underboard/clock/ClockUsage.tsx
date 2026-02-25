@@ -2,7 +2,7 @@ import { useReconcile } from '@/board/Board';
 import { getStandardNag } from '@/board/pgn/Nag';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { RabbitIcon } from '@/style/RabbitIcon';
-import { TurtleIcon } from '@/style/TurtleIcon';
+import { SlothIcon } from '@/style/SlothIcon';
 import { useLightMode } from '@/style/useLightMode';
 import { Chess, Event, EventType, Move } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
@@ -786,7 +786,7 @@ function TimeRatingCard({
                 )}
                 {area < 0 && (
                     <Tooltip title='Player moved slower than ideal on average'>
-                        <TurtleIcon sx={{ gridArea: 'icon', color: ratingColor }} />
+                        <SlothIcon sx={{ gridArea: 'icon', color: ratingColor }} />
                     </Tooltip>
                 )}
             </Box>

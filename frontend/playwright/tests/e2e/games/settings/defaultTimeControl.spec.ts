@@ -3,20 +3,11 @@ import { expect, test } from '@playwright/test';
 test.describe('Default Time Control (localStorage)', () => {
     test.beforeEach(async ({ page }) => {
         // Clear the default time control from localStorage before each test
-        await page.goto('/');
+        await page.goto('/games/analysis');
         await page.evaluate(() => localStorage.removeItem('defaultTimeControl'));
     });
 
     test('saves time control to localStorage when edited', async ({ page }) => {
-        // Navigate to games import page
-        await page.goto('/games/import');
-
-        // Click "Starting Position" button to create a blank game
-        await page.getByRole('button', { name: /Starting Position/ }).click();
-
-        // Wait for navigation to analysis page
-        await expect(page).toHaveURL('/games/analysis', { timeout: 15000 });
-
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();
 
@@ -48,18 +39,10 @@ test.describe('Default Time Control (localStorage)', () => {
     });
 
     test('pre-fills time control from localStorage in editor dialog', async ({ page }) => {
-        // Navigate to import page first
-        await page.goto('/games/import');
-
         // Set a default time control in localStorage (useLocalStorage format is JSON)
         await page.evaluate(() => {
             localStorage.setItem('defaultTimeControl', '"5400+30"');
         });
-
-        // Click to create a new game
-        await page.getByRole('button', { name: /Starting Position/ }).click();
-
-        await expect(page).toHaveURL('/games/analysis', { timeout: 15000 });
 
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();
@@ -102,7 +85,7 @@ test.describe('Default Time Control (localStorage)', () => {
         await page.getByRole('button', { name: 'Import' }).click();
 
         // Should be on analysis page
-        await expect(page).toHaveURL('/games/analysis', { timeout: 15000 });
+        await expect(page).toHaveURL('/games/analysis');
 
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();

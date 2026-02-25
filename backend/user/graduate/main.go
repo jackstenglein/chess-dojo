@@ -16,6 +16,7 @@ import (
 )
 
 var repository database.GraduationCreator = database.DynamoDB
+const annotatedGamesRequirementID = "4d23d689-1284-46e6-b2a2-4b4bfdc37174"
 
 type GraduationRequest struct {
 	Comments string `json:"comments"`
@@ -76,6 +77,10 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	totalTime := user.TimeSpent()
 	dojoTime := user.TimeSpentOnReqs(requirements)
 	nonDojoTime := totalTime - dojoTime
+	gamesAnnotated := 0
+	if progress, ok := user.Progress[annotatedGamesRequirementID]; ok && progress != nil {
+		gamesAnnotated = progress.Counts[user.DojoCohort]
+	}
 
 	log.Debugf("Total Time: %d, Dojo Time: %d, NonDojo Time: %d", totalTime, dojoTime, nonDojoTime)
 
@@ -134,6 +139,7 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 			NewCohort:      nextCohort,
 			DojoMinutes:    dojoTime,
 			NonDojoMinutes: nonDojoTime,
+			GamesAnnotated: gamesAnnotated,
 		},
 	}
 	if err := repository.PutTimelineEntry(&timelineEntry); err != nil {

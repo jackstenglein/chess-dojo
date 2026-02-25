@@ -391,7 +391,27 @@ export async function getChesscomGame(gameURL?: string): Promise<PgnImportResult
     for (let i = 0; i < encodedMoves.length; i++) {
         const encodedMove = encodedMoves[i];
         const move = tcn.decode(encodedMove);
-        game.move(move as CandidateMove);
+        const gameMove = game.move(move as CandidateMove);
+        if (!gameMove) {
+            // Chess.com for some reason notates castling in daily games with
+            // the king moving to the rook's square, which causes the move function
+            // to fail.
+            const king = game.pieces('k', game.turn())[0];
+            if (king?.square === move.from) {
+                if (move.from === 'e8' && move.to === 'h8') {
+                    game.move({ from: 'e8', to: 'g8' });
+                }
+                if (move.from === 'e8' && move.to === 'a8') {
+                    game.move({ from: 'e8', to: 'c8' });
+                }
+                if (move.from === 'e1' && move.to === 'h1') {
+                    game.move({ from: 'e1', to: 'g1' });
+                }
+                if (move.from === 'e1' && move.to === 'a1') {
+                    game.move({ from: 'e1', to: 'c1' });
+                }
+            }
+        }
 
         if (i < moveTimestamps.length) {
             const timestamp = moveTimestamps[i];

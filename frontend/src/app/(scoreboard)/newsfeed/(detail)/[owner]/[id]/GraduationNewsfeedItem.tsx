@@ -53,6 +53,12 @@ const GraduationNewsfeedItem: React.FC<GraduationNewsfeedItemProps> = ({ entry }
                     </Typography>{' '}
                     {formatTime(entry.graduationInfo.nonDojoMinutes || 0)}
                 </Typography>
+                <Typography>
+                    <Typography component='span' color='text.secondary'>
+                        Games Annotated:
+                    </Typography>{' '}
+                    {entry.graduationInfo.gamesAnnotated ?? 0}
+                </Typography>
             </Stack>
 
             {entry.graduationInfo.comments && (

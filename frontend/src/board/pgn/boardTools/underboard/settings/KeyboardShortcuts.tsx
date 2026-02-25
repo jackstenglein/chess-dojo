@@ -73,6 +73,8 @@ function displayShortcutAction(action: ShortcutAction): string {
             return 'Insert Top Engine Move';
         case ShortcutAction.NextPuzzle:
             return 'Next Puzzle';
+        case ShortcutAction.ViewShortcuts:
+            return 'Open Keyboard Shortcuts Dialog';
     }
 }
 
@@ -127,6 +129,8 @@ function shortcutActionDescription(action: ShortcutAction): string {
             return 'Inserts the top engine move into the game (note: the engine must be running).';
         case ShortcutAction.NextPuzzle:
             return 'Goes to the next puzzle (has no effect outside of puzzles).';
+        case ShortcutAction.ViewShortcuts:
+            return 'Opens a dialog to view and edit keyboard shortcuts';
     }
 }
 
@@ -153,6 +157,11 @@ interface ShortcutHandlerOptions {
      * instead of going to that move.
      */
     setVariationDialogMove?: (move: Move) => void;
+
+    /**
+     * A function that sets whether the keyboard shortcuts dialog is open.
+     */
+    setKeyboardShortcutsDialogOpen?: (open: boolean) => void;
 
     /**
      * The API for imperatively interacting with the underboard.
@@ -361,6 +370,13 @@ function handleInsertEngineMove({ opts }: ShortcutHandlerProps) {
 }
 
 /**
+ * Handles opening the keyboard shortcuts dialog.
+ */
+function handleViewShortcuts({ opts }: ShortcutHandlerProps) {
+    opts?.setKeyboardShortcutsDialogOpen?.(true);
+}
+
+/**
  * Maps ShortcutActions to their handler functions. Not all ShortcutActions are included.
  */
 export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> = {
@@ -385,6 +401,7 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.UnfocusTextField]: handleUnfocusTextField,
     [ShortcutAction.InsertNullMove]: handleInsertNullMove,
     [ShortcutAction.InsertEngineMove]: handleInsertEngineMove,
+    [ShortcutAction.ViewShortcuts]: handleViewShortcuts,
     [ShortcutAction.NextPuzzle]: () => null, // This action is a special case handled by the CheckmatePuzzlePage component.
 };
 
@@ -428,7 +445,6 @@ export function matchAction(
             matchedAction = action;
         }
     }
-
     return matchedAction;
 }
 
@@ -570,8 +586,8 @@ const KeyboardShortcuts = ({
                                     select
                                     value={binding.modifier}
                                     onChange={(e) => onChangeModifier(a, e.target.value)}
-                                    SelectProps={{
-                                        displayEmpty: true,
+                                    slotProps={{
+                                        select: { displayEmpty: true },
                                     }}
                                 >
                                     <MenuItem value=''>
