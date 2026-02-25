@@ -657,7 +657,7 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                     startIcon={<AddIcon />}
                     title='Add New'
                     sx={{ position: 'absolute', top: 8, right: 16, zIndex: 1 }}
-                ></Button>
+                > Add New </Button>
 
                 <Stack spacing={3} ref={topRef}>
                     {activeItems.length === 0 ? (
