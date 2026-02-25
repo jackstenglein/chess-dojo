@@ -605,12 +605,8 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
         errors,
         request,
         timelineRequest,
-        isTimeOnly,
         items,
-        newItemCount,
-        cohortCount,
         cohortTime,
-        totalCount,
         totalTime,
         getUpdateItem,
         getDeleteItem,
@@ -641,9 +637,7 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
     }
 
     const activeItems = items.filter((item) => !item.deleted);
-    const hasChanges = items.some(
-        (item) => (item.isNew && !item.deleted) || (item.deleted && !item.isNew),
-    );
+   
 
     return (
         <>
@@ -675,11 +669,6 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
             </DialogContent>
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
-                {!isTimeOnly && (
-                    <Typography color='text.secondary'>
-                        Total Count: {totalCount}. Current Cohort: {cohortCount}
-                    </Typography>
-                )}
                 <Typography color='text.secondary'>
                     Total Time: {Math.floor(totalTime / 60)}h {totalTime % 60}m. Current Cohort:{' '}
                     {Math.floor(cohortTime / 60)}h {Math.floor(cohortTime % 60)}m
@@ -719,9 +708,8 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                     data-cy='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
-                    disabled={!hasChanges}
                 >
-                    {newItemCount > 0 ? `Save (${newItemCount} new)` : 'Save'}
+                    Save
                 </LoadingButton>
             </DialogActions>
 
