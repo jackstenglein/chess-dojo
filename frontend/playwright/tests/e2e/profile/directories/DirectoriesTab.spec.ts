@@ -3,6 +3,36 @@ import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../../../../lib/env';
 import { getBySel, interceptApi } from '../../../../lib/helpers';
 
+function mockHomeWithTestDir() {
+    return {
+        body: {
+            directory: {
+                owner: getEnv('username'),
+                id: 'home',
+                parent: '00000000-0000-0000-0000-000000000000',
+                name: 'Home',
+                visibility: 'PUBLIC',
+                items: {
+                    '2bca0358-bbfc-46f0-b28d-e850ded0ba5c': {
+                        type: 'DIRECTORY',
+                        id: '2bca0358-bbfc-46f0-b28d-e850ded0ba5c',
+                        metadata: {
+                            createdAt: '2024-08-02T17:36:22.690Z',
+                            updatedAt: '2024-08-02T17:36:22.690Z',
+                            visibility: 'PUBLIC',
+                            name: 'Test',
+                        },
+                    },
+                },
+                itemIds: ['2bca0358-bbfc-46f0-b28d-e850ded0ba5c'],
+                createdAt: '2024-07-27T16:59:32.621Z',
+                updatedAt: '2024-08-07T02:24:57.001Z',
+            },
+            accessRole: 'OWNER',
+        },
+    };
+}
+
 test.describe('Directories', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/profile?view=games');
@@ -71,9 +101,12 @@ test.describe('Directories', () => {
     });
 
     test('requires confirmation to delete directory', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`, {
-            fixture: 'profile/directories/basic.json',
-        });
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
+            mockHomeWithTestDir(),
+        );
         await page.goto('/profile?view=games');
 
         await getBySel(page, 'directories-data-grid')
@@ -90,9 +123,12 @@ test.describe('Directories', () => {
     });
 
     test('displays move directory dialog', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`, {
-            fixture: 'profile/directories/basic.json',
-        });
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
+            mockHomeWithTestDir(),
+        );
         await page.goto('/profile?view=games');
 
         await getBySel(page, 'directories-data-grid')
@@ -105,9 +141,12 @@ test.describe('Directories', () => {
     });
 
     test('disables renaming directory to empty/same name', async ({ page }) => {
-        await interceptApi(page, 'GET', `/directory/${getEnv('username')}/home/v2`, {
-            fixture: 'profile/directories/basic.json',
-        });
+        await interceptApi(
+            page,
+            'GET',
+            `/directory/${getEnv('username')}/home/v2`,
+            mockHomeWithTestDir(),
+        );
         await page.goto('/profile?view=games');
 
         await getBySel(page, 'directories-data-grid')
