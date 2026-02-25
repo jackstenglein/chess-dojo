@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { env } from '../../../lib/env';
+import { getEnv } from '../../../lib/env';
 import { getBySel } from '../../../lib/helpers';
 
 test.describe('Signin Page', () => {
@@ -51,8 +51,8 @@ test.describe('Signin Page', () => {
     });
 
     test('logs in with correct credentials', async ({ page }) => {
-        await page.locator('#email').fill(env.cognitoUsername);
-        await page.locator('#password').fill(env.cognitoPassword);
+        await page.locator('#email').fill(getEnv('email'));
+        await page.locator('#password').fill(getEnv('password'));
         await page.locator('[data-cy="signin-button"]').click();
         await expect(page).toHaveURL('/profile');
     });

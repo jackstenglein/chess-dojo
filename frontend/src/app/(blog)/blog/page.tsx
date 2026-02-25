@@ -16,6 +16,9 @@ import { BlogListItem } from './BlogListItem';
 import items from './items';
 import ShareButton from './shareButton/ShareButton';
 
+// Forces NextJS to render this page on the server, so dynamic blog posts are fetched correctly.
+export const dynamic = 'force-dynamic';
+
 const BLOG_LIST_LIMIT = 50;
 
 /**

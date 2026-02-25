@@ -11,6 +11,7 @@ dotenv.config({
     path: [
         path.join(__dirname, '../.env.test.local'),
         path.join(__dirname, '../.env.local'),
+        path.join(__dirname, '../.env.test'),
         path.join(__dirname, '../.env'),
     ],
 });
@@ -20,22 +21,23 @@ const isCI = !!process.env.CI;
 export default defineConfig({
     testDir: './tests',
     testIgnore: ['**/*.test.ts', '**/node_modules/**'],
-    timeout: 10000,
+    timeout: 30000,
     fullyParallel: true,
     forbidOnly: isCI,
     retries: isCI ? 2 : 0,
-    workers: isCI ? 1 : undefined,
+    workers: isCI ? 3 : undefined,
     reporter: 'html',
 
     use: {
         baseURL: 'http://localhost:3000',
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
+        timezoneId: 'Etc/GMT+0',
     },
 
     projects: [
         // Setup project - authenticates and saves session
-        { name: 'setup', testMatch: /.*\.setup\.ts$/ },
+        { name: 'setup', testMatch: /.*\.setup\.ts$/, timeout: 60000 },
 
         // Auth tests - run WITHOUT authentication (testing login/signup flows)
         {

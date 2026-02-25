@@ -1,6 +1,5 @@
 import js from '@eslint/js';
 import nextPlugin from '@next/eslint-plugin-next';
-import pluginCypress from 'eslint-plugin-cypress';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
@@ -14,7 +13,6 @@ export default defineConfig([
             'node_modules/**',
             'coverage/**',
             'public/**',
-            'playwright/**',
             'playwright-report/**',
             'runner-results/**',
             'src/stockfish/engine/sf17-79.js',
@@ -30,10 +28,6 @@ export default defineConfig([
         plugins: { js },
         extends: ['js/recommended'],
         languageOptions: { globals: globals.browser },
-    },
-    {
-        files: ['cypress/**/*.{js,ts}'],
-        extends: [pluginCypress.configs.recommended],
     },
     {
         files: ['**/*.{js,jsx,ts,tsx}'],
@@ -116,6 +110,12 @@ export default defineConfig([
             // React is now imported by default
             'jsx-uses-react': 'off',
             'react/no-unescaped-entities': 'off',
+        },
+    },
+    {
+        files: ['playwright/**/*.ts'],
+        rules: {
+            'no-console': 'off',
         },
     },
 ]);

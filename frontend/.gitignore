@@ -1,8 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Secrets
-cypress/fixtures/auth/signinCredentials.json
-
 # dependencies
 /node_modules
 /.pnp
@@ -10,11 +7,8 @@ cypress/fixtures/auth/signinCredentials.json
 
 # testing
 /coverage
-cypress/screenshots/
 .nyc_output/
 runner-results/
-.cypressCombineCoverage.lock/
-.cypressCoverageReport.lock/
 
 # Playwright
 playwright/.auth/
