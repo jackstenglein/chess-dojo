@@ -1,7 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Button, Grid, InputBase, Slider, Stack, Typography } from '@mui/material';
-import { useEffect } from 'react';
+import { useRef } from 'react';
 
 interface InputSliderProps {
     value: number;
@@ -12,12 +12,7 @@ interface InputSliderProps {
 }
 
 const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, suffix }) => {
-    useEffect(() => {
-        if (value < min) {
-            setValue(min);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [min, setValue]);
+    const timerRef = useRef<NodeJS.Timeout>(null);
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setValue(newValue as number);
@@ -39,10 +34,19 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
 
     const handleDecrement = () => {
         setValue((prev) => Math.max(min, prev - 1));
+        timerRef.current = setInterval(() => setValue((prev) => Math.max(min, prev - 1)), 200);
     };
 
     const handleIncrement = () => {
         setValue((prev) => prev + 1);
+        timerRef.current = setInterval(() => setValue((prev) => prev + 1), 200);
+    };
+
+    const stopRepeating = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
     };
 
     return (
@@ -93,7 +97,11 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                     <Stack direction='row' aria-label={suffix ?? 'Progress count'}>
                         <Button
                             data-cy='task-updater-decrement'
-                            onClick={handleDecrement}
+                            onMouseDown={handleDecrement}
+                            onMouseUp={stopRepeating}
+                            onMouseLeave={stopRepeating}
+                            onTouchStart={handleDecrement}
+                            onTouchEnd={stopRepeating}
                             disabled={value <= min}
                             variant='outlined'
                             aria-label='Decrement'
@@ -110,7 +118,6 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                             inputProps={{
                                 step: 1,
                                 min: min,
-                                type: 'number',
                                 'aria-label': suffix ?? 'Count',
                                 style: {
                                     textAlign: 'center',
@@ -121,6 +128,8 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                                 width: 64,
                                 border: 1,
                                 borderColor: 'divider',
+                                borderLeftWidth: 0,
+                                borderRightWidth: 0,
                                 '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
                                     {
                                         WebkitAppearance: 'none',
@@ -131,7 +140,11 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
 
                         <Button
                             data-cy='task-updater-increment'
-                            onClick={handleIncrement}
+                            onMouseDown={handleIncrement}
+                            onMouseUp={stopRepeating}
+                            onMouseLeave={stopRepeating}
+                            onTouchStart={handleIncrement}
+                            onTouchEnd={stopRepeating}
                             variant='outlined'
                             aria-label='Increment'
                             sx={{ px: 1.5, minWidth: 40, borderRadius: '0 4px 4px 0' }}
