@@ -69,4 +69,29 @@ test.describe('Import Games Page - PGN Text', () => {
         await importPgnText(page, pgn);
         await verifyGame(page, { white: 'JackStenglein', black: 'carson2626', lastMove: 'Nc5' });
     });
+
+    test('submits commands without values', async ({ page }) => {
+        await importPgnText(
+            page,
+            `
+[White "JackStenglein"]
+[Black "carson2626"]
+[Result "1-0"]
+[TimeControl "600"]
+[WhiteElo "1653"]
+[BlackElo "1149"]
+[Termination "JackStenglein won by resignation"]
+[ECO "A50"]
+[EndDate "2026.02.09"]
+[Link "https://www.chess.com/game/daily/926728269"]
+
+1. e4 {[%clk 0:10:00]} 1... Nf6 {[%clk 0:05:20][%EOG]}`,
+        );
+        await verifyGame(page, {
+            white: 'JackStenglein',
+            black: 'carson2626',
+            lastMove: 'Nf6',
+            lastMoveClock: { white: '0:10:00', black: '0:05:20' },
+        });
+    });
 });
