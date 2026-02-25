@@ -2,9 +2,22 @@ import { CustomTask, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
 import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
-import { Check } from '@mui/icons-material';
-import { alpha, Box, ButtonBase, Card, Chip, Grid, Stack, Typography } from '@mui/material';
+import { Check, ExpandMore } from '@mui/icons-material';
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    alpha,
+    Box,
+    ButtonBase,
+    Card,
+    Chip,
+    Grid,
+    Stack,
+    Typography,
+} from '@mui/material';
 import { use, useMemo, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
 import { SuggestedTask } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
@@ -26,6 +39,8 @@ export function WeeklyTrainingPlan() {
         timeline,
     });
 
+    const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
+
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
 
@@ -39,36 +54,64 @@ export function WeeklyTrainingPlan() {
         setTaskDialogView(undefined);
     };
 
+    const handleAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+        setExpanded(isExpanded);
+    };
+
     return (
         <Stack spacing={2} width={1}>
-            <Stack direction='row' alignItems='center' spacing={2}>
-                <Typography variant='h5' fontWeight='bold'>
-                    This Week
-                </Typography>
+            <Accordion
+                expanded={expanded}
+                onChange={handleAccordionChange}
+                sx={{
+                    '&:before': {
+                        display: 'none',
+                    },
+                    boxShadow: 'none',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    sx={{
+                        '& .MuiAccordionSummary-content': {
+                            alignItems: 'center',
+                        },
+                    }}
+                >
+                    <Stack direction='row' alignItems='center' spacing={2} width={1}>
+                        <Typography variant='h5' fontWeight='bold'>
+                            This Week
+                        </Typography>
 
-                <WorkGoalSettingsEditor
-                    currentGoal={goalTime}
-                    currentValue={workedTime}
-                    disabled={!isCurrentUser}
-                    initialWeekStart={user.weekStart}
-                    workGoal={user.workGoal}
-                />
-            </Stack>
+                        <WorkGoalSettingsEditor
+                            currentGoal={goalTime}
+                            currentValue={workedTime}
+                            disabled={!isCurrentUser}
+                            initialWeekStart={user.weekStart}
+                            workGoal={user.workGoal}
+                        />
+                    </Stack>
+                </AccordionSummary>
 
-            {isLoading ? (
-                <LoadingPage />
-            ) : (
-                <Grid container columns={7}>
-                    {days.map((_, i) => (
-                        <Grid key={i} size={1}>
-                            <WeeklyTrainingPlanDay
-                                dayIndex={(i + user.weekStart) % 7}
-                                onOpenTask={onOpenTask}
-                            />
+                <AccordionDetails>
+                    {isLoading ? (
+                        <LoadingPage />
+                    ) : (
+                        <Grid container columns={7}>
+                            {days.map((_, i) => (
+                                <Grid key={i} size={1}>
+                                    <WeeklyTrainingPlanDay
+                                        dayIndex={(i + user.weekStart) % 7}
+                                        onOpenTask={onOpenTask}
+                                    />
+                                </Grid>
+                            ))}
                         </Grid>
-                    ))}
-                </Grid>
-            )}
+                    )}
+                </AccordionDetails>
+            </Accordion>
 
             {taskDialogView && selectedTask && (
                 <TaskDialog

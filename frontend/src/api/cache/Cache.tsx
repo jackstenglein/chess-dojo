@@ -30,6 +30,7 @@ export interface IdentifiableCache<T> {
     putMany: (objs: T[]) => void;
     update: (obj: Partial<T>) => void;
     remove: (id: string) => void;
+    clear: () => void;
     isFetched: (id: string) => boolean;
     markFetched: (id: string) => void;
     request: Request;
@@ -117,6 +118,10 @@ export function useIdentifiableCache<T>(
         [setObjects],
     );
 
+    const clear = useCallback(() => {
+        setObjects({});
+    }, [setObjects]);
+
     const isFetched = useCallback(
         (id: string) => {
             return fetchedIds.current[id] || false;
@@ -142,6 +147,7 @@ export function useIdentifiableCache<T>(
         putMany,
         update,
         remove,
+        clear,
         isFetched,
         markFetched,
         request,
@@ -252,6 +258,7 @@ interface UseNotificationsResponse {
     notifications: Notification[];
     request: Request;
     removeNotification: (id: string) => void;
+    clearNotifications: () => void;
 }
 
 export function useNotifications(): UseNotificationsResponse {
@@ -282,5 +289,6 @@ export function useNotifications(): UseNotificationsResponse {
         request,
 
         removeNotification: cache.notifications.remove,
+        clearNotifications: cache.notifications.clear,
     };
 }

@@ -31,9 +31,7 @@
     },
     "include": [
         "src",
-        "cypress.config.ts",
         "vitest.config.ts",
-        ".eslintrc-old.cjs",
         "scripts",
         "./*.cjs",
         "./*.mjs",
@@ -41,7 +39,8 @@
         ".next/types/**/*.ts",
         "./window.d.ts",
         "next.config.mjs",
-        ".next/dev/types/**/*.ts"
+        ".next/dev/types/**/*.ts",
+        "playwright/**/*.ts"
     ],
     "exclude": [
         "node_modules",

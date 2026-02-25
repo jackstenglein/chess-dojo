@@ -1,8 +1,10 @@
 import { useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
 import { Edit } from '@mui/icons-material';
-import { Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Grid, IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
+import { useLocalStorage } from 'usehooks-ts';
+import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import ClockTextField from './ClockTextField';
 import { formatTime } from './ClockUsage';
 import { TimeControlDescription } from './TimeControlDescription';
@@ -38,6 +40,10 @@ const ClockEditor = ({
     setShowTimeControlEditor: (v: boolean) => void;
 }) => {
     const { chess } = useChess();
+    const [clockFieldFormat, setClockFieldFormat] = useLocalStorage<string>(
+        ClockFieldFormatKey,
+        ClockFieldFormat.SingleField,
+    );
 
     if (!chess) {
         return null;
@@ -45,23 +51,41 @@ const ClockEditor = ({
 
     const moves = chess.history();
     const grid = [];
+    const isThreeField = clockFieldFormat === ClockFieldFormat.ThreeField;
+
     for (let i = 0; i < moves.length; i += 2) {
+        if (isThreeField) {
+            grid.push(
+                <Grid key={`${i}-white-label`} size={3}>
+                    <Typography>
+                        {i / 2 + 1}. {moves[i].san}
+                    </Typography>
+                </Grid>,
+            );
+        }
+
         grid.push(
-            <Grid key={`${i}-white`} size={6}>
-                <ClockTextField
-                    label={`${i / 2 + 1}. ${moves[i].san}`}
-                    move={moves[i]}
-                    forceSingleField
-                />
+            <Grid key={`${i}-white`} size={isThreeField ? 9 : 6}>
+                <ClockTextField label={`${i / 2 + 1}. ${moves[i].san}`} move={moves[i]} />
             </Grid>,
         );
+
         if (moves[i + 1]) {
+            if (isThreeField) {
+                grid.push(
+                    <Grid key={`${i}-black-label`} size={3}>
+                        <Typography>
+                            {i / 2 + 1}... {moves[i + 1].san}
+                        </Typography>
+                    </Grid>,
+                );
+            }
+
             grid.push(
-                <Grid key={`${i}-black`} size={6}>
+                <Grid key={`${i}-black`} size={isThreeField ? 9 : 6}>
                     <ClockTextField
                         label={`${i / 2 + 1}... ${moves[i + 1].san}`}
                         move={moves[i + 1]}
-                        forceSingleField
                     />
                 </Grid>,
             );
@@ -94,6 +118,22 @@ const ClockEditor = ({
                     <br />
                     Moves left blank will use the last-set clock time.
                 </Typography>
+            </Grid>
+
+            <Grid pb={1} size={12}>
+                <TextField
+                    select
+                    label='Clock Field Format'
+                    value={clockFieldFormat}
+                    onChange={(e) => setClockFieldFormat(e.target.value)}
+                    fullWidth
+                >
+                    <MenuItem value={ClockFieldFormat.SingleField}>Single Field</MenuItem>
+                    <MenuItem value={ClockFieldFormat.ThreeField}>Three Fields</MenuItem>
+                    <MenuItem value={ClockFieldFormat.SingleFieldInTotalMinutes}>
+                        Total Minutes
+                    </MenuItem>
+                </TextField>
             </Grid>
             {grid}
         </Grid>
