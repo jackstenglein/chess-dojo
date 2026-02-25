@@ -488,12 +488,12 @@ export function useProgressHistoryEditor({
 
         request.onStart();
         try {
-            // --- 1. Submit new entries via updateUserProgress (same as ProgressUpdater) ---
-            const newItems = items.filter((item) => item.isNew && !item.deleted);
+            
+            const newItems = items.filter((item) => item.isNew);
             if (newItems.length > 0) {
                 const currentCount = getCurrentCount({
                     cohort,
-                    requirement: requirement!,
+                    requirement: requirement,
                     progress,
                     timeline: entries,
                 });
