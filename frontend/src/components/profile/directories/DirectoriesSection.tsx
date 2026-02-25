@@ -339,12 +339,22 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
 
     return (
         <Stack height={1} justifyContent='center' py={1}>
-            <Grid container>
+            <Grid container columnSpacing={0.5}>
                 <Grid size={1} display='flex' justifyContent='center'>
                     <Badge
-                        badgeContent={params.row.metadata.gameCount}
+                        badgeContent={params.row.metadata.gameCount || 0}
                         color='secondary'
-                        sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 16, height: 16 } }}
+                        sx={{
+                            alignSelf: 'flex-start',
+                            '& .MuiBadge-badge': {
+                                fontSize: '0.65rem',
+                                minWidth: 16,
+                                height: 16,
+                                ml: '4px',
+                            },
+                        }}
+                        showZero
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                     >
                         <Folder />
                     </Badge>

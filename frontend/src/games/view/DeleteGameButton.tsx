@@ -143,7 +143,7 @@ export function DeleteGamesDialog({
                 <TextField
                     label='Type "delete" to confirm'
                     value={confirmText}
-                    onChange={(e) => setConfirmText(e.target.value)}
+                    onChange={(e) => setConfirmText(e.target.value.toLowerCase())}
                     fullWidth
                     size='small'
                     autoComplete='off'
@@ -157,7 +157,7 @@ export function DeleteGamesDialog({
                     data-cy='delete-game-confirm-button'
                     color='error'
                     loading={request.isLoading()}
-                    disabled={confirmText !== 'delete'}
+                    disabled={confirmText.trim() !== 'delete'}
                     onClick={onDelete}
                 >
                     Delete

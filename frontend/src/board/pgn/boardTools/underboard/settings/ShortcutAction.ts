@@ -67,6 +67,9 @@ export enum ShortcutAction {
 
     /** Goes to the next puzzle. */
     NextPuzzle = 'NEXT_PUZZLE',
+
+    /** Opens the keyboard shortcuts dialog */
+    ViewShortcuts = 'VIEW_SHORTCUTS',
 }
 
 export interface KeyBinding {
@@ -103,5 +106,6 @@ export const ShortcutBindings = {
         [ShortcutAction.InsertNullMove]: { modifier: '', key: '' },
         [ShortcutAction.InsertEngineMove]: { modifier: '', key: 'Space' },
         [ShortcutAction.NextPuzzle]: { modifier: '', key: 'Space' },
+        [ShortcutAction.ViewShortcuts]: { modifier: 'Shift', key: 'd' },
     },
 } as const;

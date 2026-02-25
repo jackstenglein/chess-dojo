@@ -192,7 +192,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
         <CardContent sx={{ height: { md: 1 } }}>
             <Stack spacing={3} mt={move ? 2 : undefined} pb={2} sx={{ height: { md: 1 } }}>
                 {move && isMainline ? (
-                    <ClockTextField label='Clock (hh:mm:ss)' move={move} />
+                    <ClockTextField move={move} />
                 ) : (
                     !move && (
                         <Stack>

@@ -14,7 +14,15 @@ test.describe('Graduations', () => {
     });
 
     test('displays correct columns for graduation', async ({ page }) => {
-        const columns = ['Name', 'Graduated', 'Old Cohort', 'New Cohort', 'Dojo Score', 'Date'];
+        const columns = [
+            'Name',
+            'Graduated',
+            'Old Cohort',
+            'New Cohort',
+            'Dojo Score',
+            'Games Annotated',
+            'Date',
+        ];
         for (const col of columns) {
             await expect(page.getByText(col, { exact: true })).toBeVisible();
         }
