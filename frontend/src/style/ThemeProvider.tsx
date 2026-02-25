@@ -94,6 +94,7 @@ declare module '@mui/material/styles' {
             headerBg: string;
             pinnedBg: string;
         };
+
         // Calendar colors
         tomato: Palette['primary'];
         flamingo: Palette['primary'];
