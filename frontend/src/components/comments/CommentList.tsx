@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ReplyIcon from '@mui/icons-material/Reply';
 import SaveIcon from '@mui/icons-material/Save';
+import SendIcon from '@mui/icons-material/Send';
 import {
     Button,
     Dialog,
@@ -27,6 +28,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { groupCommentsIntoThreads } from './threadComments';
 
 const COMMENT_LINE_CLAMP = 4;
+const COLLAPSE_REPLY_THRESHOLD = 3;
 
 interface CommentListProps {
     comments: Comment[] | null;
@@ -35,7 +37,7 @@ interface CommentListProps {
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
     threaded?: boolean;
-    onReply?: (parentCommentId: string) => void;
+    onSubmitReply?: (parentId: string, content: string) => Promise<void>;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -45,8 +47,47 @@ const CommentList: React.FC<CommentListProps> = ({
     onEdit,
     onDelete,
     threaded,
-    onReply,
+    onSubmitReply,
 }) => {
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+    const replyRequest = useRequest();
+
+    const toggleThread = useCallback((threadId: string) => {
+        setExpandedThreads((prev) => {
+            const next = new Set(prev);
+            if (next.has(threadId)) {
+                next.delete(threadId);
+            } else {
+                next.add(threadId);
+            }
+            return next;
+        });
+    }, []);
+
+    const handleReplyClick = useCallback((parentCommentId: string) => {
+        setReplyingTo(parentCommentId);
+    }, []);
+
+    const handleSubmitReply = useCallback(
+        (parentId: string, content: string) => {
+            if (!onSubmitReply) {
+                return;
+            }
+            replyRequest.onStart();
+            onSubmitReply(parentId, content)
+                .then(() => {
+                    replyRequest.onSuccess();
+                    setReplyingTo(null);
+                    setExpandedThreads((prev) => new Set(prev).add(parentId));
+                })
+                .catch((err: unknown) => {
+                    replyRequest.onFailure(err);
+                });
+        },
+        [onSubmitReply, replyRequest],
+    );
+
     if (!comments) {
         return null;
     }
@@ -60,6 +101,8 @@ const CommentList: React.FC<CommentListProps> = ({
 
         return (
             <Stack spacing={2} width={1} alignItems='start' mb={2}>
+                <RequestSnackbar request={replyRequest} />
+
                 {hiddenThreads > 0 && viewCommentsLink && (
                     <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
                         View {hiddenThreads} earlier comment
@@ -67,26 +110,80 @@ const CommentList: React.FC<CommentListProps> = ({
                     </Link>
                 )}
 
-                {displayThreads.map((thread) => (
-                    <Stack key={thread.root.id} spacing={1} width={1}>
-                        <CommentListItem
-                            comment={thread.root}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            onReply={onReply}
-                        />
-                        {thread.replies.map((reply) => (
-                            <Stack key={reply.id} pl='52px' width={1}>
-                                <CommentListItem
-                                    comment={reply}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                    onReply={onReply}
+                {displayThreads.map((thread) => {
+                    const isCollapsible = thread.replies.length >= COLLAPSE_REPLY_THRESHOLD;
+                    const isExpanded = expandedThreads.has(thread.root.id);
+                    const hiddenReplies =
+                        isCollapsible && !isExpanded ? thread.replies.slice(0, -2) : [];
+                    const visibleReplies =
+                        isCollapsible && !isExpanded ? thread.replies.slice(-2) : thread.replies;
+
+                    return (
+                        <Stack key={thread.root.id} spacing={1} width={1}>
+                            <CommentListItem
+                                comment={thread.root}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onReply={onSubmitReply ? handleReplyClick : undefined}
+                            />
+                            {replyingTo === thread.root.id && onSubmitReply && (
+                                <InlineReplyEditor
+                                    parentId={thread.root.id}
+                                    parentName={thread.root.ownerDisplayName}
+                                    onSubmit={handleSubmitReply}
+                                    onCancel={() => setReplyingTo(null)}
+                                    isLoading={replyRequest.isLoading()}
                                 />
-                            </Stack>
-                        ))}
-                    </Stack>
-                ))}
+                            )}
+                            {hiddenReplies.length > 0 && (
+                                <Button
+                                    size='small'
+                                    onClick={() => toggleThread(thread.root.id)}
+                                    sx={{
+                                        textTransform: 'none',
+                                        pl: '52px',
+                                        justifyContent: 'flex-start',
+                                    }}
+                                >
+                                    Show {hiddenReplies.length} more{' '}
+                                    {hiddenReplies.length === 1 ? 'reply' : 'replies'}
+                                </Button>
+                            )}
+                            {isCollapsible && isExpanded && (
+                                <Button
+                                    size='small'
+                                    onClick={() => toggleThread(thread.root.id)}
+                                    sx={{
+                                        textTransform: 'none',
+                                        pl: '52px',
+                                        justifyContent: 'flex-start',
+                                    }}
+                                >
+                                    Hide replies
+                                </Button>
+                            )}
+                            {visibleReplies.map((reply) => (
+                                <Stack key={reply.id} spacing={1} pl='52px' width={1}>
+                                    <CommentListItem
+                                        comment={reply}
+                                        onEdit={onEdit}
+                                        onDelete={onDelete}
+                                        onReply={onSubmitReply ? handleReplyClick : undefined}
+                                    />
+                                    {replyingTo === reply.id && onSubmitReply && (
+                                        <InlineReplyEditor
+                                            parentId={thread.root.id}
+                                            parentName={reply.ownerDisplayName}
+                                            onSubmit={handleSubmitReply}
+                                            onCancel={() => setReplyingTo(null)}
+                                            isLoading={replyRequest.isLoading()}
+                                        />
+                                    )}
+                                </Stack>
+                            ))}
+                        </Stack>
+                    );
+                })}
             </Stack>
         );
     }
@@ -309,6 +406,18 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                 )}
                             </>
                         )}
+
+                        {onReply && user && !editing && (
+                            <Tooltip title='Reply'>
+                                <IconButton
+                                    size='small'
+                                    onClick={() => onReply(comment.id)}
+                                    sx={{ alignSelf: 'flex-end' }}
+                                >
+                                    <ReplyIcon fontSize='small' />
+                                </IconButton>
+                            </Tooltip>
+                        )}
                     </Stack>
                 </Paper>
                 <Stack direction='row' alignItems='center' spacing={1}>
@@ -317,16 +426,6 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
                         {isEdited && ' • (edited)'}
                     </Typography>
-                    {onReply && user && (
-                        <Button
-                            size='small'
-                            startIcon={<ReplyIcon fontSize='small' />}
-                            onClick={() => onReply(comment.id)}
-                            sx={{ textTransform: 'none', minWidth: 0, py: 0 }}
-                        >
-                            Reply
-                        </Button>
-                    )}
                 </Stack>
             </Stack>
 
@@ -349,6 +448,59 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                 </DialogActions>
                 <RequestSnackbar request={deleteRequest} />
             </Dialog>
+        </Stack>
+    );
+};
+
+interface InlineReplyEditorProps {
+    parentId: string;
+    parentName: string;
+    onSubmit: (parentId: string, content: string) => void;
+    onCancel: () => void;
+    isLoading: boolean;
+}
+
+const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
+    parentId,
+    parentName,
+    onSubmit,
+    onCancel,
+    isLoading,
+}) => {
+    const [content, setContent] = useState('');
+
+    return (
+        <Stack pl='52px' spacing={0.5} width={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
+                <Typography variant='body2' color='text.secondary'>
+                    Replying to {parentName}
+                </Typography>
+                <IconButton size='small' onClick={onCancel} disabled={isLoading}>
+                    <CloseIcon fontSize='small' />
+                </IconButton>
+            </Stack>
+            <Stack direction='row' spacing={1} alignItems='start'>
+                <TextField
+                    fullWidth
+                    multiline
+                    size='small'
+                    label='Write a reply...'
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    slotProps={{ htmlInput: { maxLength: 10000 } }}
+                />
+                <Tooltip title='Post Reply'>
+                    <span>
+                        <IconButton
+                            color='primary'
+                            onClick={() => onSubmit(parentId, content.trim())}
+                            disabled={content.trim().length === 0 || isLoading}
+                        >
+                            <SendIcon fontSize='small' />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </Stack>
         </Stack>
     );
 };
