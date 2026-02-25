@@ -269,13 +269,19 @@ function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
         if (item.date === null) {
             itemErrors.date = 'This field is required';
         }
-        if (item.count !== '' && (!NEGATIVE_NUMBER_REGEX.test(item.count) || isNaN(parseInt(item.count)))) {
+        if (
+            item.count !== '' &&
+            (!NEGATIVE_NUMBER_REGEX.test(item.count) || isNaN(parseInt(item.count)))
+        ) {
             itemErrors.count = 'This field must be an integer';
         }
         if (item.hours !== '' && (!NUMBER_REGEX.test(item.hours) || isNaN(parseInt(item.hours)))) {
             itemErrors.hours = 'This field must be an integer';
         }
-        if (item.minutes !== '' && (!NUMBER_REGEX.test(item.minutes) || isNaN(parseInt(item.minutes)))) {
+        if (
+            item.minutes !== '' &&
+            (!NUMBER_REGEX.test(item.minutes) || isNaN(parseInt(item.minutes)))
+        ) {
             itemErrors.minutes = 'This field must be an integer';
         }
 
@@ -330,7 +336,8 @@ function getTimelineUpdate(
                 : item.cohort;
 
         const minutesSpent = 60 * parseInt(item.hours || '0') + parseInt(item.minutes || '0');
-        progress.minutesSpent[item.cohort] = (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
+        progress.minutesSpent[item.cohort] =
+            (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
         const previousCount = progress.counts[cohort] ?? 0;
         const newCount =
@@ -488,8 +495,7 @@ export function useProgressHistoryEditor({
 
         request.onStart();
         try {
-            
-            const newItems = items.filter((item) => item.isNew);
+            const newItems = items.filter((item) => item.isNew && !item.deleted);
             if (newItems.length > 0) {
                 const currentCount = getCurrentCount({
                     cohort,
@@ -535,7 +541,6 @@ export function useProgressHistoryEditor({
                 }
             }
 
-            // --- 2. Submit edits/deletes to existing entries via updateUserTimeline ---
             const timelineUpdate = getTimelineUpdate(requirement, items);
             const hasTimelineChanges =
                 timelineUpdate.updated.length > 0 || timelineUpdate.deleted.length > 0;
@@ -605,8 +610,12 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
         errors,
         request,
         timelineRequest,
+        isTimeOnly,
         items,
+        newItemCount,
+        cohortCount,
         cohortTime,
+        totalCount,
         totalTime,
         getUpdateItem,
         getDeleteItem,
@@ -637,15 +646,29 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
     }
 
     const activeItems = items.filter((item) => !item.deleted);
-   
+    const hasChanges = items.some(
+        (item) => (item.isNew && !item.deleted) || (item.deleted && !item.isNew),
+    );
 
     return (
         <>
-            <DialogContent>
+            <DialogContent sx={{ position: 'relative' }}>
+                <Tooltip title='Add New'>
+                    <IconButton
+                        data-cy='task-history-add-new-button'
+                        onClick={handleAddAnother}
+                        disabled={request.isLoading()}
+                        size='small'
+                        sx={{ position: 'absolute', top: 8, right: 16, zIndex: 1 }}
+                    >
+                        <AddIcon />
+                    </IconButton>
+                </Tooltip>
+
                 <Stack spacing={3} ref={topRef}>
                     {activeItems.length === 0 ? (
                         <DialogContentText>
-                            No history yet. Use "Add Another" below to log your first entry.
+                            No history yet. Use the + button above to log your first entry.
                         </DialogContentText>
                     ) : (
                         <Stack spacing={3} mt={1} width={1}>
@@ -669,6 +692,11 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
             </DialogContent>
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
+                {!isTimeOnly && (
+                    <Typography color='text.secondary'>
+                        Total Count: {totalCount}. Current Cohort: {cohortCount}
+                    </Typography>
+                )}
                 <Typography color='text.secondary'>
                     Total Time: {Math.floor(totalTime / 60)}h {totalTime % 60}m. Current Cohort:{' '}
                     {Math.floor(cohortTime / 60)}h {Math.floor(cohortTime % 60)}m
@@ -695,21 +723,13 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                         </Button>
                     </>
                 )}
-                <Button
-                    data-cy='task-history-add-another-button'
-                    variant='outlined'
-                    startIcon={<AddIcon />}
-                    onClick={handleAddAnother}
-                    disabled={request.isLoading()}
-                >
-                    Add Another
-                </Button>
                 <LoadingButton
                     data-cy='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
+                    disabled={!hasChanges}
                 >
-                    Save
+                    {newItemCount > 0 ? `Save (${newItemCount} new)` : 'Save'}
                 </LoadingButton>
             </DialogActions>
 
