@@ -1,7 +1,6 @@
 'use client';
 
 import { RequirementCategory } from '@/database/requirement';
-import type {} from '@mui/x-data-grid-pro/themeAugmentation';
 import { Box, CssBaseline } from '@mui/material';
 import { blue, deepPurple } from '@mui/material/colors';
 import {
@@ -93,6 +92,7 @@ declare module '@mui/material/styles' {
         DataGrid: {
             bg: string;
             headerBg: string;
+            pinnedBg: string;
         };
         // Calendar colors
         tomato: Palette['primary'];
@@ -164,7 +164,11 @@ declare module '@mui/material' {
 const defaultTheme = createTheme({});
 
 const defaultPalette = {
-    DataGrid: { bg: 'transparent', headerBg: 'var(--mui-palette-background-paper)' },
+    DataGrid: {
+        bg: 'transparent',
+        headerBg: 'var(--mui-palette-background-paper)',
+        pinnedBg: 'var(--mui-palette-background-paper)',
+    },
     meet: defaultTheme.palette.augmentColor({
         color: {
             main: '#93a84f',
@@ -307,15 +311,6 @@ const theme = createTheme({
         colorSchemeSelector: 'class',
     },
     defaultColorScheme: 'dark',
-    components: {
-        MuiDataGrid: {
-            styleOverrides: {
-                pinnedRows: {
-                    backgroundColor: 'var(--mui-palette-background-paper)',
-                },
-            },
-        },
-    },
     colorSchemes: {
         light: {
             palette: {
