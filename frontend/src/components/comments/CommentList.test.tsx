@@ -195,9 +195,9 @@ describe('CommentList', () => {
             fireEvent.click(screen.getByLabelText('Reply'));
             expect(screen.getByText('Replying to User root')).toBeInTheDocument();
 
-            const replyEditor = screen.getByText('Replying to User root')
-                .parentElement as HTMLElement;
-            const cancelButton = within(replyEditor).getByRole('button');
+            // The close button is the only button in the reply editor header row
+            const replyLabel = screen.getByText('Replying to User root');
+            const cancelButton = within(replyLabel.parentElement ?? replyLabel).getByRole('button');
             fireEvent.click(cancelButton);
 
             expect(screen.queryByText('Replying to User root')).not.toBeInTheDocument();
