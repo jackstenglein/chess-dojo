@@ -236,6 +236,12 @@ type Game struct {
 
 	// A set of directories containing this game, in the form `owner/id`.
 	Directories []string `dynamodbav:"directories,stringset,omitempty" json:"directories,omitempty"`
+
+	// The time management rating for white in this game.
+	TimeManagementRatingWhite int `dynamodbav:"timeManagementRatingWhite,omitempty" json:"timeManagementRatingWhite,omitempty"`
+
+	// The time management rating for black in this game.
+	TimeManagementRatingBlack int `dynamodbav:"timeManagementRatingBlack,omitempty" json:"timeManagementRatingBlack,omitempty"`
 }
 
 type Reviewer struct {

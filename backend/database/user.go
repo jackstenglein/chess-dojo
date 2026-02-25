@@ -107,9 +107,9 @@ const (
 	Dwz      RatingSystem = "DWZ"
 	Acf      RatingSystem = "ACF"
 	Knsb     RatingSystem = "KNSB"
-	Custom   RatingSystem = "CUSTOM"
-	Custom2  RatingSystem = "CUSTOM_2"
-	Custom3  RatingSystem = "CUSTOM_3"
+	Custom         RatingSystem = "CUSTOM"
+	Custom2        RatingSystem = "CUSTOM_2"
+	Custom3        RatingSystem = "CUSTOM_3"
 )
 
 // IsCustom returns true if the rating system is a custom rating system.
