@@ -645,24 +645,19 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
     }
 
     const activeItems = items.filter((item) => !item.deleted);
-  
 
     return (
         <>
             <DialogContent sx={{ position: 'relative' }}>
-                    <Button
-                        data-cy='task-history-add-new-button'
-                        onClick={handleAddAnother}
-                        disabled={request.isLoading()}
-                        size='small'
-                        startIcon={<AddIcon />}
-                        title='Add New'
-                        sx={{ position: 'absolute', top: 8, right: 16, zIndex: 1 }}
-                    >
-                     
-                    </Button>
-             
-            
+                <Button
+                    data-cy='task-history-add-new-button'
+                    onClick={handleAddAnother}
+                    disabled={request.isLoading()}
+                    size='small'
+                    startIcon={<AddIcon />}
+                    title='Add New'
+                    sx={{ position: 'absolute', top: 8, right: 16, zIndex: 1 }}
+                ></Button>
 
                 <Stack spacing={3} ref={topRef}>
                     {activeItems.length === 0 ? (
@@ -726,7 +721,6 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                     data-cy='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
-                   
                 >
                     Save
                 </LoadingButton>
