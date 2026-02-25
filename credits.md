@@ -23,3 +23,7 @@ Thanks to Lichess for their amazing work in open source chess!
 ## Graduation Icons
 
 - [Jalpp](https://github.com/jalpp/DojoIcons)
+
+## Other Icons
+
+- Sloth by [Lewen Design](https://thenounproject.com/browse/icons/term/sloth/) from Noun Project (CC BY 3.0)
