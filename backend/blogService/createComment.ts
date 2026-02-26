@@ -50,8 +50,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         console.log('Event: %j', event);
 
         const userInfo = requireUserInfo(event);
-        const user = await getUser(userInfo.username);
         const request = parseEvent(event, createBlogCommentRequestSchema);
+        const user = await getUser(userInfo.username);
 
         const blog = await getBlog(request.owner, request.id);
         if (!blog) {

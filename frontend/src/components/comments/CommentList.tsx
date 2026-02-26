@@ -24,7 +24,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { groupCommentsIntoThreads } from './threadComments';
 
 const COMMENT_LINE_CLAMP = 4;
@@ -53,7 +53,7 @@ const CommentList: React.FC<CommentListProps> = ({
     const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
     const replyRequest = useRequest();
 
-    const toggleThread = useCallback((threadId: string) => {
+    const toggleThread = (threadId: string) => {
         setExpandedThreads((prev) => {
             const next = new Set(prev);
             if (next.has(threadId)) {
@@ -63,30 +63,27 @@ const CommentList: React.FC<CommentListProps> = ({
             }
             return next;
         });
-    }, []);
+    };
 
-    const handleReplyClick = useCallback((parentCommentId: string) => {
+    const handleReplyClick = (parentCommentId: string) => {
         setReplyingTo(parentCommentId);
-    }, []);
+    };
 
-    const handleSubmitReply = useCallback(
-        (parentId: string, content: string) => {
-            if (!onSubmitReply) {
-                return;
-            }
-            replyRequest.onStart();
-            onSubmitReply(parentId, content)
-                .then(() => {
-                    replyRequest.onSuccess();
-                    setReplyingTo(null);
-                    setExpandedThreads((prev) => new Set(prev).add(parentId));
-                })
-                .catch((err: unknown) => {
-                    replyRequest.onFailure(err);
-                });
-        },
-        [onSubmitReply, replyRequest],
-    );
+    const handleSubmitReply = (parentId: string, content: string) => {
+        if (!onSubmitReply) {
+            return;
+        }
+        replyRequest.onStart();
+        onSubmitReply(parentId, content)
+            .then(() => {
+                replyRequest.onSuccess();
+                setReplyingTo(null);
+                setExpandedThreads((prev) => new Set(prev).add(parentId));
+            })
+            .catch((err: unknown) => {
+                replyRequest.onFailure(err);
+            });
+    };
 
     if (!comments) {
         return null;
@@ -237,16 +234,12 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const editRequest = useRequest();
     const deleteRequest = useRequest();
 
-    const checkClamped = useCallback(() => {
+    useEffect(() => {
         const el = contentRef.current;
         if (el) {
             setIsClamped(el.scrollHeight > el.clientHeight);
         }
-    }, []);
-
-    useEffect(() => {
-        checkClamped();
-    }, [checkClamped, comment.content]);
+    }, [comment.content]);
 
     useEffect(() => {
         setExpanded(false);
