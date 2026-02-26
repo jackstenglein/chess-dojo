@@ -5,8 +5,6 @@ const DB_NAME = 'chessEngineEvals';
 const STORE_NAME = 'evals';
 const DB_VERSION = 1;
 
-
-
 async function getDb() {
     return openDB(DB_NAME, DB_VERSION, {
         upgrade(db) {

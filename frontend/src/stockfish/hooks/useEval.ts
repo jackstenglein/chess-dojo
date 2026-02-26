@@ -14,8 +14,8 @@ import {
     SavedEval,
     SavedEvals,
 } from '../engine/engine';
-import { useEngine } from './useEngine';
 import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
+import { useEngine } from './useEngine';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
     const [currentPosition, setCurrentPosition] = useState<PositionEval>();
@@ -50,7 +50,14 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
         const evaluate = async () => {
             setCurrentPosition(undefined);
             const fen = chess.fen();
-            const cacheKey = makeEvalCacheKey(fen, engineName, depth, multiPv, resolvedThreads, hash);
+            const cacheKey = makeEvalCacheKey(
+                fen,
+                engineName,
+                depth,
+                multiPv,
+                resolvedThreads,
+                hash,
+            );
 
             // L1 – IndexedDB (only contains fully-completed evals)
             const idbHit = await getEvalCache(cacheKey);
@@ -95,10 +102,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 const finalEval: SavedEval = { ...rawPositionEval, engine: engineName };
 
                 // Only write to cache once the engine has reached the full requested depth
-                if (
-                    finalEval.lines.length >= multiPv &&
-                    finalEval.lines[0]?.depth >= depth
-                ) {
+                if (finalEval.lines.length >= multiPv && finalEval.lines[0]?.depth >= depth) {
                     memCache.current[fen] = finalEval;
                     void setEvalCache(cacheKey, finalEval);
                 }
