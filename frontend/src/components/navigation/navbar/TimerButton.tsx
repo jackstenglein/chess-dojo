@@ -151,12 +151,13 @@ export function useTimer(): Timer {
             const storedTaskStr = localStorage.getItem('runningTimerTask');
             if (storedTaskStr) {
                 try {
-                    const storedTask = JSON.parse(storedTaskStr);
+                    const storedTask = JSON.parse(storedTaskStr) as Requirement | CustomTask;
                     if (storedTask.id !== task.id) {
                         currentTimerSeconds = 0;
                         setTimerSeconds(0);
                     }
                 } catch (e) {
+                    // eslint-disable-next-line no-console
                     console.error('Failed to parse running task', e);
                 }
             }
@@ -175,8 +176,9 @@ export function useTimer(): Timer {
         const storedTask = localStorage.getItem('runningTimerTask');
         if (storedTask) {
             try {
-                setTaskToOpen(JSON.parse(storedTask));
+                setTaskToOpen(JSON.parse(storedTask) as Requirement | CustomTask);
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.error('Failed to parse running task', e);
             }
         }
