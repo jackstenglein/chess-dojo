@@ -132,7 +132,7 @@ export function MergeLineDialog({
             <RequestSnackbar request={request} />
 
             <Snackbar
-                data-cy='success-snackbar'
+                data-testid='success-snackbar'
                 open={!!request.data}
                 autoHideDuration={6000}
                 onClose={request.reset}

@@ -130,7 +130,7 @@ export function ListFollowedPositionsPage() {
 
                                 <Tooltip title='Copy position FEN to clipboard'>
                                     <Button
-                                        data-cy='position-fen-copy'
+                                        data-testid='position-fen-copy'
                                         startIcon={
                                             copied === 'fen' ? (
                                                 <Check color='success' />

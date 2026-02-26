@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { getBySel, interceptApi, locatorContainsAll } from '../../../../lib/helpers';
+import { interceptApi, locatorContainsAll } from '../../../../lib/helpers';
 
 test.describe('Leaderboard Tab', () => {
     test.beforeEach(async ({ page }) => {
@@ -20,8 +20,8 @@ test.describe('Leaderboard Tab', () => {
     });
 
     test('contains search options', async ({ page }) => {
-        await expect(getBySel(page, 'time-control-selector')).toBeVisible();
-        await expect(getBySel(page, 'tournament-type-selector')).toBeVisible();
+        await expect(page.getByTestId('time-control-selector')).toBeVisible();
+        await expect(page.getByTestId('tournament-type-selector')).toBeVisible();
         await expect(page.getByText('Monthly')).toBeVisible();
         await expect(page.getByText('Yearly')).toBeVisible();
     });
@@ -29,7 +29,7 @@ test.describe('Leaderboard Tab', () => {
     test('contains correct columns', async ({ page }) => {
         const columns = ['Rank', 'Username', 'Rating', 'Score'];
 
-        const leaderboard = getBySel(page, 'leaderboard');
+        const leaderboard = page.getByTestId('leaderboard');
         await expect(leaderboard.locator('.MuiDataGrid-columnHeader')).toHaveCount(columns.length);
 
         await locatorContainsAll(leaderboard, columns);

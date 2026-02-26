@@ -144,7 +144,7 @@ const SubmitResultsPage = () => {
 
             <Stack spacing={4}>
                 <Stack spacing={1}>
-                    <Typography data-cy='title' variant='h6'>
+                    <Typography data-testid='title' variant='h6'>
                         Submit Results for the Dojo Open Classical
                     </Typography>
                     <Typography>
@@ -154,7 +154,7 @@ const SubmitResultsPage = () => {
                 </Stack>
 
                 <TextField
-                    data-cy='region'
+                    data-testid='region'
                     label='Region'
                     select
                     required
@@ -177,7 +177,7 @@ const SubmitResultsPage = () => {
                 </TextField>
 
                 <TextField
-                    data-cy='section'
+                    data-testid='section'
                     label='Section'
                     select
                     required
@@ -200,7 +200,7 @@ const SubmitResultsPage = () => {
                 </TextField>
 
                 <TextField
-                    data-cy='game-url'
+                    data-testid='game-url'
                     label='Game URL'
                     value={gameUrl}
                     onChange={(e) => setGameUrl(e.target.value)}
@@ -219,7 +219,7 @@ const SubmitResultsPage = () => {
                 />
 
                 <TextField
-                    data-cy='white'
+                    data-testid='white'
                     label='White'
                     required
                     value={white}
@@ -239,7 +239,7 @@ const SubmitResultsPage = () => {
                     }
                 />
                 <TextField
-                    data-cy='black'
+                    data-testid='black'
                     label='Black'
                     required
                     value={black}
@@ -260,7 +260,7 @@ const SubmitResultsPage = () => {
                 />
 
                 <TextField
-                    data-cy='result'
+                    data-testid='result'
                     label='Result'
                     select
                     required
@@ -288,7 +288,7 @@ const SubmitResultsPage = () => {
 
                 {(result === '0-1F' || result === '1-0F') && (
                     <FormControlLabel
-                        data-cy='report-opponent'
+                        data-testid='report-opponent'
                         control={
                             <Checkbox
                                 checked={reportOpponent}
@@ -300,7 +300,7 @@ const SubmitResultsPage = () => {
                 )}
 
                 <TextField
-                    data-cy='notes'
+                    data-testid='notes'
                     label='Notes'
                     multiline
                     minRows={3}
@@ -309,7 +309,7 @@ const SubmitResultsPage = () => {
                 />
 
                 <LoadingButton
-                    data-cy='submit-button'
+                    data-testid='submit-button'
                     variant='contained'
                     loading={request.isLoading()}
                     onClick={onSubmit}

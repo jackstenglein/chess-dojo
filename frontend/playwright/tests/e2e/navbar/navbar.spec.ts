@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 const navbarStartItems = [
     'Training Plan',
@@ -36,7 +35,7 @@ test.describe('Navbar (unauthenticated)', () => {
         await page.setViewportSize({ width: 1200, height: 660 });
         await page.goto('/');
 
-        const navbar = getBySel(page, 'navbar');
+        const navbar = page.getByTestId('navbar');
         await expect(navbar.getByText('Live Classes')).toBeVisible();
         await expect(navbar.getByText('Tournaments')).toBeVisible();
         await expect(navbar.getByText('Blog')).toBeVisible();
@@ -48,7 +47,7 @@ test.describe('Navbar (unauthenticated)', () => {
 
         // Test mobile menu
         await page.setViewportSize({ width: 449, height: 660 });
-        await getBySel(page, 'navbar-more-button').click();
+        await page.getByTestId('navbar-more-button').click();
 
         const menu = page.locator('#menu-appbar');
         await expect(menu.getByRole('menuitem', { name: /Live Classes/ })).toBeVisible();
@@ -67,7 +66,7 @@ test.describe('Navbar (authenticated)', () => {
             await page.setViewportSize({ width, height: 660 });
             await page.goto('/profile');
 
-            const navbar = getBySel(page, 'navbar');
+            const navbar = page.getByTestId('navbar');
 
             // Check visible start items
             const visibleStartItems = navbarStartItems.slice(0, navbarStartItems.length - hidden);
@@ -78,12 +77,12 @@ test.describe('Navbar (authenticated)', () => {
             // Check visible end items
             const visibleEndItems = navbarEndItems.slice(endHidden);
             for (const item of visibleEndItems) {
-                await expect(getBySel(page, item)).toBeVisible();
+                await expect(page.getByTestId(item)).toBeVisible();
             }
 
             // Check hidden items in menu
             if (hidden > 0) {
-                await getBySel(page, 'navbar-more-button').click();
+                await page.getByTestId('navbar-more-button').click();
                 const menu = page.locator('#menu-appbar');
 
                 const hiddenStartItems = navbarStartItems.slice(navbarStartItems.length - hidden);

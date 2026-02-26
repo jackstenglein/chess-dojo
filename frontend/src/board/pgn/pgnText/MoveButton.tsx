@@ -115,7 +115,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
 
     return (
         <MuiButton
-            data-cy='pgn-text-move-button'
+            data-testid='pgn-text-move-button'
             ref={ref}
             variant={isCurrentMove ? 'contained' : 'text'}
             disableElevation
@@ -174,7 +174,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                         <Typography
                             variant='caption'
                             color={isCurrentMove ? 'primary.contrastText' : 'info.main'}
-                            data-cy='elapsed-move-time'
+                            data-testid='elapsed-move-time'
                         >
                             {time}
                         </Typography>

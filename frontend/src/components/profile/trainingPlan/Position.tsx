@@ -138,7 +138,7 @@ const Position = ({ position, orientation }: PositionProps) => {
             <CardActions disableSpacing sx={{ flexWrap: 'wrap', columnGap: 1 }}>
                 <Tooltip title='Copy position FEN to clipboard'>
                     <Button
-                        data-cy='position-fen-copy'
+                        data-testid='position-fen-copy'
                         startIcon={
                             copied === 'fen' ? (
                                 <CheckIcon color='success' />
@@ -165,7 +165,7 @@ const Position = ({ position, orientation }: PositionProps) => {
 
                 <Tooltip title='Copy a URL and send to another player to play on Lichess'>
                     <LoadingButton
-                        data-cy='position-challenge-url'
+                        data-testid='position-challenge-url'
                         startIcon={
                             copied === 'lichess' ? (
                                 <CheckIcon color='success' />

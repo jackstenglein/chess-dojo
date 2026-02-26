@@ -299,12 +299,12 @@ export default function GameTable({
             slotProps={
                 contextMenu
                     ? {
-                          root: { 'data-cy': 'games-table' },
+                          root: { 'data-testid': 'games-table' },
                           row: {
                               onContextMenu: contextMenu.open,
                           },
                       }
-                    : { root: { 'data-cy': 'games-table' } }
+                    : { root: { 'data-testid': 'games-table' } }
             }
             pagination
             listView={isListView}

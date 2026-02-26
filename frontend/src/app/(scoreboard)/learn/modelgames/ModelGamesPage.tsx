@@ -99,9 +99,9 @@ function AuthModelGamesPage({ user }: { user: User }) {
                                 tooltip: 'Select Game',
                                 icon: <Search />,
                                 element: (
-                                    <CardContent data-cy='pgn-selector'>
+                                    <CardContent data-testid='pgn-selector'>
                                         <TextField
-                                            data-cy='cohort-select'
+                                            data-testid='cohort-select'
                                             select
                                             label='Cohort'
                                             value={cohort}

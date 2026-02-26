@@ -363,7 +363,7 @@ function UnderboardButton({ children, value, tooltip, shortcut, ...props }: Unde
 
     return (
         <Tooltip title={tooltip}>
-            <ToggleButton data-cy={`underboard-button-${value}`} value={value} {...props}>
+            <ToggleButton data-testid={`underboard-button-${value}`} value={value} {...props}>
                 {children}
             </ToggleButton>
         </Tooltip>

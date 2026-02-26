@@ -1,14 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Statistics Page', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/scoreboard/stats');
-        await expect(getBySel(page, 'chart-title').first()).toBeVisible();
+        await expect(page.getByTestId('chart-title').first()).toBeVisible();
     });
 
     test('has selector to change views', async ({ page }) => {
-        await expect(getBySel(page, 'scoreboard-view-selector')).toBeVisible();
+        await expect(page.getByTestId('scoreboard-view-selector')).toBeVisible();
     });
 
     test('has correct graphs', async ({ page }) => {
@@ -27,7 +26,7 @@ test.describe('Statistics Page', () => {
             'Rating Systems',
         ];
 
-        await expect(getBySel(page, 'chart-title')).toHaveCount(titles.length);
+        await expect(page.getByTestId('chart-title')).toHaveCount(titles.length);
 
         for (const title of titles) {
             await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
