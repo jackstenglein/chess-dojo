@@ -163,7 +163,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                 }}
             >
                 <Stack
-                    data-cy='calendar-filters'
+                    data-testid='calendar-filters'
                     sx={{
                         pt: 0.5,
                         pb: 2,

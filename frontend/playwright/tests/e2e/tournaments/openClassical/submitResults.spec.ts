@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { getBySel, interceptApi } from '../../../../lib/helpers';
+import { interceptApi } from '../../../../lib/helpers';
 
 async function fillForm(
     page: Page,
@@ -13,24 +13,24 @@ async function fillForm(
     },
 ) {
     if (data.region) {
-        await getBySel(page, 'region').locator('[role="combobox"]').click();
+        await page.getByTestId('region').locator('[role="combobox"]').click();
         await page.getByRole('option', { name: data.region }).click();
     }
     if (data.section) {
-        await getBySel(page, 'section').locator('[role="combobox"]').click();
+        await page.getByTestId('section').locator('[role="combobox"]').click();
         await page.getByRole('option', { name: data.section }).click();
     }
     if (data.gameUrl) {
-        await getBySel(page, 'game-url').locator('input').fill(data.gameUrl);
+        await page.getByTestId('game-url').locator('input').fill(data.gameUrl);
     }
     if (data.white) {
-        await getBySel(page, 'white').locator('input').fill(data.white);
+        await page.getByTestId('white').locator('input').fill(data.white);
     }
     if (data.black) {
-        await getBySel(page, 'black').locator('input').fill(data.black);
+        await page.getByTestId('black').locator('input').fill(data.black);
     }
     if (data.result) {
-        await getBySel(page, 'result').locator('[role="combobox"]').click();
+        await page.getByTestId('result').locator('[role="combobox"]').click();
         await page.getByRole('option', { name: data.result }).click();
     }
 }
@@ -39,22 +39,22 @@ test.describe('Submit Results Page', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/tournaments/open-classical/submit-results');
         // Wait for form to load
-        await expect(getBySel(page, 'submit-button')).toBeVisible();
+        await expect(page.getByTestId('submit-button')).toBeVisible();
     });
 
     test('fetches game results from Lichess', async ({ page }) => {
         await fillForm(page, { gameUrl: 'https://lichess.org/Mw461kKB9Rsq' });
-        await getBySel(page, 'game-url').locator('input').blur();
+        await page.getByTestId('game-url').locator('input').blur();
 
-        await expect(getBySel(page, 'white').locator('input')).toHaveAttribute(
+        await expect(page.getByTestId('white').locator('input')).toHaveAttribute(
             'value',
             'shatterednirvana',
         );
-        await expect(getBySel(page, 'black').locator('input')).toHaveAttribute(
+        await expect(page.getByTestId('black').locator('input')).toHaveAttribute(
             'value',
             'jackstenglein',
         );
-        await expect(getBySel(page, 'result').locator('input')).toHaveAttribute('value', '0-1');
+        await expect(page.getByTestId('result').locator('input')).toHaveAttribute('value', '0-1');
     });
 
     test('requires region to submit', async ({ page }) => {
@@ -66,9 +66,9 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'region')).toContainText('This field is required');
+        await expect(page.getByTestId('region')).toContainText('This field is required');
     });
 
     test('requires section to submit', async ({ page }) => {
@@ -80,9 +80,9 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'section')).toContainText('This field is required');
+        await expect(page.getByTestId('section')).toContainText('This field is required');
     });
 
     test('requires game url to submit', async ({ page }) => {
@@ -94,9 +94,9 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'game-url')).toContainText('This field is required');
+        await expect(page.getByTestId('game-url')).toContainText('This field is required');
     });
 
     test('requires white to submit', async ({ page }) => {
@@ -108,9 +108,9 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'white')).toContainText('This field is required');
+        await expect(page.getByTestId('white')).toContainText('This field is required');
     });
 
     test('requires black to submit', async ({ page }) => {
@@ -122,9 +122,9 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'black')).toContainText('This field is required');
+        await expect(page.getByTestId('black')).toContainText('This field is required');
     });
 
     test('requires result to submit', async ({ page }) => {
@@ -136,33 +136,33 @@ test.describe('Submit Results Page', () => {
             black: 'jackstenglein',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'result')).toContainText('This field is required');
+        await expect(page.getByTestId('result')).toContainText('This field is required');
     });
 
     test('does not require URL when game is not played', async ({ page }) => {
         for (const result of ['Did Not Play', 'White Forfeits', 'Black Forfeits']) {
             await fillForm(page, { result });
-            await getBySel(page, 'submit-button').click();
+            await page.getByTestId('submit-button').click();
 
-            await expect(getBySel(page, 'game-url')).not.toContainText('This field is required');
+            await expect(page.getByTestId('game-url')).not.toContainText('This field is required');
         }
 
         await fillForm(page, { result: 'White Wins' });
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'game-url')).toContainText('This field is required');
+        await expect(page.getByTestId('game-url')).toContainText('This field is required');
     });
 
     test('displays report option when player forfeits', async ({ page }) => {
         for (const result of ['White Forfeits', 'Black Forfeits']) {
             await fillForm(page, { result });
-            await expect(getBySel(page, 'report-opponent')).toBeVisible();
+            await expect(page.getByTestId('report-opponent')).toBeVisible();
         }
 
         await fillForm(page, { result: 'Did Not Play' });
-        await expect(getBySel(page, 'report-opponent')).not.toBeVisible();
+        await expect(page.getByTestId('report-opponent')).not.toBeVisible();
     });
 
     test('redirects to details page on submit', async ({ page }) => {
@@ -185,7 +185,7 @@ test.describe('Submit Results Page', () => {
             result: 'Black Wins',
         });
 
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await expect(page).toHaveURL(/\/tournaments\/open-classical/);
     });

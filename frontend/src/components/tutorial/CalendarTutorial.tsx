@@ -11,13 +11,13 @@ const steps: Step[] = [
         disableBeacon: true,
     },
     {
-        target: '[data-cy=timezone-selector]',
+        target: '[data-testid=timezone-selector]',
         title: 'Timezone',
         content:
             'By default, the calendar displays events in your current timezone. If you want to change timezones, you can use this dropdown.',
     },
     {
-        target: '[data-cy=calendar-filters-selectors]',
+        target: '[data-testid=calendar-filters-selectors]',
         title: 'Filters',
         content:
             'The filters in this section allow you to hide certain events and meetings from the calendar.',

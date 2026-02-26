@@ -38,7 +38,7 @@ export function TimerButton() {
         <>
             <Tooltip title='Timer'>
                 <IconButton
-                    data-cy='Timer'
+                    data-testid='Timer'
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     color={isPaused ? 'warning' : 'secondary'}
                     sx={{ color: !isPaused && !isRunning ? 'white' : undefined }}

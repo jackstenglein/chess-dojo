@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { getBySel, interceptApi, useAdminUser } from '../../../lib/helpers';
+import { interceptApi, useAdminUser } from '../../../lib/helpers';
 
 test.describe('Blog editor (create)', () => {
     test.beforeEach(async ({ page }) => {
@@ -41,14 +41,14 @@ test.describe('Blog editor (create)', () => {
         await expect(page.getByText('How this post appears on the blog list page')).toBeVisible();
         await expect(page.getByText('My Post')).toBeVisible();
         await expect(
-            getBySel(page, 'markdown-list-preview').getByText('Short overview.'),
+            page.getByTestId('markdown-list-preview').getByText('Short overview.'),
         ).toBeVisible();
     });
 
     test('Preview tab shows title and subtitle with content', async ({ page }) => {
         await page.getByRole('textbox', { name: 'Title', exact: true }).fill('Preview Title');
         await page.getByRole('textbox', { name: 'Subtitle' }).fill('Preview Subtitle');
-        const editor = getBySel(page, 'markdown-editor').getByRole('textbox', {
+        const editor = page.getByTestId('markdown-editor').getByRole('textbox', {
             name: 'Write your blog post',
         });
         await editor.fill('# Heading\n\nSome content.');

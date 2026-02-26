@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Verify Email Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -22,28 +21,28 @@ test.describe('Verify Email Page', () => {
         await page.locator('#name').fill('Test Name');
         await page.locator('#email').fill('test@email.com');
         await page.locator('#password').fill('testpassword');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         // Wait for verification page to appear
-        await expect(getBySel(page, 'description')).toContainText(
+        await expect(page.getByTestId('description')).toContainText(
             'please enter the verification code',
         );
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(getBySel(page, 'title')).toHaveText('ChessDojo');
-        await expect(getBySel(page, 'description')).toContainText(
+        await expect(page.getByTestId('title')).toHaveText('ChessDojo');
+        await expect(page.getByTestId('description')).toContainText(
             'please enter the verification code',
         );
     });
 
     test('requires code to submit', async ({ page }) => {
-        await getBySel(page, 'verify-button').click();
+        await page.getByTestId('verify-button').click();
         await expect(page.locator('#code-helper-text')).toHaveText('Verification code is required');
     });
 
     test('allows sending new code', async ({ page }) => {
-        await getBySel(page, 'resend-button').click();
+        await page.getByTestId('resend-button').click();
         await expect(page.getByText('New verification code sent')).toBeVisible();
     });
 
@@ -61,7 +60,7 @@ test.describe('Verify Email Page', () => {
         });
 
         await page.locator('#code').fill('12345');
-        await getBySel(page, 'verify-button').click();
+        await page.getByTestId('verify-button').click();
 
         await expect(page.locator('#code-helper-text')).toContainText('Invalid verification code');
     });
@@ -80,7 +79,7 @@ test.describe('Verify Email Page', () => {
         });
 
         await page.locator('#code').fill('12345');
-        await getBySel(page, 'verify-button').click();
+        await page.getByTestId('verify-button').click();
 
         await expect(page.locator('#code-helper-text')).toHaveText('Alias already exists.');
         await expect(page.getByText('An account with this email already exists.')).toBeVisible();

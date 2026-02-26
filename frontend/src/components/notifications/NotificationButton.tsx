@@ -49,7 +49,11 @@ const NotificationButton = () => {
         <>
             <RequestSnackbar request={clearRequest} />
             <Tooltip title='Notifications'>
-                <IconButton data-cy='Notifications' onClick={handleOpen} sx={{ color: 'white' }}>
+                <IconButton
+                    data-testid='Notifications'
+                    onClick={handleOpen}
+                    sx={{ color: 'white' }}
+                >
                     <Badge badgeContent={notifications.length} color='secondary' overlap='circular'>
                         <NotificationsIcon />
                     </Badge>
@@ -77,7 +81,7 @@ const NotificationButton = () => {
                                     <CircularProgress size={24} />
                                 ) : (
                                     <Button
-                                        data-cy='clear-all-notifications'
+                                        data-testid='clear-all-notifications'
                                         size='small'
                                         onClick={onClearAll}
                                     >

@@ -27,8 +27,8 @@ setup('authenticate', async ({ page }) => {
     const passwordInput = page.getByRole('textbox', { name: 'Password' });
     await passwordInput.fill(password);
 
-    // Click sign in button (use data-cy to avoid Google sign-in button)
-    const signInButton = page.locator('[data-cy="signin-button"]');
+    // Click sign in button (use data-testid to avoid Google sign-in button)
+    const signInButton = page.getByTestId('signin-button');
     await signInButton.click();
 
     // Wait for navigation away from signin page

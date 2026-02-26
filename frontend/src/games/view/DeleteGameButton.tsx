@@ -43,7 +43,7 @@ const DeleteGameButton: React.FC<DeleteGameButtonProps> = ({
             {variant === 'icon' ? (
                 <Tooltip title={`Delete Game${games.length !== 1 ? 's' : ''}`}>
                     <IconButton
-                        data-cy='delete-game-button'
+                        data-testid='delete-game-button'
                         onClick={() => setShowDeleteModal(true)}
                         {...slotProps?.icon}
                     >
@@ -52,7 +52,7 @@ const DeleteGameButton: React.FC<DeleteGameButtonProps> = ({
                 </Tooltip>
             ) : (
                 <Button
-                    data-cy='delete-game-button'
+                    data-testid='delete-game-button'
                     variant={variant}
                     onClick={() => setShowDeleteModal(true)}
                     color='error'
@@ -154,7 +154,7 @@ export function DeleteGamesDialog({
                     Cancel
                 </Button>
                 <LoadingButton
-                    data-cy='delete-game-confirm-button'
+                    data-testid='delete-game-confirm-button'
                     color='error'
                     loading={request.isLoading()}
                     disabled={confirmText.trim() !== 'delete'}
