@@ -64,23 +64,33 @@ function everySevenDays(startDate: Date, endDate: Date): Date[] {
 }
 
 function datesAreSameDay(first: Date, second: Date) {
+
     return (
-        first.getFullYear() === second.getFullYear() &&
-        first.getMonth() === second.getMonth() &&
-        first.getDate() === second.getDate()
+        first.getUTCFullYear() === second.getUTCFullYear() &&
+        first.getUTCMonth() === second.getUTCMonth() &&
+        first.getUTCDate() === second.getUTCDate()
     );
 }
 
 export function getChartData(ratingHistory: RatingHistory[] | undefined, currentRating: number) {
-    if (!ratingHistory || ratingHistory.length === 0) {
+
+    if (!ratingHistory) {
         return [];
     }
 
-    const dates = everySevenDays(new Date(ratingHistory[0].date), new Date());
-    let data = [];
+    // Any 0 rating is probably a data collection error. Strip them out.
+    const sanitizedHistory = ratingHistory.filter((r) => r.rating > 0);
 
-    if (dates.length === ratingHistory.length) {
-        data = ratingHistory.map((r) => ({
+    if (sanitizedHistory.length === 0) {
+        return [];
+    }
+
+    // Map the rating history into the chart data, filling in any missing weeks with the last known rating.
+    // NOTE: We never count today as a missing week, since we have today's rating data on-hand
+    const dates = everySevenDays(new Date(sanitizedHistory[0].date), new Date());
+    let data = [];
+    if (dates.length === sanitizedHistory.length) {
+        data = sanitizedHistory.map((r) => ({
             date: new Date(r.date),
             rating: r.rating,
         }));
@@ -88,23 +98,24 @@ export function getChartData(ratingHistory: RatingHistory[] | undefined, current
         let historyIndex = 0;
         for (const date of dates) {
             if (
-                historyIndex < ratingHistory.length &&
-                date >= new Date(ratingHistory[historyIndex].date)
+                historyIndex < sanitizedHistory.length &&
+                date >= new Date(sanitizedHistory[historyIndex].date)
             ) {
                 data.push({
                     date,
-                    rating: ratingHistory[historyIndex].rating,
+                    rating: sanitizedHistory[historyIndex].rating,
                 });
                 historyIndex++;
-            } else if (historyIndex > 0) {
+            } else if (historyIndex > 0 && !datesAreSameDay(date, new Date())) {
                 data.push({
                     date,
-                    rating: ratingHistory[historyIndex - 1].rating,
+                    rating: sanitizedHistory[historyIndex - 1].rating,
                 });
             }
         }
     }
 
+    // If there isn't already a rating for today, append the current rating to the chart data.
     const now = new Date();
     if (data.length > 0 && !datesAreSameDay(now, data[data.length - 1].date)) {
         data.push({
@@ -114,6 +125,7 @@ export function getChartData(ratingHistory: RatingHistory[] | undefined, current
     }
 
     return [{ label: 'Rating', data }];
+
 }
 
 function RatingProfileLink({
