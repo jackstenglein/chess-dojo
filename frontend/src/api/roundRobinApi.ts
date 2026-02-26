@@ -41,9 +41,9 @@ export interface RoundRobinApiContextType {
 export type RoundRobinRegisterResponse =
     | { url: string; banned?: boolean }
     | {
-          waitlist: RoundRobinWaitlist;
-          tournament?: RoundRobin;
-      };
+        waitlist: RoundRobinWaitlist;
+        tournament?: RoundRobin;
+    };
 
 /**
  * Sends a request to register for a round robin tournament.
