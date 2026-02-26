@@ -2,9 +2,22 @@ import { CustomTask, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
 import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
-import { Check } from '@mui/icons-material';
-import { alpha, Box, ButtonBase, Card, Chip, Grid, Stack, Typography } from '@mui/material';
+import { Check, ExpandMore } from '@mui/icons-material';
+import {
+    alpha,
+    Box,
+    ButtonBase,
+    Card,
+    Chip,
+    Collapse,
+    Grid,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { use, useMemo, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
 import { SuggestedTask } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
@@ -26,6 +39,8 @@ export function WeeklyTrainingPlan() {
         timeline,
     });
 
+    const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
+
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
 
@@ -39,10 +54,25 @@ export function WeeklyTrainingPlan() {
         setTaskDialogView(undefined);
     };
 
+    const toggleExpanded = () => {
+        setExpanded((v) => !v);
+    };
+
     return (
         <Stack spacing={2} width={1}>
-            <Stack direction='row' alignItems='center' spacing={2}>
-                <Typography variant='h5' fontWeight='bold'>
+            <Stack direction='row' alignItems='center' width={1}>
+                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                    <IconButton onClick={toggleExpanded}>
+                        <ExpandMore
+                            sx={{
+                                transform: expanded ? 'rotate(180deg)' : undefined,
+                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+                            }}
+                        />
+                    </IconButton>
+                </Tooltip>
+
+                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
                     This Week
                 </Typography>
 
@@ -55,20 +85,22 @@ export function WeeklyTrainingPlan() {
                 />
             </Stack>
 
-            {isLoading ? (
-                <LoadingPage />
-            ) : (
-                <Grid container columns={7}>
-                    {days.map((_, i) => (
-                        <Grid key={i} size={1}>
-                            <WeeklyTrainingPlanDay
-                                dayIndex={(i + user.weekStart) % 7}
-                                onOpenTask={onOpenTask}
-                            />
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+            <Collapse in={expanded}>
+                {isLoading ? (
+                    <LoadingPage />
+                ) : (
+                    <Grid container columns={7}>
+                        {days.map((_, i) => (
+                            <Grid key={i} size={1}>
+                                <WeeklyTrainingPlanDay
+                                    dayIndex={(i + user.weekStart) % 7}
+                                    onOpenTask={onOpenTask}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
+            </Collapse>
 
             {taskDialogView && selectedTask && (
                 <TaskDialog

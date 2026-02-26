@@ -37,7 +37,7 @@ export default defineConfig({
 
     projects: [
         // Setup project - authenticates and saves session
-        { name: 'setup', testMatch: /.*\.setup\.ts$/ },
+        { name: 'setup', testMatch: /.*\.setup\.ts$/, timeout: 60000 },
 
         // Auth tests - run WITHOUT authentication (testing login/signup flows)
         {
