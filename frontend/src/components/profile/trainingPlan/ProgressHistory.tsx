@@ -649,7 +649,7 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
     return (
         <>
             <DialogContent sx={{ position: 'relative' }}>
-                <Stack direction='row' justifyContent='flex-end' mb={1}>
+                <Stack direction='row' justifyContent='flex-start' mb={3}>
                     <Button
                         data-cy='task-history-add-new-button'
                         onClick={handleAddAnother}
