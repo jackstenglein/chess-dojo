@@ -11,10 +11,11 @@ import {
     ENGINE_THREADS,
     EngineName,
     PositionEval,
+    SavedEval,
+    SavedEvals,
 } from '../engine/engine';
 import { useEngine } from './useEngine';
-import {  getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
-import { SavedEval, SavedEvals } from '../engine/engine';
+import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
     const [currentPosition, setCurrentPosition] = useState<PositionEval>();
@@ -51,7 +52,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
             const fen = chess.fen();
             const cacheKey = makeEvalCacheKey(fen, engineName, depth, multiPv, resolvedThreads, hash);
 
-            // L1 cache check the browser idb first
+            // L1 – IndexedDB (only contains fully-completed evals)
             const idbHit = await getEvalCache(cacheKey);
             if (idbHit) {
                 memCache.current[fen] = idbHit;
@@ -59,7 +60,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 return;
             }
 
-            // L2 cache check, check in mem for 2nd pass
+            // L2 – in-memory (only contains fully-completed evals)
             const memHit = memCache.current[fen];
             if (
                 memHit?.engine === engineName &&
@@ -70,7 +71,6 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 return;
             }
 
-          
             try {
                 const rawPositionEval = await engine.evaluatePositionWithUpdate({
                     fen,
@@ -85,10 +85,23 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                     },
                 });
 
+                // Guard: ensure the position hasn't changed while engine was running.
+                // If the user moved away and back, fen may differ — don't cache a
+                // result that belongs to a position we're no longer on.
+                if (rawPositionEval.lines[0]?.fen !== fen) {
+                    return;
+                }
+
                 const finalEval: SavedEval = { ...rawPositionEval, engine: engineName };
 
-                memCache.current[fen] = finalEval;
-                void setEvalCache(cacheKey, finalEval);
+                // Only write to cache once the engine has reached the full requested depth
+                if (
+                    finalEval.lines.length >= multiPv &&
+                    finalEval.lines[0]?.depth >= depth
+                ) {
+                    memCache.current[fen] = finalEval;
+                    void setEvalCache(cacheKey, finalEval);
+                }
             } catch (err) {
                 if (err !== E_CANCELED) throw err;
             }
