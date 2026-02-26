@@ -1,6 +1,8 @@
 import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { TaskDialog, TaskDialogView } from '@/components/profile/trainingPlan/TaskDialog';
+import { CustomTask, Requirement } from '@/database/requirement';
 import { User } from '@/database/user';
 import { NotInterested, Pause, PlayArrow, Timer } from '@mui/icons-material';
 import {
@@ -14,6 +16,8 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers-pro';
+import { AdapterLuxon } from '@mui/x-date-pickers-pro/AdapterLuxon';
 import { useEffect, useState } from 'react';
 
 /** Regex which matches the timer in the title of the page */
@@ -28,7 +32,7 @@ export function TimerButton() {
     const { user } = useAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const timer = useTimer();
-    const { isPaused, isRunning } = timer;
+    const { isPaused, isRunning, taskToOpen, setTaskToOpen } = timer;
 
     if (!user) {
         return null;
@@ -58,6 +62,13 @@ export function TimerButton() {
                     <TimerDetails timer={timer} />
                 </Menu>
             )}
+            {taskToOpen && (
+                <GlobalTaskModal
+                    task={taskToOpen}
+                    onClose={() => setTaskToOpen(null)}
+                    user={user}
+                />
+            )}
         </>
     );
 }
@@ -70,7 +81,7 @@ export function TimerMenuItem() {
     const { timerSeconds, isRunning, isPaused, onStart, onPause, onClear } = useTimer();
 
     return (
-        <MenuItem onClick={isRunning ? onPause : onStart}>
+        <MenuItem onClick={isRunning ? onPause : () => onStart()}>
             <ListItemIcon>
                 <Timer color={isPaused ? 'warning' : isRunning ? 'secondary' : undefined} />
             </ListItemIcon>
@@ -102,7 +113,9 @@ interface Timer {
     timerSeconds: number;
     isRunning: boolean;
     isPaused: boolean;
-    onStart: () => void;
+    taskToOpen: Requirement | CustomTask | null;
+    setTaskToOpen: (task: Requirement | CustomTask | null) => void;
+    onStart: (task?: Requirement | CustomTask) => void;
     onPause: () => void;
     onClear: () => void;
 }
@@ -111,6 +124,7 @@ export function useTimer(): Timer {
     const { user, updateUser } = useAuth();
     const api = useApi();
     const [timerSeconds, setTimerSeconds] = useState(() => getTimerSeconds(user));
+    const [taskToOpen, setTaskToOpen] = useState<Requirement | CustomTask | null>(null);
 
     const isRunning = Boolean(user?.timerStartedAt);
     const isPaused = !isRunning && Boolean(user?.timerSeconds);
@@ -129,9 +143,27 @@ export function useTimer(): Timer {
         }
     }, [isRunning, setTimerSeconds, user]);
 
-    const onStart = () => {
+    const onStart = (task?: Requirement | CustomTask) => {
         const timerStartedAt = new Date().toISOString();
+        let currentTimerSeconds = user?.timerSeconds || 0;
         updateUser({ timerStartedAt });
+        if (task) {
+            const storedTaskStr = localStorage.getItem('runningTimerTask');
+            if (storedTaskStr) {
+                try {
+                    const storedTask = JSON.parse(storedTaskStr);
+                    if (storedTask.id !== task.id) {
+                        currentTimerSeconds = 0;
+                        setTimerSeconds(0);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse running task', e);
+                }
+            }
+            localStorage.setItem('runningTimerTask', JSON.stringify(task));
+        }
+
+        updateUser({ timerStartedAt, timerSeconds: currentTimerSeconds });
         void api.updateUser({ timerStartedAt });
     };
 
@@ -139,15 +171,34 @@ export function useTimer(): Timer {
         const timerSeconds = getTimerSeconds(user);
         updateUser({ timerSeconds, timerStartedAt: '' });
         void api.updateUser({ timerSeconds, timerStartedAt: '' });
+
+        const storedTask = localStorage.getItem('runningTimerTask');
+        if (storedTask) {
+            try {
+                setTaskToOpen(JSON.parse(storedTask));
+            } catch (e) {
+                console.error('Failed to parse running task', e);
+            }
+        }
     };
 
     const onClear = () => {
         updateUser({ timerSeconds: 0, timerStartedAt: '' });
         void api.updateUser({ timerSeconds: 0, timerStartedAt: '' });
         setTimerSeconds(0);
+        localStorage.removeItem('runningTimerTask');
     };
 
-    return { timerSeconds, isRunning, isPaused, onStart, onPause, onClear };
+    return {
+        timerSeconds,
+        isRunning,
+        isPaused,
+        taskToOpen,
+        setTaskToOpen,
+        onStart,
+        onPause,
+        onClear,
+    };
 }
 
 function TimerDetails({ timer }: { timer: Timer }) {
@@ -168,7 +219,7 @@ function TimerDetails({ timer }: { timer: Timer }) {
                         Pause
                     </Button>
                 ) : (
-                    <Button startIcon={<PlayArrow />} onClick={onStart}>
+                    <Button startIcon={<PlayArrow />} onClick={() => onStart()}>
                         Start
                     </Button>
                 )}
@@ -198,4 +249,30 @@ export function getTimerSeconds(user: User | undefined): number {
         timerSeconds += (now - startedAt) / 1000;
     }
     return Math.floor(timerSeconds);
+}
+/**
+ * wrapper component that lazy-loads the TimelineProvider
+ * only when the timer is paused from the global header.
+ */
+function GlobalTaskModal({
+    task,
+    onClose,
+    user,
+}: {
+    task: Requirement | CustomTask;
+    onClose: () => void;
+    user: User;
+}) {
+    return (
+        <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <TaskDialog
+                open={true}
+                onClose={onClose}
+                task={task}
+                initialView={TaskDialogView.Progress}
+                progress={user?.progress?.[task.id]}
+                cohort={user?.dojoCohort || ''}
+            />
+        </LocalizationProvider>
+    );
 }
