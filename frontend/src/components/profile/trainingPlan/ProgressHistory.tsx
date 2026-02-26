@@ -12,7 +12,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
-import { ALL_COHORTS, compareCohorts, dojoCohorts, User } from '@/database/user';
+import { ALL_COHORTS, compareCohorts, dojoCohorts, TimeFormat, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from '@mui/lab';
@@ -31,7 +31,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import { AxiosResponse } from 'axios';
 import deepEqual from 'deep-equal';
 import { DateTime } from 'luxon';
@@ -68,6 +68,7 @@ export const ProgressHistoryItem = ({
     updateItem,
     deleteItem,
 }: ProgressHistoryItemProps) => {
+    const { user } = useAuth();
     if (item.deleted) {
         return null;
     }
@@ -79,6 +80,7 @@ export const ProgressHistoryItem = ({
     const isTimeOnly =
         item.entry.scoreboardDisplay === ScoreboardDisplay.NonDojo ||
         item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes;
+    const useTwelveHourClock = user?.timeFormat !== TimeFormat.TwentyFourHour;
 
     const onChange = (
         key: 'date' | 'count' | 'hours' | 'minutes' | 'notes' | 'cohort',
@@ -119,17 +121,20 @@ export const ProgressHistoryItem = ({
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 'grow' }} sx={{ minWidth: '145px' }}>
-                        <DatePicker
-                            label='Date'
+                        <DateTimePicker
+                            label='Date & Time'
                             value={item.date}
                             onChange={(v) => onChange('date', v)}
                             slotProps={{
                                 textField: {
                                     error: !!error.date,
-                                    helperText: error.date,
+                                    helperText:
+                                        error.date ||
+                                        'Date and time are recorded in your selected timezone.',
                                     fullWidth: true,
                                 },
                             }}
+                            ampm={useTwelveHourClock}
                         />
                     </Grid>
 
