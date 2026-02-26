@@ -39,7 +39,7 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
         <>
             <Divider sx={{ my: 3 }} />
             <Typography variant='h5' gutterBottom>
-                Comments
+                Comments{comments && comments.length >= 2 ? ` (${comments.length})` : ''}
             </Typography>
             <CommentList
                 comments={comments}
