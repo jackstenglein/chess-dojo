@@ -64,7 +64,6 @@ function everySevenDays(startDate: Date, endDate: Date): Date[] {
 }
 
 function datesAreSameDay(first: Date, second: Date) {
-
     return (
         first.getUTCFullYear() === second.getUTCFullYear() &&
         first.getUTCMonth() === second.getUTCMonth() &&
@@ -73,7 +72,6 @@ function datesAreSameDay(first: Date, second: Date) {
 }
 
 export function getChartData(ratingHistory: RatingHistory[] | undefined, currentRating: number) {
-
     if (!ratingHistory) {
         return [];
     }
@@ -125,7 +123,6 @@ export function getChartData(ratingHistory: RatingHistory[] | undefined, current
     }
 
     return [{ label: 'Rating', data }];
-
 }
 
 function RatingProfileLink({
