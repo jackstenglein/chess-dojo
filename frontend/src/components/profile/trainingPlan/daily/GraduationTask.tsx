@@ -2,6 +2,7 @@ import { useFreeTier } from '@/auth/Auth';
 import { formatRatingSystem, getCurrentRating, shouldPromptGraduation } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
+import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Help, NotInterested } from '@mui/icons-material';
 import {
     Card,
@@ -30,6 +31,8 @@ export function GraduationTask() {
         return null;
     }
 
+    const ratingSystemName = user.ratings[user.ratingSystem]?.name;
+
     const onOpen = () => {
         if (isFreeTier) {
             setUpsellDialogOpen(true);
@@ -57,9 +60,12 @@ export function GraduationTask() {
 
                             <Typography color='textSecondary' sx={{ mt: 1 }}>
                                 Congrats on reaching {getCurrentRating(user)}{' '}
-                                {formatRatingSystem(user.ratingSystem)}! Use this task to move to
-                                the next cohort, add a badge to your profile, and get one of your
-                                annotated games reviewed on stream!
+                                {formatRatingSystem(user.ratingSystem)}
+                                {isCustom(user.ratingSystem) &&
+                                    ratingSystemName &&
+                                    ` (${ratingSystemName})`}
+                                ! Use this task to move to the next cohort, add a badge to your
+                                profile, and get one of your annotated games reviewed on stream!
                             </Typography>
                         </CardContent>
                     </CardActionArea>

@@ -15,6 +15,7 @@ import CohortIcon from '@/scoreboard/CohortIcon';
 import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
+import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Lock } from '@mui/icons-material';
 import { Box, Divider, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
@@ -48,6 +49,8 @@ export function FullTrainingPlanGraduationItem({
         graduationBoundary > 0 &&
         minRatingBoundary != null &&
         currentRating >= 0;
+
+    const ratingSystemName = user.ratings[user.ratingSystem]?.name;
 
     const onOpen = () => {
         if (disabled) return;
@@ -101,6 +104,9 @@ export function FullTrainingPlanGraduationItem({
                                                     sx={{ fontWeight: 'bold' }}
                                                 >
                                                     {formatRatingSystem(user.ratingSystem)}
+                                                    {isCustom(user.ratingSystem) &&
+                                                        ratingSystemName &&
+                                                        ` (${ratingSystemName})`}
                                                 </Typography>
                                             </Stack>
                                             <Stack direction='row' alignItems='center' gap={0.5}>
