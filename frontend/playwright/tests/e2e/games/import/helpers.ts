@@ -58,7 +58,7 @@ export async function verifyGame(
     if (lastMove) {
         const moveButton = getBySel(page, 'pgn-text-move-button').last();
         await expect(moveButton).toContainText(lastMove);
-        await moveButton.click({ force: true });
+        await moveButton.click();
 
         if (lastMoveClock?.white) {
             await expect(
