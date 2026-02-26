@@ -370,7 +370,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
     };
 
     return (
-        <Stack data-cy='calendar-filters' spacing={{ xs: 3, sm: 4 }}>
+        <Stack data-testid='calendar-filters' spacing={{ xs: 3, sm: 4 }}>
             {meetingCount > 0 && (
                 <Link
                     href='/meeting'
@@ -410,7 +410,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                             Reset Filters
                         </Button>
 
-                        <Stack data-cy='calendar-filters-selectors'>
+                        <Stack data-testid='calendar-filters-selectors'>
                             <Typography variant='h6' color='text.secondary'>
                                 <Icon
                                     name='eventCheck'
@@ -433,7 +433,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 }))}
                                 displayEmpty='None'
                                 size='small'
-                                data-cy='my-dojo-calendar'
+                                data-testid='my-dojo-calendar'
                             />
                         </Stack>
 
@@ -460,7 +460,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 }))}
                                 displayEmpty='None'
                                 size='small'
-                                data-cy='dojoliga-tournaments'
+                                data-testid='dojoliga-tournaments'
                             />
                         </Stack>
 
@@ -504,7 +504,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 Cohorts
                             </Typography>
                             <MultipleSelectChip
-                                data-cy='cohort-selector'
+                                data-testid='cohort-selector'
                                 selected={filters.cohorts}
                                 setSelected={onChangeCohort}
                                 options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({

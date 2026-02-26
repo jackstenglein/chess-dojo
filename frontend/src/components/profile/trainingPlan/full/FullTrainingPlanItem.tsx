@@ -97,7 +97,7 @@ export const FullTrainingPlanItem = ({
                         <IconButton
                             aria-label={`Update ${requirement.name}`}
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
-                            data-cy='update-task-button'
+                            data-testid='update-task-button'
                         >
                             <AddCircle color='primary' />
                         </IconButton>

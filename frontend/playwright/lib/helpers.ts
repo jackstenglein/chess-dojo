@@ -4,22 +4,6 @@ import { fileURLToPath } from 'url';
 import { getEnv } from './env';
 
 /**
- * Select element by data-cy attribute.
- * Replaces Cypress cy.getBySel('selector')
- */
-export function getBySel(page: Page, selector: string): Locator {
-    return page.locator(`[data-cy="${selector}"]`);
-}
-
-/**
- * Find element within a parent by data-cy attribute.
- * Replaces Cypress cy.findBySel('selector')
- */
-export function findBySel(parent: Locator, selector: string): Locator {
-    return parent.locator(`[data-cy="${selector}"]`);
-}
-
-/**
  * Verify all texts exist on page.
  * Replaces Cypress cy.containsAll(['text1', 'text2'])
  */

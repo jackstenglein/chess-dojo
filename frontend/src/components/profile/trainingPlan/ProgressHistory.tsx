@@ -136,7 +136,7 @@ export const ProgressHistoryItem = ({
                     {!isTimeOnly && (
                         <Grid size={{ xs: 12, sm: 'grow' }}>
                             <TextField
-                                data-cy='task-history-count'
+                                data-testid='task-history-count'
                                 label='Count'
                                 value={item.count}
                                 onChange={(event) => onChange('count', event.target.value)}
@@ -196,7 +196,7 @@ export const ProgressHistoryItem = ({
 
                 <Tooltip title='Delete entry'>
                     <IconButton
-                        data-cy='task-history-delete-button'
+                        data-testid='task-history-delete-button'
                         aria-label='delete'
                         onClick={deleteItem}
                     >
@@ -573,7 +573,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                     </>
                 )}
                 <LoadingButton
-                    data-cy='task-updater-save-button'
+                    data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
