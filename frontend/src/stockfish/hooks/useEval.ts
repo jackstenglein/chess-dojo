@@ -14,7 +14,7 @@ import {
     SavedEval,
     SavedEvals,
 } from '../engine/engine';
-import { getEvalCache, getEvalCacheStats, makeEvalCacheKey, setEvalCache } from './evalCache';
+import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
 import { useEngine } from './useEngine';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
@@ -71,7 +71,6 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 return;
             }
 
-            
             try {
                 const rawPositionEval = await engine.evaluatePositionWithUpdate({
                     fen,
@@ -91,14 +90,9 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 // Only cache once the engine has reached the full requested depth
                 if (finalEval.lines.length >= multiPv && finalEval.lines[0]?.depth >= depth) {
                     memCache.current[fen] = finalEval;
-                  
+
                     void setEvalCache(cacheKey, finalEval);
-                  
-                    const stats = await getEvalCacheStats();
-                      // eslint-disable-next-line no-console
-                    console.log(stats)
                 }
-                
             } catch (err) {
                 if (err !== E_CANCELED) throw err;
             }

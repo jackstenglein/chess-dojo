@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { openDB, IDBPDatabase } from 'idb';
+import { IDBPDatabase, openDB } from 'idb';
 import { EngineName, SavedEval } from '../engine/engine';
 
 const DB_NAME = 'stockfishEngineEvals';
@@ -7,11 +7,9 @@ const STORE_NAME = 'evals';
 const META_STORE_NAME = 'meta';
 const DB_VERSION = 2;
 
-
-const MAX_CACHE_BYTES = 500 * 1024 * 1024; // 50 MB
+const MAX_CACHE_BYTES = 500 * 1024 * 1024; // 500 MB
 
 const EVICTION_FRACTION = 0.2;
-
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -31,18 +29,14 @@ function getDb(): Promise<IDBPDatabase> {
     return dbPromise;
 }
 
-
 interface MetaRecord {
     lastAccessedAt: number;
-    /** Byte size measured from the actual stored JSON of the SavedEval. */
     sizeBytes: number;
 }
-
 
 export function makeEvalCacheKey(fen: string, engineName: EngineName): string {
     return `${fen}|${engineName}`;
 }
-
 
 /**
  * Measures the byte size of a SavedEval as it would actually be stored —
@@ -53,13 +47,11 @@ function measureBytes(eval_: SavedEval): number {
     return new TextEncoder().encode(JSON.stringify(eval_)).byteLength;
 }
 
-
 /** Updates (or creates) the LRU metadata record for a given cache key. */
 async function touchMeta(db: IDBPDatabase, key: string, sizeBytes: number): Promise<void> {
     const record: MetaRecord = { lastAccessedAt: Date.now(), sizeBytes };
     await db.put(META_STORE_NAME, record, key);
 }
-
 
 /**
  * Evicts the oldest `fraction` of entries from the IDB cache.
@@ -106,7 +98,6 @@ async function evictIfNeeded(db: IDBPDatabase, incomingBytes: number): Promise<v
     await evict(db, EVICTION_FRACTION);
 }
 
-
 /**
  * Retrieves a cached eval from IndexedDB.
  * Updates the LRU timestamp on hit so recently-read entries are evicted last.
@@ -143,32 +134,23 @@ export async function setEvalCache(key: string, eval_: SavedEval): Promise<void>
         await touchMeta(db, key, sizeBytes);
     } catch (err) {
         if ((err as DOMException)?.name === 'QuotaExceededError') {
-            console.warn('[evalCache] QuotaExceededError — forcing aggressive eviction and retrying.');
+            console.warn(
+                '[evalCache] QuotaExceededError — forcing aggressive eviction and retrying.',
+            );
             try {
                 await evict(db, EVICTION_FRACTION * 3);
                 await db.put(STORE_NAME, eval_, key);
                 await touchMeta(db, key, sizeBytes);
             } catch (retryErr) {
-                console.error('[evalCache] Could not store eval after aggressive eviction:', retryErr);
+                console.error(
+                    '[evalCache] Could not store eval after aggressive eviction:',
+                    retryErr,
+                );
             }
         } else {
             throw err;
         }
     }
-}
-
-/**
- * Clears all eval entries and their metadata from IndexedDB.
- * Useful for a "Clear engine cache" button in a settings panel.
- */
-export async function clearEvalCache(): Promise<void> {
-    const db = await getDb();
-    const tx = db.transaction([STORE_NAME, META_STORE_NAME], 'readwrite');
-    await Promise.all([
-        tx.objectStore(STORE_NAME).clear(),
-        tx.objectStore(META_STORE_NAME).clear(),
-    ]);
-    await tx.done;
 }
 
 /**
@@ -186,46 +168,46 @@ export async function clearEvalCache(): Promise<void> {
  *                         ÷ average measured size of existing entries
  *                       (falls back to 3072 B/entry when the cache is empty)
  */
-export async function getEvalCacheStats(): Promise<{
-    entryCount: number;
-    estimatedBytes: number;
-    maxBytes: number;
-    usedPercent: number;
-    browserUsage: number | null;
-    browserQuota: number | null;
-    maxEvalCount: number;
-}> {
-    const db = await getDb();
-    const allKeys = (await db.getAllKeys(META_STORE_NAME)) as string[];
-    const allMeta = (await db.getAll(META_STORE_NAME)) as MetaRecord[];
+// export async function getEvalCacheStats(): Promise<{
+//     entryCount: number;
+//     estimatedBytes: number;
+//     maxBytes: number;
+//     usedPercent: number;
+//     browserUsage: number | null;
+//     browserQuota: number | null;
+//     maxEvalCount: number;
+// }> {
+//     const db = await getDb();
+//     const allKeys = (await db.getAllKeys(META_STORE_NAME)) as string[];
+//     const allMeta = (await db.getAll(META_STORE_NAME)) as MetaRecord[];
 
-    const estimatedBytes = allMeta.reduce((sum, m) => sum + (m?.sizeBytes ?? 0), 0);
-    const avgBytesPerEval = allMeta.length > 0 ? estimatedBytes / allMeta.length : 3072;
+//     const estimatedBytes = allMeta.reduce((sum, m) => sum + (m?.sizeBytes ?? 0), 0);
+//     const avgBytesPerEval = allMeta.length > 0 ? estimatedBytes / allMeta.length : 3072;
 
-    let browserUsage: number | null = null;
-    let browserQuota: number | null = null;
-    let maxEvalCount = Math.floor(MAX_CACHE_BYTES / avgBytesPerEval);
+//     let browserUsage: number | null = null;
+//     let browserQuota: number | null = null;
+//     let maxEvalCount = Math.floor(MAX_CACHE_BYTES / avgBytesPerEval);
 
-    if (navigator?.storage?.estimate) {
-        
-            const estimate = await navigator.storage.estimate();
-            browserUsage = estimate.usage ?? null;
-            browserQuota = estimate.quota ?? null;
-            if (browserQuota != null && browserUsage != null) {
-                const remaining = browserQuota - browserUsage;
-                const effectiveBudget = Math.min(MAX_CACHE_BYTES, remaining * 0.8);
-                maxEvalCount = Math.max(0, Math.floor(effectiveBudget / avgBytesPerEval));
-            }
-       
-    }
+//     if (navigator?.storage?.estimate) {
 
-    return {
-        entryCount: allKeys.length,
-        estimatedBytes,
-        maxBytes: MAX_CACHE_BYTES,
-        usedPercent: (estimatedBytes / MAX_CACHE_BYTES) * 100,
-        browserUsage,
-        browserQuota,
-        maxEvalCount,
-    };
-}
+//             const estimate = await navigator.storage.estimate();
+//             browserUsage = estimate.usage ?? null;
+//             browserQuota = estimate.quota ?? null;
+//             if (browserQuota != null && browserUsage != null) {
+//                 const remaining = browserQuota - browserUsage;
+//                 const effectiveBudget = Math.min(MAX_CACHE_BYTES, remaining * 0.8);
+//                 maxEvalCount = Math.max(0, Math.floor(effectiveBudget / avgBytesPerEval));
+//             }
+
+//     }
+
+//     return {
+//         entryCount: allKeys.length,
+//         estimatedBytes,
+//         maxBytes: MAX_CACHE_BYTES,
+//         usedPercent: (estimatedBytes / MAX_CACHE_BYTES) * 100,
+//         browserUsage,
+//         browserQuota,
+//         maxEvalCount,
+//     };
+// }
