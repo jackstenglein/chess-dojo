@@ -27,7 +27,11 @@ import CustomTaskEditor from '../CustomTaskEditor';
 import { ScheduleClassicalGame } from '../ScheduleClassicalGame';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID } from '../suggestedTasks';
 import { TrainingPlanIcon } from '../TrainingPlanIcon';
+import { FullTrainingPlanGraduationItem } from './FullTrainingPlanGraduationItem';
 import { FullTrainingPlanItem } from './FullTrainingPlanItem';
+
+/** Fake requirement id for the graduation task in the full training plan. */
+export const GRADUATION_TASK_ID = 'GRADUATION_TASK';
 
 /** A section in the training plan view. */
 export interface Section {
@@ -253,6 +257,17 @@ function TaskList({
             {tasks.map((r) => {
                 if (r.id === SCHEDULE_CLASSICAL_GAME_TASK_ID) {
                     return <ScheduleClassicalGame key={r.id} hideChip />;
+                }
+                if (r.id === GRADUATION_TASK_ID) {
+                    return (
+                        <FullTrainingPlanGraduationItem
+                            key={r.id}
+                            requirement={r as Requirement}
+                            user={user}
+                            cohort={cohort}
+                            isCurrentUser={isCurrentUser}
+                        />
+                    );
                 }
                 if (isFreeTier && isRequirement(r) && !r.isFree) {
                     return null;
