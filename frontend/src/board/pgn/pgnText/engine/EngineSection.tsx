@@ -132,6 +132,35 @@ export default function EngineSection() {
                                             {' • '}
                                         </Typography>
                                         <NodesPerSecond nps={engineLines[0].nps} />
+
+                                        {chessDbDepth && (
+                                            <Tooltip
+                                                title={`Cloud evaluation depth: ${chessDbDepth}`}
+                                                disableInteractive
+                                            >
+                                                <Stack
+                                                    direction='row'
+                                                    alignItems='center'
+                                                    spacing={0.5}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    <Cloud
+                                                        sx={{
+                                                            verticalAlign: 'middle',
+                                                            ml: 0.75,
+                                                            mr: 0.5,
+                                                            fontSize: 15,
+                                                        }}
+                                                    />
+                                                    <Typography
+                                                        variant='caption'
+                                                        sx={{ color: 'text.secondary' }}
+                                                    >
+                                                        Depth {chessDbDepth}
+                                                    </Typography>
+                                                </Stack>
+                                            </Tooltip>
+                                        )}
                                     </>
                                 )
                             ) : (
@@ -140,19 +169,6 @@ export default function EngineSection() {
                         </Box>
                     </Stack>
 
-                    {enabled && !isGameOver && chessDbDepth && (
-                        <Tooltip
-                            title={`Cloud evaluation depth: ${chessDbDepth}`}
-                            disableInteractive
-                        >
-                            <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mr: 1 }}>
-                                <Cloud sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-                                    {chessDbDepth}
-                                </Typography>
-                            </Stack>
-                        </Tooltip>
-                    )}
                     <Settings />
                 </Stack>
 
