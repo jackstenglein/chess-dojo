@@ -14,7 +14,7 @@ import {
     SavedEval,
     SavedEvals,
 } from '../engine/engine';
-import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
+import { getEvalCache, getEvalCacheStats, makeEvalCacheKey, setEvalCache } from './evalCache';
 import { useEngine } from './useEngine';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
@@ -50,24 +50,9 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
         const evaluate = async () => {
             setCurrentPosition(undefined);
             const fen = chess.fen();
-            const cacheKey = makeEvalCacheKey(
-                fen,
-                engineName,
-                depth,
-                multiPv,
-                resolvedThreads,
-                hash,
-            );
+            const cacheKey = makeEvalCacheKey(fen, engineName);
 
-            // L1 – IndexedDB (only contains fully-completed evals)
-            const idbHit = await getEvalCache(cacheKey);
-            if (idbHit) {
-                memCache.current[fen] = idbHit;
-                setCurrentPosition(idbHit);
-                return;
-            }
-
-            // L2 – in-memory (only contains fully-completed evals)
+            // L1 – in-memory (fastest, no async I/O, lives for component lifetime)
             const memHit = memCache.current[fen];
             if (
                 memHit?.engine === engineName &&
@@ -78,6 +63,15 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                 return;
             }
 
+            // L2 – IndexedDB (survives page reload; only contains fully-completed evals)
+            const idbHit = await getEvalCache(cacheKey);
+            if (idbHit) {
+                memCache.current[fen] = idbHit;
+                setCurrentPosition(idbHit);
+                return;
+            }
+
+            
             try {
                 const rawPositionEval = await engine.evaluatePositionWithUpdate({
                     fen,
@@ -92,20 +86,17 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                     },
                 });
 
-                // Guard: ensure the position hasn't changed while engine was running.
-                // If the user moved away and back, fen may differ — don't cache a
-                // result that belongs to a position we're no longer on.
-                if (rawPositionEval.lines[0]?.fen !== fen) {
-                    return;
-                }
-
                 const finalEval: SavedEval = { ...rawPositionEval, engine: engineName };
 
-                // Only write to cache once the engine has reached the full requested depth
+                // Only cache once the engine has reached the full requested depth
                 if (finalEval.lines.length >= multiPv && finalEval.lines[0]?.depth >= depth) {
                     memCache.current[fen] = finalEval;
+                  
                     void setEvalCache(cacheKey, finalEval);
+                    // eslint-disable-next-line no-console
+                console.log(getEvalCacheStats())
                 }
+                
             } catch (err) {
                 if (err !== E_CANCELED) throw err;
             }
