@@ -63,6 +63,11 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
     const [name, setName] = useState(task?.name ?? '');
     const [description, setDescription] = useState(task?.description ?? '');
     const [cohorts, setCohorts] = useState([ALL_COHORTS]);
+    const [startCount, setStartCount] = useState(
+        task?.scoreboardDisplay === ScoreboardDisplay.NonDojo
+            ? ''
+            : `${Object.values(task?.startCount || {})[0] || ''}`,
+    );
     const [count, setCount] = useState(
         task?.scoreboardDisplay === ScoreboardDisplay.NonDojo
             ? ''
@@ -92,9 +97,16 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
         if (cohorts.length === 0) {
             newErrors.cohorts = 'At least one cohort is required';
         }
+        const startCountInt = parseInt(startCount || '0');
+        if (isNaN(startCountInt) || startCountInt < 0) {
+            newErrors.startCount = 'Must be a positive integer or empty';
+        }
         const countInt = parseInt(count || '0');
         if (isNaN(countInt) || countInt < 0) {
             newErrors.count = 'Must be a positive integer or empty';
+        }
+        if (startCountInt > 0 && startCountInt >= countInt) {
+            newErrors.startCount = 'Must be less than Goal';
         }
         if (countType === OTHER_COUNT_TYPE && otherType.trim() === '') {
             newErrors.otherType = 'This field is required';
@@ -127,6 +139,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             owner: user.username,
             name,
             description,
+            startCount: startCountInt,
             counts: newCounts,
             scoreboardDisplay,
             category,
@@ -231,6 +244,18 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                         helperText={
                             errors.cohorts ||
                             'Your time will be tracked individually across each cohort'
+                        }
+                    />
+
+                    <TextField
+                        label='Starting Point (Optional)'
+                        value={startCount}
+                        onChange={(e) => setStartCount(e.target.value)}
+                        fullWidth
+                        error={!!errors.startCount}
+                        helperText={
+                            errors.startCount ||
+                            'Where you want to start for this task. Leave blank if you are only tracking time in this task.'
                         }
                     />
 
