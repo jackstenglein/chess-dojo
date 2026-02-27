@@ -93,8 +93,10 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                     memCache.current[fen] = finalEval;
                   
                     void setEvalCache(cacheKey, finalEval);
-                    // eslint-disable-next-line no-console
-                console.log(getEvalCacheStats())
+                  
+                    const stats = await getEvalCacheStats();
+                      // eslint-disable-next-line no-console
+                    console.log(stats)
                 }
                 
             } catch (err) {
