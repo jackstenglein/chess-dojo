@@ -44,7 +44,7 @@ export interface MultipleSelectChipProps {
     sx?: SxProps;
     error?: boolean;
     helperText?: string;
-    'data-cy'?: string;
+    'data-testid'?: string;
     displayEmpty?: string;
     disabled?: boolean;
 }

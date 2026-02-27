@@ -148,7 +148,7 @@ export const MissingGameDataPreflight = ({
                         >
                             <TextField
                                 fullWidth
-                                data-cy='white'
+                                data-testid='white'
                                 label="White's name"
                                 value={headers.white}
                                 onChange={(e) => onChangeHeader('white', e.target.value)}
@@ -165,7 +165,7 @@ export const MissingGameDataPreflight = ({
                         >
                             <TextField
                                 fullWidth
-                                data-cy='black'
+                                data-testid='black'
                                 label="Black's name"
                                 value={headers.black}
                                 onChange={(e) => onChangeHeader('black', e.target.value)}
@@ -182,7 +182,7 @@ export const MissingGameDataPreflight = ({
                         >
                             <TextField
                                 select
-                                data-cy='result'
+                                data-testid='result'
                                 label='Game Result'
                                 value={headers.result.replaceAll('*', '')}
                                 onChange={(e) => onChangeHeader('result', e.target.value)}
@@ -250,10 +250,10 @@ export const MissingGameDataPreflight = ({
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button data-cy='cancel-preflight' onClick={onClose} disabled={loading}>
+                <Button data-testid='cancel-preflight' onClick={onClose} disabled={loading}>
                     {skippable ? 'Skip for now' : 'Cancel'}
                 </Button>
-                <LoadingButton data-cy='submit-preflight' onClick={submit} loading={loading}>
+                <LoadingButton data-testid='submit-preflight' onClick={submit} loading={loading}>
                     Submit
                 </LoadingButton>
             </DialogActions>

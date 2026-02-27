@@ -72,7 +72,7 @@ export const ForgotPasswordForm = () => {
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-cy='title' mb={4}>
+            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
                 ChessDojo
             </Typography>
 
@@ -134,7 +134,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 component='div'
                 gutterBottom
                 textAlign='center'
-                data-cy='description'
+                data-testid='description'
             >
                 Enter your email, and we'll send you a code to reset your password.
             </Typography>
@@ -161,7 +161,7 @@ const StartStep: React.FC<StartStepProps> = ({
             />
 
             <LoadingButton
-                data-cy='submit-button'
+                data-testid='submit-button'
                 variant='contained'
                 onClick={onSubmit}
                 fullWidth
@@ -179,7 +179,7 @@ const StartStep: React.FC<StartStepProps> = ({
             </LoadingButton>
 
             <Button
-                data-cy='cancel-button'
+                data-testid='cancel-button'
                 variant='text'
                 sx={{ textTransform: 'none' }}
                 component={Link}
@@ -261,7 +261,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 component='div'
                 gutterBottom
                 textAlign='center'
-                data-cy='description'
+                data-testid='description'
             >
                 Email sent! Enter the code to reset your password.
             </Typography>
@@ -314,7 +314,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                 }}
                 loading={request.isLoading()}
-                data-cy='submit-button'
+                data-testid='submit-button'
             >
                 Reset Password
             </LoadingButton>
@@ -334,7 +334,7 @@ const SuccessStep = () => {
                 component='div'
                 gutterBottom
                 textAlign='center'
-                data-cy='description'
+                data-testid='description'
             >
                 You can now sign in using your new password.
             </Typography>
@@ -351,7 +351,7 @@ const SuccessStep = () => {
                     padding: '12px 16px',
                     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                 }}
-                data-cy='signin-button'
+                data-testid='signin-button'
             >
                 Sign In
             </Button>

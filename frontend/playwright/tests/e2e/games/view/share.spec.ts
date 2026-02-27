@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../../lib/helpers';
 
 test.describe('Share Tab Unauthenticated', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -9,7 +8,7 @@ test.describe('Share Tab Unauthenticated', () => {
     });
 
     test('opens sharing tab when unauthenticated', async ({ page }) => {
-        await getBySel(page, 'underboard-button-share').click();
+        await page.getByTestId('underboard-button-share').click();
         // Verify the share panel is visible by checking the button is pressed
         await expect(page.getByRole('button', { name: 'Share', pressed: true })).toBeVisible();
     });

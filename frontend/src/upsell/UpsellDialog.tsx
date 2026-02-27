@@ -71,7 +71,7 @@ const UpsellDialog: React.FC<UpsellDialogProps> = ({
 
     return (
         <Dialog
-            data-cy='upsell-dialog'
+            data-testid='upsell-dialog'
             maxWidth='sm'
             fullWidth
             open={open}

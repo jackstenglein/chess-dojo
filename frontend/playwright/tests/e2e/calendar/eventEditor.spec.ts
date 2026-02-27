@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { findBySel, getBySel, interceptApi, useFreeTier } from '../../../lib/helpers';
+import { interceptApi, useFreeTier } from '../../../lib/helpers';
 import { dateMapper, Event } from '../../../lib/utils';
 import { events as initialEvents } from './events';
 
@@ -38,80 +38,80 @@ test.describe('Event Editor', () => {
         await expect(page.getByText('Hide Filters')).toBeVisible();
 
         await openEventEditor(page);
-        await expect(getBySel(page, 'upsell-dialog')).toBeVisible();
+        await expect(page.getByTestId('upsell-dialog')).toBeVisible();
         await page.unrouteAll({ behavior: 'ignoreErrors' });
     });
 
     test('shows and hides event editor', async ({ page }) => {
         await openEventEditor(page);
-        await expect(getBySel(page, 'event-editor')).toBeVisible();
+        await expect(page.getByTestId('event-editor')).toBeVisible();
 
-        await getBySel(page, 'cancel-button').click();
-        await expect(getBySel(page, 'event-editor')).not.toBeVisible();
+        await page.getByTestId('cancel-button').click();
+        await expect(page.getByTestId('event-editor')).not.toBeVisible();
     });
 
     test('contains correct content', async ({ page }) => {
         await openEventEditor(page);
 
-        await expect(getBySel(page, 'event-title-textfield')).toBeVisible();
-        await expect(getBySel(page, 'location-textfield')).toBeVisible();
-        await expect(getBySel(page, 'description-textfield')).toBeVisible();
-        await expect(getBySel(page, 'participants-textfield')).toBeVisible();
+        await expect(page.getByTestId('event-title-textfield')).toBeVisible();
+        await expect(page.getByTestId('location-textfield')).toBeVisible();
+        await expect(page.getByTestId('description-textfield')).toBeVisible();
+        await expect(page.getByTestId('participants-textfield')).toBeVisible();
     });
 
     test('selects default cohorts on open', async ({ page }) => {
         await openEventEditor(page);
 
-        await expect(getBySel(page, 'event-editor').getByText('1400-1500')).toBeVisible();
-        await expect(getBySel(page, 'event-editor').getByText('1500-1600')).toBeVisible();
-        await expect(getBySel(page, 'event-editor').getByText('1600-1700')).toBeVisible();
-        await expect(getBySel(page, 'event-editor').getByText('1700-1800')).not.toBeVisible();
+        await expect(page.getByTestId('event-editor').getByText('1400-1500')).toBeVisible();
+        await expect(page.getByTestId('event-editor').getByText('1500-1600')).toBeVisible();
+        await expect(page.getByTestId('event-editor').getByText('1600-1700')).toBeVisible();
+        await expect(page.getByTestId('event-editor').getByText('1700-1800')).not.toBeVisible();
     });
 
     test('requires at least one type to save', async ({ page }) => {
         await openEventEditor(page);
 
-        await getBySel(page, 'save-button').click();
+        await page.getByTestId('save-button').click();
 
         await expect(
-            getBySel(page, 'event-editor').getByText('At least one type is required'),
+            page.getByTestId('event-editor').getByText('At least one type is required'),
         ).toBeVisible();
     });
 
     test('requires at least one cohort to save', async ({ page }) => {
         await openEventEditor(page);
 
-        await findBySel(getBySel(page, 'event-editor'), 'cohort-selector').click();
+        await page.getByTestId('event-editor').getByTestId('cohort-selector').click();
 
         await page.locator('.MuiPopover-root').getByText('All Cohorts').click();
         await page.locator('.MuiPopover-root').getByText('All Cohorts').click();
         await page.locator('.MuiBackdrop-root').last().click({ force: true });
-        await getBySel(page, 'save-button').click();
+        await page.getByTestId('save-button').click();
 
         await expect(
-            getBySel(page, 'event-editor').getByText('At least one cohort is required'),
+            page.getByTestId('event-editor').getByText('At least one cohort is required'),
         ).toBeVisible();
     });
 
     test('creates and deletes availability', async ({ page }) => {
         await openEventEditor(page);
 
-        await getBySel(page, 'availability-type-selector').click();
+        await page.getByTestId('availability-type-selector').click();
         await page.locator('.MuiPopover-root').getByText('All Types').click();
         await page.locator('.MuiBackdrop-root').last().click({ force: true });
-        await getBySel(page, 'save-button').click();
+        await page.getByTestId('save-button').click();
 
         await page.getByText('Available - Group').click();
 
         await expect(
-            getBySel(page, 'availability-viewer').getByText('Number of Participants'),
+            page.getByTestId('availability-viewer').getByText('Number of Participants'),
         ).toBeVisible();
-        await expect(getBySel(page, 'availability-viewer').getByText('0 / 100')).toBeVisible();
+        await expect(page.getByTestId('availability-viewer').getByText('0 / 100')).toBeVisible();
         await expect(
-            getBySel(page, 'availability-viewer').getByText('Available Types'),
+            page.getByTestId('availability-viewer').getByText('Available Types'),
         ).toBeVisible();
-        await expect(getBySel(page, 'availability-viewer').getByText('Cohorts')).toBeVisible();
-        await expect(getBySel(page, 'book-button')).not.toBeVisible();
+        await expect(page.getByTestId('availability-viewer').getByText('Cohorts')).toBeVisible();
+        await expect(page.getByTestId('book-button')).not.toBeVisible();
 
         await page.locator('.rs__popper_actions').getByRole('button').last().click();
         await page.getByText('DELETE').click();

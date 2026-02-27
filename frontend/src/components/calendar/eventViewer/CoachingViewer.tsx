@@ -67,7 +67,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
     const isParticipant = Boolean(event.participants[user?.username || '']);
 
     return (
-        <Stack data-cy='coaching-viewer' sx={{ pt: 2 }} spacing={2}>
+        <Stack data-testid='coaching-viewer' sx={{ pt: 2 }} spacing={2}>
             <RequestSnackbar request={request} />
             {event.status === EventStatus.Canceled && (isOwner || isParticipant) && (
                 <Alert severity='warning' variant='filled'>
@@ -132,7 +132,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
             ) : (
                 <Stack spacing={2} pb={1}>
                     <LoadingButton
-                        data-cy='book-button'
+                        data-testid='book-button'
                         variant='contained'
                         loading={request.isLoading()}
                         onClick={onBook}

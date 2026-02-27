@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../../lib/helpers';
 
 test.describe('Import Games Page - Custom Position', () => {
     test.beforeEach(async ({ page }) => {
@@ -23,7 +22,7 @@ test.describe('Import Games Page - Custom Position', () => {
 
         await expect(page).toHaveURL('/games/analysis');
 
-        await getBySel(page, 'underboard-button-tags').click();
+        await page.getByTestId('underboard-button-tags').click();
         await expect(page.getByText(fen)).toBeVisible();
     });
 
@@ -38,7 +37,7 @@ test.describe('Import Games Page - Custom Position', () => {
 
         await expect(page).toHaveURL('/games/analysis');
 
-        await getBySel(page, 'underboard-button-tags').click();
+        await page.getByTestId('underboard-button-tags').click();
         await expect(page.getByText(fen)).toBeVisible();
     });
 });

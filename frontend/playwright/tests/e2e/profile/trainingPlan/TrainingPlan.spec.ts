@@ -1,13 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { getEnv } from '../../../../lib/env';
-import { getBySel } from '../../../../lib/helpers';
 
 test.describe('Training Plan', () => {
     test('displays task updater', async ({ page }) => {
         await page.goto('/profile?view=progress');
-        await getBySel(page, 'update-task-button').first().click();
+        await page.getByTestId('update-task-button').first().click();
 
-        await expect(getBySel(page, 'task-updater-save-button')).toBeVisible();
+        await expect(page.getByTestId('task-updater-save-button')).toBeVisible();
     });
 
     test('displays pinned tasks from other cohorts in today', async ({ page }) => {
@@ -86,7 +85,7 @@ test.describe('Training Plan', () => {
 
         await page.goto('/profile?view=progress');
         await expect(
-            getBySel(page, 'training-plan-today').getByText('Read Tal-Botvinnik 1960').first(),
+            page.getByTestId('training-plan-today').getByText('Read Tal-Botvinnik 1960').first(),
         ).toBeVisible();
     });
 });
