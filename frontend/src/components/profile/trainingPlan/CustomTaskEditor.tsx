@@ -64,9 +64,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
     const [description, setDescription] = useState(task?.description ?? '');
     const [cohorts, setCohorts] = useState([ALL_COHORTS]);
     const [startCount, setStartCount] = useState(
-        task?.scoreboardDisplay === ScoreboardDisplay.NonDojo
-            ? ''
-            : `${Object.values(task?.startCount || {})[0] || ''}`,
+        task?.scoreboardDisplay === ScoreboardDisplay.NonDojo ? '' : `${task?.startCount || ''}`,
     );
     const [count, setCount] = useState(
         task?.scoreboardDisplay === ScoreboardDisplay.NonDojo
