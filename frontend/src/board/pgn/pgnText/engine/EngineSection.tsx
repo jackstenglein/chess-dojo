@@ -3,6 +3,7 @@ import { ENGINE_LINE_COUNT, ENGINE_NAME, engines, LineEval } from '@/stockfish/e
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
+import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -26,6 +27,7 @@ export default function EngineSection() {
     const isGameOver = chess?.isGameOver();
 
     const { pv: chessDbPv, pvLoading: chessDbLoading } = useChessDB();
+    const chessDbDepth = chessDbPv?.depth;
 
     const engineLines = evaluation?.lines?.length
         ? evaluation.lines
@@ -59,7 +61,6 @@ export default function EngineSection() {
                             sx={{ mr: 1 }}
                         />
                     </Tooltip>
-
                     {enabled && !isGameOver && (
                         <Stack sx={{ mr: 2 }} alignItems='center'>
                             <Typography variant='h5'>{formatLineEval(engineLines[0])}</Typography>
@@ -75,7 +76,6 @@ export default function EngineSection() {
                             </Tooltip>
                         </Stack>
                     )}
-
                     <Stack sx={{ flexGrow: 1, lineHeight: '1.2', color: 'text.secondary' }}>
                         <Stack direction='row' alignItems='center'>
                             <Typography variant='caption' sx={{ display: { '@288': 'none' } }}>
@@ -140,6 +140,19 @@ export default function EngineSection() {
                         </Box>
                     </Stack>
 
+                    {enabled && !isGameOver && chessDbDepth && (
+                        <Tooltip
+                            title={`Cloud evaluation depth: ${chessDbDepth}`}
+                            disableInteractive
+                        >
+                            <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mr: 1 }}>
+                                <Cloud sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                <Typography variant='caption' sx={{ color: 'text.secondary' }}>
+                                    {chessDbDepth}
+                                </Typography>
+                            </Stack>
+                        </Tooltip>
+                    )}
                     <Settings />
                 </Stack>
 
