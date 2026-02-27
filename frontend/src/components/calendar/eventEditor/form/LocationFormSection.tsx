@@ -18,7 +18,7 @@ const LocationFormSection: React.FC<LocationFormSectionProps> = ({
 }) => {
     return (
         <TextField
-            data-cy='location-textfield'
+            data-testid='location-textfield'
             fullWidth
             placeholder={`Location${required ? '' : ' (Optional)'}`}
             variant='outlined'

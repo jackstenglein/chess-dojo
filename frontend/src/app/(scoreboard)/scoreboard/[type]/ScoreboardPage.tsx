@@ -124,7 +124,7 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
                     toolbar: ScoreboardToolbar,
                 }}
                 slotProps={{
-                    root: { 'data-cy': 'current-members-scoreboard' },
+                    root: { 'data-testid': 'current-members-scoreboard' },
                 }}
             />
 
@@ -141,7 +141,7 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
                                 toolbar: ScoreboardToolbar,
                             }}
                             slotProps={{
-                                root: { 'data-cy': 'graduates-scoreboard' },
+                                root: { 'data-testid': 'graduates-scoreboard' },
                             }}
                         />
                     </div>

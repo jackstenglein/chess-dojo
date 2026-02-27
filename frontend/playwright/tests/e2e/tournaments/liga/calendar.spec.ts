@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { getBySel, interceptApi } from '../../../../lib/helpers';
+import { interceptApi } from '../../../../lib/helpers';
 import { dateMapper, Event } from '../../../../lib/utils';
 import { events } from './events';
 
@@ -32,7 +32,7 @@ test.describe('Calendar Tab', () => {
     });
 
     test('has tab selector', async ({ page }) => {
-        await getBySel(page, 'tournaments-tab-list').getByText('Leaderboard').click();
+        await page.getByTestId('tournaments-tab-list').getByText('Leaderboard').click();
 
         await expect(page).toHaveURL(/\/tournaments\/liga\?type=leaderboard/);
     });

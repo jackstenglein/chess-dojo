@@ -60,7 +60,7 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
         <>
             <List>
                 {selectedHeaders.map((header, idx) => (
-                    <ListItem data-cy='pgn-selector-item' key={idx} disablePadding>
+                    <ListItem data-testid='pgn-selector-item' key={idx} disablePadding>
                         <ListItemButton
                             sx={{ pl: 0 }}
                             selected={selectedIndex === idx}
@@ -99,7 +99,7 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
             </List>
 
             {hiddenCount !== undefined && hiddenCount > 0 && (
-                <Stack data-cy='upsell-message' px={1} mt={2} spacing={2} alignItems='center'>
+                <Stack data-testid='upsell-message' px={1} mt={2} spacing={2} alignItems='center'>
                     <Typography textAlign='center'>
                         Unlock {hiddenCount} more game
                         {hiddenCount > 1 ? 's' : ''} by upgrading to a full account
@@ -125,7 +125,7 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                 overflowY: 'scroll',
                 flexGrow: fullHeight ? 1 : undefined,
             }}
-            data-cy='pgn-selector'
+            data-testid='pgn-selector'
         >
             {items}
         </Card>

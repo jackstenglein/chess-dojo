@@ -48,7 +48,7 @@ const Navbar = () => {
     return (
         <HideOnScroll>
             <AppBar
-                data-cy='navbar'
+                data-testid='navbar'
                 position='sticky'
                 sx={{ zIndex: 1300, height: 'var(--navbar-height)' }}
             >

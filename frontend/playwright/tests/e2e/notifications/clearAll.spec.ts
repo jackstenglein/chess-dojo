@@ -58,7 +58,7 @@ test.describe('Clear All Notifications', () => {
         await mockNotifications(page, [FAKE_NOTIFICATION]);
         await page.goto('/notifications');
 
-        const clearAllButton = page.locator('[data-cy="clear-all-notifications"]');
+        const clearAllButton = page.getByTestId('clear-all-notifications');
         await expect(clearAllButton).toBeVisible();
         await clearAllButton.click();
 
@@ -70,7 +70,7 @@ test.describe('Clear All Notifications', () => {
         await mockNotifications(page, [FAKE_NOTIFICATION]);
         await page.goto('/');
 
-        const notificationButton = page.locator('[data-cy="Notifications"]');
+        const notificationButton = page.getByTestId('Notifications');
         await notificationButton.click();
 
         const menu = page.locator('#notifications-menu');
@@ -82,7 +82,7 @@ test.describe('Clear All Notifications', () => {
         await mockNotifications(page, []);
         await page.goto('/');
 
-        const notificationButton = page.locator('[data-cy="Notifications"]');
+        const notificationButton = page.getByTestId('Notifications');
         await notificationButton.click();
 
         const menu = page.locator('#notifications-menu');

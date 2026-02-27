@@ -127,7 +127,7 @@ export const DeleteDialog = ({
     return (
         <Dialog open={true} onClose={request.isLoading() ? undefined : onCancel} fullWidth>
             <DialogTitle>{getDialogTitle(type, items)}</DialogTitle>
-            <DialogContent data-cy='delete-directory-form'>
+            <DialogContent data-testid='delete-directory-form'>
                 <Stack spacing={1}>
                     <DeleteDialogContentText type={type} directory={directory} items={items} />
 
@@ -135,7 +135,7 @@ export const DeleteDialog = ({
                         <>
                             <DialogContentText>To confirm, type `delete` below:</DialogContentText>
                             <TextField
-                                data-cy='delete-directory-confirm'
+                                data-testid='delete-directory-confirm'
                                 placeholder='delete'
                                 value={value}
                                 onChange={(e) => setValue(e.target.value.toLowerCase())}
@@ -156,7 +156,7 @@ export const DeleteDialog = ({
                     Cancel
                 </Button>
                 <LoadingButton
-                    data-cy='delete-directory-button'
+                    data-testid='delete-directory-button'
                     color='error'
                     disabled={disableDelete}
                     loading={request.isLoading()}
