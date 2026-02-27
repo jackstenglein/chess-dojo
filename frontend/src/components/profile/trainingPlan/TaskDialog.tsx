@@ -1,5 +1,8 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth, useFreeTier } from '@/auth/Auth';
+import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { useTimer } from '@/components/navigation/navbar/TimerButton';
+import { TimelineProvider, useTimelineContext } from '@/components/profile/activity/useTimeline';
 import DeleteCustomTaskModal from '@/components/profile/trainingPlan/DeleteCustomTaskModal';
 import Position from '@/components/profile/trainingPlan/Position';
 import ProgressHistory from '@/components/profile/trainingPlan/ProgressHistory';
@@ -16,7 +19,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
-import { AccessAlarm, Check, Lock, Loop, Scoreboard } from '@mui/icons-material';
+import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -31,7 +34,6 @@ import {
     Typography,
 } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { useTimelineContext } from '../activity/useTimeline';
 import CustomTaskEditor from './CustomTaskEditor';
 import { TaskDescription } from './TaskDescription';
 
@@ -52,19 +54,21 @@ interface TaskDialogProps {
 
 export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
     const [view, setView] = useState(initialView);
-
+    const { user } = useAuth();
     return (
-        <Dialog
-            open={open}
-            onClose={props.onClose}
-            maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
-            fullWidth
-        >
-            {view === TaskDialogView.Details && <DetailsDialog {...props} setView={setView} />}
-            {(view === TaskDialogView.Progress || view === TaskDialogView.History) && (
-                <ProgressDialog {...props} view={view} setView={setView} />
-            )}
-        </Dialog>
+        <TimelineProvider owner={user?.username || ''}>
+            <Dialog
+                open={open}
+                onClose={props.onClose}
+                maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
+                fullWidth
+            >
+                {view === TaskDialogView.Details && <DetailsDialog {...props} setView={setView} />}
+                {(view === TaskDialogView.Progress || view === TaskDialogView.History) && (
+                    <ProgressDialog {...props} view={view} setView={setView} />
+                )}
+            </Dialog>
+        </TimelineProvider>
     );
 }
 
@@ -134,6 +138,8 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const [showEditor, setShowEditor] = useState(false);
     const [showDeleter, setShowDeleter] = useState(false);
     const isFreeTier = useFreeTier();
+
+    const { isRunning, timerSeconds, onStart, onPause } = useTimer();
 
     const selectedCohort = useMemo(() => {
         if (!task) {
@@ -297,6 +303,31 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ flexWrap: 'wrap' }}>
+                <Box sx={{ mr: 'auto' }}>
+                    {isRunning ? (
+                        <Button
+                            variant='contained'
+                            color='error'
+                            startIcon={<Pause />}
+                            onClick={() => {
+                                onPause();
+                                setView(TaskDialogView.Progress);
+                            }}
+                        >
+                            Pause Timer ({formatTime(timerSeconds)})
+                        </Button>
+                    ) : (
+                        <Button
+                            variant='contained'
+                            color='secondary'
+                            startIcon={<PlayArrow />}
+                            onClick={() => onStart(task)}
+                        >
+                            Start Timer
+                        </Button>
+                    )}
+                </Box>
+
                 <Button onClick={onClose}>Cancel</Button>
                 <Button onClick={() => setView(TaskDialogView.Progress)}>Update Progress</Button>
                 <Button onClick={() => setView(TaskDialogView.History)}>Show History</Button>
