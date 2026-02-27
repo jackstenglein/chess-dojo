@@ -122,7 +122,6 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={{ xs: 12, sm: 'grow' }} sx={{ minWidth: '145px' }}>
                         <DateTimePicker
-                            label='Date & Time'
                             value={item.date}
                             onChange={(v) => onChange('date', v)}
                             slotProps={{
