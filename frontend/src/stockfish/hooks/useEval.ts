@@ -11,8 +11,10 @@ import {
     ENGINE_THREADS,
     EngineName,
     PositionEval,
+    SavedEval,
     SavedEvals,
 } from '../engine/engine';
+import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
 import { useEngine } from './useEngine';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
@@ -23,7 +25,8 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
     const [multiPv] = useLocalStorage(ENGINE_LINE_COUNT.Key, ENGINE_LINE_COUNT.Default);
     const [threads, setThreads] = useLocalStorage(ENGINE_THREADS.Key, ENGINE_THREADS.Default);
     const [hash] = useLocalStorage(ENGINE_HASH.Key, ENGINE_HASH.Default);
-    const savedEvals = useRef<SavedEvals>({});
+
+    const memCache = useRef<SavedEvals>({});
 
     useEffect(() => {
         if (!ENGINE_THREADS.Default) {
@@ -36,25 +39,35 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
     }, [threads, setThreads]);
 
     useEffect(() => {
-        if (!enabled || !chess || !engine || !engineName) {
-            return;
-        }
+        if (!enabled || !chess || !engine || !engineName) return;
 
         if (!engine?.isReady()) {
             logger.error?.(`Engine ${engineName} not ready`);
         }
 
+        const resolvedThreads = threads || navigator.hardwareConcurrency || 4;
+
         const evaluate = async () => {
             setCurrentPosition(undefined);
             const fen = chess.fen();
-            const savedEval = savedEvals.current[fen];
+            const cacheKey = makeEvalCacheKey(fen, engineName);
 
+            // L1 – in-memory (fastest, no async I/O, lives for component lifetime)
+            const memHit = memCache.current[fen];
             if (
-                savedEval?.engine === engineName &&
-                savedEval.lines.length >= multiPv &&
-                savedEval.lines[0].depth >= depth
+                memHit?.engine === engineName &&
+                memHit.lines.length >= multiPv &&
+                memHit.lines[0]?.depth >= depth
             ) {
-                setCurrentPosition(savedEval);
+                setCurrentPosition(memHit);
+                return;
+            }
+
+            // L2 – IndexedDB (survives page reload; only contains fully-completed evals)
+            const idbHit = await getEvalCache(cacheKey);
+            if (idbHit) {
+                memCache.current[fen] = idbHit;
+                setCurrentPosition(idbHit);
                 return;
             }
 
@@ -63,7 +76,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                     fen,
                     depth,
                     multiPv,
-                    threads: threads || 4,
+                    threads: resolvedThreads,
                     hash: Math.pow(2, hash),
                     setPartialEval: (positionEval: PositionEval) => {
                         if (positionEval.lines[0]?.fen === chess.fen()) {
@@ -72,14 +85,16 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
                     },
                 });
 
-                savedEvals.current = {
-                    ...savedEvals.current,
-                    [fen]: { ...rawPositionEval, engine: engineName },
-                };
-            } catch (err) {
-                if (err !== E_CANCELED) {
-                    throw err;
+                const finalEval: SavedEval = { ...rawPositionEval, engine: engineName };
+
+                // Only cache once the engine has reached the full requested depth
+                if (finalEval.lines.length >= multiPv && finalEval.lines[0]?.depth >= depth) {
+                    memCache.current[fen] = finalEval;
+
+                    void setEvalCache(cacheKey, finalEval);
                 }
+            } catch (err) {
+                if (err !== E_CANCELED) throw err;
             }
         };
 
