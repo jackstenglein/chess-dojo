@@ -127,9 +127,7 @@ export const ProgressHistoryItem = ({
                             slotProps={{
                                 textField: {
                                     error: !!error.date,
-                                    helperText:
-                                        error.date ||
-                                        'Date and time are recorded in your selected timezone.',
+                                    helperText: error.date,
                                     fullWidth: true,
                                 },
                             }}
