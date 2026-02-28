@@ -5,8 +5,15 @@ import {
     isComplete,
     Requirement,
     RequirementCategory,
+    RequirementStatus,
+    ScoreboardDisplay,
 } from '@/database/requirement';
-import { dojoCohorts } from '@/database/user';
+import {
+    dojoCohorts,
+    getCurrentRating,
+    getMinRatingBoundary,
+    getRatingBoundary,
+} from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
@@ -33,7 +40,32 @@ import { use, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { getUpcomingGameSchedule, SCHEDULE_CLASSICAL_GAME_TASK_ID } from '../suggestedTasks';
 import { TrainingPlanContext } from '../TrainingPlanTab';
-import { FullTrainingPlanSection, Section } from './FullTrainingPlanSection';
+import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
+
+/** Builds a minimal fake requirement for the "Graduate from {cohort}" task. */
+function getGraduationFakeTask(cohort: string): Requirement {
+    return {
+        id: GRADUATION_TASK_ID,
+        status: RequirementStatus.Active,
+        category: RequirementCategory.Graduation,
+        name: `Graduate from ${cohort}`,
+        description: 'Move to the next cohort and get featured in the graduation show.',
+        freeDescription: '',
+        counts: { [cohort]: 1 },
+        startCount: 0,
+        numberOfCohorts: 1,
+        unitScore: 0,
+        totalScore: 0,
+        scoreboardDisplay: ScoreboardDisplay.Checkbox,
+        progressBarSuffix: '',
+        updatedAt: new Date().toISOString(),
+        sortPriority: 'zz-graduation',
+        expirationDays: -1,
+        isFree: false,
+        atomic: true,
+        expectedMinutes: 0,
+    };
+}
 
 /** Renders the full training plan view of the training plan tab. */
 export function FullTrainingPlan() {
@@ -59,6 +91,7 @@ export function FullTrainingPlan() {
         [RequirementCategory.Middlegames]: false,
         [RequirementCategory.Endgame]: false,
         [RequirementCategory.Opening]: false,
+        [RequirementCategory.Graduation]: false,
         [RequirementCategory.NonDojo]: false,
     });
 
@@ -101,6 +134,42 @@ export function FullTrainingPlan() {
                 s.completedTasks.push(task);
             } else {
                 s.uncompletedTasks.push(task);
+            }
+        }
+
+        // Add a Graduation section when viewing the user's current cohort (they can only graduate from it).
+        if (cohort === user.dojoCohort) {
+            const graduationTask = getGraduationFakeTask(cohort);
+            const gradComplete = user.graduationCohorts?.includes(cohort) ?? false;
+            const minBoundary = getMinRatingBoundary(cohort, user.ratingSystem);
+            const graduationBoundary = getRatingBoundary(cohort, user.ratingSystem);
+            const currentRating = getCurrentRating(user);
+            let graduationPercent = 0;
+            if (gradComplete) {
+                graduationPercent = 100;
+            } else if (
+                graduationBoundary != null &&
+                graduationBoundary > 0 &&
+                minBoundary != null &&
+                graduationBoundary > minBoundary
+            ) {
+                const range = graduationBoundary - minBoundary;
+                const progress = (currentRating - minBoundary) / range;
+                graduationPercent = Math.round(100 * Math.min(1, Math.max(0, progress)));
+            }
+            const existing = sections.find((s) => s.category === RequirementCategory.Graduation);
+            if (existing) {
+                if (gradComplete) existing.completedTasks.push(graduationTask);
+                else existing.uncompletedTasks.push(graduationTask);
+                existing.progressBar = graduationPercent;
+            } else {
+                sections.push({
+                    category: RequirementCategory.Graduation,
+                    uncompletedTasks: gradComplete ? [] : [graduationTask],
+                    completedTasks: gradComplete ? [graduationTask] : [],
+                    progressBar: graduationPercent,
+                    color: CategoryColors[RequirementCategory.Graduation],
+                });
             }
         }
 
