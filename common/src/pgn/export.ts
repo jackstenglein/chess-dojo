@@ -32,6 +32,12 @@ export const PdfExportSchema = z.object({
     /** Whether to skip rendering null moves. */
     skipNullMoves: z.boolean().optional(),
 
+    /** Whether to skip rendering clock times. */
+    skipClocks: z.boolean().optional(),
+
+    /** Whether to skip rendering the QR code in the PDF. */
+    skipQrCode: z.boolean().optional(),
+
     /** The number of ply between diagrams. */
     plyBetweenDiagrams: z.number().int().min(-1).max(40),
 });

@@ -14,7 +14,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const request = parseBody(event, PdfExportSchema);
         const generator = new TypstGenerator({
             ...request,
-            qrcodeFilename: `/tmp/${event.requestContext.requestId}-qrcode.png`,
+            qrcodeFilename: request.skipQrCode
+                ? undefined
+                : `/tmp/${event.requestContext.requestId}-qrcode.png`,
         });
         fs.writeFileSync(`/tmp/${event.requestContext.requestId}.typ`, await generator.toTypst());
         console.log('Generated typ file');

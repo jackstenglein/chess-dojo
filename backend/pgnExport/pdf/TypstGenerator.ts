@@ -275,10 +275,15 @@ export class TypstGenerator {
                 .filter((n) => n) ?? [];
         const nagLabel = this.options.skipNags ? '' : nagDetails.map((n) => n.label).join('');
 
+        const clockLabel =
+            !this.options.skipClocks && move.commentDiag?.clk
+                ? ` #text(size: 0.8em, fill: gray)[${escape(move.commentDiag.clk)}]`
+                : '';
+
         if (!depth) {
-            this.result += `*${moveTex}${nagLabel}*`;
+            this.result += `*${moveTex}${nagLabel}*${clockLabel}`;
         } else {
-            this.result += `${moveTex}${nagLabel}`;
+            this.result += `${moveTex}${nagLabel}${clockLabel}`;
         }
 
         if (move.next || move.commentAfter) {
