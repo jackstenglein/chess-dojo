@@ -1,8 +1,11 @@
 import {
     Blog,
+    CreateBlogCommentRequest,
     CreateBlogRequest,
+    DeleteBlogCommentRequest,
     GetBlogRequest,
     ListBlogsRequest,
+    UpdateBlogCommentRequest,
     UpdateBlogRequest,
 } from '@jackstenglein/chess-dojo-common/src/blog/api';
 import { AxiosResponse } from 'axios';
@@ -85,5 +88,37 @@ export function updateBlog(request: UpdateBlogRequest): Promise<AxiosResponse<Bl
     const { owner, id, ...body } = request;
     return axiosService.put<Blog>(`/blog/${owner}/${id}`, body, {
         functionName: 'updateBlog',
+    });
+}
+
+export function createBlogComment(
+    props: Pick<CreateBlogCommentRequest, 'owner' | 'id' | 'parentId'>,
+    content: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.post<Blog>(
+        `/blog/comments/${props.owner}/${props.id}`,
+        { content, ...(props.parentId && { parentId: props.parentId }) },
+        { functionName: 'createBlogComment' },
+    );
+}
+
+export function updateBlogComment(
+    props: Pick<UpdateBlogCommentRequest, 'owner' | 'id' | 'commentId'>,
+    content: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.put<Blog>(
+        `/blog/comments/${props.owner}/${props.id}`,
+        { commentId: props.commentId, content },
+        { functionName: 'updateBlogComment' },
+    );
+}
+
+export function deleteBlogComment(
+    props: Pick<DeleteBlogCommentRequest, 'owner' | 'id'>,
+    commentId: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.delete<Blog>(`/blog/comments/${props.owner}/${props.id}`, {
+        data: { commentId },
+        functionName: 'deleteBlogComment',
     });
 }
