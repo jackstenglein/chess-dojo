@@ -72,6 +72,8 @@ export function ShareTab() {
         setSkipHeader,
         skipClocks,
         setSkipClocks,
+        skipQrCode,
+        setSkipQrCode,
         pdfDiagramMode,
         setPdfDiagramMode,
         plyBetweenDiagrams,
@@ -257,7 +259,14 @@ export function ShareTab() {
 
         try {
             pdfRequest.onStart();
-            const pgn = chess.renderPgn();
+            const pgn =
+                chess?.renderPgn({
+                    skipComments,
+                    skipNags,
+                    skipVariations,
+                    skipNullMoves,
+                    skipHeader,
+                }) || '';
 
             const response = await getPdf({
                 pgn,
@@ -267,8 +276,11 @@ export function ShareTab() {
                 skipHeader,
                 skipComments,
                 skipNags,
+                skipDrawables,
                 skipVariations,
                 skipNullMoves,
+                skipClocks,
+                skipQrCode,
                 plyBetweenDiagrams: pdfDiagramMode === 'markedPositions' ? -1 : plyBetweenDiagrams,
             });
 
@@ -441,7 +453,16 @@ export function ShareTab() {
                 </Stack>
 
                 <FormControl sx={{ mt: 1.5, mb: 1 }}>
-                    <FormLabel>PDF Diagrams</FormLabel>
+                    <FormLabel>PDF Options</FormLabel>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!skipQrCode}
+                                onChange={(e) => setSkipQrCode(!e.target.checked)}
+                            />
+                        }
+                        label='QR Code'
+                    />
                     <RadioGroup
                         row
                         value={pdfDiagramMode}

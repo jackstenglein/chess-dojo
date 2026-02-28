@@ -29,6 +29,10 @@ export const pgnExportOptions = {
         key: 'export-pgn/skip-clocks',
         default: false,
     },
+    skipQrCode: {
+        key: 'export-pgn/skip-qr-code',
+        default: false,
+    },
     pdfDiagramMode: {
         key: 'export-pgn/pdf-diagram-mode',
         default: 'markedPositions',
@@ -73,6 +77,10 @@ export function usePgnExportOptions() {
         pgnExportOptions.skipClocks.key,
         pgnExportOptions.skipClocks.default,
     );
+    const [skipQrCode, setSkipQrCode] = useLocalStorage<boolean>(
+        pgnExportOptions.skipQrCode.key,
+        pgnExportOptions.skipQrCode.default,
+    );
     const [pdfDiagramMode, setPdfDiagramMode] = useLocalStorage<'markedPositions' | 'numMoves'>(
         pgnExportOptions.pdfDiagramMode.key,
         pgnExportOptions.pdfDiagramMode.default,
@@ -97,6 +105,8 @@ export function usePgnExportOptions() {
         setSkipHeader,
         skipClocks,
         setSkipClocks,
+        skipQrCode,
+        setSkipQrCode,
         pdfDiagramMode,
         setPdfDiagramMode,
         plyBetweenDiagrams,
