@@ -6,6 +6,14 @@ export enum EngineName {
     Stockfish11 = 'stockfish_11',
 }
 
+export const EnginePathRecord: Record<EngineName, string> = {
+    stockfish_18: 'engines/stockfish-18/stockfish-18',
+    stockfish_17: 'engines/stockfish-17/stockfish-17',
+    stockfish_16: 'engines/stockfish-16/stockfish-16',
+    stockfish_11: 'engines/stockfish-11.js'
+}
+
+
 export interface EngineInfo {
     /** The internal name of the engine. */
     name: EngineName;
