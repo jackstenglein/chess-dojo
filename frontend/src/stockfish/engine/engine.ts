@@ -238,3 +238,8 @@ export interface EvaluatePositionWithUpdateParams {
     /** The callback function that is sent eval updates. */
     setPartialEval?: (positionEval: PositionEval) => void;
 }
+
+export const CLOUD_EVAL_ENABLED = {
+    Key: 'cloudEvalEnabled',
+    Default: true,
+};
