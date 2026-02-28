@@ -237,28 +237,6 @@ export class UciEngineFactory {
         await this.releaseWorker(worker);
     }
 
-    private async setWorkersNb(workersNb: number) {
-        if (workersNb === this.workers.length) return;
-
-        if (workersNb < 1) {
-            throw new Error(`Number of workers must be greater than 0, got ${workersNb} instead`);
-        }
-
-        if (workersNb < this.workers.length) {
-            const workersToRemove = this.workers.slice(workersNb);
-            this.workers = this.workers.slice(0, workersNb);
-
-            for (const worker of workersToRemove) {
-                this.terminateWorker(worker);
-            }
-            return;
-        }
-
-        const workersNbToCreate = workersNb - this.workers.length;
-
-        await Promise.all(new Array(workersNbToCreate).fill(0).map(() => this.addNewWorker()));
-    }
-
     
     /**
      * Evaluates the given position, updating the eval as the engine runs.
