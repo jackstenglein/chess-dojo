@@ -132,13 +132,6 @@ func (t *CustomTask) GetCounts() map[DojoCohort]int {
 	return t.Counts
 }
 
-func (t *CustomTask) GetStartCount() int {
-	if t.StartCount == nil {
-		return 0
-	}
-	return *t.StartCount
-}
-
 func (t *CustomTask) IsCustom() bool {
 	return true
 }
