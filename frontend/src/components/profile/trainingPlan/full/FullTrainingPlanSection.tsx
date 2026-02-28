@@ -103,6 +103,7 @@ export function FullTrainingPlanSection({
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls={`${section.category.replaceAll(' ', '-')}-content`}
                 id={`${section.category.replaceAll(' ', '-')}-header`}
+                data-testid={`${section.category.replaceAll(' ', '-')}-header`}
             >
                 <Grid
                     container
@@ -204,7 +205,11 @@ export function FullTrainingPlanSection({
                     ))}
 
                 {!isFreeTier && isCustomTaskCategory(section.category) && isCurrentUser && (
-                    <Button sx={{ mt: 2 }} onClick={() => setShowCustomTaskEditor(true)}>
+                    <Button
+                        sx={{ mt: 2 }}
+                        onClick={() => setShowCustomTaskEditor(true)}
+                        data-testid={`add-custom-task-button-${section.category.replaceAll(' ', '-')}`}
+                    >
                         Add Custom Task
                     </Button>
                 )}

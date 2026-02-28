@@ -73,6 +73,11 @@ type CustomTask struct {
 	// ALL_COHORTS is *not* a valid value.
 	Counts map[DojoCohort]int `dynamodbav:"counts" json:"counts"`
 
+	// The minimum starting value, applied to all cohorts. For example, the M2s start at 307
+	// NOTE: Some user data predates the addition of this field, so to ensure backwards compatibility,
+	//       this field is optional.
+	StartCount *int `dynamodbav:"startCount,omitempty" json:"startCount"`
+
 	// Must be NonDojo
 	ScoreboardDisplay ScoreboardDisplay `dynamodbav:"scoreboardDisplay" json:"scoreboardDisplay"`
 
