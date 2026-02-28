@@ -95,12 +95,12 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
         if (cohorts.length === 0) {
             newErrors.cohorts = 'At least one cohort is required';
         }
-        const startCountInt = parseInt(startCount || '0');
-        if (isNaN(startCountInt) || startCountInt < 0) {
+        const startCountInt = Number(startCount || '0');
+        if (!Number.isInteger(startCountInt) || startCountInt < 0) {
             newErrors.startCount = 'Must be a positive integer or empty';
         }
-        const countInt = parseInt(count || '0');
-        if (isNaN(countInt) || countInt < 0) {
+        const countInt = Number(count || '0');
+        if (!Number.isInteger(countInt) || countInt < 0) {
             newErrors.count = 'Must be a positive integer or empty';
         }
         if (startCountInt > 0 && startCountInt >= countInt) {
@@ -221,6 +221,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                         error={!!errors.name}
                         helperText={errors.name}
                         fullWidth
+                        data-testid='custom-task-name-input'
                     />
 
                     <TextField
@@ -231,6 +232,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         fullWidth
+                        data-testid='custom-task-description-input'
                     />
 
                     <CohortSelect
@@ -255,6 +257,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                             errors.startCount ||
                             'Where you want to start for this task. Leave blank if you are only tracking time in this task.'
                         }
+                        data-testid='custom-task-starting-point-input'
                     />
 
                     <TextField
@@ -267,6 +270,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                             errors.count ||
                             'The final target you want to reach. Leave blank if you are only tracking time in this task.'
                         }
+                        data-testid='custom-task-goal-input'
                     />
 
                     <TextField
@@ -275,6 +279,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                         value={countType}
                         onChange={(e) => setCountType(e.target.value)}
                         fullWidth
+                        data-testid='custom-task-goal-type-select'
                     >
                         <MenuItem value=''>None</MenuItem>
                         <MenuItem value='Chapters'>Chapters</MenuItem>
@@ -303,15 +308,24 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                             />
                         }
                         label='Reset count to 0 when switching cohorts'
+                        data-testid='custom-task-reset-count-checkbox'
                     />
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} disabled={request.isLoading()}>
+                <Button
+                    onClick={onClose}
+                    disabled={request.isLoading()}
+                    data-testid='custom-task-cancel-button'
+                >
                     Cancel
                 </Button>
 
-                <LoadingButton loading={request.isLoading()} onClick={onCreate}>
+                <LoadingButton
+                    loading={request.isLoading()}
+                    onClick={onCreate}
+                    data-testid='custom-task-submit-button'
+                >
                     {task ? 'Update' : 'Create'}
                 </LoadingButton>
             </DialogActions>
