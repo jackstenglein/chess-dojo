@@ -141,16 +141,17 @@ export default function EngineSection() {
                                                 <Stack
                                                     direction='row'
                                                     alignItems='center'
-                                                    spacing={0.5}
-                                                    sx={{ mr: 1 }}
+                                                    spacing={1}
+                                                    sx={{ mr: 2, ml: 5 }}
                                                 >
                                                     <Cloud
                                                         sx={{
                                                             verticalAlign: 'middle',
-                                                            ml: 0.75,
+                                                            ml: 1,
                                                             mr: 0.5,
                                                             fontSize: 15,
                                                         }}
+                                                        color='primary'
                                                     />
                                                     <Typography
                                                         variant='caption'
