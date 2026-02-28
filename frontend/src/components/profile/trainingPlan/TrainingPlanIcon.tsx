@@ -5,6 +5,7 @@ import {
     LiveTv,
     MenuBook,
     PushPin,
+    School,
     Speed,
     SportsScore,
     WavingHand,
@@ -33,6 +34,8 @@ export function TrainingPlanIcon({ category, ...rest }: TrainingPlanIconProps) {
             return <CrisisAlert {...rest} />;
         case RequirementCategory.NonDojo:
             return <LiveTv {...rest} />;
+        case RequirementCategory.Graduation:
+            return <School {...rest} />;
         case RequirementCategory.Pinned:
             return <PushPin {...rest} />;
     }
