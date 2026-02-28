@@ -263,7 +263,6 @@ export function ShareTab() {
                 chess?.renderPgn({
                     skipComments,
                     skipNags,
-                    skipDrawables,
                     skipVariations,
                     skipNullMoves,
                     skipHeader,
