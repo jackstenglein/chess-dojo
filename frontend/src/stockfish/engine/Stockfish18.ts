@@ -10,7 +10,7 @@ export class Stockfish18 extends UciEngine {
             throw new Error('Stockfish 18 is not supported');
         }
 
-        const enginePath = '/static/engine/stockfish-18.js#/static/engine/stockfish-18.wasm';
+        const enginePath = '/static/engine/stockfish-18.js';
         const worker = UciEngine.workerFromPath(enginePath);
         super(EngineName.Stockfish18, worker);
     }
