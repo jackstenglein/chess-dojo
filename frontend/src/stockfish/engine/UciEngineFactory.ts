@@ -1,11 +1,16 @@
 // import { getConfig } from '@/config';
 import { EngineWorker, WorkerJob, getEngineWorker, sendCommandsToWorker } from './EngineWorker';
-import { ENGINE_DEPTH,
+import {
+    ENGINE_DEPTH,
     ENGINE_HASH,
     ENGINE_LINE_COUNT,
-    ENGINE_THREADS, EngineName, EvaluatePositionWithUpdateParams, PositionEval } from './engine';
-import { parseEvaluationResults } from './parseResults';
+    ENGINE_THREADS,
+    EngineName,
+    EvaluatePositionWithUpdateParams,
+    PositionEval,
+} from './engine';
 import { debug } from './helper';
+import { parseEvaluationResults } from './parseResults';
 // import { truncate } from 'fs';
 
 // const config = getConfig();
@@ -67,7 +72,9 @@ export class UciEngineFactory {
         const nextJob = this.workerQueue.shift();
         if (!nextJob) {
             worker.isReady = true;
-            this.engineDebug(`Worker released, available workers: ${this.workers.filter(w => w.isReady).length}`);
+            this.engineDebug(
+                `Worker released, available workers: ${this.workers.filter((w) => w.isReady).length}`,
+            );
             return;
         }
 
@@ -101,7 +108,10 @@ export class UciEngineFactory {
         }
 
         this.engineDebug(`Setting MultiPV to ${multiPv}`);
-        await this.sendCommandsToEachWorker([`setoption name MultiPV value ${multiPv}`, 'isready'], 'readyok');
+        await this.sendCommandsToEachWorker(
+            [`setoption name MultiPV value ${multiPv}`, 'isready'],
+            'readyok',
+        );
 
         this.multiPv = multiPv;
     }
@@ -121,7 +131,10 @@ export class UciEngineFactory {
             );
         }
         this.engineDebug(`Setting threads to ${threads}`);
-        await this.sendCommandsToEachWorker([`setoption name Threads value ${threads}`, 'isready'], 'readyok');
+        await this.sendCommandsToEachWorker(
+            [`setoption name Threads value ${threads}`, 'isready'],
+            'readyok',
+        );
         this.threads = threads;
     }
 
@@ -140,7 +153,10 @@ export class UciEngineFactory {
             );
         }
         this.engineDebug(`Setting hash to ${hash} MB`);
-        await this.sendCommandsToEachWorker([`setoption name Hash value ${hash}`, 'isready'], 'readyok');
+        await this.sendCommandsToEachWorker(
+            [`setoption name Hash value ${hash}`, 'isready'],
+            'readyok',
+        );
         this.hash = hash;
     }
 
@@ -215,7 +231,9 @@ export class UciEngineFactory {
         finalMessage: string,
         onNewMessage?: (messages: string[]) => void,
     ): Promise<void> {
-        this.engineDebug(`Broadcasting commands to ${this.workers.length} workers: ${commands.join(', ')}`);
+        this.engineDebug(
+            `Broadcasting commands to ${this.workers.length} workers: ${commands.join(', ')}`,
+        );
         await Promise.all(
             this.workers.map(async (worker) => {
                 await sendCommandsToWorker(worker, commands, finalMessage, onNewMessage);
@@ -252,7 +270,9 @@ export class UciEngineFactory {
     }: EvaluatePositionWithUpdateParams): Promise<PositionEval> {
         this.throwErrorIfNotReady();
 
-        this.engineDebug(`Starting evaluation: depth=${depth}, multiPv=${multiPv}, threads=${threads}, hash=${hash}`);
+        this.engineDebug(
+            `Starting evaluation: depth=${depth}, multiPv=${multiPv}, threads=${threads}, hash=${hash}`,
+        );
         await this.stopAllCurrentJobs();
         await this.setMultiPv(multiPv);
         await this.setHash(hash);

@@ -10,15 +10,15 @@ export const EnginePathRecord: Record<EngineName, string> = {
     stockfish_18: '/static/engines/stockfish-18/stockfish-18',
     stockfish_17: '/static/engines/stockfish-17/stockfish-17',
     stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1',
-    stockfish_11: '/static/engines/stockfish-11.js'
-}
+    stockfish_11: '/static/engines/stockfish-11.js',
+};
 
 export const EngineWasmPathRecord: Record<EngineName, string> = {
     stockfish_11: '',
     stockfish_18: '/static/stockfish-18/stockfish-18.wasm',
     stockfish_17: '/static/stockfish-17/stockfish-17-lite.wasm',
-    stockfish_16: '/static/stockfish-16.1-lite.wasm'
-}
+    stockfish_16: '/static/stockfish-16.1-lite.wasm',
+};
 
 export interface EngineInfo {
     /** The internal name of the engine. */

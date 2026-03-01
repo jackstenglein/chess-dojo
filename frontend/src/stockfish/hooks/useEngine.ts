@@ -9,20 +9,22 @@ export const useEngine = (enabled: boolean, engineName: EngineName | undefined) 
     useEffect(() => {
         if (!engineName || !enabled) return;
 
-        pickEngine(engineName).then((newEngine) => {
-            setEngine((prev) => {
-                prev?.shutdown();
-                return newEngine;
+        pickEngine(engineName)
+            .then((newEngine) => {
+                setEngine((prev) => {
+                    prev?.shutdown();
+                    return newEngine;
+                });
+            })
+            .catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to pick engine:', error);
             });
-        }).catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error('Failed to pick engine:', error);
-        });
     }, [engineName, enabled]);
 
     return engine;
 };
 
 const pickEngine = (engine: EngineName): Promise<UciEngineFactory> => {
-    return createStockfishEngine(engine)
+    return createStockfishEngine(engine);
 };
