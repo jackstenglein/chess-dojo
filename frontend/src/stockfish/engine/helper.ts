@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { logger } from '@/logging/logger';
 
 export const isWasmSupported = () => 
@@ -23,5 +24,6 @@ export const isMobileDevice = () =>
  * @param optionalParams The optionalParams to pass to console.debug.
  */
 export function debug(message?: unknown, ...optionalParams: unknown[]) {
+    console.log(message, optionalParams);
     logger.debug?.(message, optionalParams);
 }

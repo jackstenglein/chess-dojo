@@ -40,9 +40,11 @@ export class UciEngineFactory {
         debug = config.isBeta,
     ): Promise<UciEngineFactory> {
         const engine = new UciEngineFactory(engineName, enginePath, customEngineInit, debug);
+        engine.engineDebug(`Creating engine: ${engineName} from path: ${enginePath}`);
 
         await engine.addNewWorker();
         engine.isReady = true;
+        engine.engineDebug(`Engine ${engineName} is ready`);
 
         return engine;
     }
@@ -52,9 +54,11 @@ export class UciEngineFactory {
             if (!worker.isReady) continue;
 
             worker.isReady = false;
+            this.engineDebug(`Worker acquired, pool size: ${this.workers.length - 1} available`);
             return worker;
         }
 
+        this.engineDebug('No available workers, queuing job');
         return undefined;
     }
 
@@ -62,9 +66,11 @@ export class UciEngineFactory {
         const nextJob = this.workerQueue.shift();
         if (!nextJob) {
             worker.isReady = true;
+            this.engineDebug(`Worker released, available workers: ${this.workers.filter(w => w.isReady).length}`);
             return;
         }
 
+        this.engineDebug(`Processing queued job, remaining queue size: ${this.workerQueue.length}`);
         const res = await sendCommandsToWorker(
             worker,
             nextJob.commands,
@@ -76,15 +82,12 @@ export class UciEngineFactory {
         nextJob.resolve(res);
     }
 
-    /**
-     * Sets the multiPv (number of lines) option. See https://disservin.github.io/stockfish-docs/stockfish-wiki/Terminology.html#multiple-pvs.
-     * @param multiPv The number of lines to set.
-     * @param forceInit If true, the option is set even if multiPv is equal to this.multiPv. If false, an error is thrown if the engine is not ready.
-     * @returns A Promise that resolves once the engine is ready.
-     */
     private async setMultiPv(multiPv: number, forceInit = false) {
         if (!forceInit) {
-            if (multiPv === this.multiPv) return;
+            if (multiPv === this.multiPv) {
+                this.engineDebug(`MultiPV already set to ${multiPv}, skipping`);
+                return;
+            }
 
             this.throwErrorIfNotReady();
         }
@@ -96,20 +99,16 @@ export class UciEngineFactory {
             multiPv = 1;
         }
 
+        this.engineDebug(`Setting MultiPV to ${multiPv}`);
         await this.sendCommandsToEachWorker([`setoption name MultiPV value ${multiPv}`, 'isready'], 'readyok');
 
         this.multiPv = multiPv;
     }
 
-    /**
-     * Sets the thread count for the engine.
-     * @param threads The number of threads to use.
-     * @param forceInit If true, the option is set even if threads is equal to this.threads.
-     * @returns A Promise that resolves once the engine is ready.
-     */
     private async setThreads(threads: number, forceInit = false) {
         if (!forceInit) {
             if (threads === this.threads) {
+                this.engineDebug(`Threads already set to ${threads}, skipping`);
                 return;
             }
             this.throwErrorIfNotReady();
@@ -120,19 +119,15 @@ export class UciEngineFactory {
                 `Invalid threads value (${threads}) is not in range [${ENGINE_THREADS.Min}, ${ENGINE_THREADS.Max}]`,
             );
         }
+        this.engineDebug(`Setting threads to ${threads}`);
         await this.sendCommandsToEachWorker([`setoption name Threads value ${threads}`, 'isready'], 'readyok');
         this.threads = threads;
     }
 
-    /**
-     * Sets the hash size in MB for the engine.
-     * @param hash The hash size in MB.
-     * @param forceInit If true, the option is set even if hash is equal to this.hash.
-     * @returns A Promise that resolves once the engine is ready.
-     */
     private async setHash(hash: number, forceInit = false) {
         if (!forceInit) {
             if (hash === this.hash) {
+                this.engineDebug(`Hash already set to ${hash}, skipping`);
                 return;
             }
             this.throwErrorIfNotReady();
@@ -143,10 +138,10 @@ export class UciEngineFactory {
                 `Invalid threads value (${hash}) is not in range [${Math.pow(2, ENGINE_HASH.Min)}, ${Math.pow(2, ENGINE_HASH.Max)}]`,
             );
         }
+        this.engineDebug(`Setting hash to ${hash} MB`);
         await this.sendCommandsToEachWorker([`setoption name Hash value ${hash}`, 'isready'], 'readyok');
         this.hash = hash;
     }
-
 
     public getIsReady(): boolean {
         return this.isReady;
@@ -159,6 +154,7 @@ export class UciEngineFactory {
     }
 
     public shutdown(): void {
+        this.engineDebug(`Shutting down engine, terminating ${this.workers.length} workers`);
         this.isReady = false;
         this.workerQueue = [];
 
@@ -166,22 +162,25 @@ export class UciEngineFactory {
             this.terminateWorker(worker);
         }
         this.workers = [];
+        this.engineDebug('Engine shutdown complete');
     }
 
     private terminateWorker(worker: EngineWorker) {
-        this.engineDebug(`Terminating worker from ${this.enginePath}`)
+        this.engineDebug(`Terminating worker from ${this.enginePath}`);
         worker.isReady = false;
         worker.uci('quit');
         worker.terminate();
     }
 
     public async stopAllCurrentJobs(): Promise<void> {
+        this.engineDebug(`Stopping all jobs, queue size: ${this.workerQueue.length}`);
         this.workerQueue = [];
         await this.sendCommandsToEachWorker(['stop', 'isready'], 'readyok');
 
         for (const worker of this.workers) {
             await this.releaseWorker(worker);
         }
+        this.engineDebug('All jobs stopped');
     }
 
     private async sendCommands(
@@ -192,6 +191,7 @@ export class UciEngineFactory {
         const worker = this.acquireWorker();
 
         if (!worker) {
+            this.engineDebug(`Queueing commands: ${commands.join(', ')}`);
             return new Promise((resolve) => {
                 this.workerQueue.push({
                     commands,
@@ -202,6 +202,7 @@ export class UciEngineFactory {
             });
         }
 
+        this.engineDebug(`Sending commands: ${commands.join(', ')}`);
         const res = await sendCommandsToWorker(worker, commands, finalMessage, onNewMessage);
 
         await this.releaseWorker(worker);
@@ -213,6 +214,7 @@ export class UciEngineFactory {
         finalMessage: string,
         onNewMessage?: (messages: string[]) => void,
     ): Promise<void> {
+        this.engineDebug(`Broadcasting commands to ${this.workers.length} workers: ${commands.join(', ')}`);
         await Promise.all(
             this.workers.map(async (worker) => {
                 await sendCommandsToWorker(worker, commands, finalMessage, onNewMessage);
@@ -222,6 +224,7 @@ export class UciEngineFactory {
     }
 
     private async addNewWorker() {
+        this.engineDebug(`Adding new worker for engine at ${this.enginePath}`);
         const worker = getEngineWorker(this.enginePath);
 
         await sendCommandsToWorker(worker, ['uci'], 'uciok');
@@ -234,18 +237,10 @@ export class UciEngineFactory {
         await sendCommandsToWorker(worker, ['ucinewgame', 'isready'], 'readyok');
 
         this.workers.push(worker);
+        this.engineDebug(`Worker added, total workers: ${this.workers.length}`);
         await this.releaseWorker(worker);
     }
 
-    
-    /**
-     * Evaluates the given position, updating the eval as the engine runs.
-     * @param fen The FEN to evaluate.
-     * @param depth The depth to use when evaluating.
-     * @param multiPv The number of lines to analyze.
-     * @param setPartialEval The callback function that is sent eval updates.
-     * @returns The engine's final PositionEval.
-     */
     public async evaluatePositionWithUpdate({
         fen,
         depth = ENGINE_DEPTH.Default,
@@ -256,6 +251,7 @@ export class UciEngineFactory {
     }: EvaluatePositionWithUpdateParams): Promise<PositionEval> {
         this.throwErrorIfNotReady();
 
+        this.engineDebug(`Starting evaluation: depth=${depth}, multiPv=${multiPv}, threads=${threads}, hash=${hash}`);
         await this.stopAllCurrentJobs();
         await this.setMultiPv(multiPv);
         await this.setHash(hash);
@@ -269,7 +265,7 @@ export class UciEngineFactory {
             setPartialEval(parsedResults);
         };
 
-        this.engineDebug(`Evaluating position: ${fen}`)
+        this.engineDebug(`Evaluating position: ${fen}`);
 
         const results = await this.sendCommands(
             [`position fen ${fen}`, `go depth ${depth}`],
@@ -277,14 +273,10 @@ export class UciEngineFactory {
             onNewMessage,
         );
 
+        this.engineDebug('Evaluation complete');
         return parseEvaluationResults(fen, results, whiteToPlay);
     }
 
-    /**
-     * Passes the given message and params to console.debug if this._debug is true.
-     * @param message The message to pass to console.debug.
-     * @param optionalParams The optionalParams to pass to console.debug.
-     */
     private engineDebug(message?: unknown, ...optionalParams: unknown[]) {
         if (this._debug) {
             debug(message, optionalParams);
