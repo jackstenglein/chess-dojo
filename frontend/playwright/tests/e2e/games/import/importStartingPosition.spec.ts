@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../../lib/helpers';
 
 test.describe('Import Games Page - Position', () => {
     test.beforeEach(async ({ page }) => {
@@ -17,6 +16,6 @@ test.describe('Import Games Page - Position', () => {
 
         await page.getByRole('link', { name: 'Training Plan' }).click();
 
-        await expect(getBySel(page, 'unsaved-analysis-nav-guard')).toBeVisible();
+        await expect(page.getByTestId('unsaved-analysis-nav-guard')).toBeVisible();
     });
 });

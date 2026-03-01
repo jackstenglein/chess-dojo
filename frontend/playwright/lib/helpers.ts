@@ -4,22 +4,6 @@ import { fileURLToPath } from 'url';
 import { getEnv } from './env';
 
 /**
- * Select element by data-cy attribute.
- * Replaces Cypress cy.getBySel('selector')
- */
-export function getBySel(page: Page, selector: string): Locator {
-    return page.locator(`[data-cy="${selector}"]`);
-}
-
-/**
- * Find element within a parent by data-cy attribute.
- * Replaces Cypress cy.findBySel('selector')
- */
-export function findBySel(parent: Locator, selector: string): Locator {
-    return parent.locator(`[data-cy="${selector}"]`);
-}
-
-/**
  * Verify all texts exist on page.
  * Replaces Cypress cy.containsAll(['text1', 'text2'])
  */
@@ -43,7 +27,6 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Mock an API endpoint with a fixture or response.
- * Replaces Cypress cy.interceptApi(method, url, response)
  */
 export async function interceptApi(
     page: Page,
@@ -91,7 +74,7 @@ export async function waitForNavigation(
 export async function useFreeTier(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         const response = await route.fetch();
-        const body = await response.json();
+        const body = (await response.json()) as object;
         await route.fulfill({
             response,
             contentType: 'application/json',
@@ -111,7 +94,7 @@ export async function useFreeTier(page: Page) {
 export async function useAdminUser(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
         const response = await route.fetch();
-        const body = await response.json();
+        const body = (await response.json()) as object;
         await route.fulfill({
             response,
             contentType: 'application/json',
@@ -121,4 +104,5 @@ export async function useAdminUser(page: Page) {
             }),
         });
     });
+    await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }

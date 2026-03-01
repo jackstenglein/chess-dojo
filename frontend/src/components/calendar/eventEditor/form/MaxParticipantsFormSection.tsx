@@ -16,7 +16,7 @@ const MaxParticipantsFormSection: React.FC<MaxParticipantsFormSectionProps> = ({
 }) => {
     return (
         <TextField
-            data-cy='participants-textfield'
+            data-testid='participants-textfield'
             fullWidth
             placeholder='Max Participants'
             variant='outlined'

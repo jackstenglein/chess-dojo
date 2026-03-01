@@ -1,24 +1,11 @@
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { getBySel, interceptApi } from '../../../../lib/helpers';
+import { interceptApi } from '../../../../lib/helpers';
 import { dateMapper, Event } from '../../../../lib/utils';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { events } from './events';
 
 test.describe('Calendar Tab', () => {
     test.beforeEach(async ({ page }) => {
-        // Read and transform fixture dates
-        const fixtureData = JSON.parse(
-            fs.readFileSync(
-                path.join(__dirname, '../../../fixtures/tournaments/liga/events.json'),
-                'utf-8',
-            ),
-        );
-
-        for (const event of fixtureData.events as Event[]) {
+        for (const event of events as Event[]) {
             const startDate = event.startTime.slice(0, 10);
             const endDate = event.endTime.slice(0, 10);
 
@@ -31,7 +18,7 @@ test.describe('Calendar Tab', () => {
         }
 
         await interceptApi(page, 'GET', '/calendar', {
-            body: fixtureData,
+            body: events,
         });
 
         await page.goto('/tournaments/liga?type=calendar');
@@ -45,7 +32,7 @@ test.describe('Calendar Tab', () => {
     });
 
     test('has tab selector', async ({ page }) => {
-        await getBySel(page, 'tournaments-tab-list').getByText('Leaderboard').click();
+        await page.getByTestId('tournaments-tab-list').getByText('Leaderboard').click();
 
         await expect(page).toHaveURL(/\/tournaments\/liga\?type=leaderboard/);
     });

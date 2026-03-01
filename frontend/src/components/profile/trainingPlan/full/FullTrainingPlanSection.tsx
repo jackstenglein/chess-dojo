@@ -150,7 +150,7 @@ export function FullTrainingPlanSection({
                     </Grid>
                 </Grid>
             </AccordionSummary>
-            <AccordionDetails data-cy={`progress-category-${section.category}`}>
+            <AccordionDetails data-testid={`progress-category-${section.category}`}>
                 <Divider />
 
                 <TaskList

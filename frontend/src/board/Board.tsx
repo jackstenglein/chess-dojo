@@ -425,7 +425,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     return (
         <Box width={1} height={1} sx={{ ...pieceSx, ...getBoardSx(boardStyle) }}>
             <div
-                data-cy='chessground-board'
+                data-testid='chessground-board'
                 ref={boardRef}
                 style={{ width: '100%', height: '100%' }}
             />

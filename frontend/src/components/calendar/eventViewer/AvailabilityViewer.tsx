@@ -25,7 +25,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
     };
 
     return (
-        <Stack data-cy='availability-viewer' sx={{ pt: 2 }} spacing={2}>
+        <Stack data-testid='availability-viewer' sx={{ pt: 2 }} spacing={2}>
             {!isOwner && <OwnerField title='Owner' event={event} />}
 
             {event.maxParticipants > 1 && (
@@ -84,7 +84,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
 
             {!isOwner && (
                 <Button
-                    data-cy='book-button'
+                    data-testid='book-button'
                     variant='contained'
                     color='success'
                     onClick={startBooking}

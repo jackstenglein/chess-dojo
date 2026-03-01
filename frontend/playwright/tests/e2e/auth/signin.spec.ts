@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { env } from '../../../lib/env';
-import { getBySel } from '../../../lib/helpers';
+import { getEnv } from '../../../lib/env';
 
 test.describe('Signin Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -8,16 +7,16 @@ test.describe('Signin Page', () => {
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(getBySel(page, 'title')).toHaveText('ChessDojo');
+        await expect(page.getByTestId('title')).toHaveText('ChessDojo');
     });
 
     test('should link to signup', async ({ page }) => {
-        await getBySel(page, 'signup-button').click();
+        await page.getByTestId('signup-button').click();
         await expect(page).toHaveURL('/signup');
     });
 
     test('should link to forgot password', async ({ page }) => {
-        await getBySel(page, 'forgot-password-button').click();
+        await page.getByTestId('forgot-password-button').click();
         await expect(page).toHaveURL('/forgot-password');
     });
 
@@ -31,29 +30,29 @@ test.describe('Signin Page', () => {
 
     test('requires email to submit form', async ({ page }) => {
         await page.locator('#password').fill('testpassword');
-        await page.locator('[data-cy="signin-button"]').click();
+        await page.getByTestId('signin-button').click();
         await expect(page.locator('#email-helper-text')).toHaveText('Email is required');
     });
 
     test('requires password to submit form', async ({ page }) => {
         await page.locator('#email').fill('test@email.com');
-        await page.locator('[data-cy="signin-button"]').click();
+        await page.getByTestId('signin-button').click();
         await expect(page.locator('#password-helper-text')).toHaveText('Password is required');
     });
 
     test('returns error for incorrect password', async ({ page }) => {
         await page.locator('#email').fill('test@email.com');
         await page.locator('#password').fill('testpassword');
-        await page.locator('[data-cy="signin-button"]').click();
+        await page.getByTestId('signin-button').click();
         await expect(page.locator('#password-helper-text')).toHaveText(
             'Incorrect email or password',
         );
     });
 
     test('logs in with correct credentials', async ({ page }) => {
-        await page.locator('#email').fill(env.cognitoUsername);
-        await page.locator('#password').fill(env.cognitoPassword);
-        await page.locator('[data-cy="signin-button"]').click();
+        await page.locator('#email').fill(getEnv('email'));
+        await page.locator('#password').fill(getEnv('password'));
+        await page.getByTestId('signin-button').click();
         await expect(page).toHaveURL('/profile');
     });
 });

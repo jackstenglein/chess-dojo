@@ -83,7 +83,7 @@ const SupportTicket = () => {
                     }}
                 >
                     <TextField
-                        data-cy='support-ticket-name'
+                        data-testid='support-ticket-name'
                         label='Full Name'
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -100,7 +100,7 @@ const SupportTicket = () => {
                     }}
                 >
                     <TextField
-                        data-cy='support-ticket-email'
+                        data-testid='support-ticket-email'
                         label='Email'
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +112,7 @@ const SupportTicket = () => {
 
                 <Grid size={12}>
                     <TextField
-                        data-cy='support-ticket-subject'
+                        data-testid='support-ticket-subject'
                         label='Subject'
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
@@ -124,7 +124,7 @@ const SupportTicket = () => {
 
                 <Grid size={12}>
                     <TextField
-                        data-cy='support-ticket-message'
+                        data-testid='support-ticket-message'
                         label='Message'
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
@@ -139,7 +139,7 @@ const SupportTicket = () => {
 
                 <Grid display='flex' justifyContent='center' size={12}>
                     <LoadingButton
-                        data-cy='support-ticket-submit'
+                        data-testid='support-ticket-submit'
                         variant='contained'
                         loading={request.isLoading()}
                         onClick={onSubmit}
