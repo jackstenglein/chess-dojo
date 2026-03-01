@@ -10,8 +10,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    TextField,
     MenuItem,
+    TextField,
 } from '@mui/material';
 import { useState } from 'react';
 
@@ -37,8 +37,8 @@ export function SubmitGameModal({
     const [gameUrl, setGameUrl] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showMismatch, setShowMismatch] = useState(false);
-    const [selectedOpponent, setSelectedOpponent] = useState<string>('');
-    const [colorPlayed, setColorPlayed] = useState<string>('White');
+    const [selectedOpponent, setSelectedOpponent] = useState('');
+    const [colorPlayed, setColorPlayed] = useState('White');
 
     const request = useRequest<string>();
     const api = useApi();
@@ -65,15 +65,17 @@ export function SubmitGameModal({
             request.onSuccess('Game submitted');
             onClose();
             setGameUrl('');
-        } catch (err: any) {
-            const message = err?.response?.data?.message;
-
+        } catch (err: unknown) {
             request.onFailure(err);
 
-            if (message?.includes('No pairing found')) {
-                setShowMismatch(true);
-            }
+            if (err instanceof Error) {
+                const maybeAxiosError = err as { response?: { data?: { message?: string } } };
+                const message = maybeAxiosError.response?.data?.message;
 
+                if (message?.includes('No pairing found')) {
+                    setShowMismatch(true);
+                }
+            }
         }
     };
 
@@ -84,15 +86,17 @@ export function SubmitGameModal({
         }
         setErrors({});
 
-        // Add api handling
+        try {
+            request.onStart();
 
-        setShowMismatch(false);
-        setGameUrl('');
-        setSelectedOpponent('');
-        setColorPlayed('White');
-        request.reset();
-        onClose();
-    }
+            // Simulate API call for now
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            request.onSuccess('Game submitted');
+            handleMismatchClose();
+        } catch (err: unknown) {
+            request.onFailure(err);
+        }
+    };
 
     const handleClose = () => {
         onClose();
@@ -108,60 +112,68 @@ export function SubmitGameModal({
         setGameUrl('');
         setSelectedOpponent('');
         setColorPlayed('White');
-    }
-
-    const requestSnackbar = <RequestSnackbar request={request} showSuccess />
+    };
 
     if (showMismatch) {
         return (
             <>
-                <Dialog open={showMismatch} onClose={request.isLoading() ? undefined : handleMismatchClose} fullWidth>
+                <Dialog
+                    open={showMismatch}
+                    onClose={request.isLoading() ? undefined : handleMismatchClose}
+                    fullWidth
+                >
                     <DialogTitle>Mismatch Detected</DialogTitle>
                     <DialogContent>
-                        <p>We detected a possible mismatch in the game. Please select the correct opponent.</p>
+                        <p>
+                            We detected a possible mismatch in the game. Please select the correct
+                            opponent.
+                        </p>
                         <TextField
                             select
                             fullWidth
-                            label="Select the correct opponent"
+                            label='Select the correct opponent'
                             value={selectedOpponent}
                             onChange={(e) => setSelectedOpponent(e.target.value)}
                             error={!!errors.gameUrl}
                             helperText={errors.gameUrl}
                             sx={{ mt: 2.5 }}
                         >
-                            {
-                                Object.values(players)
-                                    .filter((p) => p.username !== user.username) // exclude current user
-                                    .map((p) => (
-                                        <MenuItem key={p.username} value={p.username}>
-                                            {p.displayName || p.username}
-                                        </MenuItem>
-                                    )
-                                    )
-                            }
+                            {Object.values(players)
+                                .filter((p) => p.username !== user.username) // exclude current user
+                                .map((p) => (
+                                    <MenuItem key={p.username} value={p.username}>
+                                        {p.displayName || p.username}
+                                    </MenuItem>
+                                ))}
                         </TextField>
                         <TextField
                             select
                             fullWidth
-                            label="Select color played"
+                            label='Select color played'
                             value={colorPlayed}
                             onChange={(e) => setColorPlayed(e.target.value)}
                             sx={{ mt: 2.5 }}
                         >
-                            <MenuItem value="White">White</MenuItem>
-                            <MenuItem value="Black">Black</MenuItem>
+                            <MenuItem value='White'>White</MenuItem>
+                            <MenuItem value='Black'>Black</MenuItem>
                         </TextField>
                     </DialogContent>
                     <DialogActions>
-                        <Button disabled={request.isLoading()} onClick={() => handleMismatchClose()}>
+                        <Button
+                            disabled={request.isLoading()}
+                            onClick={() => handleMismatchClose()}
+                        >
                             Cancel
                         </Button>
-                        <LoadingButton loading={request.isLoading()} onClick={() => handleMismatchSubmit()}>
+                        <LoadingButton
+                            loading={request.isLoading()}
+                            onClick={() => handleMismatchSubmit()}
+                        >
                             Confirm
                         </LoadingButton>
                     </DialogActions>
                 </Dialog>
-                {requestSnackbar}
+                <RequestSnackbar request={request} showSuccess />
             </>
         );
     }
@@ -181,7 +193,6 @@ export function SubmitGameModal({
                         helperText={errors.gameUrl}
                         sx={{ mt: 2.5 }}
                     />
-
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={handleClose}>
@@ -192,7 +203,7 @@ export function SubmitGameModal({
                     </LoadingButton>
                 </DialogActions>
             </Dialog>
-            {requestSnackbar}
+            <RequestSnackbar request={request} showSuccess />
         </>
     );
 }
