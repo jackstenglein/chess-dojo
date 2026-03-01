@@ -14,7 +14,7 @@ export async function createStockfishEngine(
         throw new Error(error);
     }
 
-    const lite: boolean = stockfishVersion === EngineName.Stockfish16;
+    const lite: boolean = stockfishVersion === EngineName.Stockfish16 || stockfishVersion == EngineName.Stockfish17;
     console.log(`[Stockfish] Lite mode: ${lite}`);
 
     const multiThreadIsSupported = isMultiThreadSupported();
