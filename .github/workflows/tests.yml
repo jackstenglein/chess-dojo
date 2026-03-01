@@ -49,6 +49,8 @@ jobs:
         if: steps.filter.outputs.backend == 'true'
         working-directory: backend
         run: npm run test
+        env:
+          CI: true
 
       # Copied from https://nextjs.org/docs/pages/building-your-application/deploying/ci-build-caching#github-actions
       - name: NextJS Cache
