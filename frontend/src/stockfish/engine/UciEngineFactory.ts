@@ -11,7 +11,7 @@ import {
 } from './engine';
 import { debug } from './helper';
 import { parseEvaluationResults } from './parseResults';
-// import { truncate } from 'fs';
+
 
 // const config = getConfig();
 
@@ -37,6 +37,7 @@ export class UciEngineFactory {
         this.enginePath = enginePath;
         this.customEngineInit = customEngineInit;
         this._debug = debug;
+
     }
 
     public static async create(
@@ -51,7 +52,14 @@ export class UciEngineFactory {
         await engine.addNewWorker();
         engine.isReady = true;
         engine.engineDebug(`Engine ${engineName} is ready`);
-
+        await engine.sendCommandsToEachWorker(['uci'], 'uciok');
+        await engine.sendCommands(
+            ['setoption name UCI_ShowWDL value true', 'isready'],
+            'readyok',
+        );
+        await engine.setMultiPv(engine.getMultiPv, true);
+        await engine.setThreads(engine.getThreads, true);
+        await engine.setHash(engine.getHash, true);
         return engine;
     }
 
@@ -88,6 +96,18 @@ export class UciEngineFactory {
 
         await this.releaseWorker(worker);
         nextJob.resolve(res);
+    }
+
+    public get getMultiPv() {
+        return this.multiPv;
+    }
+
+    public get getHash() {
+        return this.hash;
+    }
+
+    public get getThreads() {
+        return this.threads;
     }
 
     private async setMultiPv(multiPv: number, forceInit = false) {
@@ -245,15 +265,7 @@ export class UciEngineFactory {
     private async addNewWorker() {
         this.engineDebug(`Adding new worker for engine at ${this.enginePath}`);
         const worker = getEngineWorker(this.enginePath);
-
-        await sendCommandsToWorker(worker, ['uci'], 'uciok');
-        await sendCommandsToWorker(
-            worker,
-            [`setoption name MultiPV value ${this.multiPv}`, 'isready'],
-            'readyok',
-        );
         await this.customEngineInit?.(worker);
-        await sendCommandsToWorker(worker, ['ucinewgame', 'isready'], 'readyok');
 
         this.workers.push(worker);
         this.engineDebug(`Worker added, total workers: ${this.workers.length}`);

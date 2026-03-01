@@ -13,6 +13,7 @@ export const useEngine = (enabled: boolean, engineName: EngineName | undefined) 
             .then((newEngine) => {
                 setEngine((prev) => {
                     prev?.shutdown();
+                    prev?.stopAllCurrentJobs()
                     return newEngine;
                 });
             })
