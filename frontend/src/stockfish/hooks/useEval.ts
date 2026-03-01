@@ -40,7 +40,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
             return;
         }
 
-        if (!engine?.isReady()) {
+        if (!engine?.getIsReady()) {
             logger.error?.(`Engine ${engineName} not ready`);
         }
 
@@ -91,7 +91,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
         void evaluate();
         chess.addObserver(observer);
         return () => {
-            void engine?.stopSearch();
+            void engine?.stopAllCurrentJobs();
             chess.removeObserver(observer);
         };
     }, [enabled, chess, depth, engine, engineName, multiPv, threads, hash, setCurrentPosition]);

@@ -1,0 +1,2 @@
+frontend/public/static/engine/stockfish-18.wasm filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text

@@ -1,40 +1,30 @@
-import { logger } from '@/logging/logger';
 import { useEffect, useState } from 'react';
 import { EngineName } from '../engine/engine';
-import { Stockfish11 } from '../engine/Stockfish11';
-import { Stockfish16 } from '../engine/Stockfish16';
-import { Stockfish17 } from '../engine/Stockfish17';
-import { UciEngine } from '../engine/UciEngine';
+import { createStockfishEngine } from '../engine/StockfishEngineFactory';
+import { UciEngineFactory } from '../engine/UciEngineFactory';
 
 export const useEngine = (enabled: boolean, engineName: EngineName | undefined) => {
-    const [engine, setEngine] = useState<UciEngine>();
+    const [engine, setEngine] = useState<UciEngineFactory>();
 
     useEffect(() => {
-        if (!enabled || !engineName) return;
+        if (!engineName || !enabled) return;
 
-        const engine = pickEngine(engineName);
-        logger.debug?.('Initializing engine');
-        void engine.init().then(() => {
-            logger.debug?.('Engine initialized');
-            setEngine(engine);
-        });
-
-        return () => {
-            engine.shutdown();
-            setEngine(undefined);
-        };
-    }, [enabled, engineName]);
+        pickEngine(engineName)
+            .then((newEngine) => {
+                setEngine((prev) => {
+                    prev?.shutdown();
+                    return newEngine;
+                });
+            })
+            .catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to pick engine:', error);
+            });
+    }, [engineName, enabled]);
 
     return engine;
 };
 
-const pickEngine = (engine: EngineName): UciEngine => {
-    switch (engine) {
-        case EngineName.Stockfish17:
-            return new Stockfish17();
-        case EngineName.Stockfish16:
-            return new Stockfish16();
-        case EngineName.Stockfish11:
-            return new Stockfish11();
-    }
+const pickEngine = (engine: EngineName): Promise<UciEngineFactory> => {
+    return createStockfishEngine(engine);
 };

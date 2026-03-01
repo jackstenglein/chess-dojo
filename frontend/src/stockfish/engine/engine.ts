@@ -1,9 +1,24 @@
 /** The name of an available engine. */
 export enum EngineName {
+    Stockfish18 = 'stockfish_18',
     Stockfish17 = 'stockfish_17',
     Stockfish16 = 'stockfish_16',
     Stockfish11 = 'stockfish_11',
 }
+
+export const EnginePathRecord: Record<EngineName, string> = {
+    stockfish_18: '/static/engines/stockfish-18/stockfish-18',
+    stockfish_17: '/static/engines/stockfish-17/stockfish-17',
+    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1',
+    stockfish_11: '/static/engines/stockfish-11.js',
+};
+
+export const EngineWasmPathRecord: Record<EngineName, string> = {
+    stockfish_11: '',
+    stockfish_18: '/static/stockfish-18/stockfish-18.wasm',
+    stockfish_17: '/static/stockfish-17/stockfish-17-lite.wasm',
+    stockfish_16: '/static/stockfish-16.1-lite.wasm',
+};
 
 export interface EngineInfo {
     /** The internal name of the engine. */
@@ -36,6 +51,16 @@ export interface EngineInfo {
 
 /** The list of engines available for use. */
 export const engines: EngineInfo[] = [
+    {
+        name: EngineName.Stockfish18,
+        fullName: 'Stockfish 18 NNUE • 100 MB',
+        shortName: 'SF 18 • 100 MB',
+        extraShortName: 'SF 18',
+        description: 'Best for desktop',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by Stockfish's neural network.`,
+        location: 'in local browser',
+    },
     {
         name: EngineName.Stockfish17,
         fullName: 'Stockfish 17.1 NNUE • 79 MB',
