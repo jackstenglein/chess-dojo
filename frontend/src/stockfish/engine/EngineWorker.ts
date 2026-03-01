@@ -21,15 +21,26 @@ export const getEngineWorker = (enginePath: string): EngineWorker => {
   const worker = new window.Worker(enginePath);
 
   const engineWorker: EngineWorker = {
-    isReady: false,
-    uci: (command: string) => worker.postMessage(command),
-    listen: () => null,
-    terminate: () => worker.terminate(),
+  isReady: false,
+  uci: (command: string) => {
+    debug(`Sending command to worker: ${command}`);
+    worker.postMessage(command);
+  },
+  listen: () => null,
+  terminate: () => {
+    debug("Terminating worker");
+    worker.terminate();
+  },
   };
 
   worker.onmessage = (event) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    engineWorker.listen(event.data);
+  debug(`Worker message received: ${event.data}`);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  engineWorker.listen(event.data);
+  };
+
+  worker.onerror = (error) => {
+  debug(`Worker error: ${error.message}`);
   };
 
   return engineWorker;
@@ -42,20 +53,23 @@ export const sendCommandsToWorker = (
   onNewMessage?: (messages: string[]) => void
 ): Promise<string[]> => {
   return new Promise((resolve) => {
-    const messages: string[] = [];
+  const messages: string[] = [];
+  debug(`Sending ${commands.length} commands to worker, waiting for: ${finalMessage}`);
 
-    worker.listen = (data) => {
-      messages.push(data);
-      onNewMessage?.(messages);
+  worker.listen = (data) => {
+    messages.push(data);
+    debug(`Collected message (${messages.length}): ${data}`);
+    onNewMessage?.(messages);
 
-      if (data.startsWith(finalMessage)) {
-        resolve(messages);
-      }
-    };
-
-    for (const command of commands) {
-      worker.uci(command);
+    if (data.startsWith(finalMessage)) {
+    debug(`Final message received. Total messages: ${messages.length}`);
+    resolve(messages);
     }
+  };
+
+  for (const command of commands) {
+    worker.uci(command);
+  }
   });
 };
 

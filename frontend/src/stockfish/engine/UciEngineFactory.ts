@@ -1,4 +1,4 @@
-import { getConfig } from '@/config';
+// import { getConfig } from '@/config';
 import { EngineWorker, WorkerJob, getEngineWorker, sendCommandsToWorker } from './EngineWorker';
 import { ENGINE_DEPTH,
     ENGINE_HASH,
@@ -6,8 +6,9 @@ import { ENGINE_DEPTH,
     ENGINE_THREADS, EngineName, EvaluatePositionWithUpdateParams, PositionEval } from './engine';
 import { parseEvaluationResults } from './parseResults';
 import { debug } from './helper';
+// import { truncate } from 'fs';
 
-const config = getConfig();
+// const config = getConfig();
 
 export class UciEngineFactory {
     public readonly name: EngineName;
@@ -37,7 +38,7 @@ export class UciEngineFactory {
         engineName: EngineName,
         enginePath: string,
         customEngineInit?: UciEngineFactory['customEngineInit'],
-        debug = config.isBeta,
+        debug = true,
     ): Promise<UciEngineFactory> {
         const engine = new UciEngineFactory(engineName, enginePath, customEngineInit, debug);
         engine.engineDebug(`Creating engine: ${engineName} from path: ${enginePath}`);
