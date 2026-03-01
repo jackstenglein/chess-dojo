@@ -9,7 +9,7 @@ export enum EngineName {
 export const EnginePathRecord: Record<EngineName, string> = {
     stockfish_18: '/static/engines/stockfish-18/stockfish-18',
     stockfish_17: '/static/engines/stockfish-17/stockfish-17',
-    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1',
+    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1#',
     stockfish_11: '/static/engines/stockfish-11.js'
 }
 

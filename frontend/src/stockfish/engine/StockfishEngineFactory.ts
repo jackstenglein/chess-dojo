@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { EngineName, EnginePathRecord } from './engine';
+import { EngineName, EnginePathRecord, EngineWasmPathRecord } from './engine';
 import { debug, isMultiThreadSupported, isWasmSupported } from './helper';
 import { UciEngineFactory } from './UciEngineFactory';
 
@@ -25,6 +25,7 @@ export async function createStockfishEngine(
     }
 
     const stockfishPath = EnginePathRecord[stockfishVersion];
+    const wasmPath = EngineWasmPathRecord[stockfishVersion];
     console.log(`[Stockfish] Base path: ${stockfishPath}`);
 
     let enginePath;
@@ -34,7 +35,7 @@ export async function createStockfishEngine(
     } else {
         enginePath = `${stockfishPath}${
             lite ? '-lite' : ''
-        }${multiThreadIsSupported ? '' : '-single'}.js`;
+        }${multiThreadIsSupported ? '' : '-single'}.js#${wasmPath}`;
     }
 
     console.log(`[Stockfish] Resolved engine path: ${enginePath}`);
