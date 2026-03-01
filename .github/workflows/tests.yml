@@ -20,35 +20,72 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # Copied from https://nextjs.org/docs/pages/building-your-application/deploying/ci-build-caching#github-actions
-      - uses: actions/cache@v4
+      - name: npm cache
+        uses: actions/cache@v5
         with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/frontend/.next/cache
-          # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-node-
+
+      - name: Determine Changed Paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'common/**'
+            frontend:
+              - 'frontend/**'
+              - 'common/**'
+      
+      - name: Install Backend Dependencies
+        if: steps.filter.outputs.backend == 'true'
+        working-directory: backend
+        run: npm ci
+
+      - name: Run Backend Unit Tests
+        if: steps.filter.outputs.backend == 'true'
+        working-directory: backend
+        run: npm run test
+        env:
+          CI: true
+
+      # Copied from https://nextjs.org/docs/pages/building-your-application/deploying/ci-build-caching#github-actions
+      - name: NextJS Cache
+        if: steps.filter.outputs.frontend == 'true'
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/frontend/.next/cache
+          # Generate a new cache whenever frontend packages or source files change.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('frontend/package-lock.json', 'common/package-lock.json') }}-${{ hashFiles('frontend/**/*.js', 'frontend/**/*.jsx', 'frontend/**/*.ts', 'frontend/**/*.tsx', 'common/**/*.ts', 'common/**/*.tsx') }}
+          # If source files changed but frontend packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('frontend/package-lock.json', 'common/package-lock.json') }}-
 
       - name: Install Frontend Dependencies
+        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm ci
       
-      - name: Run Unit Tests
+      - name: Run Frontend Unit Tests
+        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm run test:unit
       
       - name: Install Playwright Browsers
+        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npx playwright install --with-deps
 
       - name: Build Frontend
+        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm run build:test
 
       - name: Run Tests
+        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm run test:playwright
         env:
@@ -56,7 +93,7 @@ jobs:
 
       - name: Save Playwright Report
         uses: actions/upload-artifact@v5
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() }} && steps.filter.outputs.frontend == 'true'
         with:
           name: playwright-report
           path: frontend/playwright-report/

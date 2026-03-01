@@ -173,7 +173,7 @@ describe('getPerformanceStats', () => {
                 draws: { total: 1, white: 1, black: 0 },
                 losses: { total: 0, white: 0, black: 0 },
                 rating: { total: 2296, white: 2134, black: 2471 },
-                normalizedRating: { total: 2296, white: 2134, black: 2403 },
+                normalizedRating: { total: 2296, white: 2134, black: 2471 },
                 avgOppRating: { total: 2103, white: 2134, black: 2071 },
                 normalizedAvgOppRating: { total: 2103, white: 2134, black: 2071 },
                 cohortRatings: {
@@ -182,7 +182,7 @@ describe('getPerformanceStats', () => {
                         draws: { total: 0, white: 0, black: 0 },
                         losses: { total: 0, white: 0, black: 0 },
                         rating: { total: 2471, white: 0, black: 2471 },
-                        normalizedRating: { total: 2403, white: 0, black: 2403 },
+                        normalizedRating: { total: 2471, white: 0, black: 2471 },
                         avgOppRating: { total: 2071, white: 0, black: 2071 },
                         normalizedAvgOppRating: { total: 2071, white: 0, black: 2071 },
                     },
