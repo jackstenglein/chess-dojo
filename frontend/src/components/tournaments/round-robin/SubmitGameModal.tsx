@@ -2,7 +2,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { User } from '@/database/user';
 import { RoundRobin, RoundRobinPlayer } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -88,11 +87,14 @@ export function SubmitGameModal({
 
         try {
             request.onStart();
-
             // Simulate API call for now
             await new Promise<void>((resolve) => setTimeout(resolve, 0));
             request.onSuccess('Game submitted');
-            handleMismatchClose();
+            setShowMismatch(false);
+            onClose();
+            setGameUrl('');
+            setSelectedOpponent('');
+            setColorPlayed('White');
         } catch (err: unknown) {
             request.onFailure(err);
         }
@@ -105,11 +107,8 @@ export function SubmitGameModal({
     };
 
     const handleMismatchClose = () => {
-        setErrors({});
         setShowMismatch(false);
-        onClose();
-        request.reset();
-        setGameUrl('');
+        handleClose();
         setSelectedOpponent('');
         setColorPlayed('White');
     };
@@ -165,12 +164,12 @@ export function SubmitGameModal({
                         >
                             Cancel
                         </Button>
-                        <LoadingButton
+                        <Button
                             loading={request.isLoading()}
                             onClick={() => handleMismatchSubmit()}
                         >
                             Confirm
-                        </LoadingButton>
+                        </Button>
                     </DialogActions>
                 </Dialog>
                 <RequestSnackbar request={request} showSuccess />
@@ -198,9 +197,9 @@ export function SubmitGameModal({
                     <Button disabled={request.isLoading()} onClick={handleClose}>
                         Cancel
                     </Button>
-                    <LoadingButton loading={request.isLoading()} onClick={handleSubmit}>
+                    <Button loading={request.isLoading()} onClick={handleSubmit}>
                         Submit
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
             <RequestSnackbar request={request} showSuccess />

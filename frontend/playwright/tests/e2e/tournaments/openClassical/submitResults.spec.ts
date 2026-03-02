@@ -35,7 +35,7 @@ async function fillForm(
     }
 }
 
-test.describe.serial('Submit Results Page', () => {
+test.describe('Submit Results Page', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/tournaments/open-classical/submit-results');
 

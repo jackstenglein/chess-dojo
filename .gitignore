@@ -2,5 +2,3 @@
 node_modules/
 .todo
 .cursor/
-.env.development
-.vscode/
