@@ -1,4 +1,5 @@
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
+import { logger } from '@/logging/logger';
 import { Chess } from '@jackstenglein/chess';
 import { GameImportTypes } from '@jackstenglein/chess-dojo-common/src/database/game';
 import {
@@ -59,15 +60,24 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
         return option.label;
     };
 
-    const changeFen = (_: React.SyntheticEvent, value: string | PositionFormOption | null) => {
+    const changeFen = (value: string | PositionFormOption | null) => {
         setError('');
 
         if (!value) {
             setFen('');
         } else if (typeof value === 'string') {
             try {
-                new Chess({ fen: value });
                 setFen(value);
+                const valueTokens = value.split(' ');
+                const position = positions.find((p) => {
+                    const pTokens = p.fen.split(' ');
+                    return pTokens.slice(0, 4).every((token, idx) => token === valueTokens[idx]);
+                });
+                if (position) {
+                    setInputValue(getOptionLabel(position));
+                } else {
+                    setInputValue(value);
+                }
             } catch {
                 setFen('');
             }
@@ -84,21 +94,23 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                 type: GameImportTypes.fen,
             });
         } catch (err) {
+            logger.warn?.(`Invalid FEN: `, err);
             setError('Invalid FEN');
         }
     };
 
     const onChangeBoard = (value: string) => {
-        setFen(value);
-        const valueTokens = value.split(' ');
-        const position = positions.find((p) => {
-            const pTokens = p.fen.split(' ');
-            return pTokens.slice(0, 4).every((token, idx) => token === valueTokens[idx]);
-        });
-        if (position) {
-            setInputValue(getOptionLabel(position));
-        } else {
-            setInputValue(value);
+        changeFen(value);
+    };
+
+    const onBlur = () => {
+        try {
+            if (inputValue) {
+                new Chess({ fen: inputValue });
+                changeFen(inputValue);
+            }
+        } catch {
+            // Input value is not a FEN, so we shouldn't do anything
         }
     };
 
@@ -122,12 +134,13 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                             />
                         )}
                         isOptionEqualToValue={(a, b) => a.id === b.id}
-                        onChange={changeFen}
+                        onChange={(_, value) => changeFen(value)}
                         inputValue={inputValue}
                         onInputChange={(_e, value) => {
                             setInputValue(value);
                         }}
-                        data-cy='position-entry'
+                        onBlur={onBlur}
+                        data-testid='position-entry'
                         freeSolo
                         selectOnFocus
                         blurOnSelect

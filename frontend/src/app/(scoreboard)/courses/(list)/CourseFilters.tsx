@@ -89,7 +89,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
     };
 
     return (
-        <Stack data-cy='course-filters' sx={{ pt: 0.5, pb: 2 }} spacing={{ xs: 3, sm: 4 }}>
+        <Stack data-testid='course-filters' sx={{ pt: 0.5, pb: 2 }} spacing={{ xs: 3, sm: 4 }}>
             <Accordion
                 expanded={forceExpansion || expanded === 'categories'}
                 onChange={handleAccordionChange('categories')}

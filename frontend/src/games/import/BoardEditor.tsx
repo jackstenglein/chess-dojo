@@ -415,11 +415,10 @@ function getEnPassantOptions(fen: string): string[] {
         const rank = board[rankIdx];
         for (let i = 0; i < 8; i++) {
             const piece = rank[i];
-            if (piece && piece.type === 'p' && piece.color === color) {
+            if (piece?.type === 'p' && piece.color === color) {
                 const leftPiece = rank[i - 1];
                 if (
-                    leftPiece &&
-                    leftPiece.type === 'p' &&
+                    leftPiece?.type === 'p' &&
                     leftPiece.color !== color &&
                     board[captureRankIdx][i - 1] === null
                 ) {
@@ -428,8 +427,7 @@ function getEnPassantOptions(fen: string): string[] {
 
                 const rightPiece = rank[i + 1];
                 if (
-                    rightPiece &&
-                    rightPiece.type === 'p' &&
+                    rightPiece?.type === 'p' &&
                     rightPiece.color !== color &&
                     board[captureRankIdx][i + 1] === null
                 ) {

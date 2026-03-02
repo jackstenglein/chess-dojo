@@ -77,7 +77,7 @@ export class Stockfish17 extends UciEngine {
 
 export const sharedWasmMemory = (lo: number, hi = 32767): WebAssembly.Memory => {
     let shrink = 4; // 32767 -> 24576 -> 16384 -> 12288 -> 8192 -> 6144 -> etc
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
         try {
             return new WebAssembly.Memory({ shared: true, initial: lo, maximum: hi });

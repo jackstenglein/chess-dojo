@@ -149,9 +149,9 @@ export function VisibilityIcon({
                     }
                 >
                     {game.unlisted ? (
-                        <VisibilityOff data-cy='unlisted-icon' color='error' />
+                        <VisibilityOff data-testid='unlisted-icon' color='error' />
                     ) : (
-                        <Visibility data-cy='public-icon' sx={{ color: 'text.secondary' }} />
+                        <Visibility data-testid='public-icon' sx={{ color: 'text.secondary' }} />
                     )}
                 </IconButton>
             </Tooltip>

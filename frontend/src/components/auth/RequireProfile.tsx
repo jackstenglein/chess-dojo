@@ -3,8 +3,7 @@
 import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
-import { hasCreatedProfile, SubscriptionStatus } from '@/database/user';
-import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { hasCreatedProfile } from '@/database/user';
 import { AxiosError } from 'axios';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -28,33 +27,12 @@ export function RequireProfile() {
         if (status === AuthStatus.Authenticated && !request.isSent()) {
             request.onStart();
             api.checkUserAccess()
-                .then(() => {
+                .then((resp) => {
                     request.onSuccess();
-                    updateUser({
-                        subscriptionStatus: SubscriptionStatus.Subscribed,
-                        paymentInfo: {
-                            customerId: 'WIX',
-                            subscriptionId: 'WIX',
-                            subscriptionTier: SubscriptionTier.Basic,
-                            ...user?.paymentInfo,
-                            subscriptionStatus: SubscriptionStatus.Subscribed,
-                        },
-                    });
+                    updateUser(resp.data);
                 })
                 .catch((err: AxiosError) => {
                     request.onFailure(err);
-                    if (err.response?.status === 403) {
-                        updateUser({
-                            subscriptionStatus: SubscriptionStatus.NotSubscribed,
-                            paymentInfo: {
-                                customerId: 'WIX',
-                                subscriptionId: 'WIX',
-                                subscriptionTier: SubscriptionTier.Free,
-                                ...user?.paymentInfo,
-                                subscriptionStatus: SubscriptionStatus.NotSubscribed,
-                            },
-                        });
-                    }
                 });
         }
     }, [request, api, status, updateUser, user]);

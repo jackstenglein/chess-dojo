@@ -73,7 +73,7 @@ export const SignInForm = () => {
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-cy='title' mb={4}>
+            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
                 ChessDojo
             </Typography>
 
@@ -119,7 +119,7 @@ export const SignInForm = () => {
                     }}
                 />
                 <LoadingButton
-                    data-cy='signin-button'
+                    data-testid='signin-button'
                     variant='contained'
                     fullWidth
                     sx={{
@@ -136,7 +136,7 @@ export const SignInForm = () => {
 
                 <Stack direction='row' justifyContent='space-between' sx={{ width: 1, mt: -2 }}>
                     <Button
-                        data-cy='signup-button'
+                        data-testid='signup-button'
                         variant='text'
                         sx={{ textTransform: 'none' }}
                         component={Link}
@@ -145,7 +145,7 @@ export const SignInForm = () => {
                         Sign Up
                     </Button>
                     <Button
-                        data-cy='forgot-password-button'
+                        data-testid='forgot-password-button'
                         variant='text'
                         sx={{ textTransform: 'none', alignSelf: 'end' }}
                         component={Link}

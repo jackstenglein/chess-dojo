@@ -12,16 +12,13 @@ import useSaveGame from './useSaveGame';
 /**
  * A hook that encapsulates functionality for the UnsavedGameBanner and UnsavedGameIcon.
  */
-export function useUnsavedGame(chess?: Chess) {
+export function useUnsavedGame(chessProp?: Chess) {
     const [showDialog, setShowDialog] = useState(false);
     const [showBanner, setShowBanner] = useState(true);
     const { createGame, stagedGame, setStagedGame, request } = useSaveGame();
     const { chess: chessContext } = useChess();
 
-    if (!chess) {
-        chess = chessContext;
-    }
-
+    const chess = chessProp ?? chessContext;
     const onSubmit = async (form: SaveGameForm) => {
         if (!chess) {
             return;
@@ -33,10 +30,12 @@ export function useUnsavedGame(chess?: Chess) {
         chess.setHeader('Date', toPgnDate(form.date) ?? '???.??.??');
 
         const pgnText = chess.pgn.render();
-        const req: CreateGameRequest = stagedGame ?? {
-            pgnText,
-            type: GameImportTypes.manual,
-        };
+        const req: CreateGameRequest = stagedGame
+            ? { ...stagedGame }
+            : {
+                  pgnText,
+                  type: GameImportTypes.manual,
+              };
 
         req.pgnText = pgnText;
         req.publish = form.publish;

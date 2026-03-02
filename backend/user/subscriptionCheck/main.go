@@ -75,21 +75,14 @@ func updateUser(user *database.User) bool {
 	if !isWix(user) {
 		return false
 	}
-	if user.PaymentInfo.IsSubscribed() {
-		return false
-	}
 
 	isForbidden, _ := access.IsForbidden(user.WixEmail, 0)
 	if !isForbidden {
 		return false
 	}
 
-	user.PaymentInfo = &database.PaymentInfo{
-		CustomerId:         "WIX",
-		SubscriptionId:     "WIX",
-		SubscriptionStatus: database.SubscriptionStatus_Canceled,
-		SubscriptionTier:   database.SubscriptionTier_Basic,
-	}
+	user.SubscriptionStatus = database.SubscriptionStatus_Canceled
+	user.SubscriptionTier = database.SubscriptionTier_Free
 	return true
 }
 

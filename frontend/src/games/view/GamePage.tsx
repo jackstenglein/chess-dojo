@@ -22,6 +22,8 @@ import {
     UpdateGameRequest,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Box } from '@mui/material';
+import { isAxiosError } from 'axios';
+import { notFound } from 'next/navigation';
 import { useEffect } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
 import PgnErrorBoundary from './PgnErrorBoundary';
@@ -61,6 +63,14 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
 
     if (status === AuthStatus.Loading) {
         return <LoadingPage />;
+    }
+
+    if (
+        request.isFailure() &&
+        isAxiosError(request.error) &&
+        request.error.response?.status === 404
+    ) {
+        notFound();
     }
 
     const onSave = (headers: GameHeader, orientation: GameOrientation) => {

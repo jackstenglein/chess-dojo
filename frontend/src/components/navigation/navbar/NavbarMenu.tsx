@@ -38,7 +38,6 @@ import {
     Notifications,
     Person2 as Person2Icon,
     Psychology,
-    RocketLaunch,
     Scoreboard,
     Sell,
     SignalCellularAlt,
@@ -47,11 +46,7 @@ import {
     Storefront,
     EmojiEvents as Tournaments,
 } from '@mui/icons-material';
-import AutoGraphIcon from '@mui/icons-material/AutoGraph';
-import GroupIcon from '@mui/icons-material/Group';
-import LanguageIcon from '@mui/icons-material/Language';
 import SearchIcon from '@mui/icons-material/Search';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import {
     Badge,
     Button,
@@ -70,7 +65,22 @@ import {
 import React, { ReactNode, useState, type JSX } from 'react';
 import DarkModeToggle from './DarkModeToggle';
 import ProfileButton from './ProfileButton';
-import UnauthenticatedMenu, { ExtraSmallMenuUnauthenticated } from './UnauthenticatedMenu';
+import { TimerButton, TimerMenuItem } from './TimerButton';
+import UnauthenticatedMenu from './UnauthenticatedMenu';
+
+const SEARCH_NAVBAR_ITEM = {
+    id: 'search',
+    name: 'Search Users',
+    icon: <SearchIcon />,
+    href: '/scoreboard/search',
+};
+
+const HELP_NAVBAR_ITEM = {
+    id: 'help',
+    name: 'Help',
+    icon: <Help />,
+    href: '/help',
+};
 
 const config = getConfig();
 
@@ -86,7 +96,7 @@ export const Logo = () => {
                 marginRight: '15px',
             }}
         >
-            <ChessDojoIcon sx={{ color: 'white', fontSize: { xs: '50px', md: '60px' } }} />
+            <ChessDojoIcon sx={{ color: 'white', fontSize: { xs: '50px', md: '50px' } }} />
         </Link>
     );
 };
@@ -108,80 +118,10 @@ export interface NavbarItem {
 function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
     return [
         {
-            id: 'newsfeed',
-            name: 'Newsfeed',
-            icon: <Feed />,
-            href: '/newsfeed',
-        },
-        {
             id: 'training-plan',
             name: 'Training Plan',
             icon: <Checklist />,
             href: '/profile?view=progress',
-        },
-        {
-            id: 'scoreboard',
-            name: 'Scoreboard',
-            icon: <Scoreboard />,
-            onClick: () => toggleExpansion('scoreboard'),
-            children: [
-                {
-                    id: 'my-cohort',
-                    name: 'My Cohort',
-                    icon: <GroupIcon />,
-                    href: '/scoreboard',
-                },
-                {
-                    id: 'full-dojo',
-                    name: 'Full Dojo',
-                    icon: <LanguageIcon />,
-                    href: '/scoreboard/dojo',
-                },
-                {
-                    id: 'followers',
-                    name: 'Followers',
-                    icon: <ThumbUpIcon />,
-                    href: '/scoreboard/following',
-                },
-                {
-                    id: 'search-users',
-                    name: 'Search Users',
-                    icon: <SearchIcon />,
-                    href: '/scoreboard/search',
-                },
-                {
-                    id: 'statistics',
-                    name: 'Statistics',
-                    icon: <AutoGraphIcon />,
-                    href: '/scoreboard/stats',
-                },
-            ],
-        },
-        {
-            id: 'tournaments',
-            name: 'Tournaments',
-            icon: <Tournaments />,
-            onClick: () => toggleExpansion('tournaments'),
-            children: [
-                {
-                    id: 'round-robin',
-                    name: 'Round Robin',
-                    icon: <CrossedSwordIcon />,
-                    href: '/tournaments/round-robin',
-                },
-                {
-                    id: 'open-classical',
-                    name: 'Open Classical',
-                    icon: <TournamentBracketIcon />,
-                    href: '/tournaments/open-classical',
-                },
-                {
-                    id: 'dojo-liga',
-                    name: 'DojoLiga',
-                    icon: <MilitaryTech />,
-                    href: '/tournaments/liga',
-                },
-            ],
         },
         {
             id: 'games',
@@ -216,11 +156,60 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
             href: '/calendar',
         },
         {
-            id: 'material',
-            name: 'Material',
-            icon: <MenuBook />,
-            onClick: () => toggleExpansion('material'),
+            id: 'tournaments',
+            name: 'Tournaments',
+            icon: <Tournaments />,
+            onClick: () => toggleExpansion('tournaments'),
             children: [
+                {
+                    id: 'round-robin',
+                    name: 'Round Robin',
+                    icon: <CrossedSwordIcon />,
+                    href: '/tournaments/round-robin',
+                },
+                {
+                    id: 'open-classical',
+                    name: 'Open Classical',
+                    icon: <TournamentBracketIcon />,
+                    href: '/tournaments/open-classical',
+                },
+                {
+                    id: 'dojo-liga',
+                    name: 'DojoLiga',
+                    icon: <MilitaryTech />,
+                    href: '/tournaments/liga',
+                },
+            ],
+        },
+        {
+            id: 'live-classes',
+            name: (
+                <>
+                    Live Classes{' '}
+                    <Chip label='NEW' color='success' size='small' sx={{ ml: 1 }} />{' '}
+                </>
+            ),
+            icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
+            href: '/live-classes',
+        },
+        {
+            id: 'learn',
+            name: 'Learn',
+            icon: <MenuBook />,
+            onClick: () => toggleExpansion('learn'),
+            children: [
+                {
+                    id: 'live-classes',
+                    name: 'Live Classes',
+                    icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
+                    href: '/learn/live-classes',
+                },
+                {
+                    id: 'puzzles',
+                    name: 'Puzzles',
+                    icon: <Speed />,
+                    href: '/tests',
+                },
                 {
                     id: 'courses',
                     name: 'Courses',
@@ -228,52 +217,78 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
                     href: '/courses',
                 },
                 {
-                    id: 'live-classes',
-                    name: 'Live Classes',
-                    icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
-                    href: '/material/live-classes',
-                },
-                {
-                    id: 'tests',
-                    name: 'Tests',
-                    icon: <Speed />,
-                    href: '/tests',
-                },
-                {
                     id: 'books',
                     name: 'Books',
                     icon: <AutoStories />,
-                    href: '/material/books',
+                    href: '/learn/books',
                 },
                 {
                     id: 'sparring-positions',
                     name: 'Sparring Positions',
                     icon: <LocalFireDepartment />,
-                    href: '/material/sparring',
+                    href: '/learn/sparring',
                 },
                 {
                     id: 'model-annotations',
                     name: 'Model Annotations',
                     icon: <BorderColor />,
-                    href: '/material/modelgames',
+                    href: '/learn/modelgames',
                 },
                 {
                     id: 'games-to-memorize',
                     name: 'Games to Memorize',
                     icon: <Psychology />,
-                    href: '/material/memorizegames',
-                },
-                {
-                    id: 'rating-conversions',
-                    name: 'Rating Conversions',
-                    icon: <SignalCellularAlt />,
-                    href: '/material/ratings',
+                    href: '/learn/memorizegames',
                 },
                 {
                     id: 'guides',
                     name: 'Guides',
                     icon: <Info />,
-                    href: '/material/guides',
+                    href: '/learn/guides',
+                },
+                {
+                    id: 'rating-conversions',
+                    name: 'Rating Conversions',
+                    icon: <SignalCellularAlt />,
+                    href: '/learn/ratings',
+                },
+            ],
+        },
+        {
+            id: 'social',
+            name: 'Social',
+            icon: <Groups />,
+            onClick: () => toggleExpansion('social'),
+            children: [
+                {
+                    id: 'search-users',
+                    name: 'Search Users',
+                    icon: <SearchIcon />,
+                    href: '/scoreboard/search',
+                },
+                {
+                    id: 'newsfeed',
+                    name: 'Newsfeed',
+                    icon: <Feed />,
+                    href: '/newsfeed',
+                },
+                {
+                    id: 'scoreboard',
+                    name: 'Scoreboard',
+                    icon: <Scoreboard />,
+                    href: '/scoreboard',
+                },
+                {
+                    id: 'clubs',
+                    name: 'Clubs',
+                    icon: <Groups />,
+                    href: '/clubs',
+                },
+                {
+                    id: 'blog',
+                    name: 'Blog',
+                    icon: <Forum />,
+                    href: '/blog',
                 },
                 {
                     id: 'discord',
@@ -306,29 +321,6 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
             ],
         },
         {
-            id: 'live-classes',
-            name: (
-                <>
-                    Live Classes{' '}
-                    <Chip label='NEW' color='success' size='small' sx={{ ml: 1 }} />{' '}
-                </>
-            ),
-            icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
-            href: '/live-classes',
-        },
-        {
-            id: 'clubs',
-            name: 'Clubs',
-            icon: <Groups />,
-            href: '/clubs',
-        },
-        {
-            id: 'blog',
-            name: 'Blog',
-            icon: <Forum />,
-            href: '/blog',
-        },
-        {
             id: 'shop',
             name: 'Shop',
             icon: <Sell />,
@@ -339,12 +331,6 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
                     name: 'Courses',
                     icon: <ImportContacts />,
                     href: '/courses',
-                },
-                {
-                    id: 'coaching',
-                    name: 'Coaching',
-                    icon: <RocketLaunch />,
-                    href: '/coaching',
                 },
                 {
                     id: 'merch',
@@ -364,19 +350,10 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
     ];
 }
 
-function helpItem(): NavbarItem {
-    return {
-        id: 'help',
-        name: 'Help',
-        icon: <Help />,
-        href: '/help',
-    };
-}
-
 function NotificationsMenuItem(): JSX.Element {
     const { notifications } = useNotifications();
     return (
-        <MenuItem href='/notifications'>
+        <MenuItem component={Link} href='/notifications'>
             <ListItemIcon>
                 <Badge badgeContent={notifications.length} color='secondary' overlap='circular'>
                     <Notifications />
@@ -517,11 +494,11 @@ export const NavMenuItem: React.FC<{
     );
 };
 
-function HelpButton() {
+function NavIconButton({ item }: { item: NavbarItem }) {
     return (
-        <Tooltip key='help' title='Help'>
-            <IconButton data-cy='Help' key='help' sx={{ color: 'white' }} href='/help'>
-                <Help />
+        <Tooltip title={item.name}>
+            <IconButton data-testid={item.name} sx={{ color: 'white' }} href={item.href ?? ''}>
+                {item.icon}
             </IconButton>
         </Tooltip>
     );
@@ -531,17 +508,17 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
     const auth = useAuth();
 
-    const showAll = useMediaQuery('(min-width:1856px)');
-    const hide2 = useMediaQuery('(min-width:1694px)');
-    const hide3 = useMediaQuery('(min-width:1599px)');
-    const hide4 = useMediaQuery('(min-width:1388px)');
-    const hide5 = useMediaQuery('(min-width:1249px)');
-    const hide6 = useMediaQuery('(min-width:1116px)');
-    const hide7 = useMediaQuery('(min-width:990px)');
-    const hide8 = useMediaQuery('(min-width:797px)');
+    const showAll = useMediaQuery('(min-width:1500px)');
+    const hide2 = useMediaQuery('(min-width:1341px)');
+    const hide3 = useMediaQuery('(min-width:1217px)');
+    const hide4 = useMediaQuery('(min-width:1000px)');
+    const hide5 = useMediaQuery('(min-width:810px)');
+    const hide6 = useMediaQuery('(min-width:450px)');
 
-    const showHelp = useMediaQuery('(min-width:624px)');
-    const showNewsfeed = useMediaQuery('(min-width:595px)');
+    const showNewsfeed = useMediaQuery('(min-width:720px)');
+    const showHelp = useMediaQuery('(min-width:680px)');
+    const showSearch = useMediaQuery('(min-width:640px)');
+    const showTimer = useMediaQuery('(min-width:584px)');
     const showNotifications = useMediaQuery('(min-width:567px)');
     const showProfileDropdown = useMediaQuery('(min-width:542px)');
 
@@ -562,12 +539,6 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         startItemCount = startItems.length - 5;
     } else if (hide6) {
         startItemCount = startItems.length - 6;
-    } else if (hide7) {
-        startItemCount = startItems.length - 7;
-    } else if (hide8) {
-        startItemCount = startItems.length - 8;
-    } else {
-        startItemCount = startItems.length - 9;
     }
 
     const onClose = () => {
@@ -611,19 +582,38 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         );
     }
 
+    if (showSearch) {
+        endItems.push(<NavIconButton key='search' item={SEARCH_NAVBAR_ITEM} />);
+    } else {
+        menuItems.push(
+            <NavMenuItem
+                key='search'
+                item={SEARCH_NAVBAR_ITEM}
+                openItems={openItems}
+                handleClose={onClose}
+            />,
+        );
+    }
+
     if (showNotifications) {
         endItems.push(<NotificationButton key='notifications' />);
     } else {
         menuItems.push(<NotificationsMenuItem key='notifications' />);
     }
 
+    if (showTimer) {
+        endItems.push(<TimerButton key='timer' />);
+    } else {
+        menuItems.push(<TimerMenuItem key='timer' />);
+    }
+
     if (showHelp) {
-        endItems.push(HelpButton());
+        endItems.push(<NavIconButton key='help' item={HELP_NAVBAR_ITEM} />);
     } else {
         menuItems.push(
             <NavMenuItem
                 key='help'
-                item={helpItem()}
+                item={HELP_NAVBAR_ITEM}
                 openItems={openItems}
                 handleClose={onClose}
             />,
@@ -634,6 +624,7 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         endItems.push(<ProfileButton key='profileDropdown' />);
     } else {
         menuItems.push(
+            <DarkModeToggle key='darkMode' />,
             <MenuItem
                 key='signout'
                 onClick={() => {
@@ -658,7 +649,7 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     };
 }
 
-const LargeMenu = ({ meetingCount }: MenuProps) => {
+const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
     const auth = useAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -687,7 +678,7 @@ const LargeMenu = ({ meetingCount }: MenuProps) => {
                     Help
                 </Button>
 
-                <Button onClick={auth.signout} sx={{ color: 'white' }}>
+                <Button onClick={auth.signout} color='error'>
                     Sign Out
                 </Button>
             </>
@@ -697,14 +688,18 @@ const LargeMenu = ({ meetingCount }: MenuProps) => {
     return (
         <>
             <Logo />
-            <Stack spacing={1} direction='row' sx={{ flexGrow: 1 }}>
+            <Stack
+                spacing={1}
+                direction='row'
+                sx={{ flexGrow: 1, justifyContent: startItems.length ? 'flex-start' : 'flex-end' }}
+            >
                 {startItems}
 
                 {menuItems.length > 0 && (
                     <>
                         <Tooltip title='More'>
                             <IconButton
-                                data-cy='navbar-more-button'
+                                data-testid='navbar-more-button'
                                 onClick={handleOpen}
                                 sx={{ color: 'white' }}
                             >
@@ -726,128 +721,6 @@ const LargeMenu = ({ meetingCount }: MenuProps) => {
             {endItems}
         </>
     );
-};
-
-const ExtraSmallMenu = ({ meetingCount }: MenuProps) => {
-    const auth = useAuth();
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const { notifications } = useNotifications();
-    const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-
-    const startItems = allStartItems((item: string) =>
-        setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
-    );
-
-    if (auth.status === AuthStatus.Unauthenticated) {
-        return <ExtraSmallMenuUnauthenticated />;
-    }
-
-    const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-        setOpenItems({});
-    };
-
-    const profileCreated = hasCreatedProfile(auth.user);
-
-    let startItemsJsx: JSX.Element[] = [];
-    if (profileCreated) {
-        startItemsJsx = startItems.map((item) => (
-            <NavMenuItem
-                key={item.id}
-                item={item}
-                openItems={openItems}
-                handleClose={handleClose}
-                meetingCount={meetingCount}
-            />
-        ));
-    }
-
-    return (
-        <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            sx={{ flexGrow: 1, height: 1 }}
-        >
-            <Logo />
-            <IconButton
-                data-cy='navbar-more-button'
-                size='medium'
-                aria-label='navigation menu'
-                aria-controls='menu-appbar'
-                aria-haspopup='true'
-                onClick={handleOpen}
-                color='inherit'
-            >
-                <MenuIcon />
-            </IconButton>
-            <Menu
-                id='menu-appbar'
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                {!profileCreated && (
-                    <MenuItem component={Link} href='/profile'>
-                        <ListItemIcon>
-                            <Person2Icon />
-                        </ListItemIcon>
-                        <Typography textAlign='center'>Profile</Typography>
-                    </MenuItem>
-                )}
-
-                {startItemsJsx}
-
-                <MenuItem component={Link} href='/notifications'>
-                    <ListItemIcon>
-                        <Badge
-                            badgeContent={notifications.length}
-                            color='secondary'
-                            overlap='circular'
-                        >
-                            <Notifications />
-                        </Badge>
-                    </ListItemIcon>
-                    <Typography textAlign='center'>Notifications</Typography>
-                </MenuItem>
-
-                <MenuItem component={Link} href='/help'>
-                    <ListItemIcon>
-                        <Help />
-                    </ListItemIcon>
-                    <Typography textAlign='center'>Help</Typography>
-                </MenuItem>
-
-                <DarkModeToggle />
-
-                <MenuItem
-                    onClick={() => {
-                        auth.signout();
-                        handleClose();
-                    }}
-                >
-                    <ListItemIcon>
-                        <Logout color='error' />
-                    </ListItemIcon>
-                    <Typography textAlign='center' color='error'>
-                        Sign Out
-                    </Typography>
-                </MenuItem>
-            </Menu>
-        </Stack>
-    );
-};
-
-const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
-    const largeMenu = useMediaQuery('(min-width:450px)');
-    if (largeMenu) {
-        return <LargeMenu meetingCount={meetingCount} />;
-    }
-    return <ExtraSmallMenu meetingCount={meetingCount} />;
 };
 
 const NavbarMenu = ({ meetingCount }: MenuProps) => {

@@ -132,7 +132,7 @@ const Editor: React.FC<EditorProps> = ({ openClassical, onSuccess }) => {
                 <DialogContent>
                     <Stack pt={1} spacing={3}>
                         <TextField
-                            data-cy='region'
+                            data-testid='region'
                             label='Region'
                             select
                             required
@@ -146,7 +146,7 @@ const Editor: React.FC<EditorProps> = ({ openClassical, onSuccess }) => {
                         </TextField>
 
                         <TextField
-                            data-cy='section'
+                            data-testid='section'
                             label='Section'
                             select
                             required

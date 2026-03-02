@@ -1,11 +1,26 @@
+import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useNotifications } from '@/api/cache/Cache';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { Badge, IconButton, Menu, MenuItem, MenuList, Tooltip } from '@mui/material';
+import {
+    Badge,
+    Button,
+    CircularProgress,
+    Divider,
+    IconButton,
+    Menu,
+    MenuItem,
+    MenuList,
+    Stack,
+    Tooltip,
+} from '@mui/material';
 import { useState } from 'react';
 import { NotificationListItem } from './NotificationListItem';
 
 const NotificationButton = () => {
-    const { notifications } = useNotifications();
+    const { notifications, clearNotifications } = useNotifications();
+    const api = useApi();
+    const clearRequest = useRequest();
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -17,10 +32,28 @@ const NotificationButton = () => {
         setAnchorEl(null);
     };
 
+    const onClearAll = () => {
+        clearRequest.onStart();
+        api.deleteAllNotifications()
+            .then(() => {
+                clearNotifications();
+                clearRequest.onSuccess();
+                handleClose();
+            })
+            .catch((err) => {
+                clearRequest.onFailure(err);
+            });
+    };
+
     return (
         <>
+            <RequestSnackbar request={clearRequest} />
             <Tooltip title='Notifications'>
-                <IconButton data-cy='Notifications' onClick={handleOpen} sx={{ color: 'white' }}>
+                <IconButton
+                    data-testid='Notifications'
+                    onClick={handleOpen}
+                    sx={{ color: 'white' }}
+                >
                     <Badge badgeContent={notifications.length} color='secondary' overlap='circular'>
                         <NotificationsIcon />
                     </Badge>
@@ -41,6 +74,24 @@ const NotificationButton = () => {
                 }}
             >
                 <MenuList>
+                    {notifications.length > 0 && (
+                        <>
+                            <Stack direction='row' justifyContent='center' sx={{ pb: 1 }}>
+                                {clearRequest.isLoading() ? (
+                                    <CircularProgress size={24} />
+                                ) : (
+                                    <Button
+                                        data-testid='clear-all-notifications'
+                                        size='small'
+                                        onClick={onClearAll}
+                                    >
+                                        Clear All
+                                    </Button>
+                                )}
+                            </Stack>
+                            <Divider />
+                        </>
+                    )}
                     {notifications.map((n) => (
                         <NotificationListItem key={n.id} notification={n} menuItem />
                     ))}

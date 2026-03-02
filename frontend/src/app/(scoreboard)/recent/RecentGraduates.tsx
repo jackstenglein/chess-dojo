@@ -59,6 +59,15 @@ function getTimeframeOptions() {
 }
 
 const timeframeOptions = getTimeframeOptions();
+const ANNOTATED_GAMES_TASK_ID = '4d23d689-1284-46e6-b2a2-4b4bfdc37174';
+
+function getAnnotatedGamesCount(graduation: Graduation): number {
+    const progress = graduation.progress?.[ANNOTATED_GAMES_TASK_ID];
+    if (!progress?.counts) {
+        return 0;
+    }
+    return progress.counts[graduation.previousCohort] ?? progress.counts.ALL_COHORTS ?? 0;
+}
 
 const graduateTableColumns: GridColDef<Graduation>[] = [
     {
@@ -152,6 +161,19 @@ const graduateTableColumns: GridColDef<Graduation>[] = [
         ),
     },
     {
+        field: 'gamesAnnotated',
+        headerName: 'Games Annotated',
+        headerAlign: 'center',
+        align: 'center',
+        flex: 1,
+        valueGetter: (_value, row) => getAnnotatedGamesCount(row),
+        renderCell: (params) => (
+            <Stack height='30px' justifyContent='center'>
+                {params.value}
+            </Stack>
+        ),
+    },
+    {
         field: 'createdAt',
         headerName: 'Date',
         headerAlign: 'center',
@@ -199,7 +221,6 @@ const RecentGraduates = () => {
 
     const graduations = useMemo(() => {
         const gs = request.data ?? [];
-
         return getUniqueGraduations(
             gs.filter((g) => g.createdAt >= timeframe.minDate && g.createdAt < timeframe.maxDate),
         );
@@ -212,7 +233,7 @@ const RecentGraduates = () => {
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
                     <Typography variant='h6'>Recent Graduates</Typography>
                     <FormControl
-                        data-cy='graduates-timeframe-select'
+                        data-testid='graduates-timeframe-select'
                         size='small'
                         variant='standard'
                     >
@@ -230,7 +251,7 @@ const RecentGraduates = () => {
                         >
                             {timeframeOptions.map((option) => (
                                 <MenuItem
-                                    data-cy={option.label}
+                                    data-testid={option.label}
                                     key={option.label}
                                     value={option.value as unknown as string}
                                 >
@@ -287,7 +308,7 @@ const RecentGraduates = () => {
                         getDetailPanelHeight={getDetailPanelHeight}
                         pagination
                         slotProps={{
-                            root: { 'data-cy': 'recent-graduates-table' },
+                            root: { 'data-testid': 'recent-graduates-table' },
                         }}
                     />
                 </div>

@@ -61,7 +61,7 @@ const CohortsFormSection: React.FC<CohortsFormSectionProps> = ({
             sx={{ width: 1 }}
             error={Boolean(error)}
             helperText={error || helperText}
-            data-cy='cohort-selector'
+            data-testid='cohort-selector'
             displayEmpty={placeholder}
         />
     );

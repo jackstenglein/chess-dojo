@@ -11,7 +11,7 @@ const UpsellAlert: React.FC<UpsellAlertProps> = ({ children }) => {
 
     return (
         <Alert
-            data-cy='upsell-alert'
+            data-testid='upsell-alert'
             severity='warning'
             variant='filled'
             action={

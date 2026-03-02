@@ -92,11 +92,11 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
     onSearch,
 }) => {
     return (
-        <Stack data-cy='search-by-cohort' spacing={2}>
+        <Stack data-testid='search-by-cohort' spacing={2}>
             <FormControl>
                 <InputLabel>Cohort</InputLabel>
                 <Select
-                    data-cy='cohort-select'
+                    data-testid='cohort-select'
                     value={cohort}
                     label='Cohort'
                     onChange={(e) => setCohort(e.target.value)}
@@ -145,7 +145,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
             </Grid>
 
             <LoadingButton
-                data-cy='cohort-search-button'
+                data-testid='cohort-search-button'
                 variant='outlined'
                 loading={isLoading}
                 onClick={onSearch}
@@ -166,8 +166,8 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
     onSearch,
 }) => {
     return (
-        <Stack data-cy='search-by-owner' spacing={2}>
-            <Typography data-cy='owner-search-description' gutterBottom>
+        <Stack data-testid='search-by-owner' spacing={2}>
+            <Typography data-testid='owner-search-description' gutterBottom>
                 Find games that you have uploaded to the Dojo Database. Note that games uploaded
                 previously through Dojo 1.0's Google Form submission will not be matched.
             </Typography>
@@ -200,7 +200,7 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
             </Grid>
 
             <LoadingButton
-                data-cy='owner-search-button'
+                data-testid='owner-search-button'
                 variant='outlined'
                 loading={isLoading}
                 onClick={onSearch}
@@ -249,13 +249,13 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
     };
 
     return (
-        <Stack data-cy='search-by-player' spacing={2}>
+        <Stack data-testid='search-by-player' spacing={2}>
             <Typography gutterBottom>
                 Find games based on player name. Note this is the name as it was recorded in the PGN
                 file.
             </Typography>
             <TextField
-                data-cy='player-name'
+                data-testid='player-name'
                 label='Player Name'
                 value={player}
                 onChange={(e) => setPlayer(e.target.value)}
@@ -264,7 +264,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
             />
 
             <Select
-                data-cy='color'
+                data-testid='color'
                 value={color}
                 label='Color'
                 onChange={(e) => setColor(e.target.value)}
@@ -303,7 +303,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
             </Grid>
 
             <LoadingButton
-                data-cy='player-search-button'
+                data-testid='player-search-button'
                 variant='outlined'
                 loading={isLoading}
                 onClick={handleSearch}
@@ -357,11 +357,11 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
     };
 
     return (
-        <Stack data-cy='search-by-opening' spacing={2}>
+        <Stack data-testid='search-by-opening' spacing={2}>
             <FormControl>
                 <Typography gutterBottom>Find games based on opening ECO Codes</Typography>
                 <TextField
-                    data-cy='opening-eco'
+                    data-testid='opening-eco'
                     value={eco}
                     label='Opening ECO'
                     onChange={(e) => setEco(e.target.value)}
@@ -399,7 +399,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
             </Grid>
 
             <LoadingButton
-                data-cy='opening-search-button'
+                data-testid='opening-search-button'
                 variant='outlined'
                 loading={isLoading}
                 onClick={handleSearch}
@@ -440,10 +440,10 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
     };
 
     return (
-        <Stack data-cy='search-by-position' spacing={2}>
+        <Stack data-testid='search-by-position' spacing={2}>
             <FormControl>
                 <TextField
-                    data-cy='fen'
+                    data-testid='fen'
                     value={fen}
                     label='FEN'
                     onChange={(e) => setFen(e.target.value)}
@@ -453,7 +453,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
             </FormControl>
 
             <LoadingButton
-                data-cy='fen-search-button'
+                data-testid='fen-search-button'
                 variant='outlined'
                 loading={isLoading}
                 onClick={handleSearch}
@@ -488,7 +488,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
 
 const SearchFiles = () => {
     return (
-        <Stack data-cy='search-files' spacing={2}>
+        <Stack data-testid='search-files' spacing={2}>
             <Button href='/profile?view=games' variant='outlined'>
                 Go to My Files
             </Button>

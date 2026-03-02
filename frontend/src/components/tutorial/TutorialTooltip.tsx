@@ -15,7 +15,7 @@ const TutorialTooltip: React.FC<TooltipRenderProps> = ({
 }) => {
     return (
         <Card
-            data-cy='tutorial-tooltip'
+            data-testid='tutorial-tooltip'
             sx={{ maxWidth: 'md', width: { xs: '95vw', sm: undefined } }}
             {...tooltipProps}
         >

@@ -10,6 +10,7 @@ import {
     matchAction,
     modifierKeys,
 } from './boardTools/underboard/settings/KeyboardShortcuts';
+import { KeyboardShortcutsDialog } from './boardTools/underboard/settings/KeyboardShortcutsDialog';
 import { ShortcutAction, ShortcutBindings } from './boardTools/underboard/settings/ShortcutAction';
 import {
     ScrollToMove,
@@ -29,6 +30,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
     const reconcile = useReconcile();
     const [variationBehavior] = useLocalStorage(VariationBehaviorKey, VariationBehavior.Dialog);
     const [variationDialogMove, setVariationDialogMove] = useState<Move | null>(null);
+    const [keyboardShortcutsDialogOpen, setKeyboardShortcutsDialogOpen] = useState<boolean>(false);
     const [keyBindings] = useLocalStorage(ShortcutBindings.key, ShortcutBindings.default);
     const [scrollToMove] = useLocalStorage(ScrollToMove.key, ScrollToMove.default);
 
@@ -59,6 +61,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             }
 
             if (modifierKeys.includes(event.key) && keydownMap) {
+                // eslint-disable-next-line react-hooks/immutability
                 keydownMap.current[event.key] = true;
             }
 
@@ -110,6 +113,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                 opts: {
                     underboardApi: underboardRef.current,
                     toggleOrientation,
+                    setKeyboardShortcutsDialogOpen,
                     setVariationDialogMove:
                         variationBehavior === VariationBehavior.Dialog
                             ? setVariationDialogMove
@@ -126,6 +130,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             toggleOrientation,
             variationBehavior,
             setVariationDialogMove,
+            setKeyboardShortcutsDialogOpen,
             underboardRef,
             reconcile,
             addEngineMoveRef,
@@ -136,6 +141,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
     const onKeyUp = useCallback(
         (event: KeyboardEvent) => {
             if (modifierKeys.includes(event.key) && keydownMap) {
+                // eslint-disable-next-line react-hooks/immutability
                 keydownMap.current[event.key] = false;
             }
         },
@@ -205,11 +211,19 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
         };
     }, [onKeyDown, onKeyUp, onWheel, boardRef]);
 
-    if (!variationDialogMove) {
-        return null;
-    }
-
-    return <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />;
+    return (
+        <>
+            {variationDialogMove && (
+                <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />
+            )}
+            {keyboardShortcutsDialogOpen && (
+                <KeyboardShortcutsDialog
+                    open={keyboardShortcutsDialogOpen}
+                    setOpen={setKeyboardShortcutsDialogOpen}
+                />
+            )}
+        </>
+    );
 };
 
 export default KeyboardHandler;

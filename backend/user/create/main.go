@@ -50,10 +50,8 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 	var paymentInfo *database.PaymentInfo
 	if isForbidden, _ := access.IsForbidden(email, 3*time.Second); !isForbidden {
 		paymentInfo = &database.PaymentInfo{
-			CustomerId:         "WIX",
-			SubscriptionId:     "WIX",
-			SubscriptionStatus: database.SubscriptionStatus_Subscribed,
-			SubscriptionTier:   database.SubscriptionTier_Basic,
+			CustomerId:     "WIX",
+			SubscriptionId: "WIX",
 		}
 	}
 

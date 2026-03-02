@@ -321,7 +321,7 @@ export function ShareTab() {
     };
 
     return (
-        <CardContent data-cy='underboard-tab-share'>
+        <CardContent data-testid='underboard-tab-share'>
             <Stack>
                 <RequestSnackbar request={pdfRequest} />
                 <RequestSnackbar request={cloneRequest} />

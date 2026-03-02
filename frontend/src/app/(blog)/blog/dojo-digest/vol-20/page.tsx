@@ -165,16 +165,10 @@ export default function DojoDigestVol20() {
                         Carl
                     </Link>{' '}
                     tied for first place in a three-way finish at the Charlotte ALTO. One of the
-                    other players in the tie was{' '}
-                    <Link
-                        href='https://www.chessdojo.club/profile/google_116612922603097318426'
-                        target='_blank'
-                    >
-                        Chichinus
-                    </Link>
-                    , whom Carl faced in the final round—where a decisive result would have secured
-                    clear first. Their intense game, played on the top board of the U1800 section,
-                    was broadcast alongside the{' '}
+                    other players in the tie was another Dojoer Eli Eichner, whom Carl faced in the
+                    final round—where a decisive result would have secured clear first. Their
+                    intense game, played on the top board of the U1800 section, was broadcast
+                    alongside the{' '}
                     <Link
                         href='https://www.chess.com/events/2025-charlotte-alto-spring/05/Eichner_Eli_Stein-Labanz_Carl'
                         target='_blank'

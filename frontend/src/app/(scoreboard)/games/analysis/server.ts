@@ -74,7 +74,7 @@ function getPathSegment(url: string | undefined, idx: number): PgnImportResult<s
     let urlObj: URL;
     try {
         urlObj = new URL(url.trim());
-    } catch (error) {
+    } catch (_error) {
         return {
             error: {
                 statusCode: 400,
@@ -185,7 +185,7 @@ function splitPgns(pgns: string, separator = /(1-0|0-1|1\/2-1\/2|\*)(\r?\n)+\[/)
     for (const split of splits) {
         if (isValidResult(split) && games.length > 0) {
             games[games.length - 1] += split;
-        } else if (split.startsWith('[') || split.trim().match(/^\d+/)) {
+        } else if (split.startsWith('[') || /^\d+/.exec(split.trim())) {
             games.push(split);
         } else if (split.trim().length > 0) {
             games.push(`[${split}`);
@@ -355,11 +355,7 @@ export async function getChesscomGame(gameURL?: string): Promise<PgnImportResult
     const gameData = resp.data.game;
 
     // Unstable endpoint not part of the official API
-    if (
-        gameData?.moveTimestamps === undefined ||
-        gameData?.moveList === undefined ||
-        gameData?.pgnHeaders === undefined
-    ) {
+    if (gameData?.moveList === undefined || gameData?.pgnHeaders === undefined) {
         return {
             error: {
                 statusCode: 500,
@@ -382,23 +378,46 @@ export async function getChesscomGame(gameURL?: string): Promise<PgnImportResult
         encodedMoves.push(gameData.moveList.slice(i, i + 2));
     }
 
-    // Convert to milliseconds
-    const moveTimestamps = gameData.moveTimestamps.split(',').map((n) => Number(n) * 100);
-
     const startingPosition = gameData.pgnHeaders.FEN?.toString();
     const game = new Chess({ fen: startingPosition });
 
-    encodedMoves.forEach((encodedMove, idx) => {
-        const timestamp = moveTimestamps[idx];
-        const clk = msToClk(timestamp);
-        const move = tcn.decode(encodedMove);
-
-        game.move(move as CandidateMove);
-        game.setComment(`[%clk ${clk}]`);
-    });
-
     for (const [key, value] of Object.entries(gameData.pgnHeaders)) {
         game.setHeader(key, value.toString());
+    }
+
+    // Timestamps are in deci-seconds -- convert to milliseconds
+    const moveTimestamps = gameData.moveTimestamps?.split(',').map((n) => Number(n) * 100) ?? [];
+
+    for (let i = 0; i < encodedMoves.length; i++) {
+        const encodedMove = encodedMoves[i];
+        const move = tcn.decode(encodedMove);
+        const gameMove = game.move(move as CandidateMove);
+        if (!gameMove) {
+            // Chess.com for some reason notates castling in daily games with
+            // the king moving to the rook's square, which causes the move function
+            // to fail.
+            const king = game.pieces('k', game.turn())[0];
+            if (king?.square === move.from) {
+                if (move.from === 'e8' && move.to === 'h8') {
+                    game.move({ from: 'e8', to: 'g8' });
+                }
+                if (move.from === 'e8' && move.to === 'a8') {
+                    game.move({ from: 'e8', to: 'c8' });
+                }
+                if (move.from === 'e1' && move.to === 'h1') {
+                    game.move({ from: 'e1', to: 'g1' });
+                }
+                if (move.from === 'e1' && move.to === 'a1') {
+                    game.move({ from: 'e1', to: 'c1' });
+                }
+            }
+        }
+
+        if (i < moveTimestamps.length) {
+            const timestamp = moveTimestamps[i];
+            const clk = msToClk(timestamp);
+            game.setComment(`[%clk ${clk}]`);
+        }
     }
 
     return { data: game.pgn.render() };
@@ -410,7 +429,7 @@ export async function getChesscomGame(gameURL?: string): Promise<PgnImportResult
  * @returns The PGN of the game.
  */
 export async function getChesscomEvent(url?: string): Promise<PgnImportResult<string>> {
-    const [, path] = (url ?? '').match(chesscomEventRegex) ?? [];
+    const [, path] = chesscomEventRegex.exec(url ?? '') ?? [];
 
     if (!path) {
         return {

@@ -69,7 +69,7 @@ const RatingsSection = ({ review }: SectionProps) => {
     const dark = !viewer?.enableLightMode;
 
     const preferred = review.ratings
-        ? Object.entries(review.ratings).filter((data) => data[1].isPreferred)[0]
+        ? Object.entries(review.ratings).find((data) => data[1].isPreferred)
         : undefined;
 
     return (

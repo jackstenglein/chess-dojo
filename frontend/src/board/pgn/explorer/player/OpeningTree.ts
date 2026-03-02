@@ -88,7 +88,7 @@ export class OpeningTree {
      * Calculates and saves the list of most recent games matching the current filters.
      */
     private calculateMostRecentGames() {
-        if (!this.gamesSortedByDate || this.gamesSortedByDate.length !== this.gameData.size) {
+        if (this.gamesSortedByDate?.length !== this.gameData.size) {
             this.gamesSortedByDate = [...this.gameData.values()]
                 .sort((lhs: GameData, rhs: GameData) =>
                     rhs.headers.Date.localeCompare(lhs.headers.Date),

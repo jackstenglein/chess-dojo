@@ -63,9 +63,9 @@ export const UpdateDirectoryDialog = ({
     return (
         <Dialog open={true} onClose={request.isLoading() ? undefined : onCancel} fullWidth>
             <DialogTitle>{title}</DialogTitle>
-            <DialogContent data-cy='update-directory-form'>
+            <DialogContent data-testid='update-directory-form'>
                 <TextField
-                    data-cy='update-directory-name'
+                    data-testid='update-directory-name'
                     label='Name'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -121,7 +121,7 @@ export const UpdateDirectoryDialog = ({
                     disabled={disabled}
                     loading={request.isLoading()}
                     onClick={() => onSave(name, visibility, disabled, request)}
-                    data-cy='update-directory-save-button'
+                    data-testid='update-directory-save-button'
                 >
                     {saveLabel}
                 </LoadingButton>

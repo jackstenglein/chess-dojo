@@ -40,7 +40,7 @@ const ScoreboardViewSelector: React.FC<ScoreboardViewSelectorProps> = ({ value, 
 
     return (
         <TextField
-            data-cy='scoreboard-view-selector'
+            data-testid='scoreboard-view-selector'
             id='scoreboard-cohort-select'
             select
             label='View'

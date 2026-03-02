@@ -29,7 +29,7 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     if (!isInTablebase(fen)) {
         return (
-            <Stack data-cy='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
+            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
                 <Typography>
                     Tablebase is only available for positions with 7 pieces or fewer
                 </Typography>
@@ -43,7 +43,7 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     if (!position) {
         return (
-            <Stack data-cy='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
+            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
                 <Typography>No tablebase information found for this position</Typography>
             </Stack>
         );
@@ -120,7 +120,7 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
             borderRadius='4px'
             border='1px solid'
             sx={{ borderColor: 'divider' }}
-            data-cy='explorer-tab-tablebase'
+            data-testid='explorer-tab-tablebase'
         >
             {items}
         </Stack>

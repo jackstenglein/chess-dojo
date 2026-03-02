@@ -124,7 +124,7 @@ const Explorer = () => {
                             icon={<ChessDojoIcon />}
                             iconPosition='start'
                             sx={{ minHeight: '48px' }}
-                            data-cy='explorer-tab-button-dojo'
+                            data-testid='explorer-tab-button-dojo'
                         />
                         <Tab
                             label='Masters'
@@ -132,7 +132,7 @@ const Explorer = () => {
                             icon={<KingIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
                             sx={{ minHeight: '48px' }}
-                            data-cy='explorer-tab-button-masters'
+                            data-testid='explorer-tab-button-masters'
                         />
                         <Tab
                             label='Lichess'
@@ -140,7 +140,7 @@ const Explorer = () => {
                             icon={<SiLichess />}
                             iconPosition='start'
                             sx={{ minHeight: '48px' }}
-                            data-cy='explorer-tab-button-lichess'
+                            data-testid='explorer-tab-button-lichess'
                         />
                         <Tab
                             label='Player'
@@ -148,7 +148,7 @@ const Explorer = () => {
                             icon={<PersonSearch />}
                             iconPosition='start'
                             sx={{ minHeight: '48px' }}
-                            data-cy='explorer-tab-button-player'
+                            data-testid='explorer-tab-button-player'
                         />
                         <Tab
                             label='Tablebase'
@@ -156,7 +156,7 @@ const Explorer = () => {
                             icon={<RookIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
                             sx={{ minHeight: '48px' }}
-                            data-cy='explorer-tab-button-tablebase'
+                            data-testid='explorer-tab-button-tablebase'
                         />
                     </Tabs>
                 </Box>

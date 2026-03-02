@@ -59,7 +59,7 @@ export function MainLanding() {
                                 <Typography
                                     variant='h2'
                                     textAlign={{ xs: 'center', md: 'start' }}
-                                    data-cy='title'
+                                    data-testid='title'
                                     fontFamily={(theme) => fontFamily(theme, anton)}
                                     fontWeight='400'
                                 >
@@ -70,7 +70,7 @@ export function MainLanding() {
                                 <Typography
                                     variant='h5'
                                     textAlign={{ xs: 'center', md: 'start' }}
-                                    data-cy='subtitle'
+                                    data-testid='subtitle'
                                     sx={{
                                         fontFamily: (theme) => fontFamily(theme, barlow),
                                         fontWeight: 400,

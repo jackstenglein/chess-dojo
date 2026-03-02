@@ -16,7 +16,7 @@ const DescriptionFormSection: React.FC<DescriptionFormSectionProps> = ({
 }) => {
     return (
         <TextField
-            data-cy='description-textfield'
+            data-testid='description-textfield'
             placeholder={`Description${required ? '' : ' (Optional)'}`}
             multiline
             minRows={3}

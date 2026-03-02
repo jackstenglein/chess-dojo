@@ -13,8 +13,10 @@ import {
 import { Scores } from '../../app/(scoreboard)/tests/[type]/[id]/exam/ExamPage';
 import { ExamPgnSelectorProps, formatTime } from './ExamPgnSelector';
 
-interface CompletedExamPgnSelectorProps
-    extends Omit<ExamPgnSelectorProps, 'countdown' | 'onComplete' | 'orientations'> {
+interface CompletedExamPgnSelectorProps extends Omit<
+    ExamPgnSelectorProps,
+    'countdown' | 'onComplete' | 'orientations'
+> {
     elapsedTime: number;
     onReset: () => void;
     resetLabel?: string;

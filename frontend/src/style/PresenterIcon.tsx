@@ -1,8 +1,8 @@
 import { SvgIcon, SvgIconProps } from '@mui/material';
 
-export function PresenterIcon(props: SvgIconProps) {
+export function PresenterIcon({ ref, ...props }: SvgIconProps) {
     return (
-        <SvgIcon ref={props.ref} fontSize='inherit' sx={{ verticalAlign: 'middle' }} {...props}>
+        <SvgIcon ref={ref} fontSize='inherit' sx={{ verticalAlign: 'middle' }} {...props}>
             <svg
                 stroke='currentColor'
                 fill='currentColor'

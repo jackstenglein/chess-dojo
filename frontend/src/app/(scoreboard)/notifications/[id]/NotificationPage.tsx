@@ -20,7 +20,7 @@ export function NotificationPage({ id }: { id: string }) {
     }
 
     const notification = notifications.find((n) => n.id === id);
-    if (!notification || notification.type !== NotificationTypes.EXPLORER_GAME) {
+    if (notification?.type !== NotificationTypes.EXPLORER_GAME) {
         router.push('/notifications');
         return null;
     }

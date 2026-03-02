@@ -66,6 +66,8 @@ export enum PieceStyle {
     Cburnett = 'WALNUT',
     ThreeD = 'THREE_D',
     ThreeDRedBlue = 'THREE_D_RED_BLUE',
+    Disguised = 'DISGUISED',
+    Invisible = 'INVISIBLE',
 }
 
 export enum CoordinateStyle {
@@ -199,6 +201,8 @@ const ViewerSettings = ({
                     <MenuItem value={PieceStyle.Spatial}>Spatial</MenuItem>
                     <MenuItem value={PieceStyle.ThreeD}>3D</MenuItem>
                     <MenuItem value={PieceStyle.ThreeDRedBlue}>3D (Red/Blue)</MenuItem>
+                    <MenuItem value={PieceStyle.Disguised}>Disguised</MenuItem>
+                    <MenuItem value={PieceStyle.Invisible}>Invisible</MenuItem>
                 </TextField>
             )}
 

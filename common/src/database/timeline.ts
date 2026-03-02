@@ -97,6 +97,8 @@ export interface TimelineGraduationInfo {
     dojoMinutes: number;
     /** The user's non dojo time spent when graduating. */
     nonDojoMinutes: number;
+    /** The number of games annotated when graduating. */
+    gamesAnnotated?: number;
 }
 
 /** Metadata for a published game timeline entry. */
@@ -119,4 +121,13 @@ export interface Reaction {
     updatedAt: string;
     /** The reaction types set by the user. */
     types?: string[];
+}
+
+/**
+ * Special requirement ids in the timeline which do not have a
+ * real requirement associated with them.
+ */
+export enum TimelineSpecialRequirementId {
+    GameSubmission = 'GameSubmission',
+    Graduation = 'Graduation',
 }

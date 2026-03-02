@@ -106,7 +106,7 @@ export const MoveDialog = ({
     return (
         <Dialog open={true} onClose={moveRequest.isLoading() ? undefined : onCancel} fullWidth>
             <DialogTitle>{getDialogTitle(items)}</DialogTitle>
-            <DialogContent data-cy='move-directory-form'>
+            <DialogContent data-testid='move-directory-form'>
                 {newDirectory ? (
                     <Stack>
                         <Stack alignItems='center' direction='row' spacing={1.5}>

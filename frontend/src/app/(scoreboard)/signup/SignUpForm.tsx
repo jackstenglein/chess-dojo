@@ -96,7 +96,7 @@ export const SignUpForm = () => {
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-cy='title' mb={4}>
+            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
                 ChessDojo
             </Typography>
 
@@ -163,7 +163,7 @@ export const SignUpForm = () => {
                     }}
                 />
                 <LoadingButton
-                    data-cy='submit-button'
+                    data-testid='submit-button'
                     variant='contained'
                     fullWidth
                     sx={{
@@ -190,7 +190,7 @@ export const SignUpForm = () => {
                 />
                 <Typography variant='body2' component='div' gutterBottom>
                     Already have an account?{' '}
-                    <Link href='/signin' data-cy='signin-button'>
+                    <Link href='/signin' data-testid='signin-button'>
                         Sign In
                     </Link>
                 </Typography>

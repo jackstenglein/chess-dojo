@@ -1,6 +1,8 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
+import { getTimerSeconds } from '@/components/navigation/navbar/TimerButton';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import {
     CustomTask,
@@ -31,6 +33,7 @@ import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
 const TIME_WARNING_THRESHOLD_MINS = 60 * 5;
+const SECONDS_PER_HOUR = 3600;
 
 interface ProgressUpdaterProps {
     requirement: Requirement | CustomTask;
@@ -47,6 +50,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
     onClose,
     setView,
 }) => {
+    const { user } = useAuth();
     const api = useApi();
     const { entries, onNewEntry } = useTimelineContext();
 
@@ -57,8 +61,11 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
     const [markComplete, setMarkComplete] = useState(true);
     const [date, setDate] = useState<DateTime | null>(DateTime.now());
 
-    const [hours, setHours] = useState('');
-    const [minutes, setMinutes] = useState('');
+    const timerSeconds = getTimerSeconds(user);
+    const timerHours = Math.floor(timerSeconds / SECONDS_PER_HOUR);
+    const timerMinutes = Math.floor((timerSeconds % SECONDS_PER_HOUR) / 60);
+    const [hours, setHours] = useState(timerHours ? `${timerHours}` : '');
+    const [minutes, setMinutes] = useState(timerMinutes ? `${timerMinutes}` : '');
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [notes, setNotes] = useState('');
@@ -245,7 +252,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                             Task Details
                         </Button>
                         <Button
-                            data-cy='task-updater-show-history-button'
+                            data-testid='task-updater-show-history-button'
                             onClick={() => setView(TaskDialogView.History)}
                             disabled={request.isLoading()}
                         >
@@ -254,7 +261,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                     </>
                 )}
                 <LoadingButton
-                    data-cy='task-updater-save-button'
+                    data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >

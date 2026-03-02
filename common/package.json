@@ -10,20 +10,19 @@
     "author": "jackstenglein",
     "license": "MIT",
     "dependencies": {
-        "@jackstenglein/chess": "^2.2.15",
+        "@jackstenglein/chess": "^2.2.18",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
         "uuid": "^13.0.0",
-        "zod": "^4.3.5"
+        "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@jackstenglein/eslint-config-dojo": "file:../eslint-config-dojo",
+        "@eslint/js": "^9.39.2",
         "@types/uuid": "^10.0.0",
-        "@typescript-eslint/eslint-plugin": "^7.12.0",
-        "@typescript-eslint/parser": "^7.12.0",
-        "eslint": "^8.57.0",
-        "eslint-plugin-eqeqeq-fix": "^1.0.3",
-        "prettier": "^3.6.2",
-        "prettier-plugin-organize-imports": "^4.3.0"
+        "eslint": "^9.39.2",
+        "jiti": "^2.6.1",
+        "prettier": "^3.8.1",
+        "prettier-plugin-organize-imports": "^4.3.0",
+        "typescript-eslint": "^8.54.0"
     }
 }

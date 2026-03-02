@@ -18,7 +18,7 @@ export interface UserApiContextType {
      * on chessdojo.shop and an error otherwise.
      * @returns An empty AxiosResponse if the current user has an active subscription.
      */
-    checkUserAccess: () => Promise<AxiosResponse>;
+    checkUserAccess: () => Promise<AxiosResponse<User>>;
 
     /**
      * getUser returns the current signed-in user.
@@ -157,7 +157,7 @@ export interface UserApiContextType {
  * @returns An empty AxiosResponse if the current user has an active subscription.
  */
 export function checkUserAccess(idToken: string) {
-    return axiosService.get('/user/access', {
+    return axiosService.get<User>('/user/access/v2', {
         headers: {
             Authorization: 'Bearer ' + idToken,
         },

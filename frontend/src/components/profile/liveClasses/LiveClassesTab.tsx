@@ -121,7 +121,7 @@ function GameReviewSection({ user }: { user: User }) {
             </Typography>
             <Typography color='textSecondary'>
                 All classes are recorded. You can view the recordings{' '}
-                <Link href='/material/live-classes'>here</Link>. Note that it may take a few hours
+                <Link href='/learn/live-classes'>here</Link>. Note that it may take a few hours
                 after a class for the recording to be available.
             </Typography>
 
@@ -214,7 +214,7 @@ function LectureSection() {
             </Typography>
             <Typography color='textSecondary'>
                 All classes are recorded. You can view the recordings{' '}
-                <Link href='/material/live-classes'>here</Link>. Note that it may take a few hours
+                <Link href='/learn/live-classes'>here</Link>. Note that it may take a few hours
                 after a class for the recording to be available.
             </Typography>
 

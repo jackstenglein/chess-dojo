@@ -17,10 +17,9 @@ const defaultDateTime = DateTime.fromJSDate(d);
 interface ClockTextFieldProps {
     move: Move;
     label?: string;
-    forceSingleField?: boolean;
 }
 
-const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label, forceSingleField }) => {
+const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
     const { chess } = useChess();
     const [clockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
@@ -31,11 +30,46 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label, forceSingl
         return null;
     }
 
-    if (clockFieldFormat === ClockFieldFormat.SingleField || forceSingleField) {
+    if (clockFieldFormat === ClockFieldFormat.SingleFieldInTotalMinutes) {
+        const seconds = clockToSeconds(move.commentDiag?.clk) || 0;
+        const displayValue = seconds > 0 ? String(Math.floor(seconds / 60)) : '';
+
+        return (
+            <TextField
+                id={BlockBoardKeyboardShortcuts}
+                label={label || 'Clock (total minutes)'}
+                placeholder='Total minutes'
+                value={displayValue}
+                disabled={!move}
+                onChange={(event) => {
+                    const raw = event.target.value;
+                    if (raw === '') {
+                        chess.setCommand('clk', formatTime(0), move);
+                        return;
+                    }
+                    let minutes = parseInt(raw);
+                    if (isNaN(minutes) || minutes < 0) {
+                        return;
+                    }
+                    if (minutes > 999) {
+                        minutes = 999;
+                    }
+                    chess.setCommand('clk', formatTime(minutes * 60), move);
+                }}
+                fullWidth
+                className={BlockBoardKeyboardShortcuts}
+                slotProps={{
+                    htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
+                }}
+            />
+        );
+    }
+
+    if (clockFieldFormat === ClockFieldFormat.SingleField) {
         return (
             <TimeField
                 id={BlockBoardKeyboardShortcuts}
-                label={label}
+                label={label || 'Clock (hh:mm:ss)'}
                 format='HH:mm:ss'
                 value={
                     convertSecondsToDateTime(clockToSeconds(move.commentDiag?.clk)) ||

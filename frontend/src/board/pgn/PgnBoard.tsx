@@ -203,6 +203,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
         }, [gameOrientation, board, toggleOrientation]);
 
         useEffect(() => {
+            // eslint-disable-next-line react-hooks/immutability
             chess.disableNullMoves = disableNullMoves;
         }, [chess, disableNullMoves]);
 

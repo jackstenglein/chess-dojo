@@ -25,9 +25,60 @@ import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pr
 import { TimeField } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
 import { useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { BlockBoardKeyboardShortcuts } from '../../../PgnBoard';
 import { convertSecondsToDateTime } from '../clock/ClockEditor';
 import { TagRow } from './Tags';
+
+const DEFAULT_TIME_CONTROL_KEY = 'defaultTimeControl';
+
+function parseTimeControlString(value: string): TimeControl[] {
+    if (!value || value.trim() === '' || value === '?') {
+        return [{}];
+    }
+
+    const parts = value.split(':');
+    return parts.map((part) => {
+        const tc: TimeControl = {};
+
+        // Check for moves/time format: "40/5400" means 40 moves in 5400 seconds
+        const movesMatch = /^(\d+)\/(.+)$/.exec(part);
+        if (movesMatch) {
+            tc.moves = parseInt(movesMatch[1]);
+            part = movesMatch[2];
+        }
+
+        // Check for increment: "5400+30"
+        const incrementMatch = /^(\d+)\+(\d+)$/.exec(part);
+        if (incrementMatch) {
+            tc.seconds = parseInt(incrementMatch[1]);
+            tc.increment = parseInt(incrementMatch[2]);
+            tc.kind = tc.moves
+                ? TimeControlKind.MovesInSecondsWithIncrement
+                : TimeControlKind.SecondsWithIncrement;
+            return tc;
+        }
+
+        // Check for delay: "5400d30"
+        const delayMatch = /^(\d+)d(\d+)$/.exec(part);
+        if (delayMatch) {
+            tc.seconds = parseInt(delayMatch[1]);
+            tc.delay = parseInt(delayMatch[2]);
+            tc.kind = tc.moves
+                ? TimeControlKind.MovesInSecondsWithDelay
+                : TimeControlKind.SecondsWithDelay;
+            return tc;
+        }
+
+        // Just seconds: "5400"
+        const seconds = parseInt(part);
+        if (!isNaN(seconds)) {
+            tc.seconds = seconds;
+        }
+
+        return tc;
+    });
+}
 
 type TimeControlHeader = Tags['TimeControl'];
 
@@ -48,7 +99,23 @@ export function TimeControlEditor({
     onCancel,
     onSuccess,
 }: TimeControlEditorProps) {
-    const [timeControls, setTimeControls] = useState<TimeControl[]>(initialItems || [{}]);
+    const [defaultTimeControl, setDefaultTimeControl] = useLocalStorage<string>(
+        DEFAULT_TIME_CONTROL_KEY,
+        '',
+    );
+
+    // Use initialItems if provided, otherwise try to use the default from localStorage
+    const getInitialTimeControls = (): TimeControl[] => {
+        if (initialItems && initialItems.length > 0) {
+            return initialItems;
+        }
+        if (defaultTimeControl) {
+            return parseTimeControlString(defaultTimeControl);
+        }
+        return [{}];
+    };
+
+    const [timeControls, setTimeControls] = useState<TimeControl[]>(getInitialTimeControls);
     const [errors, setErrors] = useState<TimeControlErrors>({});
 
     const onSave = () => {
@@ -59,6 +126,7 @@ export function TimeControlEditor({
         }
 
         const newValue = timeControls.map((tc) => getTimeControlValue(tc)).join(':');
+        setDefaultTimeControl(newValue);
         onSuccess(newValue);
     };
 

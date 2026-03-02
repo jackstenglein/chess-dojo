@@ -108,7 +108,7 @@ const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
 
                             {currentUser && currentUser.username !== coach.username && (
                                 <LoadingButton
-                                    data-cy='follow-button'
+                                    data-testid='follow-button'
                                     variant='contained'
                                     onClick={onFollow}
                                     loading={followRequest.isLoading()}

@@ -69,7 +69,7 @@ const PairingsTab: React.FC<PairingsTabProps> = ({ openClassical, onUpdate }) =>
                 </TextField>
 
                 <TextField
-                    data-cy='section'
+                    data-testid='section'
                     label='Section'
                     select
                     value={ratingRange}
@@ -235,7 +235,7 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
                     </DialogContentText>
 
                     <TextField
-                        data-cy='result'
+                        data-testid='result'
                         label='Result'
                         select
                         required

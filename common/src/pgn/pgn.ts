@@ -16,7 +16,7 @@ export function splitPgns(pgns: string, separator = /(1-0|0-1|1\/2-1\/2|\*)(\r?\
     for (const split of splits) {
         if (isValidResult(split) && games.length > 0) {
             games[games.length - 1] += split;
-        } else if (split.startsWith('[') || split.trim().match(/^\d+/)) {
+        } else if (split.startsWith('[') || /^\d+/.exec(split.trim())) {
             games.push(split);
         } else if (split.trim().length > 0) {
             games.push(`[${split}`);

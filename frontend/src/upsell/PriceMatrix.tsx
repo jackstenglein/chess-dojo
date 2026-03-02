@@ -4,7 +4,7 @@ import { Link } from '@/components/navigation/Link';
 import { CalendarSessionType } from '@/database/event';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { Button, ButtonProps, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
-import { JSX, useEffect, useState } from 'react';
+import { JSX, useSyncExternalStore } from 'react';
 import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
 import { getCurrency } from './locales';
@@ -103,11 +103,11 @@ const PriceMatrix: React.FC<PriceMatrixProps> = ({
     onFreeTier,
     currentTier,
 }) => {
-    const [currency, setCurrency] = useState('USD');
-    useEffect(() => {
-        const lang = navigator.languages[0];
-        setCurrency(getCurrency(lang));
-    }, [setCurrency]);
+    const currency = useSyncExternalStore(
+        () => () => null,
+        () => getCurrency(navigator.languages[0]),
+        () => 'USD',
+    );
 
     const priceData = priceDataByCurrency[currency || 'USD'] || priceDataByCurrency.USD;
 

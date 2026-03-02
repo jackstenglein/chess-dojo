@@ -72,7 +72,7 @@ const CohortIcon: React.FC<CohortIconProps & SvgIconProps> = ({
             }}
         >
             <Image
-                data-cy='graduation-icon'
+                data-testid='graduation-icon'
                 src={`${url}${skipCache ? `?bypassCache=${new Date().getTime()}` : ''}`}
                 alt=''
                 width={size}

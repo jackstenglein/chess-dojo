@@ -10,9 +10,10 @@ import {
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import {
+    Box,
     Button,
     Card,
-    CardActions,
+    CardActionArea,
     CardContent,
     CardHeader,
     Container,
@@ -20,8 +21,10 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import Image from 'next/image';
 import { datetime, RRule } from 'rrule';
 import { liveClassesFaq } from '../help/liveClasses';
+import scheduleImage from './schedule.webp';
 
 export default function LiveClassesPage() {
     const { user } = useAuth();
@@ -55,6 +58,7 @@ export default function LiveClassesPage() {
             <Typography variant='h4' fontWeight='bold'>
                 Live Classes
             </Typography>
+
             <Typography variant='h6' mt={2}>
                 ChessDojo offers two live class tiers: the Lecture Tier and the Game & Profile
                 Review Tier. The Lecture Tier provides access to larger lecture-style classes on
@@ -63,6 +67,20 @@ export default function LiveClassesPage() {
                 reviews one player's game and profile each week. The highlighted player rotates each
                 week.
             </Typography>
+
+            <Stack alignItems='center' mt={3}>
+                <Box
+                    sx={{
+                        position: 'relative',
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        width: { xs: 1, sm: 0.7, md: 0.5 },
+                        aspectRatio: 1,
+                    }}
+                >
+                    <Image src={scheduleImage} alt='' fill style={{ objectFit: 'contain' }} />
+                </Box>
+            </Stack>
 
             <Typography variant='h5' mt={4} fontWeight='bold'>
                 Lectures
@@ -74,25 +92,28 @@ export default function LiveClassesPage() {
                 website.
             </Typography>
 
+            {!isLiveClassUser && (
+                <Button href='/prices' component={Link} variant='contained' sx={{ mt: 2 }}>
+                    Join Lecture Tier
+                </Button>
+            )}
+
             <Grid container mt={4} spacing={3}>
                 {lectureEvents.map((e) => (
                     <Grid key={e.event.id} size={{ xs: 12, sm: 4 }}>
                         <Card>
-                            <CardHeader
-                                title={e.event.title}
-                                subheader={`Next Meeting: ${toDojoDateString(e.nextDate, user?.timezoneOverride)} • ${toDojoTimeString(e.nextDate, user?.timezoneOverride, user?.timeFormat)}`}
-                            />
-                            <CardContent>
-                                <Typography>{e.event.description}</Typography>
-                            </CardContent>
-                            <CardActions>
-                                <Button
-                                    href={isLiveClassUser ? `/meeting/${e.event.id}` : '/prices'}
-                                    component={Link}
-                                >
-                                    Join Lecture
-                                </Button>
-                            </CardActions>
+                            <CardActionArea
+                                href={isLiveClassUser ? `/meeting/${e.event.id}` : '/prices'}
+                                component={Link}
+                            >
+                                <CardHeader
+                                    title={e.event.title}
+                                    subheader={`Next Meeting: ${toDojoDateString(e.nextDate, user?.timezoneOverride)} • ${toDojoTimeString(e.nextDate, user?.timezoneOverride, user?.timeFormat)}`}
+                                />
+                                <CardContent>
+                                    <Typography>{e.event.description}</Typography>
+                                </CardContent>
+                            </CardActionArea>
                         </Card>
                     </Grid>
                 ))}
@@ -123,7 +144,13 @@ export default function LiveClassesPage() {
                 Recordings
             </Typography>
             <Typography variant='h6' mt={2}>
-                All recordings can be found <Link href='/material/live-classes'>here</Link>.
+                {isLiveClassUser ? (
+                    <>
+                        All recordings can be found <Link href='/learn/live-classes'>here</Link>.
+                    </>
+                ) : (
+                    <>All classes are recorded and available for viewing on demand.</>
+                )}
             </Typography>
 
             <Typography variant='h4' mt={8}>

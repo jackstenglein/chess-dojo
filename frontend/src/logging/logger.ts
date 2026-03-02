@@ -4,10 +4,12 @@ import { LogLevel } from './logLevel';
 
 const logLevel = getConfig().logLevel;
 
+const noop = () => null;
+
 export const logger = {
-    debug: logLevel <= LogLevel.Debug ? console.debug : undefined,
-    log: logLevel <= LogLevel.Log ? console.log : undefined,
-    info: logLevel <= LogLevel.Info ? console.info : undefined,
-    warn: logLevel <= LogLevel.Warning ? console.warn : undefined,
-    error: logLevel <= LogLevel.Error ? console.error : undefined,
+    debug: logLevel <= LogLevel.Debug ? console.debug : noop,
+    log: logLevel <= LogLevel.Log ? console.log : noop,
+    info: logLevel <= LogLevel.Info ? console.info : noop,
+    warn: logLevel <= LogLevel.Warning ? console.warn : noop,
+    error: logLevel <= LogLevel.Error ? console.error : noop,
 } as const;

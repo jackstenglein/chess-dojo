@@ -10,7 +10,6 @@ updates:
       - '/frontend'
       - '/backend'
       - '/common'
-      - '/eslint-config-dojo'
     schedule:
       interval: 'monthly'
     open-pull-requests-limit: 50

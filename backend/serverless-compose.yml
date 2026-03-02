@@ -236,3 +236,10 @@ services:
       EventsTableArn: ${chess-dojo-scheduler.EventsTableArn}
       ClubsTableArn: ${clubService.ClubsTableArn}
       SecretsBucket: ${chess-dojo-scheduler.SecretsBucket}
+
+  blogService:
+    path: blogService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}

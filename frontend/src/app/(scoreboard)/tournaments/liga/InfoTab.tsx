@@ -93,7 +93,7 @@ const InfoTab = () => {
                             <>
                                 Join{' '}
                                 <Link
-                                    data-cy='lichess-team-link'
+                                    data-testid='lichess-team-link'
                                     href='https://lichess.org/team/chessdojo'
                                     target='_blank'
                                     rel='noreferrer'
@@ -115,7 +115,7 @@ const InfoTab = () => {
                             <>
                                 Join{' '}
                                 <Link
-                                    data-cy='chesscom-team-link'
+                                    data-testid='chesscom-team-link'
                                     href='https://www.chess.com/club/chessdojo'
                                     target='_blank'
                                     rel='noreferrer'
@@ -137,7 +137,7 @@ const InfoTab = () => {
                             <>
                                 Join{' '}
                                 <Link
-                                    data-cy='discord-invite-link'
+                                    data-testid='discord-invite-link'
                                     href={config.discord.url}
                                     target='_blank'
                                     rel='noreferrer'

@@ -56,7 +56,7 @@ export const liveClassesFaq = {
                 <>
                     The Game and Profile Review classes are split into the following rating ranges:
                     0-600, 600-1000, 1000-1400, 1400-1800, 1800+ (these ratings all use the{' '}
-                    <Link href='/material/ratings'>ChessDojo rating scale</Link>). For the Game and
+                    <Link href='/learn/ratings'>ChessDojo rating scale</Link>). For the Game and
                     Profile Review classes, you can only join the class for your specific cohort.
                     The lectures are roughly split among the same rating ranges but may cover
                     broader or more targeted ranges for a given class. Each class will specify its

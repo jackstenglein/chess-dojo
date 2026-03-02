@@ -101,6 +101,36 @@ export function getPieceSx(style: PieceStyle): PieceSx {
             return getStandardPieceBackgrounds('/static/board/pieces/three-d-basic/', '.png');
         case PieceStyle.ThreeDRedBlue:
             return getStandardPieceBackgrounds('/static/board/pieces/three-d/', '.png');
+        case PieceStyle.Disguised:
+            return {
+                '--white-pawn': `url('/static/board/pieces/disguised/w.svg')`,
+                '--white-bishop': `url('/static/board/pieces/disguised/w.svg')`,
+                '--white-knight': `url('/static/board/pieces/disguised/w.svg')`,
+                '--white-rook': `url('/static/board/pieces/disguised/w.svg')`,
+                '--white-queen': `url('/static/board/pieces/disguised/w.svg')`,
+                '--white-king': `url('/static/board/pieces/disguised/w.svg')`,
+                '--black-pawn': `url('/static/board/pieces/disguised/b.svg')`,
+                '--black-bishop': `url('/static/board/pieces/disguised/b.svg')`,
+                '--black-knight': `url('/static/board/pieces/disguised/b.svg')`,
+                '--black-rook': `url('/static/board/pieces/disguised/b.svg')`,
+                '--black-queen': `url('/static/board/pieces/disguised/b.svg')`,
+                '--black-king': `url('/static/board/pieces/disguised/b.svg')`,
+            };
+        case PieceStyle.Invisible:
+            return {
+                '--white-pawn': `none`,
+                '--white-bishop': `none`,
+                '--white-knight': `none`,
+                '--white-rook': `none`,
+                '--white-queen': `none`,
+                '--white-king': `none`,
+                '--black-pawn': `none`,
+                '--black-bishop': `none`,
+                '--black-knight': `none`,
+                '--black-rook': `none`,
+                '--black-queen': `none`,
+                '--black-king': `none`,
+            };
     }
 }
 

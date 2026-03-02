@@ -149,10 +149,9 @@ func handleSubscriptionPurchase(checkoutSession *stripe.CheckoutSession) api.Res
 	}
 
 	paymentInfo := database.PaymentInfo{
-		CustomerId:         checkoutSession.Customer.ID,
-		SubscriptionId:     checkoutSession.Subscription.ID,
-		SubscriptionStatus: database.SubscriptionStatus_Subscribed,
-		SubscriptionTier:   tier,
+		CustomerId:     checkoutSession.Customer.ID,
+		SubscriptionId: checkoutSession.Subscription.ID,
+		UpdatedAt:      time.Now().Format(time.RFC3339),
 	}
 	update := database.UserUpdate{
 		PaymentInfo:        &paymentInfo,
@@ -285,20 +284,15 @@ func handleSubscriptionDeletion(event *stripe.Event) api.Response {
 	if username == "" {
 		return api.Failure(errors.New(400, "Invalid request: no username in subscription metadata", ""))
 	}
-	tier, err := getTier(&subscription)
-	if err != nil {
-		return api.Failure(err)
-	}
 
 	paymentInfo := database.PaymentInfo{
-		CustomerId:         subscription.Customer.ID,
-		SubscriptionId:     subscription.ID,
-		SubscriptionStatus: database.SubscriptionStatus_Canceled,
-		SubscriptionTier:   tier,
+		CustomerId:     subscription.Customer.ID,
+		SubscriptionId: subscription.ID,
+		UpdatedAt:      time.Now().Format(time.RFC3339),
 	}
 	update := database.UserUpdate{
 		PaymentInfo:        &paymentInfo,
-		SubscriptionStatus: stripe.String(string(database.SubscriptionStatus_NotSubscribed)),
+		SubscriptionStatus: stripe.String(string(database.SubscriptionStatus_Canceled)),
 		SubscriptionTier:   stripe.String(string(database.SubscriptionTier_Free)),
 	}
 
@@ -338,10 +332,9 @@ func handleSubscriptionUpdated(event *stripe.Event) api.Response {
 	}
 
 	paymentInfo := database.PaymentInfo{
-		CustomerId:         subscription.Customer.ID,
-		SubscriptionId:     subscription.ID,
-		SubscriptionStatus: database.SubscriptionStatus_Subscribed,
-		SubscriptionTier:   tier,
+		CustomerId:     subscription.Customer.ID,
+		SubscriptionId: subscription.ID,
+		UpdatedAt:      time.Now().Format(time.RFC3339),
 	}
 	update := database.UserUpdate{
 		PaymentInfo:        &paymentInfo,

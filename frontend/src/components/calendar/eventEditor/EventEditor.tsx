@@ -106,7 +106,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
     };
 
     return (
-        <Dialog data-cy='event-editor' fullScreen open={true} TransitionComponent={Transition}>
+        <Dialog data-testid='event-editor' fullScreen open={true} TransitionComponent={Transition}>
             <RequestSnackbar request={request} />
 
             <AppBar sx={{ position: 'relative' }}>
@@ -119,11 +119,11 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         error={Boolean(editor.errors.title)}
                         helperText={editor.errors.title}
                         sx={{ fontSize: '1.5rem', mr: 5, flexGrow: 1 }}
-                        data-cy='event-title-textfield'
+                        data-testid='event-title-textfield'
                     />
 
                     <Button
-                        data-cy='cancel-button'
+                        data-testid='cancel-button'
                         color='error'
                         onClick={() => scheduler.close()}
                         disabled={request.isLoading()}
@@ -132,7 +132,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         Cancel
                     </Button>
                     <Button
-                        data-cy='save-button'
+                        data-testid='save-button'
                         color='success'
                         loading={request.isLoading()}
                         onClick={() => {
@@ -497,7 +497,7 @@ const formConfigs: Record<EditableEventType, FormConfig> = {
                                 editor.errors.types ||
                                 'Choose the meeting types you are available for.'
                             }
-                            data-cy='availability-type-selector'
+                            data-testid='availability-type-selector'
                         />
                     );
                 },

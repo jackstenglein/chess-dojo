@@ -54,7 +54,7 @@ export class TypstGenerator {
             throw new ApiError({
                 statusCode: 500,
                 publicMessage: 'Temporary server error',
-                privateMessage: `TexGenerator.writeQrCode called, but options is missing cohort/id/qrcodeFilename: ${this.options}`,
+                privateMessage: `TypstGenerator.writeQrCode called, but options is missing cohort/id/qrcodeFilename: ${this.options}`,
             });
         }
 
@@ -387,12 +387,12 @@ function getPlayer(name: string | undefined, elo: string | undefined): string {
     return result;
 }
 
+/**
+ * Escapes typst control sequences from the given value.
+ * https://typst.app/docs/reference/syntax/
+ */
 function escape(value: string): string {
-    return value
-        .replaceAll('#', '\\#')
-        .replaceAll('$', '\\$')
-        .replaceAll('[', '\\[')
-        .replaceAll(']', '\\]');
+    return value.replaceAll(/(?<!\\)([\n#$\[\]\</=~+@-])/g, '\\$1');
 }
 
 const boardColors: Record<string, string> = {

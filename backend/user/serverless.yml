@@ -73,6 +73,12 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /user/access/v2
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -769,6 +775,22 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
+        Resource: ${param:NotificationsTableArn}
+
+  deleteAllNotifications:
+    handler: notifications/deleteAll/main.go
+    events:
+      - httpApi:
+          path: /user/notifications
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:BatchWriteItem
         Resource: ${param:NotificationsTableArn}
 
   getFollower:

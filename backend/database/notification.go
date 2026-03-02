@@ -395,6 +395,66 @@ func (repo *dynamoRepository) ListNotifications(username string, startKey string
 	return notifications, lastKey, nil
 }
 
+// DeleteAllNotifications removes all notifications for the specified username from the database.
+func (repo *dynamoRepository) DeleteAllNotifications(username string) error {
+	var deleteRequests []*dynamodb.WriteRequest
+
+	input := &dynamodb.QueryInput{
+		KeyConditionExpression: aws.String("#username = :username"),
+		ExpressionAttributeNames: map[string]*string{
+			"#username": aws.String("username"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":username": {
+				S: aws.String(username),
+			},
+		},
+		ProjectionExpression: aws.String("#username, id"),
+		TableName:            aws.String(notificationTable),
+	}
+
+	var lastEvaluatedKey map[string]*dynamodb.AttributeValue
+	for {
+		if lastEvaluatedKey != nil {
+			input.ExclusiveStartKey = lastEvaluatedKey
+		}
+
+		result, err := repo.svc.Query(input)
+		if err != nil {
+			return errors.Wrap(500, "Temporary server error", "Failed DynamoDB Query call", err)
+		}
+
+		for _, item := range result.Items {
+			req := &dynamodb.WriteRequest{
+				DeleteRequest: &dynamodb.DeleteRequest{
+					Key: map[string]*dynamodb.AttributeValue{
+						"username": item["username"],
+						"id":       item["id"],
+					},
+				},
+			}
+			deleteRequests = append(deleteRequests, req)
+
+			if len(deleteRequests) == 25 {
+				if err := repo.batchWrite(deleteRequests, notificationTable); err != nil {
+					return err
+				}
+				deleteRequests = nil
+			}
+		}
+
+		lastEvaluatedKey = result.LastEvaluatedKey
+		if lastEvaluatedKey == nil {
+			break
+		}
+	}
+
+	if len(deleteRequests) > 0 {
+		return repo.batchWrite(deleteRequests, notificationTable)
+	}
+	return nil
+}
+
 // DeleteNotification removes the notification with the specified key from the database.
 func (repo *dynamoRepository) DeleteNotification(username, id string) error {
 	input := &dynamodb.DeleteItemInput{

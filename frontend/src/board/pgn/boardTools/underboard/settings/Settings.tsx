@@ -15,7 +15,7 @@ const Settings: React.FC<SettingsProps> = ({ showEditor }) => {
     const { game, onUpdateGame: onSaveGame } = useGame();
 
     return (
-        <CardContent data-cy='underboard-tab-settings'>
+        <CardContent data-testid='underboard-tab-settings'>
             <Stack spacing={6}>
                 {showEditor && game && <GameSettings game={game} onSaveGame={onSaveGame} />}
                 {viewer?.isAdmin && game && <AdminSettings game={game} onSaveGame={onSaveGame} />}

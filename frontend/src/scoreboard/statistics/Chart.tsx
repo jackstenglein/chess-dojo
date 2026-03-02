@@ -46,7 +46,7 @@ const Chart: React.FC<ChartProps> = ({
 
     return (
         <Stack>
-            <Typography data-cy='chart-title' variant='subtitle1'>
+            <Typography data-testid='chart-title' variant='subtitle1'>
                 {title}
             </Typography>
             {!hideSums && (

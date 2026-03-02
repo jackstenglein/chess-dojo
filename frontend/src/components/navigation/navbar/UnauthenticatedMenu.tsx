@@ -11,7 +11,6 @@ import {
     Forum,
     ImportContacts,
     Menu as MenuIcon,
-    RocketLaunch,
     Sell,
     Storefront,
     EmojiEvents as Tournaments,
@@ -81,12 +80,6 @@ function unauthenticatedStartItems(toggleExpansion: (item: string) => void): Nav
                     name: 'Courses',
                     icon: <ImportContacts />,
                     href: '/courses',
-                },
-                {
-                    id: 'coaching',
-                    name: 'Coaching',
-                    icon: <RocketLaunch />,
-                    href: '/coaching',
                 },
                 {
                     id: 'merch',
@@ -187,7 +180,7 @@ export const LargeMenuUnauthenticated = () => {
                     <>
                         <Tooltip title='More'>
                             <IconButton
-                                data-cy='navbar-more-button'
+                                data-testid='navbar-more-button'
                                 onClick={handleOpen}
                                 sx={{ color: 'white' }}
                             >
@@ -258,7 +251,7 @@ export const ExtraSmallMenuUnauthenticated = () => {
                 </Typography>
             </Stack>
             <IconButton
-                data-cy='navbar-more-button'
+                data-testid='navbar-more-button'
                 size='medium'
                 aria-label='navigation menu'
                 aria-controls='menu-appbar'

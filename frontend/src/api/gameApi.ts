@@ -619,7 +619,7 @@ function urlMatches(
     let urlObj: URL | null = null;
     try {
         urlObj = new URL(url.trim());
-    } catch (error) {
+    } catch (_err) {
         return false;
     }
 
@@ -747,7 +747,7 @@ export const isChesscomAnalysisURL = (url: string) =>
  * @returns True if the date is valid.
  */
 export function isValidDate(date?: string) {
-    return date && !!DateTime.fromISO(date.replaceAll('.', '-'))?.isValid;
+    return date && DateTime.fromISO(date.replaceAll('.', '-')).isValid;
 }
 
 /**

@@ -136,6 +136,7 @@ import {
 } from './newsfeedApi';
 import {
     NotificationApiContextType,
+    deleteAllNotifications,
     deleteNotification,
     listNotifications,
 } from './notificationApi';
@@ -387,6 +388,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
 
             listNotifications: (startKey?: string) => listNotifications(idToken, startKey),
             deleteNotification: (id: string) => deleteNotification(idToken, id),
+            deleteAllNotifications: () => deleteAllNotifications(idToken),
 
             getNewsfeedItem: (owner: string, id: string) => getNewsfeedItem(owner, id),
             listNewsfeed: (newsfeedIds: string[], skipLastFetch?: boolean, startKey?: string) =>

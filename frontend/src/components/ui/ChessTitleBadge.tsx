@@ -29,7 +29,7 @@ interface ChessTitleBadgeProps {
  * Displays a chess title as a small badge with a tooltip showing the full title name.
  * Only displays if the title is a recognized chess title.
  */
-export function ChessTitleBadge({ title, sx, size = 'small' }: ChessTitleBadgeProps) {
+export function ChessTitleBadge({ title, sx = [], size = 'small' }: ChessTitleBadgeProps) {
     // * Only render if this is a recognized chess title
     if (!title || !CHESS_TITLES[title]) {
         return null;
@@ -44,18 +44,20 @@ export function ChessTitleBadge({ title, sx, size = 'small' }: ChessTitleBadgePr
                 size={size}
                 variant='outlined'
                 color='primary'
-                sx={{
-                    fontSize: '0.75rem',
-                    height: size === 'small' ? '20px' : '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    '& .MuiChip-label': {
-                        px: 0.5,
-                        fontWeight: 'bold',
-                        lineHeight: size === 'small' ? '20px' : '24px',
+                sx={[
+                    {
+                        fontSize: '0.75rem',
+                        height: size === 'small' ? '20px' : '24px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        '& .MuiChip-label': {
+                            px: 0.5,
+                            fontWeight: 'bold',
+                            lineHeight: size === 'small' ? '20px' : '24px',
+                        },
                     },
-                    ...sx,
-                }}
+                    sx,
+                ].flat()}
             />
         </Tooltip>
     );

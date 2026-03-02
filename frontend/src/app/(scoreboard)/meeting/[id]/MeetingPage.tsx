@@ -294,8 +294,8 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                                         body={
                                             <>
                                                 Recordings will be available{' '}
-                                                <Link href='/material/live-classes'>here</Link> a
-                                                few hours after the class.
+                                                <Link href='/learn/live-classes'>here</Link> a few
+                                                hours after the class.
                                             </>
                                         }
                                     />

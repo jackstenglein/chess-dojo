@@ -123,7 +123,7 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
                     {[[move, move.next, move.next?.next]]
                         .concat(move.variations)
                         .map((variation, i) => {
-                            if (!variation || !variation[0]) {
+                            if (!variation?.[0]) {
                                 return null;
                             }
 

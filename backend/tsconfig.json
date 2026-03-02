@@ -1,10 +1,10 @@
 {
-  "compilerOptions": {
-      "lib": ["es2021"],
-      "strict": true,
-      "esModuleInterop": true,
-      "target": "ES2015",
-      "moduleResolution": "NodeNext",
-      "module": "NodeNext"
-  }
+    "compilerOptions": {
+        "lib": ["es2023"],
+        "strict": true,
+        "esModuleInterop": true,
+        "target": "ES2015",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext"
+    }
 }

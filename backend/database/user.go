@@ -351,6 +351,12 @@ type User struct {
 
 	// The id of the user's game review cohort, if they are a member of the Game & Profile Review tier.
 	GameReviewCohortId string `dynamodbav:"gameReviewCohortId,omitempty" json:"gameReviewCohortId,omitempty"`
+
+	// The time already on the user's timer, if it is paused.
+	TimerSeconds int `dynamodbav:"timerSeconds,omitempty" json:"timerSeconds"`
+
+	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
+	TimerStartedAt string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt"`
 }
 
 type PuzzleThemeOverview struct {
@@ -386,11 +392,8 @@ type PaymentInfo struct {
 	// The Stripe subscription id for the training program
 	SubscriptionId string `dynamodbav:"subscriptionId" json:"-"`
 
-	// The status of the subscription
-	SubscriptionStatus SubscriptionStatus `dynamodbav:"subscriptionStatus" json:"subscriptionStatus"`
-
-	// The tier of the subscription
-	SubscriptionTier SubscriptionTier `dynamodbav:"subscriptionTier" json:"subscriptionTier"`
+	// The date the subscription was last updated
+	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
 }
 
 type WorkGoalSettings struct {
@@ -442,36 +445,11 @@ type GameScheduleEntry struct {
 	Count int `dynamodbav:"count" json:"count"`
 }
 
-// Returns true if the given PaymentInfo indicates an active subscription.
-func (pi *PaymentInfo) IsSubscribed() bool {
-	if pi == nil {
-		return false
-	}
-	return pi.SubscriptionId != "" && pi.SubscriptionStatus == SubscriptionStatus_Subscribed
-}
-
 func (pi *PaymentInfo) GetCustomerId() string {
 	if pi == nil {
 		return ""
 	}
 	return pi.CustomerId
-}
-
-func (pi *PaymentInfo) GetSubscriptionStatus() SubscriptionStatus {
-	if pi == nil {
-		return SubscriptionStatus_NotSubscribed
-	}
-	return pi.SubscriptionStatus
-}
-
-func (pi *PaymentInfo) GetSubscriptionTier() SubscriptionTier {
-	if pi == nil {
-		return SubscriptionTier_Free
-	}
-	if pi.SubscriptionTier == "" {
-		return SubscriptionTier_Basic
-	}
-	return pi.SubscriptionTier
 }
 
 func (pi *PaymentInfo) GetSubscriptionId() string {
@@ -668,21 +646,24 @@ func (u *User) IsSubscribed() bool {
 	if u == nil {
 		return false
 	}
-	return u.PaymentInfo.IsSubscribed() || u.SubscriptionStatus == SubscriptionStatus_Subscribed
+	return u.SubscriptionStatus == SubscriptionStatus_Subscribed
 }
 
 func (u *User) GetSubscriptionStatus() SubscriptionStatus {
 	if u == nil {
 		return SubscriptionStatus_NotSubscribed
 	}
-	return u.PaymentInfo.GetSubscriptionStatus()
+	return u.SubscriptionStatus
 }
 
 func (u *User) GetSubscriptionTier() SubscriptionTier {
 	if u.GetSubscriptionStatus() != SubscriptionStatus_Subscribed {
 		return SubscriptionTier_Free
 	}
-	return u.PaymentInfo.GetSubscriptionTier()
+	if u.SubscriptionTier == "" {
+		return SubscriptionTier_Basic
+	}
+	return u.SubscriptionTier
 }
 
 func (u *User) GetIsCalendarAdmin() bool {
@@ -827,6 +808,12 @@ type UserUpdate struct {
 
 	// The user's firebase cloud messaging tokens
 	FirebaseTokens *[]string `dynamodbav:"firebaseTokens,omitempty" json:"firebaseTokens,omitempty"`
+
+	// The time already on the user's timer, if it is paused.
+	TimerSeconds *int `dynamodbav:"timerSeconds,omitempty" json:"timerSeconds,omitempty"`
+
+	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
+	TimerStartedAt *string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem
@@ -952,6 +939,13 @@ type AdminUserLister interface {
 
 // CreateUser creates a new User object with the provided information.
 func (repo *dynamoRepository) CreateUser(username, email, name string, paymentInfo *PaymentInfo) (*User, error) {
+	subscriptionStatus := SubscriptionStatus_NotSubscribed
+	subscriptionTier := SubscriptionTier_Free
+	if paymentInfo != nil {
+		subscriptionStatus = SubscriptionStatus_Subscribed
+		subscriptionTier = SubscriptionTier_Basic
+	}
+
 	user := &User{
 		Username:           username,
 		Email:              email,
@@ -960,7 +954,8 @@ func (repo *dynamoRepository) CreateUser(username, email, name string, paymentIn
 		CreatedAt:          time.Now().Format(time.RFC3339),
 		DojoCohort:         NoCohort,
 		PaymentInfo:        paymentInfo,
-		SubscriptionStatus: paymentInfo.GetSubscriptionStatus(),
+		SubscriptionStatus: subscriptionStatus,
+		SubscriptionTier:   subscriptionTier,
 	}
 
 	err := repo.SetUserConditional(user, aws.String("attribute_not_exists(username)"))
@@ -1425,13 +1420,13 @@ func (repo *dynamoRepository) UpdateUserSubscriptionStatuses(users []*User) erro
 	var sb strings.Builder
 	statements := make([]*dynamodb.BatchStatementRequest, 0, len(users))
 	for _, user := range users {
-		params, err := dynamodbattribute.MarshalList([]any{user.GetSubscriptionStatus(), user.PaymentInfo})
+		params, err := dynamodbattribute.MarshalList([]any{user.GetSubscriptionStatus(), user.GetSubscriptionTier()})
 		if err != nil {
 			return errors.Wrap(500, "Temporary server error", "Failed to marshal user.PaymentInfo", err)
 		}
 
 		sb.WriteString(fmt.Sprintf("UPDATE \"%s\"", userTable))
-		sb.WriteString(" SET subscriptionStatus=? paymentInfo=?")
+		sb.WriteString(" SET subscriptionStatus=? subscriptionTier=?")
 		sb.WriteString(fmt.Sprintf(" WHERE username='%s'", user.Username))
 
 		statement := &dynamodb.BatchStatementRequest{

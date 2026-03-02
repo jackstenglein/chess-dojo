@@ -23,7 +23,17 @@ export function EditTimelinEntryDialog({
     onClose: () => void;
 }) {
     const { user } = useAuth();
-    const { requirement } = useRequirement(entry.requirementId);
+    const isCustom = entry.isCustomRequirement;
+
+    const customTask = isCustom
+        ? user?.customTasks?.find((t) => t.id === entry.requirementId)
+        : undefined;
+
+    const { requirement: fetchedRequirement } = useRequirement(
+        isCustom ? undefined : entry.requirementId,
+    );
+
+    const requirement = isCustom ? customTask : fetchedRequirement;
 
     const {
         errors,

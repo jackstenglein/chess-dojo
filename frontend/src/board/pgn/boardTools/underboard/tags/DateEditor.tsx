@@ -1,4 +1,5 @@
 import { parsePgnDate, toLocalPgnDate } from '@/api/gameApi';
+import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import { PgnDate } from '@jackstenglein/chess';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pro';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -24,6 +25,10 @@ export function EditDateCell(props: GridRenderEditCellParams<TagRow, PgnDate | s
             disableFuture
             value={dateTime}
             onChange={handleChange}
+            className={BlockBoardKeyboardShortcuts}
+            slotProps={{
+                textField: { id: BlockBoardKeyboardShortcuts },
+            }}
             sx={{
                 width: 1,
                 height: 1,

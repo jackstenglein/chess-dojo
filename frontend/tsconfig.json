@@ -12,7 +12,7 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "preserve",
+        "jsx": "react-jsx",
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -20,25 +20,31 @@
         "allowJs": true,
         "forceConsistentCasingInFileNames": true,
         "incremental": true,
-        "plugins": [{ "name": "next" }],
-        "paths": { "@/*": ["src/*"] }
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ],
+        "paths": {
+            "@/*": ["src/*"]
+        }
     },
     "include": [
         "src",
-        "cypress.config.ts",
         "vitest.config.ts",
-        ".eslintrc.cjs",
         "scripts",
         "./*.cjs",
         "./*.mjs",
         "./next-env.d.ts",
         ".next/types/**/*.ts",
-        "./window.d.ts"
+        "./window.d.ts",
+        "next.config.mjs",
+        ".next/dev/types/**/*.ts",
+        "playwright/**/*.ts"
     ],
     "exclude": [
         "node_modules",
         "src/stockfish/engine/sf17-79.js",
-        "src/stockfish/engine/sf171-79.js",
-        "scripts/simulate-suggested-tasks.ts"
+        "src/stockfish/engine/sf171-79.js"
     ]
 }

@@ -29,8 +29,6 @@ export interface User {
     bio: string;
     coachBio?: string;
 
-    subscriptionStatus: string;
-
     ratingSystem: RatingSystem;
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
@@ -81,6 +79,11 @@ export interface User {
 
     purchasedCourses?: Record<string, boolean>;
 
+    /** The user's subscription status. This must be a top-level attribute because it is a Dynamo GSI key. */
+    subscriptionStatus: SubscriptionStatus;
+    /** The user's subscription tier. This must be a top-level attribute because it is a Dynamo GSI key. */
+    subscriptionTier?: SubscriptionTier;
+    /** The user's stripe payment info. */
     paymentInfo?: PaymentInfo;
 
     coachInfo?: CoachInfo;
@@ -120,6 +123,12 @@ export interface User {
 
     /** The id of the user's game review cohort, if they are a member of the Game & Profile review tier. */
     gameReviewCohortId?: string;
+
+    /** The time already on the user's timer, if it is paused. */
+    timerSeconds?: number;
+
+    /** The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty. */
+    timerStartedAt?: string;
 }
 
 /**
@@ -127,13 +136,7 @@ export interface User {
  * @param user The user to get the subscription status for.
  */
 export function getSubscriptionStatus(user?: User): SubscriptionStatus {
-    if (!user) {
-        return SubscriptionStatus.NotSubscribed;
-    }
-    if (user.subscriptionStatus === SubscriptionStatus.Subscribed) {
-        return SubscriptionStatus.Subscribed;
-    }
-    return user.paymentInfo?.subscriptionStatus ?? SubscriptionStatus.NotSubscribed;
+    return user?.subscriptionStatus ?? SubscriptionStatus.NotSubscribed;
 }
 
 /**
@@ -144,7 +147,7 @@ export function getSubscriptionTier(user?: User): SubscriptionTier {
     if (getSubscriptionStatus(user) !== SubscriptionStatus.Subscribed) {
         return SubscriptionTier.Free;
     }
-    return user?.paymentInfo?.subscriptionTier || SubscriptionTier.Basic;
+    return user?.subscriptionTier || SubscriptionTier.Basic;
 }
 
 export interface WorkGoalSettings {
@@ -231,10 +234,6 @@ export interface PaymentInfo {
     customerId: string;
     /** The stripe subscription id or a special value for non-stripe subscriptions. */
     subscriptionId: string;
-    /** The status of the subscription. */
-    subscriptionStatus: SubscriptionStatus;
-    /** The tier of the subscription. */
-    subscriptionTier: SubscriptionTier;
 }
 
 export interface CoachInfo {
