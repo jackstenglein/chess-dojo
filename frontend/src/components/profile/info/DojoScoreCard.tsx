@@ -22,6 +22,7 @@ import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
+import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
@@ -144,6 +145,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
         graduationBoundary > 0 &&
         currentRating > 0;
     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
+    const ratingSystemName = user.ratings[user.ratingSystem]?.name;
 
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
@@ -160,6 +162,9 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                                         sx={{ fontWeight: 'bold' }}
                                     >
                                         {formatRatingSystem(user.ratingSystem)}
+                                        {isCustom(user.ratingSystem) &&
+                                            ratingSystemName &&
+                                            ` (${ratingSystemName})`}
                                     </Typography>
                                 </Stack>
 
