@@ -110,7 +110,7 @@ export class ChessDBService {
 
             const pvData: ChessDbPv = {
                 score: responseData.score,
-                depth: responseData.depth,
+                depth: responseData.depth + 22, // for pv chessDB doesn't properly assign a pv where it left from analysis on a request, +22 estimate can be taken according to chessdb devs for proper estimate.
                 pv: responseData.pv ?? [],
                 pvSAN: responseData.pvSAN ?? [],
             };
