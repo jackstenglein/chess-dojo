@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    LectureTierUser,
     listGameReviewCohorts,
     ListGameReviewCohortsResponse,
     setGameReviewCohorts,
@@ -13,6 +14,7 @@ import { getConfig } from '@/config';
 import { TimeFormat } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
+import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import {
     GameReviewCohort,
     GameReviewCohortMember,
@@ -24,6 +26,7 @@ import {
     CardContent,
     CardHeader,
     Container,
+    Divider,
     Menu,
     MenuItem,
     Stack,
@@ -43,10 +46,34 @@ interface EditableGameReviewCohort extends GameReviewCohort {
     senseiReviewGoogleMeetUrl?: string;
 }
 
+/** Groups lecture tier users by dojoCohort, sorted by cohort range. */
+function groupLectureUsersByCohort(users: LectureTierUser[]): Map<string, LectureTierUser[]> {
+    const grouped = new Map<string, LectureTierUser[]>();
+    for (const user of users) {
+        const cohort = user.dojoCohort || 'Unknown';
+        const list = grouped.get(cohort) || [];
+        list.push(user);
+        grouped.set(cohort, list);
+    }
+    // Sort keys by the numeric lower bound of the cohort range
+    const sorted = new Map(
+        [...grouped.entries()].sort(([a], [b]) => {
+            const [aVal] = getCohortRangeInt(a);
+            const [bVal] = getCohortRangeInt(b);
+            if (aVal < 0 && bVal < 0) return 0;
+            if (aVal < 0) return 1;
+            if (bVal < 0) return -1;
+            return aVal - bVal;
+        }),
+    );
+    return sorted;
+}
+
 export function AdminGameReviewCohorts() {
     const { user } = useAuth();
     const request = useRequest<ListGameReviewCohortsResponse>();
     const [unassignedUsers, setUnassignedUsers] = useState<GameReviewCohortMember[]>([]);
+    const [lectureUsers, setLectureUsers] = useState<LectureTierUser[]>([]);
     const [editor, setEditor] = useState<EditableGameReviewCohort[]>([]);
     const [moving, setMoving] = useState<{
         anchorElement: HTMLElement;
@@ -64,6 +91,7 @@ export function AdminGameReviewCohorts() {
                     request.onSuccess(resp.data);
                     setEditor(resp.data.gameReviewCohorts);
                     setUnassignedUsers(resp.data.unassignedUsers);
+                    setLectureUsers(resp.data.lectureUsers);
                 })
                 .catch((err) => request.onFailure(err));
         }
@@ -235,6 +263,7 @@ export function AdminGameReviewCohorts() {
                 request.onSuccess({
                     gameReviewCohorts: resp.data.gameReviewCohorts,
                     unassignedUsers,
+                    lectureUsers,
                 });
                 setEditor(resp.data.gameReviewCohorts);
                 saveRequest.onSuccess();
@@ -249,6 +278,8 @@ export function AdminGameReviewCohorts() {
             setErrors({});
         }
     };
+
+    const groupedLectureUsers = groupLectureUsersByCohort(lectureUsers);
 
     return (
         <Container sx={{ py: 5 }}>
@@ -271,13 +302,22 @@ export function AdminGameReviewCohorts() {
                                         href={`/profile/${m.username}`}
                                         target='_blank'
                                         ml={1}
-                                        mr={3}
                                     >
                                         {m.displayName}
                                     </Link>
+                                    {m.dojoCohort && (
+                                        <Typography
+                                            variant='body2'
+                                            color='text.secondary'
+                                            ml={0.5}
+                                        >
+                                            ({m.dojoCohort})
+                                        </Typography>
+                                    )}
 
                                     <Button
                                         variant='outlined'
+                                        sx={{ ml: 2 }}
                                         onClick={(e) => onStartMove(e, -1, m.username)}
                                     >
                                         Move
@@ -424,13 +464,22 @@ export function AdminGameReviewCohorts() {
                                             href={`/profile/${m.username}`}
                                             target='_blank'
                                             ml={1}
-                                            mr={3}
                                         >
                                             {m.displayName}
                                         </Link>
+                                        {m.dojoCohort && (
+                                            <Typography
+                                                variant='body2'
+                                                color='text.secondary'
+                                                ml={0.5}
+                                            >
+                                                ({m.dojoCohort})
+                                            </Typography>
+                                        )}
 
                                         <Button
                                             variant='outlined'
+                                            sx={{ ml: 2 }}
                                             onClick={(e) => onStartMove(e, i, m.username)}
                                         >
                                             Move
@@ -466,6 +515,48 @@ export function AdminGameReviewCohorts() {
                         </Typography>
                     )}
                 </Stack>
+
+                <Card variant='outlined'>
+                    <CardHeader title='Lecture Tier Users' />
+                    <CardContent>
+                        {lectureUsers.length === 0 ? (
+                            <Typography>No lecture tier users</Typography>
+                        ) : (
+                            <Stack spacing={2}>
+                                {[...groupedLectureUsers.entries()].map(
+                                    ([cohort, users], groupIndex) => (
+                                        <Stack key={cohort} spacing={1}>
+                                            {groupIndex > 0 && <Divider />}
+                                            <Typography variant='subtitle2' color='text.secondary'>
+                                                {cohort}
+                                            </Typography>
+                                            {users.map((u) => (
+                                                <Stack
+                                                    key={u.username}
+                                                    direction='row'
+                                                    alignItems='center'
+                                                >
+                                                    <Avatar
+                                                        username={u.username}
+                                                        displayName={u.displayName}
+                                                        size={30}
+                                                    />
+                                                    <Link
+                                                        href={`/profile/${u.username}`}
+                                                        target='_blank'
+                                                        ml={1}
+                                                    >
+                                                        {u.displayName}
+                                                    </Link>
+                                                </Stack>
+                                            ))}
+                                        </Stack>
+                                    ),
+                                )}
+                            </Stack>
+                        )}
+                    </CardContent>
+                </Card>
 
                 <Menu
                     open={!!moving}

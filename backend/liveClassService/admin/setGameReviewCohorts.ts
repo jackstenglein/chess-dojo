@@ -81,6 +81,12 @@ async function handleRequest(request: SetGameReviewCohortsRequest) {
             cohort.id = uuidv4();
         }
 
+        // Strip backend-enriched fields before persisting
+        for (const [key, member] of Object.entries(cohort.members)) {
+            const { dojoCohort: _, ...rest } = member;
+            cohort.members[key] = rest as typeof member;
+        }
+
         const builder = new UpdateItemBuilder<GameReviewCohort>()
             .key('type', 'GAME_REVIEW_COHORT')
             .key('id', cohort.id)
