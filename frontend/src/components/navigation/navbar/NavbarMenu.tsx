@@ -2,6 +2,7 @@ import { useNotifications } from '@/api/cache/Cache';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import NotificationButton from '@/components/notifications/NotificationButton';
+import { NewsfeedButton } from './NewsfeedButton';
 import { getConfig } from '@/config';
 import { hasCreatedProfile } from '@/database/user';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
@@ -540,6 +541,7 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const hide8 = useMediaQuery('(min-width:797px)');
 
     const showHelp = useMediaQuery('(min-width:624px)');
+    const showNewsfeed = useMediaQuery('(min-width:595px)');
     const showNotifications = useMediaQuery('(min-width:567px)');
     const showProfileDropdown = useMediaQuery('(min-width:542px)');
 
@@ -590,6 +592,24 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         ));
 
     const endItems: JSX.Element[] = [];
+
+    if (showNewsfeed) {
+        endItems.push(<NewsfeedButton key='newsfeed-icon' />);
+    } else {
+        menuItems.push(
+            <NavMenuItem
+                key='newsfeed-icon'
+                item={{
+                    id: 'newsfeed-shortcut',
+                    name: 'Newsfeed',
+                    icon: <Feed />,
+                    href: '/newsfeed',
+                }}
+                openItems={openItems}
+                handleClose={onClose}
+            />,
+        );
+    }
 
     if (showNotifications) {
         endItems.push(<NotificationButton key='notifications' />);
