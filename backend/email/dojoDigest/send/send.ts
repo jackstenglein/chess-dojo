@@ -1,6 +1,6 @@
 import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2';
 import csvParser from 'csv-parser';
-import { createReadStream, readFileSync, writeFileSync } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import { parse } from 'ts-command-line-args';
 import { DigestData, getDigestData } from './getDigestData';
 import { HEATMAP_STYLE_MINIFIED } from './heatmapStyle';
@@ -121,12 +121,13 @@ async function main() {
 }
 
 interface Unsubscriber {
-    Email: string;
+    email: string;
 }
 
 interface Subscriber {
     username?: string;
     email: string;
+    email_verified?: string;
 }
 
 /**
@@ -142,7 +143,7 @@ async function getSubscribers(args: Arguments): Promise<Subscriber[]> {
         createReadStream(args.unsubscribersPath)
             .pipe(csvParser())
             .on('data', (row: Unsubscriber) => {
-                unsubscribers.add(row.Email);
+                unsubscribers.add(row.email);
             })
             .on('end', () => resolve(unsubscribers))
             .on('error', reject);
@@ -150,34 +151,58 @@ async function getSubscribers(args: Arguments): Promise<Subscriber[]> {
     console.log(`Will skip ${unsubscribers.size} unsubscribed users`);
 
     const subscribers: Subscriber[] = [];
-    const subscriberSet = new Set<string>();
     for (const subscribersPath of args.subscribersPath) {
         await new Promise((resolve, reject) => {
             createReadStream(subscribersPath)
                 .pipe(csvParser())
                 .on('data', (row: Subscriber) => {
-                    if (!unsubscribers.has(row.email) && !subscriberSet.has(row.email)) {
+                    if (!unsubscribers.has(row.email)) {
                         subscribers.push(row);
-                        subscriberSet.add(row.email);
                     }
                 })
                 .on('end', resolve)
                 .on('error', reject);
         });
     }
-    return subscribers;
+    subscribers.sort((a, b) => {
+        const aEmail = a.email.toLowerCase().trim();
+        const bEmail = b.email.toLowerCase().trim();
+        if (aEmail === bEmail) {
+            if (a.email_verified === 'true') {
+                return -1;
+            }
+            if (b.email_verified === 'true') {
+                return 1;
+            }
+            return 0;
+        }
+        return aEmail.localeCompare(bEmail);
+    });
+
+    const finalSubscribers: Subscriber[] = [];
+    const subscriberSet = new Set<string>();
+    for (const sub of subscribers) {
+        const email = sub.email.toLowerCase().trim();
+        if (!subscriberSet.has(email)) {
+            finalSubscribers.push(sub);
+            subscriberSet.add(email);
+        }
+    }
+
+    return finalSubscribers;
 }
 
 async function sendSummaryEmail(address: string, html: string, subject: string, data: DigestData) {
     const finalHtml = html
+        .replace('{{month}}', 'February')
         .replace('{{time}}', data.time)
         .replace('{{games}}', `${data.games}`)
         .replace('{{heatmap_html}}', data.heatmapHtml);
-    writeFileSync('email.html', finalHtml);
     return sendEmail(address, finalHtml, subject);
 }
 
 async function sendEmail(address: string, html: string, subject: string) {
+    address = address.trim();
     return ses.send(
         new SendEmailCommand({
             Destination: {
