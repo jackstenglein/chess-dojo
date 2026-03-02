@@ -1,15 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { forwardRef } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { NewsfeedButton } from './NewsfeedButton';
-
-vi.mock('../Link', () => ({
-    Link: forwardRef<HTMLAnchorElement, React.ComponentPropsWithRef<'a'>>(
-        function MockLink(props, ref) {
-            return <a ref={ref} {...props} />;
-        },
-    ),
-}));
 
 describe('NewsfeedButton', () => {
     afterEach(() => {
