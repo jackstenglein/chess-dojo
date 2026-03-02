@@ -14,7 +14,6 @@ import { getConfig } from '@/config';
 import { TimeFormat } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
-import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import {
     GameReviewCohort,
     GameReviewCohortMember,
@@ -37,6 +36,7 @@ import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
 import { Frequency, RRule } from 'rrule';
+import { groupLectureUsersByCohort } from './groupLectureUsersByCohort';
 
 interface EditableGameReviewCohort extends GameReviewCohort {
     editDiscordChannelId?: string;
@@ -44,29 +44,6 @@ interface EditableGameReviewCohort extends GameReviewCohort {
     peerReviewGoogleMeetUrl?: string;
     editSenseiReviewTime?: DateTime | null;
     senseiReviewGoogleMeetUrl?: string;
-}
-
-/** Groups lecture tier users by dojoCohort, sorted by cohort range. */
-function groupLectureUsersByCohort(users: LectureTierUser[]): Map<string, LectureTierUser[]> {
-    const grouped = new Map<string, LectureTierUser[]>();
-    for (const user of users) {
-        const cohort = user.dojoCohort || 'Unknown';
-        const list = grouped.get(cohort) || [];
-        list.push(user);
-        grouped.set(cohort, list);
-    }
-    // Sort keys by the numeric lower bound of the cohort range
-    const sorted = new Map(
-        [...grouped.entries()].sort(([a], [b]) => {
-            const [aVal] = getCohortRangeInt(a);
-            const [bVal] = getCohortRangeInt(b);
-            if (aVal < 0 && bVal < 0) return 0;
-            if (aVal < 0) return 1;
-            if (bVal < 0) return -1;
-            return aVal - bVal;
-        }),
-    );
-    return sorted;
 }
 
 export function AdminGameReviewCohorts() {
