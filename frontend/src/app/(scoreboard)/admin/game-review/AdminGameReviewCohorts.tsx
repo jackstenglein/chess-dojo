@@ -275,19 +275,11 @@ export function AdminGameReviewCohorts() {
                                         displayName={m.displayName}
                                         size={30}
                                     />
-                                    <Link
-                                        href={`/profile/${m.username}`}
-                                        target='_blank'
-                                        ml={1}
-                                    >
+                                    <Link href={`/profile/${m.username}`} target='_blank' ml={1}>
                                         {m.displayName}
                                     </Link>
                                     {m.dojoCohort && (
-                                        <Typography
-                                            variant='body2'
-                                            color='text.secondary'
-                                            ml={0.5}
-                                        >
+                                        <Typography variant='body2' color='text.secondary' ml={0.5}>
                                             ({m.dojoCohort})
                                         </Typography>
                                     )}

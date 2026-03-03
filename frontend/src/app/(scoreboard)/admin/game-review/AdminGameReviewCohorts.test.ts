@@ -35,20 +35,14 @@ describe('groupLectureUsersByCohort', () => {
     });
 
     it('places 2400+ cohort after lower cohorts', () => {
-        const users = [
-            makeUser('alice', '2400+'),
-            makeUser('bob', '800-900'),
-        ];
+        const users = [makeUser('alice', '2400+'), makeUser('bob', '800-900')];
         const result = groupLectureUsersByCohort(users);
         const keys = [...result.keys()];
         expect(keys).toEqual(['800-900', '2400+']);
     });
 
     it('places users with empty dojoCohort into Unknown at the end', () => {
-        const users = [
-            makeUser('alice', '1200-1300'),
-            makeUser('bob', ''),
-        ];
+        const users = [makeUser('alice', '1200-1300'), makeUser('bob', '')];
         const result = groupLectureUsersByCohort(users);
         const keys = [...result.keys()];
         expect(keys).toEqual(['1200-1300', 'Unknown']);
