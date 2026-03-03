@@ -551,7 +551,10 @@ export function useProgressHistoryEditor({
 
     const addItem = useCallback(() => {
         if (!requirement) return;
-        setItems((prev) => [...prev, createNewEntry(requirement, cohort, prev.length, user?.username!)]);
+        setItems((prev) => [
+            ...prev,
+            createNewEntry(requirement, cohort, prev.length, user?.username!),
+        ]);
     }, [requirement, cohort, user]);
 
     const onSubmit = async () => {
