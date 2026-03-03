@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../../lib/helpers';
 
 test.describe('Info Tab', () => {
     test.beforeEach(async ({ page }) => {
@@ -9,7 +8,7 @@ test.describe('Info Tab', () => {
     });
 
     test('has tab selector', async ({ page }) => {
-        await getBySel(page, 'tournaments-tab-list').getByText('Calendar').click();
+        await page.getByTestId('tournaments-tab-list').getByText('Calendar').click();
 
         await expect(page).toHaveURL(/\/tournaments\/liga\?type=calendar/);
     });
@@ -21,21 +20,21 @@ test.describe('Info Tab', () => {
     });
 
     test('links to Lichess team', async ({ page }) => {
-        await expect(getBySel(page, 'lichess-team-link')).toHaveAttribute(
+        await expect(page.getByTestId('lichess-team-link')).toHaveAttribute(
             'href',
             'https://lichess.org/team/chessdojo',
         );
     });
 
     test('links to Chess.com team', async ({ page }) => {
-        await expect(getBySel(page, 'chesscom-team-link')).toHaveAttribute(
+        await expect(page.getByTestId('chesscom-team-link')).toHaveAttribute(
             'href',
             'https://www.chess.com/club/chessdojo',
         );
     });
 
     test('links to Discord server', async ({ page }) => {
-        await expect(getBySel(page, 'discord-invite-link')).toHaveAttribute(
+        await expect(page.getByTestId('discord-invite-link')).toHaveAttribute(
             'href',
             'https://discord.gg/ehryScGMfP',
         );

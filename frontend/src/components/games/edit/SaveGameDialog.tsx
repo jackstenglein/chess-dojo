@@ -144,13 +144,13 @@ export default function SaveGameDialog({
                 {children}
             </SaveGameDialogBody>
             <DialogActions>
-                <Button data-cy='cancel-preflight' onClick={onClose} disabled={loading}>
+                <Button data-testid='cancel-preflight' onClick={onClose} disabled={loading}>
                     Cancel
                 </Button>
 
                 {type === SaveGameDialogType.Save && (
                     <LoadingButton
-                        data-cy='save-dialogue-button'
+                        data-testid='save-dialogue-button'
                         onClick={() => submit(false)}
                         loading={loading && selectedButton === 'save'}
                         disabled={loading && selectedButton !== 'save'}
@@ -167,7 +167,7 @@ export default function SaveGameDialog({
                     </Tooltip>
                 ) : (
                     <LoadingButton
-                        data-cy='publish-dialogue-button'
+                        data-testid='publish-dialogue-button'
                         onClick={() => submit(true)}
                         loading={loading && selectedButton === 'publish'}
                         disabled={loading && selectedButton !== 'publish'}
@@ -236,7 +236,7 @@ function SaveGameDialogBody({
                         >
                             <TextField
                                 fullWidth
-                                data-cy='white'
+                                data-testid='white'
                                 label="White's name"
                                 value={form.white}
                                 onChange={(e) => onChangeField('white', e.target.value)}
@@ -254,7 +254,7 @@ function SaveGameDialogBody({
                         >
                             <TextField
                                 fullWidth
-                                data-cy='black'
+                                data-testid='black'
                                 label="Black's name"
                                 value={form.black}
                                 onChange={(e) => onChangeField('black', e.target.value)}
@@ -272,7 +272,7 @@ function SaveGameDialogBody({
                         >
                             <TextField
                                 select
-                                data-cy='result'
+                                data-testid='result'
                                 label='Result'
                                 value={form.result}
                                 onChange={(e) => onChangeField('result', e.target.value)}

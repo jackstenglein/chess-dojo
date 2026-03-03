@@ -278,7 +278,7 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
             )}
             {error && (
                 <Snackbar
-                    data-cy='error-snackbar'
+                    data-testid='error-snackbar'
                     open={!!error}
                     autoHideDuration={6000}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}

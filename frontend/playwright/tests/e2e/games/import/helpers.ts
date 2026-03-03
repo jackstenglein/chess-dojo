@@ -1,5 +1,4 @@
 import { expect, Page } from '@playwright/test';
-import { getBySel } from '../../../../lib/helpers';
 
 /** Matches the URL of a game page. */
 export const gameUrlRegex = /^\/games\/\d{3,4}-\d{3,4}\/\d{4}\.\d{2}\.\d{2}_.+$/;
@@ -8,9 +7,9 @@ export const gameUrlRegex = /^\/games\/\d{3,4}-\d{3,4}\/\d{4}\.\d{2}\.\d{2}_.+$/
  * Deletes the game currently open in the browser.
  */
 export async function deleteCurrentGame(page: Page): Promise<void> {
-    await getBySel(page, 'underboard-button-settings').click();
-    await getBySel(page, 'delete-game-button').click();
-    await getBySel(page, 'delete-game-confirm-button').click();
+    await page.getByTestId('underboard-button-settings').click();
+    await page.getByTestId('delete-game-button').click();
+    await page.getByTestId('delete-game-confirm-button').click();
     await expect(page).toHaveURL('/profile');
 }
 
@@ -41,44 +40,40 @@ export async function verifyGame(
 ): Promise<void> {
     if (white) {
         await expect(
-            getBySel(
-                page,
+            page.getByTestId(
                 orientation === 'black' ? 'player-header-header' : 'player-header-footer',
             ),
         ).toContainText(white);
     }
     if (black) {
         await expect(
-            getBySel(
-                page,
+            page.getByTestId(
                 orientation === 'black' ? 'player-header-footer' : 'player-header-header',
             ),
         ).toContainText(black);
     }
     if (lastMove) {
-        const moveButton = getBySel(page, 'pgn-text-move-button').last();
+        const moveButton = page.getByTestId('pgn-text-move-button').last();
         await expect(moveButton).toContainText(lastMove);
-        await moveButton.click({ force: true });
+        await moveButton.click();
 
         if (lastMoveClock?.white) {
             await expect(
-                getBySel(
-                    page,
+                page.getByTestId(
                     orientation === 'black' ? 'player-header-header' : 'player-header-footer',
                 ),
             ).toContainText(lastMoveClock.white);
         }
         if (lastMoveClock?.black) {
             await expect(
-                getBySel(
-                    page,
+                page.getByTestId(
                     orientation === 'black' ? 'player-header-footer' : 'player-header-header',
                 ),
             ).toContainText(lastMoveClock.black);
         }
     }
     if (lastMoveEmt) {
-        await expect(getBySel(page, 'elapsed-move-time').last()).toHaveText(lastMoveEmt);
+        await expect(page.getByTestId('elapsed-move-time').last()).toHaveText(lastMoveEmt);
     }
 }
 

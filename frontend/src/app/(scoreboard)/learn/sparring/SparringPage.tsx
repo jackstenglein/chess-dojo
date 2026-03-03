@@ -184,7 +184,7 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
                         {subsection.hidden > 0 && (
                             <Grid size='auto'>
                                 <Stack
-                                    data-cy='upsell-message'
+                                    data-testid='upsell-message'
                                     px={1}
                                     mt={2}
                                     spacing={2}

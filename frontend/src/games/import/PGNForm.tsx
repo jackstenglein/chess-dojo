@@ -118,7 +118,7 @@ export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClos
                 <OrDivider />
 
                 <TextField
-                    data-cy='pgn-text'
+                    data-testid='pgn-text'
                     label='Paste PGN'
                     placeholder={pgnTextPlaceholder}
                     value={pgnText}

@@ -93,7 +93,7 @@ export default function BooksPage() {
             </Stack>
             <Stack mt={3} spacing={3}>
                 <MultipleSelectChip
-                    data-cy='cohort-selector'
+                    data-testid='cohort-selector'
                     selected={cohorts}
                     setSelected={onChangeCohort}
                     options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({

@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Books Tab', () => {
     test.beforeEach(async ({ page }) => {
@@ -15,6 +14,6 @@ test.describe('Books Tab', () => {
     });
 
     test('should have cohort selector', async ({ page }) => {
-        await expect(getBySel(page, 'cohort-selector')).toBeVisible();
+        await expect(page.getByTestId('cohort-selector')).toBeVisible();
     });
 });

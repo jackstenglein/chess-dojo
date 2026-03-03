@@ -185,7 +185,7 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
 
     return (
         <Paper
-            data-cy={`player-header-${type}`}
+            data-testid={`player-header-${type}`}
             elevation={3}
             variant={light ? 'outlined' : 'elevation'}
             sx={{
@@ -258,7 +258,7 @@ export default PlayerHeader;
 function EmptyHeader({ type, light }: { type: string; light: boolean }) {
     return (
         <Paper
-            data-cy={`player-header-${type}`}
+            data-testid={`player-header-${type}`}
             elevation={3}
             variant={light ? 'outlined' : 'elevation'}
             sx={{

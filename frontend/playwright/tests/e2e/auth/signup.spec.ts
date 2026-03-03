@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Signup Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -21,32 +20,32 @@ test.describe('Signup Page', () => {
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(getBySel(page, 'title')).toHaveText('ChessDojo');
+        await expect(page.getByTestId('title')).toHaveText('ChessDojo');
     });
 
     test('should link to signin', async ({ page }) => {
-        await getBySel(page, 'signin-button').click();
+        await page.getByTestId('signin-button').click();
         await expect(page).toHaveURL('/signin');
     });
 
     test('requires name to submit form', async ({ page }) => {
         await page.locator('#email').fill('test@email.com');
         await page.locator('#password').fill('testpassword');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
         await expect(page.locator('#name-helper-text')).toHaveText('Name is required');
     });
 
     test('requires email to submit form', async ({ page }) => {
         await page.locator('#name').fill('Test Name');
         await page.locator('#password').fill('testpassword');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
         await expect(page.locator('#email-helper-text')).toHaveText('Email is required');
     });
 
     test('requires password to submit form', async ({ page }) => {
         await page.locator('#name').fill('Test Name');
         await page.locator('#email').fill('test@email.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
         await expect(page.locator('#password-helper-text')).toHaveText('Password is required');
     });
 
@@ -54,8 +53,8 @@ test.describe('Signup Page', () => {
         await page.locator('#name').fill('Test Name');
         await page.locator('#email').fill('test@email.com');
         await page.locator('#password').fill('testpassword');
-        await getBySel(page, 'submit-button').click();
-        await expect(getBySel(page, 'description')).toContainText(
+        await page.getByTestId('submit-button').click();
+        await expect(page.getByTestId('description')).toContainText(
             'please enter the verification code',
         );
     });

@@ -73,7 +73,7 @@ export function DailyTrainingPlan() {
     };
 
     return (
-        <Stack data-cy='training-plan-today' spacing={2} width={1}>
+        <Stack data-testid='training-plan-today' spacing={2} width={1}>
             <Stack direction='row' alignItems='center'>
                 <Tooltip title={expanded ? 'Hide' : 'Show'}>
                     <IconButton onClick={toggleExpanded}>
@@ -349,7 +349,7 @@ function DailyTrainingPlanItem({
                                 },
                                 container: { mx: 0.5 },
                             }}
-                            data-cy='update-task-button'
+                            data-testid='update-task-button'
                         />
                     </Tooltip>
                 </CardActions>

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { containsAll, getBySel } from '../../../lib/helpers';
+import { containsAll } from '../../../lib/helpers';
 
 test.describe('Sparring Positions Tab', () => {
     test.beforeEach(async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe('Sparring Positions Tab', () => {
         await page.getByText('Middlegame Win Conversions').click();
         await page.getByText('600-700').click();
 
-        await expect(getBySel(page, 'position-fen-copy')).toBeVisible();
-        await expect(getBySel(page, 'position-challenge-url')).toBeVisible();
+        await expect(page.getByTestId('position-fen-copy')).toBeVisible();
+        await expect(page.getByTestId('position-challenge-url')).toBeVisible();
     });
 });

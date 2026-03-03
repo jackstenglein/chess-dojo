@@ -49,7 +49,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
             <TextField
                 label='Time Format'
                 select
-                data-cy='time-format-selector'
+                data-testid='time-format-selector'
                 value={timeFormat}
                 onChange={(e) => onChangeTimeFormat(e.target.value as TimeFormat)}
                 size='small'

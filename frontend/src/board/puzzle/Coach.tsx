@@ -7,7 +7,7 @@ const defaultSrc = 'https://www.chess.com/chess-themes/pieces/bases/150/wn.png';
 const Coach: React.FC<CoachProps> = ({ src }) => {
     return (
         <img
-            data-cy='coach-image'
+            data-testid='coach-image'
             src={src || defaultSrc}
             style={{
                 maxHeight: '120px',

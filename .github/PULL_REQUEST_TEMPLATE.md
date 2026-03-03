@@ -1,3 +1,5 @@
+*Please familiarize yourself with our [contribution guide](https://github.com/jackstenglein/chess-dojo/blob/main/docs/contributing.md) if you have not already.*
+
 ## Summary
 
 Briefly explain the purpose of this PR and the high-level changes made.

@@ -104,7 +104,7 @@ export const VerifyEmailForm = ({
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-cy='title' mb={4}>
+            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
                 ChessDojo
             </Typography>
 
@@ -114,7 +114,7 @@ export const VerifyEmailForm = ({
                     component='div'
                     gutterBottom
                     textAlign='center'
-                    data-cy='description'
+                    data-testid='description'
                 >
                     In order to complete your account creation, please enter the verification code
                     sent to {email}.
@@ -154,7 +154,7 @@ export const VerifyEmailForm = ({
                         boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                     }}
                     onClick={onSubmit}
-                    data-cy='verify-button'
+                    data-testid='verify-button'
                 >
                     Verify Email
                 </LoadingButton>
@@ -170,7 +170,7 @@ export const VerifyEmailForm = ({
                     startIcon={<MarkEmailUnreadIcon />}
                     onClick={onResendCode}
                     loading={codeRequest.isLoading()}
-                    data-cy='resend-button'
+                    data-testid='resend-button'
                 >
                     Send New Code
                 </LoadingButton>

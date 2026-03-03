@@ -125,7 +125,7 @@ const ListGamesPage = () => {
                 <Grid size={{ xs: 12, md: 4, lg: 4 }}>
                     <Stack spacing={4}>
                         <Button
-                            data-cy='import-game-button'
+                            data-testid='import-game-button'
                             id='import-game-button'
                             variant='contained'
                             component={Link}
@@ -177,7 +177,7 @@ const ListGamesPage = () => {
                             </Stack>
 
                             <Typography
-                                data-cy='download-database-button'
+                                data-testid='download-database-button'
                                 id='download-full-database'
                                 variant='body2'
                                 alignSelf='start'

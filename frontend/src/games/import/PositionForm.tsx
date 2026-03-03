@@ -140,7 +140,7 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                             setInputValue(value);
                         }}
                         onBlur={onBlur}
-                        data-cy='position-entry'
+                        data-testid='position-entry'
                         freeSolo
                         selectOnFocus
                         blurOnSelect

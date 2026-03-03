@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Forgot Password Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -21,17 +20,17 @@ test.describe('Forgot Password Page', () => {
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(getBySel(page, 'title')).toHaveText('ChessDojo');
-        await expect(getBySel(page, 'description')).toContainText('Enter your email');
+        await expect(page.getByTestId('title')).toHaveText('ChessDojo');
+        await expect(page.getByTestId('description')).toContainText('Enter your email');
     });
 
     test('links back to signin page', async ({ page }) => {
-        await getBySel(page, 'cancel-button').click();
+        await page.getByTestId('cancel-button').click();
         await expect(page).toHaveURL('/signin');
     });
 
     test('requires email to submit form', async ({ page }) => {
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
         await expect(page.locator('#email-helper-text')).toHaveText('Email is required');
     });
 
@@ -49,7 +48,7 @@ test.describe('Forgot Password Page', () => {
         });
 
         await page.locator('#email').fill('test@email.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
         await expect(page.locator('#email-helper-text')).toHaveText(
             'Account with this email does not exist',
         );
@@ -57,22 +56,22 @@ test.describe('Forgot Password Page', () => {
 
     test('requires code to submit second form', async ({ page }) => {
         await page.locator('#email').fill('jackstenglein+test@gmail.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await page.locator('#password').fill('testpassword');
         await page.locator('#password-confirm').fill('testpassword');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await expect(page.locator('#code-helper-text')).toHaveText('Recovery code is required');
     });
 
     test('requires password to be 8 characters', async ({ page }) => {
         await page.locator('#email').fill('jackstenglein+test@gmail.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await page.locator('#code').fill('12345');
         await page.locator('#password').fill('1234567');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await expect(page.locator('#password-helper-text')).toHaveText(
             'Password must be at least 8 characters',
@@ -81,12 +80,12 @@ test.describe('Forgot Password Page', () => {
 
     test('requires password confirm to match', async ({ page }) => {
         await page.locator('#email').fill('jackstenglein+test@gmail.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await page.locator('#code').fill('12345');
         await page.locator('#password').fill('12345678');
         await page.locator('#password-confirm').fill('12345679');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await expect(page.locator('#password-confirm-helper-text')).toHaveText(
             'Passwords do not match',
@@ -95,7 +94,7 @@ test.describe('Forgot Password Page', () => {
 
     test('fails for incorrect recovery code', async ({ page }) => {
         await page.locator('#email').fill('jackstenglein+test@gmail.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         // Override the route for the confirm step
         await page.route('**/cognito-idp.us-east-1.amazonaws.com/**', async (route) => {
@@ -112,24 +111,24 @@ test.describe('Forgot Password Page', () => {
         await page.locator('#code').fill('12345');
         await page.locator('#password').fill('12345678');
         await page.locator('#password-confirm').fill('12345678');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await expect(page.locator('#code-helper-text')).toHaveText('Incorrect recovery code.');
     });
 
     test('redirects back to signin after completion', async ({ page }) => {
         await page.locator('#email').fill('jackstenglein+test@gmail.com');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
         await page.locator('#code').fill('12345');
         await page.locator('#password').fill('12345678');
         await page.locator('#password-confirm').fill('12345678');
-        await getBySel(page, 'submit-button').click();
+        await page.getByTestId('submit-button').click();
 
-        await expect(getBySel(page, 'description')).toHaveText(
+        await expect(page.getByTestId('description')).toHaveText(
             'You can now sign in using your new password.',
         );
-        await getBySel(page, 'signin-button').click();
+        await page.getByTestId('signin-button').click();
         await expect(page).toHaveURL('/signin');
     });
 });

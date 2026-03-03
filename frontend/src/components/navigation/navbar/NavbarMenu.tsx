@@ -496,7 +496,7 @@ export const NavMenuItem: React.FC<{
 function NavIconButton({ item }: { item: NavbarItem }) {
     return (
         <Tooltip title={item.name}>
-            <IconButton data-cy={item.name} sx={{ color: 'white' }} href={item.href ?? ''}>
+            <IconButton data-testid={item.name} sx={{ color: 'white' }} href={item.href ?? ''}>
                 {item.icon}
             </IconButton>
         </Tooltip>
@@ -679,7 +679,7 @@ const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
                     <>
                         <Tooltip title='More'>
                             <IconButton
-                                data-cy='navbar-more-button'
+                                data-testid='navbar-more-button'
                                 onClick={handleOpen}
                                 sx={{ color: 'white' }}
                             >

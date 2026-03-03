@@ -22,7 +22,7 @@ This document describes coding patterns and conventions used in the chess-dojo r
 | Hooks | camelCase with `use` prefix | `useRouter`, `useRequest` |
 | API / utils / non-component modules | camelCase | `notificationApi.ts`, `axiosService.ts` |
 | Props interface | `PascalCase` + `Props` suffix | `DeleteGameButtonProps` |
-| E2E test selectors (`data-cy`) | kebab-case | `delete-game-button`, `clear-all-notifications` |
+| E2E test selectors (`data-testid`) | kebab-case | `delete-game-button`, `clear-all-notifications` |
 | Backend Lambda handlers | Export `handler` | `export const handler: APIGatewayProxyHandlerV2 = async (event) => { ... }` |
 | Backend service folders | camelCase + `Service` suffix | `blogService`, `directoryService` |
 
@@ -40,7 +40,7 @@ This document describes coding patterns and conventions used in the chess-dojo r
 - Do not use `React.FC<Props>`. This pattern was used earlier in the codebase but is now avoided. Instead just define the type of props inline or create an interface.
 - **Named export** for all exports. Default exports were used earlier in the codebase but are now avoided.
 - Destructure props in the function signature (this is not always necessary).
-- Use **single quotes** for JSX attribute values where possible (e.g. `data-cy='delete-game-button'`, `color='error'`, `variant='h5'`). Use double quotes when the string contains a single quote.
+- Use **single quotes** for JSX attribute values where possible (e.g. `data-testid='delete-game-button'`, `color='error'`, `variant='h5'`). Use double quotes when the string contains a single quote.
 
 ### UI & layout
 
@@ -56,8 +56,8 @@ This document describes coding patterns and conventions used in the chess-dojo r
 
 ### E2E testability
 
-- Add **`data-cy`** attributes to elements that tests need to target (e.g. buttons, forms, key sections).
-- Use **kebab-case** for `data-cy` values: `data-cy='delete-game-confirm-button'`.
+- Add **`data-testid`** attributes to elements that tests need to target (e.g. buttons, forms, key sections).
+- Use **kebab-case** for `data-testid` values: `data-testid='delete-game-confirm-button'`.
 
 ### Documentation
 
@@ -123,7 +123,7 @@ This document describes coding patterns and conventions used in the chess-dojo r
 
 - Tests live under **`frontend/playwright/tests/e2e/`**, grouped by feature (e.g. `auth/`, `games/`, `calendar/`).
 - Use **`test.describe('Feature or Page')`** and **`test('should ...', async ({ page }) => { ... })`**.
-- Use **`getBySel(page, 'data-cy-value')`** from `playwright/lib/helpers.ts` to select by `data-cy` (replacing Cypress-style `cy.getBySel`).
+- Use **`page.getByTestId('data-testid-value')`** to select by `data-testid` attribute.
 - Use **`getEnv(...)`** from `playwright/lib/env.ts` for environment-dependent values (e.g. credentials, API base URL).
 - Use **`test.beforeEach`** for shared setup (e.g. `page.goto('/signin')`).
 
@@ -143,9 +143,9 @@ This document describes coding patterns and conventions used in the chess-dojo r
 ## Summary checklist
 
 - Types and ESLint: strict, no console in frontend, `_` for unused vars.
-- Naming: PascalCase components/files, camelCase APIs/hooks, kebab-case `data-cy`.
-- Frontend: `@/` imports, named exports, MUI, `useRequest` + `RequestSnackbar`, `data-cy` on test targets.
+- Naming: PascalCase components/files, camelCase APIs/hooks, kebab-case `data-testid`.
+- Frontend: `@/` imports, named exports, MUI, `useRequest` + `RequestSnackbar`, `data-testid` on test targets.
 - API: one module per domain, `functionName` passed to `axoisService` in axios calls, JSDoc on public API.
 - Backend: `'use strict'`, shared `api.ts` helpers, Zod from common, JSDoc on handlers and exported functions.
 - Common: Zod schemas + inferred types, JSDoc on exports.
-- Tests: Vitest `describe`/`it` and mocks; Playwright `getBySel`, `getEnv`, and `test.describe`/`test()`.
+- Tests: Vitest `describe`/`it` and mocks; Playwright `getByTestId`, `getEnv`, and `test.describe`/`test()`.

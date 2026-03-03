@@ -64,9 +64,10 @@ export default defineConfig({
     ],
 
     webServer: {
-        command: 'npm run start:build',
+        command: isCI ? 'npm run start:build' : 'npm run start:test',
         url: 'http://localhost:3000',
         reuseExistingServer: !isCI,
         cwd: path.join(__dirname, '..'),
+        timeout: isCI ? 60 * 1000 : 120 * 1000,
     },
 });

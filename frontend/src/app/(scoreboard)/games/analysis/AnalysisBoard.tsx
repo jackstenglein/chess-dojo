@@ -86,7 +86,7 @@ export default function AnalysisBoard() {
             </GameContext.Provider>
 
             <Dialog
-                data-cy='unsaved-analysis-nav-guard'
+                data-testid='unsaved-analysis-nav-guard'
                 open={navGuard.active}
                 onClose={navGuard.reject}
             >

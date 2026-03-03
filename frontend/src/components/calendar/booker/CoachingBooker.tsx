@@ -61,7 +61,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
 
     return (
         <Dialog
-            data-cy='availability-booker'
+            data-testid='availability-booker'
             fullScreen
             open={true}
             TransitionComponent={Transition}
@@ -72,7 +72,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         Book Coaching Session
                     </Typography>
                     <Button
-                        data-cy='cancel-button'
+                        data-testid='cancel-button'
                         component={Link}
                         color='error'
                         href={'/calendar'}
@@ -82,7 +82,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         Cancel
                     </Button>
                     <LoadingButton
-                        data-cy='book-button'
+                        data-testid='book-button'
                         color='success'
                         disabled={isParticipant}
                         loading={request.status === RequestStatus.Loading}

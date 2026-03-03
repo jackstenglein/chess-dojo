@@ -43,7 +43,7 @@ const PgnText = () => {
             {unsaved && <UnsavedGameBanner dismissable />}
 
             <Card
-                data-cy='pgn-text'
+                data-testid='pgn-text'
                 variant={light ? 'outlined' : 'elevation'}
                 sx={{ display: 'flex', flexDirection: 'column' }}
             >

@@ -132,7 +132,7 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
                         </Button>
                     ) : (
                         <LoadingButton
-                            data-cy='book-button'
+                            data-testid='book-button'
                             variant='contained'
                             loading={request.isLoading()}
                             onClick={onBook}

@@ -6,7 +6,7 @@ export interface ImportButtonProps {
 }
 
 export const ImportButton = ({ onClick, loading }: ImportButtonProps) => (
-    <LoadingButton data-cy='import-button' name='import' loading={loading} onClick={onClick}>
+    <LoadingButton data-testid='import-button' name='import' loading={loading} onClick={onClick}>
         Import
     </LoadingButton>
 );

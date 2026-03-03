@@ -35,7 +35,7 @@ const ProfileButton = () => {
 
     return (
         <>
-            <Button data-cy='navbar-profile-button' onClick={handleOpen}>
+            <Button data-testid='navbar-profile-button' onClick={handleOpen}>
                 <Stack direction='row' alignItems='center'>
                     <Avatar user={user} size={40} />
                     <ExpandMoreIcon sx={{ color: 'white' }} />

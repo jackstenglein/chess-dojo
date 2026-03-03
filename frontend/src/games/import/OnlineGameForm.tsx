@@ -97,7 +97,7 @@ const RecentGameCell = ({
     return (
         <Card sx={{ height: 1 }}>
             <CardActionArea
-                data-cy={`recent-game-${game.source}`}
+                data-testid={`recent-game-${game.source}`}
                 onClick={() => {
                     onClick(game);
                 }}
@@ -263,7 +263,7 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
             <DialogContent sx={{ height: fetchGames ? '75vh' : undefined }}>
                 <Stack>
                     <TextField
-                        data-cy='online-game-url'
+                        data-testid='online-game-url'
                         label='Lichess or Chess.com URL'
                         placeholder='https://lichess.org/study/abcd1234/abcd1234'
                         value={url}

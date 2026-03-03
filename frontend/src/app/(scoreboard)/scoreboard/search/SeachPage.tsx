@@ -225,7 +225,7 @@ export function SearchPage() {
 
                 <Stack spacing={1} alignItems='start'>
                     <TextField
-                        data-cy='search-query'
+                        data-testid='search-query'
                         label='Search Query'
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -240,7 +240,7 @@ export function SearchPage() {
                         </Typography>
                         <FormControl error={!!errors.fields}>
                             <FormControlLabel
-                                data-cy='search-field'
+                                data-testid='search-field'
                                 control={
                                     <Checkbox
                                         checked={allFields}
@@ -256,7 +256,7 @@ export function SearchPage() {
                                     }
                                     return (
                                         <FormControlLabel
-                                            data-cy='search-field'
+                                            data-testid='search-field'
                                             key={field}
                                             control={
                                                 <Checkbox
@@ -294,7 +294,7 @@ export function SearchPage() {
                         getRowId={(row: GridRowModel<User>) => row.username}
                         pagination
                         slotProps={{
-                            root: { 'data-cy': 'search-results' },
+                            root: { 'data-testid': 'search-results' },
                         }}
                     />
                 )}

@@ -35,7 +35,7 @@ export const TimezoneSelector = ({
         <TextField
             label={label}
             select
-            data-cy='timezone-selector'
+            data-testid='timezone-selector'
             value={value}
             onChange={(e) => onChange(e.target.value)}
             {...textFieldProps}

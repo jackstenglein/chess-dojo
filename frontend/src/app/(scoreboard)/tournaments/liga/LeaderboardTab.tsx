@@ -102,7 +102,7 @@ const LeaderboardTab = () => {
             >
                 <Stack direction='row' spacing={2}>
                     <TextField
-                        data-cy='site-control-selector'
+                        data-testid='site-control-selector'
                         select
                         label='Site'
                         value={site}
@@ -129,7 +129,7 @@ const LeaderboardTab = () => {
                     </TextField>
 
                     <TextField
-                        data-cy='time-control-selector'
+                        data-testid='time-control-selector'
                         sx={{ minWidth: 130 }}
                         select
                         label='Time Control'
@@ -163,7 +163,7 @@ const LeaderboardTab = () => {
                     </TextField>
 
                     <TextField
-                        data-cy='tournament-type-selector'
+                        data-testid='tournament-type-selector'
                         sx={{ minWidth: 130 }}
                         select
                         label='Tournament Type'
@@ -254,7 +254,7 @@ const LeaderboardTab = () => {
                 }}
                 slotProps={{
                     root: {
-                        'data-cy': 'leaderboard',
+                        'data-testid': 'leaderboard',
                     },
                 }}
                 pagination

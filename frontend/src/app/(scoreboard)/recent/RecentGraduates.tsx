@@ -233,7 +233,7 @@ const RecentGraduates = () => {
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
                     <Typography variant='h6'>Recent Graduates</Typography>
                     <FormControl
-                        data-cy='graduates-timeframe-select'
+                        data-testid='graduates-timeframe-select'
                         size='small'
                         variant='standard'
                     >
@@ -251,7 +251,7 @@ const RecentGraduates = () => {
                         >
                             {timeframeOptions.map((option) => (
                                 <MenuItem
-                                    data-cy={option.label}
+                                    data-testid={option.label}
                                     key={option.label}
                                     value={option.value as unknown as string}
                                 >
@@ -308,7 +308,7 @@ const RecentGraduates = () => {
                         getDetailPanelHeight={getDetailPanelHeight}
                         pagination
                         slotProps={{
-                            root: { 'data-cy': 'recent-graduates-table' },
+                            root: { 'data-testid': 'recent-graduates-table' },
                         }}
                     />
                 </div>

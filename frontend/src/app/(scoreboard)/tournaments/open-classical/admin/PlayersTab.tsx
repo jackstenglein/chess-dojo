@@ -238,7 +238,7 @@ const PlayersTab: React.FC<PlayersTabProps> = ({ openClassical, onUpdate }) => {
                 </TextField>
 
                 <TextField
-                    data-cy='section'
+                    data-testid='section'
                     label='Section'
                     select
                     value={ratingRange}

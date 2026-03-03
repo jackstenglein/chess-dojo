@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../../../../lib/env';
-import { getBySel, interceptApi } from '../../../../lib/helpers';
+import { interceptApi } from '../../../../lib/helpers';
 
 function mockHomeWithTestDir() {
     return {
@@ -74,29 +74,29 @@ test.describe('Directories', () => {
     test('displays new directory dialog', async ({ page }) => {
         await page.getByRole('button', { name: 'Add' }).click();
         await page.getByText('New Folder').click();
-        await expect(getBySel(page, 'update-directory-form')).toBeVisible();
+        await expect(page.getByTestId('update-directory-form')).toBeVisible();
     });
 
     test('requires name to create new directory', async ({ page }) => {
         await page.getByRole('button', { name: 'Add' }).click();
         await page.getByText('New Folder').click();
-        await expect(getBySel(page, 'update-directory-save-button')).toBeDisabled();
+        await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill('Test');
-        await expect(getBySel(page, 'update-directory-save-button')).toBeEnabled();
+        await page.getByTestId('update-directory-name').locator('input').fill('Test');
+        await expect(page.getByTestId('update-directory-save-button')).toBeEnabled();
     });
 
     test('requires name to be <= 100 characters', async ({ page }) => {
         await page.getByRole('button', { name: 'Add' }).click();
         await page.getByText('New Folder').click();
-        await expect(getBySel(page, 'update-directory-save-button')).toBeDisabled();
+        await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
-        const input = getBySel(page, 'update-directory-name').locator('input');
+        const input = page.getByTestId('update-directory-name').locator('input');
         await input.fill('A');
-        await expect(getBySel(page, 'update-directory-save-button')).toBeEnabled();
+        await expect(page.getByTestId('update-directory-save-button')).toBeEnabled();
 
         await input.fill('A'.repeat(101));
-        await expect(getBySel(page, 'update-directory-save-button')).toBeDisabled();
+        await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
         await expect(page.getByText('101 / 100 characters')).toBeVisible();
     });
 
@@ -109,17 +109,18 @@ test.describe('Directories', () => {
         );
         await page.goto('/profile?view=games');
 
-        await getBySel(page, 'directories-data-grid')
+        await page
+            .getByTestId('directories-data-grid')
             .getByText('Test')
             .last()
             .click({ button: 'right' });
         await page.getByText('Delete').click();
 
-        await expect(getBySel(page, 'delete-directory-form')).toBeVisible();
-        await expect(getBySel(page, 'delete-directory-button')).toBeDisabled();
+        await expect(page.getByTestId('delete-directory-form')).toBeVisible();
+        await expect(page.getByTestId('delete-directory-button')).toBeDisabled();
 
-        await getBySel(page, 'delete-directory-confirm').locator('input').fill('DeLeTe');
-        await expect(getBySel(page, 'delete-directory-button')).toBeEnabled();
+        await page.getByTestId('delete-directory-confirm').locator('input').fill('DeLeTe');
+        await expect(page.getByTestId('delete-directory-button')).toBeEnabled();
     });
 
     test('displays move directory dialog', async ({ page }) => {
@@ -131,13 +132,14 @@ test.describe('Directories', () => {
         );
         await page.goto('/profile?view=games');
 
-        await getBySel(page, 'directories-data-grid')
+        await page
+            .getByTestId('directories-data-grid')
             .getByText('Test')
             .last()
             .click({ button: 'right' });
         await page.getByText('Move').click();
 
-        await expect(getBySel(page, 'move-directory-form')).toBeVisible();
+        await expect(page.getByTestId('move-directory-form')).toBeVisible();
     });
 
     test('disables renaming directory to empty/same name', async ({ page }) => {
@@ -149,20 +151,21 @@ test.describe('Directories', () => {
         );
         await page.goto('/profile?view=games');
 
-        await getBySel(page, 'directories-data-grid')
+        await page
+            .getByTestId('directories-data-grid')
             .getByText('Test')
             .last()
             .click({ button: 'right' });
         await page.getByText('Edit Name/Visibility').click();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill('');
-        await expect(getBySel(page, 'update-directory-save-button')).toBeDisabled();
+        await page.getByTestId('update-directory-name').locator('input').fill('');
+        await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill('Test');
-        await expect(getBySel(page, 'update-directory-save-button')).toBeDisabled();
+        await page.getByTestId('update-directory-name').locator('input').fill('Test');
+        await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill('Test 2');
-        await expect(getBySel(page, 'update-directory-save-button')).toBeEnabled();
+        await page.getByTestId('update-directory-name').locator('input').fill('Test 2');
+        await expect(page.getByTestId('update-directory-save-button')).toBeEnabled();
     });
 
     test('creates and deletes directory', async ({ page }) => {
@@ -171,23 +174,26 @@ test.describe('Directories', () => {
         await page.getByRole('button', { name: 'Add' }).click();
         await page.getByText('New Folder').click();
 
-        await getBySel(page, 'update-directory-name').locator('input').fill(name);
-        await getBySel(page, 'update-directory-save-button').click();
-        await expect(getBySel(page, 'update-directory-form')).not.toBeVisible();
-        await expect(getBySel(page, 'directories-data-grid').getByText(name).last()).toBeVisible();
+        await page.getByTestId('update-directory-name').locator('input').fill(name);
+        await page.getByTestId('update-directory-save-button').click();
+        await expect(page.getByTestId('update-directory-form')).not.toBeVisible();
+        await expect(
+            page.getByTestId('directories-data-grid').getByText(name).last(),
+        ).toBeVisible();
 
-        await getBySel(page, 'directories-data-grid')
+        await page
+            .getByTestId('directories-data-grid')
             .getByText(name)
             .last()
             .click({ button: 'right' });
         await page.getByText('Delete').click();
 
-        await getBySel(page, 'delete-directory-confirm').locator('input').fill('DeLeTe');
-        await getBySel(page, 'delete-directory-button').click();
+        await page.getByTestId('delete-directory-confirm').locator('input').fill('DeLeTe');
+        await page.getByTestId('delete-directory-button').click();
 
-        await expect(getBySel(page, 'delete-directory-form')).not.toBeVisible();
+        await expect(page.getByTestId('delete-directory-form')).not.toBeVisible();
         await expect(
-            getBySel(page, 'directories-data-grid').getByText(name).last(),
+            page.getByTestId('directories-data-grid').getByText(name).last(),
         ).not.toBeAttached();
     });
 });

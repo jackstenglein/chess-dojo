@@ -75,14 +75,14 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
                 <Stack spacing={2}>
                     <TextField
                         fullWidth
-                        data-cy='white'
+                        data-testid='white'
                         label="White's Name"
                         value={headers.White}
                         onChange={(e) => onChangeHeader('White', e.target.value)}
                     />
                     <TextField
                         fullWidth
-                        data-cy='black'
+                        data-testid='black'
                         label="Black's Name"
                         value={headers.Black}
                         onChange={(e) => onChangeHeader('Black', e.target.value)}

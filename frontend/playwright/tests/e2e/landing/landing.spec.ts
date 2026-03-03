@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { getBySel } from '../../../lib/helpers';
 
 test.describe('Landing Page (unauthenticated)', () => {
     // These tests run without authentication
@@ -10,9 +9,9 @@ test.describe('Landing Page (unauthenticated)', () => {
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(getBySel(page, 'title')).toContainText('Got Mated?');
-        await expect(getBySel(page, 'title')).toContainText('Time to join ChessDojo!');
-        await expect(getBySel(page, 'subtitle')).toContainText(
+        await expect(page.getByTestId('title')).toContainText('Got Mated?');
+        await expect(page.getByTestId('title')).toContainText('Time to join ChessDojo!');
+        await expect(page.getByTestId('subtitle')).toContainText(
             'A chess training plan for every level and a community to do it with.',
         );
         await expect(page.locator('img').first()).toBeVisible();

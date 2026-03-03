@@ -252,7 +252,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                             Task Details
                         </Button>
                         <Button
-                            data-cy='task-updater-show-history-button'
+                            data-testid='task-updater-show-history-button'
                             onClick={() => setView(TaskDialogView.History)}
                             disabled={request.isLoading()}
                         >
@@ -261,7 +261,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                     </>
                 )}
                 <LoadingButton
-                    data-cy='task-updater-save-button'
+                    data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >

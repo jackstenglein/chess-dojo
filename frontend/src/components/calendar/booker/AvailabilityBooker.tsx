@@ -159,7 +159,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
 
     return (
         <Dialog
-            data-cy='availability-booker'
+            data-testid='availability-booker'
             fullScreen
             open={true}
             TransitionComponent={Transition}
@@ -172,7 +172,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                         {isGroup ? 'Join Group Meeting' : 'Book Meeting'}
                     </Typography>
                     <Button
-                        data-cy='cancel-button'
+                        data-testid='cancel-button'
                         color='error'
                         href='/calendar'
                         disabled={request.status === RequestStatus.Loading}
@@ -181,7 +181,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                         Cancel
                     </Button>
                     <LoadingButton
-                        data-cy='book-button'
+                        data-testid='book-button'
                         color='success'
                         loading={request.status === RequestStatus.Loading}
                         onClick={confirmBooking}
@@ -302,7 +302,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                     {availability.types?.map((t) => (
                                         <FormControlLabel
                                             key={t}
-                                            control={<Radio data-cy='meeting-type-radio' />}
+                                            control={<Radio data-testid='meeting-type-radio' />}
                                             value={t}
                                             label={getDisplayString(t)}
                                         />

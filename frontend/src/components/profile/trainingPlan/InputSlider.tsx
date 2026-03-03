@@ -96,7 +96,7 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                     )}
                     <Stack direction='row' aria-label={suffix ?? 'Progress count'}>
                         <Button
-                            data-cy='task-updater-decrement'
+                            data-testid='task-updater-decrement'
                             onMouseDown={handleDecrement}
                             onMouseUp={stopRepeating}
                             onMouseLeave={stopRepeating}
@@ -111,7 +111,7 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                         </Button>
 
                         <InputBase
-                            data-cy='task-updater-count'
+                            data-testid='task-updater-count'
                             value={value}
                             onChange={handleInputChange}
                             onBlur={handleBlur}
@@ -139,7 +139,7 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                         />
 
                         <Button
-                            data-cy='task-updater-increment'
+                            data-testid='task-updater-increment'
                             onMouseDown={handleIncrement}
                             onMouseUp={stopRepeating}
                             onMouseLeave={stopRepeating}

@@ -16,7 +16,7 @@ export function LiveClassViewer({ processedEvent }: { processedEvent: ProcessedE
     const event = processedEvent.event as Event;
 
     return (
-        <Stack data-cy='live-class-viewer' sx={{ pt: 2 }} spacing={2}>
+        <Stack data-testid='live-class-viewer' sx={{ pt: 2 }} spacing={2}>
             <Typography>{event.title}</Typography>
 
             <OwnerField title='Sensei' event={event} />

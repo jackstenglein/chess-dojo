@@ -36,6 +36,7 @@ import {
     RadioGroup,
     Slider,
     Stack,
+    Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
 import { ReactNode, useState } from 'react';
@@ -72,6 +73,8 @@ export function ShareTab() {
         setSkipHeader,
         skipClocks,
         setSkipClocks,
+        skipQrCode,
+        setSkipQrCode,
         pdfDiagramMode,
         setPdfDiagramMode,
         plyBetweenDiagrams,
@@ -257,7 +260,14 @@ export function ShareTab() {
 
         try {
             pdfRequest.onStart();
-            const pgn = chess.renderPgn();
+            const pgn =
+                chess?.renderPgn({
+                    skipComments,
+                    skipNags,
+                    skipVariations,
+                    skipNullMoves,
+                    skipHeader,
+                }) || '';
 
             const response = await getPdf({
                 pgn,
@@ -267,8 +277,11 @@ export function ShareTab() {
                 skipHeader,
                 skipComments,
                 skipNags,
+                skipDrawables,
                 skipVariations,
                 skipNullMoves,
+                skipClocks,
+                skipQrCode,
                 plyBetweenDiagrams: pdfDiagramMode === 'markedPositions' ? -1 : plyBetweenDiagrams,
             });
 
@@ -321,7 +334,7 @@ export function ShareTab() {
     };
 
     return (
-        <CardContent data-cy='underboard-tab-share'>
+        <CardContent data-testid='underboard-tab-share'>
             <Stack>
                 <RequestSnackbar request={pdfRequest} />
                 <RequestSnackbar request={cloneRequest} />
@@ -440,27 +453,44 @@ export function ShareTab() {
                     </FormGroup>
                 </Stack>
 
-                <FormControl sx={{ mt: 1.5, mb: 1 }}>
-                    <FormLabel>PDF Diagrams</FormLabel>
-                    <RadioGroup
-                        row
-                        value={pdfDiagramMode}
-                        onChange={(e) =>
-                            setPdfDiagramMode(e.target.value as 'markedPositions' | 'numMoves')
+                <FormGroup sx={{ mt: 2.5, mb: 1 }}>
+                    <Typography variant='h6' color='textSecondary'>
+                        PDF Options
+                    </Typography>
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!skipQrCode}
+                                onChange={(e) => setSkipQrCode(!e.target.checked)}
+                            />
                         }
-                    >
-                        <FormControlLabel
-                            value='markedPositions'
-                            control={<Radio />}
-                            label='Marked Positions Only'
-                        />
-                        <FormControlLabel
-                            value='numMoves'
-                            control={<Radio />}
-                            label={`Marked Positions + Every ${plyBetweenDiagrams / 2} Moves`}
-                        />
-                    </RadioGroup>
-                </FormControl>
+                        label='Include QR Code to Game'
+                    />
+
+                    <FormControl sx={{ mt: 1.5, mb: 1 }}>
+                        <FormLabel>Diagrams</FormLabel>
+
+                        <RadioGroup
+                            row
+                            value={pdfDiagramMode}
+                            onChange={(e) =>
+                                setPdfDiagramMode(e.target.value as 'markedPositions' | 'numMoves')
+                            }
+                        >
+                            <FormControlLabel
+                                value='markedPositions'
+                                control={<Radio />}
+                                label='Marked Positions Only'
+                            />
+                            <FormControlLabel
+                                value='numMoves'
+                                control={<Radio />}
+                                label={`Marked Positions + Every ${plyBetweenDiagrams / 2} Moves`}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </FormGroup>
 
                 {pdfDiagramMode === 'numMoves' && (
                     <FormGroup>

@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getBySel } from '../../../../lib/helpers';
 import { verifyGame } from './helpers';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,7 +60,7 @@ test.describe('Import Games Page - PGN Text', () => {
         await page.getByRole('button', { name: 'Import' }).click();
 
         await expect(page).toHaveURL('/games/import');
-        await expect(getBySel(page, 'error-snackbar')).toContainText('Invalid PGN');
+        await expect(page.getByTestId('error-snackbar')).toContainText('Invalid PGN');
     });
 
     test('submits from Chess.com daily game', async ({ page }) => {

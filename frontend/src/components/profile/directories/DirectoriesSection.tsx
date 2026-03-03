@@ -276,7 +276,7 @@ const DirectorySection = ({
                         toolbar: CustomGridToolbar,
                     }}
                     slotProps={{
-                        root: { 'data-cy': 'directories-data-grid' },
+                        root: { 'data-testid': 'directories-data-grid' },
                         row: isEditor
                             ? {
                                   onContextMenu: contextMenu.open,

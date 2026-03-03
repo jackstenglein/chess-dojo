@@ -74,7 +74,7 @@ Tests should:
 
 - Use Playwright's [locator API](https://playwright.dev/docs/locators) for element selection
 - Prefer role-based locators (`getByRole`, `getByLabel`, `getByText`)
-- Use `data-cy` attributes when role-based locators aren't specific enough
+- Set the `data-testid` attribute on the DOM element and user `page.getByTestId` when role-based locators aren't specific enough
 
 Example:
 

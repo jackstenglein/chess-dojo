@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { getBySel, interceptApi } from '../../../lib/helpers';
+import { interceptApi } from '../../../lib/helpers';
 
 // Freeze time at Sept 6, 2023 so the fixture dates fall within range
 const fixedDate = new Date(2023, 8, 6); // month is 0-indexed
@@ -30,7 +30,7 @@ test.describe('Graduations', () => {
 
     test('displays correct graduations from past week', async ({ page }) => {
         await expect(
-            getBySel(page, 'recent-graduates-table').getByText('1–11 of 11'),
+            page.getByTestId('recent-graduates-table').getByText('1–11 of 11'),
         ).toBeVisible();
         await expect(page.getByRole('link', { name: 'QuiteKnight' })).toHaveAttribute(
             'href',
@@ -39,10 +39,12 @@ test.describe('Graduations', () => {
     });
 
     test('displays correct graduations for other timeframes', async ({ page }) => {
-        await getBySel(page, 'graduates-timeframe-select').click();
+        await page.getByTestId('graduates-timeframe-select').click();
         await page.getByText('Graduation of 8/30/2023').click();
 
-        await expect(getBySel(page, 'recent-graduates-table').getByText('1–9 of 9')).toBeVisible();
+        await expect(
+            page.getByTestId('recent-graduates-table').getByText('1–9 of 9'),
+        ).toBeVisible();
         await expect(page.getByRole('link', { name: 'Bodheen' })).toHaveAttribute(
             'href',
             '/profile/372ae346-b786-4000-9fc8-36005eb29415',

@@ -40,7 +40,7 @@ export function NotificationsPage() {
                         <CircularProgress size={24} />
                     ) : (
                         <Button
-                            data-cy='clear-all-notifications'
+                            data-testid='clear-all-notifications'
                             variant='outlined'
                             onClick={onClearAll}
                         >

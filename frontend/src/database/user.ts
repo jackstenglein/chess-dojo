@@ -288,9 +288,7 @@ export function shouldPromptGraduation(user?: User): boolean {
     if (!user?.dojoCohort || !user.ratingSystem) {
         return false;
     }
-    if (isCustom(user.ratingSystem)) {
-        return false;
-    }
+
     const cohortBoundaries = ratingBoundaries[user.dojoCohort];
     if (!cohortBoundaries) {
         return false;
@@ -318,9 +316,7 @@ export function shouldPromptDemotion(user?: User): boolean {
     if (!user?.dojoCohort || !user.ratingSystem) {
         return false;
     }
-    if (isCustom(user.ratingSystem)) {
-        return false;
-    }
+
     const cohortBefore = dojoCohorts[dojoCohorts.indexOf(user.dojoCohort) - 1];
     if (cohortBefore && user.graduationCohorts?.includes(cohortBefore)) {
         return false;

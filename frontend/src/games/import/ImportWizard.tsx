@@ -148,7 +148,7 @@ const ImportSourceCard = ({
                 <CardActionArea
                     sx={{ height: 1 }}
                     onClick={onClick}
-                    data-cy={id}
+                    data-testid={id}
                     disabled={disabled}
                 >
                     <CardContent>

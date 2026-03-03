@@ -211,7 +211,7 @@ const RegistrationPage = () => {
                 </TextField>
 
                 <TextField
-                    data-cy='region'
+                    data-testid='region'
                     label='Region'
                     select
                     required
@@ -235,7 +235,7 @@ const RegistrationPage = () => {
                 </TextField>
 
                 <TextField
-                    data-cy='section'
+                    data-testid='section'
                     label='Section'
                     select
                     required

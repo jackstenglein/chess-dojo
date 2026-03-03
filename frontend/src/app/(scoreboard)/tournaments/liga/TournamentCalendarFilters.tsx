@@ -91,7 +91,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
 
     return (
         <Stack
-            data-cy='calendar-filters'
+            data-testid='calendar-filters'
             sx={{ pt: 0.5, pb: 2, position: { md: 'sticky' }, top: { md: '88px' } }}
         >
             <Accordion expanded={forceExpansion || expanded} onChange={(_, e) => setExpanded(e)}>
@@ -130,7 +130,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 }))}
                                 displayEmpty='None'
                                 size='small'
-                                data-cy='tournament-types'
+                                data-testid='tournament-types'
                             />
                         </Stack>
 
@@ -157,7 +157,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 }))}
                                 displayEmpty='None'
                                 size='small'
-                                data-cy='time-controls'
+                                data-testid='time-controls'
                             />
                         </Stack>
 
@@ -184,7 +184,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 }))}
                                 displayEmpty='None'
                                 size='small'
-                                data-cy='starting-position'
+                                data-testid='starting-position'
                             />
                         </Stack>
                     </Stack>
