@@ -32,10 +32,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         const gameReviewCohorts = (output.Items?.map((item) => unmarshall(item)) ??
             []) as GameReviewCohort[];
-        const [users, lectureUsers] = await Promise.all([
-            getGameReviewUsers(),
-            getLectureTierUsers(),
+        const [users, lectureTierUsers] = await Promise.all([
+            getUsersByTier(SubscriptionTier.GameReview),
+            getUsersByTier(SubscriptionTier.Lecture),
         ]);
+        const lectureUsers = lectureTierUsers.map((u) => ({
+            username: u.username,
+            displayName: u.displayName,
+            dojoCohort: u.dojoCohort,
+        }));
 
         // Build a map of username -> dojoCohort from game review users
         const userCohortMap = new Map<string, string>();
@@ -70,15 +75,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     }
 };
 
-async function getGameReviewUsers() {
+async function getUsersByTier(tier: SubscriptionTier): Promise<User[]> {
     let exclusiveStartKey: Record<string, AttributeValue> | undefined = undefined;
     const users: User[] = [];
 
     do {
         const input = new QueryCommand({
-            KeyConditionExpression: '#subscriptionTier = :gameReview',
+            KeyConditionExpression: '#subscriptionTier = :tier',
             ExpressionAttributeNames: { '#subscriptionTier': 'subscriptionTier' },
-            ExpressionAttributeValues: { ':gameReview': { S: SubscriptionTier.GameReview } },
+            ExpressionAttributeValues: { ':tier': { S: tier } },
             IndexName: `SubscriptionTierIdx`,
             TableName: USER_TABLE,
             ExclusiveStartKey: exclusiveStartKey,
@@ -90,32 +95,6 @@ async function getGameReviewUsers() {
     } while (exclusiveStartKey);
 
     return users;
-}
-
-async function getLectureTierUsers() {
-    let exclusiveStartKey: Record<string, AttributeValue> | undefined = undefined;
-    const users: User[] = [];
-
-    do {
-        const input = new QueryCommand({
-            KeyConditionExpression: '#subscriptionTier = :lecture',
-            ExpressionAttributeNames: { '#subscriptionTier': 'subscriptionTier' },
-            ExpressionAttributeValues: { ':lecture': { S: SubscriptionTier.Lecture } },
-            IndexName: `SubscriptionTierIdx`,
-            TableName: USER_TABLE,
-            ExclusiveStartKey: exclusiveStartKey,
-        });
-
-        const output = await dynamo.send(input);
-        users.push(...(output.Items?.map((u) => unmarshall(u) as User) ?? []));
-        exclusiveStartKey = output.LastEvaluatedKey;
-    } while (exclusiveStartKey);
-
-    return users.map((u) => ({
-        username: u.username,
-        displayName: u.displayName,
-        dojoCohort: u.dojoCohort,
-    }));
 }
 
 /** Returns the minimum member rating in a cohort, or Infinity if it has no members. */

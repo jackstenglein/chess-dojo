@@ -493,7 +493,7 @@ export function AdminGameReviewCohorts() {
                     )}
                 </Stack>
 
-                <Card variant='outlined'>
+                <Card variant='outlined' data-testid='lecture-tier-card'>
                     <CardHeader title='Lecture Tier Users' />
                     <CardContent>
                         {lectureUsers.length === 0 ? (

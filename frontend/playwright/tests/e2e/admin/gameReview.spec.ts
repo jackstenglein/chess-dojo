@@ -94,8 +94,8 @@ test.describe('Admin game review page', () => {
     });
 
     test('groups lecture tier users by cohort with lower cohorts first', async ({ page }) => {
-        const card = page.locator('text=Lecture Tier Users').locator('..');
-        const cohortLabels = card.locator('..').getByText(/^\d+-\d+$/);
+        const card = page.getByTestId('lecture-tier-card');
+        const cohortLabels = card.getByText(/^\d+-\d+$/);
         const texts = await cohortLabels.allTextContents();
         expect(texts.indexOf('800-900')).toBeLessThan(texts.indexOf('1500-1600'));
     });
