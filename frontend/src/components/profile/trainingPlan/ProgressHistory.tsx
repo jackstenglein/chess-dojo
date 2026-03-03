@@ -550,10 +550,10 @@ export function useProgressHistoryEditor({
     );
 
     const addItem = useCallback(() => {
-        if (!requirement) return;
+        if (!requirement || !user) return;
         setItems((prev) => [
             ...prev,
-            createNewEntry(requirement, cohort, prev.length, user?.username!),
+            createNewEntry(requirement, cohort, prev.length, user.username),
         ]);
     }, [requirement, cohort, user]);
 
