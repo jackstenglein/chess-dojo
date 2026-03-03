@@ -39,6 +39,7 @@ import { AxiosResponse } from 'axios';
 import deepEqual from 'deep-equal';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
@@ -227,8 +228,10 @@ function createNewEntry(
     requirement: Requirement | CustomTask,
     cohort: string,
     index: number,
+    owner: string,
 ): HistoryItem {
     const now = DateTime.now();
+    const id = `${now.toISODate()}_${uuidv4()}`;
     return {
         date: now,
         count: '',
@@ -240,9 +243,10 @@ function createNewEntry(
         deleted: false,
         isNew: true,
         entry: {
-            id: `new-${now.toMillis()}-${index}`,
+            id,
             requirementId: requirement.id,
             cohort,
+            owner,
             scoreboardDisplay: requirement.scoreboardDisplay,
             createdAt: now.toUTC().toISO() ?? '',
             date: now.toUTC().toISO() ?? '',
@@ -296,25 +300,28 @@ function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
 function getTimelineUpdate(
     requirement: Requirement | CustomTask | undefined,
     items: HistoryItem[],
+    currentProgress: RequirementProgress | undefined,
+    existingEntries: TimelineEntry[],
 ): {
     progress: RequirementProgress;
     updated: TimelineEntry[];
+    created: TimelineEntry[];
     deleted: TimelineEntry[];
     errors: Record<number, HistoryItemError>;
 } {
-    // Only process existing (non-new) items here — new items go through updateUserProgress
-    const existingItems = items.filter((item) => !item.isNew);
-    const errors = validateItems(existingItems);
+    const errors = validateItems(items);
 
     if (!requirement || Object.keys(errors).length > 0) {
         return {
             progress: { requirementId: requirement?.id || '', minutesSpent: {}, updatedAt: '' },
             updated: [],
+            created: [],
             deleted: [],
             errors,
         };
     }
 
+    const created: TimelineEntry[] = [];
     const updated: TimelineEntry[] = [];
     const deleted: TimelineEntry[] = [];
     const progress: RequirementProgress & { counts: Record<string, number> } = {
@@ -324,13 +331,15 @@ function getTimelineUpdate(
         updatedAt: '',
     };
 
+    // Process existing (non-new) items first
+    const existingItems = items.filter((item) => !item.isNew);
     for (const item of existingItems) {
         if (item.deleted) {
             deleted.push(item.entry);
             continue;
         }
 
-        const cohort =
+        const itemCohort =
             requirement.numberOfCohorts === 0 || requirement.numberOfCohorts === 1
                 ? ALL_COHORTS
                 : item.cohort;
@@ -339,12 +348,12 @@ function getTimelineUpdate(
         progress.minutesSpent[item.cohort] =
             (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
-        const previousCount = progress.counts[cohort] ?? 0;
+        const previousCount = progress.counts[itemCohort] ?? 0;
         const newCount =
             item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes
                 ? previousCount + minutesSpent
                 : previousCount + parseInt(item.count || '0');
-        progress.counts[cohort] = newCount;
+        progress.counts[itemCohort] = newCount;
 
         let previousScore = 0;
         let newScore = 0;
@@ -375,7 +384,66 @@ function getTimelineUpdate(
         }
     }
 
-    return { progress, updated, deleted, errors };
+    // Process new items, seeding previousCount from existing saved progress
+    const newItems = items.filter((item) => item.isNew && !item.deleted);
+    for (const item of newItems) {
+        const itemCohort =
+            requirement.numberOfCohorts === 0 || requirement.numberOfCohorts === 1
+                ? ALL_COHORTS
+                : item.cohort;
+
+        const minutesSpent = 60 * parseInt(item.hours || '0') + parseInt(item.minutes || '0');
+        progress.minutesSpent[item.cohort] =
+            (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
+
+        const existingCount = getCurrentCount({
+            cohort: item.cohort,
+            requirement,
+            progress: currentProgress,
+            timeline: existingEntries,
+        });
+
+        const previousCount = progress.counts[itemCohort] ?? existingCount;
+
+        let newCount: number;
+        if (requirement.scoreboardDisplay === ScoreboardDisplay.Minutes) {
+            newCount = previousCount + minutesSpent;
+        } else if (requirement.scoreboardDisplay === ScoreboardDisplay.NonDojo) {
+            newCount = 0;
+        } else {
+            newCount = previousCount + parseInt(item.count || '0');
+        }
+        progress.counts[itemCohort] = newCount;
+
+        let previousScore = 0;
+        let newScore = 0;
+        if (isRequirement(requirement)) {
+            previousScore = getCurrentScore(item.cohort, requirement, {
+                counts: { [ALL_COHORTS]: previousCount, [item.cohort]: previousCount },
+            } as unknown as RequirementProgress);
+            newScore = getCurrentScore(item.cohort, requirement, {
+                counts: { [ALL_COHORTS]: newCount, [item.cohort]: newCount },
+            } as unknown as RequirementProgress);
+        }
+
+        const newEntry: TimelineEntry = {
+            ...item.entry,
+            cohort: item.cohort,
+            notes: item.notes,
+            date: item.date?.toUTC().toISO() || item.entry.createdAt,
+            previousCount,
+            newCount,
+            owner: item.entry.owner,
+            dojoPoints: newScore - previousScore,
+            totalDojoPoints: newScore,
+            minutesSpent,
+            totalMinutesSpent: progress.minutesSpent[item.cohort],
+        };
+
+        created.push(newEntry);
+    }
+
+    return { progress, updated, created, deleted, errors };
 }
 
 export function useProgressHistoryEditor({
@@ -389,6 +457,7 @@ export function useProgressHistoryEditor({
     progress?: RequirementProgress;
     onSuccess: () => void;
 }) {
+    const { user } = useAuth();
     const cohortOptions = requirement?.counts[ALL_COHORTS]
         ? dojoCohorts
         : Object.keys(requirement?.counts || {}).sort(compareCohorts);
@@ -434,7 +503,6 @@ export function useProgressHistoryEditor({
         setItems(initialItems);
     }, [initialItems]);
 
-    // Totals computed across all non-deleted items (existing + new) for display
     const totalTime = useMemo(() => {
         return items
             .filter((item) => !item.deleted)
@@ -481,96 +549,52 @@ export function useProgressHistoryEditor({
         [],
     );
 
-    /** Appends one new blank entry defaulting to today and the user's cohort */
     const addItem = useCallback(() => {
         if (!requirement) return;
-        setItems((prev) => [...prev, createNewEntry(requirement, cohort, prev.length)]);
-    }, [requirement, cohort]);
+        setItems((prev) => [...prev, createNewEntry(requirement, cohort, prev.length, user?.username!)]);
+    }, [requirement, cohort, user]);
 
     const onSubmit = async () => {
-        // Validate all non-deleted items together so errors show at once
-        const allErrors = validateItems(items);
-        setErrors(allErrors);
-        if (Object.keys(allErrors).length > 0) return;
+        const timelineUpdate = getTimelineUpdate(requirement, items, progress, entries);
+        setErrors(timelineUpdate.errors);
+        if (Object.keys(timelineUpdate.errors).length > 0) return;
+
+        const hasChanges =
+            timelineUpdate.updated.length > 0 ||
+            timelineUpdate.created.length > 0 ||
+            timelineUpdate.deleted.length > 0;
+
+        if (!hasChanges) {
+            onSuccess();
+            return;
+        }
 
         request.onStart();
         try {
-            const newItems = items.filter((item) => item.isNew && !item.deleted);
-            if (newItems.length > 0) {
-                const currentCount = getCurrentCount({
-                    cohort,
-                    requirement: requirement,
-                    progress,
-                    timeline: entries,
-                });
+            const response = await api.updateUserTimeline({
+                requirementId: requirement?.id || '',
+                progress: timelineUpdate.progress,
+                updated: [...timelineUpdate.updated, ...timelineUpdate.created],
+                deleted: timelineUpdate.deleted,
+            });
 
-                let runningCount = currentCount;
-                for (const item of newItems) {
-                    const incrementalMinutes =
-                        60 * (parseInt(item.hours) || 0) + (parseInt(item.minutes) || 0);
+            trackEvent(EventType.UpdateTimeline, {
+                requirement_id: requirement?.id,
+                requirement_name: requirement?.name,
+                is_custom_requirement: !isRequirement(requirement),
+                total_count:
+                    requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes
+                        ? totalTime
+                        : totalCount,
+                total_minutes: totalTime,
+            });
 
-                    let newCount = runningCount + (parseInt(item.count) || 0);
-                    if (requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes) {
-                        newCount = runningCount + incrementalMinutes;
-                    } else if (requirement?.scoreboardDisplay === ScoreboardDisplay.NonDojo) {
-                        newCount = 0;
-                    }
-
-                    const resp = await api.updateUserProgress({
-                        cohort: item.cohort,
-                        requirementId: requirement?.id || '',
-                        previousCount: runningCount,
-                        newCount,
-                        incrementalMinutesSpent: incrementalMinutes,
-                        date: item.date,
-                        notes: item.notes,
-                    });
-
-                    trackEvent(EventType.UpdateProgress, {
-                        requirement_id: requirement?.id,
-                        requirement_name: requirement?.name,
-                        is_custom_requirement: !isRequirement(requirement),
-                        dojo_cohort: item.cohort,
-                        previous_count: runningCount,
-                        new_count: newCount,
-                        incremental_minutes: incrementalMinutes,
-                    });
-
-                    onNewEntry(resp.data.timelineEntry);
-                    runningCount = newCount;
-                }
+            onEditEntries(timelineUpdate.updated);
+            for (const entry of timelineUpdate.created) {
+                onNewEntry(entry);
             }
-
-            const timelineUpdate = getTimelineUpdate(requirement, items);
-            const hasTimelineChanges =
-                timelineUpdate.updated.length > 0 || timelineUpdate.deleted.length > 0;
-
-            if (hasTimelineChanges) {
-                const response = await api.updateUserTimeline({
-                    requirementId: requirement?.id || '',
-                    progress: timelineUpdate.progress,
-                    updated: timelineUpdate.updated,
-                    deleted: timelineUpdate.deleted,
-                });
-
-                trackEvent(EventType.UpdateTimeline, {
-                    requirement_id: requirement?.id,
-                    requirement_name: requirement?.name,
-                    is_custom_requirement: !isRequirement(requirement),
-                    total_count:
-                        requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes
-                            ? totalTime
-                            : totalCount,
-                    total_minutes: totalTime,
-                });
-
-                onEditEntries(timelineUpdate.updated);
-                onDeleteEntries(timelineUpdate.deleted);
-                request.onSuccess(response);
-            } else {
-                request.reset();
-            }
-
+            onDeleteEntries(timelineUpdate.deleted);
+            request.onSuccess(response);
             onSuccess();
         } catch (err) {
             request.onFailure(err);
@@ -629,7 +653,6 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
 
     const handleAddAnother = () => {
         addItem();
-        // Scroll to top so the newest entry (rendered first in reversed list) is visible
         setTimeout(
             () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
             50,
@@ -651,7 +674,7 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
             <DialogContent sx={{ position: 'relative' }}>
                 <Stack direction='row' justifyContent='flex-start' mb={3}>
                     <Button
-                        data-cy='task-history-add-new-button'
+                        data-testid='task-history-add-new-button'
                         onClick={handleAddAnother}
                         disabled={request.isLoading()}
                         variant='contained'
