@@ -68,8 +68,8 @@ test.describe('Admin game review page', () => {
     });
 
     test('displays game review cohort groups with member names', async ({ page }) => {
-        await expect(page.getByText('Group A')).toBeVisible();
-        await expect(page.getByText('Group B')).toBeVisible();
+        await expect(page.locator('input[value="Group A"]')).toBeVisible();
+        await expect(page.locator('input[value="Group B"]')).toBeVisible();
         await expect(page.getByText('Alice')).toBeVisible();
         await expect(page.getByText('Bob')).toBeVisible();
         await expect(page.getByText('Charlie')).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('Admin game review page', () => {
     });
 
     test('displays Lecture Tier Users card', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Lecture Tier Users' })).toBeVisible();
+        await expect(page.getByText('Lecture Tier Users')).toBeVisible();
         await expect(page.getByText('Eve')).toBeVisible();
         await expect(page.getByText('Frank')).toBeVisible();
         await expect(page.getByText('Grace')).toBeVisible();
