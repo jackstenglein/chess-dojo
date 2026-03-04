@@ -130,7 +130,11 @@ export const FullTrainingPlanItem = ({
 
     return (
         <Tooltip title={blocker.reason} followCursor>
-            <Stack spacing={2} mt={2}>
+            <Stack
+                spacing={2}
+                mt={2}
+                data-testid={`${requirement.name.replaceAll(' ', '-')}-training-plan-entry`}
+            >
                 <Grid
                     container
                     columnGap={0.5}

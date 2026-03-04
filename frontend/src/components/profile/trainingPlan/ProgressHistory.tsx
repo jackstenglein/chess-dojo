@@ -364,7 +364,7 @@ function getTimelineUpdate(
         progress.minutesSpent[item.cohort] =
             (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
-        const previousCount = progress.counts[cohort] ?? requirement.startCount ?? 0;
+        const previousCount = progress.counts[cohort] ?? (requirement.startCount || 0);
         const newCount =
             item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes
                 ? previousCount + minutesSpent
