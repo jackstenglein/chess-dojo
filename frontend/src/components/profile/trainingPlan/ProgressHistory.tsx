@@ -38,7 +38,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { AxiosResponse } from 'axios';
 import deepEqual from 'deep-equal';
 import { DateTime } from 'luxon';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskDialogView } from './TaskDialog';
 
@@ -554,8 +554,6 @@ interface ProgressHistoryProps {
 
 const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps) => {
     const { user } = useAuth();
-    const topRef = useRef<HTMLDivElement>(null);
-
     const {
         errors,
         request,
@@ -600,7 +598,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                     </Button>
                 </Stack>
 
-                <Stack spacing={3} ref={topRef}>
+                <Stack spacing={3}>
                     {items.length === 0 ? (
                         <DialogContentText>
                             No history yet. Use the + button above to log your first entry.
