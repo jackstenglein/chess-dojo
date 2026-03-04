@@ -12,6 +12,7 @@ import {
     getCurrentCount,
     isRequirement,
 } from '@/database/requirement';
+import { TimeFormat } from '@/database/user';
 import { LoadingButton } from '@mui/lab';
 import {
     Alert,
@@ -25,7 +26,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
 import { useState } from 'react';
 import InputSlider from './InputSlider';
@@ -80,6 +81,7 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
         requirement.scoreboardDisplay === ScoreboardDisplay.Yearly;
     const isNonDojo = requirement.scoreboardDisplay === ScoreboardDisplay.NonDojo;
     const isMinutes = requirement.scoreboardDisplay === ScoreboardDisplay.Minutes;
+    const useTwelveHourClock = user?.timeFormat !== TimeFormat.TwentyFourHour;
 
     const hoursInt = parseInt(hours) || 0;
     const minutesInt = parseInt(minutes) || 0;
@@ -186,12 +188,19 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                     <Stack spacing={2}>
                         <Grid container width={1} gap={2}>
                             <Grid size={{ xs: 12, sm: 'grow' }}>
-                                <DatePicker
-                                    label='Date'
+                                <DateTimePicker
+                                    label='Date & Time'
                                     disableFuture
                                     value={date}
                                     onChange={setDate}
-                                    slotProps={{ textField: { fullWidth: true } }}
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            helperText:
+                                                'Date and time are recorded in your selected timezone.',
+                                        },
+                                    }}
+                                    ampm={useTwelveHourClock}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 'grow' }}>
