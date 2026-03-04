@@ -81,10 +81,14 @@ async function handleRequest(request: SetGameReviewCohortsRequest) {
             cohort.id = uuidv4();
         }
 
-        // Strip backend-enriched fields before persisting
+        // Whitelist persisted fields to avoid storing backend-enriched output fields
         for (const [key, member] of Object.entries(cohort.members)) {
-            const { dojoCohort: _, ...rest } = member;
-            cohort.members[key] = rest as typeof member;
+            cohort.members[key] = {
+                username: member.username,
+                displayName: member.displayName,
+                queueDate: member.queueDate,
+                paused: member.paused,
+            };
         }
 
         const builder = new UpdateItemBuilder<GameReviewCohort>()
