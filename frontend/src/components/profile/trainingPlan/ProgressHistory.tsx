@@ -603,7 +603,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
 
                 <Stack spacing={3}>
                     {items.length === 0 ? (
-                        <DialogContentText>
+                        <DialogContentText data-testid='no-history-text'>
                             No history yet. Use the + button above to log your first entry.
                         </DialogContentText>
                     ) : (
