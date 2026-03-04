@@ -5,8 +5,8 @@ import { useAuth } from '@/auth/Auth';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import {
     CustomTask,
-    getCurrentCount,
     getCurrentScore,
+    getTotalCount,
     isRequirement,
     Requirement,
     RequirementProgress,
@@ -228,10 +228,20 @@ function createNewEntry(
     requirement: Requirement | CustomTask,
     cohort: string,
     index: number,
-    owner: string,
+    user: User,
 ): HistoryItem {
-    const now = DateTime.now();
+    const now = DateTime.now().toUTC();
     const id = `${now.toISODate()}_${uuidv4()}`;
+
+    const cohortOptions = requirement.counts[ALL_COHORTS]
+        ? dojoCohorts
+        : Object.keys(requirement.counts).sort(compareCohorts);
+    if (!cohortOptions.includes(cohort)) {
+        cohort = cohortOptions[0];
+    }
+
+    const totalCount = getTotalCount(cohort, requirement);
+
     return {
         date: now,
         count: '',
@@ -243,21 +253,31 @@ function createNewEntry(
         deleted: false,
         isNew: true,
         entry: {
+            owner: user.username,
             id,
+            ownerDisplayName: user.displayName,
             requirementId: requirement.id,
-            cohort,
-            owner,
+            requirementName: isRequirement(requirement)
+                ? requirement.shortName || requirement.name
+                : requirement.name,
+            requirementCategory: requirement.category,
+            isCustomRequirement: !isRequirement(requirement),
             scoreboardDisplay: requirement.scoreboardDisplay,
-            createdAt: now.toUTC().toISO() ?? '',
-            date: now.toUTC().toISO() ?? '',
+            progressBarSuffix: requirement.progressBarSuffix,
+            cohort,
+            totalCount,
             previousCount: 0,
             newCount: 0,
             dojoPoints: 0,
             totalDojoPoints: 0,
             minutesSpent: 0,
             totalMinutesSpent: 0,
+            date: now.toISO() ?? '',
+            createdAt: now.toISO() ?? '',
             notes: '',
-        } as TimelineEntry,
+            comments: [],
+            reactions: {},
+        },
     };
 }
 
@@ -300,12 +320,9 @@ function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
 function getTimelineUpdate(
     requirement: Requirement | CustomTask | undefined,
     items: HistoryItem[],
-    currentProgress: RequirementProgress | undefined,
-    existingEntries: TimelineEntry[],
 ): {
     progress: RequirementProgress;
     updated: TimelineEntry[];
-    created: TimelineEntry[];
     deleted: TimelineEntry[];
     errors: Record<number, HistoryItemError>;
 } {
@@ -315,13 +332,11 @@ function getTimelineUpdate(
         return {
             progress: { requirementId: requirement?.id || '', minutesSpent: {}, updatedAt: '' },
             updated: [],
-            created: [],
             deleted: [],
             errors,
         };
     }
 
-    const created: TimelineEntry[] = [];
     const updated: TimelineEntry[] = [];
     const deleted: TimelineEntry[] = [];
     const progress: RequirementProgress & { counts: Record<string, number> } = {
@@ -331,15 +346,13 @@ function getTimelineUpdate(
         updatedAt: '',
     };
 
-    // Process existing (non-new) items first
-    const existingItems = items.filter((item) => !item.isNew);
-    for (const item of existingItems) {
+    for (const item of items) {
         if (item.deleted) {
             deleted.push(item.entry);
             continue;
         }
 
-        const itemCohort =
+        const cohort =
             requirement.numberOfCohorts === 0 || requirement.numberOfCohorts === 1
                 ? ALL_COHORTS
                 : item.cohort;
@@ -348,12 +361,12 @@ function getTimelineUpdate(
         progress.minutesSpent[item.cohort] =
             (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
-        const previousCount = progress.counts[itemCohort] ?? 0;
+        const previousCount = progress.counts[cohort] ?? 0;
         const newCount =
             item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes
                 ? previousCount + minutesSpent
                 : previousCount + parseInt(item.count || '0');
-        progress.counts[itemCohort] = newCount;
+        progress.counts[cohort] = newCount;
 
         let previousScore = 0;
         let newScore = 0;
@@ -384,77 +397,16 @@ function getTimelineUpdate(
         }
     }
 
-    // Process new items, seeding previousCount from existing saved progress
-    const newItems = items.filter((item) => item.isNew && !item.deleted);
-    for (const item of newItems) {
-        const itemCohort =
-            requirement.numberOfCohorts === 0 || requirement.numberOfCohorts === 1
-                ? ALL_COHORTS
-                : item.cohort;
-
-        const minutesSpent = 60 * parseInt(item.hours || '0') + parseInt(item.minutes || '0');
-        progress.minutesSpent[item.cohort] =
-            (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
-
-        const existingCount = getCurrentCount({
-            cohort: item.cohort,
-            requirement,
-            progress: currentProgress,
-            timeline: existingEntries,
-        });
-
-        const previousCount = progress.counts[itemCohort] ?? existingCount;
-
-        let newCount: number;
-        if (requirement.scoreboardDisplay === ScoreboardDisplay.Minutes) {
-            newCount = previousCount + minutesSpent;
-        } else if (requirement.scoreboardDisplay === ScoreboardDisplay.NonDojo) {
-            newCount = 0;
-        } else {
-            newCount = previousCount + parseInt(item.count || '0');
-        }
-        progress.counts[itemCohort] = newCount;
-
-        let previousScore = 0;
-        let newScore = 0;
-        if (isRequirement(requirement)) {
-            previousScore = getCurrentScore(item.cohort, requirement, {
-                counts: { [ALL_COHORTS]: previousCount, [item.cohort]: previousCount },
-            } as unknown as RequirementProgress);
-            newScore = getCurrentScore(item.cohort, requirement, {
-                counts: { [ALL_COHORTS]: newCount, [item.cohort]: newCount },
-            } as unknown as RequirementProgress);
-        }
-
-        const newEntry: TimelineEntry = {
-            ...item.entry,
-            cohort: item.cohort,
-            notes: item.notes,
-            date: item.date?.toUTC().toISO() || item.entry.createdAt,
-            previousCount,
-            newCount,
-            owner: item.entry.owner,
-            dojoPoints: newScore - previousScore,
-            totalDojoPoints: newScore,
-            minutesSpent,
-            totalMinutesSpent: progress.minutesSpent[item.cohort],
-        };
-
-        created.push(newEntry);
-    }
-
-    return { progress, updated, created, deleted, errors };
+    return { progress, updated, deleted, errors };
 }
 
 export function useProgressHistoryEditor({
     initialCohort,
     requirement,
-    progress,
     onSuccess,
 }: {
     initialCohort?: string;
     requirement?: Requirement | CustomTask;
-    progress?: RequirementProgress;
     onSuccess: () => void;
 }) {
     const { user } = useAuth();
@@ -470,7 +422,6 @@ export function useProgressHistoryEditor({
     const {
         entries,
         request: timelineRequest,
-        onNewEntry,
         onEditEntries,
         onDeleteEntries,
     } = useTimelineContext();
@@ -503,40 +454,25 @@ export function useProgressHistoryEditor({
         setItems(initialItems);
     }, [initialItems]);
 
-    const totalTime = useMemo(() => {
-        return items
-            .filter((item) => !item.deleted)
-            .reduce((sum, item) => {
-                return sum + 60 * (parseInt(item.hours) || 0) + (parseInt(item.minutes) || 0);
-            }, 0);
-    }, [items]);
+    const update = useMemo(() => getTimelineUpdate(requirement, items), [requirement, items]);
 
-    const totalCount = useMemo(() => {
-        return items
-            .filter((item) => !item.deleted && !isTimeOnly)
-            .reduce((sum, item) => sum + (parseInt(item.count) || 0), 0);
-    }, [items, isTimeOnly]);
+    const cohortCount =
+        update.progress.counts?.ALL_COHORTS ?? update.progress.counts?.[cohort] ?? 0;
+    const totalCount = Object.values(update.progress.counts ?? {}).reduce(
+        (sum, value) => sum + value,
+        0,
+    );
 
-    const cohortTime = useMemo(() => {
-        return items
-            .filter((item) => !item.deleted && item.cohort === cohort)
-            .reduce((sum, item) => {
-                return sum + 60 * (parseInt(item.hours) || 0) + (parseInt(item.minutes) || 0);
-            }, 0);
-    }, [items, cohort]);
-
-    const cohortCount = useMemo(() => {
-        return items
-            .filter((item) => !item.deleted && !isTimeOnly && item.cohort === cohort)
-            .reduce((sum, item) => sum + (parseInt(item.count) || 0), 0);
-    }, [items, cohort, isTimeOnly]);
-
-    const newItemCount = items.filter((item) => item.isNew && !item.deleted).length;
+    const cohortTime = update.progress.minutesSpent[cohort] ?? 0;
+    const totalTime = Object.values(update.progress.minutesSpent).reduce(
+        (sum, value) => sum + value,
+        0,
+    );
 
     const getUpdateItem = useCallback(
         (idx: number) => (item: HistoryItem) =>
             setItems((items) => [...items.slice(0, idx), item, ...items.slice(idx + 1)]),
-        [],
+        [setItems],
     );
 
     const getDeleteItem = useCallback(
@@ -546,27 +482,19 @@ export function useProgressHistoryEditor({
                 { ...items[idx], deleted: true },
                 ...items.slice(idx + 1),
             ]),
-        [],
+        [setItems],
     );
 
     const addItem = useCallback(() => {
         if (!requirement || !user) return;
-        setItems((prev) => [
-            ...prev,
-            createNewEntry(requirement, cohort, prev.length, user.username),
-        ]);
+        setItems((prev) => [...prev, createNewEntry(requirement, cohort, prev.length, user)]);
     }, [requirement, cohort, user]);
 
     const onSubmit = async () => {
-        const timelineUpdate = getTimelineUpdate(requirement, items, progress, entries);
-        setErrors(timelineUpdate.errors);
-        if (Object.keys(timelineUpdate.errors).length > 0) return;
+        setErrors(update.errors);
+        if (Object.keys(update.errors).length > 0) return;
 
-        const hasChanges =
-            timelineUpdate.updated.length > 0 ||
-            timelineUpdate.created.length > 0 ||
-            timelineUpdate.deleted.length > 0;
-
+        const hasChanges = update.updated.length > 0 || update.deleted.length > 0;
         if (!hasChanges) {
             onSuccess();
             return;
@@ -576,9 +504,9 @@ export function useProgressHistoryEditor({
         try {
             const response = await api.updateUserTimeline({
                 requirementId: requirement?.id || '',
-                progress: timelineUpdate.progress,
-                updated: [...timelineUpdate.updated, ...timelineUpdate.created],
-                deleted: timelineUpdate.deleted,
+                progress: update.progress,
+                updated: update.updated,
+                deleted: update.deleted,
             });
 
             trackEvent(EventType.UpdateTimeline, {
@@ -592,11 +520,8 @@ export function useProgressHistoryEditor({
                 total_minutes: totalTime,
             });
 
-            onEditEntries(timelineUpdate.updated);
-            for (const entry of timelineUpdate.created) {
-                onNewEntry(entry);
-            }
-            onDeleteEntries(timelineUpdate.deleted);
+            onEditEntries(update.updated);
+            onDeleteEntries(update.deleted);
             request.onSuccess(response);
             onSuccess();
         } catch (err) {
@@ -610,7 +535,6 @@ export function useProgressHistoryEditor({
         timelineRequest,
         isTimeOnly,
         items,
-        newItemCount,
         cohortCount,
         cohortTime,
         totalCount,
@@ -624,12 +548,11 @@ export function useProgressHistoryEditor({
 
 interface ProgressHistoryProps {
     requirement: Requirement | CustomTask;
-    progress?: RequirementProgress;
     onClose: () => void;
     setView?: (view: TaskDialogView) => void;
 }
 
-const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHistoryProps) => {
+const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps) => {
     const { user } = useAuth();
     const topRef = useRef<HTMLDivElement>(null);
 
@@ -649,18 +572,9 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
         onSubmit,
     } = useProgressHistoryEditor({
         requirement,
-        progress,
         initialCohort: user?.dojoCohort,
         onSuccess: onClose,
     });
-
-    const handleAddAnother = () => {
-        addItem();
-        setTimeout(
-            () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-            50,
-        );
-    };
 
     if (timelineRequest.isLoading()) {
         return (
@@ -670,15 +584,13 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
         );
     }
 
-    const activeItems = items.filter((item) => !item.deleted);
-
     return (
         <>
             <DialogContent sx={{ position: 'relative' }}>
                 <Stack direction='row' justifyContent='flex-start' mb={3}>
                     <Button
                         data-testid='task-history-add-new-button'
-                        onClick={handleAddAnother}
+                        onClick={addItem}
                         disabled={request.isLoading()}
                         variant='contained'
                         size='small'
@@ -689,7 +601,7 @@ const ProgressHistory = ({ requirement, progress, onClose, setView }: ProgressHi
                 </Stack>
 
                 <Stack spacing={3} ref={topRef}>
-                    {activeItems.length === 0 ? (
+                    {items.length === 0 ? (
                         <DialogContentText>
                             No history yet. Use the + button above to log your first entry.
                         </DialogContentText>
