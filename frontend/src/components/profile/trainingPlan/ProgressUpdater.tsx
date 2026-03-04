@@ -189,15 +189,13 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                         <Grid container width={1} gap={2}>
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <DateTimePicker
-                                    label='Date & Time'
+                                    label='Date'
                                     disableFuture
                                     value={date}
                                     onChange={setDate}
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
-                                            helperText:
-                                                'Date and time are recorded in your selected timezone.',
                                         },
                                     }}
                                     ampm={useTwelveHourClock}
