@@ -7,6 +7,11 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 )
 
+// The current version of timeline entries.
+// Increment this when making breaking changes to the TimelineEntry structure.
+// A nil VersionNumber should be treated as version 0.
+const CurrentTimelineVersion = 1
+
 type TimelineEntryKey struct {
 	// The username of the user that created this timeline entry. Hash key
 	// of the Timeline table.
@@ -88,6 +93,10 @@ type TimelineEntry struct {
 	// The reactions left on the timeline entry as a map from the
 	// username of the reactor
 	Reactions map[string]Reaction `dynamodbav:"reactions" json:"reactions"`
+
+	// The version number of the timeline entry, to allow handling of breaking changes.
+	// VersionNumber = null means the timeline entry should be treated as version 0.
+	VersionNumber *int `dynamodbav:"versionNumber,omitempty" json:"versionNumber,omitempty"`
 }
 
 // The info on graduation that is copied into the timeline entry

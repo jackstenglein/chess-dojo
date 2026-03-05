@@ -364,7 +364,12 @@ function getTimelineUpdate(
         progress.minutesSpent[item.cohort] =
             (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
-        const previousCount = progress.counts[cohort] ?? (requirement.startCount || 0);
+        // If a previous count was specified, use that. Otherwise this is the first entry in the timeline.
+        // We want to use requirement.startCount || 0 if the entry version postdates support for this (that is,
+        // if the entry version is truthy at all), and fall back to 0 otherwise.
+        const previousCount =
+            progress.counts[cohort] ?? (item.entry.versionNumber ? requirement.startCount || 0 : 0);
+
         const newCount =
             item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes
                 ? previousCount + minutesSpent

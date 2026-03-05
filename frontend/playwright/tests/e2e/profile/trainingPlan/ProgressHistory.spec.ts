@@ -126,6 +126,7 @@ const baseTimelineEntry = {
     notes: '',
     comments: null,
     reactions: null,
+    versionNumber: 1,
 };
 
 const mockTimeline = {

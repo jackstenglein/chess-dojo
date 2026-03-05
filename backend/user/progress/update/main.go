@@ -130,6 +130,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 	originalScore := task.CalculateScoreCount(request.Cohort, request.PreviousCount)
 	newScore := task.CalculateScoreCount(request.Cohort, request.NewCount)
 
+	version := database.CurrentTimelineVersion
 	timelineEntry := &database.TimelineEntry{
 		TimelineEntryKey: database.TimelineEntryKey{
 			Owner: user.Username,
@@ -153,6 +154,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		Date:                date.Format(time.RFC3339),
 		CreatedAt:           updatedAt,
 		Notes:               request.Notes,
+		VersionNumber:       &version,
 	}
 
 	if err := repository.PutTimelineEntry(timelineEntry); err != nil {

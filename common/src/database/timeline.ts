@@ -67,6 +67,9 @@ export interface TimelineEntry {
     comments: Comment[] | null;
     /** Reactions left by users on the timeline entry, mapped by their usernames. */
     reactions: Record<string, Reaction> | null;
+    /** The version number of the timeline entry, to allow handling of breaking changes. */
+    /** A falsy versionNumber should be treated as versionNumber = 0 */
+    versionNumber?: number;
 }
 
 
