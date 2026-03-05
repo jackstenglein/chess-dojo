@@ -12,8 +12,8 @@ export const useEngine = (enabled: boolean, engineName: EngineName | undefined) 
         pickEngine(engineName)
             .then((newEngine) => {
                 setEngine((prev) => {
-                    prev?.shutdown();
-                    prev?.stopAllCurrentJobs();
+                    void prev?.shutdown();
+                    void prev?.stopAllCurrentJobs();
                     return newEngine;
                 });
             })

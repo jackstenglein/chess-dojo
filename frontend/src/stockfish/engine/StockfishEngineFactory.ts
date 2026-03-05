@@ -14,7 +14,7 @@ export async function createStockfishEngine(
 
     if (!isStockfishSupported()) {
         const error = `${stockfishVersion} is not supported`;
-        console.error(`[Stockfish] ${error}`);
+        debug(`[Stockfish] ${error}`);
         throw new Error(error);
     }
 
