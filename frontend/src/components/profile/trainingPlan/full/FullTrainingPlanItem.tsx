@@ -176,7 +176,10 @@ export const FullTrainingPlanItem = ({
                             </Typography>
 
                             {displayProgress(requirement) && (
-                                <Box mr={1}>
+                                <Box
+                                    mr={1}
+                                    data-testid={`${requirement.name.replaceAll(' ', '-')}-progress-text`}
+                                >
                                     <ProgressText
                                         value={currentCount}
                                         max={totalCount}

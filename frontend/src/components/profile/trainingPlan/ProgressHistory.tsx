@@ -6,19 +6,22 @@ import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import {
     CustomTask,
     getCurrentScore,
+    getTotalCount,
     isRequirement,
     Requirement,
     RequirementProgress,
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
-import { ALL_COHORTS, compareCohorts, dojoCohorts, User } from '@/database/user';
+import { ALL_COHORTS, compareCohorts, dojoCohorts, TimeFormat, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
+    Chip,
     DialogActions,
     DialogContent,
     DialogContentText,
@@ -31,11 +34,12 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import { AxiosResponse } from 'axios';
 import deepEqual from 'deep-equal';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
@@ -51,6 +55,8 @@ interface HistoryItem {
     index: number;
     deleted: boolean;
     cohort: string;
+    /** True if this entry was added in the current session and not yet saved */
+    isNew?: boolean;
 }
 
 interface ProgressHistoryItemProps {
@@ -68,6 +74,7 @@ export const ProgressHistoryItem = ({
     updateItem,
     deleteItem,
 }: ProgressHistoryItemProps) => {
+    const { user } = useAuth();
     if (item.deleted) {
         return null;
     }
@@ -79,16 +86,13 @@ export const ProgressHistoryItem = ({
     const isTimeOnly =
         item.entry.scoreboardDisplay === ScoreboardDisplay.NonDojo ||
         item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes;
+    const useTwelveHourClock = user?.timeFormat !== TimeFormat.TwentyFourHour;
 
     const onChange = (
         key: 'date' | 'count' | 'hours' | 'minutes' | 'notes' | 'cohort',
         value: string | DateTime | null,
     ) => {
-        const newItem = {
-            ...item,
-            [key]: value,
-        };
-        updateItem(newItem);
+        updateItem({ ...item, [key]: value });
     };
 
     return (
@@ -102,6 +106,17 @@ export const ProgressHistoryItem = ({
                 rowGap={2}
             >
                 <Grid container columnGap={2} rowGap={3} alignItems='center'>
+                    {item.isNew && (
+                        <Grid size={12}>
+                            <Stack direction='row' alignItems='center' spacing={1}>
+                                <Chip label='New' size='small' color='primary' variant='outlined' />
+                                <Typography variant='body2' color='text.secondary'>
+                                    Fill in the details below
+                                </Typography>
+                            </Stack>
+                        </Grid>
+                    )}
+
                     <Grid size={{ xs: 12, sm: 'grow' }}>
                         <TextField
                             label='Cohort'
@@ -119,7 +134,7 @@ export const ProgressHistoryItem = ({
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 'grow' }} sx={{ minWidth: '145px' }}>
-                        <DatePicker
+                        <DateTimePicker
                             label='Date'
                             value={item.date}
                             onChange={(v) => onChange('date', v)}
@@ -130,6 +145,7 @@ export const ProgressHistoryItem = ({
                                     fullWidth: true,
                                 },
                             }}
+                            ampm={useTwelveHourClock}
                         />
                     </Grid>
 
@@ -152,10 +168,7 @@ export const ProgressHistoryItem = ({
                             label='Hours'
                             value={item.hours}
                             slotProps={{
-                                htmlInput: {
-                                    inputMode: 'numeric',
-                                    pattern: '[0-9]*',
-                                },
+                                htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
                             }}
                             onChange={(event) => onChange('hours', event.target.value)}
                             fullWidth
@@ -169,10 +182,7 @@ export const ProgressHistoryItem = ({
                             label='Minutes'
                             value={item.minutes}
                             slotProps={{
-                                htmlInput: {
-                                    inputMode: 'numeric',
-                                    pattern: '[0-9]*',
-                                },
+                                htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
                             }}
                             onChange={(event) => onChange('minutes', event.target.value)}
                             fullWidth
@@ -217,6 +227,99 @@ interface HistoryItemError {
     minutes?: string;
 }
 
+function createNewEntry(
+    requirement: Requirement | CustomTask,
+    cohort: string,
+    index: number,
+    user: User,
+): HistoryItem {
+    const now = DateTime.now().toUTC();
+    const id = `${now.toISODate()}_${uuidv4()}`;
+
+    const cohortOptions = requirement.counts[ALL_COHORTS]
+        ? dojoCohorts
+        : Object.keys(requirement.counts).sort(compareCohorts);
+    if (!cohortOptions.includes(cohort)) {
+        cohort = cohortOptions[0];
+    }
+
+    const totalCount = getTotalCount(cohort, requirement);
+
+    return {
+        date: now,
+        count: '',
+        hours: '',
+        minutes: '',
+        notes: '',
+        cohort,
+        index,
+        deleted: false,
+        isNew: true,
+        entry: {
+            owner: user.username,
+            id,
+            ownerDisplayName: user.displayName,
+            requirementId: requirement.id,
+            requirementName: isRequirement(requirement)
+                ? requirement.shortName || requirement.name
+                : requirement.name,
+            requirementCategory: requirement.category,
+            isCustomRequirement: !isRequirement(requirement),
+            scoreboardDisplay: requirement.scoreboardDisplay,
+            progressBarSuffix: requirement.progressBarSuffix,
+            cohort,
+            totalCount,
+            previousCount: 0,
+            newCount: 0,
+            dojoPoints: 0,
+            totalDojoPoints: 0,
+            minutesSpent: 0,
+            totalMinutesSpent: 0,
+            date: now.toISO() ?? '',
+            createdAt: now.toISO() ?? '',
+            notes: '',
+            comments: [],
+            reactions: {},
+        },
+    };
+}
+
+function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
+    const errors: Record<number, HistoryItemError> = {};
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.deleted) continue;
+
+        const itemErrors: HistoryItemError = {};
+
+        if (item.date === null) {
+            itemErrors.date = 'This field is required';
+        }
+        if (
+            item.count !== '' &&
+            (!NEGATIVE_NUMBER_REGEX.test(item.count) || isNaN(parseInt(item.count)))
+        ) {
+            itemErrors.count = 'This field must be an integer';
+        }
+        if (item.hours !== '' && (!NUMBER_REGEX.test(item.hours) || isNaN(parseInt(item.hours)))) {
+            itemErrors.hours = 'This field must be an integer';
+        }
+        if (
+            item.minutes !== '' &&
+            (!NUMBER_REGEX.test(item.minutes) || isNaN(parseInt(item.minutes)))
+        ) {
+            itemErrors.minutes = 'This field must be an integer';
+        }
+
+        if (Object.keys(itemErrors).length > 0) {
+            errors[i] = itemErrors;
+        }
+    }
+
+    return errors;
+}
+
 function getTimelineUpdate(
     requirement: Requirement | CustomTask | undefined,
     items: HistoryItem[],
@@ -226,49 +329,11 @@ function getTimelineUpdate(
     deleted: TimelineEntry[];
     errors: Record<number, HistoryItemError>;
 } {
-    const errors: Record<number, HistoryItemError> = {};
+    const errors = validateItems(items);
 
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.deleted) {
-            continue;
-        }
-
-        const itemErrors: HistoryItemError = {};
-        if (item.date === null) {
-            itemErrors.date = 'This field is required';
-        }
-
-        if (
-            item.count !== '' &&
-            (!NEGATIVE_NUMBER_REGEX.test(item.count) || isNaN(parseInt(item.count)))
-        ) {
-            itemErrors.count = 'This field must be an integer';
-        }
-
-        if (item.hours !== '' && (!NUMBER_REGEX.test(item.hours) || isNaN(parseInt(item.hours)))) {
-            itemErrors.hours = 'This field must be an integer';
-        }
-
-        if (
-            item.minutes !== '' &&
-            (!NUMBER_REGEX.test(item.minutes) || isNaN(parseInt(item.minutes)))
-        ) {
-            itemErrors.minutes = 'This field must be an integer';
-        }
-
-        if (Object.values(itemErrors).length > 0) {
-            errors[i] = itemErrors;
-        }
-    }
-
-    if (!requirement || Object.values(errors).length > 0) {
+    if (!requirement || Object.keys(errors).length > 0) {
         return {
-            progress: {
-                requirementId: requirement?.id || '',
-                minutesSpent: {},
-                updatedAt: '',
-            },
+            progress: { requirementId: requirement?.id || '', minutesSpent: {}, updatedAt: '' },
             updated: [],
             deleted: [],
             errors,
@@ -289,6 +354,7 @@ function getTimelineUpdate(
             deleted.push(item.entry);
             continue;
         }
+
         const cohort =
             requirement.numberOfCohorts === 0 || requirement.numberOfCohorts === 1
                 ? ALL_COHORTS
@@ -334,12 +400,7 @@ function getTimelineUpdate(
         }
     }
 
-    return {
-        progress,
-        updated,
-        deleted,
-        errors,
-    };
+    return { progress, updated, deleted, errors };
 }
 
 export function useProgressHistoryEditor({
@@ -351,6 +412,7 @@ export function useProgressHistoryEditor({
     requirement?: Requirement | CustomTask;
     onSuccess: () => void;
 }) {
+    const { user } = useAuth();
     const cohortOptions = requirement?.counts[ALL_COHORTS]
         ? dojoCohorts
         : Object.keys(requirement?.counts || {}).sort(compareCohorts);
@@ -385,6 +447,7 @@ export function useProgressHistoryEditor({
                 entry: t,
                 index: idx,
                 deleted: false,
+                isNew: false,
             }));
     }, [requirement, entries]);
 
@@ -419,47 +482,54 @@ export function useProgressHistoryEditor({
         (idx: number) => () =>
             setItems((items) => [
                 ...items.slice(0, idx),
-                {
-                    ...items[idx],
-                    deleted: true,
-                },
+                { ...items[idx], deleted: true },
                 ...items.slice(idx + 1),
             ]),
         [setItems],
     );
 
-    const onSubmit = () => {
+    const addItem = useCallback(() => {
+        if (!requirement || !user) return;
+        setItems((prev) => [...prev, createNewEntry(requirement, cohort, prev.length, user)]);
+    }, [requirement, cohort, user]);
+
+    const onSubmit = async () => {
         setErrors(update.errors);
-        if (Object.values(update.errors).length > 0) {
+        if (Object.keys(update.errors).length > 0) return;
+
+        const hasChanges = update.updated.length > 0 || update.deleted.length > 0;
+        if (!hasChanges) {
+            onSuccess();
             return;
         }
 
         request.onStart();
-        api.updateUserTimeline({
-            requirementId: requirement?.id || '',
-            progress: update.progress,
-            updated: update.updated,
-            deleted: update.deleted,
-        })
-            .then((response) => {
-                trackEvent(EventType.UpdateTimeline, {
-                    requirement_id: requirement?.id,
-                    requirement_name: requirement?.name,
-                    is_custom_requirement: !isRequirement(requirement),
-                    total_count:
-                        requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes
-                            ? totalTime
-                            : totalCount,
-                    total_minutes: totalTime,
-                });
-                request.onSuccess(response);
-                onEditEntries(update.updated);
-                onDeleteEntries(update.deleted);
-                onSuccess();
-            })
-            .catch((err) => {
-                request.onFailure(err);
+        try {
+            const response = await api.updateUserTimeline({
+                requirementId: requirement?.id || '',
+                progress: update.progress,
+                updated: update.updated,
+                deleted: update.deleted,
             });
+
+            trackEvent(EventType.UpdateTimeline, {
+                requirement_id: requirement?.id,
+                requirement_name: requirement?.name,
+                is_custom_requirement: !isRequirement(requirement),
+                total_count:
+                    requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes
+                        ? totalTime
+                        : totalCount,
+                total_minutes: totalTime,
+            });
+
+            onEditEntries(update.updated);
+            onDeleteEntries(update.deleted);
+            request.onSuccess(response);
+            onSuccess();
+        } catch (err) {
+            request.onFailure(err);
+        }
     };
 
     return {
@@ -474,6 +544,7 @@ export function useProgressHistoryEditor({
         totalTime,
         getUpdateItem,
         getDeleteItem,
+        addItem,
         onSubmit,
     };
 }
@@ -498,6 +569,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         totalTime,
         getUpdateItem,
         getDeleteItem,
+        addItem,
         onSubmit,
     } = useProgressHistoryEditor({
         requirement,
@@ -507,37 +579,52 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
 
     if (timelineRequest.isLoading()) {
         return (
-            <>
-                <DialogContent>
-                    <LoadingPage />
-                </DialogContent>
-            </>
+            <DialogContent>
+                <LoadingPage />
+            </DialogContent>
         );
     }
 
     return (
         <>
-            <DialogContent>
-                {items.length === 0 ? (
-                    <DialogContentText>You have no history for this requirement.</DialogContentText>
-                ) : (
-                    <Stack spacing={3} mt={1} width={1}>
-                        {items.map((_, idx, array) => {
-                            const reversedIdx = array.length - 1 - idx;
-                            const item = array[reversedIdx];
-                            return (
-                                <ProgressHistoryItem
-                                    key={item.entry.id}
-                                    requirement={requirement}
-                                    item={item}
-                                    error={errors[reversedIdx] || {}}
-                                    updateItem={getUpdateItem(reversedIdx)}
-                                    deleteItem={getDeleteItem(reversedIdx)}
-                                />
-                            );
-                        })}
-                    </Stack>
-                )}
+            <DialogContent sx={{ position: 'relative' }}>
+                <Stack direction='row' justifyContent='flex-start' mb={3}>
+                    <Button
+                        data-testid='task-history-add-new-button'
+                        onClick={addItem}
+                        disabled={request.isLoading()}
+                        variant='contained'
+                        size='small'
+                        startIcon={<AddIcon />}
+                    >
+                        Add New
+                    </Button>
+                </Stack>
+
+                <Stack spacing={3}>
+                    {items.length === 0 ? (
+                        <DialogContentText>
+                            No history yet. Use the + button above to log your first entry.
+                        </DialogContentText>
+                    ) : (
+                        <Stack spacing={3} mt={1} width={1}>
+                            {items.map((_, idx, array) => {
+                                const reversedIdx = array.length - 1 - idx;
+                                const item = array[reversedIdx];
+                                return (
+                                    <ProgressHistoryItem
+                                        key={item.entry.id}
+                                        requirement={requirement}
+                                        item={item}
+                                        error={errors[reversedIdx] || {}}
+                                        updateItem={getUpdateItem(reversedIdx)}
+                                        deleteItem={getDeleteItem(reversedIdx)}
+                                    />
+                                );
+                            })}
+                        </Stack>
+                    )}
+                </Stack>
             </DialogContent>
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
@@ -580,6 +667,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                     Save
                 </LoadingButton>
             </DialogActions>
+
             <RequestSnackbar request={request} />
             <RequestSnackbar request={timelineRequest} />
         </>
