@@ -7,6 +7,10 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src'),
+            'node_modules/next-navigation-guard': path.resolve(
+                __dirname,
+                'node_modules/next-navigation-guard',
+            ),
         },
     },
     test: {

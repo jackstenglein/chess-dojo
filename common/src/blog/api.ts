@@ -3,6 +3,31 @@ import { z } from 'zod';
 /** The username of the blog owner for the Chess Dojo blog. */
 export const DOJO_BLOG_OWNER = 'chessdojo';
 
+/** Verifies the shape of a Comment on a blog post. */
+export const CommentSchema = z.object({
+    /** The username of the person that posted the comment. */
+    owner: z.string(),
+    /** The display name of the person that posted the comment. */
+    ownerDisplayName: z.string(),
+    /** The cohort of the person that posted the comment. */
+    ownerCohort: z.string(),
+    /** The previous cohort of the person that posted the comment. */
+    ownerPreviousCohort: z.string(),
+    /** The id of the comment. */
+    id: z.string(),
+    /** The time the comment was created, in ISO 8601. */
+    createdAt: z.string(),
+    /** The time the comment was updated, in ISO 8601. */
+    updatedAt: z.string(),
+    /** The text content of the comment. */
+    content: z.string(),
+    /** The id of the root top-level comment this is a reply to. Absent for top-level comments. */
+    parentId: z.string().optional(),
+});
+
+/** A comment on a blog post. */
+export type Comment = z.infer<typeof CommentSchema>;
+
 /** Blog post status. */
 export const BlogStatusSchema = z.enum(['DRAFT', 'PUBLISHED']);
 /** Blog post status values (e.g. BlogStatuses.DRAFT, BlogStatuses.PUBLISHED). */
@@ -34,6 +59,8 @@ export const BlogSchema = z.object({
     updatedAt: z.string(),
     /** The status of the blog post. */
     status: BlogStatusSchema,
+    /** Comments on the blog post. */
+    comments: z.array(CommentSchema).nullish(),
 });
 
 /** A blog post. */
@@ -110,3 +137,46 @@ export const updateBlogRequestSchema = z.object({
 
 /** A request to update a blog post. */
 export type UpdateBlogRequest = z.infer<typeof updateBlogRequestSchema>;
+
+/** Verifies the type of a request to create a comment on a blog post. */
+export const createBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string().min(1),
+    /** The id of the blog post. */
+    id: z.string().min(1),
+    /** The text content of the comment. */
+    content: z.string().trim().min(1).max(10000),
+    /** The id of the comment being replied to. The backend resolves this to the root top-level comment. */
+    parentId: z.string().min(1).optional(),
+});
+
+/** A request to create a comment on a blog post. */
+export type CreateBlogCommentRequest = z.infer<typeof createBlogCommentRequestSchema>;
+
+/** Verifies the type of a request to update a comment on a blog post. */
+export const updateBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string().min(1),
+    /** The id of the blog post. */
+    id: z.string().min(1),
+    /** The id of the comment to update. */
+    commentId: z.string().min(1),
+    /** The new text content of the comment. */
+    content: z.string().trim().min(1).max(10000),
+});
+
+/** A request to update a comment on a blog post. */
+export type UpdateBlogCommentRequest = z.infer<typeof updateBlogCommentRequestSchema>;
+
+/** Verifies the type of a request to delete a comment on a blog post. */
+export const deleteBlogCommentRequestSchema = z.object({
+    /** The username of the blog owner. */
+    owner: z.string().min(1),
+    /** The id of the blog post. */
+    id: z.string().min(1),
+    /** The id of the comment to delete. */
+    commentId: z.string().min(1),
+});
+
+/** A request to delete a comment on a blog post. */
+export type DeleteBlogCommentRequest = z.infer<typeof deleteBlogCommentRequestSchema>;
