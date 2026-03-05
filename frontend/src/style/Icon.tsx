@@ -184,6 +184,8 @@ export const icons = {
     spar: Link,
     [EngineName.Stockfish11]: ElectricBolt,
     [EngineName.Stockfish16]: PhoneAndroid,
+    [EngineName.Stockfish17Lite]: PhoneAndroid,
+    [EngineName.Stockfish18Lite]: PhoneAndroid,
     [EngineName.Stockfish17]: Dvr,
     [EngineName.Stockfish18]: Dvr,
 };

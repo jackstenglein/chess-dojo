@@ -1,24 +1,22 @@
 /** The name of an available engine. */
 export enum EngineName {
     Stockfish18 = 'stockfish_18',
+    Stockfish18Lite = 'stockfish_18_lite',
     Stockfish17 = 'stockfish_17',
+    Stockfish17Lite = 'stockfish_17_lite',
     Stockfish16 = 'stockfish_16',
     Stockfish11 = 'stockfish_11',
 }
 
 export const EnginePathRecord: Record<EngineName, string> = {
-    stockfish_18: '/static/engines/stockfish-18/stockfish-18',
-    stockfish_17: '/static/engines/stockfish-17/stockfish-17',
-    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1',
+    stockfish_18: '/static/engines/stockfish-18/stockfish-18.js#/static/engines/stockfish-18/stockfish-18.wasm',
+    stockfish_18_lite: '/static/engines/stockfish-18/stockfish-18-lite.js#/static/engines/stockfish-18/stockfish-18-lite.wasm',
+    stockfish_17: '/static/engines/stockfish-17.1/stockfish-17.1-8e4d048.js',
+    stockfish_17_lite: '/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.js#/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.wasm',
+    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1-lite.js#/static/engines/stockfish-16.1/stockfish-16.1-lite.wasm',
     stockfish_11: '/static/engines/stockfish-11.js',
 };
 
-export const EngineWasmPathRecord: Record<EngineName, string> = {
-    stockfish_11: '',
-    stockfish_18: '/static/engines/stockfish-18/stockfish-18.wasm',
-    stockfish_17: '/static/engines/stockfish-17/stockfish-17-lite.wasm',
-    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1-lite.wasm',
-};
 
 export interface EngineInfo {
     /** The internal name of the engine. */
@@ -62,11 +60,31 @@ export const engines: EngineInfo[] = [
         location: 'in local browser',
     },
     {
+        name: EngineName.Stockfish18Lite,
+        fullName: 'Stockfish 18 NNUE • 7 MB',
+        shortName: 'SF 18 • 7 MB',
+        extraShortName: 'SF 18',
+        description: 'Best for Mobile and weaker desktops',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by Stockfish's neural network.`,
+        location: 'in local browser',
+    },
+    {
         name: EngineName.Stockfish17,
         fullName: 'Stockfish 17.1 NNUE • 79 MB',
         shortName: 'SF 17.1 • 79 MB',
         extraShortName: 'SF 17.1',
         description: 'Best for desktop',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by Stockfish's neural network.`,
+        location: 'in local browser',
+    },
+     {
+        name: EngineName.Stockfish17Lite,
+        fullName: 'Stockfish 17.1 NNUE • 7 MB',
+        shortName: 'SF 17.1 • 7 MB',
+        extraShortName: 'SF 17.1',
+        description: 'Best for mobile and weaker desktops',
         tech: 'NNUE',
         techDescription: `Evaluation is performed by Stockfish's neural network.`,
         location: 'in local browser',
