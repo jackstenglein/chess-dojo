@@ -1,4 +1,4 @@
-import { debug} from './helper';
+import { debug } from './helper';
 
 export interface EngineWorker {
     isReady: boolean;
@@ -66,4 +66,3 @@ export const sendCommandsToWorker = (
         }
     });
 };
-

@@ -1,4 +1,4 @@
-import { EngineName, EnginePathRecord} from './engine';
+import { EngineName, EnginePathRecord } from './engine';
 import { debug, isMultiThreadSupported, isWasmSupported } from './helper';
 import { UciEngineFactory } from './UciEngineFactory';
 

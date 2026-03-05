@@ -12,7 +12,6 @@ import {
 import { debug } from './helper';
 import { parseEvaluationResults } from './parseResults';
 
-
 const config = getConfig();
 
 /**
@@ -109,10 +108,7 @@ export class UciEngineFactory {
         engine.isReady = true;
         engine.engineDebug(`Engine ${engineName} is ready`);
         await engine.sendCommandsToEachWorker(['uci'], 'uciok');
-        await engine.sendCommands(
-            ['setoption name UCI_ShowWDL value true', 'isready'],
-            'readyok',
-        );
+        await engine.sendCommands(['setoption name UCI_ShowWDL value true', 'isready'], 'readyok');
         await engine.setMultiPv(engine.getMultiPv, true);
         await engine.setThreads(engine.getThreads, true);
         await engine.setHash(engine.getHash, true);

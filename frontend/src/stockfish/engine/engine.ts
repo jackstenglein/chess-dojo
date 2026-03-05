@@ -9,14 +9,17 @@ export enum EngineName {
 }
 
 export const EnginePathRecord: Record<EngineName, string> = {
-    stockfish_18: '/static/engines/stockfish-18/stockfish-18.js#/static/engines/stockfish-18/stockfish-18.wasm',
-    stockfish_18_lite: '/static/engines/stockfish-18/stockfish-18-lite.js#/static/engines/stockfish-18/stockfish-18-lite.wasm',
+    stockfish_18:
+        '/static/engines/stockfish-18/stockfish-18.js#/static/engines/stockfish-18/stockfish-18.wasm',
+    stockfish_18_lite:
+        '/static/engines/stockfish-18/stockfish-18-lite.js#/static/engines/stockfish-18/stockfish-18-lite.wasm',
     stockfish_17: '/static/engines/stockfish-17.1/stockfish-17.1-8e4d048.js',
-    stockfish_17_lite: '/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.js#/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.wasm',
-    stockfish_16: '/static/engines/stockfish-16.1/stockfish-16.1-lite.js#/static/engines/stockfish-16.1/stockfish-16.1-lite.wasm',
+    stockfish_17_lite:
+        '/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.js#/static/engines/stockfish-17.1/stockfish-17.1-lite-51f59da.wasm',
+    stockfish_16:
+        '/static/engines/stockfish-16.1/stockfish-16.1-lite.js#/static/engines/stockfish-16.1/stockfish-16.1-lite.wasm',
     stockfish_11: '/static/engines/stockfish-11.js',
 };
-
 
 export interface EngineInfo {
     /** The internal name of the engine. */
@@ -61,7 +64,7 @@ export const engines: EngineInfo[] = [
     },
     {
         name: EngineName.Stockfish18Lite,
-        fullName: 'Stockfish 18 NNUE • 7 MB',
+        fullName: 'Stockfish 18 Lite NNUE • 7 MB',
         shortName: 'SF 18 • 7 MB',
         extraShortName: 'SF 18',
         description: 'Best for Mobile and weaker desktops',
@@ -79,9 +82,9 @@ export const engines: EngineInfo[] = [
         techDescription: `Evaluation is performed by Stockfish's neural network.`,
         location: 'in local browser',
     },
-     {
+    {
         name: EngineName.Stockfish17Lite,
-        fullName: 'Stockfish 17.1 NNUE • 7 MB',
+        fullName: 'Stockfish 17.1 Lite NNUE • 7 MB',
         shortName: 'SF 17.1 • 7 MB',
         extraShortName: 'SF 17.1',
         description: 'Best for mobile and weaker desktops',
