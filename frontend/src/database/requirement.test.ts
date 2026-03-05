@@ -28,7 +28,7 @@ const requirementNormal: Requirement = {
         [testCohort3]: 30,
     },
     startCount: 2,
-    numberOfCohorts: 1,
+    numberOfCohorts: 3,
     unitScore: 0.01,
     totalScore: 0.1,
     scoreboardDisplay: ScoreboardDisplay.ProgressBar,
@@ -42,29 +42,8 @@ const requirementNormal: Requirement = {
 };
 
 const requirementAllCohorts: Requirement = {
-    id: 'If51a94d8-305a-4c3a-a2c3-f7d521765ca2D',
-    status: RequirementStatus.Active,
-    category: RequirementCategory.Tactics,
-    name: 'TestRequirement',
-    shortName: 'TestReq',
-    dailyName: 'DailyTestReq',
-    description: 'Test Description',
-    freeDescription: 'Test Free Description',
-    counts: {
-        ALL_COHORTS: 10,
-    },
-    startCount: 2,
+    ...requirementNormal,
     numberOfCohorts: 1,
-    unitScore: 0.01,
-    totalScore: 0.1,
-    scoreboardDisplay: ScoreboardDisplay.ProgressBar,
-    progressBarSuffix: 'suffix',
-    updatedAt: '2023-01-01T00:00:00Z',
-    sortPriority: '1',
-    expirationDays: 30,
-    isFree: true,
-    atomic: true,
-    expectedMinutes: 10,
 };
 
 const customTaskNormal: CustomTask = {
@@ -292,6 +271,80 @@ describe('requirement.ts', () => {
             });
 
             expect(count).toBe(0);
+        });
+
+        it('returns startCount for ALL_COHORTS with no progress', () => {
+            const count = getCurrentCount({
+                cohort: testCohort,
+                requirement: requirementAllCohorts,
+                progress: progressNormal,
+                timeline: [timelineEntryNormal],
+            });
+
+            expect(count).toBe(2);
+        });
+
+        it('returns 0 for ALL_COHORTS with no progress and no startCount', () => {
+            const count = getCurrentCount({
+                cohort: testCohort,
+                requirement: {
+                    ...requirementAllCohorts,
+                    startCount: 0,
+                },
+                progress: progressNormal,
+                timeline: [timelineEntryNormal],
+            });
+
+            expect(count).toBe(0);
+        });
+
+        it('is correct for ALL_COHORTS with progress', () => {
+            const count = getCurrentCount({
+                cohort: testCohort,
+                requirement: requirementAllCohorts,
+                progress: {
+                    ...progressNormal,
+                    counts: {
+                        ALL_COHORTS: 5,
+                    },
+                },
+                timeline: [timelineEntryNormal],
+            });
+
+            expect(count).toBe(5);
+        });
+
+        it('does not clamp upper bound for ALL_COHORTS if not asked to', () => {
+            const count = getCurrentCount({
+                cohort: testCohort,
+                requirement: requirementAllCohorts,
+                progress: {
+                    ...progressNormal,
+                    counts: {
+                        ALL_COHORTS: 15,
+                    },
+                },
+                timeline: [timelineEntryNormal],
+            });
+
+            expect(count).toBe(15);
+        });
+
+        it('clamps upper bound for ALL_COHORTS when asked to', () => {
+            const count = getCurrentCount({
+                cohort: testCohort,
+                requirement: requirementAllCohorts,
+                progress: {
+                    ...progressNormal,
+                    counts: {
+                        ALL_COHORTS: 15,
+                    },
+                },
+                timeline: [timelineEntryNormal],
+                clamp: true,
+            });
+
+            expect(count).toBe(10);
         });
     });
 });

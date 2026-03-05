@@ -4,29 +4,29 @@ import { getEnv } from '../../../../lib/env';
 const baseCustomTask = {
     category: 'Tactics',
     counts: {
-        '0-300': 100,
-        '1000-1100': 100,
-        '1100-1200': 100,
-        '1200-1300': 100,
-        '1300-1400': 100,
-        '1400-1500': 100,
-        '1500-1600': 100,
-        '1600-1700': 100,
-        '1700-1800': 100,
-        '1800-1900': 100,
-        '1900-2000': 100,
-        '2000-2100': 100,
-        '2100-2200': 100,
-        '2200-2300': 100,
-        '2300-2400': 100,
-        '2400+': 100,
-        '300-400': 100,
-        '400-500': 100,
-        '500-600': 100,
-        '600-700': 100,
-        '700-800': 100,
-        '800-900': 100,
-        '900-1000': 100,
+        '0-300': 250,
+        '1000-1100': 250,
+        '1100-1200': 250,
+        '1200-1300': 250,
+        '1300-1400': 250,
+        '1400-1500': 250,
+        '1500-1600': 250,
+        '1600-1700': 250,
+        '1700-1800': 250,
+        '1800-1900': 250,
+        '1900-2000': 250,
+        '2000-2100': 250,
+        '2100-2200': 250,
+        '2200-2300': 250,
+        '2300-2400': 250,
+        '2400+': 250,
+        '300-400': 250,
+        '400-500': 250,
+        '500-600': 250,
+        '600-700': 250,
+        '700-800': 250,
+        '800-900': 250,
+        '900-1000': 250,
     },
     description: '',
     numberOfCohorts: 1,
@@ -66,13 +66,14 @@ const mockUser = {
         },
         {
             ...baseCustomTask,
-            id: '0238bb2d-15bf-444c-9da4-f57bc2183d6d',
-            name: 'No min goal with progress',
+            id: 'a5332a93-8117-4bc5-85e1-69bd089e7c8b',
+            name: 'No History',
         },
         {
             ...baseCustomTask,
-            id: 'a5332a93-8117-4bc5-85e1-69bd089e7c8b',
-            name: 'No History',
+            id: '28508c3a-9837-425c-97a1-c12c748c06ae',
+            name: 'Old Timeline Entries',
+            startCount: 150,
         },
     ],
     dojoCohort: '1400-1500',
@@ -173,15 +174,44 @@ const mockTimeline = {
         },
         {
             ...baseTimelineEntry,
-            requirementId: '38y61',
-            requirementName: 'Nonexistent task',
+            requirementId: '28508c3a-9837-425c-97a1-c12c748c06ae',
+            requirementName: 'Old Timeline Entries',
             scoreboardDisplay: 'PROGRESS_BAR',
             previousCount: 0,
-            newCount: 10,
+            newCount: 170,
+            totalCount: 250,
             dojoPoints: 0,
             totalDojoPoints: 0,
-            minutesSpent: 19,
-            totalMinutesSpent: 19,
+            minutesSpent: 20,
+            totalMinutesSpent: 20,
+            createdAt: '2026-03-02T19:26:30.731Z',
+        },
+        {
+            ...baseTimelineEntry,
+            requirementId: '28508c3a-9837-425c-97a1-c12c748c06ae',
+            requirementName: 'Old Timeline Entries',
+            scoreboardDisplay: 'PROGRESS_BAR',
+            previousCount: 170,
+            newCount: 180,
+            totalCount: 250,
+            dojoPoints: 0,
+            totalDojoPoints: 0,
+            minutesSpent: 30,
+            totalMinutesSpent: 50,
+            createdAt: '2026-03-02T20:26:30.731Z',
+        },
+        {
+            ...baseTimelineEntry,
+            requirementId: '28508c3a-9837-425c-97a1-c12c748c06ae',
+            requirementName: 'Old Timeline Entries',
+            scoreboardDisplay: 'PROGRESS_BAR',
+            previousCount: 180,
+            newCount: 200,
+            totalCount: 250,
+            dojoPoints: 0,
+            totalDojoPoints: 0,
+            minutesSpent: 10,
+            totalMinutesSpent: 60,
             createdAt: '2026-03-03T19:26:30.731Z',
         },
     ],
@@ -343,5 +373,29 @@ test.describe('ProgressHistory', () => {
         expect(postRequestBody?.updated?.[1]?.newCount).toBe(60);
         expect(postRequestBody?.updated?.[1]?.minutesSpent).toBe(100);
         expect(postRequestBody?.updated?.[1]?.totalMinutesSpent).toBe(100);
+    });
+
+    // Check backwards compatibility with older timeline entries
+    test('ProgressHistory properly handles older timeline entries with previousCount < startCount', async ({
+        page,
+    }) => {
+        await page
+            .getByTestId('Old-Timeline-Entries-training-plan-entry')
+            .getByRole('button', { name: 'Old Timeline Entries' })
+            .click();
+        await page.getByTestId('task-updater-show-history-button').click();
+
+        // Delete the second entry
+        await page.getByTestId('task-history-delete-button').nth(1).click();
+
+        // Save the changes, which will trigger a POST request to update the timeline
+        await page.getByTestId('task-updater-save-button').click();
+
+        // Progress was correctly synced to the new timeline, even though the old timeline entry had a previousCount < startCount
+        expect(postRequestBody?.progress?.counts?.ALL_COHORTS).toBe(190);
+
+        // The outmoded timeline entry was fixed up correctly
+        expect(postRequestBody?.updated?.[0]?.previousCount).toBe(150);
+        expect(postRequestBody?.updated?.[0]?.newCount).toBe(170);
     });
 });
