@@ -227,35 +227,60 @@ export class OpeningTree {
                 lastPlayed = game;
             }
 
+            const opponentRating =
+                game.playerColor === Color.White
+                    ? game.normalizedBlackElo
+                    : game.normalizedWhiteElo;
+
             if (game.result === GameResult.White) {
                 white++;
                 if (game.playerColor === Color.White) {
                     playerWins++;
-                    if (game.normalizedBlackElo > (bestWin?.normalizedBlackElo ?? 0)) {
+                    const bestWinOpponentRating = bestWin
+                        ? bestWin.playerColor === Color.White
+                            ? bestWin.normalizedBlackElo
+                            : bestWin.normalizedWhiteElo
+                        : 0;
+                    if (opponentRating > bestWinOpponentRating) {
                         bestWin = game;
                     }
-                } else if (game.normalizedWhiteElo < (worstLoss?.normalizedWhiteElo ?? Infinity)) {
-                    worstLoss = game;
+                } else {
+                    const worstLossOpponentRating = worstLoss
+                        ? worstLoss.playerColor === Color.White
+                            ? worstLoss.normalizedBlackElo
+                            : worstLoss.normalizedWhiteElo
+                        : Infinity;
+                    if (opponentRating < worstLossOpponentRating) {
+                        worstLoss = game;
+                    }
                 }
             } else if (game.result === GameResult.Black) {
                 black++;
                 if (game.playerColor === Color.Black) {
                     playerWins++;
-                    if (game.normalizedWhiteElo > (bestWin?.normalizedWhiteElo ?? 0)) {
+                    const bestWinOpponentRating = bestWin
+                        ? bestWin.playerColor === Color.White
+                            ? bestWin.normalizedBlackElo
+                            : bestWin.normalizedWhiteElo
+                        : 0;
+                    if (opponentRating > bestWinOpponentRating) {
                         bestWin = game;
                     }
-                } else if (game.normalizedBlackElo < (worstLoss?.normalizedBlackElo ?? Infinity)) {
-                    worstLoss = game;
+                } else {
+                    const worstLossOpponentRating = worstLoss
+                        ? worstLoss.playerColor === Color.White
+                            ? worstLoss.normalizedBlackElo
+                            : worstLoss.normalizedWhiteElo
+                        : Infinity;
+                    if (opponentRating < worstLossOpponentRating) {
+                        worstLoss = game;
+                    }
                 }
             } else {
                 draws++;
             }
 
-            if (game.playerColor === Color.White) {
-                totalOpponentRating += game.normalizedBlackElo;
-            } else {
-                totalOpponentRating += game.normalizedWhiteElo;
-            }
+            totalOpponentRating += opponentRating;
         }
 
         const moves = position.moves
@@ -284,39 +309,60 @@ export class OpeningTree {
                         lastPlayed = game;
                     }
 
+                    const opponentRating =
+                        game.playerColor === Color.White
+                            ? game.normalizedBlackElo
+                            : game.normalizedWhiteElo;
+
                     if (game.result === GameResult.White) {
                         white++;
                         if (game.playerColor === Color.White) {
                             playerWins++;
-                            if (game.normalizedBlackElo > (bestWin?.normalizedBlackElo ?? 0)) {
+                            const bestWinOpponentRating = bestWin
+                                ? bestWin.playerColor === Color.White
+                                    ? bestWin.normalizedBlackElo
+                                    : bestWin.normalizedWhiteElo
+                                : 0;
+                            if (opponentRating > bestWinOpponentRating) {
                                 bestWin = game;
                             }
-                        } else if (
-                            game.normalizedWhiteElo < (worstLoss?.normalizedWhiteElo ?? Infinity)
-                        ) {
-                            worstLoss = game;
+                        } else {
+                            const worstLossOpponentRating = worstLoss
+                                ? worstLoss.playerColor === Color.White
+                                    ? worstLoss.normalizedBlackElo
+                                    : worstLoss.normalizedWhiteElo
+                                : Infinity;
+                            if (opponentRating < worstLossOpponentRating) {
+                                worstLoss = game;
+                            }
                         }
                     } else if (game.result === GameResult.Black) {
                         black++;
                         if (game.playerColor === Color.Black) {
                             playerWins++;
-                            if (game.normalizedWhiteElo > (bestWin?.normalizedWhiteElo ?? 0)) {
+                            const bestWinOpponentRating = bestWin
+                                ? bestWin.playerColor === Color.White
+                                    ? bestWin.normalizedBlackElo
+                                    : bestWin.normalizedWhiteElo
+                                : 0;
+                            if (opponentRating > bestWinOpponentRating) {
                                 bestWin = game;
                             }
-                        } else if (
-                            game.normalizedBlackElo < (worstLoss?.normalizedBlackElo ?? Infinity)
-                        ) {
-                            worstLoss = game;
+                        } else {
+                            const worstLossOpponentRating = worstLoss
+                                ? worstLoss.playerColor === Color.White
+                                    ? worstLoss.normalizedBlackElo
+                                    : worstLoss.normalizedWhiteElo
+                                : Infinity;
+                            if (opponentRating < worstLossOpponentRating) {
+                                worstLoss = game;
+                            }
                         }
                     } else {
                         draws++;
                     }
 
-                    if (game.playerColor === Color.White) {
-                        totalOpponentRating += game.normalizedBlackElo;
-                    } else {
-                        totalOpponentRating += game.normalizedWhiteElo;
-                    }
+                    totalOpponentRating += opponentRating;
                 }
                 const result = { ...move, white, black, draws };
                 const totalGames = white + black + draws;
