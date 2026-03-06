@@ -28,8 +28,11 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
+import { ANNOTATE_GAMES_TASK_ID, CLASSICAL_GAMES_TASK_ID } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
+
+const MINIMUM_TASKS = new Set([CLASSICAL_GAMES_TASK_ID, ANNOTATE_GAMES_TASK_ID]);
 
 interface FullTrainingPlanItemProps {
     user: User;
@@ -62,6 +65,8 @@ export const FullTrainingPlanItem = ({
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
     const time = formatTime(getTotalTime(cohort, progress));
     const expired = isExpired(requirement, progress);
+    const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
+    const minimumReached = isMinimumTask && currentCount >= totalCount;
 
     let UpdateElement = null;
 
@@ -85,7 +90,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Unspecified:
         case ScoreboardDisplay.Yearly:
             UpdateElement =
-                currentCount >= totalCount ? (
+                currentCount >= totalCount && !isMinimumTask ? (
                     <Tooltip title='Update Progress'>
                         <Checkbox
                             checked
@@ -159,6 +164,15 @@ export const FullTrainingPlanItem = ({
                                 />
                             </Tooltip>
                         )}
+                        {minimumReached && (
+                            <Chip
+                                variant='outlined'
+                                color='success'
+                                label='Minimum Reached'
+                                size='small'
+                                sx={{ alignSelf: 'start', mb: 0.5 }}
+                            />
+                        )}
 
                         <Stack
                             direction='row'
@@ -185,6 +199,7 @@ export const FullTrainingPlanItem = ({
                                         value={currentCount}
                                         max={totalCount}
                                         min={requirement.startCount}
+                                        suffix={isMinimumTask ? 'min.' : ''}
                                         isTime={
                                             requirement.scoreboardDisplay ===
                                             ScoreboardDisplay.Minutes

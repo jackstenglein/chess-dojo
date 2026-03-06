@@ -9,6 +9,67 @@ test.describe('Training Plan', () => {
         await expect(page.getByTestId('task-updater-save-button')).toBeVisible();
     });
 
+    test('shows Minimum Reached chip for completed minimum tasks', async ({ page }) => {
+        await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.abort();
+            }
+
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    username: 'test',
+                    subscriptionStatus: 'SUBSCRIBED',
+                    subscriptionTier: 'BASIC',
+                    displayName: 'Test Account',
+                    ratingSystem: 'CHESSCOM',
+                    ratings: {
+                        CHESSCOM: {
+                            username: 'test',
+                            hideUsername: false,
+                            startRating: 1971,
+                            currentRating: 2009,
+                        },
+                    },
+                    dojoCohort: '1400-1500',
+                    progress: {
+                        '38f46441-7a4e-4506-8632-166bcbe78baf': {
+                            requirementId: '38f46441-7a4e-4506-8632-166bcbe78baf',
+                            counts: { '1400-1500': 44 },
+                            minutesSpent: { '1400-1500': 3000 },
+                            updatedAt: '2025-09-10T18:14:39Z',
+                        },
+                    },
+                    isAdmin: false,
+                    isCalendarAdmin: false,
+                    isTournamentAdmin: false,
+                    createdAt: '2022-05-01T17:00:00Z',
+                    updatedAt: '2025-09-12T20:41:37Z',
+                    timezoneOverride: 'DEFAULT',
+                    timeFormat: '24',
+                    hasCreatedProfile: true,
+                    followerCount: 0,
+                    followingCount: 0,
+                    totalDojoScore: 50,
+                    weekStart: 0,
+                }),
+            });
+        });
+        await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+
+        await page.goto('/profile?view=progress');
+
+        const fullPlan = page.getByText('Full Training Plan').first();
+        await expect(fullPlan).toBeVisible();
+
+        const minimumChip = page.getByText('Minimum Reached').first();
+        await expect(minimumChip).toBeVisible();
+
+        const updateButton = page.getByTestId('update-task-button').first();
+        await expect(updateButton).toBeVisible();
+    });
+
     test('displays pinned tasks from other cohorts in today', async ({ page }) => {
         await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
             if (route.request().method() !== 'GET') {

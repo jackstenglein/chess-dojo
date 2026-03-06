@@ -59,7 +59,7 @@ export interface WeeklySuggestedTasks {
 export const CLASSICAL_GAMES_TASK_ID = '38f46441-7a4e-4506-8632-166bcbe78baf';
 
 /** The id of the annotate classical games task. */
-const ANNOTATE_GAMES_TASK_ID = '4d23d689-1284-46e6-b2a2-4b4bfdc37174';
+export const ANNOTATE_GAMES_TASK_ID = '4d23d689-1284-46e6-b2a2-4b4bfdc37174';
 
 /** The id of the review games with higher rated players task. */
 const REVIEW_WITH_HIGHER_RATED_TASK_ID = '72241c06-5d06-4245-92da-9b294c6b736a';
