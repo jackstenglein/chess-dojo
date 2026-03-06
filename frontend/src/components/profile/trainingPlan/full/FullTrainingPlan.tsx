@@ -39,12 +39,10 @@ import {
 import { use, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
-    ANNOTATE_GAMES_TASK_ID,
-    CLASSICAL_GAMES_TASK_ID,
     getUpcomingGameSchedule,
+    MINIMUM_TASKS,
     SCHEDULE_CLASSICAL_GAME_TASK_ID,
 } from '../suggestedTasks';
-
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
 
@@ -72,8 +70,6 @@ function getGraduationFakeTask(cohort: string): Requirement {
         expectedMinutes: 0,
     };
 }
-
-const MINIMUM_TASKS = new Set([CLASSICAL_GAMES_TASK_ID, ANNOTATE_GAMES_TASK_ID]);
 
 /** Renders the full training plan view of the training plan tab. */
 export function FullTrainingPlan() {

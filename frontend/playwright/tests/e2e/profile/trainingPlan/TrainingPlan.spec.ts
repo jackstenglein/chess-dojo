@@ -66,6 +66,9 @@ test.describe('Training Plan', () => {
         const minimumChip = page.getByText('Minimum Reached').first();
         await expect(minimumChip).toBeVisible();
 
+        const progressText = page.getByText(/44 \/ 40 min\./).first();
+        await expect(progressText).toBeVisible();
+
         const updateButton = page.getByTestId('update-task-button').first();
         await expect(updateButton).toBeVisible();
     });

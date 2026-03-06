@@ -28,11 +28,9 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
-import { ANNOTATE_GAMES_TASK_ID, CLASSICAL_GAMES_TASK_ID } from '../suggestedTasks';
+import { MINIMUM_TASKS } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
-
-const MINIMUM_TASKS = new Set([CLASSICAL_GAMES_TASK_ID, ANNOTATE_GAMES_TASK_ID]);
 
 interface FullTrainingPlanItemProps {
     user: User;
@@ -165,13 +163,15 @@ export const FullTrainingPlanItem = ({
                             </Tooltip>
                         )}
                         {minimumReached && (
-                            <Chip
-                                variant='outlined'
-                                color='success'
-                                label='Minimum Reached'
-                                size='small'
-                                sx={{ alignSelf: 'start', mb: 0.5 }}
-                            />
+                            <Tooltip title="You've reached the minimum, keep going!">
+                                <Chip
+                                    variant='outlined'
+                                    color='success'
+                                    label='Minimum Reached'
+                                    size='small'
+                                    sx={{ alignSelf: 'start', mb: 0.5 }}
+                                />
+                            </Tooltip>
                         )}
 
                         <Stack
