@@ -1,4 +1,5 @@
 import { logger } from '@/logging/logger';
+import { AxiosError } from 'axios';
 import { useCallback } from 'react';
 import { Request, useRequest } from '../Request';
 import { axiosService } from '../axiosService';
@@ -103,9 +104,31 @@ export function useChesscomGames(): [
     return [request.data, requestGames, request];
 }
 
+const MAX_RETRIES = 3;
+const INITIAL_BACKOFF_MS = 1000;
+const ARCHIVE_TIMEOUT_MS = 30_000;
+
 export async function fetchChesscomArchiveGames(username: string, year: string, month: string) {
-    const resp = await axiosService.get<ChesscomGamesResponse>(
-        `https://api.chess.com/pub/player/${username}/games/${year}/${month}`,
-    );
-    return resp.data.games;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const resp = await axiosService.get<ChesscomGamesResponse>(
+                `https://api.chess.com/pub/player/${username}/games/${year}/${month}`,
+                { timeout: ARCHIVE_TIMEOUT_MS },
+            );
+            return resp.data.games;
+        } catch (err) {
+            if (
+                err instanceof AxiosError &&
+                err.response?.status === 429 &&
+                attempt < MAX_RETRIES
+            ) {
+                const backoff = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+                await new Promise((resolve) => setTimeout(resolve, backoff));
+                continue;
+            }
+            throw err;
+        }
+    }
+    // Unreachable, but satisfies TypeScript
+    throw new Error('Max retries exceeded');
 }
