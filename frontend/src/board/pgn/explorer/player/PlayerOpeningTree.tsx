@@ -90,13 +90,14 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 }
             }),
             proxy((tree) => (openingTree.current = OpeningTree.fromTree(tree))),
+            readonlyFilters.downloadLimit,
         );
         const tree = OpeningTree.fromTree(result);
         logger.debug?.('loader finished with tree: ', tree);
         openingTree.current = tree;
         loadComplete.current = true;
         setIsLoading(false);
-    }, [sources, setSources, setIndexedCount]);
+    }, [sources, setSources, setIndexedCount, readonlyFilters.downloadLimit]);
 
     const onClear = () => {
         openingTree.current = undefined;
