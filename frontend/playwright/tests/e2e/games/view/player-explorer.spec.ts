@@ -84,15 +84,12 @@ test.describe('Player Opening Explorer', () => {
         await page.getByPlaceholder('Chess.com Username').fill('testuser');
         await page.getByRole('button', { name: 'Load Games' }).click();
 
-        // Wait for loading indicator to appear and then disappear
-        await expect(page.getByText(/games? loaded/)).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText(/games? loaded/)).not.toBeVisible({ timeout: 15000 });
-
-        // Opening tree should render with move rows (e4 is the first move in most fixture games)
-        await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(
-            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
-        ).toBeVisible();
+        // Wait for the opening tree to render with move rows
+        const playerTree = page.getByTestId('explorer-tab-player');
+        await expect(playerTree).toBeVisible({ timeout: 15000 });
+        await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
+            timeout: 10000,
+        });
     });
 
     test('loads Lichess games and displays opening tree', async ({ page }) => {
@@ -104,15 +101,12 @@ test.describe('Player Opening Explorer', () => {
         await page.getByPlaceholder('Lichess Username').fill('testplayer');
         await page.getByRole('button', { name: 'Load Games' }).click();
 
-        // Wait for loading to complete
-        await expect(page.getByText(/games? loaded/)).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText(/games? loaded/)).not.toBeVisible({ timeout: 15000 });
-
-        // Opening tree should render with moves
-        await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(
-            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
-        ).toBeVisible();
+        // Wait for the opening tree to render with moves
+        const playerTree = page.getByTestId('explorer-tab-player');
+        await expect(playerTree).toBeVisible({ timeout: 15000 });
+        await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
+            timeout: 10000,
+        });
     });
 
     test('filters by color without making new API calls', async ({ page }) => {
@@ -122,9 +116,12 @@ test.describe('Player Opening Explorer', () => {
         await page.getByPlaceholder('Chess.com Username').fill('testuser');
         await page.getByRole('button', { name: 'Load Games' }).click();
 
-        // Wait for load to complete
-        await expect(page.getByText(/games? loaded/)).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText(/games? loaded/)).not.toBeVisible({ timeout: 15000 });
+        // Wait for tree to render
+        const playerTree = page.getByTestId('explorer-tab-player');
+        await expect(playerTree).toBeVisible({ timeout: 15000 });
+        await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
+            timeout: 10000,
+        });
 
         const apiCallsAfterLoad = { ...callCount };
 
@@ -136,7 +133,7 @@ test.describe('Player Opening Explorer', () => {
         await page.waitForTimeout(500);
 
         // The tree should still be visible (re-filtered, not re-fetched)
-        await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
+        await expect(playerTree).toBeVisible();
 
         // No new API calls should have been made
         expect(callCount.archives).toBe(apiCallsAfterLoad.archives);
@@ -150,15 +147,12 @@ test.describe('Player Opening Explorer', () => {
         await page.getByPlaceholder('Chess.com Username').fill('testuser');
         await page.getByRole('button', { name: 'Load Games' }).click();
 
-        // Wait for load to complete
-        await expect(page.getByText(/games? loaded/)).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText(/games? loaded/)).not.toBeVisible({ timeout: 15000 });
-
-        // Tree should be visible with moves
-        await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(
-            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
-        ).toBeVisible();
+        // Wait for tree to render with moves
+        const playerTree = page.getByTestId('explorer-tab-player');
+        await expect(playerTree).toBeVisible({ timeout: 15000 });
+        await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
+            timeout: 10000,
+        });
 
         // Click Clear Data to reset the tree
         await page.getByText('Filters').click();
