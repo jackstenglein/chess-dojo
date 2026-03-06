@@ -1,5 +1,5 @@
+import { buildPlayerOpeningTree } from '@/api/explorerApi';
 import { logger } from '@/logging/logger';
-import { proxy, releaseProxy, Remote, wrap } from 'comlink';
 import {
     createContext,
     Dispatch,
@@ -8,13 +8,11 @@ import {
     SetStateAction,
     useCallback,
     useContext,
-    useEffect,
     useRef,
     useState,
 } from 'react';
 import { EditableGameFilters, useGameFilters } from './Filters';
 import { OpeningTree } from './OpeningTree';
-import { OpeningTreeLoaderFactory } from './OpeningTreeLoader';
 import { DEFAULT_PLAYER_SOURCE, GameFilters, PlayerSource } from './PlayerSource';
 
 export interface PlayerOpeningTreeContextType {
@@ -24,10 +22,10 @@ export interface PlayerOpeningTreeContextType {
     onLoad: () => Promise<void>;
     onCancel: () => void;
     onClear: () => void;
-    indexedCount: number;
     openingTree: RefObject<OpeningTree | undefined | null>;
     filters: EditableGameFilters;
     readonlyFilters: GameFilters;
+    error: string | undefined;
 }
 
 const PlayerOpeningTreeContext = createContext<PlayerOpeningTreeContextType | undefined>(undefined);
@@ -43,19 +41,10 @@ export function usePlayerOpeningTree(): PlayerOpeningTreeContextType {
 export function PlayerOpeningTreeProvider({ children }: { children: ReactNode }) {
     const [sources, setSources] = useState([DEFAULT_PLAYER_SOURCE]);
     const [isLoading, setIsLoading] = useState(false);
-    const [indexedCount, setIndexedCount] = useState(-1);
-    const workerRef = useRef<Remote<OpeningTreeLoaderFactory>>(undefined);
-    const loaderRef = useRef<{ abort: () => void }>(undefined);
+    const [error, setError] = useState<string | undefined>(undefined);
+    const abortControllerRef = useRef<AbortController>(undefined);
     const openingTree = useRef<OpeningTree>(undefined);
-    const loadComplete = useRef(false);
     const [filters, readonlyFilters] = useGameFilters(sources);
-
-    useEffect(() => {
-        const worker = new Worker(new URL('./OpeningTreeLoader.ts', import.meta.url));
-        const proxy = wrap<OpeningTreeLoaderFactory>(worker);
-        workerRef.current = proxy;
-        return proxy[releaseProxy];
-    }, []);
 
     const onLoad = useCallback(async () => {
         const newSources: PlayerSource[] = [];
@@ -77,43 +66,44 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
             return;
         }
 
-        const loader = await workerRef.current?.newLoader();
-        if (!loader) {
-            return;
-        }
-        loaderRef.current = loader;
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
         setIsLoading(true);
-        setIndexedCount(0);
-        const result = await loader.load(
-            sources,
-            proxy((inc = 1) => {
-                if (!loadComplete.current) {
-                    setIndexedCount((v) => v + inc);
-                }
-            }),
-            proxy((tree) => (openingTree.current = OpeningTree.fromTree(tree))),
-            readonlyFilters.downloadLimit,
-        );
-        const tree = OpeningTree.fromTree(result);
-        logger.debug?.('loader finished with tree: ', tree);
-        openingTree.current = tree;
-        loadComplete.current = true;
-        loaderRef.current = undefined;
-        setIsLoading(false);
-    }, [sources, setSources, setIndexedCount, readonlyFilters.downloadLimit]);
+        setError(undefined);
+        try {
+            const apiSources = newSources.map((s) => ({
+                type: s.type,
+                username: s.username.trim().toLowerCase(),
+            }));
+            const response = await buildPlayerOpeningTree(apiSources);
+            if (controller.signal.aborted) {
+                return;
+            }
+            const tree = OpeningTree.fromBackendResponse(response.data);
+            logger.debug?.('API returned tree: ', tree);
+            openingTree.current = tree;
+        } catch (err) {
+            if (controller.signal.aborted) {
+                return;
+            }
+            logger.error?.('Failed to build player opening tree:', err);
+            setError('Failed to load games. Please try again.');
+        } finally {
+            abortControllerRef.current = undefined;
+            setIsLoading(false);
+        }
+    }, [sources, setSources]);
 
     const onCancel = useCallback(() => {
-        void loaderRef.current?.abort();
-        loaderRef.current = undefined;
-        loadComplete.current = true;
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = undefined;
         setIsLoading(false);
     }, []);
 
     const onClear = () => {
         openingTree.current = undefined;
-        loadComplete.current = false;
-        setIndexedCount(-1);
+        setError(undefined);
     };
 
     return (
@@ -125,10 +115,10 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 onLoad,
                 onCancel,
                 onClear,
-                indexedCount,
                 openingTree,
                 filters,
                 readonlyFilters,
+                error,
             }}
         >
             {children}

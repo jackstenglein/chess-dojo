@@ -1,8 +1,14 @@
+import {
+    BackendIndexedGame,
+    BuildPlayerOpeningTreeResponse,
+} from '@/api/explorerApi';
 import { OnlineGameTimeClass } from '@/api/external/onlineGame';
 import { GameData, LichessExplorerMove, LichessExplorerPosition } from '@/database/explorer';
 import { GameResult } from '@/database/game';
+import { getNormalizedRating } from '@/database/user';
 import { logger } from '@/logging/logger';
 import { Chess, normalizeFen } from '@jackstenglein/chess';
+import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import deepEqual from 'deep-equal';
 import {
@@ -11,6 +17,8 @@ import {
     MAX_DOWNLOAD_LIMIT,
     MAX_PLY_COUNT,
     MIN_PLY_COUNT,
+    PlayerSource,
+    SourceType,
 } from './PlayerSource';
 
 interface PositionDataMove extends LichessExplorerMove {
@@ -59,6 +67,35 @@ export class OpeningTree {
      */
     static fromTree(other: OpeningTree): OpeningTree {
         return new OpeningTree(other.positionData, other.gameData);
+    }
+
+    /**
+     * Constructs an OpeningTree from the backend API response.
+     */
+    static fromBackendResponse(resp: BuildPlayerOpeningTreeResponse): OpeningTree {
+        const gameData = new Map<string, GameData>();
+        for (const [url, bg] of Object.entries(resp.games)) {
+            gameData.set(url, convertBackendGame(bg));
+        }
+
+        const positionData = new Map<string, PositionData>();
+        for (const [fen, bp] of Object.entries(resp.positions)) {
+            positionData.set(fen, {
+                white: bp.White,
+                black: bp.Black,
+                draws: bp.Draws,
+                games: new Set(Object.keys(bp.Games ?? {})),
+                moves: (bp.Moves ?? []).map((m) => ({
+                    san: m.SAN,
+                    white: m.White,
+                    black: m.Black,
+                    draws: m.Draws,
+                    games: new Set(Object.keys(m.Games ?? {})),
+                })),
+            });
+        }
+
+        return new OpeningTree(positionData, gameData);
     }
 
     /**
@@ -523,6 +560,42 @@ export class OpeningTree {
             return false;
         }
     }
+}
+
+const BACKEND_TIME_CLASS_MAP: Record<string, OnlineGameTimeClass> = {
+    bullet: OnlineGameTimeClass.Bullet,
+    blitz: OnlineGameTimeClass.Blitz,
+    rapid: OnlineGameTimeClass.Rapid,
+    classical: OnlineGameTimeClass.Classical,
+    correspondence: OnlineGameTimeClass.Daily,
+};
+
+function convertBackendGame(bg: BackendIndexedGame): GameData {
+    const sourceType = bg.source === 'lichess' ? SourceType.Lichess : SourceType.Chesscom;
+    const playerColor = bg.playerColor === 'black' ? Color.Black : Color.White;
+    const ratingSystem =
+        sourceType === SourceType.Lichess ? RatingSystem.Lichess : RatingSystem.Chesscom;
+    const source: PlayerSource = {
+        type: sourceType,
+        username: playerColor === Color.White ? bg.whiteUsername : bg.blackUsername,
+    };
+
+    return {
+        source,
+        playerColor,
+        white: bg.whiteUsername,
+        black: bg.blackUsername,
+        whiteElo: bg.whiteRating,
+        normalizedWhiteElo: getNormalizedRating(bg.whiteRating, ratingSystem),
+        blackElo: bg.blackRating,
+        normalizedBlackElo: getNormalizedRating(bg.blackRating, ratingSystem),
+        result: bg.result as GameResult,
+        plyCount: bg.PlyCount,
+        rated: bg.rated,
+        url: bg.url,
+        headers: bg.Headers ?? {},
+        timeClass: BACKEND_TIME_CLASS_MAP[bg.timeClass] ?? OnlineGameTimeClass.Rapid,
+    };
 }
 
 /**

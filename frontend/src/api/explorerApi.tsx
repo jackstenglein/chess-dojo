@@ -86,6 +86,60 @@ export function followPosition(idToken: string, request: FollowPositionRequest) 
     );
 }
 
+export interface BuildPlayerOpeningTreeRequest {
+    sources: { type: string; username: string }[];
+}
+
+export interface BuildPlayerOpeningTreeResponse {
+    positions: Record<string, BackendPositionData>;
+    games: Record<string, BackendIndexedGame>;
+}
+
+export interface BackendPositionData {
+    White: number;
+    Black: number;
+    Draws: number;
+    Moves: BackendMoveData[] | null;
+    Games: Record<string, object>;
+}
+
+export interface BackendMoveData {
+    SAN: string;
+    White: number;
+    Black: number;
+    Draws: number;
+    Games: Record<string, object>;
+}
+
+export interface BackendIndexedGame {
+    pgn: string;
+    playerColor: string;
+    whiteUsername: string;
+    blackUsername: string;
+    whiteRating: number;
+    blackRating: number;
+    result: string;
+    timeClass: string;
+    rated: boolean;
+    url: string;
+    source: string;
+    PlyCount: number;
+    Headers: Record<string, string>;
+}
+
+/**
+ * Builds a player opening tree on the backend.
+ * @param sources The player sources to build the tree from.
+ * @returns The serialized opening tree.
+ */
+export function buildPlayerOpeningTree(sources: BuildPlayerOpeningTreeRequest['sources']) {
+    return axiosService.post<BuildPlayerOpeningTreeResponse>(
+        `/explorer/player-opening-tree`,
+        { sources },
+        { functionName: 'buildPlayerOpeningTree' },
+    );
+}
+
 export interface ListFollowedPositionsResponse {
     /** The followed positions */
     positions: ExplorerPositionFollower[];

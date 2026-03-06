@@ -6,6 +6,7 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -32,10 +33,10 @@ export function PlayerTab({ fen }: { fen: string }) {
         onLoad: parentOnLoad,
         onCancel,
         onClear,
-        indexedCount,
         openingTree,
         filters,
         readonlyFilters,
+        error,
     } = usePlayerOpeningTree();
     const isFreeTier = useFreeTier();
     const pagination = usePlayerGames(fen, openingTree, readonlyFilters);
@@ -87,14 +88,18 @@ export function PlayerTab({ fen }: { fen: string }) {
 
             {isLoading && (
                 <Stack direction='row' spacing={1} my={1} alignItems='center'>
-                    <Typography>
-                        {indexedCount} game{indexedCount === 1 ? '' : 's'} loaded...
-                    </Typography>
+                    <Typography>Loading games...</Typography>
                     <CircularProgress size={20} />
                     <Button size='small' variant='outlined' onClick={onCancel}>
                         Cancel
                     </Button>
                 </Stack>
+            )}
+
+            {error && (
+                <Alert severity='error' sx={{ mt: 1 }}>
+                    {error}
+                </Alert>
             )}
 
             {openingTree.current && (
