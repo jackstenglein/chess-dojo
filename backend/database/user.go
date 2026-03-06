@@ -360,6 +360,10 @@ type User struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId"`
+
+	// Tracks which milestone notifications have been sent for this user,
+	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
+	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
