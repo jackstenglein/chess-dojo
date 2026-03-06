@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"math"
 	"net/http"
 	"regexp"
@@ -15,15 +16,14 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
 
 const (
 	baseURL        = "https://api.chess.com/pub/player"
 	defaultTimeout = 10 * time.Second
 
-	maxConcurrency = 5
-	maxRetries     = 3
+	maxRetries = 3
 	baseRetryDelay = 500 * time.Millisecond
 )
 
@@ -196,57 +196,37 @@ func (c *Client) FetchGames(ctx context.Context, archiveURL string) ([]Game, err
 	return resp.Games, nil
 }
 
-// FetchAllGames fetches archives for the given username, filters them by date
-// range, and returns all games from the matching archives. Games are returned
-// in reverse chronological order (newest archive first). Non-standard variants
-// are excluded when standardOnly is true. Archive fetches run concurrently
-// with a concurrency limit of maxConcurrency.
-func (c *Client) FetchAllGames(ctx context.Context, username string, since, until time.Time, standardOnly bool) ([]Game, error) {
-	archives, err := c.FetchArchives(ctx, username)
-	if err != nil {
-		return nil, err
-	}
+// Games returns an iterator that yields one game.Game at a time from all
+// matching archives. Archives are processed in reverse chronological order
+// (newest first). Non-standard variants are excluded when standardOnly is true.
+// The iterator converts each platform-specific game to the common game model.
+func (c *Client) Games(ctx context.Context, username string, since, until time.Time, standardOnly bool) iter.Seq2[game.Game, error] {
+	return func(yield func(game.Game, error) bool) {
+		archives, err := c.FetchArchives(ctx, username)
+		if err != nil {
+			yield(game.Game{}, err)
+			return
+		}
 
-	filtered := FilterArchives(archives, since, until)
-	n := len(filtered)
-	if n == 0 {
-		return nil, nil
-	}
+		filtered := FilterArchives(archives, since, until)
 
-	// Allocate a slot per archive to preserve order (newest first).
-	results := make([][]Game, n)
-
-	g, ctx := errgroup.WithContext(ctx)
-	g.SetLimit(maxConcurrency)
-
-	for i := 0; i < n; i++ {
-		// Reverse index: slot 0 = newest archive.
-		idx := n - 1 - i
-		archiveURL := filtered[idx]
-		g.Go(func() error {
-			games, err := c.FetchGames(ctx, archiveURL)
+		// Process newest archive first.
+		for i := len(filtered) - 1; i >= 0; i-- {
+			games, err := c.FetchGames(ctx, filtered[i])
 			if err != nil {
-				return err
+				yield(game.Game{}, err)
+				return
 			}
-			results[i] = games
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-
-	var allGames []Game
-	for _, games := range results {
-		for j := range games {
-			if standardOnly && !games[j].IsStandard() {
-				continue
+			for j := range games {
+				if standardOnly && !games[j].IsStandard() {
+					continue
+				}
+				if !yield(ToGame(&games[j], username), nil) {
+					return
+				}
 			}
-			allGames = append(allGames, games[j])
 		}
 	}
-	return allGames, nil
 }
 
 // doGet performs an HTTP GET request and returns the response body.

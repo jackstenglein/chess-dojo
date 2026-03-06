@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
 
 func loadFixture(t *testing.T) []byte {
@@ -18,7 +20,7 @@ func loadFixture(t *testing.T) []byte {
 	return data
 }
 
-func TestFetchGames_AllGames(t *testing.T) {
+func TestGames_AllGames(t *testing.T) {
 	fixture := loadFixture(t)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,64 +39,53 @@ func TestFetchGames_AllGames(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var collected []game.Game
+	for g, err := range client.Games(context.Background(), FetchParams{
 		Username:  "testplayer",
 		PGNInJSON: true,
-	})
-
-	var collected []Game
-	for g := range games {
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		collected = append(collected, g)
-	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 
 	if got := len(collected); got != 5 {
 		t.Fatalf("got %d games, want 5", got)
 	}
 
-	// Verify first game fields
+	// Verify first game fields (common model).
 	g := collected[0]
-	if g.ID != "game001" {
-		t.Errorf("ID = %q, want game001", g.ID)
+	if g.Source != game.SourceLichess {
+		t.Errorf("Source = %q, want %q", g.Source, game.SourceLichess)
 	}
 	if !g.Rated {
 		t.Error("Rated = false, want true")
 	}
-	if g.Speed != TimeClassRapid {
-		t.Errorf("Speed = %q, want rapid", g.Speed)
+	if g.TimeClass != game.TimeClassRapid {
+		t.Errorf("TimeClass = %q, want rapid", g.TimeClass)
 	}
-	if g.Players.White.Rating != 1600 {
-		t.Errorf("White rating = %d, want 1600", g.Players.White.Rating)
+	if g.WhiteRating != 1600 {
+		t.Errorf("WhiteRating = %d, want 1600", g.WhiteRating)
 	}
-	if g.Players.Black.Rating != 1580 {
-		t.Errorf("Black rating = %d, want 1580", g.Players.Black.Rating)
+	if g.BlackRating != 1580 {
+		t.Errorf("BlackRating = %d, want 1580", g.BlackRating)
 	}
-	if g.Winner != "white" {
-		t.Errorf("Winner = %q, want white", g.Winner)
+	if g.Result != game.ResultWhite {
+		t.Errorf("Result = %q, want %q", g.Result, game.ResultWhite)
 	}
-	if g.Result() != "1-0" {
-		t.Errorf("Result() = %q, want 1-0", g.Result())
+	if g.PlayerColor != "white" {
+		t.Errorf("PlayerColor = %q, want white", g.PlayerColor)
 	}
-	if g.PlayerColor("TestPlayer") != "white" {
-		t.Errorf("PlayerColor(TestPlayer) = %q, want white", g.PlayerColor("TestPlayer"))
-	}
-	if g.URL() != "https://lichess.org/game001" {
-		t.Errorf("URL() = %q, want https://lichess.org/game001", g.URL())
+	if g.URL != "https://lichess.org/game001" {
+		t.Errorf("URL = %q, want https://lichess.org/game001", g.URL)
 	}
 	if g.PGN == "" {
 		t.Error("PGN is empty")
 	}
-	if g.Opening.ECO != "C50" {
-		t.Errorf("Opening.ECO = %q, want C50", g.Opening.ECO)
-	}
-	if g.Clock.Initial != 600 {
-		t.Errorf("Clock.Initial = %d, want 600", g.Clock.Initial)
-	}
 }
 
-func TestFetchGames_WithMax(t *testing.T) {
+func TestGames_WithMax(t *testing.T) {
 	fixture := loadFixture(t)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,26 +98,24 @@ func TestFetchGames_WithMax(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var count int
+	for _, err := range client.Games(context.Background(), FetchParams{
 		Username:  "testplayer",
 		Max:       2,
 		PGNInJSON: true,
-	})
-
-	var collected []Game
-	for g := range games {
-		collected = append(collected, g)
-	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		count++
 	}
 
-	if got := len(collected); got != 2 {
-		t.Fatalf("got %d games, want 2 (client-side max)", got)
+	if count != 2 {
+		t.Fatalf("got %d games, want 2 (client-side max)", count)
 	}
 }
 
-func TestFetchGames_DrawResult(t *testing.T) {
+func TestGames_DrawResult(t *testing.T) {
 	fixture := loadFixture(t)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -136,33 +125,28 @@ func TestFetchGames_DrawResult(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var collected []game.Game
+	for g, err := range client.Games(context.Background(), FetchParams{
 		Username:  "testplayer",
 		PGNInJSON: true,
-	})
-
-	var collected []Game
-	for g := range games {
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		collected = append(collected, g)
 	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	// game003 is a draw
+	// game003 is a draw (third game).
 	g := collected[2]
-	if g.ID != "game003" {
-		t.Fatalf("expected game003, got %s", g.ID)
+	if g.Result != game.ResultDraw {
+		t.Errorf("Result = %q, want %q", g.Result, game.ResultDraw)
 	}
-	if g.Result() != "1/2-1/2" {
-		t.Errorf("Result() = %q, want 1/2-1/2", g.Result())
-	}
-	if g.Speed != TimeClassBlitz {
-		t.Errorf("Speed = %q, want blitz", g.Speed)
+	if g.TimeClass != game.TimeClassBlitz {
+		t.Errorf("TimeClass = %q, want blitz", g.TimeClass)
 	}
 }
 
-func TestFetchGames_PlayerColorBlack(t *testing.T) {
+func TestGames_PlayerColorBlack(t *testing.T) {
 	fixture := loadFixture(t)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -172,27 +156,25 @@ func TestFetchGames_PlayerColorBlack(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var collected []game.Game
+	for g, err := range client.Games(context.Background(), FetchParams{
 		Username:  "testplayer",
 		PGNInJSON: true,
-	})
-
-	var collected []Game
-	for g := range games {
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		collected = append(collected, g)
 	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	// game002: TestPlayer is black
+	// game002: TestPlayer is black.
 	g := collected[1]
-	if g.PlayerColor("testplayer") != "black" {
-		t.Errorf("PlayerColor(testplayer) = %q, want black", g.PlayerColor("testplayer"))
+	if g.PlayerColor != "black" {
+		t.Errorf("PlayerColor = %q, want black", g.PlayerColor)
 	}
 }
 
-func TestFetchGames_ContextCancellation(t *testing.T) {
+func TestGames_ContextCancellation(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		// Write one game then block
@@ -207,18 +189,20 @@ func TestFetchGames_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
 
-	games, errc := client.FetchGames(ctx, FetchParams{
+	var count int
+	var lastErr error
+	for _, err := range client.Games(ctx, FetchParams{
 		Username:  "slowuser",
 		PGNInJSON: true,
-	})
-
-	var count int
-	for range games {
+	}) {
+		if err != nil {
+			lastErr = err
+			break
+		}
 		count++
 	}
-	err := <-errc
-	// Should get context error (deadline exceeded or canceled)
-	if err == nil {
+	// Should get context error (deadline exceeded or canceled).
+	if lastErr == nil {
 		t.Fatal("expected context error, got nil")
 	}
 	if count != 1 {
@@ -226,29 +210,34 @@ func TestFetchGames_ContextCancellation(t *testing.T) {
 	}
 }
 
-func TestFetchGames_HTTPError(t *testing.T) {
+func TestGames_HTTPError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var gotErr error
+	var count int
+	for _, err := range client.Games(context.Background(), FetchParams{
 		Username:  "nonexistent",
 		PGNInJSON: true,
-	})
-
-	for range games {
-		t.Fatal("expected no games")
+	}) {
+		if err != nil {
+			gotErr = err
+			break
+		}
+		count++
 	}
-
-	err := <-errc
-	if err == nil {
+	if count != 0 {
+		t.Fatalf("expected no games, got %d", count)
+	}
+	if gotErr == nil {
 		t.Fatal("expected error for 404 response")
 	}
 }
 
-func TestFetchGames_EmptyResponse(t *testing.T) {
+func TestGames_EmptyResponse(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		// Empty body
@@ -256,24 +245,22 @@ func TestFetchGames_EmptyResponse(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var count int
+	for _, err := range client.Games(context.Background(), FetchParams{
 		Username:  "newuser",
 		PGNInJSON: true,
-	})
-
-	var count int
-	for range games {
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		count++
-	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 	if count != 0 {
 		t.Errorf("got %d games, want 0", count)
 	}
 }
 
-func TestFetchGames_BlankLines(t *testing.T) {
+func TestGames_BlankLines(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		// NDJSON with blank lines between games
@@ -285,17 +272,15 @@ func TestFetchGames_BlankLines(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	games, errc := client.FetchGames(context.Background(), FetchParams{
+	var count int
+	for _, err := range client.Games(context.Background(), FetchParams{
 		Username:  "user",
 		PGNInJSON: true,
-	})
-
-	var count int
-	for range games {
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		count++
-	}
-	if err := <-errc; err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 	if count != 1 {
 		t.Errorf("got %d games, want 1 (blank lines should be skipped)", count)

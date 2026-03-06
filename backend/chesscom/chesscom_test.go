@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
 
 func mustReadFile(t *testing.T, path string) []byte {
@@ -328,29 +329,17 @@ func TestPGNExtracted(t *testing.T) {
 	}
 }
 
-func TestFetchAllGamesParallel(t *testing.T) {
-	var maxConcurrent atomic.Int32
-	var current atomic.Int32
-	games := mustReadFile(t, "testdata/games.json")
+func TestGamesIterator(t *testing.T) {
+	gamesFixture := mustReadFile(t, "testdata/games.json")
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c := current.Add(1)
-		defer current.Add(-1)
-		for {
-			old := maxConcurrent.Load()
-			if c <= old || maxConcurrent.CompareAndSwap(old, c) {
-				break
-			}
-		}
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/pub/player/testuser/games/archives" {
-			// Return archive URLs pointing back at this test server.
 			fmt.Fprintf(w, `{"archives":["%s/pub/player/testuser/games/2024/01","%s/pub/player/testuser/games/2024/02","%s/pub/player/testuser/games/2024/03","%s/pub/player/testuser/games/2024/04"]}`,
 				"https://api.chess.com", "https://api.chess.com", "https://api.chess.com", "https://api.chess.com")
 			return
 		}
-		time.Sleep(10 * time.Millisecond)
-		w.Write(games)
+		w.Write(gamesFixture)
 	}))
 	defer srv.Close()
 
@@ -363,18 +352,22 @@ func TestFetchAllGamesParallel(t *testing.T) {
 		},
 	}
 
-	result, err := client.FetchAllGames(context.Background(), "testuser", time.Time{}, time.Time{}, true)
-	if err != nil {
-		t.Fatalf("FetchAllGames failed: %v", err)
+	var collected []game.Game
+	for g, err := range client.Games(context.Background(), "testuser", time.Time{}, time.Time{}, true) {
+		if err != nil {
+			t.Fatalf("Games iterator error: %v", err)
+		}
+		collected = append(collected, g)
 	}
 
 	// 4 archives × 3 standard games per archive = 12 games.
-	if len(result) != 12 {
-		t.Errorf("expected 12 standard games, got %d", len(result))
+	if len(collected) != 12 {
+		t.Errorf("expected 12 standard games, got %d", len(collected))
 	}
 
-	if mc := maxConcurrent.Load(); mc < 2 {
-		t.Logf("max concurrent requests: %d (parallelism may not be observable with few archives)", mc)
+	// Verify games are converted to common model.
+	if len(collected) > 0 && collected[0].Source != game.SourceChessCom {
+		t.Errorf("expected source %q, got %q", game.SourceChessCom, collected[0].Source)
 	}
 }
 
@@ -391,9 +384,9 @@ func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return t.base.RoundTrip(req)
 }
 
-func benchFetchAllGames(b *testing.B, latency time.Duration, numArchives int) {
+func benchGames(b *testing.B, latency time.Duration, numArchives int) {
 	b.Helper()
-	games := mustReadFileB(b, "testdata/games.json")
+	gamesFixture := mustReadFileB(b, "testdata/games.json")
 
 	archiveList := "["
 	for i := range numArchives {
@@ -413,7 +406,7 @@ func benchFetchAllGames(b *testing.B, latency time.Duration, numArchives int) {
 			w.Write([]byte(fmt.Sprintf(`{"archives":%s}`, archiveList)))
 			return
 		}
-		w.Write(games)
+		w.Write(gamesFixture)
 	}))
 	defer srv.Close()
 
@@ -428,9 +421,10 @@ func benchFetchAllGames(b *testing.B, latency time.Duration, numArchives int) {
 
 	b.ResetTimer()
 	for range b.N {
-		_, err := client.FetchAllGames(context.Background(), "testuser", time.Time{}, time.Time{}, false)
-		if err != nil {
-			b.Fatalf("FetchAllGames failed: %v", err)
+		for _, err := range client.Games(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
+			if err != nil {
+				b.Fatalf("Games iterator error: %v", err)
+			}
 		}
 	}
 }
@@ -444,12 +438,12 @@ func mustReadFileB(b *testing.B, path string) []byte {
 	return data
 }
 
-func BenchmarkFetchAllGames_12Archives_50msLatency(b *testing.B) {
-	benchFetchAllGames(b, 50*time.Millisecond, 12)
+func BenchmarkGames_12Archives_50msLatency(b *testing.B) {
+	benchGames(b, 50*time.Millisecond, 12)
 }
 
-func BenchmarkFetchAllGames_12Archives_NoLatency(b *testing.B) {
-	benchFetchAllGames(b, 0, 12)
+func BenchmarkGames_12Archives_NoLatency(b *testing.B) {
+	benchGames(b, 0, 12)
 }
 
 func contains(s, substr string) bool {

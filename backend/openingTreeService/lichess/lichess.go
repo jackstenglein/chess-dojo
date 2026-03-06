@@ -6,8 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"iter"
 	"net/http"
 	"strings"
+
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
 
 const (
@@ -130,81 +133,64 @@ func NewClient(httpClient *http.Client) *Client {
 	return &Client{HTTPClient: httpClient}
 }
 
-// FetchGames streams games from the Lichess API and sends each parsed game
-// to the returned channel. The channel is closed when all games have been
-// sent or when the context is cancelled. Errors during streaming are
-// delivered via the error channel.
-//
-// The caller should range over the games channel and check the error channel
-// after the games channel closes.
-func (c *Client) FetchGames(ctx context.Context, params FetchParams) (<-chan Game, <-chan error) {
-	games := make(chan Game)
-	errc := make(chan error, 1)
+// Games returns an iterator that yields one game.Game at a time from the
+// Lichess NDJSON stream. Each game is converted to the common game model.
+// The iterator stops on the first error, yielding it as the error value.
+func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.Game, error] {
+	return func(yield func(game.Game, error) bool) {
+		url := c.buildURL(params)
 
-	go func() {
-		defer close(games)
-		defer close(errc)
-
-		if err := c.streamGames(ctx, params, games); err != nil {
-			errc <- err
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			yield(game.Game{}, fmt.Errorf("lichess: creating request: %w", err))
+			return
 		}
-	}()
+		req.Header.Set("Accept", "application/x-ndjson")
+		req.Header.Set("User-Agent", defaultUserAgent)
 
-	return games, errc
-}
+		resp, err := c.HTTPClient.Do(req)
+		if err != nil {
+			yield(game.Game{}, fmt.Errorf("lichess: executing request: %w", err))
+			return
+		}
+		defer resp.Body.Close()
 
-func (c *Client) streamGames(ctx context.Context, params FetchParams, out chan<- Game) error {
-	url := c.buildURL(params)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return fmt.Errorf("lichess: creating request: %w", err)
-	}
-	req.Header.Set("Accept", "application/x-ndjson")
-	req.Header.Set("User-Agent", defaultUserAgent)
-
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("lichess: executing request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("lichess: unexpected status %d for user %q", resp.StatusCode, params.Username)
-	}
-
-	scanner := bufio.NewScanner(resp.Body)
-	// Lichess games can have large PGNs; allow up to 1MB per line.
-	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
-
-	count := 0
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
+		if resp.StatusCode != http.StatusOK {
+			yield(game.Game{}, fmt.Errorf("lichess: unexpected status %d for user %q", resp.StatusCode, params.Username))
+			return
 		}
 
-		var game Game
-		if err := json.Unmarshal([]byte(line), &game); err != nil {
-			return fmt.Errorf("lichess: parsing game JSON: %w", err)
+		scanner := bufio.NewScanner(resp.Body)
+		// Lichess games can have large PGNs; allow up to 1MB per line.
+		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+
+		count := 0
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" {
+				continue
+			}
+
+			var lg Game
+			if err := json.Unmarshal([]byte(line), &lg); err != nil {
+				yield(game.Game{}, fmt.Errorf("lichess: parsing game JSON: %w", err))
+				return
+			}
+
+			if !yield(ToGame(&lg, params.Username), nil) {
+				return
+			}
+
+			count++
+			if params.Max > 0 && count >= params.Max {
+				return
+			}
 		}
 
-		select {
-		case out <- game:
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-
-		count++
-		if params.Max > 0 && count >= params.Max {
-			return nil
+		if err := scanner.Err(); err != nil {
+			yield(game.Game{}, fmt.Errorf("lichess: reading stream: %w", err))
 		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("lichess: reading stream: %w", err)
-	}
-	return nil
 }
 
 func (c *Client) buildURL(params FetchParams) string {
