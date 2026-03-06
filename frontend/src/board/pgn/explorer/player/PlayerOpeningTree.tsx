@@ -93,6 +93,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 }
             }),
             proxy((tree) => (openingTree.current = OpeningTree.fromTree(tree))),
+            readonlyFilters.downloadLimit,
         );
         const tree = OpeningTree.fromTree(result);
         logger.debug?.('loader finished with tree: ', tree);
@@ -100,7 +101,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
         loadComplete.current = true;
         loaderRef.current = undefined;
         setIsLoading(false);
-    }, [sources, setSources, setIndexedCount]);
+    }, [sources, setSources, setIndexedCount, readonlyFilters.downloadLimit]);
 
     const onCancel = useCallback(() => {
         void loaderRef.current?.abort();
