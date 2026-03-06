@@ -20,6 +20,11 @@ var findGameChannelId = os.Getenv("discordFindGameChannelId")
 var coachingChannelId = os.Getenv("discordCoachingChannelId")
 var publicGuildId = os.Getenv("discordPublicGuildId")
 var privateGuildId = os.Getenv("discordPrivateGuildId")
+var senseiRoleId = os.Getenv("discordSenseiRoleId")
+
+// cachedSenseiIds holds the cached result of GetSenseiDiscordIds for the
+// lifetime of a single Lambda invocation (process).
+var cachedSenseiIds []string
 
 // GetDiscordIdByCognitoUsername returns the discord ID of the user with the given Cognito username.
 func GetDiscordIdByCognitoUsername(discord *discordgo.Session, username string) (string, error) {
@@ -189,4 +194,44 @@ func SetOpenClassicalRole(user *database.User) error {
 	roles = append(roles, openClassicalRole)
 	_, err = discord.GuildMemberEdit(privateGuildId, member.User.ID, &discordgo.GuildMemberParams{Roles: &roles})
 	return errors.Wrap(500, "Temporary server error", fmt.Sprintf("Failed to set guild member roles to %v", roles), err)
+}
+
+// GetSenseiDiscordIds returns the Discord user IDs of all guild members with
+// the sensei role. Results are cached for the lifetime of the Lambda process.
+func GetSenseiDiscordIds() ([]string, error) {
+	if cachedSenseiIds != nil {
+		return cachedSenseiIds, nil
+	}
+
+	if senseiRoleId == "" {
+		return nil, errors.New(500, "Temporary server error", "discordSenseiRoleId is not configured")
+	}
+
+	discord, err := discordgo.New("Bot " + authToken)
+	if err != nil {
+		return nil, errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
+	}
+
+	var senseiIds []string
+	after := ""
+	for {
+		members, err := discord.GuildMembers(privateGuildId, after, 1000)
+		if err != nil {
+			return nil, errors.Wrap(500, "Temporary server error", "Failed to list guild members", err)
+		}
+		if len(members) == 0 {
+			break
+		}
+
+		for _, m := range members {
+			if slices.Contains(m.Roles, senseiRoleId) {
+				senseiIds = append(senseiIds, m.User.ID)
+			}
+		}
+
+		after = members[len(members)-1].User.ID
+	}
+
+	cachedSenseiIds = senseiIds
+	return senseiIds, nil
 }
