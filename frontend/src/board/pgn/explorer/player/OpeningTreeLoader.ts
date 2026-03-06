@@ -11,6 +11,9 @@ import { expose, proxy } from 'comlink';
 import { OpeningTree } from './OpeningTree';
 import { Color, MIN_DOWNLOAD_LIMIT, PlayerSource, SourceType } from './PlayerSource';
 
+/** Timeout in milliseconds for Chess.com and Lichess API requests. */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 interface ChesscomListArchivesResponse {
     /**
      * A list of URLs in the form https://api.chess.com/pub/player/{username}/{year}/{month}
@@ -97,6 +100,7 @@ export class OpeningTreeLoader {
 
         const archiveResponse = await axiosService.get<ChesscomListArchivesResponse>(
             `https://api.chess.com/pub/player/${source.username}/games/archives`,
+            { timeout: REQUEST_TIMEOUT_MS },
         );
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
@@ -176,12 +180,18 @@ export class OpeningTreeLoader {
             );
         }
 
+        const controller = new AbortController();
+        const connectionTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
         const response = await fetch(
             `https://lichess.org/api/games/user/${source.username}?pgnInJson=true`,
             {
                 headers: { Accept: 'application/x-ndjson' },
+                signal: controller.signal,
             },
         );
+
+        clearTimeout(connectionTimer);
 
         const reader = response.body?.getReader();
         if (!reader) {
