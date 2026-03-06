@@ -44,9 +44,9 @@ export class OpeningTree {
     private mostRecentGames: Set<string> | undefined;
 
     /** Cache for getPosition results, keyed by normalized FEN. */
-    private positionCache: Map<string, PositionData> = new Map();
+    private positionCache = new Map<string, PositionData>();
     /** Cache for getGames results, keyed by normalized FEN. */
-    private gamesCache: Map<string, GameData[]> = new Map();
+    private gamesCache = new Map<string, GameData[]>();
 
     constructor(positionData?: Map<string, PositionData>, gameData?: Map<string, GameData>) {
         this.positionData = new Map<string, PositionData>(positionData);
