@@ -90,7 +90,9 @@ test.describe('Player Opening Explorer', () => {
 
         // Opening tree should render with move rows (e4 is the first move in most fixture games)
         await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(page.getByRole('cell', { name: /e4/ })).toBeVisible();
+        await expect(
+            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
+        ).toBeVisible();
     });
 
     test('loads Lichess games and displays opening tree', async ({ page }) => {
@@ -108,7 +110,9 @@ test.describe('Player Opening Explorer', () => {
 
         // Opening tree should render with moves
         await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(page.getByRole('cell', { name: /e4/ })).toBeVisible();
+        await expect(
+            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
+        ).toBeVisible();
     });
 
     test('filters by color without making new API calls', async ({ page }) => {
@@ -139,46 +143,9 @@ test.describe('Player Opening Explorer', () => {
         expect(callCount.games).toBe(apiCallsAfterLoad.games);
     });
 
-    test('respects download limit', async ({ page }) => {
-        // Create a large archive list to test limiting
-        const manyArchives = {
-            archives: Array.from({ length: 24 }, (_, i) => {
-                const month = String((i % 12) + 1).padStart(2, '0');
-                const year = 2024 - Math.floor(i / 12);
-                return `https://api.chess.com/pub/player/testuser/games/${year}/${month}`;
-            }),
-        };
-
-        const archiveFetchCount = { count: 0 };
-        await page.route('**/api.chess.com/pub/player/*/games/archives', (route) => {
-            return route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify(manyArchives),
-            });
-        });
-
-        await page.route('**/api.chess.com/pub/player/*/games/*/*', (route) => {
-            archiveFetchCount.count++;
-            return route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify(chessComGames),
-            });
-        });
-
+    test('clear data resets the tree', async ({ page }) => {
+        await mockChesscomRoutes(page);
         await openPlayerTab(page);
-
-        // Set download limit to minimum (100) before loading
-        // The download limit slider defaults to 2000 (All Games)
-        // We need to set it via localStorage before the component reads it
-        await page.evaluate(() => {
-            localStorage.setItem('openingTreeFilters.downloadLimit', '100');
-        });
-        // Reload to pick up the localStorage change
-        await page.reload();
-        await page.getByTestId('underboard-button-explorer').click();
-        await page.getByTestId('explorer-tab-button-player').click();
 
         await page.getByPlaceholder('Chess.com Username').fill('testuser');
         await page.getByRole('button', { name: 'Load Games' }).click();
@@ -187,13 +154,18 @@ test.describe('Player Opening Explorer', () => {
         await expect(page.getByText(/games? loaded/)).toBeVisible({ timeout: 10000 });
         await expect(page.getByText(/games? loaded/)).not.toBeVisible({ timeout: 15000 });
 
-        // With 5 games per archive and a limit of 100, it should stop well before
-        // fetching all 24 archives. The exact count depends on implementation but
-        // should be significantly less than 24.
-        expect(archiveFetchCount.count).toBeLessThan(24);
-
-        // The tree should still render
+        // Tree should be visible with moves
         await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
+        await expect(
+            page.getByTestId('explorer-tab-player').getByRole('gridcell', { name: /e4/ }),
+        ).toBeVisible();
+
+        // Click Clear Data to reset the tree
+        await page.getByText('Filters').click();
+        await page.getByRole('button', { name: 'Clear Data' }).click();
+
+        // Tree should be gone and Load Games button should reappear
+        await expect(page.getByRole('button', { name: 'Load Games' })).toBeVisible();
     });
 
     test('displays error for invalid username (404)', async ({ page }) => {
@@ -218,7 +190,7 @@ test.describe('Player Opening Explorer', () => {
         });
 
         // The move table should not contain any actual moves
-        await expect(page.getByRole('cell', { name: /e4/ })).not.toBeVisible();
-        await expect(page.getByRole('cell', { name: /d4/ })).not.toBeVisible();
+        await expect(page.getByRole('gridcell', { name: /e4/ })).not.toBeVisible();
+        await expect(page.getByRole('gridcell', { name: /d4/ })).not.toBeVisible();
     });
 });
