@@ -119,26 +119,13 @@ export class OpeningTreeLoader {
         );
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
-<<<<<<< fix/apply-download-limit-v2
-        for (const archive of archives) {
-            if (this.isDownloadLimitReached()) {
-                break;
-            }
-
-            try {
-                const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
-                if (!match) {
-                    logger.warn?.(
-                        `Skipping archive ${archive} because it does not match archive regex ${CHESSCOM_ARCHIVE_REGEX.source}`,
-                    );
-                    continue;
-                }
-                const year = match[1];
-                const month = match[2];
-=======
         const archivePromises = archives.map((archive) =>
             this.archiveSemaphore
                 .runExclusive(async () => {
+                    if (this.isDownloadLimitReached()) {
+                        return;
+                    }
+
                     const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
                     if (!match) {
                         logger.warn?.(
@@ -148,7 +135,6 @@ export class OpeningTreeLoader {
                     }
                     const year = match[1];
                     const month = match[2];
->>>>>>> dev
 
                     const games = await fetchChesscomArchiveGames(source.username, year, month);
                     const indexPromises = games.map((game) => this.indexChesscomGame(source, game));
