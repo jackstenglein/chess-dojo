@@ -21,6 +21,7 @@ export interface PlayerOpeningTreeContextType {
     sources: PlayerSource[];
     setSources: Dispatch<SetStateAction<PlayerSource[]>>;
     isLoading: boolean;
+    isLoaded: boolean;
     onLoad: () => Promise<void>;
     onClear: () => void;
     indexedCount: number;
@@ -42,6 +43,7 @@ export function usePlayerOpeningTree(): PlayerOpeningTreeContextType {
 export function PlayerOpeningTreeProvider({ children }: { children: ReactNode }) {
     const [sources, setSources] = useState([DEFAULT_PLAYER_SOURCE]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [indexedCount, setIndexedCount] = useState(-1);
     const workerRef = useRef<Remote<OpeningTreeLoaderFactory>>(undefined);
     const openingTree = useRef<OpeningTree>(undefined);
@@ -96,11 +98,12 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
         openingTree.current = tree;
         loadComplete.current = true;
         setIsLoading(false);
+        setIsLoaded(true);
     }, [sources, setSources, setIndexedCount]);
 
     const onClear = () => {
-        openingTree.current = undefined;
         loadComplete.current = false;
+        setIsLoaded(false);
         setIndexedCount(-1);
     };
 
@@ -110,6 +113,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 sources,
                 setSources,
                 isLoading,
+                isLoaded,
                 onLoad,
                 onClear,
                 indexedCount,

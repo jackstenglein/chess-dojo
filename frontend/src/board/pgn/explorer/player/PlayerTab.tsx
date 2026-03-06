@@ -29,6 +29,7 @@ export function PlayerTab({ fen }: { fen: string }) {
         sources,
         setSources,
         isLoading,
+        isLoaded,
         onLoad: parentOnLoad,
         onClear,
         indexedCount,
@@ -56,7 +57,7 @@ export function PlayerTab({ fen }: { fen: string }) {
     return (
         <Stack>
             <Accordion
-                expanded={filtersOpen || (!isLoading && !openingTree.current)}
+                expanded={filtersOpen || (!isLoading && !isLoaded)}
                 onChange={(_, expanded) => setFiltersOpen(expanded)}
                 disableGutters
                 elevation={0}
@@ -67,7 +68,7 @@ export function PlayerTab({ fen }: { fen: string }) {
                         flexDirection: 'row-reverse',
                         gap: 1,
                         p: 0,
-                        display: !isLoading && !openingTree.current ? 'none' : undefined,
+                        display: !isLoading && !isLoaded ? 'none' : undefined,
                     }}
                     expandIcon={<ExpandMore />}
                 >
@@ -77,7 +78,7 @@ export function PlayerTab({ fen }: { fen: string }) {
                     <PlayerSources
                         sources={sources}
                         setSources={setSources}
-                        locked={isLoading || !!openingTree.current}
+                        locked={isLoading || isLoaded}
                         onClear={onClear}
                     />
                     <Filters filters={filters} />
@@ -104,7 +105,7 @@ export function PlayerTab({ fen }: { fen: string }) {
                 />
             )}
 
-            {!isLoading && !openingTree.current && (
+            {!isLoading && !isLoaded && (
                 <Button variant='contained' onClick={onLoad} sx={{ mt: 3 }} color='dojoOrange'>
                     Load Games
                 </Button>
