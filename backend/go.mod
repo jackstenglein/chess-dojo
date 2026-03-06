@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/aws/aws-lambda-go v1.52.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/notnil/chess v1.10.0
 	github.com/stripe/stripe-go/v81 v81.4.0
 )
 
@@ -22,7 +23,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
-	github.com/notnil/chess v1.10.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
