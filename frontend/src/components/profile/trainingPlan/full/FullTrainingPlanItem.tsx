@@ -29,6 +29,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
+import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
 
 interface FullTrainingPlanItemProps {
     user: User;
@@ -137,15 +138,15 @@ export const FullTrainingPlanItem = ({
             >
                 <Grid
                     container
-                    columnGap={0.5}
+                    columnGap={1}
                     alignItems='center'
                     justifyContent='space-between'
                     position='relative'
                 >
                     <Grid
-                        size={9}
+                        size={{ xs: 'grow', md: 9 }}
                         onClick={() => setTaskDialogView(TaskDialogView.Details)}
-                        sx={{ cursor: 'pointer', position: 'relative' }}
+                        sx={{ cursor: 'pointer', position: 'relative', maxWidth: { sm: '75%' } }}
                         id='task-details'
                         display='flex'
                         flexDirection='column'
@@ -207,7 +208,7 @@ export const FullTrainingPlanItem = ({
                             />
                         )}
                     </Grid>
-                    <Grid size={{ xs: 2, sm: 'auto' }} id='task-status'>
+                    <Grid size='auto' id='task-status'>
                         <Stack direction='row' alignItems='center' justifyContent='end'>
                             {!blocker.isBlocked && (
                                 <Typography
@@ -239,6 +240,12 @@ export const FullTrainingPlanItem = ({
                                         )}
                                     </IconButton>
                                 </Tooltip>
+                            )}
+
+                            {isCurrentUser && (
+                                <Box sx={{ display: { xs: 'none', sm: 'unset' } }}>
+                                    <TaskTimerIconButton taskId={requirement.id} />
+                                </Box>
                             )}
                         </Stack>
                     </Grid>

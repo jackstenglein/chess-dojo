@@ -1,9 +1,12 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth, useFreeTier } from '@/auth/Auth';
+import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import DeleteCustomTaskModal from '@/components/profile/trainingPlan/DeleteCustomTaskModal';
 import Position from '@/components/profile/trainingPlan/Position';
 import ProgressHistory from '@/components/profile/trainingPlan/ProgressHistory';
 import ProgressUpdater from '@/components/profile/trainingPlan/ProgressUpdater';
+import { TimerContext } from '@/components/timer/TimerContext';
 import ModalTitle from '@/components/ui/ModalTitle';
 import {
     CustomTask,
@@ -16,7 +19,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
-import { AccessAlarm, Check, Lock, Loop, Scoreboard } from '@mui/icons-material';
+import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -30,8 +33,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { useTimelineContext } from '../activity/useTimeline';
+import { use, useMemo, useState } from 'react';
 import CustomTaskEditor from './CustomTaskEditor';
 import { TaskDescription } from './TaskDescription';
 
@@ -52,7 +54,6 @@ interface TaskDialogProps {
 
 export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
     const [view, setView] = useState(initialView);
-
     return (
         <Dialog
             open={open}
@@ -134,6 +135,15 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const [showEditor, setShowEditor] = useState(false);
     const [showDeleter, setShowDeleter] = useState(false);
     const isFreeTier = useFreeTier();
+    const {
+        isRunning: timerRunning,
+        timerSeconds,
+        onStart: onStartTimer,
+        onPause: onPauseTimer,
+        task: timerTask,
+        getLabel: getTimerLabel,
+    } = use(TimerContext);
+    const timerIsOtherTask = timerTask && timerTask.id !== task.id;
 
     const selectedCohort = useMemo(() => {
         if (!task) {
@@ -297,6 +307,29 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ flexWrap: 'wrap' }}>
+                <Box sx={{ flexGrow: 1 }}>
+                    {timerRunning ? (
+                        <Button
+                            color='warning'
+                            startIcon={<Pause />}
+                            onClick={() => {
+                                onPauseTimer();
+                                setView(TaskDialogView.Progress);
+                            }}
+                        >
+                            Pause Timer ({formatTime(timerSeconds)})
+                        </Button>
+                    ) : (
+                        <Button
+                            color={timerIsOtherTask ? 'error' : 'warning'}
+                            startIcon={<PlayArrow />}
+                            onClick={() => onStartTimer(task.id)}
+                        >
+                            {getTimerLabel(task.id)}
+                        </Button>
+                    )}
+                </Box>
+
                 <Button onClick={onClose}>Cancel</Button>
                 <Button onClick={() => setView(TaskDialogView.Progress)}>Update Progress</Button>
                 <Button onClick={() => setView(TaskDialogView.History)}>Show History</Button>

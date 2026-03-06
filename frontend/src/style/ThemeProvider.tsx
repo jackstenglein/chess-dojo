@@ -146,6 +146,10 @@ declare module '@mui/material' {
         darkBlue: true;
     }
 
+    interface IconButtonPropsColorOverrides {
+        dojoOrange: true;
+    }
+
     interface SvgIconPropsColorOverrides extends RequirementCategoryOverrides {
         opening: true;
         endgame: true;
