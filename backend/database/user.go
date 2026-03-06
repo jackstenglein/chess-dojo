@@ -1207,6 +1207,26 @@ func (repo *dynamoRepository) UpdateUserProgress(username string, progressEntry 
 	return &user, nil
 }
 
+// AddSentMilestoneNotification appends a milestone key to the user's
+// SentMilestoneNotifications string set using DynamoDB ADD.
+func (repo *dynamoRepository) AddSentMilestoneNotification(username string, milestoneKey string) error {
+	input := &dynamodb.UpdateItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"username": {S: aws.String(username)},
+		},
+		UpdateExpression: aws.String("ADD #smn :mk"),
+		ExpressionAttributeNames: map[string]*string{
+			"#smn": aws.String("sentMilestoneNotifications"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":mk": {SS: []*string{aws.String(milestoneKey)}},
+		},
+		TableName: aws.String(userTable),
+	}
+	_, err := repo.svc.UpdateItem(input)
+	return errors.Wrap(500, "Temporary server error", "Failed to add milestone notification", err)
+}
+
 // GetUser returns the User object with the provided username.
 func (repo *dynamoRepository) GetUser(username string) (*User, error) {
 	if username == "STATISTICS" {

@@ -350,6 +350,47 @@ func SendNotification(user *database.User, message string) error {
 	return errors.Wrap(500, "Temporary server error", "Failed to send discord message", err)
 }
 
+// SendMilestoneNotificationToSenseis sends a Discord DM to each sensei informing
+// them that a user has reached the given completion milestone.
+func SendMilestoneNotificationToSenseis(user *database.User, percent int) error {
+	senseiIds, err := GetSenseiDiscordIds()
+	if err != nil {
+		return err
+	}
+
+	if len(senseiIds) == 0 {
+		log.Infof("No senseis found; skipping milestone notification for %s", user.Username)
+		return nil
+	}
+
+	discord, err := discordgo.New("Bot " + authToken)
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
+	}
+
+	cohortEmoji := CohortEmojiIds[user.DojoCohort]
+	message := fmt.Sprintf(
+		"%s **%s** has reached **%d%%** completion in the %s %s training program! "+
+			"Consider reaching out to congratulate them and discuss next steps.",
+		MessageEmojiDojo, user.DisplayName, percent, string(user.DojoCohort), cohortEmoji,
+	)
+
+	var lastErr error
+	for _, senseiId := range senseiIds {
+		channel, err := discord.UserChannelCreate(senseiId)
+		if err != nil {
+			log.Errorf("Failed to create DM channel for sensei %s: %v", senseiId, err)
+			lastErr = err
+			continue
+		}
+		if _, err := discord.ChannelMessageSend(channel.ID, message); err != nil {
+			log.Errorf("Failed to send milestone DM to sensei %s: %v", senseiId, err)
+			lastErr = err
+		}
+	}
+	return lastErr
+}
+
 func SendMessageInChannel(message string, channelId string) (string, error) {
 	discord, err := discordgo.New("Bot " + authToken)
 	if err != nil {
