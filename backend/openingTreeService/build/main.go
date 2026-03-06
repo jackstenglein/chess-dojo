@@ -13,6 +13,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	treeapi "github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/chesscom"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/lichess"
@@ -94,7 +95,8 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	log.Infof("Built tree: %d games, %d positions", tree.GameCount(), tree.PositionCount())
 
-	jsonBytes, err := json.Marshal(tree)
+	resp := treeapi.FromOpeningTree(tree)
+	jsonBytes, err := json.Marshal(resp)
 	if err != nil {
 		return api.Failure(errors.Wrap(500, "Failed to serialize opening tree", "marshaling tree", err)), nil
 	}

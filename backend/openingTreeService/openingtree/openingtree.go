@@ -79,6 +79,16 @@ func (t *OpeningTree) PositionCount() int {
 	return len(t.positions)
 }
 
+// Positions returns the underlying positions map (FEN → PositionData).
+func (t *OpeningTree) Positions() map[string]*PositionData {
+	return t.positions
+}
+
+// Games returns the underlying games map (URL → IndexedGame).
+func (t *OpeningTree) Games() map[string]*IndexedGame {
+	return t.games
+}
+
 // GetGame returns the indexed game for the given URL, or nil if not found.
 func (t *OpeningTree) GetGame(url string) *IndexedGame {
 	return t.games[url]
