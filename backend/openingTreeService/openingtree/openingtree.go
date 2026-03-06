@@ -4,6 +4,7 @@
 package openingtree
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -225,6 +226,20 @@ func (t *OpeningTree) IndexGame(gm *game.Game) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// openingTreeJSON is the JSON-serializable representation of an OpeningTree.
+type openingTreeJSON struct {
+	Positions map[string]*PositionData `json:"positions"`
+	Games     map[string]*IndexedGame  `json:"games"`
+}
+
+// MarshalJSON implements json.Marshaler for OpeningTree.
+func (t *OpeningTree) MarshalJSON() ([]byte, error) {
+	return json.Marshal(openingTreeJSON{
+		Positions: t.positions,
+		Games:     t.games,
+	})
 }
 
 // NormalizeFEN strips the halfmove clock and fullmove number from a FEN,
