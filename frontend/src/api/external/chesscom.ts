@@ -106,12 +106,14 @@ export function useChesscomGames(): [
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 1000;
+const ARCHIVE_TIMEOUT_MS = 30_000;
 
 export async function fetchChesscomArchiveGames(username: string, year: string, month: string) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
             const resp = await axiosService.get<ChesscomGamesResponse>(
                 `https://api.chess.com/pub/player/${username}/games/${year}/${month}`,
+                { timeout: ARCHIVE_TIMEOUT_MS },
             );
             return resp.data.games;
         } catch (err) {
