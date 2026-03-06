@@ -9,10 +9,10 @@ const fixturesDir = path.join(__dirname, '../../../fixtures/games/player-explore
 
 const chessComArchives = JSON.parse(
     fs.readFileSync(path.join(fixturesDir, 'chess-com-archives.json'), 'utf-8'),
-);
+) as Record<string, unknown>;
 const chessComGames = JSON.parse(
     fs.readFileSync(path.join(fixturesDir, 'chess-com-games.json'), 'utf-8'),
-);
+) as Record<string, unknown>;
 const lichessNdjson = fs.readFileSync(path.join(fixturesDir, 'lichess-games.ndjson'), 'utf-8');
 
 /** Sets up Chess.com route mocks for a successful load. Returns a call counter. */
