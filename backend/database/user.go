@@ -357,6 +357,9 @@ type User struct {
 
 	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
 	TimerStartedAt string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt"`
+
+	// The ID of the task associated with the timer, if any.
+	TimerTaskId string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId"`
 }
 
 type PuzzleThemeOverview struct {
@@ -814,6 +817,9 @@ type UserUpdate struct {
 
 	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
 	TimerStartedAt *string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt,omitempty"`
+
+	// The ID of the task associated with the timer, if any.
+	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem

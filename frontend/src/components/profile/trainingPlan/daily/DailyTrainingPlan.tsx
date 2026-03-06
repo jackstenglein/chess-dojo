@@ -45,6 +45,7 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 import { GraduationTask } from './GraduationTask';
+import { TaskTimerIconButton } from './TaskTimerIconButton';
 
 export function DailyTrainingPlan() {
     const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
@@ -331,6 +332,8 @@ function DailyTrainingPlanItem({
                                     </IconButton>
                                 </Tooltip>
                             )}
+
+                            <TaskTimerIconButton taskId={suggestion.task.id} />
                         </>
                     )}
 
