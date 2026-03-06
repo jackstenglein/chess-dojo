@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/discord"
 )
 
 var repository database.UserProgressUpdater = database.DynamoDB
@@ -164,5 +166,58 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		return api.Failure(err), nil
 	}
 
+	checkMilestoneNotification(user)
+
 	return api.Success(ProgressUpdateResponse{User: user, TimelineEntry: timelineEntry}), nil
+}
+
+const milestoneThreshold = 85
+
+// checkMilestoneNotification checks if the user has reached the 85% completion
+// milestone and, if so, sends a Discord DM to all senseis.
+func checkMilestoneNotification(user *database.User) {
+	if user == nil || !user.DojoCohort.IsValid() {
+		return
+	}
+
+	milestoneKey := fmt.Sprintf("%d_%s", milestoneThreshold, user.DojoCohort)
+	if slices.Contains(user.SentMilestoneNotifications, milestoneKey) {
+		return
+	}
+
+	requirements, err := fetchAllRequirements(user.DojoCohort)
+	if err != nil {
+		log.Errorf("Failed to fetch requirements for milestone check: %v", err)
+		return
+	}
+
+	percent := database.GetPercentComplete(user, requirements)
+	if percent < float32(milestoneThreshold) {
+		return
+	}
+
+	log.Infof("User %s reached %d%% completion in cohort %s, notifying senseis",
+		user.Username, milestoneThreshold, user.DojoCohort)
+
+	if err := discord.SendMilestoneNotificationToSenseis(user, milestoneThreshold); err != nil {
+		log.Errorf("Failed to send milestone notification to senseis for %s: %v", user.Username, err)
+	}
+
+	if err := database.DynamoDB.AddSentMilestoneNotification(user.Username, milestoneKey); err != nil {
+		log.Errorf("Failed to record milestone notification for %s: %v", user.Username, err)
+	}
+}
+
+func fetchAllRequirements(cohort database.DojoCohort) ([]*database.Requirement, error) {
+	var requirements []*database.Requirement
+	var startKey string
+	for ok := true; ok; ok = startKey != "" {
+		reqs, nextKey, err := database.DynamoDB.ListRequirements(cohort, true, startKey)
+		if err != nil {
+			return nil, err
+		}
+		requirements = append(requirements, reqs...)
+		startKey = nextKey
+	}
+	return requirements, nil
 }

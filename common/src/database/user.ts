@@ -132,6 +132,9 @@ export interface User {
 
     /** The ID of the task associated with the timer, if any. */
     timerTaskId?: string;
+
+    /** Tracks which milestone notifications have been sent for this user. Ex: '85_2000-2100' */
+    sentMilestoneNotifications?: string[];
 }
 
 /**
