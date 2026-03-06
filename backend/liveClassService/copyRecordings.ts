@@ -14,6 +14,21 @@ const MEET_RECORDING_REGEX = /^(.*) - (.*) - Recording/;
 const S3_CLIENT = new S3Client({ region: 'us-east-1' });
 
 /**
+ * Parses a Meet recording file name into meeting name and date.
+ * @param fileName The file name (e.g. "Team Morphy Peer Review - 2/27/2025 10:00 AM - Recording").
+ * @returns The meeting name and date (YYYY-MM-DD), or null if the name does not match MEET_RECORDING_REGEX.
+ */
+export function parseMeetRecordingFileName(
+    fileName: string,
+): { meetName: string; meetDate: string } | null {
+    const matches = MEET_RECORDING_REGEX.exec(fileName);
+    if (!matches || matches.length < 3) return null;
+    const meetName = matches[1];
+    const meetDate = matches[2].split(' ')[0].replaceAll('/', '-');
+    return { meetName, meetDate };
+}
+
+/**
  * Syncs videos from MEET_RECORDINGS_DRIVE_FOLDER to S3.
  */
 export const handler = async () => {
@@ -114,14 +129,13 @@ async function streamFileToS3(
     fileParents: string[],
 ) {
     console.log(`Processing: "${fileName}" (${fileId}) with mimeType ${mimeType}`);
-    const matches = MEET_RECORDING_REGEX.exec(fileName);
-    if (!matches || matches.length < 3) {
+    const parsed = parseMeetRecordingFileName(fileName);
+    if (!parsed) {
         console.warn(`Skipping "${fileName}" because it does not match MEET_RECORDING_REGEX`);
         return;
     }
 
-    const meetName = matches[1];
-    const meetDate = matches[2].split(' ')[0].replaceAll('/', '-');
+    const { meetName, meetDate } = parsed;
     const meetInfo = MEETING_INFO[STAGE]?.[meetName];
     if (!meetInfo) {
         console.warn(
@@ -139,7 +153,7 @@ async function streamFileToS3(
         const passThrough = new PassThrough();
         driveResponse.data.pipe(passThrough);
 
-        const s3Key = `${meetInfo.keyPrefix}/${meetInfo.meetId}/${meetName} (${meetDate})`;
+        const s3Key = `${meetInfo.keyPrefix}/${meetInfo.meetId}/${meetName.replaceAll('/', ' & ')} (${meetDate})`;
         const upload = new Upload({
             client: S3_CLIENT,
             params: {

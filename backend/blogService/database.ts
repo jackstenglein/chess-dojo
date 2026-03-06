@@ -6,7 +6,9 @@ export const blogTable = process.env.stage + '-blogs';
 export {
     GetItemBuilder,
     UpdateItemBuilder,
+    and,
     attributeExists,
     dynamo,
+    equal,
     getUser,
 } from '../directoryService/database';
