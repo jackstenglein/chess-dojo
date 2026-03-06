@@ -97,6 +97,7 @@ export function DailyTrainingPlan() {
                     disabled={!isCurrentUser}
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
+                    workGoalHistory={user.workGoalHistory}
                 />
             </Stack>
 
