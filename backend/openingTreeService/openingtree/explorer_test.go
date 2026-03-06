@@ -128,9 +128,7 @@ func TestMergePosition_MergesExisting(t *testing.T) {
 // IndexGame
 // ---------------------------------------------------------------------------
 
-func TestIndexGame_ScholarsMate(t *testing.T) {
-	tree := New()
-	pgn := `[Event "Scholars Mate"]
+var scholarsPGN = `[Event "Scholars Mate"]
 [Site "Test"]
 [Date "2024.01.01"]
 [Round "1"]
@@ -140,12 +138,16 @@ func TestIndexGame_ScholarsMate(t *testing.T) {
 
 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# 1-0`
 
-	game := &GameData{
+func TestIndexGame_ScholarsMate(t *testing.T) {
+	tree := New()
+
+	g := &game.Game{
 		URL:    "https://example.com/game1",
 		Result: game.ResultWhite,
+		PGN:    scholarsPGN,
 	}
 
-	ok, err := tree.IndexGame(game, pgn)
+	ok, err := tree.IndexGame(g)
 	if err != nil {
 		t.Fatalf("IndexGame error: %v", err)
 	}
@@ -186,17 +188,16 @@ func TestIndexGame_ScholarsMate(t *testing.T) {
 
 func TestIndexGame_SkipsShortGames(t *testing.T) {
 	tree := New()
-	// Only 1 half-move (1. e4)
-	pgn := `[Result "*"]
 
-1. e4 *`
-
-	game := &GameData{
+	g := &game.Game{
 		URL:    "https://example.com/short",
 		Result: game.ResultDraw,
+		PGN: `[Result "*"]
+
+1. e4 *`,
 	}
 
-	ok, err := tree.IndexGame(game, pgn)
+	ok, err := tree.IndexGame(g)
 	if err != nil {
 		t.Fatalf("IndexGame error: %v", err)
 	}
@@ -210,16 +211,16 @@ func TestIndexGame_SkipsShortGames(t *testing.T) {
 
 func TestIndexGame_DrawResult(t *testing.T) {
 	tree := New()
-	pgn := `[Result "1/2-1/2"]
 
-1. e4 e5 2. Nf3 Nc6 1/2-1/2`
-
-	game := &GameData{
+	g := &game.Game{
 		URL:    "https://example.com/draw",
 		Result: game.ResultDraw,
+		PGN: `[Result "1/2-1/2"]
+
+1. e4 e5 2. Nf3 Nc6 1/2-1/2`,
 	}
 
-	ok, err := tree.IndexGame(game, pgn)
+	ok, err := tree.IndexGame(g)
 	if err != nil {
 		t.Fatalf("IndexGame error: %v", err)
 	}
@@ -244,21 +245,27 @@ func TestIndexGame_MultipleGames(t *testing.T) {
 	tree := New()
 
 	// Game 1: 1. e4 e5 — white wins
-	pgn1 := `[Result "1-0"]
+	g1 := &game.Game{
+		URL:    "g1",
+		Result: game.ResultWhite,
+		PGN: `[Result "1-0"]
 
-1. e4 e5 2. Nf3 Nc6 1-0`
-	game1 := &GameData{URL: "g1", Result: game.ResultWhite}
-	ok, err := tree.IndexGame(game1, pgn1)
+1. e4 e5 2. Nf3 Nc6 1-0`,
+	}
+	ok, err := tree.IndexGame(g1)
 	if err != nil || !ok {
 		t.Fatalf("game1: ok=%v err=%v", ok, err)
 	}
 
 	// Game 2: 1. e4 d5 — black wins
-	pgn2 := `[Result "0-1"]
+	g2 := &game.Game{
+		URL:    "g2",
+		Result: game.ResultBlack,
+		PGN: `[Result "0-1"]
 
-1. e4 d5 2. exd5 Qxd5 0-1`
-	game2 := &GameData{URL: "g2", Result: game.ResultBlack}
-	ok, err = tree.IndexGame(game2, pgn2)
+1. e4 d5 2. exd5 Qxd5 0-1`,
+	}
+	ok, err = tree.IndexGame(g2)
 	if err != nil || !ok {
 		t.Fatalf("game2: ok=%v err=%v", ok, err)
 	}
@@ -306,12 +313,15 @@ func TestIndexGame_MultipleGames(t *testing.T) {
 
 func TestIndexGame_BlackWin(t *testing.T) {
 	tree := New()
-	pgn := `[Result "0-1"]
 
-1. f3 e5 2. g4 Qh4# 0-1`
+	g := &game.Game{
+		URL:    "fool",
+		Result: game.ResultBlack,
+		PGN: `[Result "0-1"]
 
-	game := &GameData{URL: "fool", Result: game.ResultBlack}
-	ok, err := tree.IndexGame(game, pgn)
+1. f3 e5 2. g4 Qh4# 0-1`,
+	}
+	ok, err := tree.IndexGame(g)
 	if err != nil {
 		t.Fatalf("IndexGame error: %v", err)
 	}
@@ -337,11 +347,11 @@ func TestIndexGame_NormalizesHalfmoveClock(t *testing.T) {
 
 1. e4 e5 2. Nf3 Nc6 0-1`
 
-	game1 := &GameData{URL: "n1", Result: game.ResultWhite}
-	game2 := &GameData{URL: "n2", Result: game.ResultBlack}
+	g1 := &game.Game{URL: "n1", Result: game.ResultWhite, PGN: pgn1}
+	g2 := &game.Game{URL: "n2", Result: game.ResultBlack, PGN: pgn2}
 
-	tree.IndexGame(game1, pgn1)
-	tree.IndexGame(game2, pgn2)
+	tree.IndexGame(g1)
+	tree.IndexGame(g2)
 
 	// After 1. e4 e5 2. Nf3 Nc6 — FEN has halfmove=2, fullmove=3, but
 	// normalized should strip those.
@@ -373,11 +383,12 @@ func indexAllGames(b *testing.B, tree *OpeningTree) {
 
 	games := splitPGNGames(string(samplePGN))
 	for i, pgn := range games {
-		gd := &GameData{
+		g := &game.Game{
 			URL:    fmt.Sprintf("https://example.com/game/%d", i),
 			Result: extractResult(pgn),
+			PGN:    pgn,
 		}
-		tree.IndexGame(gd, pgn)
+		tree.IndexGame(g)
 	}
 }
 
@@ -390,8 +401,8 @@ func BenchmarkIndexGame(b *testing.B) {
 	b.ResetTimer()
 	for b.Loop() {
 		tree := New()
-		gd := &GameData{URL: "bench", Result: extractResult(pgn)}
-		tree.IndexGame(gd, pgn)
+		g := &game.Game{URL: "bench", Result: extractResult(pgn), PGN: pgn}
+		tree.IndexGame(g)
 	}
 }
 
@@ -411,20 +422,21 @@ func benchmarkIndexNGames(b *testing.B, n int) {
 	}
 
 	// Build a pool of n games by cycling through the sample games.
-	pool := make([]string, n)
+	pool := make([]*game.Game, n)
 	for i := range pool {
-		pool[i] = games[i%len(games)]
+		pgn := games[i%len(games)]
+		pool[i] = &game.Game{
+			URL:    fmt.Sprintf("g%d", i),
+			Result: extractResult(pgn),
+			PGN:    pgn,
+		}
 	}
 
 	b.ResetTimer()
 	for b.Loop() {
 		tree := New()
-		for i, pgn := range pool {
-			gd := &GameData{
-				URL:    fmt.Sprintf("g%d", i),
-				Result: extractResult(pgn),
-			}
-			tree.IndexGame(gd, pgn)
+		for _, g := range pool {
+			tree.IndexGame(g)
 		}
 	}
 }

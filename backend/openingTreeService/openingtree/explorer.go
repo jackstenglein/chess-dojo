@@ -17,39 +17,12 @@ const (
 	MinPlyCount = 2
 )
 
-// GameData holds metadata for a single indexed game.
-type GameData struct {
-	URL               string            `json:"url"`
-	Result            game.Result       `json:"result"`
-	PlyCount          int               `json:"plyCount"`
-	Headers           map[string]string `json:"headers"`
-	White             string            `json:"white"`
-	Black             string            `json:"black"`
-	WhiteElo          int               `json:"whiteElo"`
-	BlackElo          int               `json:"blackElo"`
-	NormalizedWhiteElo int              `json:"normalizedWhiteElo"`
-	NormalizedBlackElo int              `json:"normalizedBlackElo"`
-	PlayerColor       string            `json:"playerColor"`
-	Rated             bool              `json:"rated"`
-	TimeClass         string            `json:"timeClass"`
-	Source            game.SourceType   `json:"source"`
-}
-
-// GameDataFromCommon creates a GameData from a common game.Game, suitable for
-// indexing into the OpeningTree.
-func GameDataFromCommon(g *game.Game) *GameData {
-	return &GameData{
-		URL:         g.URL,
-		Result:      g.Result,
-		White:       g.WhiteUsername,
-		Black:       g.BlackUsername,
-		WhiteElo:    g.WhiteRating,
-		BlackElo:    g.BlackRating,
-		PlayerColor: g.PlayerColor,
-		Rated:       g.Rated,
-		TimeClass:   string(g.TimeClass),
-		Source:      g.Source,
-	}
+// IndexedGame wraps a game.Game with tree-internal derived data computed
+// during indexing (ply count and PGN headers).
+type IndexedGame struct {
+	*game.Game
+	PlyCount int               `json:"plyCount"`
+	Headers  map[string]string `json:"headers"`
 }
 
 // MoveData holds statistics for a single move from a position.
@@ -84,14 +57,14 @@ func (p *PositionData) totalGames() int {
 // and game metadata for each normalized FEN encountered.
 type OpeningTree struct {
 	positions map[string]*PositionData
-	games     map[string]*GameData
+	games     map[string]*IndexedGame
 }
 
 // New creates an empty OpeningTree.
 func New() *OpeningTree {
 	return &OpeningTree{
 		positions: make(map[string]*PositionData),
-		games:     make(map[string]*GameData),
+		games:     make(map[string]*IndexedGame),
 	}
 }
 
@@ -105,14 +78,14 @@ func (t *OpeningTree) PositionCount() int {
 	return len(t.positions)
 }
 
-// GetGame returns the game data for the given URL, or nil if not found.
-func (t *OpeningTree) GetGame(url string) *GameData {
+// GetGame returns the indexed game for the given URL, or nil if not found.
+func (t *OpeningTree) GetGame(url string) *IndexedGame {
 	return t.games[url]
 }
 
-// SetGame adds or replaces the game data for the given URL.
-func (t *OpeningTree) SetGame(game *GameData) {
-	t.games[game.URL] = game
+// SetGame adds or replaces the indexed game for the given URL.
+func (t *OpeningTree) SetGame(g *IndexedGame) {
+	t.games[g.URL] = g
 }
 
 // GetPosition returns the position data for the given normalized FEN, or nil if not found.
@@ -173,12 +146,12 @@ func (t *OpeningTree) MergePosition(fen string, pos *PositionData) {
 	})
 }
 
-// IndexGame parses the given PGN, replays the moves, and records each
-// position's FEN along with the move played and the game result. Games
-// with fewer than MinPlyCount half-moves are skipped. Returns true if
-// the game was successfully indexed.
-func (t *OpeningTree) IndexGame(gd *GameData, pgn string) (bool, error) {
-	reader := strings.NewReader(pgn)
+// IndexGame parses the PGN from the given game, replays the moves, and records
+// each position's FEN along with the move played and the game result. Games
+// with fewer than MinPlyCount half-moves are skipped. Returns true if the game
+// was successfully indexed.
+func (t *OpeningTree) IndexGame(gm *game.Game) (bool, error) {
+	reader := strings.NewReader(gm.PGN)
 	pgnFunc, err := chess.PGN(reader)
 	if err != nil {
 		return false, fmt.Errorf("parsing PGN: %w", err)
@@ -193,19 +166,21 @@ func (t *OpeningTree) IndexGame(gd *GameData, pgn string) (bool, error) {
 		return false, nil
 	}
 
-	// Extract headers from the parsed game.
-	gd.PlyCount = plyCount
-	if gd.Headers == nil {
-		gd.Headers = make(map[string]string)
-	}
+	// Build tree-internal indexed game with derived data.
+	headers := make(map[string]string)
 	for _, tp := range g.TagPairs() {
-		gd.Headers[tp.Key] = tp.Value
+		headers[tp.Key] = tp.Value
 	}
-	t.SetGame(gd)
+	ig := &IndexedGame{
+		Game:     gm,
+		PlyCount: plyCount,
+		Headers:  headers,
+	}
+	t.SetGame(ig)
 
 	// Determine result key.
 	var resultKey string
-	switch gd.Result {
+	switch gm.Result {
 	case game.ResultWhite:
 		resultKey = "white"
 	case game.ResultBlack:
@@ -236,14 +211,14 @@ func (t *OpeningTree) IndexGame(gd *GameData, pgn string) (bool, error) {
 				{
 					SAN:   san,
 					White: w, Black: b, Draws: d,
-					Games: map[string]struct{}{gd.URL: {}},
+					Games: map[string]struct{}{gm.URL: {}},
 				},
 			}
 		}
 
 		posData := &PositionData{
 			White: w, Black: b, Draws: d,
-			Games: map[string]struct{}{gd.URL: {}},
+			Games: map[string]struct{}{gm.URL: {}},
 			Moves: movesSlice,
 		}
 		t.MergePosition(pos.String(), posData)
