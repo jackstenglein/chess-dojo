@@ -77,7 +77,7 @@ export const MEETING_INFO: Record<string, Record<string, MeetingInfo>> = {
 };
 
 function init() {
-    if (process.env.CI === 'true') {
+    if (process.env.CI === 'true' || process.env.VITEST === 'true') {
         return;
     }
 
