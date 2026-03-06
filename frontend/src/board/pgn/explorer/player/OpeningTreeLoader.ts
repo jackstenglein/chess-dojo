@@ -134,7 +134,12 @@ export class OpeningTreeLoader {
                 const year = match[1];
                 const month = match[2];
 
-                const games = await fetchChesscomArchiveGames(source.username, year, month, this.abortController?.signal);
+                const games = await fetchChesscomArchiveGames(
+                    source.username,
+                    year,
+                    month,
+                    this.abortController?.signal,
+                );
                 const promises = games.map((game) => this.indexChesscomGame(source, game));
                 await Promise.allSettled(promises);
             } catch (err) {
