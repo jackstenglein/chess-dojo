@@ -21,17 +21,17 @@ const (
 // during indexing (ply count and PGN headers).
 type IndexedGame struct {
 	*game.Game
-	PlyCount int               `json:"plyCount"`
-	Headers  map[string]string `json:"headers"`
+	PlyCount int
+	Headers  map[string]string
 }
 
 // MoveData holds statistics for a single move from a position.
 type MoveData struct {
-	SAN   string            `json:"san"`
-	White int               `json:"white"`
-	Black int               `json:"black"`
-	Draws int               `json:"draws"`
-	Games map[string]struct{} `json:"-"`
+	SAN   string
+	White int
+	Black int
+	Draws int
+	Games map[string]struct{}
 }
 
 // totalGames returns the total number of games for this move.
@@ -41,11 +41,11 @@ func (m *MoveData) totalGames() int {
 
 // PositionData holds statistics for a single board position.
 type PositionData struct {
-	White int               `json:"white"`
-	Black int               `json:"black"`
-	Draws int               `json:"draws"`
-	Moves []*MoveData       `json:"moves"`
-	Games map[string]struct{} `json:"-"`
+	White int
+	Black int
+	Draws int
+	Moves []*MoveData
+	Games map[string]struct{}
 }
 
 // totalGames returns the total number of games for this position.
