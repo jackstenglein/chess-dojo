@@ -8,16 +8,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const (
 	baseURL        = "https://api.chess.com/pub/player"
 	defaultTimeout = 10 * time.Second
+
+	maxConcurrency = 5
+	maxRetries     = 3
+	baseRetryDelay = 500 * time.Millisecond
 )
 
 var archiveRegex = regexp.MustCompile(`/(\d{4})/(\d{2})$`)
@@ -192,7 +199,8 @@ func (c *Client) FetchGames(ctx context.Context, archiveURL string) ([]Game, err
 // FetchAllGames fetches archives for the given username, filters them by date
 // range, and returns all games from the matching archives. Games are returned
 // in reverse chronological order (newest archive first). Non-standard variants
-// are excluded when standardOnly is true.
+// are excluded when standardOnly is true. Archive fetches run concurrently
+// with a concurrency limit of maxConcurrency.
 func (c *Client) FetchAllGames(ctx context.Context, username string, since, until time.Time, standardOnly bool) ([]Game, error) {
 	archives, err := c.FetchArchives(ctx, username)
 	if err != nil {
@@ -200,14 +208,37 @@ func (c *Client) FetchAllGames(ctx context.Context, username string, since, unti
 	}
 
 	filtered := FilterArchives(archives, since, until)
+	n := len(filtered)
+	if n == 0 {
+		return nil, nil
+	}
+
+	// Allocate a slot per archive to preserve order (newest first).
+	results := make([][]Game, n)
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(maxConcurrency)
+
+	for i := 0; i < n; i++ {
+		// Reverse index: slot 0 = newest archive.
+		idx := n - 1 - i
+		archiveURL := filtered[idx]
+		g.Go(func() error {
+			games, err := c.FetchGames(ctx, archiveURL)
+			if err != nil {
+				return err
+			}
+			results[i] = games
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
 
 	var allGames []Game
-	// Process archives in reverse order (newest first).
-	for i := len(filtered) - 1; i >= 0; i-- {
-		games, err := c.FetchGames(ctx, filtered[i])
-		if err != nil {
-			return nil, err
-		}
+	for _, games := range results {
 		for j := range games {
 			if standardOnly && !games[j].IsStandard() {
 				continue
@@ -219,28 +250,41 @@ func (c *Client) FetchAllGames(ctx context.Context, username string, since, unti
 }
 
 // doGet performs an HTTP GET request and returns the response body.
+// It retries with exponential backoff on HTTP 429 (rate limit) responses.
 // The caller is responsible for closing the body.
 func (c *Client) doGet(ctx context.Context, url string) (io.ReadCloser, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("create request: %w", err)
-	}
-	req.Header.Set("Accept", "application/json")
+	for attempt := range maxRetries {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("create request: %w", err)
+		}
+		req.Header.Set("Accept", "application/json")
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("http get %s: %w", url, err)
-	}
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("http get %s: %w", url, err)
+		}
 
-	if resp.StatusCode == http.StatusTooManyRequests {
-		resp.Body.Close()
-		return nil, fmt.Errorf("rate limited by Chess.com API (HTTP 429)")
-	}
+		if resp.StatusCode == http.StatusTooManyRequests {
+			resp.Body.Close()
+			if attempt == maxRetries-1 {
+				return nil, fmt.Errorf("rate limited by Chess.com API (HTTP 429) after %d retries", maxRetries)
+			}
+			delay := time.Duration(math.Pow(2, float64(attempt))) * baseRetryDelay
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(delay):
+				continue
+			}
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
-		return nil, fmt.Errorf("unexpected status %d from %s", resp.StatusCode, url)
-	}
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return nil, fmt.Errorf("unexpected status %d from %s", resp.StatusCode, url)
+		}
 
-	return resp.Body, nil
+		return resp.Body, nil
+	}
+	return nil, fmt.Errorf("unreachable: doGet retry loop exhausted for %s", url)
 }

@@ -2,9 +2,11 @@ package chesscom
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -229,7 +231,33 @@ func TestFilterArchives(t *testing.T) {
 	}
 }
 
-func TestRateLimitHandling(t *testing.T) {
+func TestRateLimitRetry(t *testing.T) {
+	var attempts int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts <= 2 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"games":[]}`))
+	}))
+	defer srv.Close()
+
+	client := NewClientWithHTTP(srv.Client())
+	games, err := client.FetchGames(context.Background(), srv.URL)
+	if err != nil {
+		t.Fatalf("expected retry to succeed, got: %v", err)
+	}
+	if len(games) != 0 {
+		t.Errorf("expected 0 games, got %d", len(games))
+	}
+	if attempts != 3 {
+		t.Errorf("expected 3 attempts, got %d", attempts)
+	}
+}
+
+func TestRateLimitExhausted(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))
@@ -298,6 +326,130 @@ func TestPGNExtracted(t *testing.T) {
 	if !contains(result[0].PGN, "1. e4 e5") {
 		t.Errorf("expected PGN to contain moves, got: %s", result[0].PGN)
 	}
+}
+
+func TestFetchAllGamesParallel(t *testing.T) {
+	var maxConcurrent atomic.Int32
+	var current atomic.Int32
+	games := mustReadFile(t, "testdata/games.json")
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c := current.Add(1)
+		defer current.Add(-1)
+		for {
+			old := maxConcurrent.Load()
+			if c <= old || maxConcurrent.CompareAndSwap(old, c) {
+				break
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/pub/player/testuser/games/archives" {
+			// Return archive URLs pointing back at this test server.
+			fmt.Fprintf(w, `{"archives":["%s/pub/player/testuser/games/2024/01","%s/pub/player/testuser/games/2024/02","%s/pub/player/testuser/games/2024/03","%s/pub/player/testuser/games/2024/04"]}`,
+				"https://api.chess.com", "https://api.chess.com", "https://api.chess.com", "https://api.chess.com")
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+		w.Write(games)
+	}))
+	defer srv.Close()
+
+	client := &Client{
+		httpClient: &http.Client{
+			Transport: &rewriteTransport{
+				base:      srv.Client().Transport,
+				targetURL: srv.URL,
+			},
+		},
+	}
+
+	result, err := client.FetchAllGames(context.Background(), "testuser", time.Time{}, time.Time{}, true)
+	if err != nil {
+		t.Fatalf("FetchAllGames failed: %v", err)
+	}
+
+	// 4 archives × 3 standard games per archive = 12 games.
+	if len(result) != 12 {
+		t.Errorf("expected 12 standard games, got %d", len(result))
+	}
+
+	if mc := maxConcurrent.Load(); mc < 2 {
+		t.Logf("max concurrent requests: %d (parallelism may not be observable with few archives)", mc)
+	}
+}
+
+type rewriteTransport struct {
+	base      http.RoundTripper
+	targetURL string
+}
+
+func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Rewrite Chess.com API URLs to point at the test server.
+	req = req.Clone(req.Context())
+	req.URL.Scheme = "http"
+	req.URL.Host = t.targetURL[len("http://"):]
+	return t.base.RoundTrip(req)
+}
+
+func benchFetchAllGames(b *testing.B, latency time.Duration, numArchives int) {
+	b.Helper()
+	games := mustReadFileB(b, "testdata/games.json")
+
+	archiveList := "["
+	for i := range numArchives {
+		if i > 0 {
+			archiveList += ","
+		}
+		archiveList += fmt.Sprintf(`"https://api.chess.com/pub/player/testuser/games/2024/%02d"`, i+1)
+	}
+	archiveList += "]"
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if latency > 0 {
+			time.Sleep(latency)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/pub/player/testuser/games/archives" {
+			w.Write([]byte(fmt.Sprintf(`{"archives":%s}`, archiveList)))
+			return
+		}
+		w.Write(games)
+	}))
+	defer srv.Close()
+
+	client := &Client{
+		httpClient: &http.Client{
+			Transport: &rewriteTransport{
+				base:      srv.Client().Transport,
+				targetURL: srv.URL,
+			},
+		},
+	}
+
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.FetchAllGames(context.Background(), "testuser", time.Time{}, time.Time{}, false)
+		if err != nil {
+			b.Fatalf("FetchAllGames failed: %v", err)
+		}
+	}
+}
+
+func mustReadFileB(b *testing.B, path string) []byte {
+	b.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		b.Fatalf("failed to read %s: %v", path, err)
+	}
+	return data
+}
+
+func BenchmarkFetchAllGames_12Archives_50msLatency(b *testing.B) {
+	benchFetchAllGames(b, 50*time.Millisecond, 12)
+}
+
+func BenchmarkFetchAllGames_12Archives_NoLatency(b *testing.B) {
+	benchFetchAllGames(b, 0, 12)
 }
 
 func contains(s, substr string) bool {
