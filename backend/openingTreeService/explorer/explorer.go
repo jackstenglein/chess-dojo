@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 	"github.com/notnil/chess"
 )
 
@@ -16,19 +17,10 @@ const (
 	MinPlyCount = 2
 )
 
-// GameResult represents the outcome of a chess game.
-type GameResult string
-
-const (
-	ResultWhite GameResult = "1-0"
-	ResultBlack GameResult = "0-1"
-	ResultDraw  GameResult = "1/2-1/2"
-)
-
 // GameData holds metadata for a single indexed game.
 type GameData struct {
 	URL               string            `json:"url"`
-	Result            GameResult        `json:"result"`
+	Result            game.Result       `json:"result"`
 	PlyCount          int               `json:"plyCount"`
 	Headers           map[string]string `json:"headers"`
 	White             string            `json:"white"`
@@ -40,6 +32,24 @@ type GameData struct {
 	PlayerColor       string            `json:"playerColor"`
 	Rated             bool              `json:"rated"`
 	TimeClass         string            `json:"timeClass"`
+	Source            game.SourceType   `json:"source"`
+}
+
+// GameDataFromCommon creates a GameData from a common game.Game, suitable for
+// indexing into the OpeningTree.
+func GameDataFromCommon(g *game.Game) *GameData {
+	return &GameData{
+		URL:         g.URL,
+		Result:      g.Result,
+		White:       g.WhiteUsername,
+		Black:       g.BlackUsername,
+		WhiteElo:    g.WhiteRating,
+		BlackElo:    g.BlackRating,
+		PlayerColor: g.PlayerColor,
+		Rated:       g.Rated,
+		TimeClass:   string(g.TimeClass),
+		Source:      g.Source,
+	}
 }
 
 // MoveData holds statistics for a single move from a position.
@@ -167,7 +177,7 @@ func (t *OpeningTree) MergePosition(fen string, pos *PositionData) {
 // position's FEN along with the move played and the game result. Games
 // with fewer than MinPlyCount half-moves are skipped. Returns true if
 // the game was successfully indexed.
-func (t *OpeningTree) IndexGame(game *GameData, pgn string) (bool, error) {
+func (t *OpeningTree) IndexGame(gd *GameData, pgn string) (bool, error) {
 	reader := strings.NewReader(pgn)
 	pgnFunc, err := chess.PGN(reader)
 	if err != nil {
@@ -184,21 +194,21 @@ func (t *OpeningTree) IndexGame(game *GameData, pgn string) (bool, error) {
 	}
 
 	// Extract headers from the parsed game.
-	game.PlyCount = plyCount
-	if game.Headers == nil {
-		game.Headers = make(map[string]string)
+	gd.PlyCount = plyCount
+	if gd.Headers == nil {
+		gd.Headers = make(map[string]string)
 	}
 	for _, tp := range g.TagPairs() {
-		game.Headers[tp.Key] = tp.Value
+		gd.Headers[tp.Key] = tp.Value
 	}
-	t.SetGame(game)
+	t.SetGame(gd)
 
 	// Determine result key.
 	var resultKey string
-	switch game.Result {
-	case ResultWhite:
+	switch gd.Result {
+	case game.ResultWhite:
 		resultKey = "white"
-	case ResultBlack:
+	case game.ResultBlack:
 		resultKey = "black"
 	default:
 		resultKey = "draws"
@@ -226,14 +236,14 @@ func (t *OpeningTree) IndexGame(game *GameData, pgn string) (bool, error) {
 				{
 					SAN:   san,
 					White: w, Black: b, Draws: d,
-					Games: map[string]struct{}{game.URL: {}},
+					Games: map[string]struct{}{gd.URL: {}},
 				},
 			}
 		}
 
 		posData := &PositionData{
 			White: w, Black: b, Draws: d,
-			Games: map[string]struct{}{game.URL: {}},
+			Games: map[string]struct{}{gd.URL: {}},
 			Moves: movesSlice,
 		}
 		t.MergePosition(pos.String(), posData)

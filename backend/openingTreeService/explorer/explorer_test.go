@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
 
 // ---------------------------------------------------------------------------
@@ -140,7 +142,7 @@ func TestIndexGame_ScholarsMate(t *testing.T) {
 
 	game := &GameData{
 		URL:    "https://example.com/game1",
-		Result: ResultWhite,
+		Result: game.ResultWhite,
 	}
 
 	ok, err := tree.IndexGame(game, pgn)
@@ -191,7 +193,7 @@ func TestIndexGame_SkipsShortGames(t *testing.T) {
 
 	game := &GameData{
 		URL:    "https://example.com/short",
-		Result: ResultDraw,
+		Result: game.ResultDraw,
 	}
 
 	ok, err := tree.IndexGame(game, pgn)
@@ -214,7 +216,7 @@ func TestIndexGame_DrawResult(t *testing.T) {
 
 	game := &GameData{
 		URL:    "https://example.com/draw",
-		Result: ResultDraw,
+		Result: game.ResultDraw,
 	}
 
 	ok, err := tree.IndexGame(game, pgn)
@@ -245,7 +247,7 @@ func TestIndexGame_MultipleGames(t *testing.T) {
 	pgn1 := `[Result "1-0"]
 
 1. e4 e5 2. Nf3 Nc6 1-0`
-	game1 := &GameData{URL: "g1", Result: ResultWhite}
+	game1 := &GameData{URL: "g1", Result: game.ResultWhite}
 	ok, err := tree.IndexGame(game1, pgn1)
 	if err != nil || !ok {
 		t.Fatalf("game1: ok=%v err=%v", ok, err)
@@ -255,7 +257,7 @@ func TestIndexGame_MultipleGames(t *testing.T) {
 	pgn2 := `[Result "0-1"]
 
 1. e4 d5 2. exd5 Qxd5 0-1`
-	game2 := &GameData{URL: "g2", Result: ResultBlack}
+	game2 := &GameData{URL: "g2", Result: game.ResultBlack}
 	ok, err = tree.IndexGame(game2, pgn2)
 	if err != nil || !ok {
 		t.Fatalf("game2: ok=%v err=%v", ok, err)
@@ -308,7 +310,7 @@ func TestIndexGame_BlackWin(t *testing.T) {
 
 1. f3 e5 2. g4 Qh4# 0-1`
 
-	game := &GameData{URL: "fool", Result: ResultBlack}
+	game := &GameData{URL: "fool", Result: game.ResultBlack}
 	ok, err := tree.IndexGame(game, pgn)
 	if err != nil {
 		t.Fatalf("IndexGame error: %v", err)
@@ -335,8 +337,8 @@ func TestIndexGame_NormalizesHalfmoveClock(t *testing.T) {
 
 1. e4 e5 2. Nf3 Nc6 0-1`
 
-	game1 := &GameData{URL: "n1", Result: ResultWhite}
-	game2 := &GameData{URL: "n2", Result: ResultBlack}
+	game1 := &GameData{URL: "n1", Result: game.ResultWhite}
+	game2 := &GameData{URL: "n2", Result: game.ResultBlack}
 
 	tree.IndexGame(game1, pgn1)
 	tree.IndexGame(game2, pgn2)
@@ -448,20 +450,20 @@ func splitPGNGames(data string) []string {
 }
 
 // extractResult parses the Result tag from a PGN string.
-func extractResult(pgn string) GameResult {
+func extractResult(pgn string) game.Result {
 	for _, line := range strings.Split(pgn, "\n") {
 		if strings.HasPrefix(line, "[Result ") {
 			val := strings.TrimPrefix(line, "[Result \"")
 			val = strings.TrimSuffix(val, "\"]")
 			switch val {
 			case "1-0":
-				return ResultWhite
+				return game.ResultWhite
 			case "0-1":
-				return ResultBlack
+				return game.ResultBlack
 			default:
-				return ResultDraw
+				return game.ResultDraw
 			}
 		}
 	}
-	return ResultDraw
+	return game.ResultDraw
 }
