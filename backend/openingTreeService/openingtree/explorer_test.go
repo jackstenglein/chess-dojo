@@ -1,4 +1,4 @@
-package explorer
+package openingtree
 
 import (
 	"fmt"

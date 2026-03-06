@@ -1,7 +1,7 @@
-// Package explorer implements the OpeningTree data structure for indexing
+// Package openingtree implements the OpeningTree data structure for indexing
 // chess games by position. It maps normalized FENs to position statistics
 // (win/draw/loss counts, moves played) and game URLs to game metadata.
-package explorer
+package openingtree
 
 import (
 	"fmt"
