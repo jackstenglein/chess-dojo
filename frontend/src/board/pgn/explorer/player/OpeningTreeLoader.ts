@@ -106,25 +106,25 @@ export class OpeningTreeLoader {
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
         const archivePromises = archives.map((archive) =>
-            this.archiveSemaphore.runExclusive(async () => {
-                const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
-                if (!match) {
-                    logger.warn?.(
-                        `Skipping archive ${archive} because it does not match archive regex ${CHESSCOM_ARCHIVE_REGEX.source}`,
-                    );
-                    return;
-                }
-                const year = match[1];
-                const month = match[2];
+            this.archiveSemaphore
+                .runExclusive(async () => {
+                    const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
+                    if (!match) {
+                        logger.warn?.(
+                            `Skipping archive ${archive} because it does not match archive regex ${CHESSCOM_ARCHIVE_REGEX.source}`,
+                        );
+                        return;
+                    }
+                    const year = match[1];
+                    const month = match[2];
 
-                const games = await fetchChesscomArchiveGames(source.username, year, month);
-                const indexPromises = games.map((game) =>
-                    this.indexChesscomGame(source, game),
-                );
-                await Promise.allSettled(indexPromises);
-            }).catch((err) => {
-                logger.error?.(`Failed to load Chess.com archive ${archive}: `, err);
-            }),
+                    const games = await fetchChesscomArchiveGames(source.username, year, month);
+                    const indexPromises = games.map((game) => this.indexChesscomGame(source, game));
+                    await Promise.allSettled(indexPromises);
+                })
+                .catch((err) => {
+                    logger.error?.(`Failed to load Chess.com archive ${archive}: `, err);
+                }),
         );
         await Promise.allSettled(archivePromises);
     }

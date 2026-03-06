@@ -115,7 +115,11 @@ export async function fetchChesscomArchiveGames(username: string, year: string, 
             );
             return resp.data.games;
         } catch (err) {
-            if (err instanceof AxiosError && err.response?.status === 429 && attempt < MAX_RETRIES) {
+            if (
+                err instanceof AxiosError &&
+                err.response?.status === 429 &&
+                attempt < MAX_RETRIES
+            ) {
                 const backoff = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
                 await new Promise((resolve) => setTimeout(resolve, backoff));
                 continue;
