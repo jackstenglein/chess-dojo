@@ -9,7 +9,13 @@ import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user
 import { Mutex } from 'async-mutex';
 import { expose, proxy } from 'comlink';
 import { OpeningTree } from './OpeningTree';
-import { Color, MIN_DOWNLOAD_LIMIT, PlayerSource, SourceType } from './PlayerSource';
+import {
+    Color,
+    MAX_DOWNLOAD_LIMIT,
+    MIN_DOWNLOAD_LIMIT,
+    PlayerSource,
+    SourceType,
+} from './PlayerSource';
 
 interface ChesscomListArchivesResponse {
     /**
@@ -37,6 +43,7 @@ export class OpeningTreeLoader {
     private incrementIndexedCount: ((inc?: number) => void) | undefined;
     private updateProgress: ((tree: OpeningTree) => void) | undefined;
     private abortController: AbortController | undefined;
+    private downloadLimit: number | undefined;
 
     /**
      * Loads the opening tree for the given sources.
@@ -49,10 +56,13 @@ export class OpeningTreeLoader {
         sources: PlayerSource[],
         incrementIndexedCount: (inc?: number) => void,
         updateProgress: (tree: OpeningTree) => void,
+        downloadLimit?: number,
     ) {
         this.abortController = new AbortController();
         this.incrementIndexedCount = incrementIndexedCount;
         this.updateProgress = updateProgress;
+        this.downloadLimit =
+            downloadLimit && downloadLimit < MAX_DOWNLOAD_LIMIT ? downloadLimit : undefined;
 
         this.openingTree = new OpeningTree();
         const chesscomSources: PlayerSource[] = [];
@@ -109,6 +119,10 @@ export class OpeningTreeLoader {
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
         for (const archive of archives) {
+            if (this.isDownloadLimitReached()) {
+                break;
+            }
+
             try {
                 const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
                 if (!match) {
@@ -200,6 +214,11 @@ export class OpeningTreeLoader {
 
         let done = false;
         while (!done) {
+            if (this.isDownloadLimitReached()) {
+                await reader.cancel();
+                break;
+            }
+
             const readVal = await reader.read();
             done = readVal.done;
             if (done) {
@@ -254,6 +273,14 @@ export class OpeningTreeLoader {
             timeClass: getTimeClass(game.speed),
         };
         return this.indexGame(gameData, game.pgn);
+    }
+
+    /** Returns true if the download limit has been reached. */
+    private isDownloadLimitReached(): boolean {
+        return (
+            this.downloadLimit !== undefined &&
+            (this.openingTree?.getGameCount() ?? 0) >= this.downloadLimit
+        );
     }
 
     /**
