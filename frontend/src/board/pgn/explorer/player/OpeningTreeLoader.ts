@@ -36,6 +36,7 @@ export class OpeningTreeLoader {
     private mutex = new Mutex();
     private incrementIndexedCount: ((inc?: number) => void) | undefined;
     private updateProgress: ((tree: OpeningTree) => void) | undefined;
+    private abortController: AbortController | undefined;
 
     /**
      * Loads the opening tree for the given sources.
@@ -49,6 +50,7 @@ export class OpeningTreeLoader {
         incrementIndexedCount: (inc?: number) => void,
         updateProgress: (tree: OpeningTree) => void,
     ) {
+        this.abortController = new AbortController();
         this.incrementIndexedCount = incrementIndexedCount;
         this.updateProgress = updateProgress;
 
@@ -67,6 +69,11 @@ export class OpeningTreeLoader {
         const promises = [this.loadChesscom(chesscomSources), this.loadLichess(lichessSources)];
         await Promise.allSettled(promises);
         return this.openingTree;
+    }
+
+    /** Aborts any in-flight fetch requests. */
+    abort() {
+        this.abortController?.abort();
     }
 
     /**
@@ -97,6 +104,7 @@ export class OpeningTreeLoader {
 
         const archiveResponse = await axiosService.get<ChesscomListArchivesResponse>(
             `https://api.chess.com/pub/player/${source.username}/games/archives`,
+            { signal: this.abortController?.signal },
         );
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
@@ -112,7 +120,7 @@ export class OpeningTreeLoader {
                 const year = match[1];
                 const month = match[2];
 
-                const games = await fetchChesscomArchiveGames(source.username, year, month);
+                const games = await fetchChesscomArchiveGames(source.username, year, month, this.abortController?.signal);
                 const promises = games.map((game) => this.indexChesscomGame(source, game));
                 await Promise.allSettled(promises);
             } catch (err) {
@@ -180,6 +188,7 @@ export class OpeningTreeLoader {
             `https://lichess.org/api/games/user/${source.username}?pgnInJson=true`,
             {
                 headers: { Accept: 'application/x-ndjson' },
+                signal: this.abortController?.signal,
             },
         );
 

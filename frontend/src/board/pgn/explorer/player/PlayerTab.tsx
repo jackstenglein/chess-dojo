@@ -30,6 +30,7 @@ export function PlayerTab({ fen }: { fen: string }) {
         setSources,
         isLoading,
         onLoad: parentOnLoad,
+        onCancel,
         onClear,
         indexedCount,
         openingTree,
@@ -85,11 +86,14 @@ export function PlayerTab({ fen }: { fen: string }) {
             </Accordion>
 
             {isLoading && (
-                <Stack direction='row' spacing={1} my={1}>
+                <Stack direction='row' spacing={1} my={1} alignItems='center'>
                     <Typography>
                         {indexedCount} game{indexedCount === 1 ? '' : 's'} loaded...
                     </Typography>
                     <CircularProgress size={20} />
+                    <Button size='small' variant='outlined' onClick={onCancel}>
+                        Cancel
+                    </Button>
                 </Stack>
             )}
 

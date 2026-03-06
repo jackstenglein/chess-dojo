@@ -103,9 +103,10 @@ export function useChesscomGames(): [
     return [request.data, requestGames, request];
 }
 
-export async function fetchChesscomArchiveGames(username: string, year: string, month: string) {
+export async function fetchChesscomArchiveGames(username: string, year: string, month: string, signal?: AbortSignal) {
     const resp = await axiosService.get<ChesscomGamesResponse>(
         `https://api.chess.com/pub/player/${username}/games/${year}/${month}`,
+        { signal },
     );
     return resp.data.games;
 }

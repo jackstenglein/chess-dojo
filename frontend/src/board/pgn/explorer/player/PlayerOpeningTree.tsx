@@ -22,6 +22,7 @@ export interface PlayerOpeningTreeContextType {
     setSources: Dispatch<SetStateAction<PlayerSource[]>>;
     isLoading: boolean;
     onLoad: () => Promise<void>;
+    onCancel: () => void;
     onClear: () => void;
     indexedCount: number;
     openingTree: RefObject<OpeningTree | undefined | null>;
@@ -44,6 +45,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
     const [isLoading, setIsLoading] = useState(false);
     const [indexedCount, setIndexedCount] = useState(-1);
     const workerRef = useRef<Remote<OpeningTreeLoaderFactory>>(undefined);
+    const loaderRef = useRef<{ abort: () => void }>(undefined);
     const openingTree = useRef<OpeningTree>(undefined);
     const loadComplete = useRef(false);
     const [filters, readonlyFilters] = useGameFilters(sources);
@@ -79,6 +81,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
         if (!loader) {
             return;
         }
+        loaderRef.current = loader;
 
         setIsLoading(true);
         setIndexedCount(0);
@@ -95,8 +98,16 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
         logger.debug?.('loader finished with tree: ', tree);
         openingTree.current = tree;
         loadComplete.current = true;
+        loaderRef.current = undefined;
         setIsLoading(false);
     }, [sources, setSources, setIndexedCount]);
+
+    const onCancel = useCallback(() => {
+        void loaderRef.current?.abort();
+        loaderRef.current = undefined;
+        loadComplete.current = true;
+        setIsLoading(false);
+    }, []);
 
     const onClear = () => {
         openingTree.current = undefined;
@@ -111,6 +122,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 setSources,
                 isLoading,
                 onLoad,
+                onCancel,
                 onClear,
                 indexedCount,
                 openingTree,
