@@ -370,10 +370,15 @@ func SendMilestoneNotificationToSenseis(user *database.User, percent int) error 
 	}
 
 	cohortEmoji := CohortEmojiIds[user.DojoCohort]
+	var userRef string
+	if user.DiscordId != "" {
+		userRef = fmt.Sprintf("<@%s>", user.DiscordId)
+	} else {
+		userRef = fmt.Sprintf("**%s**", user.DisplayName)
+	}
 	message := fmt.Sprintf(
-		"%s **%s** has reached **%d%%** completion in the %s %s training program! "+
-			"Consider reaching out to congratulate them and discuss next steps.",
-		MessageEmojiDojo, user.DisplayName, percent, string(user.DojoCohort), cohortEmoji,
+		"%s %s has reached **%d%%** completion in the %s %s training program.",
+		MessageEmojiDojo, userRef, percent, string(user.DojoCohort), cohortEmoji,
 	)
 
 	var errs []error
