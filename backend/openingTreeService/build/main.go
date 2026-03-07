@@ -15,6 +15,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	treeapi "github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/chesscom"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/lichess"
@@ -42,8 +43,8 @@ type SourceError struct {
 
 // BuildResponse is the JSON payload nested inside the gzipped response body.
 type BuildResponse struct {
-	Tree         *openingtree.OpeningTree `json:"tree"`
-	SourceErrors []SourceError            `json:"sourceErrors,omitempty"`
+	*treeapi.Response
+	SourceErrors []SourceError `json:"sourceErrors,omitempty"`
 }
 
 // fetchResult carries either a game or an error from a source fetcher goroutine.
@@ -162,7 +163,7 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	resp := BuildResponse{
-		Tree:         tree,
+		Response:     treeapi.FromOpeningTree(tree),
 		SourceErrors: srcErrs,
 	}
 	jsonBytes, err := json.Marshal(resp)
