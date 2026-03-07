@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
@@ -210,4 +211,187 @@ func TestCheckMilestoneNotification(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCheckNotification_NotifySenseisError_RecordMilestoneNotCalled(t *testing.T) {
+	recordMilestoneCalled := false
+
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			return []*database.Requirement{
+				{
+					Id:     "test-req",
+					Status: database.Active,
+					Counts: map[database.DojoCohort]int{"0-300": 1},
+				},
+			}, "", nil
+		},
+		notifySenseis: func(user *database.User, percent int) error {
+			return errors.New("discord unavailable")
+		},
+		recordMilestone: func(username string, milestoneKey string) error {
+			recordMilestoneCalled = true
+			return nil
+		},
+	}
+
+	user := &database.User{
+		Username:   "testuser",
+		DojoCohort: database.DojoCohort("0-300"),
+		Progress: map[string]*database.RequirementProgress{
+			"test-req": {
+				RequirementId: "test-req",
+				Counts:        map[database.DojoCohort]int{"0-300": 1},
+			},
+		},
+	}
+
+	mc.checkNotification(user)
+
+	if recordMilestoneCalled {
+		t.Error("recordMilestone should NOT be called when notifySenseis returns an error")
+	}
+}
+
+func TestCheckNotification_FetchRequirementsError_BailsOutCleanly(t *testing.T) {
+	notifySenseisCalled := false
+	recordMilestoneCalled := false
+
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			return nil, "", errors.New("dynamodb timeout")
+		},
+		notifySenseis: func(user *database.User, percent int) error {
+			notifySenseisCalled = true
+			return nil
+		},
+		recordMilestone: func(username string, milestoneKey string) error {
+			recordMilestoneCalled = true
+			return nil
+		},
+	}
+
+	user := &database.User{
+		Username:   "testuser",
+		DojoCohort: database.DojoCohort("0-300"),
+	}
+
+	mc.checkNotification(user)
+
+	if notifySenseisCalled {
+		t.Error("notifySenseis should NOT be called when fetchAllRequirements returns an error")
+	}
+	if recordMilestoneCalled {
+		t.Error("recordMilestone should NOT be called when fetchAllRequirements returns an error")
+	}
+}
+
+func TestCheckNotification_PartialSenseiFailure_ErrorPropagation(t *testing.T) {
+	recordMilestoneCalled := false
+
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			return []*database.Requirement{
+				{
+					Id:     "test-req",
+					Status: database.Active,
+					Counts: map[database.DojoCohort]int{"0-300": 1},
+				},
+			}, "", nil
+		},
+		notifySenseis: func(user *database.User, percent int) error {
+			return errors.New("failed to send DM to 2 of 5 senseis")
+		},
+		recordMilestone: func(username string, milestoneKey string) error {
+			recordMilestoneCalled = true
+			return nil
+		},
+	}
+
+	user := &database.User{
+		Username:   "testuser",
+		DojoCohort: database.DojoCohort("0-300"),
+		Progress: map[string]*database.RequirementProgress{
+			"test-req": {
+				RequirementId: "test-req",
+				Counts:        map[database.DojoCohort]int{"0-300": 1},
+			},
+		},
+	}
+
+	mc.checkNotification(user)
+
+	if recordMilestoneCalled {
+		t.Error("recordMilestone should NOT be called when notifySenseis returns a partial failure error")
+	}
+}
+
+func TestFetchAllRequirements_ErrorOnFirstPage(t *testing.T) {
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			return nil, "", errors.New("dynamodb error")
+		},
+	}
+
+	reqs, err := mc.fetchAllRequirements("0-300")
+	if err == nil {
+		t.Error("fetchAllRequirements should return an error when listRequirements fails")
+	}
+	if reqs != nil {
+		t.Errorf("fetchAllRequirements should return nil requirements on error, got %v", reqs)
+	}
+}
+
+func TestFetchAllRequirements_ErrorOnSecondPage(t *testing.T) {
+	callCount := 0
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			callCount++
+			if callCount == 1 {
+				return []*database.Requirement{{Id: "req-1"}}, "next-page", nil
+			}
+			return nil, "", errors.New("dynamodb error on page 2")
+		},
+	}
+
+	reqs, err := mc.fetchAllRequirements("0-300")
+	if err == nil {
+		t.Error("fetchAllRequirements should return an error when second page fails")
+	}
+	if reqs != nil {
+		t.Errorf("fetchAllRequirements should return nil requirements on error, got %v", reqs)
+	}
+}
+
+func TestCheckNotification_RecordMilestoneError_DoesNotPanic(t *testing.T) {
+	mc := milestoneChecker{
+		listRequirements: func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+			return []*database.Requirement{
+				{
+					Id:     "test-req",
+					Status: database.Active,
+					Counts: map[database.DojoCohort]int{"0-300": 1},
+				},
+			}, "", nil
+		},
+		notifySenseis: func(user *database.User, percent int) error {
+			return nil
+		},
+		recordMilestone: func(username string, milestoneKey string) error {
+			return errors.New("dynamodb write failed")
+		},
+	}
+
+	user := &database.User{
+		Username:   "testuser",
+		DojoCohort: database.DojoCohort("0-300"),
+		Progress: map[string]*database.RequirementProgress{
+			"test-req": {
+				RequirementId: "test-req",
+				Counts:        map[database.DojoCohort]int{"0-300": 1},
+			},
+		},
+	}
+
+	mc.checkNotification(user)
 }
