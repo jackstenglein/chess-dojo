@@ -57,9 +57,16 @@ test.describe('Custom Task Editor', () => {
                 }
             });
 
+            // Abort access checks or the authenticated user will overwrite our mock
+            await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+
             await page.goto('/profile?view=progress');
             await page.getByTestId('Tactics-header').click();
             await page.getByTestId('add-custom-task-button-Tactics').click();
+        });
+
+        test.afterEach(async ({ page }) => {
+            await page.unrouteAll();
         });
 
         test('Cannot define starting point without defining a goal', async ({ page }) => {

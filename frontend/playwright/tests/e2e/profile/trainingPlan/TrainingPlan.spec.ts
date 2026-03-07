@@ -89,6 +89,181 @@ test.describe('Training Plan', () => {
         ).toBeVisible();
     });
 
+    test('displays correct progress text in daily card for task with min goal', async ({
+        page,
+    }) => {
+        await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.abort();
+            }
+
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    username: 'test',
+                    subscriptionStatus: 'SUBSCRIBED',
+                    subscriptionTier: 'BASIC',
+                    displayName: 'Test Account',
+                    ratingSystem: 'CHESSCOM',
+                    ratings: {
+                        CHESSCOM: {
+                            username: 'test',
+                            hideUsername: false,
+                            startRating: 1971,
+                            currentRating: 2009,
+                        },
+                    },
+                    customTasks: [
+                        {
+                            category: 'Tactics',
+                            counts: {
+                                '1400-1500': 100,
+                            },
+                            description: '',
+                            id: '65006c33-349d-4774-a03b-14c7e3f42abf',
+                            name: 'Nonzero Min Goal',
+                            numberOfCohorts: 1,
+                            owner: '',
+                            progressBarSuffix: 'Pages',
+                            scoreboardDisplay: 'PROGRESS_BAR',
+                            startCount: 25,
+                            updatedAt: '2026-02-27T17:26:30.731Z',
+                        },
+                        {
+                            category: 'Tactics',
+                            counts: {
+                                '1400-1500': 100,
+                            },
+                            description: '',
+                            id: '225f93fd-2ea9-4488-bbb9-9807981283f8',
+                            name: 'Nonzero Min Goal with Progress',
+                            numberOfCohorts: 1,
+                            owner: '',
+                            progressBarSuffix: 'Pages',
+                            scoreboardDisplay: 'PROGRESS_BAR',
+                            startCount: 25,
+                            updatedAt: '2026-02-27T17:26:30.731Z',
+                        },
+                    ],
+                    dojoCohort: '1400-1500',
+                    progress: {
+                        '225f93fd-2ea9-4488-bbb9-9807981283f8': {
+                            counts: {
+                                ALL_COHORTS: 30,
+                            },
+                            minutesSpent: {
+                                '1400-1500': 10,
+                            },
+                            requirementId: '225f93fd-2ea9-4488-bbb9-9807981283f8',
+                            updatedAt: '2026-02-27T19:26:30.731Z',
+                        },
+                    },
+                    isAdmin: false,
+                    isCalendarAdmin: false,
+                    isTournamentAdmin: false,
+                    createdAt: '2022-05-01T17:00:00Z',
+                    updatedAt: '2026-02-27T19:26:30.731Z',
+                    timezoneOverride: 'DEFAULT',
+                    timeFormat: '24',
+                    hasCreatedProfile: true,
+                    followerCount: 4,
+                    followingCount: 1,
+                    lastFetchedNewsfeed: '2025-03-09T18:37:38Z',
+                    referralSource: 'Reddit',
+                    totalDojoScore: 2,
+                    pinnedTasks: [
+                        '65006c33-349d-4774-a03b-14c7e3f42abf',
+                        '225f93fd-2ea9-4488-bbb9-9807981283f8',
+                    ],
+                    weekStart: 0,
+                }),
+            });
+        });
+
+        await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+
+        await page.goto('/profile?view=progress');
+
+        await expect(
+            page.getByRole('button', { name: 'Tactics Nonzero Min Goal -' }),
+        ).toContainText('0 / 75 pages completed');
+        await expect(
+            page.getByRole('button', { name: 'Tactics Nonzero Min Goal with Progress' }),
+        ).toContainText('5 / 75 pages completed');
+    });
+
+    test('displays correct progress text in daily card for task with no min goal', async ({
+        page,
+    }) => {
+        await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.abort();
+            }
+
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    username: 'test',
+                    subscriptionStatus: 'SUBSCRIBED',
+                    subscriptionTier: 'BASIC',
+                    displayName: 'Test Account',
+                    ratingSystem: 'CHESSCOM',
+                    ratings: {
+                        CHESSCOM: {
+                            username: 'test',
+                            hideUsername: false,
+                            startRating: 1971,
+                            currentRating: 2009,
+                        },
+                    },
+                    customTasks: [
+                        {
+                            category: 'Tactics',
+                            counts: {
+                                '1400-1500': 100,
+                            },
+                            description: '',
+                            id: '8d90bed6-999a-45bd-a734-1529df933680',
+                            name: 'No Min Goal',
+                            numberOfCohorts: 1,
+                            owner: '',
+                            progressBarSuffix: 'Pages',
+                            scoreboardDisplay: 'PROGRESS_BAR',
+                            updatedAt: '2026-02-27T17:26:30.731Z',
+                        },
+                    ],
+                    dojoCohort: '1400-1500',
+                    progress: {},
+                    isAdmin: false,
+                    isCalendarAdmin: false,
+                    isTournamentAdmin: false,
+                    createdAt: '2022-05-01T17:00:00Z',
+                    updatedAt: '2026-02-27T19:26:30.731Z',
+                    timezoneOverride: 'DEFAULT',
+                    timeFormat: '24',
+                    hasCreatedProfile: true,
+                    followerCount: 4,
+                    followingCount: 1,
+                    lastFetchedNewsfeed: '2025-03-09T18:37:38Z',
+                    referralSource: 'Reddit',
+                    totalDojoScore: 2,
+                    pinnedTasks: ['8d90bed6-999a-45bd-a734-1529df933680'],
+                    weekStart: 0,
+                }),
+            });
+        });
+
+        await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+
+        await page.goto('/profile?view=progress');
+
+        await expect(page.getByRole('button', { name: 'Tactics No Min Goal' })).toContainText(
+            '0 / 100 pages completed',
+        );
+    });
+
     test.describe('Custom Tasks', () => {
         test.beforeEach(async ({ page }) => {
             await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
