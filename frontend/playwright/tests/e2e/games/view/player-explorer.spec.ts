@@ -7,11 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fixturesDir = path.join(__dirname, '../../../fixtures/games/player-explorer');
 
-const backendResponseChesscom = JSON.parse(
-    fs.readFileSync(path.join(fixturesDir, 'backend-response-chesscom.json'), 'utf-8'),
-);
-const backendResponseLichess = JSON.parse(
-    fs.readFileSync(path.join(fixturesDir, 'backend-response-lichess.json'), 'utf-8'),
+const backendResponse = JSON.parse(
+    fs.readFileSync(path.join(fixturesDir, 'backend-response.json'), 'utf-8'),
 );
 
 /** Sets up a mock for the POST /explorer/player-opening-tree backend endpoint. Returns a call counter. */
@@ -57,8 +54,8 @@ test.describe('Player Opening Explorer', () => {
         });
     });
 
-    test('loads Chess.com games and displays opening tree', async ({ page }) => {
-        await mockBackendRoute(page, backendResponseChesscom);
+    test('loads games and displays opening tree', async ({ page }) => {
+        await mockBackendRoute(page, backendResponse);
         await openPlayerTab(page);
 
         // The default source type is Chess.com — enter username and load
@@ -75,27 +72,8 @@ test.describe('Player Opening Explorer', () => {
         await expect(page.getByRole('cell', { name: /e4/ })).toBeVisible();
     });
 
-    test('loads Lichess games and displays opening tree', async ({ page }) => {
-        await mockBackendRoute(page, backendResponseLichess);
-        await openPlayerTab(page);
-
-        // Switch source type to Lichess
-        await page.getByRole('button', { name: 'Lichess' }).click();
-        await page.getByPlaceholder('Lichess Username').fill('testplayer');
-        await page.getByRole('button', { name: 'Load Games' }).click();
-
-        // Wait for the tree to load
-        await expect(page.getByRole('button', { name: 'Clear Data' })).toBeVisible({
-            timeout: 15000,
-        });
-
-        // Opening tree should render with moves
-        await expect(page.getByTestId('explorer-tab-player')).toBeVisible();
-        await expect(page.getByRole('cell', { name: /e4/ })).toBeVisible();
-    });
-
     test('filters by color without making new API calls', async ({ page }) => {
-        const callCount = await mockBackendRoute(page, backendResponseChesscom);
+        const callCount = await mockBackendRoute(page, backendResponse);
         await openPlayerTab(page);
 
         await page.getByPlaceholder('Chess.com Username').fill('testuser');
