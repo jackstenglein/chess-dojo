@@ -34,7 +34,7 @@ func TestGames_AllGames(t *testing.T) {
 			t.Errorf("pgnInJson = %q, want true", r.URL.Query().Get("pgnInJson"))
 		}
 		w.Header().Set("Content-Type", "application/x-ndjson")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -92,7 +92,7 @@ func TestGames_WithMax(t *testing.T) {
 			t.Errorf("max = %q, want 2", r.URL.Query().Get("max"))
 		}
 		w.Header().Set("Content-Type", "application/x-ndjson")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -118,7 +118,7 @@ func TestGames_DrawResult(t *testing.T) {
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -148,7 +148,7 @@ func TestGames_PlayerColorBlack(t *testing.T) {
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -174,7 +174,7 @@ func TestGames_ContextCancellation(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		// Write one game then block
-		w.Write([]byte(`{"id":"slow1","rated":true,"variant":"standard","speed":"rapid","perf":"rapid","createdAt":1706400000000,"lastMoveAt":1706403600000,"status":"resign","players":{"white":{"user":{"name":"A","id":"a"},"rating":1500},"black":{"user":{"name":"B","id":"b"},"rating":1500}},"winner":"white","opening":{"eco":"C50","name":"Italian","ply":6},"moves":"e4 e5","clock":{"initial":600,"increment":0,"totalTime":600},"pgn":"1. e4 e5 1-0"}` + "\n"))
+		_, _ = w.Write([]byte(`{"id":"slow1","rated":true,"variant":"standard","speed":"rapid","perf":"rapid","createdAt":1706400000000,"lastMoveAt":1706403600000,"status":"resign","players":{"white":{"user":{"name":"A","id":"a"},"rating":1500},"black":{"user":{"name":"B","id":"b"},"rating":1500}},"winner":"white","opening":{"eco":"C50","name":"Italian","ply":6},"moves":"e4 e5","clock":{"initial":600,"increment":0,"totalTime":600},"pgn":"1. e4 e5 1-0"}` + "\n"))
 		w.(http.Flusher).Flush()
 		// Block until client cancels
 		<-r.Context().Done()
@@ -257,10 +257,10 @@ func TestGames_BlankLines(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		// NDJSON with blank lines between games
-		w.Write([]byte("\n"))
-		w.Write([]byte(`{"id":"g1","rated":false,"variant":"standard","speed":"blitz","perf":"blitz","createdAt":1706400000000,"lastMoveAt":1706403600000,"status":"draw","players":{"white":{"user":{"name":"A","id":"a"},"rating":1500},"black":{"user":{"name":"B","id":"b"},"rating":1500}},"opening":{"eco":"A00","name":"Test","ply":2},"moves":"e4 e5","clock":{"initial":180,"increment":0,"totalTime":180},"pgn":"1. e4 e5 1/2-1/2"}` + "\n"))
-		w.Write([]byte("\n"))
-		w.Write([]byte("\n"))
+		_, _ = w.Write([]byte("\n"))
+		_, _ = w.Write([]byte(`{"id":"g1","rated":false,"variant":"standard","speed":"blitz","perf":"blitz","createdAt":1706400000000,"lastMoveAt":1706403600000,"status":"draw","players":{"white":{"user":{"name":"A","id":"a"},"rating":1500},"black":{"user":{"name":"B","id":"b"},"rating":1500}},"opening":{"eco":"A00","name":"Test","ply":2},"moves":"e4 e5","clock":{"initial":180,"increment":0,"totalTime":180},"pgn":"1. e4 e5 1/2-1/2"}` + "\n"))
+		_, _ = w.Write([]byte("\n"))
+		_, _ = w.Write([]byte("\n"))
 	}))
 	defer srv.Close()
 

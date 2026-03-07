@@ -29,7 +29,7 @@ func generateOneGame(rng *rand.Rand, id int) *game.Game {
 		if len(moves) == 0 {
 			break
 		}
-		g.Move(moves[rng.Intn(len(moves))])
+		_ = g.Move(moves[rng.Intn(len(moves))])
 	}
 
 	var result game.Result

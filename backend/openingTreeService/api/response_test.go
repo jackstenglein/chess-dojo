@@ -85,7 +85,9 @@ func TestFromOpeningTree_GamesSerialization(t *testing.T) {
 
 1. d4 d5 2. c4 e6 1-0`,
 	}
-	tree.IndexGame(g)
+	if _, err := tree.IndexGame(g); err != nil {
+		t.Fatalf("IndexGame error: %v", err)
+	}
 
 	resp := FromOpeningTree(tree)
 
@@ -146,8 +148,12 @@ func TestFromOpeningTree_MoveDataSerialization(t *testing.T) {
 		URL: "g2", Result: game.ResultBlack, Source: game.SourceChessCom,
 		PGN: "[Result \"0-1\"]\n\n1. d4 d5 2. c4 e6 0-1",
 	}
-	tree.IndexGame(g1)
-	tree.IndexGame(g2)
+	if _, err := tree.IndexGame(g1); err != nil {
+		t.Fatalf("IndexGame g1 error: %v", err)
+	}
+	if _, err := tree.IndexGame(g2); err != nil {
+		t.Fatalf("IndexGame g2 error: %v", err)
+	}
 
 	resp := FromOpeningTree(tree)
 
@@ -192,7 +198,9 @@ func TestFromOpeningTree_JSONFieldNames(t *testing.T) {
 
 1. e4 e5 2. Nf3 Nc6 1/2-1/2`,
 	}
-	tree.IndexGame(g)
+	if _, err := tree.IndexGame(g); err != nil {
+		t.Fatalf("IndexGame error: %v", err)
+	}
 
 	resp := FromOpeningTree(tree)
 	data, err := json.Marshal(resp)
@@ -215,9 +223,13 @@ func TestFromOpeningTree_JSONFieldNames(t *testing.T) {
 
 	// Verify game field names are camelCase.
 	var gamesMap map[string]json.RawMessage
-	json.Unmarshal(raw["games"], &gamesMap)
+	if err := json.Unmarshal(raw["games"], &gamesMap); err != nil {
+		t.Fatalf("unmarshal games: %v", err)
+	}
 	var gameRaw map[string]json.RawMessage
-	json.Unmarshal(gamesMap[g.URL], &gameRaw)
+	if err := json.Unmarshal(gamesMap[g.URL], &gameRaw); err != nil {
+		t.Fatalf("unmarshal game: %v", err)
+	}
 
 	expectedGameKeys := []string{
 		"source", "playerColor", "white", "black",
@@ -232,11 +244,15 @@ func TestFromOpeningTree_JSONFieldNames(t *testing.T) {
 
 	// Verify position field names.
 	var posMap map[string]json.RawMessage
-	json.Unmarshal(raw["positions"], &posMap)
+	if err := json.Unmarshal(raw["positions"], &posMap); err != nil {
+		t.Fatalf("unmarshal positions: %v", err)
+	}
 	// Pick any position.
 	for _, posRaw := range posMap {
 		var pos map[string]json.RawMessage
-		json.Unmarshal(posRaw, &pos)
+		if err := json.Unmarshal(posRaw, &pos); err != nil {
+			t.Fatalf("unmarshal position: %v", err)
+		}
 		for _, key := range []string{"white", "black", "draws", "moves", "games"} {
 			if _, ok := pos[key]; !ok {
 				t.Errorf("position missing key %q", key)
@@ -247,15 +263,21 @@ func TestFromOpeningTree_JSONFieldNames(t *testing.T) {
 
 	// Verify move field names.
 	var positions map[string]json.RawMessage
-	json.Unmarshal(raw["positions"], &positions)
+	if err := json.Unmarshal(raw["positions"], &positions); err != nil {
+		t.Fatalf("unmarshal positions for moves: %v", err)
+	}
 	for _, posRaw := range positions {
 		var pos struct {
 			Moves []json.RawMessage `json:"moves"`
 		}
-		json.Unmarshal(posRaw, &pos)
+		if err := json.Unmarshal(posRaw, &pos); err != nil {
+			t.Fatalf("unmarshal position for moves: %v", err)
+		}
 		if len(pos.Moves) > 0 {
 			var moveRaw map[string]json.RawMessage
-			json.Unmarshal(pos.Moves[0], &moveRaw)
+			if err := json.Unmarshal(pos.Moves[0], &moveRaw); err != nil {
+				t.Fatalf("unmarshal move: %v", err)
+			}
 			for _, key := range []string{"san", "white", "black", "draws", "games"} {
 				if _, ok := moveRaw[key]; !ok {
 					t.Errorf("move missing key %q", key)
@@ -267,7 +289,9 @@ func TestFromOpeningTree_JSONFieldNames(t *testing.T) {
 
 	// Verify source has "type" key.
 	var sourceRaw map[string]json.RawMessage
-	json.Unmarshal(gameRaw["source"], &sourceRaw)
+	if err := json.Unmarshal(gameRaw["source"], &sourceRaw); err != nil {
+		t.Fatalf("unmarshal source: %v", err)
+	}
 	if _, ok := sourceRaw["type"]; !ok {
 		t.Error("source missing key \"type\"")
 	}
@@ -280,7 +304,9 @@ func TestFromOpeningTree_GamesAsArrayNotObject(t *testing.T) {
 		URL: "url1", Result: game.ResultWhite, Source: game.SourceChessCom,
 		PGN: "[Result \"1-0\"]\n\n1. e4 e5 2. Nf3 Nc6 1-0",
 	}
-	tree.IndexGame(g)
+	if _, err := tree.IndexGame(g); err != nil {
+		t.Fatalf("IndexGame error: %v", err)
+	}
 
 	resp := FromOpeningTree(tree)
 	data, err := json.Marshal(resp)

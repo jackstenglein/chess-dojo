@@ -7,9 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fixturesDir = path.join(__dirname, '../../../fixtures/games/player-explorer');
 
-const backendResponse = JSON.parse(
+const backendResponse: Record<string, unknown> = JSON.parse(
     fs.readFileSync(path.join(fixturesDir, 'backend-response.json'), 'utf-8'),
-);
+) as Record<string, unknown>;
 
 /** Sets up a mock for the POST /explorer/player-opening-tree backend endpoint. Returns a call counter. */
 async function mockBackendRoute(

@@ -30,7 +30,7 @@ func TestGoldenFile(t *testing.T) {
 			Result: extractResult(pgn),
 			PGN:    pgn,
 		}
-		tree.IndexGame(g)
+		_, _ = tree.IndexGame(g)
 	}
 
 	got, err := json.MarshalIndent(tree, "", "  ")
@@ -74,7 +74,7 @@ func TestCorrectnessInvariants(t *testing.T) {
 			Result: extractResult(pgn),
 			PGN:    pgn,
 		}
-		tree.IndexGame(g)
+		_, _ = tree.IndexGame(g)
 	}
 
 	t.Run("game_count", func(t *testing.T) {
@@ -188,7 +188,7 @@ func BenchmarkIndex100Games(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		for _, g := range pool {
-			tree.IndexGame(g)
+			_, _ = tree.IndexGame(g)
 		}
 	}
 }
@@ -199,7 +199,7 @@ func BenchmarkIndex500Games(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		for _, g := range pool {
-			tree.IndexGame(g)
+			_, _ = tree.IndexGame(g)
 		}
 	}
 }
@@ -210,7 +210,7 @@ func BenchmarkIndex1000Games(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		for _, g := range pool {
-			tree.IndexGame(g)
+			_, _ = tree.IndexGame(g)
 		}
 	}
 }
@@ -221,7 +221,7 @@ func BenchmarkIndex5000Games(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		for _, g := range pool {
-			tree.IndexGame(g)
+			_, _ = tree.IndexGame(g)
 		}
 	}
 }
@@ -335,7 +335,7 @@ func BenchmarkEndToEnd1000(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		for _, g := range pool {
-			tree.IndexGame(g)
+			_, _ = tree.IndexGame(g)
 		}
 	}
 }

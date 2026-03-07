@@ -21,29 +21,11 @@ func mustReadFile(t *testing.T, path string) []byte {
 	return data
 }
 
-func newTestServer(t *testing.T, archivesFile, gamesFile string) *httptest.Server {
-	t.Helper()
-	archives := mustReadFile(t, archivesFile)
-	games := mustReadFile(t, gamesFile)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/pub/player/testuser/games/archives", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(archives)
-	})
-	// Serve the same games fixture for any archive month.
-	mux.HandleFunc("/pub/player/testuser/games/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
-	})
-	return httptest.NewServer(mux)
-}
-
 func TestFetchArchives(t *testing.T) {
 	archives := mustReadFile(t, "testdata/archives.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(archives)
+		_, _ = w.Write(archives)
 	}))
 	defer srv.Close()
 
@@ -61,7 +43,7 @@ func TestFetchGames(t *testing.T) {
 	games := mustReadFile(t, "testdata/games.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	}))
 	defer srv.Close()
 
@@ -104,7 +86,7 @@ func TestGameResult(t *testing.T) {
 	games := mustReadFile(t, "testdata/games.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	}))
 	defer srv.Close()
 
@@ -136,7 +118,7 @@ func TestPlayerColor(t *testing.T) {
 	games := mustReadFile(t, "testdata/games.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	}))
 	defer srv.Close()
 
@@ -160,7 +142,7 @@ func TestIsStandard(t *testing.T) {
 	games := mustReadFile(t, "testdata/games.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	}))
 	defer srv.Close()
 
@@ -241,7 +223,7 @@ func TestRateLimitRetry(t *testing.T) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"games":[]}`))
+		_, _ = w.Write([]byte(`{"games":[]}`))
 	}))
 	defer srv.Close()
 
@@ -310,7 +292,7 @@ func TestPGNExtracted(t *testing.T) {
 	games := mustReadFile(t, "testdata/games.json")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	}))
 	defer srv.Close()
 
@@ -339,7 +321,7 @@ func TestGamesIterator(t *testing.T) {
 				"https://api.chess.com", "https://api.chess.com", "https://api.chess.com", "https://api.chess.com")
 			return
 		}
-		w.Write(gamesFixture)
+		_, _ = w.Write(gamesFixture)
 	}))
 	defer srv.Close()
 
@@ -403,10 +385,10 @@ func benchGames(b *testing.B, latency time.Duration, numArchives int) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/pub/player/testuser/games/archives" {
-			w.Write([]byte(fmt.Sprintf(`{"archives":%s}`, archiveList)))
+			_, _ = w.Write([]byte(fmt.Sprintf(`{"archives":%s}`, archiveList)))
 			return
 		}
-		w.Write(gamesFixture)
+		_, _ = w.Write(gamesFixture)
 	}))
 	defer srv.Close()
 

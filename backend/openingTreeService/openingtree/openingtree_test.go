@@ -1,8 +1,7 @@
 package openingtree
 
 import (
-	"fmt"
-	"os"
+"os"
 	"strings"
 	"testing"
 
@@ -350,8 +349,12 @@ func TestIndexGame_NormalizesHalfmoveClock(t *testing.T) {
 	g1 := &game.Game{URL: "n1", Result: game.ResultWhite, PGN: pgn1}
 	g2 := &game.Game{URL: "n2", Result: game.ResultBlack, PGN: pgn2}
 
-	tree.IndexGame(g1)
-	tree.IndexGame(g2)
+	if _, err := tree.IndexGame(g1); err != nil {
+		t.Fatalf("IndexGame g1: %v", err)
+	}
+	if _, err := tree.IndexGame(g2); err != nil {
+		t.Fatalf("IndexGame g2: %v", err)
+	}
 
 	// After 1. e4 e5 2. Nf3 Nc6 — FEN has halfmove=2, fullmove=3, but
 	// normalized should strip those.
@@ -378,20 +381,6 @@ func init() {
 	}
 }
 
-func indexAllGames(b *testing.B, tree *OpeningTree) {
-	b.Helper()
-
-	games := splitPGNGames(string(samplePGN))
-	for i, pgn := range games {
-		g := &game.Game{
-			URL:    fmt.Sprintf("https://example.com/game/%d", i),
-			Result: extractResult(pgn),
-			PGN:    pgn,
-		}
-		tree.IndexGame(g)
-	}
-}
-
 func BenchmarkIndexGame(b *testing.B) {
 	games := splitPGNGames(string(samplePGN))
 	if len(games) == 0 {
@@ -402,7 +391,7 @@ func BenchmarkIndexGame(b *testing.B) {
 	for b.Loop() {
 		tree := New()
 		g := &game.Game{URL: "bench", Result: extractResult(pgn), PGN: pgn}
-		tree.IndexGame(g)
+		_, _ = tree.IndexGame(g)
 	}
 }
 

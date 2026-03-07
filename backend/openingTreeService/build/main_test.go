@@ -73,11 +73,11 @@ func newChesscomServer(t *testing.T, username string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc(fmt.Sprintf("/pub/player/%s/games/archives", username), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(archives)
+		_, _ = w.Write(archives)
 	})
 	mux.HandleFunc(fmt.Sprintf("/pub/player/%s/games/", username), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(games)
+		_, _ = w.Write(games)
 	})
 	return httptest.NewServer(mux)
 }
@@ -90,7 +90,7 @@ func newLichessServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/games/user/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
-		w.Write(games)
+		_, _ = w.Write(games)
 	})
 	return httptest.NewServer(mux)
 }
