@@ -115,11 +115,10 @@ func (g *Game) URL() string {
 
 // FetchParams configures which games to fetch from Lichess.
 type FetchParams struct {
-	Username  string
-	Max       int       // 0 means no limit
-	PGNInJSON bool      // include PGN in the JSON response (default true)
-	Since     time.Time // zero means no lower bound
-	Until     time.Time // zero means no upper bound
+	Username string
+	Max      int       // 0 means no limit
+	Since    time.Time // zero means no lower bound
+	Until    time.Time // zero means no upper bound
 }
 
 // Client fetches games from the Lichess API.
@@ -199,12 +198,7 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 func (c *Client) buildURL(params FetchParams) string {
 	username := strings.TrimSpace(params.Username)
 
-	pgnInJSON := true
-	if !params.PGNInJSON {
-		pgnInJSON = false
-	}
-
-	u := fmt.Sprintf("%s/api/games/user/%s?pgnInJson=%t", baseURL, username, pgnInJSON)
+	u := fmt.Sprintf("%s/api/games/user/%s?pgnInJson=true", baseURL, username)
 
 	if params.Max > 0 {
 		u += fmt.Sprintf("&max=%d", params.Max)

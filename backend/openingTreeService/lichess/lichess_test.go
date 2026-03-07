@@ -41,8 +41,7 @@ func TestGames_AllGames(t *testing.T) {
 	client := newTestClient(srv)
 	var collected []game.Game
 	for g, err := range client.Games(context.Background(), FetchParams{
-		Username:  "testplayer",
-		PGNInJSON: true,
+		Username: "testplayer",
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -100,9 +99,8 @@ func TestGames_WithMax(t *testing.T) {
 	client := newTestClient(srv)
 	var count int
 	for _, err := range client.Games(context.Background(), FetchParams{
-		Username:  "testplayer",
-		Max:       2,
-		PGNInJSON: true,
+		Username: "testplayer",
+		Max:      2,
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -127,8 +125,7 @@ func TestGames_DrawResult(t *testing.T) {
 	client := newTestClient(srv)
 	var collected []game.Game
 	for g, err := range client.Games(context.Background(), FetchParams{
-		Username:  "testplayer",
-		PGNInJSON: true,
+		Username: "testplayer",
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -158,8 +155,7 @@ func TestGames_PlayerColorBlack(t *testing.T) {
 	client := newTestClient(srv)
 	var collected []game.Game
 	for g, err := range client.Games(context.Background(), FetchParams{
-		Username:  "testplayer",
-		PGNInJSON: true,
+		Username: "testplayer",
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -192,8 +188,7 @@ func TestGames_ContextCancellation(t *testing.T) {
 	var count int
 	var lastErr error
 	for _, err := range client.Games(ctx, FetchParams{
-		Username:  "slowuser",
-		PGNInJSON: true,
+		Username: "slowuser",
 	}) {
 		if err != nil {
 			lastErr = err
@@ -220,8 +215,7 @@ func TestGames_HTTPError(t *testing.T) {
 	var gotErr error
 	var count int
 	for _, err := range client.Games(context.Background(), FetchParams{
-		Username:  "nonexistent",
-		PGNInJSON: true,
+		Username: "nonexistent",
 	}) {
 		if err != nil {
 			gotErr = err
@@ -247,8 +241,7 @@ func TestGames_EmptyResponse(t *testing.T) {
 	client := newTestClient(srv)
 	var count int
 	for _, err := range client.Games(context.Background(), FetchParams{
-		Username:  "newuser",
-		PGNInJSON: true,
+		Username: "newuser",
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -274,8 +267,7 @@ func TestGames_BlankLines(t *testing.T) {
 	client := newTestClient(srv)
 	var count int
 	for _, err := range client.Games(context.Background(), FetchParams{
-		Username:  "user",
-		PGNInJSON: true,
+		Username: "user",
 	}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -297,22 +289,17 @@ func TestBuildURL(t *testing.T) {
 	}{
 		{
 			name:   "basic",
-			params: FetchParams{Username: "testplayer", PGNInJSON: true},
+			params: FetchParams{Username: "testplayer"},
 			want:   "https://lichess.org/api/games/user/testplayer?pgnInJson=true",
 		},
 		{
 			name:   "with max",
-			params: FetchParams{Username: "testplayer", Max: 100, PGNInJSON: true},
+			params: FetchParams{Username: "testplayer", Max: 100},
 			want:   "https://lichess.org/api/games/user/testplayer?pgnInJson=true&max=100",
 		},
 		{
-			name:   "pgn not in json",
-			params: FetchParams{Username: "testplayer"},
-			want:   "https://lichess.org/api/games/user/testplayer?pgnInJson=false",
-		},
-		{
 			name:   "trimmed username",
-			params: FetchParams{Username: "  spacey  ", PGNInJSON: true},
+			params: FetchParams{Username: "  spacey  "},
 			want:   "https://lichess.org/api/games/user/spacey?pgnInJson=true",
 		},
 	}

@@ -113,10 +113,9 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 			case game.SourceLichess:
 				client := lichess.NewClient(nil)
 				games = client.Games(ctx, lichess.FetchParams{
-					Username:  src.Username,
-					PGNInJSON: true,
-					Since:     since,
-					Until:     until,
+					Username: src.Username,
+					Since:    since,
+					Until:    until,
 				})
 			}
 

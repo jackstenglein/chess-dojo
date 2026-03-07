@@ -132,14 +132,6 @@ interface ExportUserGamesParams {
     moves?: boolean;
 
     /**
-     * Include the full PGN within the JSON response, in a pgn field. The response type must be set to
-     * application/x-ndjson by the request Accept header.
-     *
-     * Default: true
-     */
-    pgnInJson?: boolean;
-
-    /**
      * Include the PGN tags.
      *
      * Default: true
@@ -306,7 +298,6 @@ export const lichessApi = {
             params: {
                 clocks: true,
                 evals: false,
-                pgnInJson: true,
                 opening: true,
                 accuracy: false,
                 ...params,
