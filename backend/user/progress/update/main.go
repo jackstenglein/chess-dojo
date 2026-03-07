@@ -201,6 +201,7 @@ func checkMilestoneNotification(user *database.User) {
 
 	if err := discord.SendMilestoneNotificationToSenseis(user, milestoneThreshold); err != nil {
 		log.Errorf("Failed to send milestone notification to senseis for %s: %v", user.Username, err)
+		return
 	}
 
 	if err := database.DynamoDB.AddSentMilestoneNotification(user.Username, milestoneKey); err != nil {
