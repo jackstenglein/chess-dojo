@@ -1,6 +1,7 @@
 package discord
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"time"
@@ -375,20 +376,20 @@ func SendMilestoneNotificationToSenseis(user *database.User, percent int) error 
 		MessageEmojiDojo, user.DisplayName, percent, string(user.DojoCohort), cohortEmoji,
 	)
 
-	var lastErr error
+	var errs []error
 	for _, senseiId := range senseiIds {
 		channel, err := discord.UserChannelCreate(senseiId)
 		if err != nil {
 			log.Errorf("Failed to create DM channel for sensei %s: %v", senseiId, err)
-			lastErr = err
+			errs = append(errs, err)
 			continue
 		}
 		if _, err := discord.ChannelMessageSend(channel.ID, message); err != nil {
 			log.Errorf("Failed to send milestone DM to sensei %s: %v", senseiId, err)
-			lastErr = err
+			errs = append(errs, err)
 		}
 	}
-	return lastErr
+	return stderrors.Join(errs...)
 }
 
 func SendMessageInChannel(message string, channelId string) (string, error) {
