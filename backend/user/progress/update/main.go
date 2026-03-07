@@ -19,6 +19,18 @@ import (
 
 var repository database.UserProgressUpdater = database.DynamoDB
 
+var milestone = milestoneChecker{
+	notifySenseis:    discord.SendMilestoneNotificationToSenseis,
+	recordMilestone:  database.DynamoDB.AddSentMilestoneNotification,
+	listRequirements: database.DynamoDB.ListRequirements,
+}
+
+type milestoneChecker struct {
+	notifySenseis    func(user *database.User, percent int) error
+	recordMilestone  func(username string, milestoneKey string) error
+	listRequirements func(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error)
+}
+
 type ProgressUpdateRequest struct {
 	RequirementId           string              `json:"requirementId"`
 	Cohort                  database.DojoCohort `json:"cohort"`
@@ -166,16 +178,16 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		return api.Failure(err), nil
 	}
 
-	checkMilestoneNotification(user)
+	milestone.checkNotification(user)
 
 	return api.Success(ProgressUpdateResponse{User: user, TimelineEntry: timelineEntry}), nil
 }
 
 const milestoneThreshold = 85
 
-// checkMilestoneNotification checks if the user has reached the 85% completion
+// checkNotification checks if the user has reached the 85% completion
 // milestone and, if so, sends a Discord DM to all senseis.
-func checkMilestoneNotification(user *database.User) {
+func (mc *milestoneChecker) checkNotification(user *database.User) {
 	if user == nil || !user.DojoCohort.IsValid() {
 		return
 	}
@@ -185,7 +197,7 @@ func checkMilestoneNotification(user *database.User) {
 		return
 	}
 
-	requirements, err := fetchAllRequirements(user.DojoCohort)
+	requirements, err := mc.fetchAllRequirements(user.DojoCohort)
 	if err != nil {
 		log.Errorf("Failed to fetch requirements for milestone check: %v", err)
 		return
@@ -199,21 +211,21 @@ func checkMilestoneNotification(user *database.User) {
 	log.Infof("User %s reached %d%% completion in cohort %s, notifying senseis",
 		user.Username, milestoneThreshold, user.DojoCohort)
 
-	if err := discord.SendMilestoneNotificationToSenseis(user, milestoneThreshold); err != nil {
+	if err := mc.notifySenseis(user, milestoneThreshold); err != nil {
 		log.Errorf("Failed to send milestone notification to senseis for %s: %v", user.Username, err)
 		return
 	}
 
-	if err := repository.AddSentMilestoneNotification(user.Username, milestoneKey); err != nil {
+	if err := mc.recordMilestone(user.Username, milestoneKey); err != nil {
 		log.Errorf("Failed to record milestone notification for %s: %v", user.Username, err)
 	}
 }
 
-func fetchAllRequirements(cohort database.DojoCohort) ([]*database.Requirement, error) {
+func (mc *milestoneChecker) fetchAllRequirements(cohort database.DojoCohort) ([]*database.Requirement, error) {
 	var requirements []*database.Requirement
 	var startKey string
 	for ok := true; ok; ok = startKey != "" {
-		reqs, nextKey, err := database.DynamoDB.ListRequirements(cohort, true, startKey)
+		reqs, nextKey, err := mc.listRequirements(cohort, true, startKey)
 		if err != nil {
 			return nil, err
 		}
