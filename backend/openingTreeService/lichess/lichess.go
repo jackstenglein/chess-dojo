@@ -9,6 +9,7 @@ import (
 	"iter"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
@@ -114,9 +115,11 @@ func (g *Game) URL() string {
 
 // FetchParams configures which games to fetch from Lichess.
 type FetchParams struct {
-	Username string
-	Max      int  // 0 means no limit
-	PGNInJSON bool // include PGN in the JSON response (default true)
+	Username  string
+	Max       int       // 0 means no limit
+	PGNInJSON bool      // include PGN in the JSON response (default true)
+	Since     time.Time // zero means no lower bound
+	Until     time.Time // zero means no upper bound
 }
 
 // Client fetches games from the Lichess API.
@@ -205,6 +208,12 @@ func (c *Client) buildURL(params FetchParams) string {
 
 	if params.Max > 0 {
 		u += fmt.Sprintf("&max=%d", params.Max)
+	}
+	if !params.Since.IsZero() {
+		u += fmt.Sprintf("&since=%d", params.Since.UnixMilli())
+	}
+	if !params.Until.IsZero() {
+		u += fmt.Sprintf("&until=%d", params.Until.UnixMilli())
 	}
 	return u
 }

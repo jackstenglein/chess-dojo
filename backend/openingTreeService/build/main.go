@@ -28,6 +28,8 @@ type Source struct {
 
 type BuildRequest struct {
 	Sources []Source `json:"sources"`
+	Since   *time.Time `json:"since,omitempty"`
+	Until   *time.Time `json:"until,omitempty"`
 }
 
 // SourceError reports a per-source fetch failure. The frontend can display
@@ -101,16 +103,20 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		go func(src Source) {
 			defer wg.Done()
 
+			since, until := timeOrZero(req.Since), timeOrZero(req.Until)
+
 			var games func(func(game.Game, error) bool)
 			switch src.Type {
 			case game.SourceChessCom:
 				client := chesscom.NewClient()
-				games = client.Games(ctx, src.Username, time.Time{}, time.Time{}, true)
+				games = client.Games(ctx, src.Username, since, until, true)
 			case game.SourceLichess:
 				client := lichess.NewClient(nil)
 				games = client.Games(ctx, lichess.FetchParams{
 					Username:  src.Username,
 					PGNInJSON: true,
+					Since:     since,
+					Until:     until,
 				})
 			}
 
@@ -168,4 +174,12 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(errors.Wrap(500, "Failed to serialize opening tree", err.Error(), err)), nil
 	}
 	return apiResp, nil
+}
+
+// timeOrZero dereferences a *time.Time, returning the zero value if nil.
+func timeOrZero(t *time.Time) time.Time {
+	if t == nil {
+		return time.Time{}
+	}
+	return *t
 }
