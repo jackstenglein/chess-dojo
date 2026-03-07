@@ -1,4 +1,4 @@
-import { buildPlayerOpeningTree } from '@/api/explorerApi';
+import { BackendSourceError, buildPlayerOpeningTree } from '@/api/explorerApi';
 import { logger } from '@/logging/logger';
 import {
     createContext,
@@ -26,6 +26,7 @@ export interface PlayerOpeningTreeContextType {
     filters: EditableGameFilters;
     readonlyFilters: GameFilters;
     error: string | undefined;
+    sourceErrors: BackendSourceError[];
 }
 
 const PlayerOpeningTreeContext = createContext<PlayerOpeningTreeContextType | undefined>(undefined);
@@ -42,6 +43,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
     const [sources, setSources] = useState([DEFAULT_PLAYER_SOURCE]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
+    const [sourceErrors, setSourceErrors] = useState<BackendSourceError[]>([]);
     const abortControllerRef = useRef<AbortController>(undefined);
     const openingTree = useRef<OpeningTree>(undefined);
     const [filters, readonlyFilters] = useGameFilters(sources);
@@ -71,6 +73,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
 
         setIsLoading(true);
         setError(undefined);
+        setSourceErrors([]);
         try {
             const apiSources = newSources.map((s) => ({
                 type: s.type,
@@ -83,6 +86,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
             const tree = OpeningTree.fromBackendResponse(response.data);
             logger.debug?.('API returned tree: ', tree);
             openingTree.current = tree;
+            setSourceErrors(response.data.sourceErrors ?? []);
         } catch (err) {
             if (controller.signal.aborted) {
                 return;
@@ -104,6 +108,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
     const onClear = () => {
         openingTree.current = undefined;
         setError(undefined);
+        setSourceErrors([]);
     };
 
     return (
@@ -119,6 +124,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
                 filters,
                 readonlyFilters,
                 error,
+                sourceErrors,
             }}
         >
             {children}

@@ -37,6 +37,7 @@ export function PlayerTab({ fen }: { fen: string }) {
         filters,
         readonlyFilters,
         error,
+        sourceErrors,
     } = usePlayerOpeningTree();
     const isFreeTier = useFreeTier();
     const pagination = usePlayerGames(fen, openingTree, readonlyFilters);
@@ -99,6 +100,21 @@ export function PlayerTab({ fen }: { fen: string }) {
             {error && (
                 <Alert severity='error' sx={{ mt: 1 }}>
                     {error}
+                </Alert>
+            )}
+
+            {sourceErrors.length > 0 && (
+                <Alert severity='warning' sx={{ mt: 1 }}>
+                    {sourceErrors.length === 1
+                        ? 'A source failed to load. Partial results are shown below.'
+                        : 'Some sources failed to load. Partial results are shown below.'}
+                    <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
+                        {sourceErrors.map((se, i) => (
+                            <li key={i}>
+                                {se.source === 'lichess' ? 'Lichess' : 'Chess.com'} ({se.username}): {se.error}
+                            </li>
+                        ))}
+                    </ul>
                 </Alert>
             )}
 

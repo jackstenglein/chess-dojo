@@ -90,9 +90,16 @@ export interface BuildPlayerOpeningTreeRequest {
     sources: { type: string; username: string }[];
 }
 
+export interface BackendSourceError {
+    source: string;
+    username: string;
+    error: string;
+}
+
 export interface BuildPlayerOpeningTreeResponse {
     positions: Record<string, BackendPositionData>;
     games: Record<string, BackendIndexedGame>;
+    sourceErrors?: BackendSourceError[];
 }
 
 export interface BackendPositionData {
