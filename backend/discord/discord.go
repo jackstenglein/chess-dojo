@@ -212,7 +212,7 @@ func GetSenseiDiscordIds() ([]string, error) {
 		return nil, errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
 	}
 
-	var senseiIds []string
+	senseiIds := make([]string, 0)
 	after := ""
 	for {
 		members, err := discord.GuildMembers(privateGuildId, after, 1000)
