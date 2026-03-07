@@ -406,40 +406,6 @@ func BenchmarkIndexGame(b *testing.B) {
 	}
 }
 
-func BenchmarkIndex1000Games(b *testing.B) {
-	benchmarkIndexNGames(b, 1000)
-}
-
-func BenchmarkIndex5000Games(b *testing.B) {
-	benchmarkIndexNGames(b, 5000)
-}
-
-func benchmarkIndexNGames(b *testing.B, n int) {
-	b.Helper()
-	games := splitPGNGames(string(samplePGN))
-	if len(games) == 0 {
-		b.Fatal("no games found in sample PGN")
-	}
-
-	// Build a pool of n games by cycling through the sample games.
-	pool := make([]*game.Game, n)
-	for i := range pool {
-		pgn := games[i%len(games)]
-		pool[i] = &game.Game{
-			URL:    fmt.Sprintf("g%d", i),
-			Result: extractResult(pgn),
-			PGN:    pgn,
-		}
-	}
-
-	b.ResetTimer()
-	for b.Loop() {
-		tree := New()
-		for _, g := range pool {
-			tree.IndexGame(g)
-		}
-	}
-}
 
 // splitPGNGames splits a multi-game PGN string into individual game strings.
 func splitPGNGames(data string) []string {

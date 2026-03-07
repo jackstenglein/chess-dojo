@@ -13,6 +13,8 @@ import (
 	"github.com/notnil/chess"
 )
 
+const randSeed int64 = 42
+
 var updateGolden = flag.Bool("update-golden", false, "regenerate testdata/golden.json")
 
 // ---------------------------------------------------------------------------
@@ -177,19 +179,51 @@ func TestCorrectnessInvariants(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Benchmarks: various dataset sizes
+// Benchmarks: various dataset sizes (using random game fixtures)
 // ---------------------------------------------------------------------------
 
 func BenchmarkIndex100Games(b *testing.B) {
-	benchmarkIndexNGames(b, 100)
+	pool := generateRandomGames(100, randSeed)
+	b.ResetTimer()
+	for b.Loop() {
+		tree := New()
+		for _, g := range pool {
+			tree.IndexGame(g)
+		}
+	}
 }
 
 func BenchmarkIndex500Games(b *testing.B) {
-	benchmarkIndexNGames(b, 500)
+	pool := generateRandomGames(500, randSeed)
+	b.ResetTimer()
+	for b.Loop() {
+		tree := New()
+		for _, g := range pool {
+			tree.IndexGame(g)
+		}
+	}
 }
 
-func BenchmarkIndex3000Games(b *testing.B) {
-	benchmarkIndexNGames(b, 3000)
+func BenchmarkIndex1000Games(b *testing.B) {
+	pool := generateRandomGames(1000, randSeed)
+	b.ResetTimer()
+	for b.Loop() {
+		tree := New()
+		for _, g := range pool {
+			tree.IndexGame(g)
+		}
+	}
+}
+
+func BenchmarkIndex5000Games(b *testing.B) {
+	pool := generateRandomGames(5000, randSeed)
+	b.ResetTimer()
+	for b.Loop() {
+		tree := New()
+		for _, g := range pool {
+			tree.IndexGame(g)
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -197,8 +231,7 @@ func BenchmarkIndex3000Games(b *testing.B) {
 // ---------------------------------------------------------------------------
 
 func BenchmarkParseOnly(b *testing.B) {
-	games := splitPGNGames(string(samplePGN))
-	pool := makePool(games, 1000)
+	pool := generateRandomGames(1000, randSeed)
 
 	b.ResetTimer()
 	for b.Loop() {
@@ -216,8 +249,7 @@ func BenchmarkParseOnly(b *testing.B) {
 }
 
 func BenchmarkTreeBuildOnly(b *testing.B) {
-	games := splitPGNGames(string(samplePGN))
-	pool := makePool(games, 1000)
+	pool := generateRandomGames(1000, randSeed)
 
 	// Pre-parse all games.
 	type parsed struct {
@@ -297,8 +329,7 @@ func BenchmarkTreeBuildOnly(b *testing.B) {
 }
 
 func BenchmarkEndToEnd1000(b *testing.B) {
-	games := splitPGNGames(string(samplePGN))
-	pool := makePool(games, 1000)
+	pool := generateRandomGames(1000, randSeed)
 
 	b.ResetTimer()
 	for b.Loop() {
@@ -307,18 +338,4 @@ func BenchmarkEndToEnd1000(b *testing.B) {
 			tree.IndexGame(g)
 		}
 	}
-}
-
-// makePool creates a pool of n games by cycling through the source PGN games.
-func makePool(games []string, n int) []*game.Game {
-	pool := make([]*game.Game, n)
-	for i := range pool {
-		pgn := games[i%len(games)]
-		pool[i] = &game.Game{
-			URL:    fmt.Sprintf("g%d", i),
-			Result: extractResult(pgn),
-			PGN:    pgn,
-		}
-	}
-	return pool
 }
