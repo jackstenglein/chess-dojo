@@ -204,7 +204,7 @@ func checkMilestoneNotification(user *database.User) {
 		return
 	}
 
-	if err := database.DynamoDB.AddSentMilestoneNotification(user.Username, milestoneKey); err != nil {
+	if err := repository.AddSentMilestoneNotification(user.Username, milestoneKey); err != nil {
 		log.Errorf("Failed to record milestone notification for %s: %v", user.Username, err)
 	}
 }

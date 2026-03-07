@@ -936,6 +936,10 @@ type UserProgressUpdater interface {
 
 	// UpdateUserProgress sets the given progress entry in the user's progress map.
 	UpdateUserProgress(username string, progressEntry *RequirementProgress) (*User, error)
+
+	// AddSentMilestoneNotification appends a milestone key to the user's
+	// SentMilestoneNotifications string set.
+	AddSentMilestoneNotification(username string, milestoneKey string) error
 }
 
 type AdminUserLister interface {
