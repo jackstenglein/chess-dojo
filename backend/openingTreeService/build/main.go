@@ -40,7 +40,7 @@ type SourceError struct {
 	Error    string          `json:"error"`
 }
 
-// BuildResponse is the JSON payload nested inside the gzipped response body.
+// BuildResponse is the JSON payload returned by the handler.
 type BuildResponse struct {
 	*treeapi.Response
 	SourceErrors []SourceError `json:"sourceErrors,omitempty"`
@@ -168,11 +168,7 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		Response:     treeapi.FromOpeningTree(tree),
 		SourceErrors: srcErrs,
 	}
-	apiResp, err := treeapi.SerializeResponse(resp)
-	if err != nil {
-		return api.Failure(errors.Wrap(500, "Failed to serialize opening tree", err.Error(), err)), nil
-	}
-	return apiResp, nil
+	return api.Success(resp), nil
 }
 
 // timeOrZero dereferences a *time.Time, returning the zero value if nil.

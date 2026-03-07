@@ -1,13 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -123,32 +119,12 @@ func makeEvent(username, body string) api.Request {
 	})
 }
 
-// decodeGzipBase64Response decodes a gzip+base64 API response body.
-func decodeGzipBase64Response(t *testing.T, resp api.Response) BuildResponse {
+// decodeJSONResponse decodes a plain JSON API response body.
+func decodeJSONResponse(t *testing.T, resp api.Response) BuildResponse {
 	t.Helper()
 
-	if !resp.IsBase64Encoded {
-		t.Fatal("expected base64 encoded response")
-	}
-
-	compressed, err := base64.StdEncoding.DecodeString(resp.Body)
-	if err != nil {
-		t.Fatalf("base64 decode: %v", err)
-	}
-
-	gz, err := gzip.NewReader(bytes.NewReader(compressed))
-	if err != nil {
-		t.Fatalf("gzip reader: %v", err)
-	}
-	defer gz.Close()
-
-	raw, err := io.ReadAll(gz)
-	if err != nil {
-		t.Fatalf("gzip read: %v", err)
-	}
-
 	var result BuildResponse
-	if err := json.Unmarshal(raw, &result); err != nil {
+	if err := json.Unmarshal([]byte(resp.Body), &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
 	return result
@@ -295,7 +271,7 @@ func TestHandler_ChessComOnly(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", resp.StatusCode, resp.Body)
 	}
 
-	result := decodeGzipBase64Response(t, resp)
+	result := decodeJSONResponse(t, resp)
 
 	// The chesscom fixture has 4 archives × same games file (4 games each, 3 standard).
 	// Since archives are deduplicated by URL, we get 3 standard games.
@@ -314,14 +290,6 @@ func TestHandler_ChessComOnly(t *testing.T) {
 		if g.Source.Type != "chesscom" {
 			t.Errorf("expected source type chesscom, got %s", g.Source.Type)
 		}
-	}
-
-	// Verify response encoding headers.
-	if resp.Headers["Content-Encoding"] != "gzip" {
-		t.Errorf("expected Content-Encoding gzip, got %s", resp.Headers["Content-Encoding"])
-	}
-	if resp.Headers["Content-Type"] != "application/json" {
-		t.Errorf("expected Content-Type application/json, got %s", resp.Headers["Content-Type"])
 	}
 
 	// Verify no source errors.
@@ -355,7 +323,7 @@ func TestHandler_LichessOnly(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", resp.StatusCode, resp.Body)
 	}
 
-	result := decodeGzipBase64Response(t, resp)
+	result := decodeJSONResponse(t, resp)
 
 	if len(result.Games) == 0 {
 		t.Error("expected games in response")
@@ -397,7 +365,7 @@ func TestHandler_BothSources(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", resp.StatusCode, resp.Body)
 	}
 
-	result := decodeGzipBase64Response(t, resp)
+	result := decodeJSONResponse(t, resp)
 
 	if len(result.Games) == 0 {
 		t.Error("expected games in response")
@@ -465,7 +433,7 @@ func TestHandler_SourceError(t *testing.T) {
 		t.Fatalf("expected 200 (partial success), got %d: %s", resp.StatusCode, resp.Body)
 	}
 
-	result := decodeGzipBase64Response(t, resp)
+	result := decodeJSONResponse(t, resp)
 
 	// Should have source errors for chesscom.
 	if len(result.SourceErrors) == 0 {
@@ -490,7 +458,7 @@ func TestHandler_SourceError(t *testing.T) {
 	}
 }
 
-func TestHandler_GzipBase64Encoding(t *testing.T) {
+func TestHandler_PlainJSONEncoding(t *testing.T) {
 	chesscomSrv := newChesscomServer(t, "testuser")
 	defer chesscomSrv.Close()
 
@@ -515,36 +483,19 @@ func TestHandler_GzipBase64Encoding(t *testing.T) {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
 
-	// Verify the response is valid base64.
-	if !resp.IsBase64Encoded {
-		t.Fatal("response should be base64 encoded")
+	// Verify the response is plain JSON (not base64/gzip encoded).
+	if resp.IsBase64Encoded {
+		t.Fatal("response should not be base64 encoded")
 	}
 
-	compressed, err := base64.StdEncoding.DecodeString(resp.Body)
-	if err != nil {
-		t.Fatalf("invalid base64: %v", err)
-	}
-
-	// Verify the decoded bytes are valid gzip.
-	gz, err := gzip.NewReader(bytes.NewReader(compressed))
-	if err != nil {
-		t.Fatalf("invalid gzip: %v", err)
-	}
-	defer gz.Close()
-
-	raw, err := io.ReadAll(gz)
-	if err != nil {
-		t.Fatalf("gzip read failed: %v", err)
-	}
-
-	// Verify the decompressed content is valid JSON with expected structure.
+	// Verify the body is valid JSON with expected structure.
 	var result struct {
 		Positions    map[string]*treeapi.Position `json:"positions"`
 		Games        map[string]*treeapi.Game     `json:"games"`
 		SourceErrors []SourceError                `json:"sourceErrors"`
 	}
-	if err := json.Unmarshal(raw, &result); err != nil {
-		t.Fatalf("invalid JSON in decompressed body: %v", err)
+	if err := json.Unmarshal([]byte(resp.Body), &result); err != nil {
+		t.Fatalf("invalid JSON in response body: %v", err)
 	}
 	if len(result.Positions) == 0 {
 		t.Error("expected positions in decoded response")
