@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -166,28 +163,9 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		Response:     treeapi.FromOpeningTree(tree),
 		SourceErrors: srcErrs,
 	}
-	jsonBytes, err := json.Marshal(resp)
+	apiResp, err := treeapi.SerializeResponse(resp)
 	if err != nil {
-		return api.Failure(errors.Wrap(500, "Failed to serialize opening tree", "marshaling tree", err)), nil
+		return api.Failure(errors.Wrap(500, "Failed to serialize opening tree", err.Error(), err)), nil
 	}
-
-	var buf bytes.Buffer
-	gz := gzip.NewWriter(&buf)
-	if _, err := gz.Write(jsonBytes); err != nil {
-		return api.Failure(errors.Wrap(500, "Failed to compress response", "gzip write", err)), nil
-	}
-	if err := gz.Close(); err != nil {
-		return api.Failure(errors.Wrap(500, "Failed to compress response", "gzip close", err)), nil
-	}
-
-	return api.Response{
-		StatusCode:      200,
-		IsBase64Encoded: true,
-		Body:            base64.StdEncoding.EncodeToString(buf.Bytes()),
-		Headers: map[string]string{
-			"Content-Type":                "application/json",
-			"Content-Encoding":            "gzip",
-			"Access-Control-Allow-Origin": "*",
-		},
-	}, nil
+	return apiResp, nil
 }
