@@ -54,8 +54,8 @@ const Explorer = () => {
         data: chessDbMoves,
         loading: chessDbLoading,
         error: chessDbError,
-        requestAnalysis: chessDbRequestAnalysis,
-    } = useChessDB();
+        queueAnalysis: chessDbRequestAnalysis,
+    } = useChessDB({ enableMoves: true, enablePv: false });
 
     useEffect(() => {
         if (chess) {
@@ -123,7 +123,7 @@ const Explorer = () => {
                         moves={chessDbMoves}
                         loading={chessDbLoading}
                         error={chessDbError}
-                        requestAnalysis={chessDbRequestAnalysis}
+                        requestAnalysis={() => chessDbRequestAnalysis(fen)}
                     />
                 );
             default:

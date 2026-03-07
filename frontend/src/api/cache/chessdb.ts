@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { logger } from '@/logging/logger';
 import { IDBPDatabase, openDB } from 'idb';
 
 /**
@@ -25,7 +24,7 @@ export interface ChessDbMove {
     /**
      * ChessDB's rank of this move
      */
-    rank: string;
+    rank: number;
     /**
      * ChessDB's note for this move
      */
@@ -36,6 +35,8 @@ export interface ChessDbMove {
  * A interface that represents ChessDb PV (variation)
  */
 export interface ChessDbPv {
+    /** The starting FEN of the pv. */
+    fen: string;
     /**
      * raw eval in string format
      */
@@ -55,8 +56,8 @@ export interface ChessDbPv {
 }
 
 /**
- * A interface that represents ChessDB cache object,
- * it contains both chessDb move and variation
+ * An interface that represents ChessDB cache entry.
+ * It contains both chessDb move and variation
  */
 export interface ChessDbCacheEntry {
     moves?: ChessDbMove[];
@@ -73,7 +74,7 @@ const MAX_CACHE_BYTES = 100 * 1024 * 1024; // 100 MB
 
 /**
  * Fraction of entries (by count, oldest-first) removed during a normal eviction pass.
- * A second aggressive pass uses 3× this value on QuotaExceededError.
+ * A second aggressive pass uses 3x this value on QuotaExceededError.
  */
 const EVICTION_FRACTION = 0.2;
 
@@ -94,11 +95,11 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDb(): Promise<IDBPDatabase> {
     if (!dbPromise) {
         dbPromise = openDB(DB_NAME, DB_VERSION, {
-            upgrade(db, oldVersion) {
+            upgrade(db) {
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     db.createObjectStore(STORE_NAME);
                 }
-                if (oldVersion < 2 && !db.objectStoreNames.contains(META_STORE_NAME)) {
+                if (!db.objectStoreNames.contains(META_STORE_NAME)) {
                     db.createObjectStore(META_STORE_NAME);
                 }
             },
@@ -156,7 +157,7 @@ async function evict(db: IDBPDatabase, fraction: number): Promise<void> {
     await tx.done;
 
     const evictedBytes = toEvict.reduce((sum, { meta }) => sum + (meta?.sizeBytes ?? 0), 0);
-    console.info(
+    logger.debug(
         `[chessDbCache] Evicted ${toEvict.length} entries (${(evictedBytes / 1024).toFixed(1)} KB).`,
     );
 }
@@ -192,7 +193,7 @@ export async function getChessDbCache(fen: string): Promise<ChessDbCacheEntry | 
 }
 
 /**
- * Persists move data for a position, merging with any existing PV already cached.
+ * Persists a chess DB cache entry, merging with any existing entry already cached.
  *
  * Before writing:
  *  1. Measures the exact byte size of the merged entry via JSON + TextEncoder.
@@ -200,16 +201,16 @@ export async function getChessDbCache(fen: string): Promise<ChessDbCacheEntry | 
  *     push total tracked usage over {@link MAX_CACHE_BYTES}.
  *
  * If the browser throws `QuotaExceededError`, a second aggressive eviction pass
- * (3× the normal fraction) is attempted before retrying. If that also fails the
+ * (3x the normal fraction) is attempted before retrying. If that also fails the
  * error is swallowed — a cache miss is never fatal.
  *
  * @param fen - The FEN string identifying the position.
- * @param moves - The {@link ChessDbMove} array to cache.
+ * @param entry - The {@link ChessDbCacheEntry} to cache.
  */
-export async function setChessDbMovesCache(fen: string, moves: ChessDbMove[]): Promise<void> {
+export async function setChessDbCacheEntry(fen: string, entry: ChessDbCacheEntry): Promise<void> {
     const db = await getDb();
-    const existing: ChessDbCacheEntry = (await db.get(STORE_NAME, fen)) ?? {};
-    const merged: ChessDbCacheEntry = { ...existing, moves };
+    const existing = ((await db.get(STORE_NAME, fen)) as ChessDbCacheEntry) ?? {};
+    const merged: ChessDbCacheEntry = { ...existing, ...entry };
     const sizeBytes = measureBytes(merged);
 
     try {
@@ -218,7 +219,7 @@ export async function setChessDbMovesCache(fen: string, moves: ChessDbMove[]): P
         await touchMeta(db, fen, sizeBytes);
     } catch (err) {
         if ((err as DOMException)?.name === 'QuotaExceededError') {
-            console.warn(
+            logger.warn(
                 '[chessDbCache] QuotaExceededError — forcing aggressive eviction and retrying.',
             );
             try {
@@ -226,7 +227,7 @@ export async function setChessDbMovesCache(fen: string, moves: ChessDbMove[]): P
                 await db.put(STORE_NAME, merged, fen);
                 await touchMeta(db, fen, sizeBytes);
             } catch (retryErr) {
-                console.error(
+                logger.error(
                     '[chessDbCache] Could not store moves after aggressive eviction:',
                     retryErr,
                 );
@@ -235,31 +236,4 @@ export async function setChessDbMovesCache(fen: string, moves: ChessDbMove[]): P
             throw err;
         }
     }
-}
-
-/**
- * Persists PV (principal variation) data for a position, merging with any existing
- * moves already cached.
- *
- * Before writing:
- *  1. Measures the exact byte size of the merged entry via JSON + TextEncoder.
- *  2. Evicts the oldest {@link EVICTION_FRACTION} of entries if the write would
- *     push total tracked usage over {@link MAX_CACHE_BYTES}.
- *
- * If the browser throws `QuotaExceededError`, a second aggressive eviction pass
- * (3× the normal fraction) is attempted before retrying. If that also fails the
- * error is swallowed — a cache miss is never fatal.
- *
- * @param fen - The FEN string identifying the position.
- * @param pv - The {@link ChessDbPv} object to cache.
- */
-export async function setChessDbPvCache(fen: string, pv: ChessDbPv): Promise<void> {
-    const db = await getDb();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const existing: ChessDbCacheEntry = (await db.get(STORE_NAME, fen)) ?? {};
-    const merged: ChessDbCacheEntry = { ...existing, pv };
-    const sizeBytes = measureBytes(merged);
-    await evictIfNeeded(db, sizeBytes);
-    await db.put(STORE_NAME, merged, fen);
-    await touchMeta(db, fen, sizeBytes);
 }

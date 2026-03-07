@@ -54,9 +54,7 @@ export class ChessDBService {
         this.baseUrl = baseUrl;
     }
 
-    async getAnalysis(
-        fen: string,
-    ): Promise<{ data?: { moves: ChessDbMove[]; totalMoves: number }; error?: string }> {
+    async getAnalysis(fen: string): Promise<{ data?: { moves: ChessDbMove[] }; error?: string }> {
         if (!fen) {
             return { error: 'Missing required argument: fen' };
         }
@@ -69,22 +67,19 @@ export class ChessDBService {
             const responseData = response.data;
 
             if (responseData.status !== 'ok') {
-                await this.queueAnalysis(fen);
+                void this.queueAnalysis(fen);
                 return { error: `Position evaluation not available: ${responseData.status}` };
             }
 
             const moves = responseData.moves;
-
             if (!Array.isArray(moves) || moves.length === 0) {
                 return { error: 'No candidate moves found for this position.' };
             }
 
             const processedMoves = this.processMoves(moves, fen);
-
             return {
                 data: {
                     moves: processedMoves,
-                    totalMoves: processedMoves.length,
                 },
             };
         } catch (error) {
@@ -109,6 +104,7 @@ export class ChessDBService {
             }
 
             const pvData: ChessDbPv = {
+                fen,
                 score: responseData.score,
                 depth: responseData.depth + 22, // for pv chessDB doesn't properly assign a pv where it left from analysis on a request, +22 estimate can be taken according to chessdb devs for proper estimate.
                 pv: responseData.pv ?? [],
