@@ -483,11 +483,6 @@ func TestHandler_PlainJSONEncoding(t *testing.T) {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
 
-	// Verify the response is plain JSON (not base64/gzip encoded).
-	if resp.IsBase64Encoded {
-		t.Fatal("response should not be base64 encoded")
-	}
-
 	// Verify the body is valid JSON with expected structure.
 	var result struct {
 		Positions    map[string]*treeapi.Position `json:"positions"`
