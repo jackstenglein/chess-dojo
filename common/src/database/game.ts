@@ -313,6 +313,12 @@ export interface GameInfo extends GameKey {
 
     /** The time class of the game. Currently set only on master games. */
     timeClass?: string;
+
+    /** Whether the game has been marked as well annotated by an admin. */
+    isFeatured?: string;
+
+    /** The date the game was marked as well annotated in ISO format. */
+    featuredAt?: string;
 }
 
 export interface CommentOwner {
