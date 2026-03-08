@@ -5,7 +5,7 @@ import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import DeleteCustomTaskModal from '@/components/profile/trainingPlan/DeleteCustomTaskModal';
 import Position from '@/components/profile/trainingPlan/Position';
 import ProgressHistory from '@/components/profile/trainingPlan/ProgressHistory';
-import ProgressUpdater from '@/components/profile/trainingPlan/ProgressUpdater';
+import { ProgressUpdater } from '@/components/profile/trainingPlan/ProgressUpdater';
 import { TimerContext } from '@/components/timer/TimerContext';
 import ModalTitle from '@/components/ui/ModalTitle';
 import {
@@ -437,7 +437,7 @@ function ExpirationChip({ requirement }: { requirement: Requirement }) {
     );
 }
 
-const RepeatChip: React.FC<{ requirement: Requirement }> = ({ requirement }) => {
+const RepeatChip = ({ requirement }: { requirement: Requirement }) => {
     let title = '';
     let label = '';
 
@@ -462,7 +462,7 @@ const RepeatChip: React.FC<{ requirement: Requirement }> = ({ requirement }) => 
     );
 };
 
-const BlockerChips: React.FC<{ requirement: Requirement }> = ({ requirement }) => {
+const BlockerChips = ({ requirement }: { requirement: Requirement }) => {
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const requirementMap = useMemo(() => {
         return requirements.reduce<Record<string, Requirement>>((acc, r) => {
