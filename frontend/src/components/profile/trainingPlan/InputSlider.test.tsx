@@ -16,7 +16,7 @@ describe('InputSlider', () => {
         fireEvent.pointerDown(incrementButton);
 
         expect(setValue).toHaveBeenCalledWith(expect.any(Function));
-        const updateFunction = setValue.mock.calls[0][0];
+        const updateFunction = setValue.mock.calls[0][0] as (prev: number) => number;
         expect(updateFunction(10)).toBe(11);
     });
 
@@ -28,7 +28,7 @@ describe('InputSlider', () => {
         fireEvent.pointerDown(decrementButton);
 
         expect(setValue).toHaveBeenCalledWith(expect.any(Function));
-        const updateFunction = setValue.mock.calls[0][0];
+        const updateFunction = setValue.mock.calls[0][0] as (prev: number) => number;
         expect(updateFunction(10)).toBe(9);
     });
 
