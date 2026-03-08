@@ -86,6 +86,100 @@ export function followPosition(idToken: string, request: FollowPositionRequest) 
     );
 }
 
+export interface SourceCursor {
+    lastTimestamp: string;
+    completed?: boolean;
+}
+
+export interface Cursor {
+    sources: Record<string, SourceCursor>;
+    totalGames: number;
+}
+
+export interface BuildPlayerOpeningTreeRequest {
+    sources: { type: string; username: string }[];
+    since?: string;
+    until?: string;
+    cursor?: Cursor;
+}
+
+export interface BackendSourceError {
+    source: string;
+    username: string;
+    error: string;
+}
+
+export interface BuildPlayerOpeningTreeResponse {
+    positions: Record<string, BackendPositionData>;
+    games: Record<string, BackendIndexedGame>;
+    sourceErrors?: BackendSourceError[];
+    truncated?: boolean;
+    cursor?: Cursor;
+}
+
+export interface BackendPositionData {
+    white: number;
+    black: number;
+    draws: number;
+    moves: BackendMoveData[] | null;
+    games: string[];
+}
+
+export interface BackendMoveData {
+    san: string;
+    white: number;
+    black: number;
+    draws: number;
+    games: string[];
+}
+
+export interface BackendIndexedGame {
+    source: { type: string };
+    playerColor: string;
+    white: string;
+    black: string;
+    whiteElo: number;
+    blackElo: number;
+    result: string;
+    plyCount: number;
+    rated: boolean;
+    url: string;
+    headers: Record<string, string>;
+    timeClass: string;
+}
+
+/**
+ * Builds a player opening tree on the backend.
+ * @param idToken The id token of the current signed-in user.
+ * @param sources The player sources to build the tree from.
+ * @returns The serialized opening tree.
+ */
+export function buildPlayerOpeningTree(
+    idToken: string,
+    sources: BuildPlayerOpeningTreeRequest['sources'],
+    signal?: AbortSignal,
+    cursor?: Cursor,
+    since?: string,
+    until?: string,
+) {
+    const body: BuildPlayerOpeningTreeRequest = { sources, cursor };
+    if (since) {
+        body.since = since;
+    }
+    if (until) {
+        body.until = until;
+    }
+    return axiosService.post<BuildPlayerOpeningTreeResponse>(
+        `/explorer/player-opening-tree`,
+        body,
+        {
+            headers: { Authorization: 'Bearer ' + idToken },
+            functionName: 'buildPlayerOpeningTree',
+            signal,
+        },
+    );
+}
+
 export interface ListFollowedPositionsResponse {
     /** The followed positions */
     positions: ExplorerPositionFollower[];
