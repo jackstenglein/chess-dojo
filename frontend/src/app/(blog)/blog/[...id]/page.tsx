@@ -6,6 +6,7 @@ import { BlogMarkdown } from '../../../(scoreboard)/admin/blog/[...id]/MarkdownE
 import { Container } from '../common/Container';
 import { Footer } from '../common/Footer';
 import { Header } from '../common/Header';
+import BlogComments from './BlogComments';
 
 const BLOG_OWNER = 'chessdojo';
 
@@ -48,6 +49,7 @@ export default async function BlogPage({ params }: PageProps<'/blog/[...id]'>) {
             <Stack mt={3}>
                 <BlogMarkdown>{blog.content}</BlogMarkdown>
                 <Footer utmCampaign={`blog-${id}`} />
+                <BlogComments comments={blog.comments ?? null} owner={BLOG_OWNER} id={id} />
             </Stack>
         </Container>
     );

@@ -1,4 +1,7 @@
+import { type Comment } from '../blog/api';
 import { ScoreboardDisplay } from './requirement';
+
+export { type Comment } from '../blog/api';
 
 /** The categories of a requirement. */
 export enum RequirementCategory {
@@ -66,24 +69,6 @@ export interface TimelineEntry {
     reactions: Record<string, Reaction> | null;
 }
 
-export interface Comment {
-    /** The username of the person that posted the comment. */
-    owner: string;
-    /** The display name of the person that posted the comment. */
-    ownerDisplayName: string;
-    /** The cohort of the person that posted the comment. */
-    ownerCohort: string;
-    /** The previous cohort of the person that posted the comment. */
-    ownerPreviousCohort: string;
-    /** The id of the comment. */
-    id: string;
-    /** The time the comment was created, in ISO 8601. */
-    createdAt: string;
-    /** The time the comment was updated, in ISO 8601. */
-    updatedAt: string;
-    /** The text content of the comment. */
-    content: string;
-}
 
 /** Metadata for a graduation timeline entry. */
 export interface TimelineGraduationInfo {

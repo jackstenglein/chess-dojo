@@ -1,4 +1,5 @@
 import {
+    CLOUD_EVAL_ENABLED,
     ENGINE_ADD_INFO_ON_EVAL_CLICK,
     ENGINE_ADD_INFO_ON_MOVE_CLICK,
     ENGINE_DEPTH,
@@ -70,6 +71,11 @@ export default function Settings() {
     const [highlightEngineLines, setHighlightEngineLines] = useLocalStorage<boolean>(
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
+    );
+
+    const [cloudEvalEnabled, setCloudEvalEnabled] = useLocalStorage<boolean>(
+        CLOUD_EVAL_ENABLED.Key,
+        CLOUD_EVAL_ENABLED.Default,
     );
 
     useEffect(() => {
@@ -208,6 +214,16 @@ export default function Settings() {
                                 />
                             }
                             label='Highlight engine lines in PGN text'
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={cloudEvalEnabled}
+                                    onChange={(e) => setCloudEvalEnabled(e.target.checked)}
+                                />
+                            }
+                            label='Show Chess Cloud Database evaluation'
                         />
                     </Stack>
 

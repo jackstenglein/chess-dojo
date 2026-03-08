@@ -62,9 +62,9 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import React, { ReactNode, useState, type JSX } from 'react';
+import { TimerButton, TimerMenuItem } from '../../timer/TimerButton';
 import DarkModeToggle from './DarkModeToggle';
 import ProfileButton from './ProfileButton';
-import { TimerButton, TimerMenuItem } from './TimerButton';
 import UnauthenticatedMenu from './UnauthenticatedMenu';
 
 const SEARCH_NAVBAR_ITEM = {

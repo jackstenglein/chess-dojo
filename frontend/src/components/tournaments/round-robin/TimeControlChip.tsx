@@ -22,7 +22,7 @@ export function TimeControlChip({ cohort }: { cohort: string }) {
     );
 }
 
-function getTimeControl(cohort: string): string {
+export function getTimeControl(cohort: string): string {
     const cohortIdx = dojoCohorts.indexOf(cohort);
     if (cohortIdx < 0) {
         return '';

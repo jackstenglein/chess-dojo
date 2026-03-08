@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    LectureTierUser,
     listGameReviewCohorts,
     ListGameReviewCohortsResponse,
     setGameReviewCohorts,
@@ -24,6 +25,7 @@ import {
     CardContent,
     CardHeader,
     Container,
+    Divider,
     Menu,
     MenuItem,
     Stack,
@@ -34,6 +36,7 @@ import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
 import { Frequency, RRule } from 'rrule';
+import { groupLectureUsersByCohort } from './groupLectureUsersByCohort';
 
 interface EditableGameReviewCohort extends GameReviewCohort {
     editDiscordChannelId?: string;
@@ -47,6 +50,7 @@ export function AdminGameReviewCohorts() {
     const { user } = useAuth();
     const request = useRequest<ListGameReviewCohortsResponse>();
     const [unassignedUsers, setUnassignedUsers] = useState<GameReviewCohortMember[]>([]);
+    const [lectureUsers, setLectureUsers] = useState<LectureTierUser[]>([]);
     const [editor, setEditor] = useState<EditableGameReviewCohort[]>([]);
     const [moving, setMoving] = useState<{
         anchorElement: HTMLElement;
@@ -64,6 +68,7 @@ export function AdminGameReviewCohorts() {
                     request.onSuccess(resp.data);
                     setEditor(resp.data.gameReviewCohorts);
                     setUnassignedUsers(resp.data.unassignedUsers);
+                    setLectureUsers(resp.data.lectureUsers);
                 })
                 .catch((err) => request.onFailure(err));
         }
@@ -235,6 +240,7 @@ export function AdminGameReviewCohorts() {
                 request.onSuccess({
                     gameReviewCohorts: resp.data.gameReviewCohorts,
                     unassignedUsers,
+                    lectureUsers,
                 });
                 setEditor(resp.data.gameReviewCohorts);
                 saveRequest.onSuccess();
@@ -249,6 +255,8 @@ export function AdminGameReviewCohorts() {
             setErrors({});
         }
     };
+
+    const groupedLectureUsers = groupLectureUsersByCohort(lectureUsers);
 
     return (
         <Container sx={{ py: 5 }}>
@@ -267,17 +275,18 @@ export function AdminGameReviewCohorts() {
                                         displayName={m.displayName}
                                         size={30}
                                     />
-                                    <Link
-                                        href={`/profile/${m.username}`}
-                                        target='_blank'
-                                        ml={1}
-                                        mr={3}
-                                    >
+                                    <Link href={`/profile/${m.username}`} target='_blank' ml={1}>
                                         {m.displayName}
                                     </Link>
+                                    {m.dojoCohort && (
+                                        <Typography variant='body2' color='text.secondary' ml={0.5}>
+                                            ({m.dojoCohort})
+                                        </Typography>
+                                    )}
 
                                     <Button
                                         variant='outlined'
+                                        sx={{ ml: 2 }}
                                         onClick={(e) => onStartMove(e, -1, m.username)}
                                     >
                                         Move
@@ -424,13 +433,22 @@ export function AdminGameReviewCohorts() {
                                             href={`/profile/${m.username}`}
                                             target='_blank'
                                             ml={1}
-                                            mr={3}
                                         >
                                             {m.displayName}
                                         </Link>
+                                        {m.dojoCohort && (
+                                            <Typography
+                                                variant='body2'
+                                                color='text.secondary'
+                                                ml={0.5}
+                                            >
+                                                ({m.dojoCohort})
+                                            </Typography>
+                                        )}
 
                                         <Button
                                             variant='outlined'
+                                            sx={{ ml: 2 }}
                                             onClick={(e) => onStartMove(e, i, m.username)}
                                         >
                                             Move
@@ -466,6 +484,48 @@ export function AdminGameReviewCohorts() {
                         </Typography>
                     )}
                 </Stack>
+
+                <Card variant='outlined' data-testid='lecture-tier-card'>
+                    <CardHeader title='Lecture Tier Users' />
+                    <CardContent>
+                        {lectureUsers.length === 0 ? (
+                            <Typography>No lecture tier users</Typography>
+                        ) : (
+                            <Stack spacing={2}>
+                                {[...groupedLectureUsers.entries()].map(
+                                    ([cohort, users], groupIndex) => (
+                                        <Stack key={cohort} spacing={1}>
+                                            {groupIndex > 0 && <Divider />}
+                                            <Typography variant='subtitle2' color='text.secondary'>
+                                                {cohort}
+                                            </Typography>
+                                            {users.map((u) => (
+                                                <Stack
+                                                    key={u.username}
+                                                    direction='row'
+                                                    alignItems='center'
+                                                >
+                                                    <Avatar
+                                                        username={u.username}
+                                                        displayName={u.displayName}
+                                                        size={30}
+                                                    />
+                                                    <Link
+                                                        href={`/profile/${u.username}`}
+                                                        target='_blank'
+                                                        ml={1}
+                                                    >
+                                                        {u.displayName}
+                                                    </Link>
+                                                </Stack>
+                                            ))}
+                                        </Stack>
+                                    ),
+                                )}
+                            </Stack>
+                        )}
+                    </CardContent>
+                </Card>
 
                 <Menu
                     open={!!moving}

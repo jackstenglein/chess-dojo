@@ -50,6 +50,7 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
                 multiline
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 10000 } }}
             />
 
             {request.isLoading() ? (

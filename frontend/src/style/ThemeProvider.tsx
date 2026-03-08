@@ -92,6 +92,7 @@ declare module '@mui/material/styles' {
         DataGrid: {
             bg: string;
             headerBg: string;
+            pinnedBg: string;
         };
 
         // Calendar colors
@@ -145,6 +146,10 @@ declare module '@mui/material' {
         darkBlue: true;
     }
 
+    interface IconButtonPropsColorOverrides {
+        dojoOrange: true;
+    }
+
     interface SvgIconPropsColorOverrides extends RequirementCategoryOverrides {
         opening: true;
         endgame: true;
@@ -164,7 +169,11 @@ declare module '@mui/material' {
 const defaultTheme = createTheme({});
 
 const defaultPalette = {
-    DataGrid: { bg: 'transparent', headerBg: 'var(--mui-palette-background-paper)' },
+    DataGrid: {
+        bg: 'transparent',
+        headerBg: 'var(--mui-palette-background-paper)',
+        pinnedBg: 'var(--mui-palette-background-paper)',
+    },
     meet: defaultTheme.palette.augmentColor({
         color: {
             main: '#93a84f',

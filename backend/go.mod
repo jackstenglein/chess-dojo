@@ -3,7 +3,7 @@ module github.com/jackstenglein/chess-dojo-scheduler/backend
 go 1.25.0
 
 require (
-	github.com/aws/aws-lambda-go v1.52.0
+	github.com/aws/aws-lambda-go v1.53.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stripe/stripe-go/v81 v81.4.0
 )

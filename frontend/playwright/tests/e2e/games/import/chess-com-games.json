@@ -1,0 +1,246 @@
+{
+    "games": [
+        {
+            "url": "https://www.chess.com/game/live/1001",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.28\"]\n[White \"testuser\"]\n[Black \"opponent1\"]\n[Result \"1-0\"]\n[TimeControl \"600\"]\n\n1. e4 e5 1-0",
+            "time_control": "600",
+            "end_time": 1706400000,
+            "rated": true,
+            "uuid": "cc001",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1500,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1480,
+                "result": "resigned",
+                "username": "opponent1",
+                "uuid": "user-uuid-2"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1002",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.25\"]\n[White \"opponent2\"]\n[Black \"testuser\"]\n[Result \"0-1\"]\n[TimeControl \"600\"]\n\n1. d4 d5 0-1",
+            "time_control": "600",
+            "end_time": 1706140000,
+            "rated": true,
+            "uuid": "cc002",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1520,
+                "result": "checkmated",
+                "username": "opponent2",
+                "uuid": "user-uuid-3"
+            },
+            "black": {
+                "rating": 1490,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1003",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.20\"]\n[White \"testuser\"]\n[Black \"opponent3\"]\n[Result \"1/2-1/2\"]\n[TimeControl \"180\"]\n\n1. e4 e5 1/2-1/2",
+            "time_control": "180",
+            "end_time": 1705708800,
+            "rated": true,
+            "uuid": "cc003",
+            "time_class": "blitz",
+            "rules": "chess",
+            "white": {
+                "rating": 1495,
+                "result": "repetition",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1510,
+                "result": "repetition",
+                "username": "opponent3",
+                "uuid": "user-uuid-4"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1004",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.15\"]\n[White \"opponent4\"]\n[Black \"testuser\"]\n[Result \"1-0\"]\n[TimeControl \"600\"]\n\n1. e4 c5 1-0",
+            "time_control": "600",
+            "end_time": 1705276800,
+            "rated": true,
+            "uuid": "cc004",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1550,
+                "result": "win",
+                "username": "opponent4",
+                "uuid": "user-uuid-5"
+            },
+            "black": {
+                "rating": 1485,
+                "result": "resigned",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1005",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.10\"]\n[White \"testuser\"]\n[Black \"opponent5\"]\n[Result \"1-0\"]\n[TimeControl \"600\"]\n\n1. e4 e5 1-0",
+            "time_control": "600",
+            "end_time": 1704844800,
+            "rated": true,
+            "uuid": "cc005",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1505,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1470,
+                "result": "checkmated",
+                "username": "opponent5",
+                "uuid": "user-uuid-6"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1006",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.05\"]\n[White \"opponent6\"]\n[Black \"testuser\"]\n[Result \"0-1\"]\n[TimeControl \"60\"]\n\n1. d4 d5 0-1",
+            "time_control": "60",
+            "end_time": 1704412800,
+            "rated": true,
+            "uuid": "cc006",
+            "time_class": "bullet",
+            "rules": "chess",
+            "white": {
+                "rating": 1530,
+                "result": "checkmated",
+                "username": "opponent6",
+                "uuid": "user-uuid-7"
+            },
+            "black": {
+                "rating": 1495,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1007",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2023.12.31\"]\n[White \"testuser\"]\n[Black \"opponent7\"]\n[Result \"1-0\"]\n[TimeControl \"900+10\"]\n\n1. e4 e5 1-0",
+            "time_control": "900+10",
+            "end_time": 1703980800,
+            "rated": true,
+            "uuid": "cc007",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1510,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1500,
+                "result": "resigned",
+                "username": "opponent7",
+                "uuid": "user-uuid-8"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1008",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2023.12.26\"]\n[White \"opponent8\"]\n[Black \"testuser\"]\n[Result \"1-0\"]\n[TimeControl \"180\"]\n\n1. c4 e5 1-0",
+            "time_control": "180",
+            "end_time": 1703548800,
+            "rated": false,
+            "uuid": "cc008",
+            "time_class": "blitz",
+            "rules": "chess",
+            "white": {
+                "rating": 1520,
+                "result": "win",
+                "username": "opponent8",
+                "uuid": "user-uuid-9"
+            },
+            "black": {
+                "rating": 1480,
+                "result": "timeout",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1009",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2023.12.21\"]\n[White \"testuser\"]\n[Black \"opponent9\"]\n[Result \"1/2-1/2\"]\n[TimeControl \"600\"]\n\n1. Nf3 Nf6 1/2-1/2",
+            "time_control": "600",
+            "end_time": 1703116800,
+            "rated": true,
+            "uuid": "cc009",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1500,
+                "result": "agreed",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1510,
+                "result": "agreed",
+                "username": "opponent9",
+                "uuid": "user-uuid-10"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1010",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2023.12.16\"]\n[White \"opponent10\"]\n[Black \"testuser\"]\n[Result \"0-1\"]\n[TimeControl \"600\"]\n\n1. e4 e5 0-1",
+            "time_control": "600",
+            "end_time": 1702684800,
+            "rated": true,
+            "uuid": "cc010",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1490,
+                "result": "resigned",
+                "username": "opponent10",
+                "uuid": "user-uuid-11"
+            },
+            "black": {
+                "rating": 1505,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1011",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2023.12.11\"]\n[White \"testuser\"]\n[Black \"opponent11\"]\n[Result \"1-0\"]\n[TimeControl \"180\"]\n\n1. d4 d5 1-0",
+            "time_control": "180",
+            "end_time": 1702252800,
+            "rated": true,
+            "uuid": "cc011",
+            "time_class": "blitz",
+            "rules": "chess",
+            "white": {
+                "rating": 1502,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1498,
+                "result": "checkmated",
+                "username": "opponent11",
+                "uuid": "user-uuid-12"
+            }
+        }
+    ]
+}

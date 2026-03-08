@@ -373,7 +373,7 @@ function ScheduleClassicalGameDialogDetails() {
                 starting time of 30 minutes (you cannot play 1+90).
             </Typography>
 
-            <Typography mt={3}>
+            <Typography component='div' sx={{ mt: 3 }}>
                 We recommend playing OTB at local tournaments or clubs. The Dojo also offers
                 multiple options for playing classical games online:
                 <ul>

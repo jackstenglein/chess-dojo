@@ -5,7 +5,7 @@ import {
 import { useEffect, useMemo } from 'react';
 import { GameResult } from '../../database/game';
 import { ChesscomGame, ChesscomGameResult, ChesscomTimeClass, useChesscomGames } from './chesscom';
-import { LichessGame, LichessPerfType, LichessTimeClass, useLichessUserGames } from './lichess';
+import { LichessGame, LichessTimeClass, useLichessUserGames } from './lichess';
 
 /** A unified interface for online games from any source. */
 export interface OnlineGame {
@@ -332,8 +332,7 @@ export function useOnlineGames(params: UseOnlineGamesParams) {
 
         requestLichessGames({
             username: lichess,
-            max: 20,
-            perfType: [LichessPerfType.Rapid, LichessPerfType.Classical].join(','),
+            max: 50,
         });
     }, [lichess, requestLichessGames]);
 
