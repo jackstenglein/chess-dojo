@@ -22,6 +22,16 @@ export interface LiveClass {
     name: string;
     /** The type of the class. */
     type: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
+    /** The cohort range of the class. */
+    cohortRange: string;
+    /** The tags of the class. */
+    tags: string[];
+    /** The teacher of the class. */
+    teacher: string;
+    /** The description of the class. */
+    description: string;
+    /** The cover image URL of the class. */
+    imageUrl: string;
     /** The recordings of the class. */
     recordings: {
         /** The date of the recording. */

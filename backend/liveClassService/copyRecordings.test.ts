@@ -1,58 +1,75 @@
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { describe, expect, it } from 'vitest';
-import { parseMeetRecordingFileName } from './copyRecordings';
+import { getS3Key } from './copyRecordings';
+import type { MeetingInfo } from './meetingInfo';
 
-describe('parseMeetRecordingFileName', () => {
-    it('returns meetName and meetDate for valid recording file name', () => {
-        const result = parseMeetRecordingFileName(
-            'Team Morphy Peer Review - 2/27/2025 10:00 AM - Recording',
+const mockMeetingInfo: MeetingInfo = {
+    type: SubscriptionTier.Lecture,
+    name: 'Test Lecture',
+    googleMeetName: 'Test Lecture | GM Someone',
+    googleMeetIds: ['abc-def-ghi'],
+    cohortRange: '1200+',
+    tags: [],
+    teacher: 'GM Someone',
+    description: '',
+    imageUrl: '',
+    awsS3Folder: 'test-lecture',
+};
+
+describe('getS3Key', () => {
+    it('returns empty string when meetingInfos is empty', () => {
+        const fileName = 'Test Lecture - 2025-02-27 10:00 AM - Recording';
+        expect(getS3Key(fileName, [])).toBe('');
+    });
+
+    it('returns empty string when fileName does not match any meeting info', () => {
+        const fileName = 'Unknown Meeting - 2025-02-27 10:00 AM - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo])).toBe('');
+    });
+
+    it('returns empty string when fileName has no date matching MEET_DATE_REGEX', () => {
+        const fileName = 'Test Lecture | GM Someone - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo])).toBe('');
+    });
+
+    it('returns S3 key when fileName matches by googleMeetName with YYYY-MM-DD date', () => {
+        const fileName = 'Test Lecture | GM Someone - 2025-02-27 10:00 AM - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo])).toBe('LECTURE/test-lecture/2025-02-27');
+    });
+
+    it('returns S3 key when fileName matches by googleMeetId with YYYY-MM-DD date', () => {
+        const fileName = 'abc-def-ghi - 2025-03-01 2:00 PM - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo])).toBe('LECTURE/test-lecture/2025-03-01');
+    });
+
+    it('normalizes YYYY/MM/DD date to YYYY-MM-DD in S3 key', () => {
+        const fileName = 'Test Lecture | GM Someone - 2025/02/27 10:00 AM - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo])).toBe('LECTURE/test-lecture/2025-02-27');
+    });
+
+    it('uses first matching meeting info when multiple match', () => {
+        const otherInfo: MeetingInfo = {
+            ...mockMeetingInfo,
+            type: SubscriptionTier.GameReview,
+            googleMeetName: 'Other Meeting',
+            googleMeetIds: ['xyz-xyz-xyz'],
+            awsS3Folder: 'other-folder',
+        };
+        const fileName = 'Test Lecture | GM Someone - 2025-02-27 10:00 AM - Recording';
+        expect(getS3Key(fileName, [mockMeetingInfo, otherInfo])).toBe(
+            'LECTURE/test-lecture/2025-02-27',
         );
-        expect(result).toEqual({
-            meetName: 'Team Morphy Peer Review',
-            meetDate: '2-27-2025',
-        });
     });
 
-    it('normalizes date by replacing slashes with hyphens', () => {
-        const result = parseMeetRecordingFileName(
-            'The Najdorf 1100+ | IM David Pruess - 12/1/2024 3:00 PM - Recording',
-        );
-        expect(result).toEqual({
-            meetName: 'The Najdorf 1100+ | IM David Pruess',
-            meetDate: '12-1-2024',
-        });
-    });
-
-    it('uses only the first segment of the date (before space)', () => {
-        const result = parseMeetRecordingFileName(
-            'Team Lasker Sensei Review - 6/15/2025 2:30 PM - Recording',
-        );
-        expect(result).toEqual({
-            meetName: 'Team Lasker Sensei Review',
-            meetDate: '6-15-2025',
-        });
-    });
-
-    it('returns null for name without " - Recording" suffix', () => {
-        expect(parseMeetRecordingFileName('Team Morphy Peer Review - 2/27/2025')).toBeNull();
-        expect(parseMeetRecordingFileName('Some Random Video.mp4')).toBeNull();
-    });
-
-    it('returns null for empty string', () => {
-        expect(parseMeetRecordingFileName('')).toBeNull();
-    });
-
-    it('returns null for name with only one " - " segment', () => {
-        expect(parseMeetRecordingFileName('Just One Part - Recording')).toBeNull();
-    });
-
-    it('handles meeting names containing " - " (multiple segments)', () => {
-        const result = parseMeetRecordingFileName(
-            'Starter d4 Repertoire/Typical Plans 1100+ | IM Kostya Kavutskiy - 1/10/2025 9:00 AM - Recording',
-        );
-        expect(result).toEqual({
-            meetName: 'Starter d4 Repertoire/Typical Plans 1100+ | IM Kostya Kavutskiy',
-            meetDate: '1-10-2025',
-        });
+    it('returns correct key for GameReview tier', () => {
+        const gameReviewInfo: MeetingInfo = {
+            ...mockMeetingInfo,
+            type: SubscriptionTier.GameReview,
+            googleMeetName: 'Peer Review',
+            googleMeetIds: ['peer-review-id'],
+            awsS3Folder: 'peer-review',
+        };
+        const fileName = 'Peer Review - 2025-02-28 11:00 AM - Recording';
+        expect(getS3Key(fileName, [gameReviewInfo])).toBe('GAME_REVIEW/peer-review/2025-02-28');
     });
 });
-

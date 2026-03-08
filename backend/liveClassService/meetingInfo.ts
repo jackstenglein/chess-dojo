@@ -1,125 +1,48 @@
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { readFileSync } from 'fs';
 import { ApiError } from '../directoryService/api';
 
-interface MeetingInfo {
-    keyPrefix: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
-    meetId: string;
+export interface MeetingInfo extends Omit<LiveClass, 'recordings'> {
+    /** The name of the meeting. */
+    name: string;
+    /** The name of the Google Meet for the meeting. */
+    googleMeetName: string;
+    /** The IDs of the Google Meet for the meeting. */
+    googleMeetIds: string[];
+    /** The AWS S3 folder of the meeting's recordings. */
+    awsS3Folder: string;
 }
 
-export const MEETING_INFO: Record<string, Record<string, MeetingInfo>> = {
-    prod: {
-        'Team Morphy Peer Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-        'Team Morphy Sensei Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-
-        'Team Steinitz Peer Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-        'Team Steinitz Sensei Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-
-        'Team Lasker Peer Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-        'Team Lasker Sensei Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-
-        'Team Capablanca Peer Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-        'Team Capablanca Sensei Review': {
-            keyPrefix: SubscriptionTier.GameReview,
-            meetId: '',
-        },
-
-        'The Najdorf 1100+ | IM David Pruess': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Endgame Fundamentals 0-1200 | GM Jesse Kraai': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Calculation 1000+ | IM Kostya Kavutskiy': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Endgames 1100+ | WGM Tatev Abrahamyan': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Starter d4 Repertoire/Typical Plans 1100+ | IM Kostya Kavutskiy': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Middlegame Decision Making 1100+ | GM Josh Friedel': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-        'Board Visualization U1000 | GM Jesse Kraai': {
-            keyPrefix: SubscriptionTier.Lecture,
-            meetId: '',
-        },
-    },
-};
-
-function init() {
-    if (process.env.CI === 'true' || process.env.VITEST === 'true') {
-        return;
-    }
-
-    const csv = readFileSync('meetingIds.csv', 'utf8');
-    if (!csv) {
+/**
+ * Parses the meeting info file into a list of meeting info objects. The
+ * given tier will be added to the meeting info objects.
+ * @param filePath The path to the meeting info file.
+ * @param tier The tier to add to the meeting info objects.
+ * @returns A list of meeting info objects.
+ */
+export function parseMeetingInfo(
+    filePath: string,
+    tier: SubscriptionTier.GameReview | SubscriptionTier.Lecture,
+): MeetingInfo[] {
+    const data = readFileSync(filePath, 'utf8');
+    if (!data) {
         throw new ApiError({
             statusCode: 500,
             publicMessage: 'Internal server error',
-            privateMessage: 'meetingIds.csv file not found or empty',
+            privateMessage: `meeting info file ${filePath} not found or empty`,
         });
     }
 
-    const lines = csv.trim().split('\n');
-    if (lines.length !== Object.keys(MEETING_INFO.prod).length) {
+    try {
+        const meetingInfos: Omit<MeetingInfo, 'type'>[] = JSON.parse(data);
+        return meetingInfos.map((info) => ({ ...info, type: tier }));
+    } catch (error) {
         throw new ApiError({
             statusCode: 500,
             publicMessage: 'Internal server error',
-            privateMessage:
-                'meetingIds.csv file does not have same number of entries as MEETING_INFO.prod',
+            privateMessage: `meeting info file ${filePath} is not valid JSON`,
+            cause: error,
         });
     }
-
-    for (const line of lines) {
-        const [name, id] = line.split(',');
-        if (!name || !id) {
-            throw new ApiError({
-                statusCode: 500,
-                publicMessage: 'Internal server error',
-                privateMessage: `meetingIds.csv file has invalid line: ${line}`,
-            });
-        }
-
-        if (!MEETING_INFO.prod[name]) {
-            throw new ApiError({
-                statusCode: 500,
-                publicMessage: 'Internal server error',
-                privateMessage: `meetingIds.csv file has invalid name "${name}" not present in MEETING_INFO.prod`,
-            });
-        }
-
-        MEETING_INFO.prod[name].meetId = id;
-    }
 }
-
-init();
