@@ -104,6 +104,32 @@ func TestUpdateUser(t *testing.T) {
 				DojoCohort: "2400+",
 			},
 		},
+		{
+			name:     "ProfaneBio",
+			username: testUsername,
+			update: &database.UserUpdate{
+				Bio: aws.String("This bio is shit"),
+			},
+			wantCode: 400,
+			wantErr:  true,
+		},
+		{
+			name: "cleanBio",
+			username: testUsername,
+			update: &database.UserUpdate{
+				Bio: aws.String("This bio is clean"),
+			},
+			wantCode: 200,
+			wantUser: &database.User{
+				Username:     testUsername,
+				Email:        testEmail,
+				Name:         testName,
+				DisplayName:  "testDisplayName",
+				Bio:          "This bio is clean",
+				RatingSystem: database.Fide,
+				DojoCohort: "2400+",
+			},
+		},
 	}
 
 	for _, tc := range table {
