@@ -12,6 +12,7 @@ import { DirectoryCacheProvider } from '@/components/profile/directories/Directo
 import { BadgeCard } from '@/components/profile/info/BadgeCard';
 import DojoScoreCard from '@/components/profile/info/DojoScoreCard';
 import { HeatmapCard } from '@/components/profile/info/HeatmapCard';
+import { NewsfeedCard } from '@/components/profile/info/NewsfeedCard';
 import { UserCard } from '@/components/profile/info/UserCard';
 import { LiveClassesTab } from '@/components/profile/liveClasses/LiveClassesTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
@@ -104,15 +105,19 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                 display: 'grid',
                 gridTemplateAreas: {
                     xs: `"userInfo"
-                         "profile"`,
+                         "profile"
+                         "newsfeed"`,
                     sm: `"userInfo scorecard"
-                         "profile profile"`,
+                         "profile profile"
+                         "newsfeed newsfeed"`,
                     md: `"userInfo heatmap"
-                         "profile profile"`,
+                         "profile profile"
+                         "newsfeed newsfeed"`,
                     lg: `"userInfo  profile"
                          "heatmap   profile"
                          "scorecard profile"
                          "badges    profile"
+                         "newsfeed  profile"
                          ".         profile"`,
                 },
                 gridTemplateColumns: {
@@ -122,7 +127,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                     xl: 'minmax(350px, 400px) minmax(750px, 1500px)',
                 },
                 gridTemplateRows: {
-                    lg: 'auto auto auto auto 1fr',
+                    lg: 'auto auto auto auto auto 1fr',
                 },
                 gridAutoColumns: 0,
                 columnGap: 2,
@@ -131,10 +136,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                     gridTemplateAreas: `"userInfo  profile heatmap"
                                         "userInfo  profile badges"
                                         "scorecard profile badges"
+                                        "newsfeed  profile ."
                                         ".         profile ."`,
                     gridTemplateColumns:
                         'minmax(350px, 400px) minmax(750px, 1500px) minmax(350px, 400px)',
-                    gridTemplateRows: 'auto auto auto 1fr',
+                    gridTemplateRows: 'auto auto auto auto 1fr',
                     columnGap: 4,
                 },
             }}
@@ -261,6 +267,12 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                 {isLarge && (
                     <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
                         <BadgeCard user={user} />
+                    </Box>
+                )}
+
+                {currentUserProfile && (
+                    <Box sx={{ gridArea: 'newsfeed' }}>
+                        <NewsfeedCard />
                     </Box>
                 )}
             </TimelineProvider>

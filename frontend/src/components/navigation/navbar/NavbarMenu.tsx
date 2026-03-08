@@ -63,7 +63,6 @@ import {
 } from '@mui/material';
 import React, { ReactNode, useState, type JSX } from 'react';
 import DarkModeToggle from './DarkModeToggle';
-import { NewsfeedButton } from './NewsfeedButton';
 import ProfileButton from './ProfileButton';
 import { TimerButton, TimerMenuItem } from './TimerButton';
 import UnauthenticatedMenu from './UnauthenticatedMenu';
@@ -515,7 +514,6 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const hide5 = useMediaQuery('(min-width:810px)');
     const hide6 = useMediaQuery('(min-width:450px)');
 
-    const showNewsfeed = useMediaQuery('(min-width:720px)');
     const showHelp = useMediaQuery('(min-width:680px)');
     const showSearch = useMediaQuery('(min-width:640px)');
     const showTimer = useMediaQuery('(min-width:584px)');
@@ -563,24 +561,6 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         ));
 
     const endItems: JSX.Element[] = [];
-
-    if (showNewsfeed) {
-        endItems.push(<NewsfeedButton key='newsfeed-icon' />);
-    } else {
-        menuItems.push(
-            <NavMenuItem
-                key='newsfeed-icon'
-                item={{
-                    id: 'newsfeed-shortcut',
-                    name: 'Newsfeed',
-                    icon: <Feed />,
-                    href: '/newsfeed',
-                }}
-                openItems={openItems}
-                handleClose={onClose}
-            />,
-        );
-    }
 
     if (showSearch) {
         endItems.push(<NavIconButton key='search' item={SEARCH_NAVBAR_ITEM} />);
