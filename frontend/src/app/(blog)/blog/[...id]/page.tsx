@@ -15,7 +15,11 @@ async function fetchBlog(id: string) {
     return response.data;
 }
 
-export async function generateMetadata({ params }: PageProps<'/blog/[...id]'>): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string[] }>;
+}): Promise<Metadata> {
     const { id: idSegments } = await params;
     const id = idSegments.join('/');
     const blog = await fetchBlog(id);
@@ -34,7 +38,7 @@ export async function generateMetadata({ params }: PageProps<'/blog/[...id]'>): 
     };
 }
 
-export default async function BlogPage({ params }: PageProps<'/blog/[...id]'>) {
+export default async function BlogPage({ params }: { params: Promise<{ id: string[] }> }) {
     const { id: idSegments } = await params;
     const id = idSegments.join('/');
     const blog = await fetchBlog(id);
