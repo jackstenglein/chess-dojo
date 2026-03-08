@@ -4,7 +4,6 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { ListNewsfeedResponse } from '@/api/newsfeedApi';
 import { useAuth } from '@/auth/Auth';
-import { Link } from '@/components/navigation/Link';
 import NewsfeedItem from '@/components/newsfeed/NewsfeedItem';
 import { TimelineEntry } from '@/database/timeline';
 import { Feed, OpenInNew } from '@mui/icons-material';
@@ -55,7 +54,6 @@ export function NewsfeedCard() {
                             <Typography variant='h6'>Newsfeed</Typography>
                         </Stack>
                         <Button
-                            component={Link}
                             href='/newsfeed'
                             size='small'
                             endIcon={<OpenInNew fontSize='small' />}
