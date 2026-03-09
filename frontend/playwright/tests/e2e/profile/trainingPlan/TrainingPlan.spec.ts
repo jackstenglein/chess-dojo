@@ -57,6 +57,38 @@ test.describe('Training Plan', () => {
             });
         });
         await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
+        await page.route(`${getEnv('apiBaseUrl')}/requirements/*`, async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    requirements: [
+                        {
+                            id: '38f46441-7a4e-4506-8632-166bcbe78baf',
+                            status: 'ACTIVE',
+                            category: 'Games',
+                            name: 'Play Classical Games',
+                            description: '',
+                            freeDescription: '',
+                            counts: { '1400-1500': 40 },
+                            startCount: 0,
+                            numberOfCohorts: 1,
+                            unitScore: 0,
+                            totalScore: 0,
+                            scoreboardDisplay: 'PROGRESS_BAR',
+                            progressBarSuffix: 'Games',
+                            updatedAt: '2025-01-01T00:00:00Z',
+                            sortPriority: '',
+                            expirationDays: -1,
+                            isFree: false,
+                            atomic: false,
+                            expectedMinutes: 0,
+                        },
+                    ],
+                    lastEvaluatedKey: '',
+                }),
+            });
+        });
 
         await page.goto('/profile?view=progress');
 
