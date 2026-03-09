@@ -18,6 +18,7 @@ import {
     GameReviewCohort,
     GameReviewCohortMember,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import { Add } from '@mui/icons-material';
 import {
     Button,
@@ -416,13 +417,22 @@ export function AdminGameReviewCohorts() {
                             </Stack>
 
                             <Typography variant='h6' sx={{ mt: 3 }}>
-                                Members
+                                Members ({Object.keys(grc.members).length})
                             </Typography>
                             <Typography variant='subtitle1' color='textSecondary'>
                                 Remove all members to delete this cohort
                             </Typography>
                             <Stack spacing={1} mt={1}>
-                                {Object.values(grc.members).map((m) => (
+                                {Object.values(grc.members)
+                                    .sort((a, b) => {
+                                        const [aVal] = getCohortRangeInt(a.dojoCohort);
+                                        const [bVal] = getCohortRangeInt(b.dojoCohort);
+                                        if (aVal < 0 && bVal < 0) return 0;
+                                        if (aVal < 0) return 1;
+                                        if (bVal < 0) return -1;
+                                        return aVal - bVal;
+                                    })
+                                    .map((m) => (
                                     <Stack key={m.username} direction='row' alignItems='center'>
                                         <Avatar
                                             username={m.username}
@@ -486,7 +496,7 @@ export function AdminGameReviewCohorts() {
                 </Stack>
 
                 <Card variant='outlined' data-testid='lecture-tier-card'>
-                    <CardHeader title='Lecture Tier Users' />
+                    <CardHeader title={`Lecture Tier Users (${lectureUsers.length})`} />
                     <CardContent>
                         {lectureUsers.length === 0 ? (
                             <Typography>No lecture tier users</Typography>
