@@ -63,7 +63,7 @@ test.describe('Directories', () => {
     });
 
     test('links to game import page', async ({ page }) => {
-        await page.getByRole('button', { name: 'Add' }).click();
+        await page.getByRole('button', { name: 'Add', exact: true }).click();
 
         await expect(page.getByRole('menuitem', { name: 'New Game' })).toHaveAttribute(
             'href',
@@ -72,13 +72,13 @@ test.describe('Directories', () => {
     });
 
     test('displays new directory dialog', async ({ page }) => {
-        await page.getByRole('button', { name: 'Add' }).click();
+        await page.getByRole('button', { name: 'Add', exact: true }).click();
         await page.getByText('New Folder').click();
         await expect(page.getByTestId('update-directory-form')).toBeVisible();
     });
 
     test('requires name to create new directory', async ({ page }) => {
-        await page.getByRole('button', { name: 'Add' }).click();
+        await page.getByRole('button', { name: 'Add', exact: true }).click();
         await page.getByText('New Folder').click();
         await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
@@ -87,7 +87,7 @@ test.describe('Directories', () => {
     });
 
     test('requires name to be <= 100 characters', async ({ page }) => {
-        await page.getByRole('button', { name: 'Add' }).click();
+        await page.getByRole('button', { name: 'Add', exact: true }).click();
         await page.getByText('New Folder').click();
         await expect(page.getByTestId('update-directory-save-button')).toBeDisabled();
 
@@ -171,7 +171,7 @@ test.describe('Directories', () => {
     test('creates and deletes directory', async ({ page }) => {
         const name = uuidv4();
 
-        await page.getByRole('button', { name: 'Add' }).click();
+        await page.getByRole('button', { name: 'Add', exact: true }).click();
         await page.getByText('New Folder').click();
 
         await page.getByTestId('update-directory-name').locator('input').fill(name);
