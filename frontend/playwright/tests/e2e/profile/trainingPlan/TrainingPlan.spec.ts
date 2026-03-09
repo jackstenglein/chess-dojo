@@ -63,6 +63,8 @@ test.describe('Training Plan', () => {
         const fullPlan = page.getByText('Full Training Plan').first();
         await expect(fullPlan).toBeVisible();
 
+        await page.getByTestId('Games-header').click();
+
         const minimumChip = page.getByText('Minimum Reached').first();
         await expect(minimumChip).toBeVisible();
 
