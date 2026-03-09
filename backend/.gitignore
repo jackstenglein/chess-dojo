@@ -1,6 +1,7 @@
 # Secret files
 oauth.yml
 chesscom.yml
+lichess.yml
 ai.yml
 discord.yml
 wix.yml

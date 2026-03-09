@@ -9,6 +9,7 @@ import { AccountCircle, Lock } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
@@ -57,6 +58,10 @@ export const SignInForm = () => {
 
     const onChesscomSignIn = () => {
         auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent) => {
@@ -169,6 +174,7 @@ export const SignInForm = () => {
                     }}
                 />
                 <ChesscomSignInButton onClick={onChesscomSignIn} />
+                <LichessSignInButton onClick={onLichessSignIn} />
             </Stack>
         </Stack>
     );

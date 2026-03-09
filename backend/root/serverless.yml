@@ -105,6 +105,7 @@ resources:
       DependsOn:
         - UserPoolIdentityProvider
         - ChesscomIdentityProvider
+        - LichessIdentityProvider
       Properties:
         ClientName: ${sls:stage}-chess-dojo-scheduler-auth-client
         GenerateSecret: false
@@ -129,7 +130,7 @@ resources:
           - ${file(../config-${sls:stage}.yml):mobileHost}
           - https://www.dojoscoreboard.com
           - https://beta.chessdojo.club
-        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google, Chesscom], [COGNITO]]
+        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google, Chesscom, Lichess], [COGNITO]]
         AccessTokenValidity: 24
         IdTokenValidity: 24
 
@@ -206,6 +207,29 @@ resources:
             - https://chesscom-oidc.chessdojo.club
             - https://chesscom-oidc-dev.chessdojo.club
           authorize_scopes: 'openid email profile'
+        AttributeMapping:
+          username: 'sub'
+          email: 'email'
+          name: 'name'
+          email_verified: 'email_verified'
+
+    LichessIdentityProvider:
+      Condition: IsNotSimple
+      Type: AWS::Cognito::UserPoolIdentityProvider
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        UserPoolId: { Ref: CognitoUserPool }
+        ProviderName: 'Lichess'
+        ProviderType: 'OIDC'
+        ProviderDetails:
+          client_id: 'lichess-oidc'
+          client_secret: 'none'
+          attributes_request_method: 'GET'
+          oidc_issuer: !If
+            - IsProd
+            - https://lichess-oidc.chessdojo.club
+            - https://lichess-oidc-dev.chessdojo.club
+          authorize_scopes: 'openid email:read'
         AttributeMapping:
           username: 'sub'
           email: 'email'

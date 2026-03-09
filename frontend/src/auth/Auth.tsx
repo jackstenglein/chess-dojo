@@ -66,7 +66,7 @@ interface AuthContextType {
     getCurrentUser: () => Promise<void>;
     updateUser: (update: Partial<User>) => void;
 
-    socialSignin: (provider: 'Google' | 'Chesscom', redirectUri: string) => void;
+    socialSignin: (provider: 'Google' | 'Chesscom' | 'Lichess', redirectUri: string) => void;
     signin: (email: string, password: string) => Promise<void>;
 
     signup: (
@@ -105,7 +105,7 @@ const AuthContext = createContext<AuthContextType>({
     signout: defaultAuthContextFunction,
 });
 
-function socialSignin(provider: 'Google' | 'Chesscom', redirectUri: string) {
+function socialSignin(provider: 'Google' | 'Chesscom' | 'Lichess', redirectUri: string) {
     trackEvent(EventType.Login, { method: provider });
     const providerArg =
         provider === 'Google'

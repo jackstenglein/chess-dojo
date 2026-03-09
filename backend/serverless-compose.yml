@@ -246,3 +246,6 @@ services:
 
   chesscomOIDCService:
     path: chesscomOIDCService
+
+  lichessOIDCService:
+    path: lichessOIDCService

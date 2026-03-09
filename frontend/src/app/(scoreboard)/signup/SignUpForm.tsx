@@ -11,6 +11,7 @@ import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-
 import { LoadingButton } from '@mui/lab';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { VerifyEmailForm } from './VerifyEmailForm';
@@ -76,6 +77,10 @@ export const SignUpForm = () => {
 
     const onChesscomSignIn = () => {
         auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -194,6 +199,7 @@ export const SignUpForm = () => {
                     }}
                 />
                 <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
+                <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 <Typography variant='body2' component='div' gutterBottom>
                     Already have an account?{' '}
                     <Link href='/signin' data-testid='signin-button'>
