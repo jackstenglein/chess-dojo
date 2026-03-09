@@ -243,3 +243,6 @@ services:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
+  chesscomOIDCService:
+    path: chesscomOIDCService

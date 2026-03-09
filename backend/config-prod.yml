@@ -25,6 +25,7 @@ quickGameReviewPriceId: 'price_1Ou1BnGilmvijaecDU2PD2tx'
 deepGameReviewPriceId: 'price_1Ou1BeGilmvijaecRni6KRJU'
 hostedZoneId: 'Z03344272RB3HOTGLLT2U'
 cognitoUserPoolDomain: 'auth.chessdojo.club'
+chesscomOidcDomain: 'chesscom-oidc.chessdojo.club'
 coaches: 'google_108763076343237273295,google_100898429805622416873,google_111679691028507818183,google_114391023466287136398,8acfb26f-641f-4508-a15b-581d6b9b6230,6f4d7501-f2d1-48b3-89f6-de48c19975d6,decfa2e5-bf30-46e0-860b-39129b92da48,d1ccd792-c671-40bf-92f2-f188c53bd938,google_115870989454145021075'
 mongoUri: mongodb+srv://chess-dojo-prod.bsc8oxy.mongodb.net/?retryWrites=true&w=majority&appName=chess-dojo-prod
 meetRecordingsDriveFolder: '102cXp0zEAGaMMBC0hzNnxdB5PeStvYfX'

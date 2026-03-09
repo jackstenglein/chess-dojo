@@ -8,6 +8,7 @@ import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Lock } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
@@ -52,6 +53,10 @@ export const SignInForm = () => {
 
     const onGoogleSignIn = () => {
         auth.socialSignin('Google', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent) => {
@@ -163,6 +168,7 @@ export const SignInForm = () => {
                         margin: '20px',
                     }}
                 />
+                <ChesscomSignInButton onClick={onChesscomSignIn} />
             </Stack>
         </Stack>
     );

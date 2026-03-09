@@ -1,0 +1,179 @@
+# Deploys the Chess.com OIDC proxy service.
+# This service wraps Chess.com's OAuth 2.0 in an OIDC-compatible interface
+# so AWS Cognito can federate sign-in through Chess.com.
+#
+# Prerequisites before deploying:
+#   1. Generate an RSA-2048 key pair and store it in AWS Secrets Manager:
+#        aws secretsmanager create-secret \
+#          --name "{stage}/chesscom-oidc/rsa-key" \
+#          --secret-string '{"privateKey":"-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"}'
+#   2. Fill in backend/chesscom.yml with the Chess.com client_id and client_secret.
+#   3. Create a DNS record for the custom domain (deployed via CloudFormation below).
+
+service: chess-dojo-chesscom-oidc
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+    oidcBaseUrl: https://${file(../config-${sls:stage}.yml):chesscomOidcDomain}
+    rsaSecretName: ${sls:stage}/chesscom-oidc/rsa-key
+    chesscomClientId: ${file(../chesscom.yml):client_id}
+    chesscomClientSecret: ${file(../chesscom.yml):client_secret}
+  deploymentMethod: direct
+
+functions:
+  discovery:
+    handler: discovery.discoveryHandler
+    events:
+      - httpApi:
+          path: /.well-known/openid-configuration
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action: secretsmanager:GetSecretValue
+        Resource: !Sub arn:aws:secretsmanager:us-east-1:${AWS::AccountId}:secret:${sls:stage}/chesscom-oidc/rsa-key*
+
+  jwks:
+    handler: discovery.jwksHandler
+    events:
+      - httpApi:
+          path: /.well-known/jwks.json
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action: secretsmanager:GetSecretValue
+        Resource: !Sub arn:aws:secretsmanager:us-east-1:${AWS::AccountId}:secret:${sls:stage}/chesscom-oidc/rsa-key*
+
+  authorize:
+    handler: authorize.authorizeHandler
+    events:
+      - httpApi:
+          path: /authorize
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt OidcStateTable.Arn
+
+  callback:
+    handler: token.callbackHandler
+    events:
+      - httpApi:
+          path: /callback
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt OidcStateTable.Arn
+
+  token:
+    handler: token.tokenHandler
+    events:
+      - httpApi:
+          path: /token
+          method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+          - dynamodb:PutItem
+        Resource: !GetAtt OidcStateTable.Arn
+      - Effect: Allow
+        Action: secretsmanager:GetSecretValue
+        Resource: !Sub arn:aws:secretsmanager:us-east-1:${AWS::AccountId}:secret:${sls:stage}/chesscom-oidc/rsa-key*
+
+  userinfo:
+    handler: userinfo.userinfoHandler
+    events:
+      - httpApi:
+          path: /userinfo
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt OidcStateTable.Arn
+
+resources:
+  Conditions:
+    IsNotSimple: !Not [!Equals ['${sls:stage}', 'simple']]
+
+  Resources:
+    OidcStateTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${sls:stage}-chesscom-oidc-state
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+
+    # ACM certificate for the OIDC custom domain.
+    # Must be in us-east-1 for API Gateway regional endpoints.
+    OidcDomainCertificate:
+      Condition: IsNotSimple
+      Type: AWS::CertificateManager::Certificate
+      Properties:
+        DomainName: ${file(../config-${sls:stage}.yml):chesscomOidcDomain}
+        ValidationMethod: DNS
+        DomainValidationOptions:
+          - DomainName: ${file(../config-${sls:stage}.yml):chesscomOidcDomain}
+            HostedZoneId: ${file(../config-${sls:stage}.yml):hostedZoneId}
+
+    # API Gateway V2 custom domain for the OIDC proxy.
+    # Cognito requires a stable issuer URL, so this domain must not change.
+    OidcApiDomainName:
+      Condition: IsNotSimple
+      Type: AWS::ApiGatewayV2::DomainName
+      DependsOn: OidcDomainCertificate
+      Properties:
+        DomainName: ${file(../config-${sls:stage}.yml):chesscomOidcDomain}
+        DomainNameConfigurations:
+          - CertificateArn: !Ref OidcDomainCertificate
+            EndpointType: REGIONAL
+
+    OidcApiMapping:
+      Condition: IsNotSimple
+      Type: AWS::ApiGatewayV2::ApiMapping
+      DependsOn: OidcApiDomainName
+      Properties:
+        ApiId: !Ref HttpApi
+        DomainName: !Ref OidcApiDomainName
+        Stage: $default
+
+    OidcDnsRecord:
+      Condition: IsNotSimple
+      Type: AWS::Route53::RecordSet
+      DependsOn: OidcApiDomainName
+      Properties:
+        HostedZoneId: ${file(../config-${sls:stage}.yml):hostedZoneId}
+        Name: ${file(../config-${sls:stage}.yml):chesscomOidcDomain}
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt OidcApiDomainName.RegionalDomainName
+          HostedZoneId: !GetAtt OidcApiDomainName.RegionalHostedZoneId
+
+  Outputs:
+    OidcStateTableArn:
+      Value: !GetAtt OidcStateTable.Arn

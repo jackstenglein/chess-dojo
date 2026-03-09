@@ -10,6 +10,7 @@ import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { VerifyEmailForm } from './VerifyEmailForm';
@@ -71,6 +72,10 @@ export const SignUpForm = () => {
 
     const onGoogleSignIn = () => {
         auth.socialSignin('Google', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -188,6 +193,7 @@ export const SignUpForm = () => {
                         transformOrigin: 'center',
                     }}
                 />
+                <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
                 <Typography variant='body2' component='div' gutterBottom>
                     Already have an account?{' '}
                     <Link href='/signin' data-testid='signin-button'>

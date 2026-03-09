@@ -102,6 +102,9 @@ resources:
     UserClient:
       Type: AWS::Cognito::UserPoolClient
       DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      DependsOn:
+        - UserPoolIdentityProvider
+        - ChesscomIdentityProvider
       Properties:
         ClientName: ${sls:stage}-chess-dojo-scheduler-auth-client
         GenerateSecret: false
@@ -126,7 +129,7 @@ resources:
           - ${file(../config-${sls:stage}.yml):mobileHost}
           - https://www.dojoscoreboard.com
           - https://beta.chessdojo.club
-        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google], [COGNITO]]
+        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google, Chesscom], [COGNITO]]
         AccessTokenValidity: 24
         IdTokenValidity: 24
 
@@ -182,6 +185,31 @@ resources:
           email: 'email'
           name: 'name'
           username: 'sub'
+          email_verified: 'email_verified'
+
+    ChesscomIdentityProvider:
+      Condition: IsNotSimple
+      Type: AWS::Cognito::UserPoolIdentityProvider
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        UserPoolId: { Ref: CognitoUserPool }
+        ProviderName: 'Chesscom'
+        ProviderType: 'OIDC'
+        ProviderDetails:
+          # client_id/secret here are for Cognito↔proxy auth, not Chess.com credentials.
+          # The proxy Lambda holds the real Chess.com OAuth credentials via env vars.
+          client_id: 'chesscom-oidc'
+          client_secret: 'none'
+          attributes_request_method: 'GET'
+          oidc_issuer: !If
+            - IsProd
+            - https://chesscom-oidc.chessdojo.club
+            - https://chesscom-oidc-dev.chessdojo.club
+          authorize_scopes: 'openid email profile'
+        AttributeMapping:
+          username: 'sub'
+          email: 'email'
+          name: 'name'
           email_verified: 'email_verified'
 
     ######### End Cognito Resources ###############
