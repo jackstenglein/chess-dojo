@@ -170,7 +170,7 @@ export function useFilters(): Filters {
             );
         }
 
-        setSearchParams({});
+        
     }, [searchParams, setSearchParams, setSessions, setTypes, setTournamentTimeControls]);
 
     const weekStartOn = user?.weekStart ?? originalWeekStartOn;
