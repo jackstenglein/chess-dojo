@@ -105,14 +105,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                 display: 'grid',
                 gridTemplateAreas: {
                     xs: `"userInfo"
-                         "profile"
-                         "newsfeed"`,
+                         "profile"`,
                     sm: `"userInfo scorecard"
-                         "profile profile"
-                         "newsfeed newsfeed"`,
+                         "profile profile"`,
                     md: `"userInfo heatmap"
-                         "profile profile"
-                         "newsfeed newsfeed"`,
+                         "profile profile"`,
                     lg: `"userInfo  profile"
                          "heatmap   profile"
                          "scorecard profile"
@@ -127,7 +124,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                     xl: 'minmax(350px, 400px) minmax(750px, 1500px)',
                 },
                 gridTemplateRows: {
-                    lg: 'auto auto auto auto auto 1fr',
+                    lg: `auto auto auto auto auto 1fr`,
                 },
                 gridAutoColumns: 0,
                 columnGap: 2,
@@ -140,7 +137,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                         ".         profile ."`,
                     gridTemplateColumns:
                         'minmax(350px, 400px) minmax(750px, 1500px) minmax(350px, 400px)',
-                    gridTemplateRows: 'auto auto auto auto 1fr',
+                    gridTemplateRows: `auto auto auto auto 1fr`,
                     columnGap: 4,
                 },
             }}
