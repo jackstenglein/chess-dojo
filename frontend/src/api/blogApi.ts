@@ -5,6 +5,7 @@ import {
     DeleteBlogCommentRequest,
     GetBlogRequest,
     ListBlogsRequest,
+    UpdateBlogCommentReactionRequest,
     UpdateBlogCommentRequest,
     UpdateBlogRequest,
 } from '@jackstenglein/chess-dojo-common/src/blog/api';
@@ -121,4 +122,15 @@ export function deleteBlogComment(
         data: { commentId },
         functionName: 'deleteBlogComment',
     });
+}
+
+export function updateBlogCommentReaction(
+    props: Pick<UpdateBlogCommentReactionRequest, 'owner' | 'id' | 'commentId'>,
+    reactionType: string,
+): Promise<AxiosResponse<Blog>> {
+    return axiosService.put<Blog>(
+        `/blog/comments/reactions/${props.owner}/${props.id}`,
+        { commentId: props.commentId, reactionType },
+        { functionName: 'updateBlogCommentReaction' },
+    );
 }

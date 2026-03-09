@@ -1,6 +1,11 @@
 'use client';
 
-import { createBlogComment, deleteBlogComment, updateBlogComment } from '@/api/blogApi';
+import {
+    createBlogComment,
+    deleteBlogComment,
+    updateBlogComment,
+    updateBlogCommentReaction,
+} from '@/api/blogApi';
 import { useAuth } from '@/auth/Auth';
 import CommentEditor from '@/components/comments/CommentEditor';
 import CommentList from '@/components/comments/CommentList';
@@ -37,6 +42,10 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
         setComments(resp.data.comments ?? null);
     };
 
+    const handleReact = async (commentId: string, reactionType: string) => {
+        const resp = await updateBlogCommentReaction({ owner, id, commentId }, reactionType);
+        setComments(resp.data.comments ?? null);
+    };
     return (
         <>
             <Divider sx={{ my: 3 }} />
@@ -51,6 +60,7 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                 onDelete={user ? handleDelete : undefined}
                 threaded
                 onSubmitReply={user ? handleSubmitReply : undefined}
+                onReact={user ? handleReact : undefined}
             />
             {user ? (
                 <CommentEditor<Blog, { owner: string; id: string }>
