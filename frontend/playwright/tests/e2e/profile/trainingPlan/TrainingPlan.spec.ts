@@ -36,7 +36,7 @@ test.describe('Training Plan', () => {
                     progress: {
                         '38f46441-7a4e-4506-8632-166bcbe78baf': {
                             requirementId: '38f46441-7a4e-4506-8632-166bcbe78baf',
-                            counts: { '1400-1500': 44 },
+                            counts: { ALL_COHORTS: 44 },
                             minutesSpent: { '1400-1500': 3000 },
                             updatedAt: '2025-09-10T18:14:39Z',
                         },
