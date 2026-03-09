@@ -28,9 +28,9 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
+import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
 import { MINIMUM_TASKS } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
-import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
 
 interface FullTrainingPlanItemProps {
     user: User;
