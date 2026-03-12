@@ -5,7 +5,7 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import { TabContext } from '@mui/lab';
 import { Box, CardContent, Tab, Tabs } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SiLichess } from 'react-icons/si';
 import { useLocalStorage } from 'usehooks-ts';
 import { usePosition } from '../../../api/cache/positions';
@@ -40,15 +40,20 @@ const Explorer = () => {
     const searchParams = useSearchParams();
     const { chess } = useChess();
 
+    const hasSetTabFromParams = useRef(false);
     useEffect(() => {
+        if (hasSetTabFromParams.current) {
+            return;
+        }
         const explorer = searchParams.get('explorer');
         if (
             explorer &&
             Object.values(ExplorerDatabaseType).includes(explorer as ExplorerDatabaseType)
         ) {
+            hasSetTabFromParams.current = true;
             setTab(explorer as ExplorerDatabaseType);
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [searchParams, setTab]);
 
     const [fen, setFen] = useState(chess?.fen() ?? startingPositionFen);
     const { position, request, putPosition } = usePosition(fen);
