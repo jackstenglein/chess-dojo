@@ -25,9 +25,12 @@ import {
 import { Box } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { notFound } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
 import PgnErrorBoundary from './PgnErrorBoundary';
+
+/** Module-level cache so it survives React Strict Mode remounts in dev. */
+const gameCache = new Map<string, Game>();
 
 const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id: string }) => {
     const api = useApi();
@@ -44,7 +47,6 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
     const [currentCohort, setCurrentCohort] = useState(initialCohort);
     const [currentId, setCurrentId] = useState(initialId);
     const [currentGame, setCurrentGame] = useState<Game | undefined>();
-    const gameCacheRef = useRef(new Map<string, Game>());
 
     const cohort = currentCohort;
     const id = currentId;
@@ -52,7 +54,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
     const reset = request.reset;
     useEffect(() => {
         if (cohort && id) {
-            const cached = gameCacheRef.current.get(`${cohort}/${id}`);
+            const cached = gameCache.get(`${cohort}/${id}`);
             if (cached) {
                 setCurrentGame(cached);
                 return;
@@ -62,13 +64,13 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
     }, [cohort, id, reset]);
 
     useEffect(() => {
-        if (!request.isSent() && cohort && id && !gameCacheRef.current.has(`${cohort}/${id}`)) {
+        if (!request.isSent() && cohort && id && !gameCache.has(`${cohort}/${id}`)) {
             request.onStart();
             api.getGame(cohort, id)
                 .then((response) => {
                     const game = response.data;
                     mergeSuggestedVariations(game);
-                    gameCacheRef.current.set(`${cohort}/${id}`, game);
+                    gameCache.set(`${cohort}/${id}`, game);
                     setCurrentGame(game);
                     request.onSuccess(game);
                 })
@@ -155,7 +157,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         const current = currentGame ?? request.data;
         const updated = { ...g, pgn: current?.pgn ?? g.pgn };
         setCurrentGame(updated);
-        gameCacheRef.current.set(`${updated.cohort}/${updated.id}`, updated);
+        gameCache.set(`${updated.cohort}/${updated.id}`, updated);
         request.onSuccess(updated);
     };
 
