@@ -229,7 +229,12 @@ function MarkdownSyntaxHelp() {
                 </Typography>
                 <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
                     Use an exclamation mark before the brackets. Alt text is shown if the image
-                    cannot load.
+                    cannot load. Add dimensions in quotes to set size:{' '}
+                    {code('![alt](url "400x300")')} for width×height in pixels; use {code('"400x"')}{' '}
+                    or {code('"width=400"')} for width only, or {code('"x300"')} or{' '}
+                    {code('"height=300"')} for height only—the image will scale to keep its aspect
+                    ratio when one dimension is omitted. If both dimensions are omitted, the image
+                    will be scaled to 100% of the container width.
                 </Typography>
             </Box>
 
@@ -320,6 +325,26 @@ function MarkdownSyntaxHelp() {
     );
 }
 
+/** Parses image title for optional width/height. Supports: "400x300", "400x", "x300", "width=400", "height=300". */
+function parseImageDimensions(title: string | undefined): {
+    width?: number;
+    height?: number;
+    title?: string;
+} {
+    if (!title?.trim()) return {};
+    const t = title.trim();
+    const wxh = /^(\d+)x(\d+)$/.exec(t);
+    if (wxh) return { width: parseInt(wxh[1], 10), height: parseInt(wxh[2], 10) };
+
+    const wOnly = /^(\d+)x$/i.exec(t) ?? /^width=(\d+)$/i.exec(t);
+    if (wOnly) return { width: parseInt(wOnly[1], 10), title: t };
+
+    const hOnly = /^x(\d+)$/i.exec(t) ?? /^height=(\d+)$/i.exec(t);
+    if (hOnly) return { height: parseInt(hOnly[1], 10), title: t };
+
+    return { title: t };
+}
+
 /** Parses game:cohort/id href into { cohort, id } for GameViewer, or undefined if not a game link. */
 function getGameViewerParams(href: string | undefined): { cohort: string; id: string } | undefined {
     if (!href?.startsWith(GAME_LINK_PREFIX)) {
@@ -361,6 +386,7 @@ function getYouTubeVideoId(href: string | undefined): string | null {
 export function BlogMarkdown({ children }: { children: string }) {
     return (
         <ReactMarkdown
+            skipHtml={true}
             remarkPlugins={[remarkGfm]}
             components={{
                 p: (props) => (
@@ -537,6 +563,39 @@ export function BlogMarkdown({ children }: { children: string }) {
                         {props.children}
                     </Typography>
                 ),
+                img: (props) => {
+                    const dims = parseImageDimensions(props.title);
+                    const { width, height, title } = dims;
+                    const sx: Record<string, string | number> = {
+                        borderRadius: 2,
+                        maxWidth: '100%',
+                    };
+                    if (width && height) {
+                        sx.width = width;
+                        sx.height = height;
+                        sx.objectFit = 'contain';
+                    } else if (width) {
+                        sx.width = width;
+                        sx.height = 'auto';
+                    } else if (height) {
+                        sx.width = 'auto';
+                        sx.height = height;
+                    } else {
+                        sx.width = '100%';
+                        sx.height = 'auto';
+                    }
+                    return (
+                        <Stack width={1} alignItems='center' justifyContent='center'>
+                            <Box
+                                component='img'
+                                src={props.src}
+                                alt={props.alt}
+                                title={title}
+                                sx={sx}
+                            />
+                        </Stack>
+                    );
+                },
             }}
         >
             {children}

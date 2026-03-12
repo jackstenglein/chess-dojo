@@ -12,7 +12,7 @@ interface HeaderProps {
 
 export const Header = ({ title, subtitle, image, imageCaption, hideDivider }: HeaderProps) => {
     return (
-        <>
+        <div data-testid='blog-header'>
             <Stack mb={3}>
                 <Typography variant='h4'>{title}</Typography>
                 <Typography variant='h6' color='text.secondary' sx={{ mb: 1 }}>
@@ -37,6 +37,6 @@ export const Header = ({ title, subtitle, image, imageCaption, hideDivider }: He
                     )}
                 </Stack>
             )}
-        </>
+        </div>
     );
 };
