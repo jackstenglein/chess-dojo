@@ -198,11 +198,48 @@ describe('BlogMarkdown', () => {
         expect(container.querySelector('hr')).toBeInTheDocument();
     });
 
-    it('renders image with correct size', () => {
+    it('renders image with correct size (width×height)', () => {
         renderWithTheme(<BlogMarkdown>![alt](url "400x300")</BlogMarkdown>);
         const image = screen.getByRole('img', { name: 'alt' });
         expect(image).toBeInTheDocument();
-        expect(image).toHaveAttribute('width', '400');
-        expect(image).toHaveAttribute('height', '300');
+        expect(image).toHaveStyle({
+            width: '400px',
+            height: '300px',
+            'object-fit': 'contain',
+            'max-width': '100%',
+        });
+    });
+
+    it('renders image with correct size (width only)', () => {
+        renderWithTheme(<BlogMarkdown>![alt](url "400x")</BlogMarkdown>);
+        const image = screen.getByRole('img', { name: 'alt' });
+        expect(image).toBeInTheDocument();
+        expect(image).toHaveStyle({
+            width: '400px',
+            height: 'auto',
+            'max-width': '100%',
+        });
+    });
+
+    it('renders image with correct size (height only)', () => {
+        renderWithTheme(<BlogMarkdown>![alt](url "x300")</BlogMarkdown>);
+        const image = screen.getByRole('img', { name: 'alt' });
+        expect(image).toBeInTheDocument();
+        expect(image).toHaveStyle({
+            width: 'auto',
+            height: '300px',
+            'max-width': '100%',
+        });
+    });
+
+    it('renders image with correct size (no dimensions)', () => {
+        renderWithTheme(<BlogMarkdown>![alt](url)</BlogMarkdown>);
+        const image = screen.getByRole('img', { name: 'alt' });
+        expect(image).toBeInTheDocument();
+        expect(image).toHaveStyle({
+            width: '100%',
+            height: 'auto',
+            'max-width': '100%',
+        });
     });
 });
