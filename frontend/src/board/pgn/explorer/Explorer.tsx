@@ -4,7 +4,8 @@ import { PersonSearch } from '@mui/icons-material';
 import CloudIcon from '@mui/icons-material/Cloud';
 import { TabContext } from '@mui/lab';
 import { Box, CardContent, Tab, Tabs } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SiLichess } from 'react-icons/si';
 import { useLocalStorage } from 'usehooks-ts';
 import { usePosition } from '../../../api/cache/positions';
@@ -36,7 +37,24 @@ export enum ExplorerDatabaseType {
 
 const Explorer = () => {
     const [tab, setTab] = useLocalStorage(explorerTabKey, ExplorerDatabaseType.Dojo);
+    const searchParams = useSearchParams();
     const { chess } = useChess();
+
+    const hasSetTabFromParams = useRef(false);
+    useEffect(() => {
+        if (hasSetTabFromParams.current) {
+            return;
+        }
+        const explorer = searchParams.get('explorer');
+        if (
+            explorer &&
+            Object.values(ExplorerDatabaseType).includes(explorer as ExplorerDatabaseType)
+        ) {
+            hasSetTabFromParams.current = true;
+            setTab(explorer as ExplorerDatabaseType);
+        }
+    }, [searchParams, setTab]);
+
     const [fen, setFen] = useState(chess?.fen() ?? startingPositionFen);
     const { position, request, putPosition } = usePosition(fen);
     const [minCohort, setMinCohort] = useState('');
@@ -196,7 +214,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-lichess'
                         />
                         <Tab
-                            label='Player'
+                            label='Repertoire Spy'
                             value={ExplorerDatabaseType.Player}
                             icon={<PersonSearch />}
                             iconPosition='start'
