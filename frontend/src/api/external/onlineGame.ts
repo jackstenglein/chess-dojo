@@ -1,3 +1,4 @@
+import { logger } from '@/logging/logger';
 import {
     GameImportTypes,
     OnlineGameImportType,
@@ -241,6 +242,8 @@ export function lichessOnlineGame(game: LichessGame, skipVariant = true): Online
     const [result, resultReason] = lichessGameResult(game);
     const { white, black } = game.players;
 
+    logger.debug(`lichessOnlineGame: ${game.id}`, game);
+
     return {
         source: GameImportTypes.lichessGame,
         id: game.id,
@@ -268,8 +271,8 @@ export function lichessOnlineGame(game: LichessGame, skipVariant = true): Online
         resultReason,
         pgn: game.pgn,
         timeControl: {
-            initialSeconds: game.clock.initial,
-            incrementSeconds: game.clock.increment,
+            initialSeconds: game.clock?.initial ?? 0,
+            incrementSeconds: game.clock?.increment ?? 0,
         },
         timeClass: getTimeClass(game.speed),
     };
