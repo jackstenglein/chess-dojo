@@ -52,6 +52,12 @@ async function submitGame({
     request: RoundRobinSubmitGameRequest;
 }) {
     const data = await parseGame(request.url);
+
+    if (request.manualUsernames) {
+        data.white = request.manualUsernames.white;
+        data.black = request.manualUsernames.black;
+    }
+
     const { path, white, black } = await findPairingPath({ username, request, data });
 
     const input = new UpdateItemBuilder()

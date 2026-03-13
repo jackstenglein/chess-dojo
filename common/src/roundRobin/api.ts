@@ -43,6 +43,12 @@ export const RoundRobinSubmitGameSchema = z.object({
 
     /** The url of the game to submit. */
     url: z.string(),
+
+    /** The usernames of the players in the game if usernames don't match. */
+    manualUsernames: z.object({
+        white: z.string(),
+        black: z.string(),
+    }).optional(),
 });
 
 /** A request to submit a game for a round robin. */

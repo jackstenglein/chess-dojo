@@ -38,7 +38,7 @@ async function fillForm(
 test.describe('Submit Results Page', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/tournaments/open-classical/submit-results');
-        // Wait for form to load
+
         await expect(page.getByTestId('submit-button')).toBeVisible();
     });
 
