@@ -4,22 +4,37 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import LoadingPage from '@/loading/LoadingPage';
+import { PresenterIcon } from '@/style/PresenterIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
-import { PlayArrow } from '@mui/icons-material';
 import {
+    ExpandMore,
+    Person,
+    PlayArrow,
+    Search,
+    ShowChart,
+    Troubleshoot,
+} from '@mui/icons-material';
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Button,
     Card,
     CardContent,
-    CardHeader,
+    CardMedia,
+    Chip,
     Container,
     Dialog,
-    Divider,
+    Grid,
+    InputAdornment,
     Stack,
+    TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -27,6 +42,32 @@ import { useEffect, useState } from 'react';
 interface PresignedUrlData {
     loading?: boolean;
     url?: string;
+}
+
+function matchesSearch(c: LiveClass, query: string): boolean {
+    if (!query.trim()) return true;
+    const q = query.trim().toLowerCase();
+    return (
+        c.name.toLowerCase().includes(q) ||
+        c.teacher.toLowerCase().includes(q) ||
+        (c.description?.toLowerCase().includes(q) ?? false)
+    );
+}
+
+function getUniqueTags(classes: LiveClass[]): string[] {
+    const set = new Set<string>();
+    for (const c of classes) {
+        for (const tag of c.tags ?? []) {
+            if (tag.trim()) set.add(tag.trim());
+        }
+    }
+    return [...set].sort();
+}
+
+function matchesTagFilter(c: LiveClass, selectedTags: string[]): boolean {
+    if (selectedTags.length === 0) return true;
+    const classTags = new Set(c.tags ?? []);
+    return selectedTags.some((t) => classTags.has(t) || c.type === t);
 }
 
 export function LiveClassesPage() {
@@ -37,6 +78,8 @@ export function LiveClassesPage() {
     const [presignedUrls, setPresignedUrls] = useState<Record<string, PresignedUrlData>>({});
     const [playingUrl, setPlayingUrl] = useState<string>();
     const [showUpsell, setShowUpsell] = useState<SubscriptionTier>();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
     useEffect(() => {
         if (!request.isSent()) {
@@ -94,20 +137,119 @@ export function LiveClassesPage() {
         setPlayingUrl(url);
     };
 
-    const lectures = request.data?.filter((c) => c.type === SubscriptionTier.Lecture) ?? [];
-    const gameReviews = request.data?.filter((c) => c.type === SubscriptionTier.GameReview) ?? [];
+    const allClasses = request.data ?? [];
+    const filteredClasses = allClasses.filter(
+        (c) => matchesSearch(c, searchQuery) && matchesTagFilter(c, selectedTags),
+    );
+    const allTags = getUniqueTags(allClasses);
+
+    const toggleTag = (tag: string) => {
+        setSelectedTags((prev) =>
+            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+        );
+    };
+
+    const onClearFilters = () => {
+        setSelectedTags([]);
+        setSearchQuery('');
+    };
 
     return (
         <Container sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
             <Typography variant='h4'>Live Class Recordings</Typography>
+            <TextField
+                fullWidth
+                placeholder='Search by class name, teacher, or description'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                size='small'
+                sx={{ mt: 2, maxWidth: 480 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position='start'>
+                                <Search color='action' />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+            />
+            {allTags.length > 0 && (
+                <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center' sx={{ mt: 2 }}>
+                    <Tooltip title='Show all recordings'>
+                        <Chip
+                            label='All'
+                            size='small'
+                            variant={selectedTags.length === 0 ? 'filled' : 'outlined'}
+                            color={selectedTags.length === 0 ? 'dojoOrange' : 'default'}
+                            onClick={() => setSelectedTags([])}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                    </Tooltip>
+                    <Tooltip title='Show recordings with tag: Lecture'>
+                        <Chip
+                            label='Lecture'
+                            size='small'
+                            variant={
+                                selectedTags.includes(SubscriptionTier.Lecture)
+                                    ? 'filled'
+                                    : 'outlined'
+                            }
+                            color={
+                                selectedTags.includes(SubscriptionTier.Lecture)
+                                    ? 'dojoOrange'
+                                    : 'default'
+                            }
+                            onClick={() => toggleTag(SubscriptionTier.Lecture)}
+                            sx={{ cursor: 'pointer' }}
+                            icon={<PresenterIcon />}
+                        />
+                    </Tooltip>
+                    <Tooltip title='Show recordings with tag: Game & Profile Review'>
+                        <Chip
+                            label='Game & Profile Review'
+                            size='small'
+                            variant={
+                                selectedTags.includes(SubscriptionTier.GameReview)
+                                    ? 'filled'
+                                    : 'outlined'
+                            }
+                            color={
+                                selectedTags.includes(SubscriptionTier.GameReview)
+                                    ? 'dojoOrange'
+                                    : 'default'
+                            }
+                            onClick={() => toggleTag(SubscriptionTier.GameReview)}
+                            sx={{ cursor: 'pointer' }}
+                            icon={<Troubleshoot />}
+                        />
+                    </Tooltip>
+
+                    {allTags.map((tag) => (
+                        <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
+                            <Chip
+                                key={tag}
+                                label={tag}
+                                size='small'
+                                variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                                color={selectedTags.includes(tag) ? 'dojoOrange' : 'default'}
+                                onClick={() => toggleTag(tag)}
+                                sx={{ cursor: 'pointer' }}
+                            />
+                        </Tooltip>
+                    ))}
+                </Stack>
+            )}
 
             <Stack spacing={5} mt={5}>
-                <LiveClassesSection title='Group Classes' classes={lectures} onPlay={onPlay} />
                 <LiveClassesSection
-                    title='Game & Profile Reviews'
-                    classes={gameReviews}
+                    classes={filteredClasses}
                     onPlay={onPlay}
+                    onTagClick={toggleTag}
+                    selectedTags={selectedTags}
+                    searchQuery={searchQuery}
+                    onClearFilters={onClearFilters}
                 />
             </Stack>
 
@@ -159,27 +301,53 @@ export function LiveClassesPage() {
 }
 
 function LiveClassesSection({
-    title,
     classes,
     onPlay,
+    onTagClick,
+    selectedTags,
+    searchQuery,
+    onClearFilters,
 }: {
-    title: string;
     classes: LiveClass[];
     onPlay: (s3Key: string, tier: SubscriptionTier) => void;
+    onTagClick: (tag: string) => void;
+    selectedTags: string[];
+    searchQuery: string;
+    onClearFilters: () => void;
 }) {
-    return (
-        <Stack>
-            <Typography variant='h5'>{title}</Typography>
-            <Divider />
-            {classes.length === 0 ? (
-                <Typography sx={{ mt: 1 }}>None Found</Typography>
-            ) : (
-                <Stack mt={1} spacing={3}>
+    if (classes.length > 0) {
+        return (
+            <Stack>
+                <Grid container mt={1} spacing={3}>
                     {classes.map((c) => (
-                        <LiveClassCard key={c.name} c={c} onPlay={onPlay} />
+                        <Grid key={c.name} size={{ xs: 12, sm: 6, lg: 4 }}>
+                            <LiveClassCard
+                                c={c}
+                                onPlay={onPlay}
+                                onTagClick={onTagClick}
+                                selectedTags={selectedTags}
+                            />
+                        </Grid>
                     ))}
-                </Stack>
-            )}
+                </Grid>
+            </Stack>
+        );
+    }
+
+    if (selectedTags.length > 0 || searchQuery.trim() !== '') {
+        return (
+            <Stack alignItems='center'>
+                <Typography sx={{ mt: 1 }}>No classes match your filters</Typography>
+                <Button variant='text' color='primary' onClick={onClearFilters}>
+                    Clear Filters
+                </Button>
+            </Stack>
+        );
+    }
+
+    return (
+        <Stack alignItems='center'>
+            <Typography sx={{ mt: 1 }}>No classes found</Typography>
         </Stack>
     );
 }
@@ -187,30 +355,163 @@ function LiveClassesSection({
 function LiveClassCard({
     c,
     onPlay,
+    onTagClick,
+    selectedTags,
 }: {
     c: LiveClass;
     onPlay: (s3Key: string, tier: SubscriptionTier) => void;
+    onTagClick: (tag: string) => void;
+    selectedTags: string[];
 }) {
     return (
-        <Card key={c.name} variant='outlined'>
-            <CardHeader title={c.name} />
-            <CardContent>
-                <Stack>
-                    <Typography variant='subtitle1' fontWeight='bold' color='textSecondary'>
-                        Dates
-                    </Typography>
-                    {c.recordings.map((r) => (
-                        <Stack key={r.s3Key} direction='row' alignItems='center' spacing={1}>
-                            <Typography>{r.date}</Typography>
-                            <Button
-                                startIcon={<PlayArrow />}
-                                onClick={() => onPlay(r.s3Key, c.type)}
-                            >
-                                Play
-                            </Button>
-                        </Stack>
+        <Card variant='outlined' sx={{ overflow: 'hidden' }}>
+            {c.imageUrl && (
+                <CardMedia
+                    component='img'
+                    image={c.imageUrl}
+                    alt={`${c.name} cover`}
+                    sx={{
+                        height: 180,
+                        objectFit: 'cover',
+                        bgcolor: 'action.hover',
+                    }}
+                />
+            )}
+            <CardContent sx={{ pt: c.imageUrl ? 2 : 3 }}>
+                <Typography variant='h6' component='h2' gutterBottom>
+                    {c.name}
+                </Typography>
+
+                <Stack direction='row' flexWrap='wrap' gap={2} sx={{ mb: 2 }}>
+                    <Stack direction='row' alignItems='center' spacing={0.75}>
+                        <Person fontSize='small' color='action' />
+                        <Typography variant='body2' color='text.secondary'>
+                            {c.teacher}
+                        </Typography>
+                    </Stack>
+                    <Stack direction='row' alignItems='center' spacing={0.75}>
+                        <ShowChart fontSize='small' color='action' />
+                        <Typography variant='body2' color='text.secondary'>
+                            {c.cohortRange}
+                        </Typography>
+                    </Stack>
+                </Stack>
+
+                <Stack direction='row' flexWrap='wrap' gap={0.75} sx={{ mb: 1.5 }}>
+                    {c.type === SubscriptionTier.GameReview ? (
+                        <Tooltip title='Show recordings with tag: Game & Profile Review'>
+                            <Chip
+                                label='Game & Profile Review'
+                                size='small'
+                                variant='outlined'
+                                icon={<Troubleshoot />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onTagClick(SubscriptionTier.GameReview);
+                                }}
+                                sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                                color={
+                                    selectedTags.includes(SubscriptionTier.GameReview)
+                                        ? 'dojoOrange'
+                                        : 'default'
+                                }
+                            />
+                        </Tooltip>
+                    ) : (
+                        <Tooltip title='Show recordings with tag: Lecture'>
+                            <Chip
+                                label='Lecture'
+                                size='small'
+                                variant='outlined'
+                                icon={<PresenterIcon />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onTagClick(SubscriptionTier.Lecture);
+                                }}
+                                sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                                color={
+                                    selectedTags.includes(SubscriptionTier.Lecture)
+                                        ? 'dojoOrange'
+                                        : 'default'
+                                }
+                            />
+                        </Tooltip>
+                    )}
+                    {c.tags.map((tag) => (
+                        <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
+                            <Chip
+                                key={tag}
+                                label={tag}
+                                size='small'
+                                variant='outlined'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onTagClick(tag);
+                                }}
+                                sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                                color={selectedTags.includes(tag) ? 'dojoOrange' : 'default'}
+                            />
+                        </Tooltip>
                     ))}
                 </Stack>
+
+                <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 6,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                    }}
+                >
+                    {c.description}
+                </Typography>
+
+                <Accordion
+                    disableGutters
+                    elevation={0}
+                    sx={{
+                        bgcolor: 'transparent',
+                        '&:before': { display: 'none' },
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        mt: 2,
+                    }}
+                >
+                    <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        sx={{ minHeight: 48, '& .MuiAccordionSummary-content': { my: 1 } }}
+                    >
+                        <Typography variant='subtitle2' color='text.secondary'>
+                            {c.recordings.length} recording{c.recordings.length !== 1 ? 's' : ''}
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ pt: 0 }}>
+                        <Stack spacing={1}>
+                            {c.recordings.map((r) => (
+                                <Stack
+                                    key={r.s3Key}
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='space-between'
+                                    flexWrap='wrap'
+                                    gap={1}
+                                >
+                                    <Typography variant='body2'>{r.date}</Typography>
+                                    <Button
+                                        size='small'
+                                        startIcon={<PlayArrow />}
+                                        onClick={() => onPlay(r.s3Key, c.type)}
+                                    >
+                                        Play
+                                    </Button>
+                                </Stack>
+                            ))}
+                        </Stack>
+                    </AccordionDetails>
+                </Accordion>
             </CardContent>
         </Card>
     );
