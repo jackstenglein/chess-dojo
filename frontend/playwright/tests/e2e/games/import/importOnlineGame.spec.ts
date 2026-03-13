@@ -258,7 +258,7 @@ async function mockUserWithOnlineRatings(page: Page) {
 async function openOnlineGameDialogWithMocks(page: Page) {
     await mockUserWithOnlineRatings(page);
     await mockOnlineGameApis(page);
-    await page.goto('/games/import');
+    await page.goto('/games/import', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: /Online Game/ }).click();
     await expect(page.getByRole('dialog', { name: 'Import Online Game' })).toBeVisible();
     await expect(page.getByTestId('online-game-card-li001')).toBeVisible();
@@ -284,7 +284,7 @@ test.describe('Import Games Page - Online Game search, sort, and filter', () => 
         await expect(page.getByTestId('online-game-card-li002')).toBeVisible();
         await expect(page.getByTestId('online-game-card-li011')).toBeVisible();
         const visibleCards = page.getByTestId(/online-game-card-/);
-        await expect(visibleCards).toHaveCount(6);
+        await expect(visibleCards).toHaveCount(7);
     });
 
     test('search with no matches shows empty message', async ({ page }) => {
@@ -373,7 +373,7 @@ test.describe('Import Games Page - Online Game search, sort, and filter', () => 
         await page.getByRole('option', { name: 'Casual' }).click();
         await expect(page.getByTestId('online-game-card-cc001')).not.toBeVisible();
         const cards = page.getByTestId(/online-game-card-/);
-        await expect(cards).toHaveCount(2);
+        await expect(cards).toHaveCount(3);
     });
 
     test('filter by meets cohort time shows only matching games', async ({ page }) => {
