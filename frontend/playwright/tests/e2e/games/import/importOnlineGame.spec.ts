@@ -328,6 +328,15 @@ test.describe('Import Games Page - Online Game search, sort, and filter', () => 
         await expect(cards).toHaveCount(2);
     });
 
+    test('Lichess correspondence treated as daily game', async ({ page }) => {
+        await openOnlineGameDialogWithMocks(page);
+        await page.getByRole('button', { name: /Filters/ }).click();
+        await page.getByRole('combobox', { name: 'Time Class' }).click();
+        await page.getByRole('option', { name: 'Daily' }).click();
+        const cards = page.getByTestId(/online-game-card-/);
+        await expect(cards).toHaveCount(1);
+    });
+
     test('filter by time control shows only matching games', async ({ page }) => {
         await openOnlineGameDialogWithMocks(page);
         await page.getByRole('button', { name: /Filters/ }).click();
