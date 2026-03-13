@@ -1,4 +1,5 @@
 import { useApi } from '@/api/Api';
+import { useRequirement } from '@/api/cache/requirements';
 import { useAuth } from '@/auth/Auth';
 import { ScoreboardDisplay, formatTime } from '@/database/requirement';
 import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
@@ -74,6 +75,7 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
 };
 
 const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }) => {
+    const { requirement } = useRequirement(entry.requirementId);
     if (entry.requirementId === TimelineSpecialRequirementId.Graduation) {
         return <GraduationNewsfeedItem entry={entry} />;
     }
@@ -123,7 +125,7 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
             {isSlider && (
                 <ScoreboardProgress
                     value={entry.newCount}
-                    min={0}
+                    min={requirement?.startCount || 0}
                     max={entry.totalCount}
                     suffix={entry.progressBarSuffix}
                 />
