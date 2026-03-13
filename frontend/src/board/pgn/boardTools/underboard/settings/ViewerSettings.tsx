@@ -2,7 +2,7 @@ import {
     CORRECT_SOUND_KEY,
     INCORRECT_SOUND_KEY,
 } from '@/components/puzzles/settings/puzzleSettingsKeys';
-import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
+import { HIGHLIGHT_ENGINE_LINES, PERSIST_ENGINE_LINES } from '@/stockfish/engine/engine';
 import {
     Box,
     Checkbox,
@@ -105,6 +105,7 @@ export enum ViewerSetting {
     ShowElapsedTimeNextToMove,
     ShowEngine,
     HighlightEngineLines,
+    PersistEngineLines,
     DisplaySuggestedVariations,
     ScrollOnBoardToMove,
     CorrectSolitaireMoveSound,
@@ -150,6 +151,10 @@ const ViewerSettings = ({
     const [highlightEngineLines, setHighlightEngineLines] = useLocalStorage<boolean>(
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
+    );
+    const [persistEngineLines, setPersistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
     );
     const [showSuggestedVariations, setShowSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
@@ -319,6 +324,18 @@ const ViewerSettings = ({
                             />
                         }
                         label='Highlight engine lines in PGN text'
+                    />
+                )}
+
+                {(!enabledSettings || enabledSettings[ViewerSetting.PersistEngineLines]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={persistEngineLines}
+                                onChange={(e) => setPersistEngineLines(e.target.checked)}
+                            />
+                        }
+                        label='Persist last evaluated lines after disabling engine'
                     />
                 )}
 

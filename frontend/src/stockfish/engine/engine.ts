@@ -177,6 +177,14 @@ export const HIGHLIGHT_ENGINE_LINES = {
     Default: true,
 } as const;
 
+/** Settings for persisting last evaluated lines after disabling engine. */
+export const PERSIST_ENGINE_LINES = {
+    /** Local storage key for persisting engine lines. */
+    Key: 'persist-engine-lines',
+    /** The default value. */
+    Default: true,
+} as const;
+
 /** The evaluation of a specific position. */
 export interface PositionEval {
     /** The best move chosen by the engine. */
