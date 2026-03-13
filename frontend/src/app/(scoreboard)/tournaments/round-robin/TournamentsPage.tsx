@@ -5,6 +5,7 @@ import { listRoundRobins, RoundRobinListResponse } from '@/api/roundRobinApi';
 import { useAuth } from '@/auth/Auth';
 import { Tournament } from '@/components/tournaments/round-robin/Tournament';
 import { Waitlist } from '@/components/tournaments/round-robin/Waitlist';
+import { MastersCohort } from '@/database/game';
 import { dojoCohorts } from '@/database/user';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
@@ -125,6 +126,15 @@ export function TournamentsPage({
                             {cohort}
                         </MenuItem>
                     ))}
+                    <MenuItem value='CHAMPIONS'>
+                        <CohortIcon
+                            cohort={MastersCohort}
+                            sx={{ marginRight: '0.6em', verticalAlign: 'middle' }}
+                            tooltip=''
+                            size={25}
+                        />{' '}
+                        Champions' Circuit
+                    </MenuItem>
                 </TextField>
 
                 {waitlistRequest.data?.tournaments.map((t) => (
