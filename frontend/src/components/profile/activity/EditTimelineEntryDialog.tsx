@@ -1,7 +1,8 @@
+import { useApi } from '@/api/Api';
 import { useRequirement } from '@/api/cache/requirements';
-import { RequestSnackbar } from '@/api/Request';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { TimelineEntry } from '@/database/timeline';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import LoadingPage from '@/loading/LoadingPage';
 import {
     Box,
@@ -18,11 +19,15 @@ import { ProgressHistoryItem, useProgressHistoryEditor } from '../trainingPlan/P
 export function EditTimelinEntryDialog({
     entry,
     onClose,
+    onDeleteEntry,
 }: {
     entry: TimelineEntry;
     onClose: () => void;
+    onDeleteEntry: (entry: TimelineEntry) => void;
 }) {
+    const api = useApi();
     const { user } = useAuth();
+    const deleteRequest = useRequest();
     const isCustom = entry.isCustomRequirement;
 
     const customTask = isCustom
@@ -54,6 +59,50 @@ export function EditTimelinEntryDialog({
     });
 
     const index = items.findIndex((v) => v.entry.id === entry.id);
+
+    const onClearRestDay = async () => {
+        deleteRequest.onStart();
+        try {
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                updated: [],
+                deleted: [entry],
+            });
+            onDeleteEntry(entry);
+            deleteRequest.onSuccess('Rest day cleared');
+            onClose();
+        } catch (err) {
+            deleteRequest.onFailure(err);
+        }
+    };
+
+    if (entry.requirementId === TimelineSpecialRequirementId.RestDay) {
+        return (
+            <Dialog
+                open
+                onClose={deleteRequest.isLoading() ? undefined : onClose}
+                fullWidth
+                maxWidth='sm'
+            >
+                <DialogTitle>Clear Rest Day?</DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ mt: 1 }}>
+                        This will remove the rest day from your activity timeline.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button disabled={deleteRequest.isLoading()} onClick={onClose}>
+                        Cancel
+                    </Button>
+                    <Button loading={deleteRequest.isLoading()} onClick={onClearRestDay}>
+                        Clear Rest Day
+                    </Button>
+                </DialogActions>
+
+                <RequestSnackbar request={deleteRequest} />
+            </Dialog>
+        );
+    }
 
     if (!requirement) {
         return (

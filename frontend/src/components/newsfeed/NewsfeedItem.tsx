@@ -82,6 +82,15 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
     if (entry.requirementId === TimelineSpecialRequirementId.GameSubmission) {
         return <GameNewsfeedItem entry={entry} />;
     }
+    if (entry.requirementId === TimelineSpecialRequirementId.RestDay) {
+        return (
+            <Stack spacing={0.5}>
+                <Typography>
+                    Added <strong>Rest Day</strong>
+                </Typography>
+            </Stack>
+        );
+    }
 
     const isComplete = entry.newCount >= entry.totalCount;
     const isSlider =
