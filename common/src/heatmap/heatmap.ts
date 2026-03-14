@@ -34,6 +34,9 @@ interface ExtendedBaseActivity extends BaseActivity {
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
 
+    /** Whether the user marked the date as a rest day. */
+    restDay?: boolean;
+
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
 }
@@ -68,6 +71,9 @@ export interface WeekSummary {
 
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
+
+    /** Whether the user marked any date in the week as a rest day. */
+    restDay?: boolean;
 
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
@@ -146,6 +152,9 @@ export function getActivity(
 
         if (entry.requirementId === CLASSICAL_GAMES_REQUIREMENT_ID) {
             activity.gamePlayed = true;
+        }
+        if (entry.requirementId === TimelineSpecialRequirementId.RestDay) {
+            activity.restDay = true;
         }
         if (
             entry.requirementId === TimelineSpecialRequirementId.Graduation &&
@@ -244,6 +253,9 @@ function defaultWeekSummary(date: string): WeekSummary {
 function mergeActivity(target: WeekSummary, source: Activity) {
     if (source.gamePlayed) {
         target.gamePlayed = true;
+    }
+    if (source.restDay) {
+        target.restDay = true;
     }
     if (
         source.graduation &&

@@ -218,7 +218,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                             <TrainingPlanTab user={user} />
                         </TabPanel>
                         <TabPanel value='activity' sx={{ px: 0, pl: { lg: 1 } }}>
-                            <ActivityTab user={user} />
+                            <ActivityTab user={user} editable={currentUserProfile} />
                         </TabPanel>
                         <TabPanel value='games' sx={{ px: 0 }}>
                             <DirectoryCacheProvider>
@@ -251,7 +251,10 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
 
                 {!isSmall && (
                     <Box sx={{ gridArea: 'heatmap', display: { xs: 'none', md: 'initial' } }}>
-                        <HeatmapCard workGoalHistory={user.workGoalHistory ?? []} />
+                        <HeatmapCard
+                            workGoalHistory={user.workGoalHistory ?? []}
+                            editable={currentUserProfile}
+                        />
                     </Box>
                 )}
 

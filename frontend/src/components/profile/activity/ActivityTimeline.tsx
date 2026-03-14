@@ -82,7 +82,7 @@ interface ActivityTimelineProps {
 }
 
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) => {
-    const { request, entries, hasMore, onLoadMore, onEdit } = timeline;
+    const { request, entries, hasMore, onLoadMore, onEdit, onDeleteEntries } = timeline;
     const [editEntry, setEditEntry] = useState<TimelineEntry>();
     const [filters, setFilters] = useState<string[]>([AllCategoriesFilterName]);
     const [numShown, setNumShown] = useState(25);
@@ -176,7 +176,11 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
             <RequestSnackbar request={request} />
 
             {editEntry && (
-                <EditTimelinEntryDialog entry={editEntry} onClose={() => setEditEntry(undefined)} />
+                <EditTimelinEntryDialog
+                    entry={editEntry}
+                    onClose={() => setEditEntry(undefined)}
+                    onDeleteEntry={(entry) => onDeleteEntries([entry])}
+                />
             )}
         </Stack>
     );
