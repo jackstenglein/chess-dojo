@@ -1,3 +1,4 @@
+import { getEvalCache, makeEvalCacheKey, setEvalCache } from '@/api/cache/stockfishEvalCache';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { logger } from '@/logging/logger';
 import { EventType } from '@jackstenglein/chess';
@@ -14,7 +15,6 @@ import {
     SavedEval,
     SavedEvals,
 } from '../engine/engine';
-import { getEvalCache, makeEvalCacheKey, setEvalCache } from './evalCache';
 import { useEngine } from './useEngine';
 
 export function useEval(enabled: boolean, engineName?: EngineName): PositionEval | undefined {
