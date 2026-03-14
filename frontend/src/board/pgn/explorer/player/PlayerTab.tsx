@@ -6,6 +6,7 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -29,12 +30,15 @@ export function PlayerTab({ fen }: { fen: string }) {
         sources,
         setSources,
         isLoading,
+        gameCount,
         onLoad: parentOnLoad,
+        onCancel,
         onClear,
-        indexedCount,
         openingTree,
         filters,
         readonlyFilters,
+        error,
+        sourceErrors,
     } = usePlayerOpeningTree();
     const isFreeTier = useFreeTier();
     const pagination = usePlayerGames(fen, openingTree, readonlyFilters);
@@ -85,12 +89,37 @@ export function PlayerTab({ fen }: { fen: string }) {
             </Accordion>
 
             {isLoading && (
-                <Stack direction='row' spacing={1} my={1}>
+                <Stack direction='row' spacing={1} my={1} alignItems='center'>
                     <Typography>
-                        {indexedCount} game{indexedCount === 1 ? '' : 's'} loaded...
+                        {gameCount} game{gameCount === 1 ? '' : 's'} loaded...
                     </Typography>
                     <CircularProgress size={20} />
+                    <Button size='small' variant='outlined' onClick={onCancel}>
+                        Cancel
+                    </Button>
                 </Stack>
+            )}
+
+            {error && (
+                <Alert severity='error' sx={{ mt: 1 }}>
+                    {error}
+                </Alert>
+            )}
+
+            {sourceErrors.length > 0 && (
+                <Alert severity='warning' sx={{ mt: 1 }}>
+                    {sourceErrors.length === 1
+                        ? 'A source failed to load. Partial results are shown below.'
+                        : 'Some sources failed to load. Partial results are shown below.'}
+                    <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
+                        {sourceErrors.map((se, i) => (
+                            <li key={i}>
+                                {se.source === 'lichess' ? 'Lichess' : 'Chess.com'} ({se.username}):{' '}
+                                {se.error}
+                            </li>
+                        ))}
+                    </ul>
+                </Alert>
             )}
 
             {openingTree.current && (
