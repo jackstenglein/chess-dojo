@@ -213,16 +213,23 @@ type archiveResult struct {
 	err   error
 }
 
-// Games returns an iterator that yields one game.Game at a time from all
-// matching archives. Archives are processed in reverse chronological order
-// (newest first). Up to 5 archives are fetched concurrently, but results are
-// drained sequentially to guarantee deterministic ordering. Non-standard
-// variants are excluded when standardOnly is true.
-func (c *Client) Games(ctx context.Context, username string, since, until time.Time, standardOnly bool) iter.Seq2[game.Game, error] {
-	return func(yield func(game.Game, error) bool) {
+// ArchiveBatch holds the converted games from a single monthly archive along
+// with the timestamp of the next month boundary, suitable for cursor updates.
+type ArchiveBatch struct {
+	Games     []game.Game
+	NextMonth time.Time
+}
+
+// GamesByArchive returns an iterator that yields one ArchiveBatch per monthly
+// archive. Archives are processed in chronological order (oldest first). Up to
+// 5 archives are fetched concurrently, but results are drained sequentially to
+// guarantee deterministic ordering. Non-standard variants are excluded when
+// standardOnly is true. Per-game date filtering is applied within each batch.
+func (c *Client) GamesByArchive(ctx context.Context, username string, since, until time.Time, standardOnly bool) iter.Seq2[ArchiveBatch, error] {
+	return func(yield func(ArchiveBatch, error) bool) {
 		archives, err := c.FetchArchives(ctx, username)
 		if err != nil {
-			yield(game.Game{}, err)
+			yield(ArchiveBatch{}, err)
 			return
 		}
 
@@ -263,16 +270,18 @@ func (c *Client) Games(ctx context.Context, username string, since, until time.T
 		for i := range slots {
 			res := <-slots[i]
 			if res.err != nil {
-				yield(game.Game{}, res.err)
+				yield(ArchiveBatch{}, res.err)
 				return
 			}
+
+			var batch []game.Game
 			for j := range res.games {
 				if standardOnly && !res.games[j].IsStandard() {
 					continue
 				}
 				cg, err := ToGame(&res.games[j], username)
 				if err != nil {
-					yield(game.Game{}, err)
+					yield(ArchiveBatch{}, err)
 					return
 				}
 				if !since.IsZero() && cg.EndTime.Before(since) {
@@ -281,22 +290,19 @@ func (c *Client) Games(ctx context.Context, username string, since, until time.T
 				if !until.IsZero() && !cg.EndTime.Before(until) {
 					continue
 				}
-				if !yield(cg, nil) {
-					return
-				}
+				batch = append(batch, cg)
 			}
 
-			// Yield an archive-complete sentinel so the consumer knows
-			// all games from this monthly archive have been delivered.
-			// EndTime is set to the start of the next month so that on
-			// resume FilterArchives(since=EndTime) excludes this archive.
+			// Compute the next-month boundary for cursor updates.
+			var nextMonth time.Time
 			if m := archiveRegex.FindStringSubmatch(filtered[i]); m != nil {
 				year, _ := strconv.Atoi(m[1])
 				month, _ := strconv.Atoi(m[2])
-				nextMonth := time.Date(year, time.Month(month)+1, 1, 0, 0, 0, 0, time.UTC)
-				if !yield(game.Game{ArchiveComplete: true, EndTime: nextMonth}, nil) {
-					return
-				}
+				nextMonth = time.Date(year, time.Month(month)+1, 1, 0, 0, 0, 0, time.UTC)
+			}
+
+			if !yield(ArchiveBatch{Games: batch, NextMonth: nextMonth}, nil) {
+				return
 			}
 		}
 	}

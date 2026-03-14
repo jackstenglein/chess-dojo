@@ -339,7 +339,7 @@ func TestPGNExtracted(t *testing.T) {
 	}
 }
 
-func TestGamesIterator(t *testing.T) {
+func TestGamesByArchiveIterator(t *testing.T) {
 	gamesFixture := mustReadFile(t, "testdata/games.json")
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -363,14 +363,18 @@ func TestGamesIterator(t *testing.T) {
 	}
 
 	var collected []game.Game
-	for g, err := range client.Games(context.Background(), "testuser", time.Time{}, time.Time{}, true) {
+	var batchCount int
+	for batch, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, true) {
 		if err != nil {
-			t.Fatalf("Games iterator error: %v", err)
+			t.Fatalf("GamesByArchive iterator error: %v", err)
 		}
-		if g.ArchiveComplete {
-			continue
-		}
-		collected = append(collected, g)
+		batchCount++
+		collected = append(collected, batch.Games...)
+	}
+
+	// 4 archives = 4 batches.
+	if batchCount != 4 {
+		t.Errorf("expected 4 batches, got %d", batchCount)
 	}
 
 	// 4 archives × 3 standard games per archive = 12 games.
@@ -397,10 +401,10 @@ func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return t.base.RoundTrip(req)
 }
 
-func TestGamesParallelOrdering(t *testing.T) {
+func TestGamesByArchiveParallelOrdering(t *testing.T) {
 	// Each archive returns a unique game URL so we can verify ordering.
 	// With 10 archives and concurrency of 5, this exercises the parallel
-	// fetch path while asserting deterministic newest-first output.
+	// fetch path while asserting deterministic oldest-first output.
 	const numArchives = 10
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -430,23 +434,20 @@ func TestGamesParallelOrdering(t *testing.T) {
 	}
 
 	var collected []game.Game
-	var archiveCompleteCount int
-	for g, err := range client.Games(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
+	var batchCount int
+	for batch, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
 		if err != nil {
-			t.Fatalf("Games iterator error: %v", err)
+			t.Fatalf("GamesByArchive iterator error: %v", err)
 		}
-		if g.ArchiveComplete {
-			archiveCompleteCount++
-			continue
-		}
-		collected = append(collected, g)
+		batchCount++
+		collected = append(collected, batch.Games...)
 	}
 
 	if len(collected) != numArchives {
 		t.Fatalf("expected %d games, got %d", numArchives, len(collected))
 	}
-	if archiveCompleteCount != numArchives {
-		t.Errorf("expected %d archive-complete sentinels, got %d", numArchives, archiveCompleteCount)
+	if batchCount != numArchives {
+		t.Errorf("expected %d batches, got %d", numArchives, batchCount)
 	}
 
 	// Verify oldest-first ordering: archive 1 (month 01) should come first.
@@ -459,7 +460,7 @@ func TestGamesParallelOrdering(t *testing.T) {
 	}
 }
 
-func TestGamesPerGameDateFiltering(t *testing.T) {
+func TestGamesByArchivePerGameDateFiltering(t *testing.T) {
 	// The archive covers all of January 2024, but we request only Jan 16–17.
 	// Games on Jan 15 and Jan 18 should be excluded even though their archive is included.
 	gamesFixture := mustReadFile(t, "testdata/games.json")
@@ -488,14 +489,11 @@ func TestGamesPerGameDateFiltering(t *testing.T) {
 	until := time.Date(2024, 1, 18, 0, 0, 0, 0, time.UTC)
 
 	var collected []game.Game
-	for g, err := range client.Games(context.Background(), "testuser", since, until, false) {
+	for batch, err := range client.GamesByArchive(context.Background(), "testuser", since, until, false) {
 		if err != nil {
-			t.Fatalf("Games iterator error: %v", err)
+			t.Fatalf("GamesByArchive iterator error: %v", err)
 		}
-		if g.ArchiveComplete {
-			continue
-		}
-		collected = append(collected, g)
+		collected = append(collected, batch.Games...)
 	}
 
 	// Fixture has 4 games: Jan 15, 16, 17, 18 (all at 16:00 UTC).
@@ -544,9 +542,9 @@ func benchGames(b *testing.B, numArchives int) {
 
 	b.ResetTimer()
 	for range b.N {
-		for _, err := range client.Games(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
+		for _, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
 			if err != nil {
-				b.Fatalf("Games iterator error: %v", err)
+				b.Fatalf("GamesByArchive iterator error: %v", err)
 			}
 		}
 	}
