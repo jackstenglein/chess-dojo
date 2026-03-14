@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
-	"github.com/notnil/chess"
+	"github.com/corentings/chess"
 )
 
 const randSeed int64 = 42

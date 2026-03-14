@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
-	"github.com/notnil/chess"
+	"github.com/corentings/chess"
 )
 
-// generateRandomGames generates n random chess games using the notnil/chess
+// generateRandomGames generates n random chess games using the corentings/chess
 // library. A fixed seed ensures reproducibility across runs. Games naturally
 // vary in length and result because moves are chosen uniformly at random from
 // all legal moves at each position.
@@ -50,7 +50,7 @@ func generateOneGame(rng *rand.Rand, id int) *game.Game {
 	}
 }
 
-// pgnString builds a minimal PGN string from a notnil/chess game.
+// pgnString builds a minimal PGN string from a corentings/chess game.
 func pgnString(g *chess.Game, result game.Result) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("[Result \"%s\"]\n\n", result))
