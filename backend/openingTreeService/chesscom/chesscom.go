@@ -15,10 +15,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
+	"golang.org/x/sync/errgroup"
 )
 
 const maxConcurrentFetches = 5
@@ -26,7 +26,7 @@ const maxConcurrentFetches = 5
 const (
 	baseURL          = "https://api.chess.com/pub/player"
 	defaultTimeout   = 10 * time.Second
-	defaultUserAgent = "chess-dojo-scheduler (https://github.com/jackstenglein/chess-dojo-scheduler)"
+	defaultUserAgent = "chess-dojo (https://github.com/jackstenglein/chess-dojo)"
 
 	maxRetries     = 3
 	baseRetryDelay = 500 * time.Millisecond
@@ -240,33 +240,23 @@ func (c *Client) Games(ctx context.Context, username string, since, until time.T
 			slots[i] = make(chan archiveResult, 1)
 		}
 
-		// Semaphore limits concurrent fetches.
-		sem := make(chan struct{}, maxConcurrentFetches)
-
 		// Cancel in-flight fetches if we stop early.
 		fetchCtx, cancelFetches := context.WithCancel(ctx)
 
-		var wg sync.WaitGroup
+		g, fetchCtx := errgroup.WithContext(fetchCtx)
+		g.SetLimit(maxConcurrentFetches)
 		for i, archiveURL := range filtered {
-			wg.Add(1)
-			go func(idx int, url string) {
-				defer wg.Done()
-				select {
-				case sem <- struct{}{}:
-				case <-fetchCtx.Done():
-					slots[idx] <- archiveResult{err: fetchCtx.Err()}
-					return
-				}
-				games, err := c.FetchGames(fetchCtx, url)
-				<-sem
-				slots[idx] <- archiveResult{games: games, err: err}
-			}(i, archiveURL)
+			g.Go(func() error {
+				games, err := c.FetchGames(fetchCtx, archiveURL)
+				slots[i] <- archiveResult{games: games, err: err}
+				return nil
+			})
 		}
 
 		// Ensure all goroutines finish before we return.
 		defer func() {
 			cancelFetches()
-			wg.Wait()
+			g.Wait()
 		}()
 
 		// Drain slots in order (0, 1, 2...) to preserve oldest-first ordering.
