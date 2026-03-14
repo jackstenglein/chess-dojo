@@ -168,7 +168,6 @@ export function FullTrainingPlanSection({
                             maxWidth: { sm: 400, md: 500, lg: 600 },
                         }}
                     >
-
                         {section.progressBar !== undefined && (
                             <ScoreboardProgress
                                 value={section.progressBar}
@@ -186,10 +185,7 @@ export function FullTrainingPlanSection({
                     >
                         <ProgressText
                             value={section.completedTasks.length}
-                            max={
-                                section.completedTasks.length +
-                                section.uncompletedTasks.length
-                            }
+                            max={section.completedTasks.length + section.uncompletedTasks.length}
                             min={0}
                         />
                     </Grid>

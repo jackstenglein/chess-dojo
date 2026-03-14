@@ -40,7 +40,10 @@ export function TrainingPlanTab({ user }: { user: User }) {
                             width: dailyExpanded ? 1 : { xs: 1, sm: 'calc(50% - 8px)' },
                         }}
                     >
-                        <DailyTrainingPlan expanded={dailyExpanded} setExpanded={setDailyExpanded} />
+                        <DailyTrainingPlan
+                            expanded={dailyExpanded}
+                            setExpanded={setDailyExpanded}
+                        />
                     </Box>
                     {!hideWeekly && (
                         <Box

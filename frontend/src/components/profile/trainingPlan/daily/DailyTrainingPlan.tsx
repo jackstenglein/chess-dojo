@@ -34,7 +34,6 @@ import {
     Typography,
 } from '@mui/material';
 import { use, useMemo, useState } from 'react';
-import { useLocalStorage } from 'usehooks-ts';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';

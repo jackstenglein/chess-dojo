@@ -17,7 +17,6 @@ import {
     Typography,
 } from '@mui/material';
 import { use, useMemo, useState } from 'react';
-import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
 import { SuggestedTask } from '../suggestedTasks';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';

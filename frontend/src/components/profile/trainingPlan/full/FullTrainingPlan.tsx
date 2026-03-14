@@ -27,8 +27,8 @@ import {
     VisibilityOff,
 } from '@mui/icons-material';
 import {
-    Button,
     Box,
+    Button,
     IconButton,
     MenuItem,
     Stack,
@@ -308,7 +308,9 @@ export function FullTrainingPlan() {
                     </Stack>
                 </Stack>
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', rowGap: 0.5, columnGap: 1, width: 1 }}>
+                <Box
+                    sx={{ display: 'flex', flexWrap: 'wrap', rowGap: 0.5, columnGap: 1, width: 1 }}
+                >
                     {sections.map((section) => (
                         <FullTrainingPlanSection
                             key={section.category}
