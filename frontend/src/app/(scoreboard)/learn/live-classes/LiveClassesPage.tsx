@@ -56,7 +56,7 @@ function matchesSearch(c: LiveClass, query: string): boolean {
     const q = query.trim().toLowerCase();
     return (
         c.name.toLowerCase().includes(q) ||
-        c.teacher.toLowerCase().includes(q) ||
+        c.teacher?.toLowerCase().includes(q) ||
         (c.description?.toLowerCase().includes(q) ?? false)
     );
 }
@@ -479,12 +479,14 @@ function LiveClassCard({
                 </Typography>
 
                 <Stack direction='row' flexWrap='wrap' gap={2} sx={{ mb: 2 }}>
-                    <Stack direction='row' alignItems='center' spacing={0.75}>
-                        <Person fontSize='small' color='action' />
-                        <Typography variant='body2' color='text.secondary'>
-                            {c.teacher}
-                        </Typography>
-                    </Stack>
+                    {c.teacher && (
+                        <Stack direction='row' alignItems='center' spacing={0.75}>
+                            <Person fontSize='small' color='action' />
+                            <Typography variant='body2' color='text.secondary'>
+                                {c.teacher}
+                            </Typography>
+                        </Stack>
+                    )}
                     <Stack direction='row' alignItems='center' spacing={0.75}>
                         <ShowChart fontSize='small' color='action' />
                         <Typography variant='body2' color='text.secondary'>
@@ -533,7 +535,7 @@ function LiveClassCard({
                             />
                         </Tooltip>
                     )}
-                    {c.tags.map((tag) => (
+                    {c.tags?.map((tag) => (
                         <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
                             <Chip
                                 key={tag}
