@@ -4,6 +4,7 @@ import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displa
 import { Link } from '@/components/navigation/Link';
 import Avatar from '@/profile/Avatar';
 import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
+import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -19,6 +20,7 @@ import {
     DialogTitle,
     IconButton,
     Paper,
+    Popover,
     Stack,
     TextField,
     Tooltip,
@@ -38,6 +40,7 @@ interface CommentListProps {
     onDelete?: (commentId: string) => Promise<void>;
     threaded?: boolean;
     onSubmitReply?: (parentId: string, content: string) => Promise<void>;
+    onReact?: (commentId: string, reactionType: string) => Promise<void>;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -48,6 +51,7 @@ const CommentList: React.FC<CommentListProps> = ({
     onDelete,
     threaded,
     onSubmitReply,
+    onReact,
 }) => {
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
@@ -122,6 +126,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 onReply={onSubmitReply ? handleReplyClick : undefined}
+                                onReact={onReact}
                             />
                             {replyingTo === thread.root.id && onSubmitReply && (
                                 <InlineReplyEditor
@@ -166,6 +171,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                         onEdit={onEdit}
                                         onDelete={onDelete}
                                         onReply={onSubmitReply ? handleReplyClick : undefined}
+                                        onReact={onReact}
                                     />
                                     {replyingTo === reply.id && onSubmitReply && (
                                         <InlineReplyEditor
@@ -205,6 +211,7 @@ const CommentList: React.FC<CommentListProps> = ({
                     comment={comment}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    onReact={onReact}
                 />
             ))}
         </Stack>
@@ -216,6 +223,7 @@ interface CommentListItemProps {
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
     onReply?: (parentCommentId: string) => void;
+    onReact?: (commentId: string, reactionType: string) => Promise<void>;
 }
 
 const CommentListItem: React.FC<CommentListItemProps> = ({
@@ -223,6 +231,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     onEdit,
     onDelete,
     onReply,
+    onReact,
 }) => {
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
@@ -233,7 +242,46 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const editRequest = useRequest();
     const deleteRequest = useRequest();
+    const [reactionAnchorEl, setReactionAnchorEl] = useState<HTMLElement | null>(null);
+    const reactionOpen = Boolean(reactionAnchorEl);
 
+    const [localReactions, setLocalReactions] = useState(comment.reactions || {});
+    const REACTION_OPTIONS = ['👍', '❤️', '😂', '🔥', '🎉'];
+
+    const handleReactionClick = (event: React.MouseEvent<HTMLElement>) => {
+        setReactionAnchorEl(event.currentTarget);
+    };
+
+    const handleReactionClose = () => {
+        setReactionAnchorEl(null);
+    };
+
+    const handleSelectReaction = (emoji: string) => {
+        if (!user) return;
+
+        setLocalReactions((prev) => {
+            const existingReaction = prev[user.username];
+            const currentTypes = existingReaction?.types || [];
+            const newTypes = currentTypes.includes(emoji) ? [] : [emoji];
+
+            return {
+                ...prev,
+                [user.username]: {
+                    username: user.username,
+                    displayName: user.displayName,
+                    cohort: user.dojoCohort,
+                    updatedAt: new Date().toISOString(),
+                    types: newTypes,
+                },
+            };
+        });
+        if (onReact) {
+            onReact(comment.id, emoji).catch(() => {
+                // ignore errors for now since backend is pending
+            });
+        }
+        handleReactionClose();
+    };
     useEffect(() => {
         const el = contentRef.current;
         if (el) {
@@ -419,7 +467,95 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
                         {isEdited && ' • (edited)'}
                     </Typography>
+                    {user && (
+                        <Tooltip title='Add Reaction'>
+                            <IconButton size='small' onClick={handleReactionClick}>
+                                <AddReactionOutlinedIcon
+                                    fontSize='small'
+                                    sx={{ color: 'text.secondary' }}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                    {Object.values(localReactions).some((r) => r.types && r.types.length > 0) && (
+                        <Stack direction='row' spacing={0.5} mt={1} flexWrap='wrap'>
+                            {REACTION_OPTIONS.map((emoji) => {
+                                const reactingUsers = Object.values(localReactions).filter((r) =>
+                                    r.types?.includes(emoji),
+                                );
+                                const count = reactingUsers.length;
+
+                                if (count === 0) return null;
+
+                                const isSelectedByMe =
+                                    localReactions[user?.username || '']?.types?.includes(emoji);
+                                const MAX_NAMES = 3;
+                                let tooltipText = '';
+
+                                if (count <= MAX_NAMES) {
+                                    tooltipText = reactingUsers
+                                        .map((r) => r.displayName)
+                                        .join(', ');
+                                } else {
+                                    const firstFew = reactingUsers
+                                        .slice(0, MAX_NAMES)
+                                        .map((r) => r.displayName)
+                                        .join(', ');
+                                    tooltipText = `${firstFew} and ${count - MAX_NAMES} others`;
+                                }
+                                return (
+                                    <Tooltip key={emoji} title={tooltipText} placement='bottom'>
+                                        <Button
+                                            size='small'
+                                            variant='outlined'
+                                            onClick={() => handleSelectReaction(emoji)}
+                                            sx={{
+                                                borderRadius: 4,
+                                                py: 0.25,
+                                                px: 1,
+                                                minWidth: 0,
+                                                textTransform: 'none',
+                                                borderColor: isSelectedByMe
+                                                    ? 'primary.main'
+                                                    : 'divider',
+                                                backgroundColor: isSelectedByMe
+                                                    ? 'action.selected'
+                                                    : 'transparent',
+                                                color: isSelectedByMe
+                                                    ? 'primary.main'
+                                                    : 'text.secondary',
+                                            }}
+                                        >
+                                            {emoji}{' '}
+                                            <Typography variant='caption' sx={{ ml: 0.5 }}>
+                                                {count}
+                                            </Typography>
+                                        </Button>
+                                    </Tooltip>
+                                );
+                            })}
+                        </Stack>
+                    )}
                 </Stack>
+                <Popover
+                    open={reactionOpen}
+                    anchorEl={reactionAnchorEl}
+                    onClose={handleReactionClose}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Stack direction='row' spacing={0.5} p={0.5}>
+                        {REACTION_OPTIONS.map((emoji) => (
+                            <IconButton
+                                key={emoji}
+                                size='small'
+                                onClick={() => handleSelectReaction(emoji)}
+                            >
+                                {emoji}
+                            </IconButton>
+                        ))}
+                    </Stack>
+                </Popover>
             </Stack>
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
