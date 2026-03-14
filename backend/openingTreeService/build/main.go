@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"sync"
@@ -48,6 +50,13 @@ const (
 	DefaultLambdaTimeout = 55 * time.Second
 )
 
+// rejectUsername matches characters that are clearly invalid in any chess
+// platform username: control characters, whitespace, URL-significant
+// characters. We intentionally allow dots, tildes, and other characters
+// that some platforms may permit — the upstream API will reject truly
+// invalid usernames with a clear error.
+var rejectUsername = regexp.MustCompile(`[\x00-\x1f\x7f \t\n\r/\\?#@:]`)
+
 var repository database.UserGetter = database.DynamoDB
 
 // httpClient is the HTTP client used to create Chess.com and Lichess API clients.
@@ -59,6 +68,13 @@ type Source struct {
 	Username string          `json:"username"`
 }
 
+// BuildRequest is the JSON payload sent by the frontend.
+//
+// Since and Until define the date range filter. These MUST be re-sent on
+// cursor resume requests — the cursor only stores pagination position,
+// not the original date bounds. Omitting them on resume will cause
+// Lichess to stream all games older than the cursor position with no
+// lower bound.
 type BuildRequest struct {
 	Sources []Source         `json:"sources"`
 	Since   *string          `json:"since,omitempty"`
@@ -84,11 +100,14 @@ type BuildResponse struct {
 
 // fetchResult carries either a game or an error from a source fetcher goroutine.
 type fetchResult struct {
-	game             game.Game
-	err              error
-	src              Source
-	done             bool // true when this source finished iterating all games
-	archiveComplete  bool // true when a Chess.com archive boundary was reached
+	game  game.Game
+	err   error
+	src   Source
+	done  bool // true when this source finished iterating all games
+	// For Chess.com batches: signals an archive boundary with the next-month
+	// timestamp for cursor updates. When set, game is zero-valued.
+	archiveBoundary  bool
+	archiveNextMonth time.Time
 }
 
 func main() {
@@ -146,6 +165,9 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		if src.Username == "" {
 			return api.Failure(errors.New(400, "Invalid request: source username is required", "")), nil
 		}
+		if rejectUsername.MatchString(src.Username) {
+			return api.Failure(errors.New(400, "Invalid request: source username contains invalid characters", "")), nil
+		}
 		switch src.Type {
 		case game.SourceChessCom, game.SourceLichess:
 		default:
@@ -189,6 +211,11 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		go func(src Source) {
 			defer wg.Done()
 
+			// sinceTime and untilTime come from the request, not from the
+			// cursor. The client is responsible for re-sending consistent
+			// Since/Until values across pages. The cursor only adjusts one
+			// bound (since for Chess.com, until for Lichess) to narrow the
+			// window; the other bound is always the client-supplied value.
 			since, until := sinceTime, untilTime
 
 			// If a cursor is provided, resume from where the previous page
@@ -206,7 +233,6 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 				}
 			}
 
-			var games func(func(game.Game, error) bool)
 			switch src.Type {
 			case game.SourceChessCom:
 				var client *chesscom.Client
@@ -215,42 +241,49 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 				} else {
 					client = chesscom.NewClient()
 				}
-				games = client.Games(fetchCtx, src.Username, since, until, true)
-			case game.SourceLichess:
-				client := lichess.NewClient(httpClient)
-				games = client.Games(fetchCtx, lichess.FetchParams{
-					Username: src.Username,
-					Since:    since,
-					Until:    until,
-				})
-			}
-
-			for g, err := range games {
-				if err != nil {
-					// Don't report context cancellation as a source error;
-					// it means we hit the budget or the graceful timeout.
-					if fetchCtx.Err() != nil {
+				for batch, err := range client.GamesByArchive(fetchCtx, src.Username, since, until, true) {
+					if err != nil {
+						if fetchCtx.Err() != nil {
+							return
+						}
+						results <- fetchResult{err: err, src: src}
 						return
 					}
-					results <- fetchResult{err: err, src: src}
-					return
-				}
-
-				// Forward archive-complete sentinels from Chess.com so the
-				// fan-in loop can defer truncation to archive boundaries.
-				if g.ArchiveComplete {
+					for _, g := range batch.Games {
+						select {
+						case results <- fetchResult{game: g, src: src}:
+						case <-fetchCtx.Done():
+							return
+						}
+					}
+					// Signal the archive boundary so the fan-in loop can
+					// update the cursor and check truncation.
 					select {
-					case results <- fetchResult{src: src, archiveComplete: true, game: g}:
+					case results <- fetchResult{src: src, archiveBoundary: true, archiveNextMonth: batch.NextMonth}:
 					case <-fetchCtx.Done():
 						return
 					}
-					continue
 				}
 
-				select {
-				case results <- fetchResult{game: g, src: src}:
-				case <-fetchCtx.Done():
-					return
+			case game.SourceLichess:
+				client := lichess.NewClient(httpClient)
+				for g, err := range client.Games(fetchCtx, lichess.FetchParams{
+					Username: src.Username,
+					Since:    since,
+					Until:    until,
+				}) {
+					if err != nil {
+						if fetchCtx.Err() != nil {
+							return
+						}
+						results <- fetchResult{err: err, src: src}
+						return
+					}
+					select {
+					case results <- fetchResult{game: g, src: src}:
+					case <-fetchCtx.Done():
+						return
+					}
 				}
 			}
 
@@ -316,7 +349,7 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		}
 
 		if r.err != nil {
-			key := fmt.Sprintf("%s:%s", r.src.Type, r.src.Username)
+			key := sourceKey(r.src)
 			if _, exists := sourceErrors[key]; !exists {
 				log.Errorf("Error fetching game from %s for %s: %v", r.src.Type, r.src.Username, r.err)
 				sourceErrors[key] = SourceError{
@@ -328,14 +361,13 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 			continue
 		}
 
-		// Chess.com archive-complete sentinel: update the cursor timestamp
-		// to the archive boundary and check truncation. This ensures we
-		// only truncate at archive boundaries so that on resume
-		// FilterArchives cleanly excludes already-processed months.
-		if r.archiveComplete {
+		// Chess.com archive boundary: update the cursor timestamp and check
+		// truncation. This ensures we only truncate at archive boundaries
+		// so that on resume FilterArchives cleanly excludes already-processed months.
+		if r.archiveBoundary {
 			key := sourceKey(r.src)
-			if !r.game.EndTime.IsZero() {
-				lastTimestamp[key] = r.game.EndTime
+			if !r.archiveNextMonth.IsZero() {
+				lastTimestamp[key] = r.archiveNextMonth
 			}
 			if checkTruncation() {
 				break
@@ -369,6 +401,12 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		// For Chess.com, timestamps are set at archive boundaries (above).
 		// For Lichess (newest-first), track the min EndTime so that on
 		// resume we can set "until" to fetch games older than this point.
+		//
+		// Known limitation: if two Lichess games share the exact same lastMoveAt
+		// millisecond and truncation fires between them, the second game will be
+		// excluded on resume because Lichess's "until" parameter is exclusive.
+		// This is extremely unlikely in practice (requires two games for the same
+		// player ending in the same server-side millisecond).
 		if r.src.Type == game.SourceLichess {
 			key := sourceKey(r.src)
 			if !r.game.EndTime.IsZero() {
@@ -461,8 +499,10 @@ func measureResponseSize(tree *openingtree.OpeningTree) int {
 	resp := treeapi.FromOpeningTree(tree)
 	data, err := json.Marshal(resp)
 	if err != nil {
+		// Marshal failure means we can't measure size, so assume worst case
+		// to trigger truncation and avoid exceeding Lambda's 6MB payload limit.
 		log.Errorf("Failed to marshal response for size check: %v", err)
-		return 0
+		return math.MaxInt
 	}
 	return len(data)
 }
