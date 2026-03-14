@@ -28,7 +28,14 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
-export function WeeklyTrainingPlan() {
+interface WeeklyTrainingPlanProps {
+    /** Whether the section is expanded. */
+    expanded: boolean;
+    /** A callback function to toggle the expanded state. */
+    setExpanded: (v: boolean | ((v: boolean) => boolean)) => void;
+}
+
+export function WeeklyTrainingPlan({ expanded, setExpanded }: WeeklyTrainingPlanProps) {
     const { startDate, endDate, weekSuggestions, timeline, isCurrentUser, isLoading, user } =
         use(TrainingPlanContext);
 
@@ -38,8 +45,6 @@ export function WeeklyTrainingPlan() {
         tasks: weekSuggestions,
         timeline,
     });
-
-    const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();

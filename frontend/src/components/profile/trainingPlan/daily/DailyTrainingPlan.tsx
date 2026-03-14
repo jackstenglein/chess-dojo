@@ -47,9 +47,14 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 import { GraduationTask } from './GraduationTask';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
 
-export function DailyTrainingPlan() {
-    const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
+interface DailyTrainingPlanProps {
+    /** Whether the section is expanded. */
+    expanded: boolean;
+    /** A callback function to toggle the expanded state. */
+    setExpanded: (v: boolean | ((v: boolean) => boolean)) => void;
+}
 
+export function DailyTrainingPlan({ expanded, setExpanded }: DailyTrainingPlanProps) {
     const [startDate, endDate] = useMemo(() => {
         const startDate = new Date();
         startDate.setHours(0, 0, 0, 0);
