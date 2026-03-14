@@ -262,6 +262,9 @@ type User struct {
 	// The user's preferred time format on the calendar
 	TimeFormat string `dynamodbav:"timeFormat" json:"timeFormat"`
 
+	// The user's preferred language for the UI (e.g. "de", "es"). Empty = English.
+	Language string `dynamodbav:"language,omitempty" json:"language,omitempty"`
+
 	// The user's list of custom tasks
 	CustomTasks []*CustomTask `dynamodbav:"customTasks" json:"customTasks"`
 
@@ -744,6 +747,9 @@ type UserUpdate struct {
 
 	// The user's preferred time format on the calendar
 	TimeFormat *string `dynamodbav:"timeFormat,omitempty" json:"timeFormat,omitempty"`
+
+	// The user's preferred language for the UI (e.g. "de", "es"). Empty = English.
+	Language *string `dynamodbav:"language,omitempty" json:"language,omitempty"`
 
 	// The user's list of custom tasks
 	CustomTasks *[]*CustomTask `dynamodbav:"customTasks,omitempty" json:"customTasks,omitempty"`
