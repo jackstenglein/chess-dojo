@@ -6,6 +6,7 @@ import { useAuth } from '@/auth/Auth';
 import LoadingPage from '@/loading/LoadingPage';
 import { PresenterIcon } from '@/style/PresenterIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
+import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import {
     getSubscriptionTier,
     SubscriptionTier,
@@ -18,6 +19,8 @@ import {
     Search,
     ShowChart,
     Troubleshoot,
+    ViewList,
+    ViewModule,
 } from '@mui/icons-material';
 import {
     Accordion,
@@ -32,8 +35,12 @@ import {
     Dialog,
     Grid,
     InputAdornment,
+    MenuItem,
+    Select,
     Stack,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -70,6 +77,29 @@ function matchesTagFilter(c: LiveClass, selectedTags: string[]): boolean {
     return selectedTags.some((t) => classTags.has(t) || c.type === t);
 }
 
+const COHORT_LEVELS = [
+    { value: 'all', label: 'All Levels', min: 0, max: Infinity },
+    { value: 'beginner', label: 'Beginner (0-1000)', min: 0, max: 1000 },
+    { value: 'intermediate', label: 'Intermediate (1000-1500)', min: 1000, max: 1500 },
+    { value: 'advanced', label: 'Advanced (1500-2000)', min: 1500, max: 2000 },
+    { value: 'expert', label: 'Expert (2000+)', min: 2000, max: Infinity },
+] as const;
+
+type CohortLevelValue = (typeof COHORT_LEVELS)[number]['value'];
+
+function rangesOverlap(a: { min: number; max: number }, b: { min: number; max: number }): boolean {
+    return a.min <= b.max && b.min <= a.max;
+}
+
+function matchesCohortLevel(c: LiveClass, level: CohortLevelValue): boolean {
+    if (level === 'all') return true;
+    const levelDef = COHORT_LEVELS.find((l) => l.value === level);
+    if (!levelDef || levelDef.value === 'all') return true;
+
+    const [min, max] = getCohortRangeInt(c.cohortRange);
+    return rangesOverlap({ min, max }, { min: levelDef.min, max: levelDef.max });
+}
+
 export function LiveClassesPage() {
     const api = useApi();
     const { user } = useAuth();
@@ -80,6 +110,8 @@ export function LiveClassesPage() {
     const [showUpsell, setShowUpsell] = useState<SubscriptionTier>();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [cohortLevel, setCohortLevel] = useState<CohortLevelValue>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         if (!request.isSent()) {
@@ -139,7 +171,10 @@ export function LiveClassesPage() {
 
     const allClasses = request.data ?? [];
     const filteredClasses = allClasses.filter(
-        (c) => matchesSearch(c, searchQuery) && matchesTagFilter(c, selectedTags),
+        (c) =>
+            matchesSearch(c, searchQuery) &&
+            matchesTagFilter(c, selectedTags) &&
+            matchesCohortLevel(c, cohortLevel),
     );
     const allTags = getUniqueTags(allClasses);
 
@@ -152,7 +187,10 @@ export function LiveClassesPage() {
     const onClearFilters = () => {
         setSelectedTags([]);
         setSearchQuery('');
+        setCohortLevel('all');
     };
+
+    const hasFilter = selectedTags.length > 0 || searchQuery.trim() !== '' || cohortLevel !== 'all';
 
     return (
         <Container sx={{ py: 5 }}>
@@ -164,93 +202,141 @@ export function LiveClassesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 size='small'
-                sx={{ mt: 2, maxWidth: 480 }}
+                sx={{ mt: 2 }}
                 slotProps={{
                     input: {
                         startAdornment: (
                             <InputAdornment position='start'>
-                                <Search color='action' />
+                                <Search />
                             </InputAdornment>
                         ),
                     },
                 }}
             />
-            {allTags.length > 0 && (
-                <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center' sx={{ mt: 2 }}>
-                    <Tooltip title='Show all recordings'>
-                        <Chip
-                            label='All'
-                            size='small'
-                            variant={selectedTags.length === 0 ? 'filled' : 'outlined'}
-                            color={selectedTags.length === 0 ? 'dojoOrange' : 'default'}
-                            onClick={() => setSelectedTags([])}
-                            sx={{ cursor: 'pointer' }}
-                        />
-                    </Tooltip>
-                    <Tooltip title='Show recordings with tag: Lecture'>
-                        <Chip
-                            label='Lecture'
-                            size='small'
-                            variant={
-                                selectedTags.includes(SubscriptionTier.Lecture)
-                                    ? 'filled'
-                                    : 'outlined'
-                            }
-                            color={
-                                selectedTags.includes(SubscriptionTier.Lecture)
-                                    ? 'dojoOrange'
-                                    : 'default'
-                            }
-                            onClick={() => toggleTag(SubscriptionTier.Lecture)}
-                            sx={{ cursor: 'pointer' }}
-                            icon={<PresenterIcon />}
-                        />
-                    </Tooltip>
-                    <Tooltip title='Show recordings with tag: Game & Profile Review'>
-                        <Chip
-                            label='Game & Profile Review'
-                            size='small'
-                            variant={
-                                selectedTags.includes(SubscriptionTier.GameReview)
-                                    ? 'filled'
-                                    : 'outlined'
-                            }
-                            color={
-                                selectedTags.includes(SubscriptionTier.GameReview)
-                                    ? 'dojoOrange'
-                                    : 'default'
-                            }
-                            onClick={() => toggleTag(SubscriptionTier.GameReview)}
-                            sx={{ cursor: 'pointer' }}
-                            icon={<Troubleshoot />}
-                        />
-                    </Tooltip>
 
-                    {allTags.map((tag) => (
-                        <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
-                            <Chip
-                                key={tag}
-                                label={tag}
-                                size='small'
-                                variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                                color={selectedTags.includes(tag) ? 'dojoOrange' : 'default'}
-                                onClick={() => toggleTag(tag)}
-                                sx={{ cursor: 'pointer' }}
-                            />
-                        </Tooltip>
+            <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center' sx={{ mt: 2 }}>
+                <Tooltip title='Show all recordings'>
+                    <Chip
+                        label='All'
+                        variant={selectedTags.length === 0 ? 'filled' : 'outlined'}
+                        color={selectedTags.length === 0 ? 'primary' : 'default'}
+                        onClick={() => setSelectedTags([])}
+                        sx={{ cursor: 'pointer' }}
+                    />
+                </Tooltip>
+                <Tooltip title='Show recordings with tag: Lecture'>
+                    <Chip
+                        label='Lecture'
+                        variant={
+                            selectedTags.includes(SubscriptionTier.Lecture) ? 'filled' : 'outlined'
+                        }
+                        color={
+                            selectedTags.includes(SubscriptionTier.Lecture) ? 'primary' : 'default'
+                        }
+                        onClick={() => toggleTag(SubscriptionTier.Lecture)}
+                        sx={{ cursor: 'pointer' }}
+                        icon={<PresenterIcon sx={{ fontSize: '1.5rem' }} />}
+                    />
+                </Tooltip>
+                <Tooltip title='Show recordings with tag: Game & Profile Review'>
+                    <Chip
+                        label='Game & Profile Review'
+                        variant={
+                            selectedTags.includes(SubscriptionTier.GameReview)
+                                ? 'filled'
+                                : 'outlined'
+                        }
+                        color={
+                            selectedTags.includes(SubscriptionTier.GameReview)
+                                ? 'primary'
+                                : 'default'
+                        }
+                        onClick={() => toggleTag(SubscriptionTier.GameReview)}
+                        sx={{ cursor: 'pointer' }}
+                        icon={<Troubleshoot />}
+                    />
+                </Tooltip>
+
+                {allTags.map((tag) => (
+                    <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
+                        <Chip
+                            key={tag}
+                            label={tag}
+                            variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                            color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                            onClick={() => toggleTag(tag)}
+                            sx={{ cursor: 'pointer' }}
+                        />
+                    </Tooltip>
+                ))}
+            </Stack>
+
+            <Stack
+                direction='row'
+                alignItems='center'
+                justifyContent='space-between'
+                gap={1}
+                sx={{ mt: 2 }}
+            >
+                <Select
+                    size='small'
+                    value={cohortLevel}
+                    onChange={(e) => setCohortLevel(e.target.value)}
+                    sx={{ minWidth: 220 }}
+                >
+                    {COHORT_LEVELS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                        </MenuItem>
                     ))}
+                </Select>
+
+                <Stack direction='row' alignItems='center' gap={1}>
+                    <Typography variant='subtitle2' color='text.secondary'>
+                        {filteredClasses.length} class{filteredClasses.length !== 1 ? 'es' : ''}
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={viewMode}
+                        exclusive
+                        onChange={(_, v: 'grid' | 'list') => setViewMode(v)}
+                        aria-label='view mode'
+                        size='small'
+                    >
+                        <Tooltip title='Grid view'>
+                            <ToggleButton value='grid' aria-label='grid'>
+                                <ViewModule />
+                            </ToggleButton>
+                        </Tooltip>
+                        <Tooltip title='List view'>
+                            <ToggleButton value='list' aria-label='list'>
+                                <ViewList />
+                            </ToggleButton>
+                        </Tooltip>
+                    </ToggleButtonGroup>
                 </Stack>
-            )}
+            </Stack>
 
             <Stack spacing={5} mt={5}>
-                <LiveClassesSection
-                    classes={filteredClasses}
-                    onPlay={onPlay}
-                    onTagClick={toggleTag}
-                    selectedTags={selectedTags}
-                    searchQuery={searchQuery}
-                    onClearFilters={onClearFilters}
-                />
+                {filteredClasses.length > 0 ? (
+                    <LiveClasses
+                        classes={filteredClasses}
+                        onPlay={onPlay}
+                        onTagClick={toggleTag}
+                        selectedTags={selectedTags}
+                        variant={viewMode}
+                    />
+                ) : hasFilter ? (
+                    <Stack alignItems='center'>
+                        <Typography sx={{ mt: 1 }}>No classes match your filters</Typography>
+                        <Button variant='text' color='primary' onClick={onClearFilters}>
+                            Clear Filters
+                        </Button>
+                    </Stack>
+                ) : (
+                    <Stack alignItems='center'>
+                        <Typography sx={{ mt: 1 }}>No classes found</Typography>
+                    </Stack>
+                )}
             </Stack>
 
             {playingUrl && (
@@ -300,55 +386,33 @@ export function LiveClassesPage() {
     );
 }
 
-function LiveClassesSection({
+function LiveClasses({
     classes,
     onPlay,
     onTagClick,
     selectedTags,
-    searchQuery,
-    onClearFilters,
+    variant,
 }: {
     classes: LiveClass[];
     onPlay: (s3Key: string, tier: SubscriptionTier) => void;
     onTagClick: (tag: string) => void;
     selectedTags: string[];
-    searchQuery: string;
-    onClearFilters: () => void;
+    variant?: 'grid' | 'list';
 }) {
-    if (classes.length > 0) {
-        return (
-            <Stack>
-                <Grid container mt={1} spacing={3}>
-                    {classes.map((c) => (
-                        <Grid key={c.name} size={{ xs: 12, sm: 6, lg: 4 }}>
-                            <LiveClassCard
-                                c={c}
-                                onPlay={onPlay}
-                                onTagClick={onTagClick}
-                                selectedTags={selectedTags}
-                            />
-                        </Grid>
-                    ))}
-                </Grid>
-            </Stack>
-        );
-    }
-
-    if (selectedTags.length > 0 || searchQuery.trim() !== '') {
-        return (
-            <Stack alignItems='center'>
-                <Typography sx={{ mt: 1 }}>No classes match your filters</Typography>
-                <Button variant='text' color='primary' onClick={onClearFilters}>
-                    Clear Filters
-                </Button>
-            </Stack>
-        );
-    }
-
     return (
-        <Stack alignItems='center'>
-            <Typography sx={{ mt: 1 }}>No classes found</Typography>
-        </Stack>
+        <Grid container mt={1} spacing={3}>
+            {classes.map((c) => (
+                <Grid key={c.name} size={variant === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}>
+                    <LiveClassCard
+                        c={c}
+                        onPlay={onPlay}
+                        onTagClick={onTagClick}
+                        selectedTags={selectedTags}
+                        variant={variant}
+                    />
+                </Grid>
+            ))}
+        </Grid>
     );
 }
 
@@ -357,27 +421,58 @@ function LiveClassCard({
     onPlay,
     onTagClick,
     selectedTags,
+    variant = 'grid',
 }: {
     c: LiveClass;
     onPlay: (s3Key: string, tier: SubscriptionTier) => void;
     onTagClick: (tag: string) => void;
     selectedTags: string[];
+    variant?: 'grid' | 'list';
 }) {
+    const isList = variant === 'list';
     return (
-        <Card variant='outlined' sx={{ overflow: 'hidden' }}>
+        <Card
+            variant='outlined'
+            sx={{
+                overflow: 'hidden',
+                ...(isList
+                    ? {
+                          display: { sm: 'flex' },
+                          flexDirection: { sm: 'row' },
+                          alignItems: { sm: 'center' },
+                      }
+                    : {}),
+            }}
+        >
             {c.imageUrl && (
                 <CardMedia
                     component='img'
                     image={c.imageUrl}
                     alt={`${c.name} cover`}
                     sx={{
-                        height: 180,
+                        height: 'auto',
+                        width: '100%',
                         objectFit: 'cover',
-                        bgcolor: 'action.hover',
+                        ...(isList
+                            ? {
+                                  height: { sm: 140 },
+                                  width: { sm: 200 },
+                                  minWidth: { sm: 200 },
+                                  pl: { sm: 2 },
+                                  borderRadius: { sm: 1 },
+                              }
+                            : {}),
                     }}
                 />
             )}
-            <CardContent sx={{ pt: c.imageUrl ? 2 : 3 }}>
+            <CardContent
+                sx={{
+                    pt: c.imageUrl ? 2 : 3,
+                    flex: 1,
+                    minWidth: 0,
+                    ...(isList ? { display: { sm: 'flex' }, flexDirection: { sm: 'column' } } : {}),
+                }}
+            >
                 <Typography variant='h6' component='h2' gutterBottom>
                     {c.name}
                 </Typography>
@@ -412,7 +507,7 @@ function LiveClassCard({
                                 sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
                                 color={
                                     selectedTags.includes(SubscriptionTier.GameReview)
-                                        ? 'dojoOrange'
+                                        ? 'primary'
                                         : 'default'
                                 }
                             />
@@ -431,7 +526,7 @@ function LiveClassCard({
                                 sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
                                 color={
                                     selectedTags.includes(SubscriptionTier.Lecture)
-                                        ? 'dojoOrange'
+                                        ? 'primary'
                                         : 'default'
                                 }
                             />
@@ -449,7 +544,7 @@ function LiveClassCard({
                                     onTagClick(tag);
                                 }}
                                 sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
-                                color={selectedTags.includes(tag) ? 'dojoOrange' : 'default'}
+                                color={selectedTags.includes(tag) ? 'primary' : 'default'}
                             />
                         </Tooltip>
                     ))}
@@ -463,6 +558,7 @@ function LiveClassCard({
                         WebkitLineClamp: 6,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
+                        ...(isList ? { flex: { sm: 1 }, WebkitLineClamp: { xs: 6, sm: 2 } } : {}),
                     }}
                 >
                     {c.description}
@@ -474,21 +570,23 @@ function LiveClassCard({
                     sx={{
                         bgcolor: 'transparent',
                         '&:before': { display: 'none' },
-                        border: 1,
-                        borderColor: 'divider',
-                        borderRadius: 1,
                         mt: 2,
                     }}
                 >
                     <AccordionSummary
-                        expandIcon={<ExpandMore />}
-                        sx={{ minHeight: 48, '& .MuiAccordionSummary-content': { my: 1 } }}
+                        expandIcon={<ExpandMore sx={{ color: 'primary.main' }} />}
+                        sx={{
+                            minHeight: 48,
+                            flexDirection: 'row-reverse',
+                            '& .MuiAccordionSummary-content': { my: 1 },
+                            '& .MuiAccordionSummary-expandIconWrapper': { mr: 1, ml: 0 },
+                        }}
                     >
-                        <Typography variant='subtitle2' color='text.secondary'>
+                        <Typography variant='subtitle2' color='primary.main'>
                             {c.recordings.length} recording{c.recordings.length !== 1 ? 's' : ''}
                         </Typography>
                     </AccordionSummary>
-                    <AccordionDetails sx={{ pt: 0 }}>
+                    <AccordionDetails sx={{ py: 0 }}>
                         <Stack spacing={1}>
                             {c.recordings.map((r) => (
                                 <Stack

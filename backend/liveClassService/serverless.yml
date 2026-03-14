@@ -56,6 +56,11 @@ functions:
 
   listRecordings:
     handler: listRecordings.handler
+    package:
+      individually: true
+      patterns:
+        - lectures-${sls:stage}.json
+        - game-reviews-${sls:stage}.json
     events:
       - httpApi:
           path: /public/live-classes/recordings
