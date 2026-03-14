@@ -27,6 +27,7 @@ import {
     VisibilityOff,
 } from '@mui/icons-material';
 import {
+    Box,
     Button,
     IconButton,
     MenuItem,
@@ -228,7 +229,7 @@ export function FullTrainingPlan() {
                     flexWrap='wrap'
                     alignItems='end'
                     mt={3}
-                    mb={expanded[sections[0].category] ? -2 : 0}
+                    mb={0}
                 >
                     <TextField
                         id='training-plan-cohort-select'
@@ -307,21 +308,25 @@ export function FullTrainingPlan() {
                     </Stack>
                 </Stack>
 
-                {sections.map((section) => (
-                    <FullTrainingPlanSection
-                        key={section.category}
-                        section={section}
-                        expanded={expanded[section.category]}
-                        toggleExpand={toggleExpand}
-                        user={user}
-                        isCurrentUser={isCurrentUser}
-                        cohort={cohort}
-                        togglePin={togglePin}
-                        pinnedTasks={pinnedTasks}
-                        showCompleted={showCompleted}
-                        setShowCompleted={setShowCompleted}
-                    />
-                ))}
+                <Box
+                    sx={{ display: 'flex', flexWrap: 'wrap', rowGap: 0.5, columnGap: 1, width: 1 }}
+                >
+                    {sections.map((section) => (
+                        <FullTrainingPlanSection
+                            key={section.category}
+                            section={section}
+                            expanded={expanded[section.category]}
+                            toggleExpand={toggleExpand}
+                            user={user}
+                            isCurrentUser={isCurrentUser}
+                            cohort={cohort}
+                            togglePin={togglePin}
+                            pinnedTasks={pinnedTasks}
+                            showCompleted={showCompleted}
+                            setShowCompleted={setShowCompleted}
+                        />
+                    ))}
+                </Box>
             </Stack>
         </Stack>
     );

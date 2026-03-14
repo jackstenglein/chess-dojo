@@ -97,13 +97,43 @@ export function FullTrainingPlanSection({
             key={section.category}
             expanded={expanded}
             onChange={() => toggleExpand(section.category)}
-            sx={{ width: 1 }}
+            disableGutters
+            sx={{
+                width: expanded ? 1 : { xs: 1, sm: 'calc(50% - 4px)' },
+                '&.Mui-expanded': {
+                    width: 1,
+                },
+                '&:before': {
+                    display: 'none',
+                },
+                backgroundColor: (theme) =>
+                    theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, .05)'
+                        : 'rgba(0, 0, 0, .03)',
+                backgroundImage: 'none',
+            }}
         >
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls={`${section.category.replaceAll(' ', '-')}-content`}
                 id={`${section.category.replaceAll(' ', '-')}-header`}
                 data-testid={`${section.category.replaceAll(' ', '-')}-header`}
+                sx={{
+                    position: 'sticky',
+                    top: 'calc(var(--navbar-height) - 1px)',
+                    zIndex: 1,
+                    backgroundColor: 'inherit',
+                    '& .MuiAccordionSummary-content': {
+                        width: 1,
+                        my: 1.5,
+                    },
+                    '&.Mui-expanded': {
+                        minHeight: 0,
+                    },
+                    '&.Mui-expanded .MuiAccordionSummary-content': {
+                        my: 1.5,
+                    },
+                }}
             >
                 <Grid
                     container
@@ -113,7 +143,10 @@ export function FullTrainingPlanSection({
                     sx={{ mr: 2 }}
                     columnGap={3}
                 >
-                    <Grid size={{ xs: 'auto', sm: 5.5, lg: 5, xl: 3 }}>
+                    <Grid
+                        size={{ xs: 'auto', sm: 'auto' }}
+                        sx={{ flexBasis: { sm: '200px' }, flexShrink: 0 }}
+                    >
                         <Typography fontWeight='bold' sx={{ whiteSpace: 'nowrap' }}>
                             <TrainingPlanIcon
                                 category={section.category}
@@ -130,7 +163,10 @@ export function FullTrainingPlanSection({
                     <Grid
                         size={{ xs: 0, sm: 'grow' }}
                         color={section.color}
-                        sx={{ display: { xs: 'none', sm: 'initial' } }}
+                        sx={{
+                            display: { xs: 'none', sm: 'initial' },
+                            maxWidth: { sm: 400, md: 500, lg: 600 },
+                        }}
                     >
                         {section.progressBar !== undefined && (
                             <ScoreboardProgress
@@ -155,7 +191,10 @@ export function FullTrainingPlanSection({
                     </Grid>
                 </Grid>
             </AccordionSummary>
-            <AccordionDetails data-testid={`progress-category-${section.category}`}>
+            <AccordionDetails
+                data-testid={`progress-category-${section.category}`}
+                sx={{ pt: 0, backgroundColor: 'inherit' }}
+            >
                 <Divider />
 
                 <TaskList
