@@ -7,7 +7,7 @@ import type { MeetingInfo } from './meetingInfo';
 const mockLectureInfo: MeetingInfo = {
     type: SubscriptionTier.Lecture,
     name: 'Test Lecture',
-    googleMeetName: 'Test Lecture | GM Someone',
+    googleMeetNames: ['Test Lecture | GM Someone'],
     googleMeetIds: ['abc-def-ghi'],
     cohortRange: '1200+',
     tags: ['Opening'],
@@ -20,7 +20,7 @@ const mockLectureInfo: MeetingInfo = {
 const mockGameReviewInfo: MeetingInfo = {
     type: SubscriptionTier.GameReview,
     name: 'Peer Review',
-    googleMeetName: 'Peer Review',
+    googleMeetNames: ['Peer Review'],
     googleMeetIds: ['peer-id'],
     cohortRange: 'All',
     tags: [],

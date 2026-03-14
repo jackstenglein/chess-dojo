@@ -6,8 +6,8 @@ import { ApiError } from '../directoryService/api';
 export interface MeetingInfo extends Omit<LiveClass, 'recordings'> {
     /** The name of the meeting. */
     name: string;
-    /** The name of the Google Meet for the meeting. */
-    googleMeetName: string;
+    /** The names of the Google Meets for the meeting. */
+    googleMeetNames: string[];
     /** The IDs of the Google Meet for the meeting. */
     googleMeetIds: string[];
     /** The AWS S3 folder of the meeting's recordings. */

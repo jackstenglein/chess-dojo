@@ -6,7 +6,7 @@ import type { MeetingInfo } from './meetingInfo';
 const mockMeetingInfo: MeetingInfo = {
     type: SubscriptionTier.Lecture,
     name: 'Test Lecture',
-    googleMeetName: 'Test Lecture | GM Someone',
+    googleMeetNames: ['Test Lecture | GM Someone'],
     googleMeetIds: ['abc-def-ghi'],
     cohortRange: '1200+',
     tags: [],
@@ -51,7 +51,7 @@ describe('getS3Key', () => {
         const otherInfo: MeetingInfo = {
             ...mockMeetingInfo,
             type: SubscriptionTier.GameReview,
-            googleMeetName: 'Other Meeting',
+            googleMeetNames: ['Other Meeting'],
             googleMeetIds: ['xyz-xyz-xyz'],
             awsS3Folder: 'other-folder',
         };
@@ -65,7 +65,7 @@ describe('getS3Key', () => {
         const gameReviewInfo: MeetingInfo = {
             ...mockMeetingInfo,
             type: SubscriptionTier.GameReview,
-            googleMeetName: 'Peer Review',
+            googleMeetNames: ['Peer Review'],
             googleMeetIds: ['peer-review-id'],
             awsS3Folder: 'peer-review',
         };

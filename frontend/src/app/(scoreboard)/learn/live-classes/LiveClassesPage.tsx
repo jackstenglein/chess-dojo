@@ -277,6 +277,7 @@ export function LiveClassesPage() {
                 justifyContent='space-between'
                 gap={1}
                 sx={{ mt: 2 }}
+                flexWrap='wrap'
             >
                 <Select
                     size='small'

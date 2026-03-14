@@ -123,8 +123,10 @@ export function getMeetingInfo(
     meetingInfos: MeetingInfo[],
 ): MeetingInfo | undefined {
     return meetingInfos.find((info) => {
-        if (fileName.includes(info.googleMeetName)) {
-            return true;
+        for (const googleMeetName of info.googleMeetNames) {
+            if (fileName.includes(googleMeetName)) {
+                return true;
+            }
         }
         for (const googleMeetId of info.googleMeetIds) {
             if (fileName.includes(googleMeetId)) {

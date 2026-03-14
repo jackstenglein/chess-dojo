@@ -25,13 +25,13 @@ export interface LiveClass {
     /** The cohort range of the class. */
     cohortRange: string;
     /** The tags of the class. */
-    tags: string[];
+    tags?: string[];
     /** The teacher of the class. */
-    teacher: string;
+    teacher?: string;
     /** The description of the class. */
     description: string;
     /** The cover image URL of the class. */
-    imageUrl: string;
+    imageUrl?: string;
     /** The recordings of the class. */
     recordings: {
         /** The date of the recording. */
