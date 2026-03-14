@@ -2,6 +2,9 @@ package chesscom
 
 import (
 	"testing"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
@@ -17,43 +20,28 @@ func TestToGame(t *testing.T) {
 		Black:     Player{Username: "Bob", Rating: 1450, Result: PlayerResultCheckmated},
 	}
 
-	common, err := ToGame(g, "alice")
+	got, err := ToGame(g, "alice")
 	if err != nil {
 		t.Fatalf("ToGame error: %v", err)
 	}
 
-	if common.Source != game.SourceChessCom {
-		t.Errorf("Source = %q, want %q", common.Source, game.SourceChessCom)
+	want := game.Game{
+		Source:        game.SourceChessCom,
+		PlayerColor:   "white",
+		WhiteUsername: "Alice",
+		BlackUsername: "Bob",
+		WhiteRating:   1500,
+		BlackRating:   1450,
+		Result:        game.ResultWhite,
+		TimeClass:     game.TimeClassRapid,
+		Rated:         true,
+		URL:           "https://www.chess.com/game/live/12345",
+		PGN:           "1. e4 e5 1-0",
+		EndTime:       time.Unix(0, 0),
 	}
-	if common.PlayerColor != "white" {
-		t.Errorf("PlayerColor = %q, want white", common.PlayerColor)
-	}
-	if common.WhiteUsername != "Alice" {
-		t.Errorf("WhiteUsername = %q, want Alice", common.WhiteUsername)
-	}
-	if common.BlackUsername != "Bob" {
-		t.Errorf("BlackUsername = %q, want Bob", common.BlackUsername)
-	}
-	if common.WhiteRating != 1500 {
-		t.Errorf("WhiteRating = %d, want 1500", common.WhiteRating)
-	}
-	if common.BlackRating != 1450 {
-		t.Errorf("BlackRating = %d, want 1450", common.BlackRating)
-	}
-	if common.Result != game.ResultWhite {
-		t.Errorf("Result = %q, want %q", common.Result, game.ResultWhite)
-	}
-	if common.TimeClass != game.TimeClassRapid {
-		t.Errorf("TimeClass = %q, want %q", common.TimeClass, game.TimeClassRapid)
-	}
-	if !common.Rated {
-		t.Error("Rated = false, want true")
-	}
-	if common.URL != "https://www.chess.com/game/live/12345" {
-		t.Errorf("URL = %q, want https://www.chess.com/game/live/12345", common.URL)
-	}
-	if common.PGN != "1. e4 e5 1-0" {
-		t.Errorf("PGN = %q, want '1. e4 e5 1-0'", common.PGN)
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("ToGame mismatch (-want +got):\n%s", diff)
 	}
 }
 

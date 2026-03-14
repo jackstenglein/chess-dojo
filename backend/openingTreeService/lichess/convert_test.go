@@ -2,6 +2,9 @@ package lichess
 
 import (
 	"testing"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 )
@@ -19,43 +22,28 @@ func TestToGame(t *testing.T) {
 		PGN:    "1. e4 e5 1-0",
 	}
 
-	common, err := ToGame(g, "alice")
+	got, err := ToGame(g, "alice")
 	if err != nil {
 		t.Fatalf("ToGame error: %v", err)
 	}
 
-	if common.Source != game.SourceLichess {
-		t.Errorf("Source = %q, want %q", common.Source, game.SourceLichess)
+	want := game.Game{
+		Source:        game.SourceLichess,
+		PlayerColor:   "white",
+		WhiteUsername: "Alice",
+		BlackUsername: "Bob",
+		WhiteRating:   1600,
+		BlackRating:   1580,
+		Result:        game.ResultWhite,
+		TimeClass:     game.TimeClassRapid,
+		Rated:         true,
+		URL:           "https://lichess.org/abc123",
+		PGN:           "1. e4 e5 1-0",
+		EndTime:       time.UnixMilli(0),
 	}
-	if common.PlayerColor != "white" {
-		t.Errorf("PlayerColor = %q, want white", common.PlayerColor)
-	}
-	if common.WhiteUsername != "Alice" {
-		t.Errorf("WhiteUsername = %q, want Alice", common.WhiteUsername)
-	}
-	if common.BlackUsername != "Bob" {
-		t.Errorf("BlackUsername = %q, want Bob", common.BlackUsername)
-	}
-	if common.WhiteRating != 1600 {
-		t.Errorf("WhiteRating = %d, want 1600", common.WhiteRating)
-	}
-	if common.BlackRating != 1580 {
-		t.Errorf("BlackRating = %d, want 1580", common.BlackRating)
-	}
-	if common.Result != game.ResultWhite {
-		t.Errorf("Result = %q, want %q", common.Result, game.ResultWhite)
-	}
-	if common.TimeClass != game.TimeClassRapid {
-		t.Errorf("TimeClass = %q, want %q", common.TimeClass, game.TimeClassRapid)
-	}
-	if !common.Rated {
-		t.Error("Rated = false, want true")
-	}
-	if common.URL != "https://lichess.org/abc123" {
-		t.Errorf("URL = %q, want https://lichess.org/abc123", common.URL)
-	}
-	if common.PGN != "1. e4 e5 1-0" {
-		t.Errorf("PGN = %q, want '1. e4 e5 1-0'", common.PGN)
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("ToGame mismatch (-want +got):\n%s", diff)
 	}
 }
 
