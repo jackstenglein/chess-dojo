@@ -17,7 +17,7 @@ export const RequirementTranslationSchema = z.object({
     /** The locale code (e.g. "de", "es"). */
     locale: localeSchema,
     /** The content key, formatted as "REQUIREMENT#<requirementId>". */
-    contentKey: z.string().startsWith('REQUIREMENT#'),
+    contentKey: z.string().regex(/^REQUIREMENT#.+$/, 'contentKey must be REQUIREMENT#<id>'),
     /** The translated requirement name. */
     name: z.string(),
     /** The translated short name. */
@@ -46,7 +46,7 @@ export const CourseTranslationSchema = z.object({
     /** The locale code (e.g. "de", "es"). */
     locale: localeSchema,
     /** The content key, formatted as "COURSE#<courseId>". */
-    contentKey: z.string().startsWith('COURSE#'),
+    contentKey: z.string().regex(/^COURSE#.+$/, 'contentKey must be COURSE#<id>'),
     /** The translated course name. */
     name: z.string(),
     /** The translated course description. */
