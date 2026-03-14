@@ -4,6 +4,7 @@ import { useRequest } from '@/api/Request';
 import { NavigationMenu } from '@/components/directories/navigation/NavigationMenu';
 import { GameCell } from '@/components/games/list/GameListItem';
 import { PAGE_SIZE_OPTIONS } from '@/components/ui/pagination';
+import useGame from '@/context/useGame';
 import { GameResult } from '@/database/game.ts';
 import { useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
@@ -105,6 +106,7 @@ const DirectorySection = ({
         directory: 'home',
     });
     const router = useRouter();
+    const { onNavigateToGame } = useGame();
 
     const [columnVisibility, setColumnVisibility] = useLocalStorage<GridColumnVisibilityModel>(
         `/DirectoryTable/${namespace}/visibility`,
@@ -191,14 +193,19 @@ const DirectorySection = ({
             });
             setRowSelectionModel({ type: 'include', ids: new Set() });
         } else {
-            const url = `/games/${params.row.metadata.cohort.replaceAll('+', '%2B')}/${params.row.metadata.id.replaceAll(
-                '?',
-                '%3F',
-            )}?directory=${directory.id}&directoryOwner=${directory.owner}`;
-            if (event.shiftKey) {
-                window.open(url, '_blank');
+            const { cohort, id } = params.row.metadata;
+            if (onNavigateToGame && !event.shiftKey) {
+                onNavigateToGame(cohort, id);
             } else {
-                router.push(url);
+                const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll(
+                    '?',
+                    '%3F',
+                )}?directory=${directory.id}&directoryOwner=${directory.owner}`;
+                if (event.shiftKey) {
+                    window.open(url, '_blank');
+                } else {
+                    router.push(url);
+                }
             }
         }
     };

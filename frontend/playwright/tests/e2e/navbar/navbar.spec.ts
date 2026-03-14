@@ -60,6 +60,24 @@ test.describe('Navbar (unauthenticated)', () => {
     });
 });
 
+test.describe('Navbar Games dropdown', () => {
+    test('has Repertoire Spy link that navigates to analysis with explorer param', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 1501, height: 660 });
+        await page.goto('/profile');
+
+        const navbar = page.getByTestId('navbar');
+        await navbar.getByText('Games').click();
+        await page.getByRole('menuitem', { name: 'Repertoire Spy' }).click();
+
+        await expect(page).toHaveURL(/\/games\/analysis\?explorer=player/);
+        await expect(
+            page.getByRole('tab', { name: 'Repertoire Spy', selected: true }),
+        ).toBeVisible();
+    });
+});
+
 test.describe('Navbar (authenticated)', () => {
     for (const { width, hidden, endHidden } of viewPortWidths) {
         test(`shows correct authenticated items with ${width}px width`, async ({ page }) => {

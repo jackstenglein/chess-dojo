@@ -14,6 +14,7 @@ import { getConfig } from '@/config';
 import { TimeFormat } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
+import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import {
     GameReviewCohort,
     GameReviewCohortMember,
@@ -416,45 +417,54 @@ export function AdminGameReviewCohorts() {
                             </Stack>
 
                             <Typography variant='h6' sx={{ mt: 3 }}>
-                                Members
+                                Members ({Object.keys(grc.members).length})
                             </Typography>
                             <Typography variant='subtitle1' color='textSecondary'>
                                 Remove all members to delete this cohort
                             </Typography>
                             <Stack spacing={1} mt={1}>
-                                {Object.values(grc.members).map((m) => (
-                                    <Stack key={m.username} direction='row' alignItems='center'>
-                                        <Avatar
-                                            username={m.username}
-                                            displayName={m.displayName}
-                                            size={30}
-                                        />
-                                        <Link
-                                            href={`/profile/${m.username}`}
-                                            target='_blank'
-                                            ml={1}
-                                        >
-                                            {m.displayName}
-                                        </Link>
-                                        {m.dojoCohort && (
-                                            <Typography
-                                                variant='body2'
-                                                color='text.secondary'
-                                                ml={0.5}
+                                {Object.values(grc.members)
+                                    .sort((a, b) => {
+                                        const [aVal] = getCohortRangeInt(a.dojoCohort);
+                                        const [bVal] = getCohortRangeInt(b.dojoCohort);
+                                        if (aVal < 0 && bVal < 0) return 0;
+                                        if (aVal < 0) return 1;
+                                        if (bVal < 0) return -1;
+                                        return aVal - bVal;
+                                    })
+                                    .map((m) => (
+                                        <Stack key={m.username} direction='row' alignItems='center'>
+                                            <Avatar
+                                                username={m.username}
+                                                displayName={m.displayName}
+                                                size={30}
+                                            />
+                                            <Link
+                                                href={`/profile/${m.username}`}
+                                                target='_blank'
+                                                ml={1}
                                             >
-                                                ({m.dojoCohort})
-                                            </Typography>
-                                        )}
+                                                {m.displayName}
+                                            </Link>
+                                            {m.dojoCohort && (
+                                                <Typography
+                                                    variant='body2'
+                                                    color='text.secondary'
+                                                    ml={0.5}
+                                                >
+                                                    ({m.dojoCohort})
+                                                </Typography>
+                                            )}
 
-                                        <Button
-                                            variant='outlined'
-                                            sx={{ ml: 2 }}
-                                            onClick={(e) => onStartMove(e, i, m.username)}
-                                        >
-                                            Move
-                                        </Button>
-                                    </Stack>
-                                ))}
+                                            <Button
+                                                variant='outlined'
+                                                sx={{ ml: 2 }}
+                                                onClick={(e) => onStartMove(e, i, m.username)}
+                                            >
+                                                Move
+                                            </Button>
+                                        </Stack>
+                                    ))}
                             </Stack>
                         </CardContent>
                     </Card>
@@ -486,7 +496,7 @@ export function AdminGameReviewCohorts() {
                 </Stack>
 
                 <Card variant='outlined' data-testid='lecture-tier-card'>
-                    <CardHeader title='Lecture Tier Users' />
+                    <CardHeader title={`Lecture Tier Users (${lectureUsers.length})`} />
                     <CardContent>
                         {lectureUsers.length === 0 ? (
                             <Typography>No lecture tier users</Typography>

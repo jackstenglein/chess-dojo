@@ -29,7 +29,7 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
 import { use, useState } from 'react';
-import InputSlider from './InputSlider';
+import { InputSlider } from './InputSlider';
 import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
@@ -44,13 +44,13 @@ interface ProgressUpdaterProps {
     setView?: (view: TaskDialogView) => void;
 }
 
-const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
+export const ProgressUpdater = ({
     requirement,
     progress,
     cohort,
     onClose,
     setView,
-}) => {
+}: ProgressUpdaterProps) => {
     const { user } = useAuth();
     const api = useApi();
     const { entries, onNewEntry } = useTimelineContext();
@@ -287,5 +287,3 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
         </>
     );
 };
-
-export default ProgressUpdater;

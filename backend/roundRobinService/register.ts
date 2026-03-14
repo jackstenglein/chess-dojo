@@ -499,7 +499,7 @@ async function chargeFreeUsers(tournament: RoundRobin) {
  * for the tournament starting.
  * @param tournament The tournament that has started.
  */
-async function sendRoundRobinStartEvent(tournament: RoundRobin) {
+export async function sendRoundRobinStartEvent(tournament: RoundRobin) {
     await sqs.send(
         new SendMessageCommand({
             QueueUrl: process.env.notificationEventSqsUrl,
@@ -542,7 +542,7 @@ function generateName(startDate: Date, number: string) {
  * See https://handbook.fide.com/chapter/C05Annex1.
  * @param tournament The tournament to generate and set pairings for.
  */
-function setPairings(tournament: RoundRobin) {
+export function setPairings(tournament: RoundRobin) {
     const players = Object.keys(tournament.players);
     const pairings: RoundRobinPairing[][] = [];
 

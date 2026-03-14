@@ -28,8 +28,9 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
-import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
+import { MINIMUM_TASKS } from '../suggestedTasks';
+import { TaskDialog, TaskDialogView } from '../TaskDialog';
 
 interface FullTrainingPlanItemProps {
     user: User;
@@ -62,6 +63,8 @@ export const FullTrainingPlanItem = ({
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
     const time = formatTime(getTotalTime(cohort, progress));
     const expired = isExpired(requirement, progress);
+    const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
+    const minimumReached = isMinimumTask && currentCount >= totalCount;
 
     let UpdateElement = null;
 
@@ -85,7 +88,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Unspecified:
         case ScoreboardDisplay.Yearly:
             UpdateElement =
-                currentCount >= totalCount ? (
+                currentCount >= totalCount && !isMinimumTask ? (
                     <Tooltip title='Update Progress'>
                         <Checkbox
                             checked
@@ -131,7 +134,11 @@ export const FullTrainingPlanItem = ({
 
     return (
         <Tooltip title={blocker.reason} followCursor>
-            <Stack spacing={2} mt={2}>
+            <Stack
+                spacing={2}
+                mt={2}
+                data-testid={`${requirement.name.replaceAll(' ', '-')}-training-plan-entry`}
+            >
                 <Grid
                     container
                     columnGap={1}
@@ -154,6 +161,17 @@ export const FullTrainingPlanItem = ({
                                     variant='outlined'
                                     color='warning'
                                     label='Renew'
+                                    size='small'
+                                    sx={{ alignSelf: 'start', mb: 0.5 }}
+                                />
+                            </Tooltip>
+                        )}
+                        {minimumReached && (
+                            <Tooltip title="You've reached the minimum, keep going!">
+                                <Chip
+                                    variant='outlined'
+                                    color='success'
+                                    label='Minimum Reached'
                                     size='small'
                                     sx={{ alignSelf: 'start', mb: 0.5 }}
                                 />
@@ -185,6 +203,7 @@ export const FullTrainingPlanItem = ({
                                         value={currentCount}
                                         max={totalCount}
                                         min={requirement.startCount}
+                                        suffix={isMinimumTask ? 'min.' : ''}
                                         isTime={
                                             requirement.scoreboardDisplay ===
                                             ScoreboardDisplay.Minutes

@@ -1,32 +1,18 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { auth, drive, drive_v3 } from '@googleapis/drive';
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { createWriteStream } from 'fs';
 import { PassThrough, Readable } from 'stream';
 import { finished } from 'stream/promises';
-import { MEETING_INFO } from './meetingInfo';
+import { MeetingInfo, parseMeetingInfo } from './meetingInfo';
 
 const MEET_RECORDINGS_DRIVE_FOLDER = process.env.meetRecordingsDriveFolder;
 const FINISHED_UPLOADS_DRIVE_FOLDER = process.env.finishedUploadsDriveFolder;
 const S3_BUCKET = process.env.s3Bucket;
 const STAGE = process.env.stage || '';
-const MEET_RECORDING_REGEX = /^(.*) - (.*) - Recording/;
+const MEET_DATE_REGEX = /(\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2})/;
 const S3_CLIENT = new S3Client({ region: 'us-east-1' });
-
-/**
- * Parses a Meet recording file name into meeting name and date.
- * @param fileName The file name (e.g. "Team Morphy Peer Review - 2/27/2025 10:00 AM - Recording").
- * @returns The meeting name and date (YYYY-MM-DD), or null if the name does not match MEET_RECORDING_REGEX.
- */
-export function parseMeetRecordingFileName(
-    fileName: string,
-): { meetName: string; meetDate: string } | null {
-    const matches = MEET_RECORDING_REGEX.exec(fileName);
-    if (!matches || matches.length < 3) return null;
-    const meetName = matches[1];
-    const meetDate = matches[2].split(' ')[0].replaceAll('/', '-');
-    return { meetName, meetDate };
-}
 
 /**
  * Syncs videos from MEET_RECORDINGS_DRIVE_FOLDER to S3.
@@ -50,8 +36,17 @@ export const handler = async () => {
             return;
         }
 
-        console.log(`Found ${files.length} files. Starting transfer...`);
+        const lectureMeetingInfos = parseMeetingInfo(
+            `lectures-${STAGE}.json`,
+            SubscriptionTier.Lecture,
+        );
+        const gameReviewMeetingInfos = parseMeetingInfo(
+            `game-reviews-${STAGE}.json`,
+            SubscriptionTier.GameReview,
+        );
+        const meetingInfos = [...lectureMeetingInfos, ...gameReviewMeetingInfos];
 
+        console.log(`Found ${files.length} files. Starting transfer...`);
         for (const file of files) {
             if (!file.id || !file.name || file.trashed || !file.parents) continue;
             if (!file.mimeType?.startsWith('video')) {
@@ -59,7 +54,14 @@ export const handler = async () => {
                 continue;
             }
 
-            await streamFileToS3(driveClient, file.id, file.name, file.mimeType, file.parents);
+            await streamFileToS3({
+                driveClient,
+                fileId: file.id,
+                fileName: file.name,
+                mimeType: file.mimeType,
+                fileParents: file.parents,
+                meetingInfos,
+            });
         }
 
         return { statusCode: 200, body: 'Sync complete' };
@@ -112,6 +114,46 @@ async function getDriveClient() {
 }
 
 /**
+ * Gets the meeting info for a given Google Meet recording file name.
+ * @param fileName The Google Meet recording file name (e.g. "Team Morphy Peer Review - 2/27/2025 10:00 AM - Recording").
+ * @returns The meeting info object or undefined if none matches.
+ */
+export function getMeetingInfo(
+    fileName: string,
+    meetingInfos: MeetingInfo[],
+): MeetingInfo | undefined {
+    return meetingInfos.find((info) => {
+        for (const googleMeetName of info.googleMeetNames) {
+            if (fileName.includes(googleMeetName)) {
+                return true;
+            }
+        }
+        for (const googleMeetId of info.googleMeetIds) {
+            if (fileName.includes(googleMeetId)) {
+                return true;
+            }
+        }
+        return false;
+    });
+}
+
+export function getS3Key(fileName: string, meetingInfos: MeetingInfo[]): string {
+    const meetInfo = getMeetingInfo(fileName, meetingInfos);
+    if (!meetInfo) {
+        console.warn(`Skipping "${fileName}" because it does not match any meeting info`);
+        return '';
+    }
+
+    let meetDate = MEET_DATE_REGEX.exec(fileName)?.[1];
+    if (!meetDate) {
+        console.warn(`Skipping "${fileName}" because it does not match MEET_DATE_REGEX`);
+        return '';
+    }
+    meetDate = meetDate.replaceAll('/', '-');
+    return `${meetInfo.type}/${meetInfo.awsS3Folder}/${meetDate}`;
+}
+
+/**
  * Pipes a Google Drive file directly to S3 without loading the full file into memory/disk.
  * If the file is successfully copied to S3, it is moved into the "Finished Uploads" folder
  * in Google Drive.
@@ -120,27 +162,26 @@ async function getDriveClient() {
  * @param fileName The name of the file to move to S3.
  * @param mimeType The mime type of the file to move.
  * @param fileParents The current parents of the file in Google Drive.
+ * @param meetingInfos The list of meeting infos to match the recording to.
  */
-async function streamFileToS3(
-    driveClient: drive_v3.Drive,
-    fileId: string,
-    fileName: string,
-    mimeType: string,
-    fileParents: string[],
-) {
+async function streamFileToS3({
+    driveClient,
+    fileId,
+    fileName,
+    mimeType,
+    fileParents,
+    meetingInfos,
+}: {
+    driveClient: drive_v3.Drive;
+    fileId: string;
+    fileName: string;
+    mimeType: string;
+    fileParents: string[];
+    meetingInfos: MeetingInfo[];
+}) {
     console.log(`Processing: "${fileName}" (${fileId}) with mimeType ${mimeType}`);
-    const parsed = parseMeetRecordingFileName(fileName);
-    if (!parsed) {
-        console.warn(`Skipping "${fileName}" because it does not match MEET_RECORDING_REGEX`);
-        return;
-    }
-
-    const { meetName, meetDate } = parsed;
-    const meetInfo = MEETING_INFO[STAGE]?.[meetName];
-    if (!meetInfo) {
-        console.warn(
-            `Skipping "${fileName}" because its meeting name "${meetName}" has no associated meeting info for stage "${STAGE}"`,
-        );
+    const s3Key = getS3Key(fileName, meetingInfos);
+    if (!s3Key) {
         return;
     }
 
@@ -153,7 +194,6 @@ async function streamFileToS3(
         const passThrough = new PassThrough();
         driveResponse.data.pipe(passThrough);
 
-        const s3Key = `${meetInfo.keyPrefix}/${meetInfo.meetId}/${meetName.replaceAll('/', ' & ')} (${meetDate})`;
         const upload = new Upload({
             client: S3_CLIENT,
             params: {
