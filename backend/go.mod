@@ -4,8 +4,10 @@ go 1.25.0
 
 require (
 	github.com/aws/aws-lambda-go v1.53.0
+	github.com/corentings/chess v0.0.0-20241113092200-3f44c4e3e959
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stripe/stripe-go/v81 v81.4.0
+	golang.org/x/sync v0.19.0
 )
 
 require (
@@ -34,7 +36,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
