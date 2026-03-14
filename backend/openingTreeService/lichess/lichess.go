@@ -17,7 +17,7 @@ import (
 
 const (
 	baseURL          = "https://lichess.org"
-	defaultUserAgent = "chess-dojo-scheduler (https://github.com/jackstenglein/chess-dojo-scheduler)"
+	defaultUserAgent = "chess-dojo (https://github.com/jackstenglein/chess-dojo)"
 )
 
 // TimeClass represents a Lichess game speed category.
