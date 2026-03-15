@@ -284,21 +284,11 @@ func BenchmarkTreeBuildOnly(b *testing.B) {
 				continue
 			}
 
-			var resultKey string
+			var w, b, d int
 			switch p.game.Result {
 			case game.ResultWhite:
-				resultKey = "white"
-			case game.ResultBlack:
-				resultKey = "black"
-			default:
-				resultKey = "draws"
-			}
-
-			var w, b, d int
-			switch resultKey {
-			case "white":
 				w = 1
-			case "black":
+			case game.ResultBlack:
 				b = 1
 			default:
 				d = 1

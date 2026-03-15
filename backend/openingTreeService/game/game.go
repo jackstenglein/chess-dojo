@@ -8,7 +8,7 @@ import "time"
 type SourceType string
 
 const (
-	SourceChessCom SourceType = "chesscom"
+	SourceChesscom SourceType = "chesscom"
 	SourceLichess  SourceType = "lichess"
 )
 

@@ -51,7 +51,7 @@ func ToGame(g *Game, username string) (game.Game, error) {
 		TimeClass:    toCommonTimeClass(g.TimeClass),
 		Rated:        g.Rated,
 		URL:          g.URL,
-		Source:       game.SourceChessCom,
+		Source:       game.SourceChesscom,
 		EndTime:      time.Unix(g.EndTime, 0),
 	}, nil
 }

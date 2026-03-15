@@ -383,8 +383,8 @@ func TestGamesByArchiveIterator(t *testing.T) {
 	}
 
 	// Verify games are converted to common model.
-	if len(collected) > 0 && collected[0].Source != game.SourceChessCom {
-		t.Errorf("expected source %q, got %q", game.SourceChessCom, collected[0].Source)
+	if len(collected) > 0 && collected[0].Source != game.SourceChesscom {
+		t.Errorf("expected source %q, got %q", game.SourceChesscom, collected[0].Source)
 	}
 }
 

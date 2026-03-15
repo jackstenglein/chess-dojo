@@ -26,7 +26,7 @@ func TestToGame(t *testing.T) {
 	}
 
 	want := game.Game{
-		Source:        game.SourceChessCom,
+		Source:        game.SourceChesscom,
 		PlayerColor:   "white",
 		WhiteUsername: "Alice",
 		BlackUsername: "Bob",

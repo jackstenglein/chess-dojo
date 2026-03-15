@@ -66,6 +66,6 @@ func ToGame(g *Game, username string) (game.Game, error) {
 		Rated:        g.Rated,
 		URL:          g.URL(),
 		Source:       game.SourceLichess,
-		EndTime:      time.UnixMilli(g.CreatedAt),
+		EndTime:      time.UnixMilli(g.LastMoveAt),
 	}, nil
 }

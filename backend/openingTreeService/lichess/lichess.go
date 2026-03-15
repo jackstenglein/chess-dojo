@@ -178,6 +178,9 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 
 		count := 0
 		for scanner.Scan() {
+			if err := ctx.Err(); err != nil {
+				return
+			}
 			line := strings.TrimSpace(scanner.Text())
 			if line == "" {
 				continue
