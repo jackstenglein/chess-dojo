@@ -213,11 +213,9 @@ type archiveResult struct {
 	err   error
 }
 
-// ArchiveBatch holds the converted games from a single monthly archive along
-// with the timestamp of the next month boundary, suitable for cursor updates.
+// ArchiveBatch holds the converted games from a single monthly archive.
 type ArchiveBatch struct {
-	Games     []game.Game
-	NextMonth time.Time
+	Games []game.Game
 }
 
 // GamesByArchive returns an iterator that yields one ArchiveBatch per monthly
@@ -293,15 +291,7 @@ func (c *Client) GamesByArchive(ctx context.Context, username string, since, unt
 				batch = append(batch, cg)
 			}
 
-			// Compute the next-month boundary for cursor updates.
-			var nextMonth time.Time
-			if m := archiveRegex.FindStringSubmatch(filtered[i]); m != nil {
-				year, _ := strconv.Atoi(m[1])
-				month, _ := strconv.Atoi(m[2])
-				nextMonth = time.Date(year, time.Month(month)+1, 1, 0, 0, 0, 0, time.UTC)
-			}
-
-			if !yield(ArchiveBatch{Games: batch, NextMonth: nextMonth}, nil) {
+			if !yield(ArchiveBatch{Games: batch}, nil) {
 				return
 			}
 		}
