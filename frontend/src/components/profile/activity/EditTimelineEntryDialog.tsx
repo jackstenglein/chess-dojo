@@ -27,7 +27,7 @@ export function EditTimelinEntryDialog({
 }) {
     const api = useApi();
     const { user } = useAuth();
-    const deleteRequest = useRequest();
+    const deleteRequest = useRequest<string>();
     const isCustom = entry.isCustomRequirement;
 
     const customTask = isCustom
@@ -65,6 +65,12 @@ export function EditTimelinEntryDialog({
         try {
             await api.updateUserTimeline({
                 requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
                 updated: [],
                 deleted: [entry],
             });

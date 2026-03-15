@@ -30,8 +30,8 @@ import {
     Typography,
 } from '@mui/material';
 import { DateTime } from 'luxon';
-import { cloneElement, useEffect, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
+import { cloneElement, useEffect, useMemo, useState } from 'react';
 import {
     ActivityCalendar,
     Activity as BaseActivity,
@@ -661,29 +661,27 @@ function Block({
         !activity.restDay &&
         hasTrackedActivity(activity);
 
-    const renderedBlock =
-        showStripedCustomOverlay ? (
-            <rect
-                {...blockProps}
-                x={block.props.x}
-                y={block.props.y}
-                width={block.props.width}
-                height={block.props.height}
-                fill='url(#diagonalHatch)'
-                onContextMenu={
-                    canOpenContextMenu ? (event) => onContextMenu?.(event, activity) : undefined
-                }
-            />
-        ) : (
-            cloneElement(block, {
-                ...blockProps,
-                style: blockStyle,
-                onContextMenu:
-                    canOpenContextMenu
-                        ? (event: ReactMouseEvent<SVGElement>) => onContextMenu?.(event, activity)
-                        : undefined,
-            })
-        );
+    const renderedBlock = showStripedCustomOverlay ? (
+        <rect
+            {...blockProps}
+            x={block.props.x}
+            y={block.props.y}
+            width={block.props.width}
+            height={block.props.height}
+            fill='url(#diagonalHatch)'
+            onContextMenu={
+                canOpenContextMenu ? (event) => onContextMenu?.(event, activity) : undefined
+            }
+        />
+    ) : (
+        cloneElement(block, {
+            ...blockProps,
+            style: blockStyle,
+            onContextMenu: canOpenContextMenu
+                ? (event: ReactMouseEvent<SVGElement>) => onContextMenu?.(event, activity)
+                : undefined,
+        })
+    );
 
     return (
         <>
@@ -697,26 +695,24 @@ function Block({
                     style={{ pointerEvents: 'none' }}
                     crossOrigin='anonymous'
                 />
+            ) : activity.gamePlayed ? (
+                <GiCrossedSwords
+                    x={block.props.x}
+                    y={block.props.y}
+                    width={block.props.width}
+                    height={block.props.height}
+                    fontSize={`${block.props.width}px`}
+                    style={{ pointerEvents: 'none' }}
+                />
             ) : (
-                activity.gamePlayed ? (
-                    <GiCrossedSwords
-                        x={block.props.x}
-                        y={block.props.y}
-                        width={block.props.width}
-                        height={block.props.height}
-                        fontSize={`${block.props.width}px`}
-                        style={{ pointerEvents: 'none' }}
+                activity.restDay && (
+                    <RestDayIcon
+                        x={block.props.x as number}
+                        y={block.props.y as number}
+                        width={block.props.width as number}
+                        height={block.props.height as number}
+                        pointerEvents='none'
                     />
-                ) : (
-                    activity.restDay && (
-                        <RestDayIcon
-                            x={block.props.x as number}
-                            y={block.props.y as number}
-                            width={block.props.width as number}
-                            height={block.props.height as number}
-                            pointerEvents='none'
-                        />
-                    )
                 )
             )}
 
@@ -1280,7 +1276,9 @@ function createRestDayEntry(user: User, date: string): TimelineEntry {
         DateTime.fromISO(date, { zone: timezone })
             .set({ hour: 12, minute: 0, second: 0, millisecond: 0 })
             .toUTC()
-            .toISO() ?? now.toISO() ?? '';
+            .toISO() ??
+        now.toISO() ??
+        '';
 
     return {
         owner: user.username,
