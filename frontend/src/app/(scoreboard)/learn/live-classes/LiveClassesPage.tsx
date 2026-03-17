@@ -61,6 +61,13 @@ function matchesSearch(c: LiveClass, query: string): boolean {
     );
 }
 
+const RECORDING_DATE_REGEX = /\d{4}(-|\/)\d{2}(-|\/)\d{2}/;
+
+function formatRecordingDate(dateStr: string): string {
+    const match = RECORDING_DATE_REGEX.exec(dateStr);
+    return match ? match[0] : dateStr;
+}
+
 function getUniqueTags(classes: LiveClass[]): string[] {
     const set = new Set<string>();
     for (const c of classes) {
@@ -98,6 +105,28 @@ function matchesCohortLevel(c: LiveClass, level: CohortLevelValue): boolean {
 
     const [min, max] = getCohortRangeInt(c.cohortRange);
     return rangesOverlap({ min, max }, { min: levelDef.min, max: levelDef.max });
+}
+
+function compareLiveClasses(a: LiveClass, b: LiveClass): number {
+    // Sort by type first: Lectures before Game & Profile Reviews.
+    if (a.type !== b.type) {
+        if (a.type === SubscriptionTier.Lecture) return -1;
+        if (b.type === SubscriptionTier.Lecture) return 1;
+    }
+
+    // Then by ascending cohort range (using numeric cohort bounds).
+    const [aMin, aMax] = getCohortRangeInt(a.cohortRange);
+    const [bMin, bMax] = getCohortRangeInt(b.cohortRange);
+
+    if (aMin !== bMin) {
+        return aMin - bMin;
+    }
+    if (aMax !== bMax) {
+        return aMax - bMax;
+    }
+
+    // Stable-ish fallback: alphabetical by name.
+    return a.name.localeCompare(b.name);
 }
 
 export function LiveClassesPage() {
@@ -169,7 +198,7 @@ export function LiveClassesPage() {
         setPlayingUrl(url);
     };
 
-    const allClasses = request.data ?? [];
+    const allClasses = [...(request.data ?? [])].sort(compareLiveClasses);
     const filteredClasses = allClasses.filter(
         (c) =>
             matchesSearch(c, searchQuery) &&
@@ -403,7 +432,11 @@ function LiveClasses({
     return (
         <Grid container mt={1} spacing={3}>
             {classes.map((c) => (
-                <Grid key={c.name} size={variant === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}>
+                <Grid
+                    key={c.name}
+                    size={variant === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}
+                    sx={variant === 'grid' ? { display: 'flex' } : undefined}
+                >
                     <LiveClassCard
                         c={c}
                         onPlay={onPlay}
@@ -442,7 +475,13 @@ function LiveClassCard({
                           flexDirection: { sm: 'row' },
                           alignItems: { sm: 'center' },
                       }
-                    : {}),
+                    : variant === 'grid'
+                      ? {
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }
+                      : {}),
             }}
         >
             {c.imageUrl && (
@@ -451,18 +490,21 @@ function LiveClassCard({
                     image={c.imageUrl}
                     alt={`${c.name} cover`}
                     sx={{
-                        height: 'auto',
-                        width: '100%',
                         objectFit: 'cover',
                         ...(isList
                             ? {
-                                  height: { sm: 140 },
-                                  width: { sm: 200 },
+                                  height: { xs: 'auto', sm: 140 },
+                                  width: { xs: '100%', sm: 200 },
                                   minWidth: { sm: 200 },
                                   pl: { sm: 2 },
                                   borderRadius: { sm: 1 },
                               }
-                            : {}),
+                            : {
+                                  width: '100%',
+                                  ...(variant === 'grid'
+                                      ? { height: 180, flexShrink: 0 }
+                                      : { height: 'auto' }),
+                              }),
                     }}
                 />
             )}
@@ -472,6 +514,9 @@ function LiveClassCard({
                     flex: 1,
                     minWidth: 0,
                     ...(isList ? { display: { sm: 'flex' }, flexDirection: { sm: 'column' } } : {}),
+                    ...(variant === 'grid'
+                        ? { display: 'flex', flexDirection: 'column', minHeight: 0 }
+                        : {}),
                 }}
             >
                 <Typography variant='h6' component='h2' gutterBottom>
@@ -600,7 +645,9 @@ function LiveClassCard({
                                     flexWrap='wrap'
                                     gap={1}
                                 >
-                                    <Typography variant='body2'>{r.date}</Typography>
+                                    <Typography variant='body2'>
+                                        {formatRecordingDate(r.date)}
+                                    </Typography>
                                     <Button
                                         size='small'
                                         startIcon={<PlayArrow />}
