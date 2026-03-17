@@ -3,18 +3,18 @@ module github.com/jackstenglein/chess-dojo-scheduler/backend
 go 1.25.0
 
 require (
+	github.com/TwiN/go-away v1.8.1
 	github.com/aws/aws-lambda-go v1.53.0
 	github.com/corentings/chess v0.0.0-20241113092200-3f44c4e3e959
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stripe/stripe-go/v81 v81.4.0
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 )
 
 require (
 	cloud.google.com/go/auth v0.18.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
-	github.com/TwiN/go-away v1.8.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
