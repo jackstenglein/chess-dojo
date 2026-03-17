@@ -316,7 +316,7 @@ test.describe('ProgressHistory', () => {
         await page.getByTestId('task-updater-show-history-button').click();
 
         await expect(page.getByTestId('no-history-text')).toBeVisible();
-        await expect(page.getByText('Total Count: 0. Current Cohort: 0')).toBeVisible();
+        await expect(page.getByTestId('total-count-summary')).toContainText('0. Current Cohort: 0');
         await expect(page.getByText('Total Time: 0h 0m. Current Cohort: 0h 0m')).toBeVisible();
     });
 
@@ -327,9 +327,15 @@ test.describe('ProgressHistory', () => {
             .click();
         await page.getByTestId('task-updater-show-history-button').click();
 
-        await expect(page.getByRole('textbox', { name: 'Count' }).nth(0)).toHaveValue('30');
-        await expect(page.getByRole('textbox', { name: 'Count' }).nth(1)).toHaveValue('20');
-        await expect(page.getByRole('textbox', { name: 'Count' }).nth(2)).toHaveValue('5');
+        await expect(page.getByTestId('task-history-count').locator('input').nth(0)).toHaveValue(
+            '30',
+        );
+        await expect(page.getByTestId('task-history-count').locator('input').nth(1)).toHaveValue(
+            '20',
+        );
+        await expect(page.getByTestId('task-history-count').locator('input').nth(2)).toHaveValue(
+            '5',
+        );
 
         await expect(page.getByRole('textbox', { name: 'Hours' }).nth(0)).toHaveValue('1');
         await expect(page.getByRole('textbox', { name: 'Hours' }).nth(1)).toHaveValue('0');
@@ -339,7 +345,9 @@ test.describe('ProgressHistory', () => {
         await expect(page.getByRole('textbox', { name: 'Minutes' }).nth(1)).toHaveValue('30');
         await expect(page.getByRole('textbox', { name: 'Minutes' }).nth(2)).toHaveValue('10');
 
-        await expect(page.getByText('Total Count: 80. Current Cohort: 80')).toBeVisible();
+        await expect(page.getByTestId('total-count-summary')).toContainText(
+            '80. Current Cohort: 80',
+        );
         await expect(page.getByText('Total Time: 3h 20m. Current Cohort: 2h 10m')).toBeVisible();
     });
 
