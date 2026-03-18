@@ -6,6 +6,7 @@ import {
     ENGINE_LINE_COUNT,
     ENGINE_NAME,
     ENGINE_PRIMARY_EVAL_TYPE,
+    ENGINE_SHOW_EVAL,
     ENGINE_THREADS,
     EngineName,
     engines,
@@ -70,6 +71,10 @@ export default function Settings() {
     const [highlightEngineLines, setHighlightEngineLines] = useLocalStorage<boolean>(
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
+    );
+    const [showEval, setShowEval] = useLocalStorage<boolean>(
+        ENGINE_SHOW_EVAL.Key,
+        ENGINE_SHOW_EVAL.Default,
     );
 
     useEffect(() => {
@@ -208,6 +213,16 @@ export default function Settings() {
                                 />
                             }
                             label='Highlight engine lines in PGN text'
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={showEval}
+                                    onChange={(e) => setShowEval(e.target.checked)}
+                                />
+                            }
+                            label='Show evaluation score on engine lines'
                         />
                     </Stack>
 

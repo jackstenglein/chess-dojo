@@ -177,6 +177,14 @@ export const HIGHLIGHT_ENGINE_LINES = {
     Default: true,
 } as const;
 
+/** Settings for showing/hiding the engine evaluation score. */
+export const ENGINE_SHOW_EVAL = {
+    /** Local storage key for showing/hiding eval. */
+    Key: 'engine-show-eval',
+    /** The default value. */
+    Default: true,
+} as const;
+
 /** The evaluation of a specific position. */
 export interface PositionEval {
     /** The best move chosen by the engine. */

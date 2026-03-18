@@ -1,5 +1,11 @@
 import { useChess } from '@/board/pgn/PgnBoard';
-import { ENGINE_LINE_COUNT, ENGINE_NAME, engines, LineEval } from '@/stockfish/engine/engine';
+import {
+    ENGINE_LINE_COUNT,
+    ENGINE_NAME,
+    ENGINE_SHOW_EVAL,
+    engines,
+    LineEval,
+} from '@/stockfish/engine/engine';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
@@ -17,6 +23,7 @@ export default function EngineSection() {
     }
 
     const [linesNumber] = useLocalStorage(ENGINE_LINE_COUNT.Key, ENGINE_LINE_COUNT.Default);
+    const [showEval] = useLocalStorage(ENGINE_SHOW_EVAL.Key, ENGINE_SHOW_EVAL.Default);
 
     const [enabled, setEnabled] = useState(false);
     const evaluation = useEval(enabled, engineInfo.name);
@@ -58,7 +65,7 @@ export default function EngineSection() {
                         />
                     </Tooltip>
 
-                    {enabled && !isGameOver && (
+                    {enabled && !isGameOver && showEval && (
                         <Stack sx={{ mr: 2 }} alignItems='center'>
                             <Typography variant='h5'>{formatLineEval(engineLines[0])}</Typography>
                             <Tooltip
