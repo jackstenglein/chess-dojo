@@ -57,6 +57,6 @@
         "deploy:simple": "serverless deploy --stage simple",
         "deploy:simple:notifyService": "serverless notifyService deploy --stage simple",
         "deploy:simple:directoryService": "serverless directoryService deploy --stage simple",
-        "test": "vitest"
+        "test": "vitest run"
     }
 }

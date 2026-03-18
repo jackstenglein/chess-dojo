@@ -236,9 +236,6 @@ export function getCurrentCount({
     if (!requirement) {
         return 0;
     }
-    if (!progress) {
-        return 0;
-    }
     if (isRequirement(requirement) && requirement.scoreboardDisplay === ScoreboardDisplay.NonDojo) {
         return 0;
     }
@@ -253,9 +250,22 @@ export function getCurrentCount({
     if (isExpired(requirement, progress)) {
         return 0;
     }
-
+    if (!progress) {
+        return requirement.startCount || 0;
+    }
+    if (!progress.counts) {
+        return requirement.startCount || 0;
+    }
     if (requirement.numberOfCohorts === 1 || requirement.numberOfCohorts === 0) {
-        return clampCount(cohort, requirement, progress.counts?.ALL_COHORTS || 0, clamp);
+        return clampCount(
+            cohort,
+            requirement,
+            progress.counts.ALL_COHORTS || requirement.startCount || 0,
+            clamp,
+        );
+    }
+    if (!progress.counts?.[cohort]) {
+        return requirement.startCount || 0;
     }
 
     if (
@@ -294,7 +304,7 @@ function getYearlyCount({
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 365);
     const cutoff = cutoffDate.toISOString();
-    let count = 0;
+    let count = requirement.startCount || 0;
 
     for (const entry of timeline) {
         if ((entry.date || entry.createdAt) >= cutoff && entry.requirementId === requirement.id) {

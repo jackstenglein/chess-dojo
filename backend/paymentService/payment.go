@@ -385,6 +385,15 @@ func GetBillingPortalSession(paymentInfo *database.PaymentInfo, tier database.Su
 	}
 
 	session, err := bpsession.New(params)
+	if err != nil && strings.Contains(err.Error(), "does not include the price") {
+		params.FlowData = &stripe.BillingPortalSessionFlowDataParams{
+			Type: stripe.String("subscription_update"),
+			SubscriptionUpdate: &stripe.BillingPortalSessionFlowDataSubscriptionUpdateParams{
+				Subscription: stripe.String(paymentInfo.GetSubscriptionId()),
+			},
+		}
+		session, err = bpsession.New(params)
+	}
 	if err != nil {
 		return nil, errors.Wrap(500, "Failed to create Stripe Billing Portal session", "", err)
 	}

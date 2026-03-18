@@ -80,9 +80,16 @@ export function pauseQueueDate(request: PauseQueueDateRequest) {
     );
 }
 
+export interface LectureTierUser {
+    username: string;
+    displayName: string;
+    dojoCohort: string;
+}
+
 export interface ListGameReviewCohortsResponse {
     gameReviewCohorts: GameReviewCohort[];
     unassignedUsers: GameReviewCohortMember[];
+    lectureUsers: LectureTierUser[];
 }
 
 /**
@@ -94,6 +101,7 @@ export async function listGameReviewCohorts(): Promise<
     const response = await axiosService.get<{
         gameReviewCohorts: GameReviewCohort[];
         unassignedUsers: User[];
+        lectureUsers: LectureTierUser[];
     }>(`/admin/game-review-cohorts`, {
         functionName: 'listGameReviewCohorts',
     });
@@ -105,6 +113,7 @@ export async function listGameReviewCohorts(): Promise<
                 username: u.username,
                 displayName: u.displayName,
                 queueDate: u.createdAt,
+                dojoCohort: u.dojoCohort,
             })),
         },
     };

@@ -1,13 +1,17 @@
+import { normalizeChessDBScore } from '@/api/chessdbService';
 import { useChess } from '@/board/pgn/PgnBoard';
 import {
+    CLOUD_EVAL_ENABLED,
     ENGINE_LINE_COUNT,
     ENGINE_NAME,
     ENGINE_SHOW_EVAL,
     engines,
     LineEval,
 } from '@/stockfish/engine/engine';
+import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
+import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -26,10 +30,17 @@ export default function EngineSection() {
     const [showEval] = useLocalStorage(ENGINE_SHOW_EVAL.Key, ENGINE_SHOW_EVAL.Default);
 
     const [enabled, setEnabled] = useState(false);
+    const [cloudEvalEnabled] = useLocalStorage(CLOUD_EVAL_ENABLED.Key, CLOUD_EVAL_ENABLED.Default);
     const evaluation = useEval(enabled, engineInfo.name);
 
     const { chess } = useChess();
     const isGameOver = chess?.isGameOver();
+
+    const { pv: chessDbPv, pvLoading: chessDbLoading } = useChessDB({
+        enableMoves: false,
+        enablePv: enabled && cloudEvalEnabled,
+    });
+    const chessDbDepth = chessDbPv?.depth ?? 0;
 
     const engineLines = evaluation?.lines?.length
         ? evaluation.lines
@@ -39,9 +50,13 @@ export default function EngineSection() {
               depth: 0,
               multiPv: i + 1,
           })) as LineEval[]);
+    const isMate = engineLines.some((line) => line.mate);
+
+    const showCloudEval =
+        chessDbDepth > engineLines[0].depth && chessDbPv && cloudEvalEnabled && !isMate;
+    const showCloudDepth = cloudEvalEnabled && chessDbDepth && !isMate;
 
     const resultPercentages = engineLines[0]?.resultPercentages;
-
     return (
         <Paper
             elevation={6}
@@ -67,7 +82,16 @@ export default function EngineSection() {
 
                     {enabled && !isGameOver && showEval && (
                         <Stack sx={{ mr: 2 }} alignItems='center'>
-                            <Typography variant='h5'>{formatLineEval(engineLines[0])}</Typography>
+                            <Typography variant='h5'>
+                                {showCloudEval
+                                    ? formatLineEval({
+                                          cp: normalizeChessDBScore(
+                                              chessDbPv?.score,
+                                              chess?.turn() || 'w',
+                                          ),
+                                      })
+                                    : formatLineEval(engineLines[0])}
+                            </Typography>
                             <Tooltip
                                 title="The engine's expected Win / Draw / Loss percentages"
                                 disableInteractive
@@ -80,9 +104,8 @@ export default function EngineSection() {
                             </Tooltip>
                         </Stack>
                     )}
-
                     <Stack sx={{ flexGrow: 1, lineHeight: '1.2', color: 'text.secondary' }}>
-                        <Stack direction='row'>
+                        <Stack direction='row' alignItems='center'>
                             <Typography variant='caption' sx={{ display: { '@288': 'none' } }}>
                                 {engineInfo.extraShortName}
                             </Typography>
@@ -97,12 +120,7 @@ export default function EngineSection() {
                                 <Typography
                                     color='dojoOrange'
                                     variant='caption'
-                                    sx={{
-                                        display: {
-                                            '@': 'none',
-                                            '@351': 'initial',
-                                        },
-                                    }}
+                                    sx={{ display: { '@': 'none', '@351': 'initial' } }}
                                 >
                                     <Icon
                                         name={engineInfo.name}
@@ -118,42 +136,70 @@ export default function EngineSection() {
                             </Tooltip>
                         </Stack>
 
-                        {enabled ? (
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: {
-                                        '@': 'column',
-                                        '@319': 'row',
-                                    },
-                                }}
-                            >
-                                {isGameOver ? (
-                                    <Typography variant='caption'>Game Over</Typography>
-                                ) : (
-                                    <>
-                                        <Typography variant='caption'>
-                                            Depth {engineLines[0].depth}
-                                        </Typography>
+                        {(function engineDescription() {
+                            if (!enabled) {
+                                return (
+                                    <Typography variant='caption'>{engineInfo.location}</Typography>
+                                );
+                            }
+                            if (isGameOver) {
+                                return <Typography variant='caption'>Game Over</Typography>;
+                            }
+
+                            return (
+                                <Stack direction={showCloudEval ? 'column-reverse' : 'column'}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: { '@': 'column', '@319': 'row' },
+                                        }}
+                                    >
+                                        <Tooltip
+                                            title={`Local engine evaluation depth: ${engineLines[0].depth}`}
+                                        >
+                                            <Typography variant='caption'>
+                                                Depth {engineLines[0].depth}
+                                            </Typography>
+                                        </Tooltip>
                                         <Typography
                                             variant='caption'
                                             sx={{
                                                 whiteSpace: 'pre',
-                                                display: {
-                                                    '@': 'none',
-                                                    '@319': 'initial',
-                                                },
+                                                display: { '@': 'none', '@319': 'initial' },
                                             }}
                                         >
                                             {' • '}
                                         </Typography>
                                         <NodesPerSecond nps={engineLines[0].nps} />
-                                    </>
-                                )}
-                            </Box>
-                        ) : (
-                            <Typography variant='caption'>{engineInfo.location}</Typography>
-                        )}
+                                    </Box>
+
+                                    {showCloudDepth && (
+                                        <Tooltip
+                                            title={`Cloud DB evaluation depth: ${chessDbDepth}`}
+                                            disableInteractive
+                                        >
+                                            <Stack direction='row' alignItems='center' spacing={1}>
+                                                <Cloud
+                                                    sx={{
+                                                        verticalAlign: 'middle',
+                                                        ml: 1,
+                                                        mr: 0.5,
+                                                        fontSize: 15,
+                                                    }}
+                                                    color='primary'
+                                                />
+                                                <Typography
+                                                    variant='caption'
+                                                    sx={{ color: 'text.secondary' }}
+                                                >
+                                                    Depth {chessDbDepth}
+                                                </Typography>
+                                            </Stack>
+                                        </Tooltip>
+                                    )}
+                                </Stack>
+                            );
+                        })()}
                     </Stack>
 
                     <Settings />
@@ -161,17 +207,13 @@ export default function EngineSection() {
 
                 {enabled && !isGameOver && (
                     <Stack>
-                        {isGameOver ? (
-                            <Typography align='center' fontSize='0.9rem'>
-                                Game is over
-                            </Typography>
-                        ) : (
-                            <EvaluationSection
-                                engineInfo={engineInfo}
-                                allLines={engineLines}
-                                maxLines={linesNumber}
-                            />
-                        )}
+                        <EvaluationSection
+                            engineInfo={engineInfo}
+                            allLines={engineLines}
+                            maxLines={linesNumber}
+                            chessDbpv={chessDbPv}
+                            chessDbLoading={chessDbLoading}
+                        />
                     </Stack>
                 )}
             </Stack>
@@ -180,9 +222,7 @@ export default function EngineSection() {
 }
 
 function NodesPerSecond({ nps }: { nps?: number }) {
-    if (!nps) {
-        return null;
-    }
+    if (!nps) return null;
 
     let text = '';
     if (nps > 1_000_000) {

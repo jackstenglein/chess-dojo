@@ -1,4 +1,5 @@
 import {
+    CLOUD_EVAL_ENABLED,
     ENGINE_ADD_INFO_ON_EVAL_CLICK,
     ENGINE_ADD_INFO_ON_MOVE_CLICK,
     ENGINE_DEPTH,
@@ -75,6 +76,11 @@ export default function Settings() {
     const [showEval, setShowEval] = useLocalStorage<boolean>(
         ENGINE_SHOW_EVAL.Key,
         ENGINE_SHOW_EVAL.Default,
+    );
+
+    const [cloudEvalEnabled, setCloudEvalEnabled] = useLocalStorage<boolean>(
+        CLOUD_EVAL_ENABLED.Key,
+        CLOUD_EVAL_ENABLED.Default,
     );
 
     useEffect(() => {
@@ -223,6 +229,16 @@ export default function Settings() {
                                 />
                             }
                             label='Show evaluation score on engine lines'
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={cloudEvalEnabled}
+                                    onChange={(e) => setCloudEvalEnabled(e.target.checked)}
+                                />
+                            }
+                            label='Show Chess Cloud Database evaluation'
                         />
                     </Stack>
 

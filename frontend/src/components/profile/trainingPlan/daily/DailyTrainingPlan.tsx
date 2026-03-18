@@ -45,6 +45,7 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 import { GraduationTask } from './GraduationTask';
+import { TaskTimerIconButton } from './TaskTimerIconButton';
 
 export function DailyTrainingPlan() {
     const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
@@ -96,6 +97,7 @@ export function DailyTrainingPlan() {
                     disabled={!isCurrentUser}
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
+                    workGoalHistory={user.workGoalHistory}
                 />
             </Stack>
 
@@ -278,14 +280,17 @@ function DailyTrainingPlanItem({
                             {displayProgress(task) && (
                                 <Stack sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}>
                                     <Typography color='textSecondary'>
-                                        {getCurrentCount({
-                                            cohort: user.dojoCohort,
-                                            requirement: task,
-                                            progress: user.progress[task.id],
-                                            timeline,
-                                        })}{' '}
-                                        / {totalCount} {task.progressBarSuffix.toLowerCase()}{' '}
-                                        completed
+                                        {Math.max(
+                                            getCurrentCount({
+                                                cohort: user.dojoCohort,
+                                                requirement: task,
+                                                progress: user.progress[task.id],
+                                                timeline,
+                                            }) - (task.startCount || 0),
+                                            0,
+                                        )}{' '}
+                                        / {Math.max(totalCount - (task.startCount || 0), 0)}{' '}
+                                        {task.progressBarSuffix.toLowerCase()} completed
                                     </Typography>
                                 </Stack>
                             )}
@@ -331,6 +336,8 @@ function DailyTrainingPlanItem({
                                     </IconButton>
                                 </Tooltip>
                             )}
+
+                            <TaskTimerIconButton taskId={suggestion.task.id} />
                         </>
                     )}
 

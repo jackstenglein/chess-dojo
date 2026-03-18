@@ -13,7 +13,7 @@ import ShareButton from './shareButton/ShareButton';
 
 export function BlogListItem({ blog, disabled }: { blog: Partial<Blog>; disabled?: boolean }) {
     return (
-        <Card key={blog.id}>
+        <Card data-testid={`blog-list-item-${blog.id}`} key={blog.id}>
             <CardActionArea LinkComponent={Link} href={`/blog/${blog.id}`} disabled={disabled}>
                 {blog.coverImage && (
                     <CardMedia
@@ -24,11 +24,14 @@ export function BlogListItem({ blog, disabled }: { blog: Partial<Blog>; disabled
                     />
                 )}
                 <CardHeader
+                    data-testid='list-item-title'
                     title={blog.title}
                     subheader={[blog.subtitle, blog.date].filter(Boolean).join(' • ')}
                 />
                 <CardContent>
-                    <Typography variant='body1'>{blog.description}</Typography>
+                    <Typography data-testid='list-item-description' variant='body1'>
+                        {blog.description}
+                    </Typography>
                 </CardContent>
             </CardActionArea>
             <CardActions>

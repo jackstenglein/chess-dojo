@@ -22,6 +22,16 @@ export interface LiveClass {
     name: string;
     /** The type of the class. */
     type: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
+    /** The cohort range of the class. */
+    cohortRange: string;
+    /** The tags of the class. */
+    tags?: string[];
+    /** The teacher of the class. */
+    teacher?: string;
+    /** The description of the class. */
+    description: string;
+    /** The cover image URL of the class. */
+    imageUrl?: string;
     /** The recordings of the class. */
     recordings: {
         /** The date of the recording. */
@@ -65,6 +75,8 @@ const gameReviewCohortMemberSchema = z.object({
     queueDate: z.string(),
     /** Whether the user's queue position is paused. */
     paused: z.boolean().optional(),
+    /** The member's dojo cohort. Output only, enriched by the backend. */
+    dojoCohort: z.string().optional(),
 });
 
 /** A member of a game review cohort. */
