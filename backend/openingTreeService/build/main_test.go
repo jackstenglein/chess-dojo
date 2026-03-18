@@ -279,6 +279,73 @@ func TestHandler_EmptySourceUsername(t *testing.T) {
 	}
 }
 
+func TestHandler_InvalidSourceUsername(t *testing.T) {
+	oldRepo := repository
+	repository = subscribedUser("testuser")
+	defer func() { repository = oldRepo }()
+
+	tests := []struct {
+		name     string
+		username string
+	}{
+		{"slash", "user/name"},
+		{"space", "user name"},
+		{"at sign", "user@name"},
+		{"question mark", "user?name"},
+		{"hash", "user#name"},
+		{"colon", "user:name"},
+		{"backslash", "user\\name"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			body := fmt.Sprintf(`{"sources":[{"type":"chesscom","username":"%s"}]}`, tt.username)
+			event := makeEvent("testuser", body)
+			resp, err := handler(context.Background(), event)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if resp.StatusCode != 400 {
+				t.Errorf("expected 400, got %d", resp.StatusCode)
+			}
+			if !strings.Contains(resp.Body, "invalid characters") {
+				t.Errorf("expected error about invalid characters, got: %s", resp.Body)
+			}
+		})
+	}
+}
+
+func TestHandler_ValidSourceUsername(t *testing.T) {
+	// Verify the regex directly — valid usernames must pass.
+	validNames := []string{"hikaru", "DrNykterstein", "user_name", "user-name", "Player123", "A", "a1b2c3", "Dr.Wolf", "user.name", "~tilde"}
+	for _, name := range validNames {
+		if rejectUsername.MatchString(name) {
+			t.Errorf("valid username %q was rejected by rejectUsername regex", name)
+		}
+	}
+}
+
+func TestRejectUsername_ControlCharacters(t *testing.T) {
+	// Control characters can't be embedded in JSON strings, so test the regex directly.
+	tests := []struct {
+		name     string
+		username string
+	}{
+		{"null byte", "user\x00name"},
+		{"tab", "user\tname"},
+		{"newline", "user\nname"},
+		{"carriage return", "user\rname"},
+		{"delete", "user\x7fname"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !rejectUsername.MatchString(tt.username) {
+				t.Errorf("expected rejectUsername to match %q", tt.username)
+			}
+		})
+	}
+}
+
 func TestHandler_ChessComOnly(t *testing.T) {
 	chesscomSrv := newChesscomServer(t, "testuser")
 	defer chesscomSrv.Close()
@@ -491,7 +558,7 @@ func TestHandler_SourceError(t *testing.T) {
 	}
 }
 
-func TestHandler_GameLimitExceeded(t *testing.T) {
+func TestHandler_GameLimitTruncation(t *testing.T) {
 	chesscomSrv := newChesscomServer(t, "testuser")
 	defer chesscomSrv.Close()
 
@@ -505,8 +572,10 @@ func TestHandler_GameLimitExceeded(t *testing.T) {
 	repository = subscribedUser("player1")
 	defer func() { repository = oldRepo }()
 
-	// Set a low game limit to trigger the cap.
-	t.Setenv("MAX_GAMES", "2")
+	// Lower the hard ceiling so truncation fires with few fixture games.
+	saved := maxGames
+	maxGames = 2
+	defer func() { maxGames = saved }()
 
 	body := `{"sources":[{"type":"chesscom","username":"testuser"},{"type":"lichess","username":"testplayer"}]}`
 	event := makeEvent("player1", body)
@@ -521,17 +590,12 @@ func TestHandler_GameLimitExceeded(t *testing.T) {
 
 	result := decodeJSONResponse(t, resp)
 
-	if !result.GameLimitExceeded {
-		t.Error("expected gameLimitExceeded to be true")
+	// With concurrent sources and Chess.com's batch-at-archive-boundary
+	// semantics, the exact count may overshoot maxGames. The important
+	// invariant is that truncation fired.
+	if len(result.Games) == 0 {
+		t.Error("expected at least 1 game")
 	}
-	if result.GameLimit != 2 {
-		t.Errorf("expected gameLimit 2, got %d", result.GameLimit)
-	}
-	if len(result.Games) > 2 {
-		t.Errorf("expected at most 2 games, got %d", len(result.Games))
-	}
-
-	// Hard game limit should also set truncated and produce a cursor.
 	if !result.Truncated {
 		t.Error("expected truncated to be true when game limit exceeded")
 	}
@@ -540,44 +604,6 @@ func TestHandler_GameLimitExceeded(t *testing.T) {
 	}
 	if result.Cursor.TotalGames == 0 {
 		t.Error("expected cursor.totalGames > 0")
-	}
-}
-
-func TestHandler_GameLimitNotExceeded(t *testing.T) {
-	chesscomSrv := newChesscomServer(t, "testuser")
-	defer chesscomSrv.Close()
-
-	lichessSrv := newLichessServer(t)
-	defer lichessSrv.Close()
-
-	restore := setHTTPClient(chesscomSrv.Listener.Addr().String(), lichessSrv.Listener.Addr().String())
-	defer restore()
-
-	oldRepo := repository
-	repository = subscribedUser("player1")
-	defer func() { repository = oldRepo }()
-
-	// Set limit higher than fixture count — should not trigger.
-	t.Setenv("MAX_GAMES", "1000")
-
-	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
-	event := makeEvent("player1", body)
-
-	resp, err := handler(context.Background(), event)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if resp.StatusCode != 200 {
-		t.Fatalf("expected 200, got %d: %s", resp.StatusCode, resp.Body)
-	}
-
-	result := decodeJSONResponse(t, resp)
-
-	if result.GameLimitExceeded {
-		t.Error("expected gameLimitExceeded to be false")
-	}
-	if result.GameLimit != 1000 {
-		t.Errorf("expected gameLimit 1000, got %d", result.GameLimit)
 	}
 }
 
@@ -681,12 +707,12 @@ func TestHandler_DateRangeFiltering(t *testing.T) {
 
 func TestHandler_SizeBudgetTruncation(t *testing.T) {
 	// To test size-budget truncation we need enough games to exceed the budget.
-	// We override the size budget via a low MAX_GAMES so that the size check
+	// We override the size budget via a low maxGames so that the size check
 	// interval (100 games) is never reached, and instead we use a trick:
 	// set SizeBudget low by making the handler process enough games.
 	//
 	// Since we can't easily override the SizeBudget const in tests, we verify
-	// the truncation path by lowering MAX_GAMES to trigger the hard ceiling
+	// the truncation path by lowering maxGames to trigger the hard ceiling
 	// (which also sets truncated=true and produces a cursor). The size budget
 	// path uses the exact same truncation logic.
 	//
@@ -706,7 +732,9 @@ func TestHandler_SizeBudgetTruncation(t *testing.T) {
 	repository = subscribedUser("player1")
 	defer func() { repository = oldRepo }()
 
-	t.Setenv("MAX_GAMES", "1")
+	saved := maxGames
+	maxGames = 1
+	defer func() { maxGames = saved }()
 
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
@@ -741,7 +769,7 @@ func TestHandler_SizeBudgetTruncation(t *testing.T) {
 }
 
 func TestHandler_CursorResume(t *testing.T) {
-	// Verify that providing a Lichess cursor with lastUntil adjusts the
+	// Verify that providing a Lichess cursor with until adjusts the
 	// "until" parameter (not "since") for the Lichess fetcher. Lichess
 	// returns games newest-first, so pagination uses until=minTimestamp.
 	var lichessRequestURL string
@@ -769,12 +797,12 @@ func TestHandler_CursorResume(t *testing.T) {
 	repository = subscribedUser("player1")
 	defer func() { repository = oldRepo }()
 
-	// Send a request with a cursor that has a lichess lastUntil timestamp.
+	// Send a request with a cursor that has a lichess until timestamp.
 	cursorTime := time.Date(2024, 6, 15, 12, 0, 0, 0, time.UTC)
 	body := fmt.Sprintf(`{
 		"sources":[{"type":"lichess","username":"testplayer"}],
 		"cursor":{
-			"sources":{"lichess:testplayer":{"lastUntil":"%s"}},
+			"sources":{"lichess:testplayer":{"until":"%s"}},
 			"totalGames":50
 		}
 	}`, cursorTime.Format(time.RFC3339))
@@ -871,7 +899,7 @@ func TestBuildRequest_FrontendJSONContract(t *testing.T) {
 		},
 		{
 			name: "with cursor and date range",
-			json: `{"sources":[{"type":"chesscom","username":"user1"},{"type":"lichess","username":"user2"}],"since":"2024-06-01T00:00:00.000Z","until":"2024-06-30T23:59:59.999Z","cursor":{"sources":{"chesscom:user1":{"lastTimestamp":"2024-06-15T12:00:00Z"}},"totalGames":100}}`,
+			json: `{"sources":[{"type":"chesscom","username":"user1"},{"type":"lichess","username":"user2"}],"since":"2024-06-01T00:00:00.000Z","until":"2024-06-30T23:59:59.999Z","cursor":{"sources":{"chesscom:user1":{"since":"2024-06-15T12:00:00Z"}},"totalGames":100}}`,
 			checkFunc: func(t *testing.T, req BuildRequest) {
 				if len(req.Sources) != 2 {
 					t.Fatalf("expected 2 sources, got %d", len(req.Sources))
@@ -1048,7 +1076,7 @@ func TestMeasureResponseSize_UnderBudget(t *testing.T) {
 			URL:           fmt.Sprintf("https://example.com/game/%d", i),
 			PGN:           pgn,
 			Result:        results[i%len(results)],
-			Source:        game.SourceChessCom,
+			Source:        game.SourceChesscom,
 			WhiteUsername: fmt.Sprintf("Player%d", i%100),
 			BlackUsername: fmt.Sprintf("Opponent%d", i%100),
 			WhiteRating:   1500,
@@ -1189,7 +1217,9 @@ func TestHandler_ChessComNoDuplicatesAcrossPages(t *testing.T) {
 
 	// Set game limit to 2 — the first archive (Feb, newest-first) has 2 games,
 	// so truncation fires at the archive boundary after indexing them.
-	t.Setenv("MAX_GAMES", "2")
+	saved := maxGames
+	maxGames = 2
+	defer func() { maxGames = saved }()
 
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
@@ -1221,7 +1251,7 @@ func TestHandler_ChessComNoDuplicatesAcrossPages(t *testing.T) {
 
 	// --- Page 2: resume with cursor ---
 	// Increase game limit so page 2 doesn't truncate.
-	t.Setenv("MAX_GAMES", "1000")
+	maxGames = 1000
 
 	cursorJSON, _ := json.Marshal(page1.Cursor)
 	body2 := fmt.Sprintf(`{"sources":[{"type":"chesscom","username":"testuser"}],"cursor":%s}`, cursorJSON)
@@ -1289,7 +1319,7 @@ func TestHandler_CompletedSourceSkippedOnResume(t *testing.T) {
 		],
 		"cursor":{
 			"sources":{
-				"chesscom:testuser":{"lastTimestamp":"2024-02-01T00:00:00Z","completed":true}
+				"chesscom:testuser":{"since":"2024-02-01T00:00:00Z","completed":true}
 			},
 			"totalGames":50
 		}
@@ -1329,7 +1359,7 @@ func TestHandler_CompletedSourceSkippedOnResume(t *testing.T) {
 // cursor if truncation fires from the game limit.
 func TestHandler_CompletedFlagInCursor(t *testing.T) {
 	// Use a single Chess.com source with 2 archives (5 total games).
-	// Set MAX_GAMES=2 so truncation fires at the first archive boundary.
+	// Set maxGames=2 so truncation fires at the first archive boundary.
 	// The source won't have completed, so completed should be false.
 	// Then resume: increase limit so all games are fetched. The source
 	// completes, and if we trigger truncation again somehow the flag
@@ -1373,7 +1403,9 @@ func TestHandler_CompletedFlagInCursor(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	// Only chesscom source. Truncate after 1 game.
-	t.Setenv("MAX_GAMES", "1")
+	saved := maxGames
+	maxGames = 1
+	defer func() { maxGames = saved }()
 
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
@@ -1401,5 +1433,91 @@ func TestHandler_CompletedFlagInCursor(t *testing.T) {
 	}
 	if sc.Completed {
 		t.Error("expected completed=false for truncated source")
+	}
+}
+
+// TestHandler_ChessComPartialMonthCursor verifies that when truncation fires
+// mid-month, the cursor points at the last indexed game's EndTime (not the
+// next-month boundary). This prevents losing games from the rest of the month
+// on resume. Scenario: a single archive (March 2024) has 3 games on March 10,
+// 15, and 20. With maxGames=2, truncation fires after the archive boundary
+// (all 3 games indexed due to batch semantics, but limit exceeded). The cursor
+// should point at the last game (March 20), NOT April 1. On resume with
+// since=March 20, the March archive is still included and per-game filtering
+// skips already-indexed games while picking up any new ones after March 20.
+func TestHandler_ChessComPartialMonthCursor(t *testing.T) {
+	// Single archive with 3 games spread across the month.
+	archivesJSON := `{"archives":["https://api.chess.com/pub/player/testuser/games/2024/03"]}`
+
+	// March games: 3 games on March 10, 15, and 20.
+	marchGames := `{"games":[
+		{"url":"https://www.chess.com/game/live/mar-10","pgn":"[Event \"Live Chess\"]\n[White \"TestUser\"]\n[Black \"OpA\"]\n[Result \"1-0\"]\n1. e4 e5 1-0","time_control":"600","end_time":1710072000,"rated":true,"uuid":"mar-10","time_class":"rapid","rules":"chess","white":{"rating":1500,"result":"win","username":"TestUser","uuid":"w1"},"black":{"rating":1400,"result":"checkmated","username":"OpA","uuid":"b1"}},
+		{"url":"https://www.chess.com/game/live/mar-15","pgn":"[Event \"Live Chess\"]\n[White \"OpB\"]\n[Black \"TestUser\"]\n[Result \"0-1\"]\n1. d4 d5 0-1","time_control":"600","end_time":1710504000,"rated":true,"uuid":"mar-15","time_class":"rapid","rules":"chess","white":{"rating":1600,"result":"resigned","username":"OpB","uuid":"w2"},"black":{"rating":1500,"result":"win","username":"TestUser","uuid":"b2"}},
+		{"url":"https://www.chess.com/game/live/mar-20","pgn":"[Event \"Live Chess\"]\n[White \"TestUser\"]\n[Black \"OpC\"]\n[Result \"1/2-1/2\"]\n1. c4 e5 1/2-1/2","time_control":"600","end_time":1710936000,"rated":true,"uuid":"mar-20","time_class":"rapid","rules":"chess","white":{"rating":1500,"result":"repetition","username":"TestUser","uuid":"w3"},"black":{"rating":1500,"result":"repetition","username":"OpC","uuid":"b3"}}
+	]}`
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/pub/player/testuser/games/archives", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(archivesJSON))
+	})
+	mux.HandleFunc("/pub/player/testuser/games/2024/03", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(marchGames))
+	})
+	chesscomSrv := httptest.NewServer(mux)
+	defer chesscomSrv.Close()
+
+	lichessSrv := newLichessServer(t)
+	defer lichessSrv.Close()
+
+	restore := setHTTPClient(chesscomSrv.Listener.Addr().String(), lichessSrv.Listener.Addr().String())
+	defer restore()
+
+	oldRepo := repository
+	repository = subscribedUser("player1")
+	defer func() { repository = oldRepo }()
+
+	// Set game limit to 2 so truncation fires after the archive boundary.
+	saved := maxGames
+	maxGames = 2
+	defer func() { maxGames = saved }()
+
+	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
+	event := makeEvent("player1", body)
+
+	resp, err := handler(context.Background(), event)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 200 {
+		t.Fatalf("expected 200, got %d: %s", resp.StatusCode, resp.Body)
+	}
+
+	result := decodeJSONResponse(t, resp)
+	if !result.Truncated {
+		t.Fatal("expected truncated=true")
+	}
+	if result.Cursor == nil {
+		t.Fatal("expected cursor when truncated")
+	}
+
+	sc, ok := result.Cursor.Sources["chesscom:testuser"]
+	if !ok {
+		t.Fatal("expected chesscom:testuser in cursor sources")
+	}
+
+	// The cursor must point at the last indexed game's EndTime (March 20),
+	// NOT the next-month boundary (April 1). Using April 1 would cause
+	// FilterArchives to skip March entirely on resume, losing any games
+	// added after March 20.
+	lastGameTime := time.Unix(1710936000, 0)
+	april1 := time.Date(2024, 4, 1, 0, 0, 0, 0, time.UTC)
+
+	if sc.Since.Equal(april1) {
+		t.Errorf("cursor points at next-month boundary (April 1) instead of last game EndTime; this would skip the rest of March on resume")
+	}
+	if !sc.Since.Equal(lastGameTime) {
+		t.Errorf("cursor Since = %v, want %v (last indexed game EndTime)", sc.Since, lastGameTime)
 	}
 }

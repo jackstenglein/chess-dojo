@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
-	"os"
+	"regexp"
 	"sort"
-	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,10 +24,13 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/openingtree"
 )
 
+// maxGames is a server-side DoS guard: hard ceiling on games to index
+// per request, not a client-facing preference. The size budget (~5 MB)
+// will typically trigger first. Tests may lower this value to exercise
+// the truncation path without needing thousands of fixture games.
+var maxGames = 10000
+
 const (
-	// DefaultMaxGames is a hard safety ceiling on games to index.
-	// The size budget (~5 MB) will typically trigger first.
-	DefaultMaxGames = 10000
 
 	// SizeBudget is the approximate response size limit in bytes (~5 MB),
 	// well under Lambda's 6 MB payload limit.
@@ -48,6 +52,13 @@ const (
 	DefaultLambdaTimeout = 55 * time.Second
 )
 
+// rejectUsername matches characters that are clearly invalid in any chess
+// platform username: control characters, whitespace, URL-significant
+// characters. We intentionally allow dots, tildes, and other characters
+// that some platforms may permit — the upstream API will reject truly
+// invalid usernames with a clear error.
+var rejectUsername = regexp.MustCompile(`[\x00-\x1f\x7f \t\n\r/\\?#@:]`)
+
 var repository database.UserGetter = database.DynamoDB
 
 // httpClient is the HTTP client used to create Chess.com and Lichess API clients.
@@ -59,6 +70,13 @@ type Source struct {
 	Username string          `json:"username"`
 }
 
+// BuildRequest is the JSON payload sent by the frontend.
+//
+// Since and Until define the date range filter. These MUST be re-sent on
+// cursor resume requests — the cursor only stores pagination position,
+// not the original date bounds. Omitting them on resume will cause
+// Lichess to stream all games older than the cursor position with no
+// lower bound.
 type BuildRequest struct {
 	Sources []Source         `json:"sources"`
 	Since   *string          `json:"since,omitempty"`
@@ -77,18 +95,18 @@ type SourceError struct {
 // BuildResponse is the JSON payload returned by the handler.
 type BuildResponse struct {
 	*treeapi.Response
-	SourceErrors     []SourceError `json:"sourceErrors,omitempty"`
-	GameLimit        int           `json:"gameLimit"`
-	GameLimitExceeded bool         `json:"gameLimitExceeded"`
+	SourceErrors []SourceError `json:"sourceErrors,omitempty"`
 }
 
 // fetchResult carries either a game or an error from a source fetcher goroutine.
 type fetchResult struct {
-	game             game.Game
-	err              error
-	src              Source
-	done             bool // true when this source finished iterating all games
-	archiveComplete  bool // true when a Chess.com archive boundary was reached
+	game game.Game
+	err  error
+	src  Source
+	done bool // true when this source finished iterating all games
+	// For Chess.com batches: signals an archive boundary so that truncation
+	// checks are deferred until a full archive has been processed.
+	archiveBoundary bool
 }
 
 func main() {
@@ -146,14 +164,16 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		if src.Username == "" {
 			return api.Failure(errors.New(400, "Invalid request: source username is required", "")), nil
 		}
+		if rejectUsername.MatchString(src.Username) {
+			return api.Failure(errors.New(400, "Invalid request: source username contains invalid characters", "")), nil
+		}
 		switch src.Type {
-		case game.SourceChessCom, game.SourceLichess:
+		case game.SourceChesscom, game.SourceLichess:
 		default:
 			return api.Failure(errors.New(400, "Invalid request: source type must be 'chesscom' or 'lichess'", "")), nil
 		}
 	}
 
-	maxGames := getMaxGames()
 
 	// Create a deadline that fires before the Lambda hard timeout so we can
 	// return partial results instead of being killed mid-response.
@@ -189,68 +209,77 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		go func(src Source) {
 			defer wg.Done()
 
+			// Start with request-supplied bounds; the cursor narrows them.
 			since, until := sinceTime, untilTime
 
-			// If a cursor is provided, resume from where the previous page
-			// left off. Chess.com streams oldest-first, so we use
-			// LastTimestamp as 'since'. Lichess streams newest-first, so we
-			// use LastUntil as 'until' to fetch older games.
+			// If a cursor is provided, override whichever bounds it
+			// carries. Both Since and Until are always stored; the
+			// source's pagination direction determines which one
+			// actually narrows the window, but we apply both
+			// unconditionally so the consumer is source-agnostic.
 			if req.Cursor != nil {
 				key := sourceKey(src)
 				if sc, ok := req.Cursor.Sources[key]; ok {
-					if src.Type == game.SourceLichess && !sc.LastUntil.IsZero() {
-						until = sc.LastUntil
-					} else if !sc.LastTimestamp.IsZero() {
-						since = sc.LastTimestamp
+					if !sc.Since.IsZero() {
+						since = sc.Since
+					}
+					if !sc.Until.IsZero() {
+						until = sc.Until
 					}
 				}
 			}
 
-			var games func(func(game.Game, error) bool)
 			switch src.Type {
-			case game.SourceChessCom:
+			case game.SourceChesscom:
 				var client *chesscom.Client
 				if httpClient != nil {
 					client = chesscom.NewClientWithHTTP(httpClient)
 				} else {
 					client = chesscom.NewClient()
 				}
-				games = client.Games(fetchCtx, src.Username, since, until, true)
-			case game.SourceLichess:
-				client := lichess.NewClient(httpClient)
-				games = client.Games(fetchCtx, lichess.FetchParams{
-					Username: src.Username,
-					Since:    since,
-					Until:    until,
-				})
-			}
-
-			for g, err := range games {
-				if err != nil {
-					// Don't report context cancellation as a source error;
-					// it means we hit the budget or the graceful timeout.
-					if fetchCtx.Err() != nil {
+				for batch, err := range client.GamesByArchive(fetchCtx, src.Username, since, until, true) {
+					if err != nil {
+						if fetchCtx.Err() != nil {
+							return
+						}
+						results <- fetchResult{err: err, src: src}
 						return
 					}
-					results <- fetchResult{err: err, src: src}
-					return
-				}
-
-				// Forward archive-complete sentinels from Chess.com so the
-				// fan-in loop can defer truncation to archive boundaries.
-				if g.ArchiveComplete {
+					for _, g := range batch.Games {
+						select {
+						case results <- fetchResult{game: g, src: src}:
+						case <-fetchCtx.Done():
+							return
+						}
+					}
+					// Signal the archive boundary so the fan-in loop
+					// defers truncation checks until the full archive is processed.
 					select {
-					case results <- fetchResult{src: src, archiveComplete: true, game: g}:
+					case results <- fetchResult{src: src, archiveBoundary: true}:
 					case <-fetchCtx.Done():
 						return
 					}
-					continue
 				}
 
-				select {
-				case results <- fetchResult{game: g, src: src}:
-				case <-fetchCtx.Done():
-					return
+			case game.SourceLichess:
+				client := lichess.NewClient(httpClient)
+				for g, err := range client.Games(fetchCtx, lichess.FetchParams{
+					Username: src.Username,
+					Since:    since,
+					Until:    until,
+				}) {
+					if err != nil {
+						if fetchCtx.Err() != nil {
+							return
+						}
+						results <- fetchResult{err: err, src: src}
+						return
+					}
+					select {
+					case results <- fetchResult{game: g, src: src}:
+					case <-fetchCtx.Done():
+						return
+					}
 				}
 			}
 
@@ -272,11 +301,11 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	tree := openingtree.New()
 	sourceErrors := make(map[string]SourceError)
 	truncated := false
-	gameLimitExceeded := false
 
-	// Track the last game EndTime per source for cursor construction.
-	lastTimestamp := make(map[string]time.Time)
-	// Track min EndTime per Lichess source for backwards pagination.
+	// Track per-source EndTime bounds for cursor construction.
+	// maxTimestamp: latest EndTime seen (used as Since on resume).
+	// minTimestamp: earliest EndTime seen (used as Until on resume).
+	maxTimestamp := make(map[string]time.Time)
 	minTimestamp := make(map[string]time.Time)
 	// Track total games indexed including any from a previous cursor page.
 	priorGames := 0
@@ -296,7 +325,6 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	// drains the channel, and the caller should break out of the loop.
 	checkTruncation := func() bool {
 		if tree.GameCount() >= maxGames {
-			gameLimitExceeded = true
 			truncated = true
 			drainAndBreak()
 			return true
@@ -316,7 +344,7 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		}
 
 		if r.err != nil {
-			key := fmt.Sprintf("%s:%s", r.src.Type, r.src.Username)
+			key := sourceKey(r.src)
 			if _, exists := sourceErrors[key]; !exists {
 				log.Errorf("Error fetching game from %s for %s: %v", r.src.Type, r.src.Username, r.err)
 				sourceErrors[key] = SourceError{
@@ -328,15 +356,10 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 			continue
 		}
 
-		// Chess.com archive-complete sentinel: update the cursor timestamp
-		// to the archive boundary and check truncation. This ensures we
-		// only truncate at archive boundaries so that on resume
-		// FilterArchives cleanly excludes already-processed months.
-		if r.archiveComplete {
-			key := sourceKey(r.src)
-			if !r.game.EndTime.IsZero() {
-				lastTimestamp[key] = r.game.EndTime
-			}
+		// Chess.com archive boundary: defer truncation checks until the full
+		// archive batch has been indexed. Games within the archive are still
+		// included — the cursor will point at the last indexed game's EndTime.
+		if r.archiveBoundary {
 			if checkTruncation() {
 				break
 			}
@@ -344,10 +367,9 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		}
 
 		// For Lichess sources, check truncation on every game.
-		// For Chess.com, truncation is deferred to archive boundaries above.
+		// For Chess.com, truncation checks are deferred to archive boundaries above.
 		if r.src.Type == game.SourceLichess {
 			if tree.GameCount() >= maxGames {
-				gameLimitExceeded = true
 				truncated = true
 				drainAndBreak()
 				break
@@ -365,16 +387,22 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 			log.Warnf("Failed to index game %s: %v", r.game.URL, err)
 		}
 
-		// Track per-source last timestamp for cursor.
-		// For Chess.com, timestamps are set at archive boundaries (above).
-		// For Lichess (newest-first), track the min EndTime so that on
-		// resume we can set "until" to fetch games older than this point.
-		if r.src.Type == game.SourceLichess {
-			key := sourceKey(r.src)
-			if !r.game.EndTime.IsZero() {
-				if prev, ok := minTimestamp[key]; !ok || r.game.EndTime.Before(prev) {
-					minTimestamp[key] = r.game.EndTime
-				}
+		// Track both min and max EndTime per source for cursor construction.
+		// On resume the cursor carries both bounds so the consumer can narrow
+		// the fetch window without knowing the source's pagination direction.
+		//
+		// Known limitation: if two Lichess games share the exact same lastMoveAt
+		// millisecond and truncation fires between them, the second game will be
+		// excluded on resume because Lichess's "until" parameter is exclusive.
+		// This is extremely unlikely in practice (requires two games for the same
+		// player ending in the same server-side millisecond).
+		key := sourceKey(r.src)
+		if !r.game.EndTime.IsZero() {
+			if prev, ok := maxTimestamp[key]; !ok || r.game.EndTime.After(prev) {
+				maxTimestamp[key] = r.game.EndTime
+			}
+			if prev, ok := minTimestamp[key]; !ok || r.game.EndTime.Before(prev) {
+				minTimestamp[key] = r.game.EndTime
 			}
 		}
 	}
@@ -397,8 +425,8 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		}
 	}
 
-	log.Infof("Built tree: %d games, %d positions, %d source errors, truncated: %v, limit exceeded: %v",
-		tree.GameCount(), tree.PositionCount(), len(sourceErrors), truncated, gameLimitExceeded)
+	log.Infof("Built tree: %d games, %d positions, %d source errors, truncated: %v",
+		tree.GameCount(), tree.PositionCount(), len(sourceErrors), truncated)
 
 	var srcErrs []SourceError
 	for _, se := range sourceErrors {
@@ -416,40 +444,34 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	// Build cursor when response was truncated.
 	if truncated {
 		treeResp.Truncated = true
-		cursorSize := len(lastTimestamp) + len(minTimestamp)
+		// Collect all source keys that need a cursor entry.
+		allKeys := make(map[string]struct{})
+		for k := range maxTimestamp {
+			allKeys[k] = struct{}{}
+		}
+		for k := range minTimestamp {
+			allKeys[k] = struct{}{}
+		}
+		for k := range completedSources {
+			allKeys[k] = struct{}{}
+		}
 		cursor := &treeapi.Cursor{
-			Sources:    make(map[string]treeapi.SourceCursor, cursorSize),
+			Sources:    make(map[string]treeapi.SourceCursor, len(allKeys)),
 			TotalGames: priorGames + tree.GameCount(),
 		}
-		// Chess.com sources: use lastTimestamp (archive boundary) as resume point.
-		for key, ts := range lastTimestamp {
+		for key := range allKeys {
 			cursor.Sources[key] = treeapi.SourceCursor{
-				LastTimestamp: ts,
-				Completed:    completedSources[key],
-			}
-		}
-		// Lichess sources: use minTimestamp as LastUntil for backwards pagination.
-		for key, ts := range minTimestamp {
-			cursor.Sources[key] = treeapi.SourceCursor{
-				LastUntil: ts,
+				Since:     maxTimestamp[key],
+				Until:     minTimestamp[key],
 				Completed: completedSources[key],
-			}
-		}
-		// Include completed sources that have no timestamp entry
-		// (e.g. source completed with zero games in this page).
-		for key := range completedSources {
-			if _, exists := cursor.Sources[key]; !exists {
-				cursor.Sources[key] = treeapi.SourceCursor{Completed: true}
 			}
 		}
 		treeResp.Cursor = cursor
 	}
 
 	resp := BuildResponse{
-		Response:          treeResp,
-		SourceErrors:      srcErrs,
-		GameLimit:         maxGames,
-		GameLimitExceeded: gameLimitExceeded,
+		Response:     treeResp,
+		SourceErrors: srcErrs,
 	}
 	return api.Success(resp), nil
 }
@@ -461,25 +483,17 @@ func measureResponseSize(tree *openingtree.OpeningTree) int {
 	resp := treeapi.FromOpeningTree(tree)
 	data, err := json.Marshal(resp)
 	if err != nil {
+		// Marshal failure means we can't measure size, so assume worst case
+		// to trigger truncation and avoid exceeding Lambda's 6MB payload limit.
 		log.Errorf("Failed to marshal response for size check: %v", err)
-		return 0
+		return math.MaxInt
 	}
 	return len(data)
 }
 
 // sourceKey returns a stable key for a source, used as cursor map keys.
 func sourceKey(src Source) string {
-	return fmt.Sprintf("%s:%s", src.Type, src.Username)
+	return fmt.Sprintf("%s:%s", src.Type, strings.ToLower(src.Username))
 }
 
-// getMaxGames returns the game limit from the MAX_GAMES environment variable,
-// falling back to DefaultMaxGames.
-func getMaxGames() int {
-	if v := os.Getenv("MAX_GAMES"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			return n
-		}
-	}
-	return DefaultMaxGames
-}
 
