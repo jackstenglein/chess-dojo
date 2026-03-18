@@ -6,6 +6,9 @@ import {
 
 /**
  * Merges the comments from the given source move into the target move.
+ * @param source The move whose comments will be merged in.
+ * @param target The move that receives the merged comments.
+ * @param mergeType Controls whether comments are merged, overwritten, or discarded.
  */
 export function mergeComments(source: Move, target: Move, mergeType: PgnMergeType) {
     if (mergeType === PgnMergeTypes.DISCARD) {
@@ -31,6 +34,9 @@ export function mergeComments(source: Move, target: Move, mergeType: PgnMergeTyp
 
 /**
  * Merges the NAGs from the given source move into the target move.
+ * @param source The move whose NAGs will be merged in.
+ * @param target The move that receives the merged NAGs.
+ * @param mergeType Controls whether NAGs are merged, overwritten, or discarded.
  */
 export function mergeNags(source: Move, target: Move, mergeType: PgnMergeType) {
     if (mergeType === PgnMergeTypes.DISCARD) {
@@ -51,6 +57,9 @@ export function mergeNags(source: Move, target: Move, mergeType: PgnMergeType) {
 
 /**
  * Merges the color arrows and color fields from the given source move into the target move.
+ * @param source The move whose drawables will be merged in.
+ * @param target The move that receives the merged drawables.
+ * @param mergeType Controls whether drawables are merged, overwritten, or discarded.
  */
 export function mergeDrawables(source: Move, target: Move, mergeType: PgnMergeType) {
     if (mergeType === PgnMergeTypes.DISCARD) {

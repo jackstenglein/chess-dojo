@@ -5,7 +5,11 @@ import { PgnMergeTypes } from '@jackstenglein/chess-dojo-common/src/pgn/merge';
 import { describe, expect, test } from 'vitest';
 import { getPlayer, mergeComments, mergeDrawables, mergeNags } from './mergeUtils';
 
-/** Creates a minimal Move-shaped object for testing annotation merge helpers. */
+/**
+ * Creates a minimal Move-shaped object for testing annotation merge helpers.
+ * @param overrides Partial Move fields to apply on top of the defaults.
+ * @returns A Move object with sensible defaults and the given overrides applied.
+ */
 function makeMove(overrides: Partial<Move> = {}): Move {
     return {
         san: 'e4',

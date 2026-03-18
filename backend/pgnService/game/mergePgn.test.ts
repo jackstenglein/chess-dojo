@@ -9,7 +9,11 @@ import { assert, describe, expect, test } from 'vitest';
 import { ApiError } from '../../directoryService/api';
 import { mergePgn } from './mergePgn';
 
-/** Helper to build a minimal PgnMergeRequest with defaults. */
+/**
+ * Builds a minimal PgnMergeRequest with defaults for testing.
+ * @param overrides Partial request fields to apply on top of the defaults.
+ * @returns A PgnMergeRequest with sensible defaults and the given overrides applied.
+ */
 function makeRequest(overrides: Partial<PgnMergeRequest> = {}): PgnMergeRequest {
     return {
         cohort: '2000-2100',
