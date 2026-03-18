@@ -1,8 +1,15 @@
+import { BackendIndexedGame, BuildPlayerOpeningTreeResponse } from '@/api/explorerApi';
 import { OnlineGameTimeClass } from '@/api/external/onlineGame';
-import { GameData, LichessExplorerMove, LichessExplorerPosition } from '@/database/explorer';
+import {
+    GameData,
+    LichessExplorerMove,
+    LichessExplorerPosition,
+    PerformanceData,
+} from '@/database/explorer';
 import { GameResult } from '@/database/game';
-import { logger } from '@/logging/logger';
-import { Chess, normalizeFen } from '@jackstenglein/chess';
+import { getNormalizedRating } from '@/database/user';
+import { normalizeFen } from '@jackstenglein/chess';
+import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import deepEqual from 'deep-equal';
 import {
@@ -10,8 +17,16 @@ import {
     GameFilters,
     MAX_DOWNLOAD_LIMIT,
     MAX_PLY_COUNT,
-    MIN_PLY_COUNT,
+    PlayerSource,
+    SourceType,
 } from './PlayerSource';
+
+interface StatsResult {
+    white: number;
+    black: number;
+    draws: number;
+    performanceData?: PerformanceData;
+}
 
 interface PositionDataMove extends LichessExplorerMove {
     /**
@@ -43,6 +58,11 @@ export class OpeningTree {
     /** A set of the most recent game URLs matching the filters. */
     private mostRecentGames: Set<string> | undefined;
 
+    /** Cache for getPosition results, keyed by normalized FEN. */
+    private positionCache = new Map<string, PositionData>();
+    /** Cache for getGames results, keyed by normalized FEN. */
+    private gamesCache = new Map<string, GameData[]>();
+
     constructor(positionData?: Map<string, PositionData>, gameData?: Map<string, GameData>) {
         this.positionData = new Map<string, PositionData>(positionData);
         this.gameData = new Map<string, GameData>(gameData);
@@ -54,6 +74,35 @@ export class OpeningTree {
      */
     static fromTree(other: OpeningTree): OpeningTree {
         return new OpeningTree(other.positionData, other.gameData);
+    }
+
+    /**
+     * Constructs an OpeningTree from the backend API response.
+     */
+    static fromBackendResponse(resp: BuildPlayerOpeningTreeResponse): OpeningTree {
+        const gameData = new Map<string, GameData>();
+        for (const [url, bg] of Object.entries(resp.games)) {
+            gameData.set(url, convertBackendGame(bg));
+        }
+
+        const positionData = new Map<string, PositionData>();
+        for (const [fen, bp] of Object.entries(resp.positions)) {
+            positionData.set(normalizeFen(fen), {
+                white: bp.white,
+                black: bp.black,
+                draws: bp.draws,
+                games: new Set(bp.games ?? []),
+                moves: (bp.moves ?? []).map((m) => ({
+                    san: m.san,
+                    white: m.white,
+                    black: m.black,
+                    draws: m.draws,
+                    games: new Set(m.games ?? []),
+                })),
+            });
+        }
+
+        return new OpeningTree(positionData, gameData);
     }
 
     /**
@@ -77,6 +126,7 @@ export class OpeningTree {
         }
 
         this.filters = filters;
+        this.invalidateCaches();
         if (this.filters.downloadLimit === MAX_DOWNLOAD_LIMIT) {
             this.mostRecentGames = undefined;
             return;
@@ -102,9 +152,16 @@ export class OpeningTree {
         this.mostRecentGames = new Set(matchingGames.slice(0, this.filters?.downloadLimit));
     }
 
+    /** Invalidates the position and games caches. */
+    private invalidateCaches() {
+        this.positionCache.clear();
+        this.gamesCache.clear();
+    }
+
     /** Adds the given game to the game data map. */
     setGame(game: GameData) {
         this.gameData.set(game.url, game);
+        this.invalidateCaches();
     }
 
     /**
@@ -128,20 +185,24 @@ export class OpeningTree {
         }
 
         this.setFiltersIfNecessary(filters);
+
+        const cached = this.gamesCache.get(fen);
+        if (cached) {
+            return cached;
+        }
+
         const result = [];
         for (const url of position.games) {
             const game = this.getGame(url);
-            if (
-                game &&
-                (this.mostRecentGames?.has(url) ||
-                    (!this.mostRecentGames && matchesFilter(game, this.filters)))
-            ) {
+            if (game && this.matchesCurrentFilters(url, game)) {
                 result.push(game);
             }
         }
-        return result.sort((lhs, rhs) =>
+        const sorted = result.sort((lhs, rhs) =>
             (rhs.headers.Date ?? '').localeCompare(lhs.headers.Date ?? ''),
         );
+        this.gamesCache.set(fen, sorted);
+        return sorted;
     }
 
     /** Returns the number of games indexed by this opening tree. */
@@ -157,6 +218,7 @@ export class OpeningTree {
     setPosition(fen: string, position: PositionData) {
         fen = normalizeFen(fen);
         this.positionData.set(fen, position);
+        this.invalidateCaches();
     }
 
     /**
@@ -176,6 +238,50 @@ export class OpeningTree {
 
         this.setFiltersIfNecessary(filters);
 
+        const cached = this.positionCache.get(fen);
+        if (cached) {
+            return cached;
+        }
+
+        const positionStats = this.calculateStats(position.games);
+
+        const moves = position.moves
+            .map((move) => {
+                const moveStats = this.calculateStats(move.games);
+                return { ...move, ...moveStats };
+            })
+            .filter((m) => m.white || m.black || m.draws)
+            .sort(
+                (lhs, rhs) =>
+                    rhs.white + rhs.black + rhs.draws - (lhs.white + lhs.black + lhs.draws),
+            );
+
+        const result = { ...position, ...positionStats, moves };
+
+        this.positionCache.set(fen, result);
+        return result;
+    }
+
+    /**
+     * Returns whether a game URL passes the current filters,
+     * using the precomputed mostRecentGames set when available.
+     * @param url The game URL to check.
+     * @param game The game data (must not be undefined).
+     */
+    private matchesCurrentFilters(url: string, game: GameData): boolean {
+        if (this.mostRecentGames) {
+            return this.mostRecentGames.has(url);
+        }
+        return matchesFilter(game, this.filters);
+    }
+
+    /**
+     * Calculates W/D/L stats and performance data for a set of game URLs,
+     * applying the current filters.
+     * @param gameUrls The set of game URLs to calculate stats for.
+     * @returns The calculated stats including white, black, draws, and optional performanceData.
+     */
+    private calculateStats(gameUrls: Set<string>): StatsResult {
         let white = 0;
         let black = 0;
         let draws = 0;
@@ -186,13 +292,9 @@ export class OpeningTree {
         let bestWin: GameData | undefined = undefined;
         let worstLoss: GameData | undefined = undefined;
 
-        for (const url of position.games) {
+        for (const url of gameUrls) {
             const game = this.getGame(url);
-            if (
-                !game ||
-                (!this.mostRecentGames?.has(url) &&
-                    (this.mostRecentGames || !matchesFilter(game, this.filters)))
-            ) {
+            if (!game || !this.matchesCurrentFilters(url, game)) {
                 continue;
             }
 
@@ -200,194 +302,73 @@ export class OpeningTree {
                 lastPlayed = game;
             }
 
-            const opponentRating =
-                game.playerColor === Color.White
-                    ? game.normalizedBlackElo
-                    : game.normalizedWhiteElo;
+            const opponentRating = getOpponentRating(game);
+            const isPlayerWin =
+                (game.result === GameResult.White && game.playerColor === Color.White) ||
+                (game.result === GameResult.Black && game.playerColor === Color.Black);
+            const isPlayerLoss =
+                (game.result === GameResult.White && game.playerColor === Color.Black) ||
+                (game.result === GameResult.Black && game.playerColor === Color.White);
 
             if (game.result === GameResult.White) {
                 white++;
-                if (game.playerColor === Color.White) {
-                    playerWins++;
-                    const bestWinOpponentRating = bestWin
-                        ? bestWin.playerColor === Color.White
-                            ? bestWin.normalizedBlackElo
-                            : bestWin.normalizedWhiteElo
-                        : 0;
-                    if (opponentRating > bestWinOpponentRating) {
-                        bestWin = game;
-                    }
-                } else {
-                    const worstLossOpponentRating = worstLoss
-                        ? worstLoss.playerColor === Color.White
-                            ? worstLoss.normalizedBlackElo
-                            : worstLoss.normalizedWhiteElo
-                        : Infinity;
-                    if (opponentRating < worstLossOpponentRating) {
-                        worstLoss = game;
-                    }
-                }
             } else if (game.result === GameResult.Black) {
                 black++;
-                if (game.playerColor === Color.Black) {
-                    playerWins++;
-                    const bestWinOpponentRating = bestWin
-                        ? bestWin.playerColor === Color.White
-                            ? bestWin.normalizedBlackElo
-                            : bestWin.normalizedWhiteElo
-                        : 0;
-                    if (opponentRating > bestWinOpponentRating) {
-                        bestWin = game;
-                    }
-                } else {
-                    const worstLossOpponentRating = worstLoss
-                        ? worstLoss.playerColor === Color.White
-                            ? worstLoss.normalizedBlackElo
-                            : worstLoss.normalizedWhiteElo
-                        : Infinity;
-                    if (opponentRating < worstLossOpponentRating) {
-                        worstLoss = game;
-                    }
-                }
             } else {
                 draws++;
+            }
+
+            if (isPlayerWin) {
+                playerWins++;
+                if (opponentRating > (bestWin ? getOpponentRating(bestWin) : 0)) {
+                    bestWin = game;
+                }
+            } else if (isPlayerLoss) {
+                if (opponentRating < (worstLoss ? getOpponentRating(worstLoss) : Infinity)) {
+                    worstLoss = game;
+                }
             }
 
             totalOpponentRating += opponentRating;
         }
 
-        const moves = position.moves
-            .map((move) => {
-                let white = 0;
-                let black = 0;
-                let draws = 0;
-                let playerWins = 0;
-                let totalOpponentRating = 0;
-
-                let lastPlayed: GameData | undefined = undefined;
-                let bestWin: GameData | undefined = undefined;
-                let worstLoss: GameData | undefined = undefined;
-
-                for (const url of move.games) {
-                    const game = this.getGame(url);
-                    if (
-                        !game ||
-                        (!this.mostRecentGames?.has(url) &&
-                            (this.mostRecentGames || !matchesFilter(game, this.filters)))
-                    ) {
-                        continue;
-                    }
-
-                    if (game.headers.Date > (lastPlayed?.headers.Date ?? '')) {
-                        lastPlayed = game;
-                    }
-
-                    const opponentRating =
-                        game.playerColor === Color.White
-                            ? game.normalizedBlackElo
-                            : game.normalizedWhiteElo;
-
-                    if (game.result === GameResult.White) {
-                        white++;
-                        if (game.playerColor === Color.White) {
-                            playerWins++;
-                            const bestWinOpponentRating = bestWin
-                                ? bestWin.playerColor === Color.White
-                                    ? bestWin.normalizedBlackElo
-                                    : bestWin.normalizedWhiteElo
-                                : 0;
-                            if (opponentRating > bestWinOpponentRating) {
-                                bestWin = game;
-                            }
-                        } else {
-                            const worstLossOpponentRating = worstLoss
-                                ? worstLoss.playerColor === Color.White
-                                    ? worstLoss.normalizedBlackElo
-                                    : worstLoss.normalizedWhiteElo
-                                : Infinity;
-                            if (opponentRating < worstLossOpponentRating) {
-                                worstLoss = game;
-                            }
-                        }
-                    } else if (game.result === GameResult.Black) {
-                        black++;
-                        if (game.playerColor === Color.Black) {
-                            playerWins++;
-                            const bestWinOpponentRating = bestWin
-                                ? bestWin.playerColor === Color.White
-                                    ? bestWin.normalizedBlackElo
-                                    : bestWin.normalizedWhiteElo
-                                : 0;
-                            if (opponentRating > bestWinOpponentRating) {
-                                bestWin = game;
-                            }
-                        } else {
-                            const worstLossOpponentRating = worstLoss
-                                ? worstLoss.playerColor === Color.White
-                                    ? worstLoss.normalizedBlackElo
-                                    : worstLoss.normalizedWhiteElo
-                                : Infinity;
-                            if (opponentRating < worstLossOpponentRating) {
-                                worstLoss = game;
-                            }
-                        }
-                    } else {
-                        draws++;
-                    }
-
-                    totalOpponentRating += opponentRating;
-                }
-                const result = { ...move, white, black, draws };
-                const totalGames = white + black + draws;
-                if (lastPlayed && totalGames > 0) {
-                    const score = playerWins + draws / 2;
-                    const percentage = (score / totalGames) * 100;
-                    const ratingDiff = fideDpTable[Math.round(percentage)];
-                    const averageOpponentRating = Math.round(totalOpponentRating / totalGames);
-                    const performanceRating = averageOpponentRating + ratingDiff;
-
-                    result.performanceData = {
-                        playerWins,
-                        playerDraws: draws,
-                        playerLosses: totalGames - playerWins - draws,
-                        performanceRating,
-                        averageOpponentRating,
-                        lastPlayed,
-                        bestWin,
-                        worstLoss,
-                    };
-                }
-                return result;
-            })
-            .filter((m) => m.white || m.black || m.draws)
-            .sort(
-                (lhs, rhs) =>
-                    rhs.white + rhs.black + rhs.draws - (lhs.white + lhs.black + lhs.draws),
-            );
-
-        const result = { ...position, white, black, draws, moves };
-
+        const result: StatsResult = { white, black, draws };
         const totalGames = white + black + draws;
-        if (lastPlayed && totalGames > 0) {
-            const score = playerWins + draws / 2;
-            const percentage = (score / totalGames) * 100;
-            const ratingDiff = fideDpTable[Math.round(percentage)];
-            const averageOpponentRating = Math.round(totalOpponentRating / totalGames);
-            const performanceRating = averageOpponentRating + ratingDiff;
-
-            result.performanceData = {
-                playerWins,
-                playerDraws: draws,
-                playerLosses: totalGames - playerWins - draws,
-                performanceRating,
-                averageOpponentRating,
-                lastPlayed,
-                bestWin,
-                worstLoss,
-            };
-        }
+        result.performanceData = buildPerformanceData(
+            totalGames,
+            playerWins,
+            draws,
+            totalOpponentRating,
+            lastPlayed,
+            bestWin,
+            worstLoss,
+        );
 
         return result;
+    }
+
+    /**
+     * Merges another OpeningTree into this one additively. Positions keyed by FEN
+     * have their W/B/D counts summed, game sets unioned, and move lists merged
+     * (same SAN = sum counts + union games, new SAN = append). Game data maps are
+     * unioned (URL-keyed). Cached/filtered results are cleared.
+     * @param other The OpeningTree to merge into this one.
+     */
+    merge(other: OpeningTree) {
+        for (const [url, game] of other.gameData) {
+            if (!this.gameData.has(url)) {
+                this.gameData.set(url, game);
+            }
+        }
+
+        for (const [fen, position] of other.positionData) {
+            this.mergePosition(fen, position);
+        }
+
+        this.gamesSortedByDate = undefined;
+        this.filters = undefined;
+        this.mostRecentGames = undefined;
+        this.invalidateCaches();
     }
 
     /**
@@ -397,6 +378,7 @@ export class OpeningTree {
      */
     mergePosition(fen: string, position: PositionData) {
         fen = normalizeFen(fen);
+        this.invalidateCaches();
         const existingPosition = this.positionData.get(fen);
         if (!existingPosition) {
             this.positionData.set(fen, position);
@@ -427,73 +409,84 @@ export class OpeningTree {
             );
         }
     }
+}
 
-    /**
-     * Indexes a game into the opening tree. Games with only
-     * a single move are skipped.
-     * @param game The data of the game.
-     * @param pgn The pgn of the game.
-     * @returns True if the game was successfully indexed.
-     */
-    indexGame(game: GameData, pgn: string): boolean {
-        try {
-            const chess = new Chess({ pgn });
-            if (chess.plyCount() < MIN_PLY_COUNT) {
-                return false;
-            }
+const BACKEND_TIME_CLASS_MAP: Record<string, OnlineGameTimeClass> = {
+    bullet: OnlineGameTimeClass.Bullet,
+    blitz: OnlineGameTimeClass.Blitz,
+    rapid: OnlineGameTimeClass.Rapid,
+    classical: OnlineGameTimeClass.Classical,
+    correspondence: OnlineGameTimeClass.Daily,
+};
 
-            game.plyCount = chess.plyCount();
-            game.headers = chess.header().valueMap();
-            this.setGame(game);
+function convertBackendGame(bg: BackendIndexedGame): GameData {
+    const sourceType = bg.source.type === 'lichess' ? SourceType.Lichess : SourceType.Chesscom;
+    const playerColor = bg.playerColor === 'black' ? Color.Black : Color.White;
+    const ratingSystem =
+        sourceType === SourceType.Lichess ? RatingSystem.Lichess : RatingSystem.Chesscom;
+    const source: PlayerSource = {
+        type: sourceType,
+        username: playerColor === Color.White ? bg.white : bg.black,
+    };
 
-            const resultKey =
-                game.result === '1-0' ? 'white' : game.result === '0-1' ? 'black' : 'draws';
-            let position: PositionData = {
-                white: 0,
-                black: 0,
-                draws: 0,
-                [resultKey]: 1,
-                games: new Set([game.url]),
-                moves: [
-                    {
-                        san: chess.firstMove()?.san || '',
-                        white: 0,
-                        black: 0,
-                        draws: 0,
-                        [resultKey]: 1,
-                        games: new Set([game.url]),
-                    },
-                ],
-            };
-            this.mergePosition(chess.setUpFen(), position);
+    return {
+        source,
+        playerColor,
+        white: bg.white,
+        black: bg.black,
+        whiteElo: bg.whiteElo,
+        normalizedWhiteElo: getNormalizedRating(bg.whiteElo, ratingSystem),
+        blackElo: bg.blackElo,
+        normalizedBlackElo: getNormalizedRating(bg.blackElo, ratingSystem),
+        result: bg.result as GameResult,
+        plyCount: bg.plyCount,
+        rated: bg.rated,
+        url: bg.url,
+        headers: bg.headers ?? {},
+        timeClass: BACKEND_TIME_CLASS_MAP[bg.timeClass] ?? OnlineGameTimeClass.Rapid,
+    };
+}
 
-            for (const move of chess.history()) {
-                const nextMove = chess.nextMove(move);
+/**
+ * Returns the opponent's normalized rating for a game, based on the player's color.
+ * @param game The game to get the opponent rating from.
+ */
+function getOpponentRating(game: GameData): number {
+    return game.playerColor === Color.White ? game.normalizedBlackElo : game.normalizedWhiteElo;
+}
 
-                position = {
-                    ...position,
-                    games: new Set([game.url]),
-                    moves: nextMove
-                        ? [
-                              {
-                                  san: nextMove.san,
-                                  white: 0,
-                                  black: 0,
-                                  draws: 0,
-                                  [resultKey]: 1,
-                                  games: new Set([game.url]),
-                              },
-                          ]
-                        : [],
-                };
-                this.mergePosition(move.fen, position);
-            }
-            return true;
-        } catch (err) {
-            logger.error?.(`Failed to index game`, game, err);
-            return false;
-        }
+/**
+ * Builds performance data from accumulated stats, or returns undefined if no games.
+ */
+function buildPerformanceData(
+    totalGames: number,
+    playerWins: number,
+    draws: number,
+    totalOpponentRating: number,
+    lastPlayed: GameData | undefined,
+    bestWin: GameData | undefined,
+    worstLoss: GameData | undefined,
+): PerformanceData | undefined {
+    if (!lastPlayed || totalGames <= 0) {
+        return undefined;
     }
+
+    const score = playerWins + draws / 2;
+    const percentage = (score / totalGames) * 100;
+    const ratingDiff = fideDpTable[Math.round(percentage)];
+    const averageOpponentRating = Math.round(totalOpponentRating / totalGames);
+    const performanceRating = averageOpponentRating + ratingDiff;
+
+    return {
+        playerWins,
+        playerDraws: draws,
+        playerLosses: totalGames - playerWins - draws,
+        performanceRating,
+        averageOpponentRating,
+        lastPlayed,
+        bestWin,
+        worstLoss,
+    };
 }
 
 /**
@@ -537,12 +530,6 @@ function matchesFilter(game: GameData | undefined, filter: GameFilters | undefin
         return false;
     }
     if (!filter.rated && game.rated) {
-        return false;
-    }
-    if (filter.dateRange[0] && filter.dateRange[0] > game.headers.Date) {
-        return false;
-    }
-    if (filter.dateRange[1] && filter.dateRange[1] < game.headers.Date) {
         return false;
     }
     const opponentRating = game.playerColor === Color.White ? game.blackElo : game.whiteElo;
