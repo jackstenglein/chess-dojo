@@ -95,6 +95,9 @@ export const ProgressHistoryItem = ({
         updateItem({ ...item, [key]: value });
     };
 
+    const rawSuffix = requirement.progressBarSuffix?.trim();
+    const countLabel = rawSuffix ? rawSuffix.charAt(0).toUpperCase() + rawSuffix.slice(1) : 'Count';
+
     return (
         <Box>
             <Stack
@@ -153,7 +156,7 @@ export const ProgressHistoryItem = ({
                         <Grid size={{ xs: 12, sm: 'grow' }}>
                             <TextField
                                 data-testid='task-history-count'
-                                label='Count'
+                                label={countLabel}
                                 value={item.count}
                                 onChange={(event) => onChange('count', event.target.value)}
                                 fullWidth
@@ -580,6 +583,9 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         onSuccess: onClose,
     });
 
+    const rawSuffix = requirement?.progressBarSuffix?.trim();
+    const countLabel = rawSuffix ? rawSuffix.charAt(0).toUpperCase() + rawSuffix.slice(1) : 'Count';
+
     if (timelineRequest.isLoading()) {
         return (
             <DialogContent>
@@ -632,8 +638,8 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
                 {!isTimeOnly && (
-                    <Typography color='text.secondary'>
-                        Total Count: {totalCount}. Current Cohort: {cohortCount}
+                    <Typography color='text.secondary' data-testid='total-count-summary'>
+                        Total {countLabel} : {totalCount}. Current Cohort: {cohortCount}
                     </Typography>
                 )}
                 <Typography color='text.secondary'>

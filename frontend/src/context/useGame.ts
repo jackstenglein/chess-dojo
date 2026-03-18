@@ -6,6 +6,8 @@ export interface GameContextType {
     onUpdateGame?: (g: Game) => void;
     isOwner?: boolean;
     unsaved?: boolean;
+    /** If defined, the Directories tab calls this instead of router.push when clicking a game. */
+    onNavigateToGame?: (cohort: string, id: string) => void;
 }
 
 export const GameContext = createContext<GameContextType>({});
