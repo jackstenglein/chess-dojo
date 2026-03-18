@@ -33,6 +33,7 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -173,7 +174,7 @@ export default function Settings() {
                     </Stack>
 
                     <Stack rowGap={{ xs: 2, sm: 1 }} sx={{ my: 3 }}>
-                        <FormControl>
+                        <FormControl disabled={!showEval}>
                             <FormLabel>Primary Evaluation Type</FormLabel>
                             <RadioGroup
                                 row
@@ -189,6 +190,11 @@ export default function Settings() {
                                     />
                                 ))}
                             </RadioGroup>
+                            {!showEval && (
+                                <Typography variant='caption' color='error'>
+                                    Evaluation display is hidden
+                                </Typography>
+                            )}
                         </FormControl>
 
                         <FormControlLabel
@@ -229,6 +235,7 @@ export default function Settings() {
                                 />
                             }
                             label='Show evaluation score on engine lines'
+                            sx={!showEval ? { color: 'error.main' } : undefined}
                         />
 
                         <FormControlLabel
