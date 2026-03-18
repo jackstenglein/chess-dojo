@@ -74,7 +74,7 @@ export default function Settings() {
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
     );
-    const [showEval, setShowEval] = useLocalStorage<boolean>(
+    const [showEngineEval, setShowEngineEval] = useLocalStorage<boolean>(
         ENGINE_SHOW_EVAL.Key,
         ENGINE_SHOW_EVAL.Default,
     );
@@ -174,7 +174,7 @@ export default function Settings() {
                     </Stack>
 
                     <Stack rowGap={{ xs: 2, sm: 1 }} sx={{ my: 3 }}>
-                        <FormControl disabled={!showEval}>
+                        <FormControl disabled={!showEngineEval}>
                             <FormLabel>Primary Evaluation Type</FormLabel>
                             <RadioGroup
                                 row
@@ -190,8 +190,8 @@ export default function Settings() {
                                     />
                                 ))}
                             </RadioGroup>
-                            {!showEval && (
-                                <Typography variant='caption' color='error'>
+                            {!showEngineEval && (
+                                <Typography variant='caption' color='warning'>
                                     Evaluation display is hidden
                                 </Typography>
                             )}
@@ -230,12 +230,12 @@ export default function Settings() {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={showEval}
-                                    onChange={(e) => setShowEval(e.target.checked)}
+                                    checked={showEngineEval}
+                                    onChange={(e) => setShowEngineEval(e.target.checked)}
                                 />
                             }
                             label='Show evaluation score on engine lines'
-                            sx={!showEval ? { color: 'error.main' } : undefined}
+                            sx={!showEngineEval ? { color: 'warning.main' } : undefined}
                         />
 
                         <FormControlLabel
