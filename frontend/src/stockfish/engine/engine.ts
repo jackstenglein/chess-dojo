@@ -1,5 +1,7 @@
 /** The name of an available engine. */
 export enum EngineName {
+    Stockfish18 = 'stockfish_18',
+    Stockfish18Lite = 'stockfish_18_lite',
     Stockfish17 = 'stockfish_17',
     Stockfish16 = 'stockfish_16',
     Stockfish11 = 'stockfish_11',
@@ -37,11 +39,31 @@ export interface EngineInfo {
 /** The list of engines available for use. */
 export const engines: EngineInfo[] = [
     {
+        name: EngineName.Stockfish18,
+        fullName: 'Stockfish 18 NNUE • 108 MB',
+        shortName: 'SF 18 • 108 MB',
+        extraShortName: 'SF 18',
+        description: 'Best for desktop',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by Stockfish's neural network.`,
+        location: 'in local browser',
+    },
+    {
+        name: EngineName.Stockfish18Lite,
+        fullName: 'Stockfish 18 NNUE Lite • 16 MB',
+        shortName: 'SF 18 Lite • 16 MB',
+        extraShortName: 'SF 18 Lite',
+        description: 'Best for mobile and weaker desktops',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by a smaller Stockfish neural network.`,
+        location: 'in local browser',
+    },
+    {
         name: EngineName.Stockfish17,
         fullName: 'Stockfish 17.1 NNUE • 79 MB',
         shortName: 'SF 17.1 • 79 MB',
         extraShortName: 'SF 17.1',
-        description: 'Best for desktop',
+        description: 'Previous version',
         tech: 'NNUE',
         techDescription: `Evaluation is performed by Stockfish's neural network.`,
         location: 'in local browser',
@@ -51,7 +73,7 @@ export const engines: EngineInfo[] = [
         fullName: 'Stockfish 16.1 NNUE • 6 MB',
         shortName: 'SF 16 • 6 MB',
         extraShortName: 'SF 16',
-        description: 'Best for mobile and weaker desktops',
+        description: 'Previous version',
         tech: 'NNUE',
         techDescription: `Evaluation is performed by Stockfish's neural network.`,
         location: 'in local browser',
@@ -73,7 +95,7 @@ export const ENGINE_NAME = {
     /** Local storage key for the engine name. */
     Key: 'engine-name',
     /** The default engine name. */
-    Default: EngineName.Stockfish17,
+    Default: EngineName.Stockfish18,
 } as const;
 
 /** Settings for the number of lines calculated/displayed by the engine. */
