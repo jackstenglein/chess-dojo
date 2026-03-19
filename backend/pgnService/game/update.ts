@@ -253,6 +253,7 @@ async function updateDirectories(newGame: Game, oldGame: Game) {
         blackElo: newGame.headers.BlackElo,
         result: newGame.headers.Result,
         unlisted: newGame.unlisted,
+        date: newGame.headers.Date,
     };
 
     for (let i = 0; i < newGame.directories.length; i += 25) {

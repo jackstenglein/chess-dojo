@@ -180,6 +180,19 @@ export const publicColumns: GridColDef<DirectoryItem>[] = [
         flex: 0.5,
     },
     {
+        field: 'date',
+        headerName: 'Date Played',
+        valueGetter: (_value, row) => {
+            if (row.type === DirectoryItemTypes.DIRECTORY) {
+                return '';
+            }
+            return row.metadata.date ?? '';
+        },
+        width: 110,
+        align: 'center',
+        headerAlign: 'center',
+    },
+    {
         field: 'createdAt',
         headerName: 'Date Created',
         valueGetter: (_value, row) => row.metadata.createdAt,

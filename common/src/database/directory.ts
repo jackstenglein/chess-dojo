@@ -35,6 +35,9 @@ const gameMetadataSchema = z.object({
 
     /** Whether the game is unlisted or not. */
     unlisted: z.boolean().optional(),
+
+    /** The date the game was played, in YYYY.MM.DD format from the PGN Date header. */
+    date: z.string().optional().nullable(),
 });
 
 /** Metadata about a game in a directory. */

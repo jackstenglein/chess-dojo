@@ -442,6 +442,7 @@ async function addGamesToDirectory(owner: string, id: string, games: Game[]) {
                 blackElo: g.headers.BlackElo,
                 result: g.headers.Result,
                 unlisted: g.unlisted,
+                date: g.headers.Date,
             },
         }));
 
