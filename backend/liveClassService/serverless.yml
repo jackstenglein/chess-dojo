@@ -26,7 +26,8 @@ functions:
     package:
       individually: true
       patterns:
-        - meetingIds.csv
+        - lectures-${sls:stage}.json
+        - game-reviews-${sls:stage}.json
     events:
       - schedule:
           rate: cron(0 * * * ? *) # Every hour
@@ -80,6 +81,9 @@ functions:
   getRecording:
     handler: getRecording.handler
     events:
+      - httpApi:
+          path: /public/live-classes/recording
+          method: get
       - httpApi:
           path: /live-classes/recording
           method: get
