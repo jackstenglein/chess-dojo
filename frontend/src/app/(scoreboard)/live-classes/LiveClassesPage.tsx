@@ -10,8 +10,11 @@ import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
-import { Button, Container, Grid, Stack, Typography } from '@mui/material';
+import {
+    LiveClass,
+    SAMPLE_LIVE_CLASS_S3_KEY,
+} from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import { Box, Button, Container, Grid, Stack, Typography } from '@mui/material';
 import Image from 'next/image';
 import { useEffect, useSyncExternalStore } from 'react';
 import { liveClassesFaq } from '../help/liveClasses';
@@ -20,6 +23,16 @@ import { compareLiveClasses } from '../learn/live-classes/liveClassUtils';
 import PricingPage from '../prices/PricingPage';
 import { useOnSubscribe } from '../prices/useOnSubscribe';
 import gameReviewImage from './game_review.webp';
+
+const SAMPLE_LIVE_CLASS: LiveClass = {
+    name: 'Free Sample — Calculation 1000+',
+    type: SubscriptionTier.Lecture,
+    cohortRange: '1000+',
+    tags: ['Tactics'],
+    description: `A weekly class focusing on various techniques and skills within calculation. Students will be given weekly homework to work on before the next class, and encouraged to form study groups to solve the material together. One week's class is provided as a free sample.`,
+    imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
+    recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
+};
 
 export default function LiveClassesPage() {
     const { user } = useAuth();
@@ -48,10 +61,15 @@ export default function LiveClassesPage() {
                 });
         }
     }, [recordingsRequest]);
+
     const lectureClasses =
         recordingsRequest.data
             ?.filter((c) => c.type === SubscriptionTier.Lecture)
             .sort(compareLiveClasses) ?? [];
+
+    if (!isLiveClassUser) {
+        lectureClasses.unshift(SAMPLE_LIVE_CLASS);
+    }
 
     return (
         <Container sx={{ py: 5 }}>
@@ -73,7 +91,9 @@ export default function LiveClassesPage() {
                 The Lecture Tier provides access to larger lecture-style classes on various topics
                 like endgames, calculation, and openings. For $75/month, you get access to all
                 lecture classes and recordings, as well as full access to the rest of the ChessDojo
-                website.
+                website.{' '}
+                {!isLiveClassUser &&
+                    `Not sure if these classes are for you? Watch a free sample of Kostya's calculation course below.`}
             </Typography>
 
             <Button
@@ -92,14 +112,14 @@ export default function LiveClassesPage() {
                 {isLectureUser ? 'Already Subscribed' : 'Join Lecture Tier'}
             </Button>
 
-            <Grid container mt={4} spacing={3}>
+            <Box mt={4}>
                 <LiveClassesList
                     classes={lectureClasses}
                     onTagClick={() => null}
                     selectedTags={[]}
                     variant='grid'
                 />
-            </Grid>
+            </Box>
 
             <Typography variant='h5' mt={8} fontWeight='bold'>
                 Game & Profile Review

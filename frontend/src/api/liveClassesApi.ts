@@ -35,6 +35,13 @@ export function listRecordings() {
     });
 }
 
+export function getSampleRecording(request: GetRecordingRequest) {
+    return axiosService.get<{ url: string }>(`/public/live-classes/recording`, {
+        params: request,
+        functionName: 'getSampleRecording',
+    });
+}
+
 export function getRecording(request: GetRecordingRequest) {
     return axiosService.get<{ url: string }>(`/live-classes/recording`, {
         params: request,

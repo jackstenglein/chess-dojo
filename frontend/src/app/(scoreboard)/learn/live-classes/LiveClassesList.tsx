@@ -1,4 +1,4 @@
-import { getRecording } from '@/api/liveClassesApi';
+import { getRecording, getSampleRecording } from '@/api/liveClassesApi';
 import { useAuth } from '@/auth/Auth';
 import { PresenterIcon } from '@/style/PresenterIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
@@ -6,7 +6,10 @@ import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import {
+    LiveClass,
+    SAMPLE_LIVE_CLASS_S3_KEY,
+} from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { ExpandMore, Person, PlayArrow, ShowChart, Troubleshoot } from '@mui/icons-material';
 import {
     Accordion,
@@ -57,20 +60,22 @@ export function LiveClassesList({
     const subscriptionTier = getSubscriptionTier(user);
 
     const getPresignedLink = async (s3Key: string, tier: SubscriptionTier) => {
-        if (
-            tier === SubscriptionTier.GameReview &&
-            subscriptionTier !== SubscriptionTier.GameReview
-        ) {
-            setShowUpsell(SubscriptionTier.GameReview);
-            return;
-        }
+        if (s3Key !== SAMPLE_LIVE_CLASS_S3_KEY) {
+            if (
+                tier === SubscriptionTier.GameReview &&
+                subscriptionTier !== SubscriptionTier.GameReview
+            ) {
+                setShowUpsell(SubscriptionTier.GameReview);
+                return;
+            }
 
-        if (
-            subscriptionTier !== SubscriptionTier.Lecture &&
-            subscriptionTier !== SubscriptionTier.GameReview
-        ) {
-            setShowUpsell(SubscriptionTier.Lecture);
-            return;
+            if (
+                subscriptionTier !== SubscriptionTier.Lecture &&
+                subscriptionTier !== SubscriptionTier.GameReview
+            ) {
+                setShowUpsell(SubscriptionTier.Lecture);
+                return;
+            }
         }
 
         if (presignedUrls[s3Key]?.url) {
@@ -78,8 +83,9 @@ export function LiveClassesList({
         }
 
         try {
+            const func = s3Key === SAMPLE_LIVE_CLASS_S3_KEY ? getSampleRecording : getRecording;
             setPresignedUrls((urls) => ({ ...urls, [s3Key]: { loading: true } }));
-            const resp = await getRecording({ s3Key });
+            const resp = await func({ s3Key });
             setPresignedUrls((urls) => ({ ...urls, [s3Key]: { url: resp.data.url } }));
             return resp.data.url;
         } catch (_err) {

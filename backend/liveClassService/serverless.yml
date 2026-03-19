@@ -82,6 +82,9 @@ functions:
     handler: getRecording.handler
     events:
       - httpApi:
+          path: /public/live-classes/recording
+          method: get
+      - httpApi:
           path: /live-classes/recording
           method: get
           authorizer:
