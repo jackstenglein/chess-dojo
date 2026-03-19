@@ -1,5 +1,10 @@
+import { Suspense } from 'react';
 import LiveClassesPage from './LiveClassesPage';
 
 export default function Page() {
-    return <LiveClassesPage />;
+    return (
+        <Suspense>
+            <LiveClassesPage />
+        </Suspense>
+    );
 }

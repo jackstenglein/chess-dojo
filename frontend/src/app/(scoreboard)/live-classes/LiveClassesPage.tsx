@@ -60,7 +60,10 @@ export default function LiveClassesPage() {
             </Typography>
 
             {!isGameReviewUser && (
-                <PricingPage tiers={[SubscriptionTier.Lecture, SubscriptionTier.GameReview]} />
+                <PricingPage
+                    tiers={[SubscriptionTier.Lecture, SubscriptionTier.GameReview]}
+                    hideInterval
+                />
             )}
 
             <Typography variant='h5' mt={4} fontWeight='bold'>
