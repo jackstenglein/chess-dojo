@@ -29,11 +29,11 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
     const isOwnProfile = viewer?.username === user.username;
 
     const [cooldowns, setCooldowns] = useState<Partial<Record<RatingSystem, number>>>({});
-    const intervalsRef = useRef<Partial<Record<RatingSystem, ReturnType<typeof setInterval>>>>({});
+    const intervalsRef = useRef<Map<RatingSystem, ReturnType<typeof setInterval>>>(new Map());
 
     useEffect(() => {
         return () => {
-            Object.values(intervalsRef.current).forEach((id) => clearInterval(id));
+            intervalsRef.current.forEach((id) => clearInterval(id));
         };
     }, []);
 
@@ -57,14 +57,14 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                     const remaining = (prev[targetSystem] ?? 0) - 1;
                     if (remaining <= 0) {
                         clearInterval(intervalId);
-                        delete intervalsRef.current[targetSystem];
+                        intervalsRef.current.delete(targetSystem);
                         const { [targetSystem]: _, ...rest } = prev;
                         return rest;
                     }
                     return { ...prev, [targetSystem]: remaining };
                 });
             }, 1000);
-            intervalsRef.current[targetSystem] = intervalId;
+            intervalsRef.current.set(targetSystem, intervalId);
         },
         [api, user.ratings],
     );
