@@ -1,15 +1,19 @@
 'use strict';
 
-import { GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { GetItemCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { Game, PositionComment } from '@jackstenglein/chess-dojo-common/src/database/game';
 import {
     GameCommentEvent,
     GameReviewEvent,
+    GameReviewSubmittedEvent,
+    NotificationEventTypes,
     NotificationTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/notification';
+import { GameReviewCohort } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { ApiError } from '../directoryService/api';
-import { dynamo, UpdateItemBuilder } from '../directoryService/database';
+import { dynamo, LIVE_CLASSES_TABLE, UpdateItemBuilder } from '../directoryService/database';
+import { getGuildMember, sendDirectMessage } from './discord';
 import { getNotificationSettings } from './user';
 
 const gameTable = `${process.env.stage}-games`;
@@ -199,4 +203,102 @@ export async function handleGameReview(event: GameReviewEvent) {
     console.log(
         `Successfully created ${NotificationTypes.GAME_REVIEW_COMPLETE} notification for ${game.owner}`,
     );
+}
+
+const frontendHost = process.env.frontendHost;
+
+/**
+ * Sends Discord DM notifications to senseis when a game is submitted for review.
+ * @param event The event to create notifications for.
+ */
+export async function handleGameReviewSubmitted(event: GameReviewSubmittedEvent) {
+    const getGameOutput = await dynamo.send(
+        new GetItemCommand({
+            Key: {
+                cohort: { S: event.game.cohort },
+                id: { S: event.game.id },
+            },
+            ProjectionExpression: `cohort, #id, headers, #owner, review`,
+            ExpressionAttributeNames: {
+                '#owner': 'owner',
+                '#id': 'id',
+            },
+            TableName: gameTable,
+        }),
+    );
+    if (!getGameOutput.Item) {
+        throw new ApiError({
+            statusCode: 404,
+            publicMessage: `Invalid request: game ${event.game.cohort}/${event.game.id} not found`,
+        });
+    }
+
+    const game = unmarshall(getGameOutput.Item) as Pick<
+        Game,
+        'cohort' | 'id' | 'headers' | 'owner' | 'review'
+    >;
+
+    const cohorts = await getGameReviewCohorts();
+    const senseiUsernames = new Set<string>();
+    for (const cohort of cohorts) {
+        for (const member of Object.values(cohort.members)) {
+            senseiUsernames.add(member.username);
+        }
+    }
+
+    const message = gameReviewSubmittedMessage(game);
+    for (const username of senseiUsernames) {
+        try {
+            const user = await getNotificationSettings(username);
+            if (
+                !user?.discordUsername ||
+                user.notificationSettings?.discordNotificationSettings?.disableGameReviewSubmitted
+            ) {
+                continue;
+            }
+
+            const discordId =
+                user.discordId ?? (await getGuildMember(user.discordUsername)).user.id;
+            await sendDirectMessage(discordId, message);
+            console.log(
+                `Successfully sent Discord message to ${username} for ${NotificationEventTypes.GAME_REVIEW_SUBMITTED}`,
+            );
+        } catch (err) {
+            console.error(
+                `Failed to send ${NotificationEventTypes.GAME_REVIEW_SUBMITTED} Discord DM to ${username}:`,
+                err,
+            );
+        }
+    }
+}
+
+/**
+ * Returns all game review cohorts from the live classes table.
+ */
+async function getGameReviewCohorts(): Promise<GameReviewCohort[]> {
+    const output = await dynamo.send(
+        new ScanCommand({
+            TableName: LIVE_CLASSES_TABLE,
+        }),
+    );
+    return (output.Items?.map((item) => unmarshall(item)) ?? []) as GameReviewCohort[];
+}
+
+/**
+ * Returns the Discord message text for a game review submitted notification.
+ * @param game The game that was submitted for review.
+ */
+function gameReviewSubmittedMessage(game: Pick<Game, 'headers' | 'review'>): string {
+    const white = game.headers?.White ?? 'Unknown';
+    const black = game.headers?.Black ?? 'Unknown';
+    const result = game.headers?.Result ?? '*';
+    const reviewType = game.review?.type ?? 'Unknown';
+
+    return `📋 **New game submitted for review!**
+
+**${white}** vs **${black}**
+Result: ${result}
+Review Type: ${reviewType}
+
+[View review queue](${frontendHost}/games/review)`;
 }
