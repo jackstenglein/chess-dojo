@@ -1,4 +1,4 @@
-import { getRecording, getSampleRecording } from '@/api/liveClassesApi';
+import { getRecording } from '@/api/liveClassesApi';
 import { useAuth } from '@/auth/Auth';
 import { PresenterIcon } from '@/style/PresenterIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
@@ -83,9 +83,8 @@ export function LiveClassesList({
         }
 
         try {
-            const func = s3Key === SAMPLE_LIVE_CLASS_S3_KEY ? getSampleRecording : getRecording;
             setPresignedUrls((urls) => ({ ...urls, [s3Key]: { loading: true } }));
-            const resp = await func({ s3Key });
+            const resp = await getRecording({ s3Key });
             setPresignedUrls((urls) => ({ ...urls, [s3Key]: { url: resp.data.url } }));
             return resp.data.url;
         } catch (_err) {
@@ -217,9 +216,8 @@ function LiveClassCard({
                               }
                             : {
                                   width: '100%',
-                                  ...(variant === 'grid'
-                                      ? { height: 180, flexShrink: 0 }
-                                      : { height: 'auto' }),
+                                  aspectRatio: 16 / 9,
+                                  flexShrink: 0,
                               }),
                     }}
                 />

@@ -7,6 +7,7 @@ import {
     LiveClass,
     PauseQueueDateRequest,
     ResetQueueDateRequest,
+    SAMPLE_LIVE_CLASS_S3_KEY,
     SetGameReviewCohortsRequest,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { AxiosResponse } from 'axios';
@@ -35,18 +36,16 @@ export function listRecordings() {
     });
 }
 
-export function getSampleRecording(request: GetRecordingRequest) {
-    return axiosService.get<{ url: string }>(`/public/live-classes/recording`, {
-        params: request,
-        functionName: 'getSampleRecording',
-    });
-}
-
 export function getRecording(request: GetRecordingRequest) {
-    return axiosService.get<{ url: string }>(`/live-classes/recording`, {
-        params: request,
-        functionName: 'getRecording',
-    });
+    return axiosService.get<{ url: string }>(
+        request.s3Key === SAMPLE_LIVE_CLASS_S3_KEY
+            ? `/public/live-classes/recording`
+            : `/live-classes/recording`,
+        {
+            params: request,
+            functionName: 'getRecording',
+        },
+    );
 }
 
 /**
