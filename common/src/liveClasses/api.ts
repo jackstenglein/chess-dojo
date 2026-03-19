@@ -3,8 +3,8 @@ import { Event } from '../database/event';
 import { SubscriptionTier } from '../database/user';
 
 /** Matches the S3 key of a live class recording. */
-export const S3_LIVE_CLASS_KEY_REGEX = new RegExp(
-    `^(${SubscriptionTier.GameReview}|${SubscriptionTier.Lecture})/(.*)/(.*) \\((\\d{4}-\\d{2}-\\d{2}).*\\)$`,
+const S3_LIVE_CLASS_KEY_REGEX = new RegExp(
+    `^(${SubscriptionTier.GameReview}|${SubscriptionTier.Lecture})/`,
 );
 
 /** Verifies the type of a request to get a recording. */
