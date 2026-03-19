@@ -1,10 +1,12 @@
 'use strict';
 
 import {
+    BatchGetItemCommand,
     BatchWriteItemCommand,
     DynamoDBClient,
     GetItemCommand,
     PutItemCommand,
+    QueryCommand,
     UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
@@ -556,5 +558,110 @@ async function updateUserTimeManagementRating(user: User, games: Game[]): Promis
         );
     } catch (err) {
         console.error('Failed to update user time management rating: ', err);
+    }
+}
+
+/**
+ * Rebuilds a user's aggregate time management rating from all their games.
+ * Used when a game is edited and its TM rating changes, since the incremental
+ * aggregate model is not reversible.
+ * @param owner The username of the game owner.
+ */
+export async function rebuildUserTimeManagementRating(owner: string): Promise<void> {
+    try {
+        // Query OwnerIdx for all game keys belonging to this owner
+        let startKey: Record<string, import('@aws-sdk/client-dynamodb').AttributeValue> | undefined;
+        const gameKeys: { cohort: string; id: string }[] = [];
+
+        do {
+            const result = await dynamo.send(
+                new QueryCommand({
+                    TableName: gamesTable,
+                    IndexName: 'OwnerIdx',
+                    KeyConditionExpression: '#owner = :owner',
+                    ExpressionAttributeNames: { '#owner': 'owner' },
+                    ExpressionAttributeValues: { ':owner': { S: owner } },
+                    ProjectionExpression: 'cohort, id',
+                    ExclusiveStartKey: startKey,
+                }),
+            );
+
+            for (const item of result.Items ?? []) {
+                const game = unmarshall(item);
+                gameKeys.push({ cohort: game.cohort as string, id: game.id as string });
+            }
+            startKey = result.LastEvaluatedKey;
+        } while (startKey);
+
+        // BatchGetItem from the main table for TM ratings + orientation
+        let aggregate: TimeManagementAggregate | undefined;
+
+        for (let i = 0; i < gameKeys.length; i += 100) {
+            const batch = gameKeys.slice(i, i + 100);
+            const result = await dynamo.send(
+                new BatchGetItemCommand({
+                    RequestItems: {
+                        [gamesTable]: {
+                            Keys: batch.map((k) => marshall({ cohort: k.cohort, id: k.id })),
+                            ProjectionExpression:
+                                'orientation, timeManagementRatingWhite, timeManagementRatingBlack',
+                        },
+                    },
+                }),
+            );
+
+            for (const item of result.Responses?.[gamesTable] ?? []) {
+                const game = unmarshall(item) as {
+                    orientation?: string;
+                    timeManagementRatingWhite?: number;
+                    timeManagementRatingBlack?: number;
+                };
+                const ownerRating =
+                    game.orientation === 'black'
+                        ? game.timeManagementRatingBlack
+                        : game.timeManagementRatingWhite;
+
+                if (ownerRating !== undefined) {
+                    aggregate = updateTimeManagementAggregate(aggregate, ownerRating);
+                }
+            }
+        }
+
+        // Write the rebuilt aggregate to the user record
+        if (aggregate) {
+            await dynamo.send(
+                new UpdateItemCommand({
+                    Key: { username: { S: owner } },
+                    TableName: usersTable,
+                    UpdateExpression: 'SET #tmr = :tmRating',
+                    ExpressionAttributeNames: {
+                        '#tmr': 'timeManagementRating',
+                    },
+                    ExpressionAttributeValues: marshall(
+                        {
+                            ':tmRating': {
+                                currentRating: aggregate.currentRating,
+                                numGames: aggregate.numGames,
+                            },
+                        },
+                        { removeUndefinedValues: true },
+                    ),
+                }),
+            );
+        } else {
+            // No games with TM ratings — remove the aggregate
+            await dynamo.send(
+                new UpdateItemCommand({
+                    Key: { username: { S: owner } },
+                    TableName: usersTable,
+                    UpdateExpression: 'REMOVE #tmr',
+                    ExpressionAttributeNames: {
+                        '#tmr': 'timeManagementRating',
+                    },
+                }),
+            );
+        }
+    } catch (err) {
+        console.error('Failed to rebuild user time management rating: ', err);
     }
 }

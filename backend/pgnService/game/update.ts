@@ -29,6 +29,7 @@ import {
     getGame,
     getPgnTexts,
     getUserInfo,
+    rebuildUserTimeManagementRating,
     success,
     timelineTable,
 } from './create';
@@ -60,6 +61,15 @@ async function updateGame(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         await createTimelineEntry(result.new);
     } else if (update.unlisted && request.timelineId) {
         await deleteTimelineEntry(result.new, request.timelineId);
+    }
+
+    // Rebuild user's aggregate TM rating if any TM-relevant fields changed
+    if (
+        result.old.timeManagementRatingWhite !== result.new.timeManagementRatingWhite ||
+        result.old.timeManagementRatingBlack !== result.new.timeManagementRatingBlack ||
+        result.old.orientation !== result.new.orientation
+    ) {
+        await rebuildUserTimeManagementRating(result.new.owner);
     }
 
     await updateDirectories(result.new, result.old);
