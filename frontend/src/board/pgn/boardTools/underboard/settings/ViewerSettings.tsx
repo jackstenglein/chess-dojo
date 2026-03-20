@@ -112,25 +112,6 @@ export enum ViewerSetting {
     IncorrectSolitaireMoveSound,
 }
 
-const boardSettings = [
-    ViewerSetting.ShowLegalMoves,
-    ViewerSetting.ShowGlyphsOnBoard,
-    ViewerSetting.ScrollOnBoardToMove,
-];
-const pgnTextSettings = [
-    ViewerSetting.ShowElapsedTimeNextToMove,
-    ViewerSetting.DisplaySuggestedVariations,
-];
-const engineSettings = [
-    ViewerSetting.ShowEngine,
-    ViewerSetting.HighlightEngineLines,
-    ViewerSetting.PersistEngineLines,
-];
-const soundsSettings = [
-    ViewerSetting.CorrectSolitaireMoveSound,
-    ViewerSetting.IncorrectSolitaireMoveSound,
-];
-
 const ViewerSettings = ({
     enabledSettings,
     keyboardShortcutsProps,
@@ -286,10 +267,7 @@ const ViewerSettings = ({
             )}
 
             <Stack>
-                {!enabledSettings ||
-                    (boardSettings.some((setting) => enabledSettings[setting]) && (
-                        <Typography variant='h6'>Board</Typography>
-                    ))}
+                {!enabledSettings && <Typography variant='h6'>Board</Typography>}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowLegalMoves]) && (
                     <FormControlLabel
@@ -327,10 +305,11 @@ const ViewerSettings = ({
                     />
                 )}
 
-                {!enabledSettings ||
-                    (pgnTextSettings.some((setting) => enabledSettings[setting]) && (
-                        <Typography variant='h6'>PGN Text</Typography>
-                    ))}
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        PGN Text
+                    </Typography>
+                )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowElapsedTimeNextToMove]) && (
                     <FormControlLabel
@@ -357,10 +336,11 @@ const ViewerSettings = ({
                     />
                 )}
 
-                {!enabledSettings ||
-                    (engineSettings.some((setting) => enabledSettings[setting]) && (
-                        <Typography variant='h6'>Engine</Typography>
-                    ))}
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        Engine
+                    </Typography>
+                )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowEngine]) && (
                     <FormControlLabel
@@ -398,10 +378,11 @@ const ViewerSettings = ({
                     />
                 )}
 
-                {!enabledSettings ||
-                    (soundsSettings.some((setting) => enabledSettings[setting]) && (
-                        <Typography variant='h6'>Sounds</Typography>
-                    ))}
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        Sounds
+                    </Typography>
+                )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (
                     <FormControlLabel
