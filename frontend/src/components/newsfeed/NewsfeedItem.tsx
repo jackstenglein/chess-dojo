@@ -13,6 +13,9 @@ import CommentList from '../comments/CommentList';
 import NewsfeedItemHeader from './NewsfeedItemHeader';
 import ReactionList from './ReactionList';
 
+export const isRestDayEntry = (entry: TimelineEntry) =>
+    entry.requirementId === TimelineSpecialRequirementId.RestDay;
+
 interface NewsfeedItemProps {
     entry: TimelineEntry;
     onEdit: (entry: TimelineEntry) => void;
@@ -79,15 +82,6 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
     }
     if (entry.requirementId === TimelineSpecialRequirementId.GameSubmission) {
         return <GameNewsfeedItem entry={entry} />;
-    }
-    if (entry.requirementId === TimelineSpecialRequirementId.RestDay) {
-        return (
-            <Stack spacing={0.5}>
-                <Typography>
-                    Added <strong>Rest Day</strong>
-                </Typography>
-            </Stack>
-        );
     }
 
     const isComplete = entry.newCount >= entry.totalCount;

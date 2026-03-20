@@ -29,13 +29,7 @@ export function getBlockSize() {
  * Renders a card showing the user's activity heatmap.
  * @param workGoalHistory The work goal history of the user.
  */
-export const HeatmapCard = ({
-    workGoalHistory,
-    editable = false,
-}: {
-    workGoalHistory: WorkGoalHistory[];
-    editable?: boolean;
-}) => {
+export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHistory[] }) => {
     const { entries } = useTimelineContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [blockSize, setBlockSize] = useState(MIN_BLOCK_SIZE);
@@ -55,7 +49,6 @@ export const HeatmapCard = ({
                 <CardContent sx={{ position: 'relative' }}>
                     <Heatmap
                         entries={entries}
-                        editable={editable}
                         onPopOut={() => setIsModalOpen(true)}
                         description=''
                         workGoalHistory={workGoalHistory}
@@ -96,7 +89,6 @@ export const HeatmapCard = ({
                         entries={entries}
                         blockSize={blockSize}
                         description='in the past year'
-                        editable={editable}
                         workGoalHistory={workGoalHistory}
                     />
                 </DialogContent>

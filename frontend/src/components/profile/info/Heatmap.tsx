@@ -155,7 +155,6 @@ export function Heatmap({
     entries,
     description,
     blockSize = MIN_BLOCK_SIZE,
-    editable = false,
     onPopOut,
     minDate,
     maxDate,
@@ -165,7 +164,6 @@ export function Heatmap({
     entries: TimelineEntry[];
     description: string;
     blockSize?: number;
-    editable?: boolean;
     onPopOut?: () => void;
     minDate?: string;
     maxDate?: string;
@@ -178,6 +176,7 @@ export function Heatmap({
     const { user: viewer } = useAuth();
     const api = useApi();
     const timeline = useTimelineContext();
+    const editable = viewer?.username === timeline.owner;
     const request = useRequest();
     const [, setCalendarRef] = useState<HTMLElement | null>(null);
     const [contextMenu, setContextMenu] = useState<
@@ -630,7 +629,6 @@ function Block({
     const newStyle = color ? { ...block.props.style, fill: color } : block.props.style;
     const icon = Boolean(activity.graduation || activity.gamePlayed || activity.restDay);
     const canOpenContextMenu = editable && canManageRestDay(activity);
-    const hasTooltipContent = hasTrackedActivity(activity) || activity.restDay;
     const blockProps = {
         'data-testid': `heatmap-block-${activity.date}`,
         'data-activity-date': activity.date,
@@ -729,17 +727,13 @@ function Block({
                 </>
             )}
 
-            {hasTooltipContent ? (
-                <Tooltip
-                    key={activity.date}
-                    disableInteractive
-                    title={<BlockTooltip activity={activity} field={field} />}
-                >
-                    {renderedBlock}
-                </Tooltip>
-            ) : (
-                renderedBlock
-            )}
+            <Tooltip
+                key={activity.date}
+                disableInteractive
+                title={<BlockTooltip activity={activity} field={field} />}
+            >
+                {renderedBlock}
+            </Tooltip>
 
             {(isEndOfWeek || isEnd) && (
                 <WeekSummaryBlock

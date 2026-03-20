@@ -2,7 +2,7 @@ import { Request, RequestSnackbar } from '@/api/Request';
 import { useFilters } from '@/components/calendar/filters/CalendarFilters';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import LoadMoreButton from '@/components/newsfeed/LoadMoreButton';
-import NewsfeedItem from '@/components/newsfeed/NewsfeedItem';
+import NewsfeedItem, { isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
 import NewsfeedItemHeader from '@/components/newsfeed/NewsfeedItemHeader';
 import {
     AllCategoriesFilterName,
@@ -120,8 +120,9 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
         }
     };
 
-    const shownEntries = entries.filter((entry) =>
-        filters.some((filterKey) => Filters[filterKey]?.(entry)),
+    const shownEntries = entries.filter(
+        (entry) =>
+            !isRestDayEntry(entry) && filters.some((filterKey) => Filters[filterKey]?.(entry)),
     );
 
     return (

@@ -10,10 +10,9 @@ import { useTimelineContext } from './useTimeline';
 
 interface ActivityTabProps {
     user: User;
-    editable?: boolean;
 }
 
-const ActivityTab: React.FC<ActivityTabProps> = ({ user, editable = false }) => {
+const ActivityTab: React.FC<ActivityTabProps> = ({ user }) => {
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
     const timeline = useTimelineContext();
@@ -34,7 +33,6 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ user, editable = false }) => 
                         entries={timeline.entries}
                         blockSize={blockSize}
                         description='in the past year'
-                        editable={editable}
                         slotProps={{
                             weekdayLabelPaper: {
                                 elevation: 0,
