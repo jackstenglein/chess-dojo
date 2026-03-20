@@ -61,7 +61,7 @@ async function openPlayerTab(page: import('@playwright/test').Page) {
     await page.goto('/games/1500-1600/2024.07.24_3a1711cf-5adb-44df-b97f-e2a6907f8842');
     await page.getByTestId('underboard-button-explorer').click();
     await page.getByTestId('explorer-tab-button-player').click();
-    await expect(page.getByRole('tab', { name: 'Player', selected: true })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Repertoire Spy', selected: true })).toBeVisible();
 }
 
 test.describe('Player Opening Explorer', () => {

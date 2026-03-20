@@ -4,6 +4,7 @@ import {
     NextPuzzleRequest,
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
+import { SubmitSquareColorSessionRequest } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -28,5 +29,16 @@ export function getPuzzleHistory(idToken: string, request: GetPuzzleHistoryReque
         params: request,
         headers: { Authorization: `Bearer ${idToken}` },
         functionName: 'getPuzzleHistory',
+    });
+}
+
+/**
+ * Submits the results of a square color drill session.
+ * @param request The request containing the session results.
+ * @returns A promise that resolves to the response from the API.
+ */
+export function submitSquareColorSession(request: SubmitSquareColorSessionRequest) {
+    return axiosService.post<{ message: string }>(`/puzzle/square-color`, request, {
+        functionName: 'submitSquareColorSession',
     });
 }

@@ -14,6 +14,7 @@ export interface Graduation {
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
     comments: string;
     progress: Record<string, RequirementProgress>;
+    gamesAnnotated?: number;
     graduationCohorts: string[];
     startedAt: string;
     createdAt: string;

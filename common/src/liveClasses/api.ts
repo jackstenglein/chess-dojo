@@ -2,9 +2,12 @@ import { z } from 'zod';
 import { Event } from '../database/event';
 import { SubscriptionTier } from '../database/user';
 
+/** The S3 key of a sample live class recording which users can watch for free. */
+export const SAMPLE_LIVE_CLASS_S3_KEY = 'LECTURE/calculation-1000/2026-03-15';
+
 /** Matches the S3 key of a live class recording. */
-export const S3_LIVE_CLASS_KEY_REGEX = new RegExp(
-    `^(${SubscriptionTier.GameReview}|${SubscriptionTier.Lecture})/(.*)/(.*) \\((\\d{4}-\\d{2}-\\d{2}).*\\)$`,
+const S3_LIVE_CLASS_KEY_REGEX = new RegExp(
+    `^(${SubscriptionTier.GameReview}|${SubscriptionTier.Lecture})/`,
 );
 
 /** Verifies the type of a request to get a recording. */
@@ -22,6 +25,16 @@ export interface LiveClass {
     name: string;
     /** The type of the class. */
     type: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
+    /** The cohort range of the class. */
+    cohortRange: string;
+    /** The tags of the class. */
+    tags?: string[];
+    /** The teacher of the class. */
+    teacher?: string;
+    /** The description of the class. */
+    description: string;
+    /** The cover image URL of the class. */
+    imageUrl?: string;
     /** The recordings of the class. */
     recordings: {
         /** The date of the recording. */

@@ -38,7 +38,11 @@ import {
 } from '@mui/material';
 import { use, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { getUpcomingGameSchedule, SCHEDULE_CLASSICAL_GAME_TASK_ID } from '../suggestedTasks';
+import {
+    getUpcomingGameSchedule,
+    MINIMUM_TASKS,
+    SCHEDULE_CLASSICAL_GAME_TASK_ID,
+} from '../suggestedTasks';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
 
@@ -113,10 +117,11 @@ export function FullTrainingPlan() {
             }
 
             const s = sections.find((s) => s.category === task.category);
-            const complete =
-                task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID
-                    ? isComplete(cohort, task, user.progress[task.id], timeline, false)
-                    : getUpcomingGameSchedule(user.gameSchedule).length > 0;
+            const complete = MINIMUM_TASKS.has(task.id)
+                ? false
+                : task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID
+                  ? isComplete(cohort, task, user.progress[task.id], timeline, false)
+                  : getUpcomingGameSchedule(user.gameSchedule).length > 0;
 
             if (s === undefined) {
                 const value = getCategoryScore(user, cohort, task.category, requirements, timeline);

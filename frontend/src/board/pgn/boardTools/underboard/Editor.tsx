@@ -237,6 +237,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         multiline
                         minRows={isMainline ? 3 : 7}
                         value={comment}
+                        spellCheck={true}
                         onChange={(event) =>
                             chess.setComment(
                                 event.target.value,
