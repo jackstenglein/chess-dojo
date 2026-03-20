@@ -285,12 +285,10 @@ const DirectorySection = ({
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
                     onColumnOrderChange={() => {
-                        queueMicrotask(() => {
-                            const gridColumns = apiRef.current?.getAllColumns();
-                            if (gridColumns) {
-                                setColumnOrder(gridColumns.map((col) => col.field));
-                            }
-                        });
+                        const gridColumns = apiRef.current?.getAllColumns();
+                        if (gridColumns) {
+                            setColumnOrder(gridColumns.map((col) => col.field));
+                        }
                     }}
                     density={density}
                     onDensityChange={(d) => setDensity(d)}
