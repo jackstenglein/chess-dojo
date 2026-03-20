@@ -1,0 +1,90 @@
+[
+    {
+        "name": "The Najdorf 1100+",
+        "googleMeetNames": ["The Najdorf 1100+ | IM David Pruess"],
+        "googleMeetIds": [],
+        "cohortRange": "1100+",
+        "tags": ["Opening"],
+        "teacher": "IM David Pruess",
+        "description": "The Najdorf Sicilian is the most unbalanced but objectively good response to 1.e4, and unsurprisingly, one of the most popular of all time. Wielded by the likes of Mikhail Tal, Bobby Fischer, Garry Kasparov, Viswanathan Anand, and Veselin Topalov, many amateurs wrongly fear it is an opening only for World Champions and opening monkeys. Not so! In this course, we will learn to play the Najdorf intuitively, focusing on the main ideas, without needing to memorize any lines. Prior to each class, students will be expected to spar key positions, assigned ahead of time.",
+        "imageUrl": "https://i.ytimg.com/vi/MsJUbsshT9E/maxresdefault.jpg",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Endgame Fundamentals",
+        "googleMeetNames": ["Endgame Fundamentals 0-1200 | GM Jesse Kraai"],
+        "googleMeetIds": [],
+        "cohortRange": "0-1200",
+        "tags": ["Endgame"],
+        "teacher": "GM Jesse Kraai",
+        "description": "The superpower of learning basic endgames as a beginner is that they train you to see which squares are controlled. We call this skill \"grip\" or \"board vision.\" It's priority number one for anyone trying to reach 1200. You will of course also learn how to mate, get an introduction to the concept of Zugzwang, and learn how to calculate in \"simple\" positions.",
+        "imageUrl": "https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/endgame-fundamentals.webp",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Basic Board Visualization",
+        "googleMeetNames": ["Board Visualization U1000 | GM Jesse Kraai"],
+        "googleMeetIds": [],
+        "cohortRange": "0-1000",
+        "tags": ["Visualization", "Tactics"],
+        "teacher": "GM Jesse Kraai",
+        "description": "GM Jesse Kraai teaches you how to visualize the board in your head using practical exercises like square-color drills, knight visualization, and blindfold puzzles. By the end of the course, you will learn to replay one of Chess's most famous games in your head without a board.",
+        "imageUrl": "https://i.ytimg.com/vi/3jiJn8bjtYk/maxresdefault.jpg",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Intermediate Endgames",
+        "googleMeetNames": ["Endgames 1100+ | IM Tatev Abrahamyan"],
+        "googleMeetIds": [],
+        "cohortRange": "1100+",
+        "tags": ["Endgame"],
+        "teacher": "IM Tatev Abrahamyan",
+        "description": "IM Tatev Abrahamyan covers more advanced K+P endgames, as well as important minor piece and rook endgames like the Lucena and Philidor.",
+        "imageUrl": "https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/endgame-intermediate.webp",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Logical Chess Move by Move",
+        "googleMeetNames": ["Logical Chess Move by Move | GM Jesse Kraai"],
+        "googleMeetIds": [],
+        "cohortRange": "0-1200",
+        "tags": ["Middlegame"],
+        "teacher": "GM Jesse Kraai",
+        "description": "Irving Chernev's book Logical Chess Move by Move is a fantastic first book of strategy. In this class, GM Jesse Kraai goes through each game in detail, explaining the key ideas and concepts that led to the final result.",
+        "imageUrl": "https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/logical-chess.webp",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Calculation 1000+",
+        "googleMeetNames": ["Calculation 1000+ | IM Kostya Kavutskiy"],
+        "googleMeetIds": [],
+        "cohortRange": "1000+",
+        "tags": ["Tactics"],
+        "teacher": "IM Kostya Kavutskiy",
+        "description": "A weekly class focusing on various techniques and skills within calculation. Students will be given weekly homework to work on before the next class, and encouraged to form study groups to solve the material together.",
+        "imageUrl": "https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Starter d4 Repertoire/Typical Plans",
+        "googleMeetNames": ["Starter d4 Repertoire/Typical Plans 1100+ | IM Kostya Kavutskiy"],
+        "googleMeetIds": [],
+        "cohortRange": "1100+",
+        "tags": ["Opening"],
+        "teacher": "IM Kostya Kavutskiy",
+        "description": "IM Kostya Kavutskiy walks you through a 1.d4 starter repertoire as well as typical plans in the middlegame.",
+        "imageUrl": "https://i.ytimg.com/vi/Ho7vxC1YE_s/maxresdefault.jpg",
+        "awsS3Folder": "test"
+    },
+    {
+        "name": "Middlegame Decision Making",
+        "googleMeetNames": ["Middlegame Decision Making 1100+ | GM Josh Friedel"],
+        "googleMeetIds": [],
+        "cohortRange": "1100+",
+        "tags": ["Middlegame"],
+        "teacher": "GM Josh Friedel",
+        "description": "Learn how to make plans in the middlegame with GM Josh Friedel.",
+        "imageUrl": "https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/middlegame_decisions.webp",
+        "awsS3Folder": "test"
+    }
+]

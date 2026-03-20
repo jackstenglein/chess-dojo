@@ -18,6 +18,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/user/ratings"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
+	goaway "github.com/TwiN/go-away"
 )
 
 var repository = database.DynamoDB
@@ -78,7 +79,12 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 			return api.Failure(errors.New(400, "Invalid request: dojoCohort cannot be empty", "")), nil
 		}
 	}
-
+	// Validates that the bio does not contain profanity
+	if update.Bio != nil {
+		if goaway.IsProfane(*update.Bio) {
+			return api.Failure(errors.New(400, "Invalid request: bio contains inappropriate language", "")), nil
+		}
+	}
 	if err := saveReferralSource(ctx, user, update); err != nil {
 		return api.Failure(err), nil
 	}

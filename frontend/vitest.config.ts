@@ -4,9 +4,14 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     plugins: [react()],
+    envPrefix: 'NEXT_PUBLIC_',
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src'),
+            'node_modules/next-navigation-guard': path.resolve(
+                __dirname,
+                'node_modules/next-navigation-guard',
+            ),
         },
     },
     test: {

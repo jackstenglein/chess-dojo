@@ -12,18 +12,21 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import HelpIcon from '@mui/icons-material/Help';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
     Box,
     Card,
     CardContent,
     Chip,
+    CircularProgress,
     Grid,
+    IconButton,
     Link,
     Stack,
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AxisOptions, Chart } from 'react-charts';
 
 export function getMemberLink(ratingSystem: RatingSystem, username: string): string {
@@ -65,22 +68,30 @@ function everySevenDays(startDate: Date, endDate: Date): Date[] {
 
 function datesAreSameDay(first: Date, second: Date) {
     return (
-        first.getFullYear() === second.getFullYear() &&
-        first.getMonth() === second.getMonth() &&
-        first.getDate() === second.getDate()
+        first.getUTCFullYear() === second.getUTCFullYear() &&
+        first.getUTCMonth() === second.getUTCMonth() &&
+        first.getUTCDate() === second.getUTCDate()
     );
 }
 
 export function getChartData(ratingHistory: RatingHistory[] | undefined, currentRating: number) {
-    if (!ratingHistory || ratingHistory.length === 0) {
+    if (!ratingHistory) {
         return [];
     }
 
-    const dates = everySevenDays(new Date(ratingHistory[0].date), new Date());
-    let data = [];
+    // Any 0 rating is probably a data collection error. Strip them out.
+    const sanitizedHistory = ratingHistory.filter((r) => r.rating > 0);
 
-    if (dates.length === ratingHistory.length) {
-        data = ratingHistory.map((r) => ({
+    if (sanitizedHistory.length === 0) {
+        return [];
+    }
+
+    // Map the rating history into the chart data, filling in any missing weeks with the last known rating.
+    // NOTE: We never count today as a missing week, since we have today's rating data on-hand
+    const dates = everySevenDays(new Date(sanitizedHistory[0].date), new Date());
+    let data = [];
+    if (dates.length === sanitizedHistory.length) {
+        data = sanitizedHistory.map((r) => ({
             date: new Date(r.date),
             rating: r.rating,
         }));
@@ -88,23 +99,24 @@ export function getChartData(ratingHistory: RatingHistory[] | undefined, current
         let historyIndex = 0;
         for (const date of dates) {
             if (
-                historyIndex < ratingHistory.length &&
-                date >= new Date(ratingHistory[historyIndex].date)
+                historyIndex < sanitizedHistory.length &&
+                date >= new Date(sanitizedHistory[historyIndex].date)
             ) {
                 data.push({
                     date,
-                    rating: ratingHistory[historyIndex].rating,
+                    rating: sanitizedHistory[historyIndex].rating,
                 });
                 historyIndex++;
-            } else if (historyIndex > 0) {
+            } else if (historyIndex > 0 && !datesAreSameDay(date, new Date())) {
                 data.push({
                     date,
-                    rating: ratingHistory[historyIndex - 1].rating,
+                    rating: sanitizedHistory[historyIndex - 1].rating,
                 });
             }
         }
     }
 
+    // If there isn't already a rating for today, append the current rating to the chart data.
     const now = new Date();
     if (data.length > 0 && !datesAreSameDay(now, data[data.length - 1].date)) {
         data.push({
@@ -171,6 +183,8 @@ interface RatingCardProps {
     isPreferred?: boolean;
     ratingHistory?: RatingHistory[];
     isProvisional?: boolean;
+    onRefresh?: () => Promise<void>;
+    refreshCooldown?: number;
 }
 
 const RatingCard: React.FC<RatingCardProps> = ({
@@ -184,9 +198,12 @@ const RatingCard: React.FC<RatingCardProps> = ({
     isPreferred,
     ratingHistory,
     isProvisional,
+    onRefresh,
+    refreshCooldown,
 }) => {
     const { user } = useAuth();
     const dark = !user?.enableLightMode;
+    const [refreshing, setRefreshing] = useState(false);
     const ratingChange = currentRating - startRating;
     const graduation = getRatingBoundary(cohort, system);
 
@@ -242,15 +259,52 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     {currentRating}
                                     {isProvisional && '?'}
                                 </Typography>
-                                <Tooltip title='Ratings are updated every 24 hours'>
-                                    <HelpIcon
-                                        sx={{
-                                            mb: '5px',
-                                            ml: '3px',
-                                            color: 'text.secondary',
-                                        }}
-                                    />
-                                </Tooltip>
+                                {onRefresh ? (
+                                    <Tooltip
+                                        title={
+                                            refreshCooldown
+                                                ? `Try again in ${refreshCooldown}s`
+                                                : 'Refresh rating'
+                                        }
+                                    >
+                                        <span>
+                                            <IconButton
+                                                size='small'
+                                                disabled={refreshing || !!refreshCooldown}
+                                                onClick={async () => {
+                                                    setRefreshing(true);
+                                                    try {
+                                                        await onRefresh();
+                                                    } finally {
+                                                        setRefreshing(false);
+                                                    }
+                                                }}
+                                                sx={{ mb: '2px', ml: '3px' }}
+                                            >
+                                                {refreshing ? (
+                                                    <CircularProgress size={16} />
+                                                ) : (
+                                                    <RefreshIcon
+                                                        sx={{
+                                                            fontSize: '1.25rem',
+                                                            color: 'text.secondary',
+                                                        }}
+                                                    />
+                                                )}
+                                            </IconButton>
+                                        </span>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip title='Ratings are updated every 24 hours'>
+                                        <HelpIcon
+                                            sx={{
+                                                mb: '5px',
+                                                ml: '3px',
+                                                color: 'text.secondary',
+                                            }}
+                                        />
+                                    </Tooltip>
+                                )}
                             </Stack>
                         </Stack>
                     </Grid>
