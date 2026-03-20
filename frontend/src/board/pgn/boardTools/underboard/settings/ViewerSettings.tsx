@@ -112,6 +112,25 @@ export enum ViewerSetting {
     IncorrectSolitaireMoveSound,
 }
 
+const boardSettings = [
+    ViewerSetting.ShowLegalMoves,
+    ViewerSetting.ShowGlyphsOnBoard,
+    ViewerSetting.ScrollOnBoardToMove,
+];
+const pgnTextSettings = [
+    ViewerSetting.ShowElapsedTimeNextToMove,
+    ViewerSetting.DisplaySuggestedVariations,
+];
+const engineSettings = [
+    ViewerSetting.ShowEngine,
+    ViewerSetting.HighlightEngineLines,
+    ViewerSetting.PersistEngineLines,
+];
+const soundsSettings = [
+    ViewerSetting.CorrectSolitaireMoveSound,
+    ViewerSetting.IncorrectSolitaireMoveSound,
+];
+
 const ViewerSettings = ({
     enabledSettings,
     keyboardShortcutsProps,
@@ -267,6 +286,11 @@ const ViewerSettings = ({
             )}
 
             <Stack>
+                {!enabledSettings ||
+                    (boardSettings.some((setting) => enabledSettings[setting]) && (
+                        <Typography variant='h6'>Board</Typography>
+                    ))}
+
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowLegalMoves]) && (
                     <FormControlLabel
                         control={
@@ -291,6 +315,23 @@ const ViewerSettings = ({
                     />
                 )}
 
+                {(!enabledSettings || enabledSettings[ViewerSetting.ScrollOnBoardToMove]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={scrollToMove}
+                                onChange={(e) => setScrollToMove(e.target.checked)}
+                            />
+                        }
+                        label='Scroll on board to go to next/previous move'
+                    />
+                )}
+
+                {!enabledSettings ||
+                    (pgnTextSettings.some((setting) => enabledSettings[setting]) && (
+                        <Typography variant='h6'>PGN Text</Typography>
+                    ))}
+
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowElapsedTimeNextToMove]) && (
                     <FormControlLabel
                         control={
@@ -302,6 +343,24 @@ const ViewerSettings = ({
                         label='Show elapsed time next to move'
                     />
                 )}
+
+                {(!enabledSettings ||
+                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showSuggestedVariations}
+                                onChange={(e) => setShowSuggestedVariations(e.target.checked)}
+                            />
+                        }
+                        label="Display other users' suggested variations in PGN text"
+                    />
+                )}
+
+                {!enabledSettings ||
+                    (engineSettings.some((setting) => enabledSettings[setting]) && (
+                        <Typography variant='h6'>Engine</Typography>
+                    ))}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowEngine]) && (
                     <FormControlLabel
@@ -335,34 +394,14 @@ const ViewerSettings = ({
                                 onChange={(e) => setPersistEngineLines(e.target.checked)}
                             />
                         }
-                        label='Persist last evaluated lines after disabling engine'
+                        label='Show already-calculated lines when engine is disabled'
                     />
                 )}
 
-                {(!enabledSettings ||
-                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={showSuggestedVariations}
-                                onChange={(e) => setShowSuggestedVariations(e.target.checked)}
-                            />
-                        }
-                        label="Display other users' suggested variations in PGN text"
-                    />
-                )}
-
-                {(!enabledSettings || enabledSettings[ViewerSetting.ScrollOnBoardToMove]) && (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={scrollToMove}
-                                onChange={(e) => setScrollToMove(e.target.checked)}
-                            />
-                        }
-                        label='Scroll on board to go to next/previous move'
-                    />
-                )}
+                {!enabledSettings ||
+                    (soundsSettings.some((setting) => enabledSettings[setting]) && (
+                        <Typography variant='h6'>Sounds</Typography>
+                    ))}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (
                     <FormControlLabel

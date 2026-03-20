@@ -41,7 +41,7 @@ export default function EngineSection() {
 
     const { pv: chessDbPv, pvLoading: chessDbLoading } = useChessDB({
         enableMoves: false,
-        enablePv: (enabled || persistEngineLines) && cloudEvalEnabled,
+        enablePv: enabled && cloudEvalEnabled,
     });
     const chessDbDepth = chessDbPv?.depth ?? 0;
 

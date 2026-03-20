@@ -228,7 +228,7 @@ export default function Settings() {
                                     onChange={(e) => setPersistEngineLines(e.target.checked)}
                                 />
                             }
-                            label='Persist last evaluated lines after disabling engine'
+                            label='Show already-calculated lines when engine is disabled'
                         />
 
                         <FormControlLabel
