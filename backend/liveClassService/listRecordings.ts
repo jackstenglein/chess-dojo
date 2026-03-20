@@ -46,7 +46,7 @@ export function getLiveClasses(s3Items: _Object[], meetingInfos: MeetingInfo[]):
         lhs.recordings[0].date.localeCompare(rhs.recordings[0].date),
     );
     for (const liveClass of classes) {
-        liveClass.recordings.sort((lhs, rhs) => lhs.date.localeCompare(rhs.date));
+        liveClass.recordings.sort((lhs, rhs) => rhs.date.localeCompare(lhs.date));
     }
     return classes;
 }
@@ -85,11 +85,12 @@ function processItem(
         return;
     }
 
-    const date = item.Key?.split('/').at(-1);
+    let date = item.Key?.split('/').at(-1);
     if (!date || !DATE_REGEX.test(date)) {
         console.error(`No date found for item ${item.Key}`);
         return;
     }
+    date = DATE_REGEX.exec(date)?.[0] ?? date;
 
     if (!classes[meetingInfo.name]) {
         classes[meetingInfo.name] = { ...meetingInfo, recordings: [] };

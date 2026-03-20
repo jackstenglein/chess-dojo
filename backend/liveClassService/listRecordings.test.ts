@@ -78,13 +78,13 @@ describe('getLiveClasses', () => {
         const result = getLiveClasses(items, [mockLectureInfo]);
         expect(result).toHaveLength(1);
         expect(result[0].recordings).toHaveLength(2);
-        expect(result[0].recordings.map((r) => r.date)).toEqual(['2025-02-27', '2025-03-01']);
+        expect(result[0].recordings.map((r) => r.date)).toEqual(['2025-03-01', '2025-02-27']);
     });
 
     it('sorts classes by first recording date', () => {
         const items = [
-            s3Item('LECTURE/test-lecture/2025-03-05'),
-            s3Item('GAME_REVIEW/peer-review/2025-02-28'),
+            s3Item('LECTURE/test-lecture/Test (2025-03-05).mp4'),
+            s3Item('GAME_REVIEW/peer-review/Peer Review (2025-02-28).mp4'),
         ];
         const result = getLiveClasses(items, [mockLectureInfo, mockGameReviewInfo]);
         expect(result).toHaveLength(2);
@@ -112,5 +112,19 @@ describe('getLiveClasses', () => {
         const items = [s3Item('LECTURE/some-prefix-test-lecture-suffix/2025-02-27')];
         const result = getLiveClasses(items, [mockLectureInfo]);
         expect(result).toEqual([]);
+    });
+
+    it('sorts recordings by date in descending order for each class', () => {
+        const items = [
+            s3Item('LECTURE/test-lecture/Test (2025-03-05).mp4'),
+            s3Item('LECTURE/test-lecture/Test (2025-02-27).mp4'),
+            s3Item('LECTURE/test-lecture/2025-04-01'),
+        ];
+        const result = getLiveClasses(items, [mockLectureInfo]);
+        expect(result[0].recordings).toEqual([
+            { date: '2025-04-01', s3Key: 'LECTURE/test-lecture/2025-04-01' },
+            { date: '2025-03-05', s3Key: 'LECTURE/test-lecture/Test (2025-03-05).mp4' },
+            { date: '2025-02-27', s3Key: 'LECTURE/test-lecture/Test (2025-02-27).mp4' },
+        ]);
     });
 });
