@@ -4,7 +4,10 @@ import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { getRecordingRequestSchema } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import {
+    getRecordingRequestSchema,
+    SAMPLE_LIVE_CLASS_S3_KEY,
+} from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import {
     ApiError,
@@ -27,8 +30,13 @@ const S3_BUCKET = process.env.s3Bucket;
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         console.log('Event: ', event);
-        const userInfo = requireUserInfo(event);
         const request = parseEvent(event, getRecordingRequestSchema);
+        if (request.s3Key === SAMPLE_LIVE_CLASS_S3_KEY) {
+            const url = await getRecordingUrl(request.s3Key);
+            return success({ url });
+        }
+
+        const userInfo = requireUserInfo(event);
         const user = await getUser(userInfo.username);
         const subscriptionTier = getSubscriptionTier(user);
 
@@ -51,10 +59,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             });
         }
 
-        const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: request.s3Key });
-        const url = await getSignedUrl(S3_CLIENT, command, { expiresIn: 86400 });
+        const url = await getRecordingUrl(request.s3Key);
         return success({ url });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
 };
+
+async function getRecordingUrl(s3Key: string): Promise<string> {
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: s3Key });
+    return await getSignedUrl(S3_CLIENT, command, { expiresIn: 86400 });
+}

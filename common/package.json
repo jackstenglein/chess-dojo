@@ -4,7 +4,7 @@
     "description": "Common code shared between ChessDojo website, mobile app and backend",
     "main": "index.ts",
     "scripts": {
-        "test": "jest --config jestconfig.json",
+        "test": "vitest run",
         "lint": "eslint ."
     },
     "author": "jackstenglein",
@@ -23,6 +23,7 @@
         "jiti": "^2.6.1",
         "prettier": "^3.8.1",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "typescript-eslint": "^8.54.0"
+        "typescript-eslint": "^8.54.0",
+        "vitest": "^4.1.0"
     }
 }
