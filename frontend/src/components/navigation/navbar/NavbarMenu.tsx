@@ -146,7 +146,7 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
                     id: 'my-games',
                     name: 'My Games',
                     icon: <AccountCircle />,
-                    href: '/profile?view=games',
+                    href: '/profile?view=games&directory=mygames',
                 },
                 {
                     id: 'repertoire-spy',

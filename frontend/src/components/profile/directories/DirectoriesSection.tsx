@@ -36,6 +36,7 @@ import {
     GridToolbarContainer,
     GridToolbarDensitySelector,
     GridToolbarFilterButton,
+    useGridApiRef,
 } from '@mui/x-data-grid-pro';
 import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -131,6 +132,13 @@ const DirectorySection = ({
             },
         ],
     );
+
+    const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
+        `/DirectoryTable/${namespace}/columnOrder`,
+        [],
+    );
+
+    const apiRef = useGridApiRef();
 
     const directoryId = searchParams.get('directory') || 'home';
     const directoryOwner = searchParams.get('directoryOwner') || defaultDirectoryOwner;
@@ -268,6 +276,7 @@ const DirectorySection = ({
                 )}
 
                 <DataGridPro
+                    apiRef={apiRef}
                     autoHeight
                     listViewColumn={listViewColDef}
                     listView={isMobile}
@@ -275,6 +284,12 @@ const DirectorySection = ({
                     columns={isAdmin ? adminColumns : publicColumns}
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
+                    onColumnOrderChange={() => {
+                        const gridColumns = apiRef.current?.getAllColumns();
+                        if (gridColumns) {
+                            setColumnOrder(gridColumns.map((col) => col.field));
+                        }
+                    }}
                     density={density}
                     onDensityChange={(d) => setDensity(d)}
                     onRowClick={onClickRow}
@@ -294,6 +309,9 @@ const DirectorySection = ({
                         density: 'standard',
                         pagination: {
                             paginationModel: { pageSize: 10 },
+                        },
+                        columns: {
+                            orderedFields: columnOrder.length > 0 ? columnOrder : undefined,
                         },
                     }}
                     sortModel={sortModel}
