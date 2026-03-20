@@ -14,7 +14,7 @@ import {
     getActivity,
     mixColors,
 } from '@jackstenglein/chess-dojo-common/src/heatmap/heatmap';
-import { CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
+import { Bedtime, CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
 import {
     Box,
     Checkbox,
@@ -709,7 +709,6 @@ function Block({
                         y={block.props.y as number}
                         width={block.props.width as number}
                         height={block.props.height as number}
-                        pointerEvents='none'
                     />
                 )
             )}
@@ -1196,44 +1195,23 @@ function RestDayIcon({
     y,
     width,
     height,
-    pointerEvents,
 }: {
     size?: number;
     x?: number;
     y?: number;
     width?: number;
     height?: number;
-    pointerEvents?: 'none';
 }) {
     const finalWidth = width ?? size;
     const finalHeight = height ?? size;
-
     return (
-        <svg
-            viewBox='0 0 24 24'
+        <Bedtime
+            sx={{ pointerEvents: 'none', width: `${finalWidth}px`, height: `${finalHeight}px` }}
             width={finalWidth}
             height={finalHeight}
             x={x}
             y={y}
-            style={{ pointerEvents }}
-        >
-            <path
-                d='M21 12.8A8 8 0 1 1 11.2 3 6 6 0 0 0 21 12.8z'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-            />
-            <path
-                d='M16 5h4l-4 4h4'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-            />
-        </svg>
+        />
     );
 }
 
