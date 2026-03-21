@@ -120,7 +120,6 @@ const ListGamesPage = () => {
                         onClose={contextMenu.close}
                         position={contextMenu.position}
                         setGames={setGames}
-                        allowEdits
                     />
                 </Grid>
 

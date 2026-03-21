@@ -54,6 +54,9 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
     const reset = request.reset;
     useEffect(() => {
         if (cohort && id) {
+            if (firstLoad) {
+                gameCache.delete(`${cohort}/${id}`);
+            }
             const cached = gameCache.get(`${cohort}/${id}`);
             if (cached) {
                 setCurrentGame(cached);
@@ -61,7 +64,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
             }
             reset();
         }
-    }, [cohort, id, reset]);
+    }, [cohort, id, reset, firstLoad]);
 
     useEffect(() => {
         if (!request.isSent() && cohort && id && !gameCache.has(`${cohort}/${id}`)) {
