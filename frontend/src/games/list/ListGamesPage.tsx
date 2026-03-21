@@ -45,7 +45,7 @@ const ListGamesPage = () => {
     }, [setReviewQueueLabel, api]);
 
     const pagination = usePagination(null, 0, 10);
-    const { pageSize, setPageSize, request, data, onSearch } = pagination;
+    const { pageSize, setPageSize, request, data, onSearch, setGames } = pagination;
 
     const onClick = ({ cohort, id }: GameInfo, event: React.MouseEvent) => {
         const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll('?', '%3F')}`;
@@ -119,6 +119,8 @@ const ListGamesPage = () => {
                             .filter((g) => !!g)}
                         onClose={contextMenu.close}
                         position={contextMenu.position}
+                        setGames={setGames}
+                        allowEdits
                     />
                 </Grid>
 
