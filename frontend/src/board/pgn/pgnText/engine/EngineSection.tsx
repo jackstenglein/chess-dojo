@@ -7,6 +7,7 @@ import {
     ENGINE_SHOW_EVAL,
     engines,
     LineEval,
+    PERSIST_ENGINE_LINES,
 } from '@/stockfish/engine/engine';
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
@@ -28,6 +29,10 @@ export default function EngineSection() {
 
     const [linesNumber] = useLocalStorage(ENGINE_LINE_COUNT.Key, ENGINE_LINE_COUNT.Default);
     const [showEval] = useLocalStorage(ENGINE_SHOW_EVAL.Key, ENGINE_SHOW_EVAL.Default);
+    const [persistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
+    );
 
     const [enabled, setEnabled] = useState(false);
     const [cloudEvalEnabled] = useLocalStorage(CLOUD_EVAL_ENABLED.Key, CLOUD_EVAL_ENABLED.Default);
@@ -57,6 +62,11 @@ export default function EngineSection() {
     const showCloudDepth = cloudEvalEnabled && chessDbDepth && !isMate;
 
     const resultPercentages = engineLines[0]?.resultPercentages;
+
+    const shouldShowEvaluationSection = persistEngineLines
+        ? engineLines.length > 0 && engineLines[0].pv.length > 0 && !isGameOver
+        : enabled && !isGameOver;
+
     return (
         <Paper
             elevation={6}
@@ -205,7 +215,7 @@ export default function EngineSection() {
                     <Settings />
                 </Stack>
 
-                {enabled && !isGameOver && (
+                {shouldShowEvaluationSection && (
                     <Stack>
                         <EvaluationSection
                             engineInfo={engineInfo}
@@ -213,6 +223,7 @@ export default function EngineSection() {
                             maxLines={linesNumber}
                             chessDbpv={chessDbPv}
                             chessDbLoading={chessDbLoading}
+                            enabled={enabled}
                         />
                     </Stack>
                 )}

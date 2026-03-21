@@ -21,12 +21,14 @@ export const EvaluationSection = ({
     engineInfo,
     allLines,
     maxLines,
+    enabled,
     chessDbpv,
     chessDbLoading,
 }: {
     engineInfo: EngineInfo;
     allLines: LineEval[];
     maxLines: number;
+    enabled: boolean;
     chessDbpv: ChessDbPv | null;
     chessDbLoading: boolean;
 }) => {
@@ -66,6 +68,7 @@ export const EvaluationSection = ({
                         pv={chessDbpv}
                         loading={chessDbLoading}
                         engineInfo={engineInfo}
+                        enabled={enabled}
                     />
                 )}
                 {Array.from({ length: maxLines - (showCloudDb ? 1 : 0) }).map((_, i) => (
@@ -74,6 +77,7 @@ export const EvaluationSection = ({
                         key={i}
                         line={allLines[i]}
                         isTop={i === 0}
+                        enabled={enabled}
                     />
                 ))}
             </List>
@@ -121,10 +125,12 @@ function CloudEvalSection({
     pv,
     loading,
     engineInfo,
+    enabled,
 }: {
     pv: ChessDbPv | null;
     loading: boolean;
     engineInfo: EngineInfo;
+    enabled: boolean;
 }) {
     const { chess } = useChess();
     const currentFen = chess?.fen() ?? '';
@@ -148,7 +154,9 @@ function CloudEvalSection({
               resultPercentages: undefined,
           };
 
-    return <LineEvaluation engineInfo={engineInfo} line={line} icon={cloudIcon} />;
+    return (
+        <LineEvaluation engineInfo={engineInfo} line={line} icon={cloudIcon} enabled={enabled} />
+    );
 }
 
 /**

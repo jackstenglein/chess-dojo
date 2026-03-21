@@ -137,7 +137,7 @@ test.describe('Directories', () => {
             .getByText('Test')
             .last()
             .click({ button: 'right' });
-        await page.getByText('Move').click();
+        await page.getByRole('menuitem', { name: 'Move' }).click();
 
         await expect(page.getByTestId('move-directory-form')).toBeVisible();
     });

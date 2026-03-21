@@ -12,6 +12,7 @@ import {
     EngineName,
     engines,
     HIGHLIGHT_ENGINE_LINES,
+    PERSIST_ENGINE_LINES,
 } from '@/stockfish/engine/engine';
 import Icon from '@/style/Icon';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -77,6 +78,10 @@ export default function Settings() {
     const [showEngineEval, setShowEngineEval] = useLocalStorage<boolean>(
         ENGINE_SHOW_EVAL.Key,
         ENGINE_SHOW_EVAL.Default,
+    );
+    const [persistEngineLines, setPersistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
     );
 
     const [cloudEvalEnabled, setCloudEvalEnabled] = useLocalStorage<boolean>(
@@ -236,6 +241,16 @@ export default function Settings() {
                             }
                             label='Show evaluation score on engine lines'
                             sx={!showEngineEval ? { color: 'warning.main' } : undefined}
+                        />
+                      
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={persistEngineLines}
+                                    onChange={(e) => setPersistEngineLines(e.target.checked)}
+                                />
+                            }
+                            label='Show already-calculated lines when engine is disabled'
                         />
 
                         <FormControlLabel

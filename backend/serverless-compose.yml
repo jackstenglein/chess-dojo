@@ -21,6 +21,7 @@ services:
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
       DirectoriesTableArn: ${directoryService.DirectoriesTableArn}
+      GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
 
   discordAuthService:
     path: discordAuthService
@@ -237,8 +238,22 @@ services:
       ClubsTableArn: ${clubService.ClubsTableArn}
       SecretsBucket: ${chess-dojo-scheduler.SecretsBucket}
 
+  openingTreeService:
+    path: openingTreeService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
   blogService:
     path: blogService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
+  translationService:
+    path: translationService
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}

@@ -739,6 +739,14 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: ${param:TimelineTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:GamesTableArn}
+                - '/index/OwnerIdx'
 
   getStatistics:
     handler: statistics/get/main.go

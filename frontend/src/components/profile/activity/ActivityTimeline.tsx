@@ -2,7 +2,7 @@ import { Request, RequestSnackbar } from '@/api/Request';
 import { useFilters } from '@/components/calendar/filters/CalendarFilters';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import LoadMoreButton from '@/components/newsfeed/LoadMoreButton';
-import NewsfeedItem from '@/components/newsfeed/NewsfeedItem';
+import NewsfeedItem, { isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
 import NewsfeedItemHeader from '@/components/newsfeed/NewsfeedItemHeader';
 import {
     AllCategoriesFilterName,
@@ -82,7 +82,7 @@ interface ActivityTimelineProps {
 }
 
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) => {
-    const { request, entries, hasMore, onLoadMore, onEdit } = timeline;
+    const { request, entries, hasMore, onLoadMore, onEdit, onDeleteEntries } = timeline;
     const [editEntry, setEditEntry] = useState<TimelineEntry>();
     const [filters, setFilters] = useState<string[]>([AllCategoriesFilterName]);
     const [numShown, setNumShown] = useState(25);
@@ -120,8 +120,9 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
         }
     };
 
-    const shownEntries = entries.filter((entry) =>
-        filters.some((filterKey) => Filters[filterKey]?.(entry)),
+    const shownEntries = entries.filter(
+        (entry) =>
+            !isRestDayEntry(entry) && filters.some((filterKey) => Filters[filterKey]?.(entry)),
     );
 
     return (
@@ -176,7 +177,11 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
             <RequestSnackbar request={request} />
 
             {editEntry && (
-                <EditTimelinEntryDialog entry={editEntry} onClose={() => setEditEntry(undefined)} />
+                <EditTimelinEntryDialog
+                    entry={editEntry}
+                    onClose={() => setEditEntry(undefined)}
+                    onDeleteEntry={(entry) => onDeleteEntries([entry])}
+                />
             )}
         </Stack>
     );
