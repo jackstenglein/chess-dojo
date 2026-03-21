@@ -1,6 +1,6 @@
 'use strict';
 
-import { GetItemCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { Game, PositionComment } from '@jackstenglein/chess-dojo-common/src/database/game';
 import {
@@ -10,10 +10,9 @@ import {
     NotificationEventTypes,
     NotificationTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/notification';
-import { GameReviewCohort } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { ApiError } from '../directoryService/api';
-import { dynamo, LIVE_CLASSES_TABLE, UpdateItemBuilder } from '../directoryService/database';
-import { getGuildMember, sendDirectMessage } from './discord';
+import { dynamo, UpdateItemBuilder } from '../directoryService/database';
+import { sendDirectMessage } from './discord';
 import { getNotificationSettings } from './user';
 
 const gameTable = `${process.env.stage}-games`;
@@ -238,50 +237,22 @@ export async function handleGameReviewSubmitted(event: GameReviewSubmittedEvent)
         'cohort' | 'id' | 'headers' | 'owner' | 'review'
     >;
 
-    const cohorts = await getGameReviewCohorts();
-    const senseiUsernames = new Set<string>();
-    for (const cohort of cohorts) {
-        for (const member of Object.values(cohort.members)) {
-            senseiUsernames.add(member.username);
-        }
-    }
-
+    const senseiDiscordIds = (process.env.senseiDiscordIds || '').split(',').filter(Boolean);
     const message = gameReviewSubmittedMessage(game);
-    for (const username of senseiUsernames) {
-        try {
-            const user = await getNotificationSettings(username);
-            if (
-                !user?.discordUsername ||
-                user.notificationSettings?.discordNotificationSettings?.disableGameReviewSubmitted
-            ) {
-                continue;
-            }
 
-            const discordId =
-                user.discordId ?? (await getGuildMember(user.discordUsername)).user.id;
+    for (const discordId of senseiDiscordIds) {
+        try {
             await sendDirectMessage(discordId, message);
             console.log(
-                `Successfully sent Discord message to ${username} for ${NotificationEventTypes.GAME_REVIEW_SUBMITTED}`,
+                `Successfully sent Discord message to ${discordId} for ${NotificationEventTypes.GAME_REVIEW_SUBMITTED}`,
             );
         } catch (err) {
             console.error(
-                `Failed to send ${NotificationEventTypes.GAME_REVIEW_SUBMITTED} Discord DM to ${username}:`,
+                `Failed to send ${NotificationEventTypes.GAME_REVIEW_SUBMITTED} Discord DM to ${discordId}:`,
                 err,
             );
         }
     }
-}
-
-/**
- * Returns all game review cohorts from the live classes table.
- */
-async function getGameReviewCohorts(): Promise<GameReviewCohort[]> {
-    const output = await dynamo.send(
-        new ScanCommand({
-            TableName: LIVE_CLASSES_TABLE,
-        }),
-    );
-    return (output.Items?.map((item) => unmarshall(item)) ?? []) as GameReviewCohort[];
 }
 
 /**
