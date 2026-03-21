@@ -242,7 +242,7 @@ export default function Settings() {
                             label='Show evaluation score on engine lines'
                             sx={!showEngineEval ? { color: 'warning.main' } : undefined}
                         />
-                      
+
                         <FormControlLabel
                             control={
                                 <Checkbox
