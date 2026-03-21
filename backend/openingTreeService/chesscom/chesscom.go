@@ -10,8 +10,8 @@ import (
 	"io"
 	"iter"
 	"math"
-	"net/url"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -34,79 +34,81 @@ const (
 
 var archiveRegex = regexp.MustCompile(`/(\d{4})/(\d{2})$`)
 
-// TimeClass represents the speed category of a game.
-type TimeClass string
+// timeClass represents the speed category of a game.
+type timeClass string
 
 const (
-	TimeClassBullet TimeClass = "bullet"
-	TimeClassBlitz  TimeClass = "blitz"
-	TimeClassRapid  TimeClass = "rapid"
-	TimeClassDaily  TimeClass = "daily"
+	timeClassBullet timeClass = "bullet"
+	timeClassBlitz  timeClass = "blitz"
+	timeClassRapid  timeClass = "rapid"
+	timeClassDaily  timeClass = "daily"
 )
 
-// GameResult represents the PGN result of a game.
-type GameResult string
+// gameResult represents the PGN result of a game.
+type gameResult string
 
 const (
-	ResultWhite GameResult = "1-0"
-	ResultBlack GameResult = "0-1"
-	ResultDraw  GameResult = "1/2-1/2"
+	resultWhite gameResult = "1-0"
+	resultBlack gameResult = "0-1"
+	resultDraw  gameResult = "1/2-1/2"
 )
 
-// PlayerResult represents a player's result in a Chess.com game.
-type PlayerResult string
+// playerResult represents a player's result in a Chess.com game.
+type playerResult string
 
 const (
-	PlayerResultWin                 PlayerResult = "win"
-	PlayerResultResigned            PlayerResult = "resigned"
-	PlayerResultCheckmated          PlayerResult = "checkmated"
-	PlayerResultTimeout             PlayerResult = "timeout"
-	PlayerResultDrawAgreement       PlayerResult = "agreed"
-	PlayerResultAbandoned           PlayerResult = "abandoned"
-	PlayerResultInsufficientMaterial PlayerResult = "insufficient"
-	PlayerResultRepetition          PlayerResult = "repetition"
-	PlayerResultStalemate           PlayerResult = "stalemate"
-	PlayerResultTimeVsInsufficient  PlayerResult = "timevsinsufficient"
-	PlayerResult50Move              PlayerResult = "50move"
+	playerResultWin        playerResult = "win"
+	playerResultResigned   playerResult = "resigned"
+	playerResultCheckmated playerResult = "checkmated"
+	playerResultStalemate  playerResult = "stalemate"
+
+	// Currently unused - may uncomment later
+	// playerResultTimeout              playerResult = "timeout"
+	// playerResultDrawAgreement        playerResult = "agreed"
+	// playerResultAbandoned            playerResult = "abandoned"
+	// playerResultInsufficientMaterial playerResult = "insufficient"
+	// playerResultRepetition           playerResult = "repetition"
+	// playerResultTimeVsInsufficient   playerResult = "timevsinsufficient"
+	// playerResult50Move               playerResult = "50move"
 )
 
-// Player represents a player in a Chess.com game.
-type Player struct {
+// player represents a player in a Chess.com game.
+type player struct {
 	Rating   int          `json:"rating"`
-	Result   PlayerResult `json:"result"`
+	Result   playerResult `json:"result"`
 	Username string       `json:"username"`
 	UUID     string       `json:"uuid"`
 }
 
-// Game represents a single game from the Chess.com API.
-type Game struct {
+// chesscomGame represents a single game from the Chess.com API.
+type chesscomGame struct {
 	URL         string    `json:"url"`
 	PGN         string    `json:"pgn"`
 	TimeControl string    `json:"time_control"`
 	EndTime     int64     `json:"end_time"`
 	Rated       bool      `json:"rated"`
 	UUID        string    `json:"uuid"`
-	TimeClass   TimeClass `json:"time_class"`
+	TimeClass   timeClass `json:"time_class"`
 	Rules       string    `json:"rules"`
-	White       Player    `json:"white"`
-	Black       Player    `json:"black"`
+	White       player    `json:"white"`
+	Black       player    `json:"black"`
 }
 
 // Result returns the game result derived from the player results.
-func (g *Game) Result() GameResult {
-	if g.White.Result == PlayerResultWin {
-		return ResultWhite
+func (g *chesscomGame) Result() gameResult {
+	if g.White.Result == playerResultWin {
+		return resultWhite
 	}
-	if g.Black.Result == PlayerResultWin {
-		return ResultBlack
+	if g.Black.Result == playerResultWin {
+		return resultBlack
 	}
-	return ResultDraw
+	return resultDraw
 }
 
 // PlayerColor returns "white" or "black" based on whether the given
 // username (case-insensitive) played as white or black. It returns an
 // error if the username matches neither player.
-func (g *Game) PlayerColor(username string) (string, error) {
+func (g *chesscomGame) PlayerColor(username string) (string, error) {
 	if strings.EqualFold(g.White.Username, username) {
 		return "white", nil
 	}
@@ -117,7 +119,7 @@ func (g *Game) PlayerColor(username string) (string, error) {
 }
 
 // IsStandard returns true if the game uses standard chess rules.
-func (g *Game) IsStandard() bool {
+func (g *chesscomGame) IsStandard() bool {
 	return g.Rules == "chess"
 }
 
@@ -126,7 +128,7 @@ type archivesResponse struct {
 }
 
 type gamesResponse struct {
-	Games []Game `json:"games"`
+	Games []chesscomGame `json:"games"`
 }
 
 // Client fetches games from the Chess.com public API.
@@ -143,14 +145,18 @@ func NewClient() *Client {
 	}
 }
 
-// NewClientWithHTTP creates a new Chess.com API client with a custom http.Client.
+// NewClientWithHTTP creates a new Chess.com API client with a custom http.Client
+// or the default settings if httpClient is nil.
 func NewClientWithHTTP(httpClient *http.Client) *Client {
+	if httpClient == nil {
+		return NewClient()
+	}
 	return &Client{httpClient: httpClient, baseRetryDelay: baseRetryDelay}
 }
 
-// FetchArchives returns the list of monthly archive URLs for the given username.
+// fetchArchives returns the list of monthly archive URLs for the given username.
 // Archives are returned in the order provided by the API (ascending chronological).
-func (c *Client) FetchArchives(ctx context.Context, username string) ([]string, error) {
+func (c *Client) fetchArchives(ctx context.Context, username string) ([]string, error) {
 	url := fmt.Sprintf("%s/%s/games/archives", baseURL, url.PathEscape(strings.ToLower(username)))
 
 	body, err := c.doGet(ctx, url)
@@ -166,10 +172,10 @@ func (c *Client) FetchArchives(ctx context.Context, username string) ([]string, 
 	return resp.Archives, nil
 }
 
-// FilterArchives filters archive URLs to only include those within the given
+// filterArchives filters archive URLs to only include those within the given
 // time range [since, until]. Either bound may be zero to indicate no bound.
 // Archives are expected to end with /{year}/{month}.
-func FilterArchives(archives []string, since, until time.Time) []string {
+func filterArchives(archives []string, since, until time.Time) []string {
 	var filtered []string
 	for _, archive := range archives {
 		m := archiveRegex.FindStringSubmatch(archive)
@@ -192,8 +198,8 @@ func FilterArchives(archives []string, since, until time.Time) []string {
 	return filtered
 }
 
-// FetchGames fetches all games from a single archive URL.
-func (c *Client) FetchGames(ctx context.Context, archiveURL string) ([]Game, error) {
+// fetchGames fetches all games from a single archive URL.
+func (c *Client) fetchGames(ctx context.Context, archiveURL string) ([]chesscomGame, error) {
 	body, err := c.doGet(ctx, archiveURL)
 	if err != nil {
 		return nil, fmt.Errorf("fetch games from %s: %w", archiveURL, err)
@@ -209,29 +215,19 @@ func (c *Client) FetchGames(ctx context.Context, archiveURL string) ([]Game, err
 
 // archiveResult holds the fetched games for a single archive slot.
 type archiveResult struct {
-	games []Game
+	games []chesscomGame
 	err   error
 }
 
-// ArchiveBatch holds the converted games from a single monthly archive.
-type ArchiveBatch struct {
-	Games []game.Game
-}
-
-// GamesByArchive returns an iterator that yields one ArchiveBatch per monthly
-// archive. Archives are processed in chronological order (oldest first). Up to
-// 5 archives are fetched concurrently, but results are drained sequentially to
-// guarantee deterministic ordering. Non-standard variants are excluded when
-// standardOnly is true. Per-game date filtering is applied within each batch.
-func (c *Client) GamesByArchive(ctx context.Context, username string, since, until time.Time, standardOnly bool) iter.Seq2[ArchiveBatch, error] {
-	return func(yield func(ArchiveBatch, error) bool) {
-		archives, err := c.FetchArchives(ctx, username)
+func (c *Client) Games(ctx context.Context, username string, since, until time.Time) iter.Seq2[game.Game, error] {
+	return func(yield func(game.Game, error) bool) {
+		archives, err := c.fetchArchives(ctx, username)
 		if err != nil {
-			yield(ArchiveBatch{}, err)
+			yield(game.Game{}, err)
 			return
 		}
 
-		filtered := FilterArchives(archives, since, until)
+		filtered := filterArchives(archives, since, until)
 
 		// Process archives in chronological order (oldest-first). This
 		// ensures cursor pagination works correctly: on resume the cursor's
@@ -252,9 +248,9 @@ func (c *Client) GamesByArchive(ctx context.Context, username string, since, unt
 		g.SetLimit(maxConcurrentFetches)
 		for i, archiveURL := range filtered {
 			g.Go(func() error {
-				games, err := c.FetchGames(fetchCtx, archiveURL)
+				games, err := c.fetchGames(fetchCtx, archiveURL)
 				slots[i] <- archiveResult{games: games, err: err}
-				return nil
+				return err
 			})
 		}
 
@@ -268,18 +264,17 @@ func (c *Client) GamesByArchive(ctx context.Context, username string, since, unt
 		for i := range slots {
 			res := <-slots[i]
 			if res.err != nil {
-				yield(ArchiveBatch{}, res.err)
+				yield(game.Game{}, res.err)
 				return
 			}
 
-			var batch []game.Game
 			for j := range res.games {
-				if standardOnly && !res.games[j].IsStandard() {
+				if !res.games[j].IsStandard() {
 					continue
 				}
 				cg, err := ToGame(&res.games[j], username)
 				if err != nil {
-					yield(ArchiveBatch{}, err)
+					yield(cg, err)
 					return
 				}
 				if !since.IsZero() && cg.EndTime.Before(since) {
@@ -288,11 +283,9 @@ func (c *Client) GamesByArchive(ctx context.Context, username string, since, unt
 				if !until.IsZero() && !cg.EndTime.Before(until) {
 					continue
 				}
-				batch = append(batch, cg)
-			}
-
-			if !yield(ArchiveBatch{Games: batch}, nil) {
-				return
+				if !yield(cg, nil) {
+					return
+				}
 			}
 		}
 	}

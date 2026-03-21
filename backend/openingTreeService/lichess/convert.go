@@ -7,17 +7,17 @@ import (
 )
 
 // toCommonTimeClass maps a Lichess TimeClass to the common TimeClass.
-func toCommonTimeClass(tc TimeClass) game.TimeClass {
+func toCommonTimeClass(tc timeClass) game.TimeClass {
 	switch tc {
-	case TimeClassUltraBullet, TimeClassBullet:
+	case timeClassUltraBullet, timeClassBullet:
 		return game.TimeClassBullet
-	case TimeClassBlitz:
+	case timeClassBlitz:
 		return game.TimeClassBlitz
-	case TimeClassRapid:
+	case timeClassRapid:
 		return game.TimeClassRapid
-	case TimeClassClassical:
+	case timeClassClassical:
 		return game.TimeClassClassical
-	case TimeClassCorrespondence:
+	case timeClassCorrespondence:
 		return game.TimeClassCorrespondence
 	default:
 		return game.TimeClass(tc)
@@ -26,7 +26,7 @@ func toCommonTimeClass(tc TimeClass) game.TimeClass {
 
 // ToGame converts a Lichess Game to the common game model.
 // The username parameter identifies which player's perspective to use for PlayerColor.
-func ToGame(g *Game, username string) (game.Game, error) {
+func ToGame(g *lichessGame, username string) (game.Game, error) {
 	var result game.Result
 	switch g.Result() {
 	case "1-0":
@@ -55,17 +55,17 @@ func ToGame(g *Game, username string) (game.Game, error) {
 	}
 
 	return game.Game{
-		PGN:          g.PGN,
-		PlayerColor:  color,
+		PGN:           g.PGN,
+		PlayerColor:   color,
 		WhiteUsername: whiteUsername,
 		BlackUsername: blackUsername,
-		WhiteRating:  whiteRating,
-		BlackRating:  blackRating,
-		Result:       result,
-		TimeClass:    toCommonTimeClass(g.Speed),
-		Rated:        g.Rated,
-		URL:          g.URL(),
-		Source:       game.SourceLichess,
-		EndTime:      time.UnixMilli(g.LastMoveAt),
+		WhiteRating:   whiteRating,
+		BlackRating:   blackRating,
+		Result:        result,
+		TimeClass:     toCommonTimeClass(g.Speed),
+		Rated:         g.Rated,
+		URL:           g.URL(),
+		Source:        game.SourceLichess,
+		EndTime:       time.UnixMilli(g.LastMoveAt),
 	}, nil
 }

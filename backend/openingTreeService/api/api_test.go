@@ -23,14 +23,14 @@ func TestFromOpeningTree(t *testing.T) {
 	tests := []struct {
 		name  string
 		games []*game.Game
-		check func(t *testing.T, resp *Response)
+		check func(t *testing.T, resp *BuildResponse)
 	}{
 		{
 			name:  "empty tree",
 			games: nil,
-			check: func(t *testing.T, resp *Response) {
+			check: func(t *testing.T, resp *BuildResponse) {
 				t.Helper()
-				if diff := cmp.Diff(&Response{
+				if diff := cmp.Diff(&BuildResponse{
 					Positions: map[string]*Position{},
 					Games:     map[string]*Game{},
 				}, resp, cmpOpts); diff != "" {
@@ -41,22 +41,22 @@ func TestFromOpeningTree(t *testing.T) {
 		{
 			name: "positions serialization",
 			games: []*game.Game{{
-				URL:          "https://example.com/game1",
-				Result:       game.ResultWhite,
-				Source:       game.SourceChesscom,
-				PlayerColor:  "white",
+				URL:           "https://example.com/game1",
+				Result:        game.ResultWhite,
+				Source:        game.SourceChesscom,
+				PlayerColor:   "white",
 				WhiteUsername: "alice",
 				BlackUsername: "bob",
-				WhiteRating:  1500,
-				BlackRating:  1400,
-				TimeClass:    game.TimeClassBlitz,
-				Rated:        true,
+				WhiteRating:   1500,
+				BlackRating:   1400,
+				TimeClass:     game.TimeClassBlitz,
+				Rated:         true,
 				PGN: `[Event "Test"]
 [Result "1-0"]
 
 1. e4 e5 2. Nf3 Nc6 1-0`,
 			}},
-			check: func(t *testing.T, resp *Response) {
+			check: func(t *testing.T, resp *BuildResponse) {
 				t.Helper()
 				pos, ok := resp.Positions[startFEN]
 				if !ok {
@@ -75,22 +75,22 @@ func TestFromOpeningTree(t *testing.T) {
 		{
 			name: "games serialization",
 			games: []*game.Game{{
-				URL:          "https://example.com/game1",
-				Result:       game.ResultWhite,
-				Source:       game.SourceLichess,
-				PlayerColor:  "white",
+				URL:           "https://example.com/game1",
+				Result:        game.ResultWhite,
+				Source:        game.SourceLichess,
+				PlayerColor:   "white",
 				WhiteUsername: "alice",
 				BlackUsername: "bob",
-				WhiteRating:  1800,
-				BlackRating:  1750,
-				TimeClass:    game.TimeClassRapid,
-				Rated:        true,
+				WhiteRating:   1800,
+				BlackRating:   1750,
+				TimeClass:     game.TimeClassRapid,
+				Rated:         true,
 				PGN: `[Event "Test"]
 [Result "1-0"]
 
 1. d4 d5 2. c4 e6 1-0`,
 			}},
-			check: func(t *testing.T, resp *Response) {
+			check: func(t *testing.T, resp *BuildResponse) {
 				t.Helper()
 				url := "https://example.com/game1"
 				gm, ok := resp.Games[url]
@@ -128,7 +128,7 @@ func TestFromOpeningTree(t *testing.T) {
 					PGN: "[Result \"0-1\"]\n\n1. d4 d5 2. c4 e6 0-1",
 				},
 			},
-			check: func(t *testing.T, resp *Response) {
+			check: func(t *testing.T, resp *BuildResponse) {
 				t.Helper()
 				pos := resp.Positions[startFEN]
 				if pos == nil {
@@ -170,16 +170,16 @@ func TestFromOpeningTree_RoundTrip(t *testing.T) {
 
 	tree := openingtree.New()
 	g := &game.Game{
-		URL:          "https://example.com/round-trip",
-		Result:       game.ResultWhite,
-		Source:       game.SourceLichess,
-		PlayerColor:  "white",
+		URL:           "https://example.com/round-trip",
+		Result:        game.ResultWhite,
+		Source:        game.SourceLichess,
+		PlayerColor:   "white",
 		WhiteUsername: "alice",
 		BlackUsername: "bob",
-		WhiteRating:  1600,
-		BlackRating:  1550,
-		TimeClass:    game.TimeClassBlitz,
-		Rated:        true,
+		WhiteRating:   1600,
+		BlackRating:   1550,
+		TimeClass:     game.TimeClassBlitz,
+		Rated:         true,
 		PGN: `[Event "RT"]
 [Result "1-0"]
 
@@ -195,7 +195,7 @@ func TestFromOpeningTree_RoundTrip(t *testing.T) {
 		t.Fatalf("json.Marshal error: %v", err)
 	}
 
-	var roundTripped Response
+	var roundTripped BuildResponse
 	if err := json.Unmarshal(data, &roundTripped); err != nil {
 		t.Fatalf("json.Unmarshal error: %v", err)
 	}
@@ -245,16 +245,16 @@ func TestGoldenContract(t *testing.T) {
 
 	tree := openingtree.New()
 	g := &game.Game{
-		URL:          "https://lichess.org/contract1",
-		Result:       game.ResultWhite,
-		Source:       game.SourceLichess,
-		PlayerColor:  "white",
+		URL:           "https://lichess.org/contract1",
+		Result:        game.ResultWhite,
+		Source:        game.SourceLichess,
+		PlayerColor:   "white",
 		WhiteUsername: "alice",
 		BlackUsername: "bob",
-		WhiteRating:  1800,
-		BlackRating:  1750,
-		TimeClass:    game.TimeClassBlitz,
-		Rated:        true,
+		WhiteRating:   1800,
+		BlackRating:   1750,
+		TimeClass:     game.TimeClassBlitz,
+		Rated:         true,
 		PGN: `[Event "Contract Test"]
 [Result "1-0"]
 

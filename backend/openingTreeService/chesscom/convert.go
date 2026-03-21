@@ -7,15 +7,15 @@ import (
 )
 
 // toCommonTimeClass maps a Chess.com TimeClass to the common TimeClass.
-func toCommonTimeClass(tc TimeClass) game.TimeClass {
+func toCommonTimeClass(tc timeClass) game.TimeClass {
 	switch tc {
-	case TimeClassBullet:
+	case timeClassBullet:
 		return game.TimeClassBullet
-	case TimeClassBlitz:
+	case timeClassBlitz:
 		return game.TimeClassBlitz
-	case TimeClassRapid:
+	case timeClassRapid:
 		return game.TimeClassRapid
-	case TimeClassDaily:
+	case timeClassDaily:
 		return game.TimeClassCorrespondence
 	default:
 		return game.TimeClass(tc)
@@ -24,12 +24,12 @@ func toCommonTimeClass(tc TimeClass) game.TimeClass {
 
 // ToGame converts a Chess.com Game to the common game model.
 // The username parameter identifies which player's perspective to use for PlayerColor.
-func ToGame(g *Game, username string) (game.Game, error) {
+func ToGame(g *chesscomGame, username string) (game.Game, error) {
 	var result game.Result
 	switch g.Result() {
-	case ResultWhite:
+	case resultWhite:
 		result = game.ResultWhite
-	case ResultBlack:
+	case resultBlack:
 		result = game.ResultBlack
 	default:
 		result = game.ResultDraw
@@ -41,17 +41,17 @@ func ToGame(g *Game, username string) (game.Game, error) {
 	}
 
 	return game.Game{
-		PGN:          g.PGN,
-		PlayerColor:  color,
+		PGN:           g.PGN,
+		PlayerColor:   color,
 		WhiteUsername: g.White.Username,
 		BlackUsername: g.Black.Username,
-		WhiteRating:  g.White.Rating,
-		BlackRating:  g.Black.Rating,
-		Result:       result,
-		TimeClass:    toCommonTimeClass(g.TimeClass),
-		Rated:        g.Rated,
-		URL:          g.URL,
-		Source:       game.SourceChesscom,
-		EndTime:      time.Unix(g.EndTime, 0),
+		WhiteRating:   g.White.Rating,
+		BlackRating:   g.Black.Rating,
+		Result:        result,
+		TimeClass:     toCommonTimeClass(g.TimeClass),
+		Rated:         g.Rated,
+		URL:           g.URL,
+		Source:        game.SourceChesscom,
+		EndTime:       time.Unix(g.EndTime, 0),
 	}, nil
 }

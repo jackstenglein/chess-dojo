@@ -10,14 +10,14 @@ import (
 )
 
 func TestToGame(t *testing.T) {
-	g := &Game{
+	g := &chesscomGame{
 		URL:       "https://www.chess.com/game/live/12345",
 		PGN:       "1. e4 e5 1-0",
-		TimeClass: TimeClassRapid,
+		TimeClass: timeClassRapid,
 		Rated:     true,
 		Rules:     "chess",
-		White:     Player{Username: "Alice", Rating: 1500, Result: PlayerResultWin},
-		Black:     Player{Username: "Bob", Rating: 1450, Result: PlayerResultCheckmated},
+		White:     player{Username: "Alice", Rating: 1500, Result: playerResultWin},
+		Black:     player{Username: "Bob", Rating: 1450, Result: playerResultCheckmated},
 	}
 
 	got, err := ToGame(g, "alice")
@@ -46,10 +46,10 @@ func TestToGame(t *testing.T) {
 }
 
 func TestToGame_DailyMapsToCorrespondence(t *testing.T) {
-	g := &Game{
-		TimeClass: TimeClassDaily,
-		White:     Player{Username: "A", Result: PlayerResultWin},
-		Black:     Player{Username: "B", Result: PlayerResultResigned},
+	g := &chesscomGame{
+		TimeClass: timeClassDaily,
+		White:     player{Username: "A", Result: playerResultWin},
+		Black:     player{Username: "B", Result: playerResultResigned},
 	}
 
 	common, err := ToGame(g, "A")
@@ -62,9 +62,9 @@ func TestToGame_DailyMapsToCorrespondence(t *testing.T) {
 }
 
 func TestToGame_BlackWin(t *testing.T) {
-	g := &Game{
-		White: Player{Username: "A", Result: PlayerResultCheckmated},
-		Black: Player{Username: "B", Result: PlayerResultWin},
+	g := &chesscomGame{
+		White: player{Username: "A", Result: playerResultCheckmated},
+		Black: player{Username: "B", Result: playerResultWin},
 	}
 
 	common, err := ToGame(g, "B")
@@ -80,9 +80,9 @@ func TestToGame_BlackWin(t *testing.T) {
 }
 
 func TestToGame_Draw(t *testing.T) {
-	g := &Game{
-		White: Player{Username: "A", Result: PlayerResultStalemate},
-		Black: Player{Username: "B", Result: PlayerResultStalemate},
+	g := &chesscomGame{
+		White: player{Username: "A", Result: playerResultStalemate},
+		Black: player{Username: "B", Result: playerResultStalemate},
 	}
 
 	common, err := ToGame(g, "A")

@@ -10,13 +10,13 @@ import (
 )
 
 func TestToGame(t *testing.T) {
-	g := &Game{
+	g := &lichessGame{
 		ID:    "abc123",
 		Rated: true,
-		Speed: TimeClassRapid,
-		Players: Players{
-			White: Player{User: &User{Name: "Alice", ID: "alice"}, Rating: 1600},
-			Black: Player{User: &User{Name: "Bob", ID: "bob"}, Rating: 1580},
+		Speed: timeClassRapid,
+		Players: players{
+			White: player{User: &user{Name: "Alice", ID: "alice"}, Rating: 1600},
+			Black: player{User: &user{Name: "Bob", ID: "bob"}, Rating: 1580},
 		},
 		Winner: "white",
 		PGN:    "1. e4 e5 1-0",
@@ -48,12 +48,12 @@ func TestToGame(t *testing.T) {
 }
 
 func TestToGame_BlackWin(t *testing.T) {
-	g := &Game{
+	g := &lichessGame{
 		ID:    "def456",
-		Speed: TimeClassBlitz,
-		Players: Players{
-			White: Player{User: &User{Name: "A", ID: "a"}, Rating: 1500},
-			Black: Player{User: &User{Name: "B", ID: "b"}, Rating: 1500},
+		Speed: timeClassBlitz,
+		Players: players{
+			White: player{User: &user{Name: "A", ID: "a"}, Rating: 1500},
+			Black: player{User: &user{Name: "B", ID: "b"}, Rating: 1500},
 		},
 		Winner: "black",
 	}
@@ -71,12 +71,12 @@ func TestToGame_BlackWin(t *testing.T) {
 }
 
 func TestToGame_Draw(t *testing.T) {
-	g := &Game{
+	g := &lichessGame{
 		ID:    "ghi789",
-		Speed: TimeClassClassical,
-		Players: Players{
-			White: Player{User: &User{Name: "A", ID: "a"}, Rating: 1500},
-			Black: Player{User: &User{Name: "B", ID: "b"}, Rating: 1500},
+		Speed: timeClassClassical,
+		Players: players{
+			White: player{User: &user{Name: "A", ID: "a"}, Rating: 1500},
+			Black: player{User: &user{Name: "B", ID: "b"}, Rating: 1500},
 		},
 	}
 
@@ -93,12 +93,12 @@ func TestToGame_Draw(t *testing.T) {
 }
 
 func TestToGame_UltraBulletMapsToBullet(t *testing.T) {
-	g := &Game{
+	g := &lichessGame{
 		ID:    "ultra1",
-		Speed: TimeClassUltraBullet,
-		Players: Players{
-			White: Player{User: &User{Name: "A", ID: "a"}, Rating: 1500},
-			Black: Player{User: &User{Name: "B", ID: "b"}, Rating: 1500},
+		Speed: timeClassUltraBullet,
+		Players: players{
+			White: player{User: &user{Name: "A", ID: "a"}, Rating: 1500},
+			Black: player{User: &user{Name: "B", ID: "b"}, Rating: 1500},
 		},
 		Winner: "white",
 	}
@@ -113,12 +113,12 @@ func TestToGame_UltraBulletMapsToBullet(t *testing.T) {
 }
 
 func TestToGame_NilUser(t *testing.T) {
-	g := &Game{
+	g := &lichessGame{
 		ID:    "ai1",
-		Speed: TimeClassRapid,
-		Players: Players{
-			White: Player{User: &User{Name: "Human", ID: "human"}, Rating: 1500},
-			Black: Player{Rating: 0, AILevel: 3},
+		Speed: timeClassRapid,
+		Players: players{
+			White: player{User: &user{Name: "Human", ID: "human"}, Rating: 1500},
+			Black: player{Rating: 0, AILevel: 3},
 		},
 		Winner: "white",
 	}
