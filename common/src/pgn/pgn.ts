@@ -2,6 +2,19 @@ import { Chess } from '@jackstenglein/chess';
 import { clockToSeconds, secondsToClock } from './clock';
 
 /**
+ * Normalizes non-standard PGN result formats to standard format.
+ * Converts "0.5-0.5" (used by some Lichess studies) to "1/2-1/2".
+ *
+ * @param pgn The PGN text to normalize
+ * @returns The PGN with normalized result format
+ */
+export function normalizeResult(pgn: string): string {
+    return pgn
+        .replace(/\[Result\s+"0\.5-0\.5"\]/gi, '[Result "1/2-1/2"]')
+        .replace(/\b0\.5-0\.5\b/g, '1/2-1/2');
+}
+
+/**
  * Splits a list of PGNs in the same string into a list of strings,
  * using the provided separator.
  * @param pgns The PGN string to split.
@@ -9,7 +22,10 @@ import { clockToSeconds, secondsToClock } from './clock';
  * termination symbol, followed by 1 or more newlines, followed by the [ character.
  * @returns The list of split PGNs.
  */
-export function splitPgns(pgns: string, separator = /(1-0|0-1|1\/2-1\/2|\*)(\r?\n)+\[/): string[] {
+export function splitPgns(
+    pgns: string,
+    separator = /(1-0|0-1|1\/2-1\/2|0\.5-0\.5|\*)(\r?\n)+\[/,
+): string[] {
     const splits = pgns.split(separator);
     const games: string[] = [];
 
@@ -32,7 +48,13 @@ export function splitPgns(pgns: string, separator = /(1-0|0-1|1\/2-1\/2|\*)(\r?\
  * @returns True if the given result is valid.
  */
 export function isValidResult(result?: string): boolean {
-    return result === '1-0' || result === '0-1' || result === '1/2-1/2' || result === '*';
+    return (
+        result === '1-0' ||
+        result === '0-1' ||
+        result === '1/2-1/2' ||
+        result === '0.5-0.5' ||
+        result === '*'
+    );
 }
 
 /**
@@ -48,6 +70,9 @@ export function isValidResult(result?: string): boolean {
  * @returns The cleaned PGN.
  */
 export function cleanupPgn(pgn: string): string {
+    // Normalize non-standard result formats first
+    pgn = normalizeResult(pgn);
+
     const startIndex = pgn.indexOf('{[%evp');
     if (startIndex < 0) {
         return convertEmt(pgn);
