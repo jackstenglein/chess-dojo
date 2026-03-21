@@ -65,6 +65,8 @@ export const MergeMultipleSchema = z.object({
     games: z
         .array(gameKeySchema)
         .min(2)
+        // Cap at 20 to limit Lambda execution time (recursive PGN merge is CPU-bound)
+        // while still covering realistic use cases like merging a full tournament.
         .max(20)
         .refine(
             (games) => {
@@ -83,17 +85,13 @@ export const MergeMultipleSchema = z.object({
     headerSource: gameKeySchema,
 
     /** How to handle the comments from the merged games. Defaults to MERGE. */
-    commentMergeType: pgnMergeType
-        .optional()
-        .transform((val) => val || PgnMergeTypes.MERGE),
+    commentMergeType: pgnMergeType.default(PgnMergeTypes.MERGE),
 
     /** How to handle the NAGs from the merged games. Defaults to MERGE. */
-    nagMergeType: pgnMergeType.optional().transform((val) => val || PgnMergeTypes.MERGE),
+    nagMergeType: pgnMergeType.default(PgnMergeTypes.MERGE),
 
     /** How to handle the drawables from the merged games. Defaults to MERGE. */
-    drawableMergeType: pgnMergeType
-        .optional()
-        .transform((val) => val || PgnMergeTypes.MERGE),
+    drawableMergeType: pgnMergeType.default(PgnMergeTypes.MERGE),
 
     /** Whether to cite each source game in a comment at the end of its main line. Defaults to false. */
     citeSource: z.boolean().optional(),

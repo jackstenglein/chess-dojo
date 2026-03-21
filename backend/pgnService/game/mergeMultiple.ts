@@ -70,8 +70,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             if (source.normalizedFen() !== target.normalizedFen()) {
                 throw new ApiError({
                     statusCode: 400,
-                    publicMessage:
-                        'Unable to merge: the games do not start from the same position',
+                    publicMessage: `Unable to merge: game ${game.cohort}/${game.id} does not start from the same position as the header source game`,
                 });
             }
 
