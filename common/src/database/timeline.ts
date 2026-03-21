@@ -115,4 +115,5 @@ export interface Reaction {
 export enum TimelineSpecialRequirementId {
     GameSubmission = 'GameSubmission',
     Graduation = 'Graduation',
+    RestDay = 'RestDay',
 }

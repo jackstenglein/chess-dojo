@@ -36,53 +36,61 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
     }, [threads, setThreads]);
 
     useEffect(() => {
-        if (!enabled || !chess || !engine || !engineName) {
+        if (!chess || !engineName) {
             return;
         }
 
-        if (!engine?.isReady()) {
-            logger.error?.(`Engine ${engineName} not ready`);
+        if (enabled && engine) {
+            if (!engine.isReady()) {
+                logger.error?.(`Engine ${engineName} not ready`);
+            }
         }
 
         const evaluate = async () => {
-            setCurrentPosition(undefined);
             const fen = chess.fen();
             const savedEval = savedEvals.current[fen];
 
-            if (
-                savedEval?.engine === engineName &&
-                savedEval.lines.length >= multiPv &&
-                savedEval.lines[0].depth >= depth
-            ) {
-                setCurrentPosition(savedEval);
-                return;
+            if (savedEval?.engine === engineName) {
+                const meetsDepth =
+                    savedEval.lines.length >= multiPv && savedEval.lines[0].depth >= depth;
+
+                // When disabled, show whatever was previously evaluated.
+                // When enabled, only reuse if the saved eval meets the
+                // current depth/line requirements.
+                if (meetsDepth || !enabled) {
+                    setCurrentPosition(savedEval);
+                    return;
+                }
             }
 
-            try {
-                const rawPositionEval = await engine.evaluatePositionWithUpdate({
-                    fen,
-                    depth,
-                    multiPv,
-                    threads: threads || 4,
-                    hash: Math.pow(2, hash),
-                    setPartialEval: (positionEval: PositionEval) => {
-                        if (positionEval.lines[0]?.fen === chess.fen()) {
-                            setCurrentPosition(positionEval);
-                        }
-                    },
-                });
+            if (enabled && engine) {
+                setCurrentPosition(undefined);
+                try {
+                    const rawPositionEval = await engine.evaluatePositionWithUpdate({
+                        fen,
+                        depth,
+                        multiPv,
+                        threads: threads || 4,
+                        hash: Math.pow(2, hash),
+                        setPartialEval: (positionEval: PositionEval) => {
+                            if (positionEval.lines[0]?.fen === chess.fen()) {
+                                setCurrentPosition(positionEval);
+                                savedEvals.current[fen] = {
+                                    ...positionEval,
+                                    engine: engineName,
+                                };
+                            }
+                        },
+                    });
 
-                savedEvals.current = {
-                    ...savedEvals.current,
-                    [fen]: { ...rawPositionEval, engine: engineName },
-                };
-            } catch (err) {
-                if (err !== E_CANCELED) {
-                    throw err;
+                    savedEvals.current[fen] = { ...rawPositionEval, engine: engineName };
+                } catch (err) {
+                    if (err !== E_CANCELED) {
+                        throw err;
+                    }
                 }
             }
         };
-
         const observer = {
             types: [EventType.Initialized, EventType.LegalMove],
             handler: evaluate,
@@ -90,6 +98,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
 
         void evaluate();
         chess.addObserver(observer);
+
         return () => {
             void engine?.stopSearch();
             chess.removeObserver(observer);
