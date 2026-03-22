@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
@@ -394,4 +395,205 @@ func TestCheckNotification_RecordMilestoneError_DoesNotPanic(t *testing.T) {
 	}
 
 	mc.checkNotification(user)
+}
+
+type mockRepository struct {
+	user              *database.User
+	requirement       *database.Requirement
+	getRequirementErr error
+	updateProgressErr error
+	capturedProgress  []*database.RequirementProgress
+}
+
+func (m *mockRepository) GetUser(username string) (*database.User, error) {
+	return m.user, nil
+}
+
+func (m *mockRepository) GetRequirement(id string) (*database.Requirement, error) {
+	if m.getRequirementErr != nil {
+		return nil, m.getRequirementErr
+	}
+	return m.requirement, nil
+}
+
+func (m *mockRepository) UpdateUserProgress(username string, progress *database.RequirementProgress) (*database.User, error) {
+	m.capturedProgress = append(m.capturedProgress, progress)
+	if m.updateProgressErr != nil {
+		return m.user, m.updateProgressErr
+	}
+	return m.user, nil
+}
+
+func (m *mockRepository) PutTimelineEntry(entry *database.TimelineEntry) error {
+	return nil
+}
+
+// Stubs to satisfy UserProgressUpdater interface
+func (m *mockRepository) UpdateUser(username string, update *database.UserUpdate) (*database.User, error) {
+	return m.user, nil
+}
+func (m *mockRepository) RecordSubscriptionCancelation(cohort database.DojoCohort) error {
+	return nil
+}
+func (m *mockRepository) RecordFreeTierConversion(cohort database.DojoCohort) error {
+	return nil
+}
+func (m *mockRepository) ListTimelineEntries(owner string, startKey string) ([]*database.TimelineEntry, string, error) {
+	return nil, "", nil
+}
+func (m *mockRepository) PutTimelineEntries(entries []*database.TimelineEntry) (int, error) {
+	return 0, nil
+}
+func (m *mockRepository) DeleteTimelineEntries(entries []*database.TimelineEntry) (int, error) {
+	return 0, nil
+}
+func (m *mockRepository) AddSentMilestoneNotification(username string, milestoneKey string) error {
+	return nil
+}
+
+var _ = fmt.Errorf
+var _ = testing.T{}
+
+func newTestUser() *database.User {
+	return &database.User{
+		Username:    "test-user",
+		DisplayName: "Test User",
+		Progress:    make(map[string]*database.RequirementProgress),
+	}
+}
+
+func TestCascadeLinkedProgress_HappyPath(t *testing.T) {
+	linkedReq := &database.Requirement{
+		Id:              "linked-req-id",
+		Counts:          map[database.DojoCohort]int{"1400-1500": 14},
+		NumberOfCohorts: -1,
+	}
+	sourceReq := &database.Requirement{
+		LinkedRequirementId: "linked-req-id",
+	}
+	user := newTestUser()
+	mock := &mockRepository{user: user, requirement: linkedReq}
+	repository = mock
+
+	request := &ProgressUpdateRequest{Cohort: "1400-1500", PreviousCount: 2, NewCount: 3}
+	result := cascadeLinkedProgress(request, user, sourceReq)
+
+	if len(mock.capturedProgress) != 1 {
+		t.Fatalf("expected 1 UpdateUserProgress call, got %d", len(mock.capturedProgress))
+	}
+	captured := mock.capturedProgress[0]
+	if captured.RequirementId != "linked-req-id" {
+		t.Errorf("expected requirementId linked-req-id, got %s", captured.RequirementId)
+	}
+	if captured.Counts["1400-1500"] != 1 {
+		t.Errorf("expected count 1, got %d", captured.Counts["1400-1500"])
+	}
+	if result != user {
+		t.Error("expected updated user to be returned")
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsWhenNoLinkedId(t *testing.T) {
+	sourceReq := &database.Requirement{LinkedRequirementId: ""}
+	user := newTestUser()
+	mock := &mockRepository{user: user}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 1}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no UpdateUserProgress calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsWhenDeltaZero(t *testing.T) {
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 3, NewCount: 3}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsWhenDeltaNegative(t *testing.T) {
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 5, NewCount: 3}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsForCustomTask(t *testing.T) {
+	customTask := &database.CustomTask{Id: "custom-task-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 1}
+	cascadeLinkedProgress(request, user, customTask)
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsWhenLinkedReqNotFound(t *testing.T) {
+	sourceReq := &database.Requirement{LinkedRequirementId: "missing-req"}
+	user := newTestUser()
+	mock := &mockRepository{user: user, getRequirementErr: fmt.Errorf("not found")}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 1, Cohort: "1400-1500"}
+	result := cascadeLinkedProgress(request, user, sourceReq)
+	if result != user {
+		t.Error("expected original user on error")
+	}
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_SkipsWhenCohortNotInLinkedReq(t *testing.T) {
+	linkedReq := &database.Requirement{Id: "linked-req-id", Counts: map[database.DojoCohort]int{"1800-1900": 7}}
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user, requirement: linkedReq}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 1, Cohort: "1400-1500"}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 0 {
+		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_UsesAllCohortsKey(t *testing.T) {
+	linkedReq := &database.Requirement{Id: "linked-req-id", Counts: map[database.DojoCohort]int{"1400-1500": 14}, NumberOfCohorts: 1}
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user, requirement: linkedReq}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 2, Cohort: "1400-1500"}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 1 {
+		t.Fatalf("expected 1 call, got %d", len(mock.capturedProgress))
+	}
+	if mock.capturedProgress[0].Counts[database.AllCohorts] != 2 {
+		t.Errorf("expected AllCohorts count 2, got %d", mock.capturedProgress[0].Counts[database.AllCohorts])
+	}
+}
+
+func TestCascadeLinkedProgress_ReturnsOriginalUserOnUpdateFailure(t *testing.T) {
+	linkedReq := &database.Requirement{Id: "linked-req-id", Counts: map[database.DojoCohort]int{"1400-1500": 14}, NumberOfCohorts: -1}
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user, requirement: linkedReq, updateProgressErr: fmt.Errorf("dynamodb error")}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 0, NewCount: 1, Cohort: "1400-1500"}
+	result := cascadeLinkedProgress(request, user, sourceReq)
+	if result != user {
+		t.Error("expected original user on cascade failure")
+	}
 }

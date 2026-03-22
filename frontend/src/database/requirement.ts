@@ -164,6 +164,12 @@ export interface Requirement {
 
     /** The subscription tiers that can view this requirement. */
     subscriptionTiers?: SubscriptionTier[];
+
+    /**
+     * The ID of another requirement whose progress is incremented
+     * when this requirement's progress is updated (one-way cascade).
+     */
+    linkedRequirementId?: string;
 }
 
 /**
