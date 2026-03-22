@@ -233,48 +233,48 @@ export function Heatmap({
 
     const closeContextMenu = useCallback(() => setContextMenu(undefined), []);
 
-    const onBlockContextMenu = useCallback((
-        event: ReactMouseEvent<SVGElement>,
-        activity: Activity | ExtendedBaseActivity,
-    ) => {
-        event.preventDefault();
-        if (!editable || !canManageRestDay(activity)) {
-            return;
-        }
+    const onBlockContextMenu = useCallback(
+        (event: ReactMouseEvent<SVGElement>, activity: Activity | ExtendedBaseActivity) => {
+            event.preventDefault();
+            if (!editable || !canManageRestDay(activity)) {
+                return;
+            }
 
-        preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
-        setContextMenu({
-            activity,
-            position: {
-                top: event.clientY,
-                left: event.clientX,
-            },
-        });
-    }, [editable]);
+            preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
+            setContextMenu({
+                activity,
+                position: {
+                    top: event.clientY,
+                    left: event.clientX,
+                },
+            });
+        },
+        [editable],
+    );
 
-    const onBlockLongPress = useCallback((
-        event: LongPressReactEvents<SVGElement>,
-        activity: Activity | ExtendedBaseActivity,
-    ) => {
-        event.preventDefault();
-        if (!editable || !canManageRestDay(activity)) {
-            return;
-        }
+    const onBlockLongPress = useCallback(
+        (event: LongPressReactEvents<SVGElement>, activity: Activity | ExtendedBaseActivity) => {
+            event.preventDefault();
+            if (!editable || !canManageRestDay(activity)) {
+                return;
+            }
 
-        const touch = 'touches' in event ? event.touches[0] : undefined;
-        if (!touch) {
-            return;
-        }
+            const touch = 'touches' in event ? event.touches[0] : undefined;
+            if (!touch) {
+                return;
+            }
 
-        preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
-        setContextMenu({
-            activity,
-            position: {
-                top: touch.clientY,
-                left: touch.clientX,
-            },
-        });
-    }, [editable]);
+            preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
+            setContextMenu({
+                activity,
+                position: {
+                    top: touch.clientY,
+                    left: touch.clientX,
+                },
+            });
+        },
+        [editable],
+    );
 
     const currentRestDayEntry =
         contextMenu && viewer
