@@ -15,11 +15,15 @@ Before running, fill in:
 """
 
 import argparse
+import re
 import sys
 from datetime import datetime, timezone
 
 import boto3
 
+UUID_PATTERN = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+)
 
 # -- Deterministic IDs for idempotency (re-running overwrites, not duplicates) --
 PEER_REVIEW_REQ_ID = "a1b2c3d4-peer-review-session-placeholder"
@@ -39,8 +43,14 @@ COUNTS = {
 def validate():
     """Check that all placeholder values have been filled in before writing."""
     errors = []
-    if "TODO" in EQUAL_RATED_REQ_ID:
-        errors.append("EQUAL_RATED_REQ_ID still contains placeholder 'TODO'")
+    for name, val in [
+        ("PEER_REVIEW_REQ_ID", PEER_REVIEW_REQ_ID),
+        ("SENSEI_REVIEW_REQ_ID", SENSEI_REVIEW_REQ_ID),
+        ("EQUAL_RATED_REQ_ID", EQUAL_RATED_REQ_ID),
+        ("HIGHER_RATED_REQ_ID", HIGHER_RATED_REQ_ID),
+    ]:
+        if not UUID_PATTERN.match(val):
+            errors.append(f"{name} is not a valid UUID: {val}")
     if not COUNTS:
         errors.append("COUNTS dict is empty — no cohort targets defined")
     if errors:

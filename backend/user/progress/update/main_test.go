@@ -419,7 +419,7 @@ func (m *mockRepository) GetRequirement(id string) (*database.Requirement, error
 func (m *mockRepository) UpdateUserProgress(username string, progress *database.RequirementProgress) (*database.User, error) {
 	m.capturedProgress = append(m.capturedProgress, progress)
 	if m.updateProgressErr != nil {
-		return m.user, m.updateProgressErr
+		return nil, m.updateProgressErr
 	}
 	return m.user, nil
 }
@@ -450,9 +450,6 @@ func (m *mockRepository) DeleteTimelineEntries(entries []*database.TimelineEntry
 func (m *mockRepository) AddSentMilestoneNotification(username string, milestoneKey string) error {
 	return nil
 }
-
-var _ = fmt.Errorf
-var _ = testing.T{}
 
 func newTestUser() *database.User {
 	return &database.User{

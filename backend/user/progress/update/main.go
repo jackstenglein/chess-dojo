@@ -264,6 +264,9 @@ func cascadeLinkedProgress(request *ProgressUpdateRequest, user *database.User, 
 		return user
 	}
 
+	if user.Progress == nil {
+		user.Progress = make(map[string]*database.RequirementProgress)
+	}
 	linkedProgress, ok := user.Progress[req.LinkedRequirementId]
 	if !ok {
 		linkedProgress = &database.RequirementProgress{
