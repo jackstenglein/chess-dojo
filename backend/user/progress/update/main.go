@@ -249,7 +249,7 @@ func cascadeLinkedProgress(request *ProgressUpdateRequest, user *database.User, 
 	}
 
 	delta := request.NewCount - request.PreviousCount
-	if delta <= 0 {
+	if delta <= 0 && request.IncrementalMinutesSpent <= 0 {
 		return user
 	}
 
@@ -279,11 +279,17 @@ func cascadeLinkedProgress(request *ProgressUpdateRequest, user *database.User, 
 		linkedProgress.MinutesSpent = make(map[database.DojoCohort]int)
 	}
 
-	maxCount := linkedReq.Counts[request.Cohort]
-	if linkedReq.NumberOfCohorts == 1 || linkedReq.NumberOfCohorts == 0 {
-		linkedProgress.Counts[database.AllCohorts] = min(linkedProgress.Counts[database.AllCohorts]+delta, maxCount)
-	} else {
-		linkedProgress.Counts[request.Cohort] = min(linkedProgress.Counts[request.Cohort]+delta, maxCount)
+	if delta > 0 {
+		maxCount := linkedReq.Counts[request.Cohort]
+		if linkedReq.NumberOfCohorts == 1 || linkedReq.NumberOfCohorts == 0 {
+			linkedProgress.Counts[database.AllCohorts] = min(linkedProgress.Counts[database.AllCohorts]+delta, maxCount)
+		} else {
+			linkedProgress.Counts[request.Cohort] = min(linkedProgress.Counts[request.Cohort]+delta, maxCount)
+		}
+	}
+
+	if request.IncrementalMinutesSpent > 0 {
+		linkedProgress.MinutesSpent[request.Cohort] += request.IncrementalMinutesSpent
 	}
 
 	linkedProgress.UpdatedAt = time.Now().Format(time.RFC3339)

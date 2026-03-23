@@ -475,7 +475,7 @@ func TestCascadeLinkedProgress_HappyPath(t *testing.T) {
 	mock := &mockRepository{user: user, requirement: linkedReq}
 	repository = mock
 
-	request := &ProgressUpdateRequest{Cohort: "1400-1500", PreviousCount: 2, NewCount: 3}
+	request := &ProgressUpdateRequest{Cohort: "1400-1500", PreviousCount: 2, NewCount: 3, IncrementalMinutesSpent: 60}
 	result := cascadeLinkedProgress(request, user, sourceReq)
 
 	if len(mock.capturedProgress) != 1 {
@@ -487,6 +487,9 @@ func TestCascadeLinkedProgress_HappyPath(t *testing.T) {
 	}
 	if captured.Counts["1400-1500"] != 1 {
 		t.Errorf("expected count 1, got %d", captured.Counts["1400-1500"])
+	}
+	if captured.MinutesSpent["1400-1500"] != 60 {
+		t.Errorf("expected 60 minutes, got %d", captured.MinutesSpent["1400-1500"])
 	}
 	if result != user {
 		t.Error("expected updated user to be returned")
@@ -505,27 +508,47 @@ func TestCascadeLinkedProgress_SkipsWhenNoLinkedId(t *testing.T) {
 	}
 }
 
-func TestCascadeLinkedProgress_SkipsWhenDeltaZero(t *testing.T) {
+func TestCascadeLinkedProgress_SkipsWhenNoDeltaAndNoMinutes(t *testing.T) {
 	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
 	user := newTestUser()
 	mock := &mockRepository{user: user}
 	repository = mock
-	request := &ProgressUpdateRequest{PreviousCount: 3, NewCount: 3}
+	request := &ProgressUpdateRequest{PreviousCount: 3, NewCount: 3, IncrementalMinutesSpent: 0}
 	cascadeLinkedProgress(request, user, sourceReq)
 	if len(mock.capturedProgress) != 0 {
 		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
 	}
 }
 
-func TestCascadeLinkedProgress_SkipsWhenDeltaNegative(t *testing.T) {
+func TestCascadeLinkedProgress_SkipsWhenDeltaNegativeAndNoMinutes(t *testing.T) {
 	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
 	user := newTestUser()
 	mock := &mockRepository{user: user}
 	repository = mock
-	request := &ProgressUpdateRequest{PreviousCount: 5, NewCount: 3}
+	request := &ProgressUpdateRequest{PreviousCount: 5, NewCount: 3, IncrementalMinutesSpent: 0}
 	cascadeLinkedProgress(request, user, sourceReq)
 	if len(mock.capturedProgress) != 0 {
 		t.Errorf("expected no calls, got %d", len(mock.capturedProgress))
+	}
+}
+
+func TestCascadeLinkedProgress_CascadesTimeOnlyWhenNoGameCount(t *testing.T) {
+	linkedReq := &database.Requirement{Id: "linked-req-id", Counts: map[database.DojoCohort]int{"1400-1500": 14}, NumberOfCohorts: -1}
+	sourceReq := &database.Requirement{LinkedRequirementId: "linked-req-id"}
+	user := newTestUser()
+	mock := &mockRepository{user: user, requirement: linkedReq}
+	repository = mock
+	request := &ProgressUpdateRequest{PreviousCount: 3, NewCount: 3, Cohort: "1400-1500", IncrementalMinutesSpent: 60}
+	cascadeLinkedProgress(request, user, sourceReq)
+	if len(mock.capturedProgress) != 1 {
+		t.Fatalf("expected 1 call, got %d", len(mock.capturedProgress))
+	}
+	captured := mock.capturedProgress[0]
+	if captured.MinutesSpent["1400-1500"] != 60 {
+		t.Errorf("expected 60 minutes, got %d", captured.MinutesSpent["1400-1500"])
+	}
+	if captured.Counts["1400-1500"] != 0 {
+		t.Errorf("expected 0 count, got %d", captured.Counts["1400-1500"])
 	}
 }
 
