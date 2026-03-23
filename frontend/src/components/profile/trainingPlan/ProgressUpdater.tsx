@@ -69,7 +69,10 @@ export const ProgressUpdater = ({
         timerHours = 0;
         timerMinutes = 0;
     }
-    const [hours, setHours] = useState(timerHours ? `${timerHours}` : '');
+    const hasLinkedReq = isRequirement(requirement) && !!requirement.linkedRequirementId;
+    const [hours, setHours] = useState(
+        timerHours ? `${timerHours}` : hasLinkedReq ? '1' : '',
+    );
     const [minutes, setMinutes] = useState(timerMinutes ? `${timerMinutes}` : '');
 
     const [errors, setErrors] = useState<Record<string, string>>({});
