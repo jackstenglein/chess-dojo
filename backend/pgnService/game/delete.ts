@@ -1,6 +1,7 @@
 'use strict';
 
 import { DeleteItemCommand } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     DeleteGamesRequest,
     DeleteGamesSchema,
@@ -13,6 +14,7 @@ import {
     success,
 } from '../../directoryService/api';
 import { dynamo } from '../../directoryService/database';
+import { removeDirectoryItems } from '../../directoryService/removeItems';
 import { gamesTable } from './create';
 
 /**
@@ -64,7 +66,7 @@ async function deleteGames({
                         ':owner': { S: username },
                     },
                     TableName: gamesTable,
-                    ReturnValues: 'NONE',
+                    ReturnValues: 'ALL_OLD',
                 }),
             ),
         );
@@ -76,6 +78,24 @@ async function deleteGames({
     for (let i = 0; i < results.length; i++) {
         if (results[i].status === 'fulfilled') {
             deleted.push(request[i]);
+
+            // Clean up directory references for the deleted game
+            const result = results[i] as PromiseFulfilledResult<{ Attributes?: Record<string, unknown> }>;
+            if (result.value.Attributes) {
+                const game = unmarshall(result.value.Attributes) as { directories?: string[] };
+                if (game.directories) {
+                    const itemId = `${request[i].cohort}/${request[i].id}`;
+                    for (const dir of game.directories) {
+                        const [dirOwner, ...dirIdParts] = dir.split('/');
+                        const dirId = dirIdParts.join('/');
+                        try {
+                            await removeDirectoryItems(dirOwner, dirId, [itemId]);
+                        } catch (err) {
+                            console.error(`Failed to remove game from directory ${dir}:`, err);
+                        }
+                    }
+                }
+            }
         }
     }
 
