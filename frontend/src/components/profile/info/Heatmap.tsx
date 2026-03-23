@@ -31,15 +31,7 @@ import {
 } from '@mui/material';
 import { DateTime } from 'luxon';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import {
-    cloneElement,
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityCalendar,
     Activity as BaseActivity,
@@ -188,7 +180,6 @@ export function Heatmap({
     const editable = viewer?.username === timeline.owner;
     const request = useRequest();
     const scrollerRef = useRef<HTMLDivElement | null>(null);
-    const preservedScrollLeftRef = useRef(0);
     const [, setCalendarRef] = useState<HTMLElement | null>(null);
     const [contextMenu, setContextMenu] = useState<
         | {
@@ -222,75 +213,67 @@ export function Heatmap({
         if (scroller) {
             scroller.scrollLeft = scroller.scrollWidth;
         }
-    }, [maxDate, minDate, weekStartOn]);
+    }, []);
 
-    useLayoutEffect(() => {
-        const scroller = scrollerRef.current;
-        if (scroller) {
-            scroller.scrollLeft = preservedScrollLeftRef.current;
+    const closeContextMenu = () => setContextMenu(undefined);
+
+    const onBlockContextMenu = (
+        event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
         }
-    }, [contextMenu]);
 
-    const closeContextMenu = useCallback(() => setContextMenu(undefined), []);
+        setContextMenu({
+            activity,
+            position: {
+                top: event.clientY,
+                left: event.clientX,
+            },
+        });
+    };
 
-    const onBlockContextMenu = useCallback(
-        (event: ReactMouseEvent<SVGElement>, activity: Activity | ExtendedBaseActivity) => {
-            event.preventDefault();
-            if (!editable || !canManageRestDay(activity)) {
-                return;
-            }
+    const onBlockLongPress = (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
 
-            preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
-            setContextMenu({
-                activity,
-                position: {
-                    top: event.clientY,
-                    left: event.clientX,
-                },
-            });
-        },
-        [editable],
-    );
+        const touch = 'touches' in event ? event.touches[0] : undefined;
+        if (!touch) {
+            return;
+        }
 
-    const onBlockLongPress = useCallback(
-        (event: LongPressReactEvents<SVGElement>, activity: Activity | ExtendedBaseActivity) => {
-            event.preventDefault();
-            if (!editable || !canManageRestDay(activity)) {
-                return;
-            }
-
-            const touch = 'touches' in event ? event.touches[0] : undefined;
-            if (!touch) {
-                return;
-            }
-
-            preservedScrollLeftRef.current = scrollerRef.current?.scrollLeft ?? 0;
-            setContextMenu({
-                activity,
-                position: {
-                    top: touch.clientY,
-                    left: touch.clientX,
-                },
-            });
-        },
-        [editable],
-    );
+        setContextMenu({
+            activity,
+            position: {
+                top: touch.clientY,
+                left: touch.clientX,
+            },
+        });
+    };
 
     const currentRestDayEntry =
         contextMenu && viewer
             ? findRestDayEntry(entries, contextMenu.activity.date, viewer)
             : undefined;
 
-    const saveRestDay = async (date: string) => {
-        if (!viewer || findRestDayEntry(entries, date, viewer)) {
+    const saveRestDay = async () => {
+        if (!viewer || !contextMenu || currentRestDayEntry) {
             return;
         }
 
-        request.onStart();
-        const entry = createRestDayEntry(viewer, date);
+        closeContextMenu();
+        const entry = createRestDayEntry(viewer, contextMenu.activity.date);
         timeline.onEditEntries([entry]);
 
         try {
+            request.onStart();
             await api.updateUserTimeline({
                 requirementId: TimelineSpecialRequirementId.RestDay,
                 progress: {
@@ -309,24 +292,15 @@ export function Heatmap({
         }
     };
 
-    const saveContextMenuRestDay = async () => {
-        if (!contextMenu || currentRestDayEntry) {
-            return;
-        }
-
-        closeContextMenu();
-        await saveRestDay(contextMenu.activity.date);
-    };
-
     const clearRestDay = async () => {
         if (!currentRestDayEntry) {
             return;
         }
 
-        request.onStart();
         closeContextMenu();
         timeline.onDeleteEntries([currentRestDayEntry]);
         try {
+            request.onStart();
             await api.updateUserTimeline({
                 requirementId: TimelineSpecialRequirementId.RestDay,
                 progress: {
@@ -345,8 +319,23 @@ export function Heatmap({
         }
     };
 
-    const calendar = useMemo(
-        () => (
+    return (
+        <Stack
+            maxWidth={1}
+            sx={{
+                '& .react-activity-calendar__scroll-container': {
+                    paddingTop: '1px',
+                    paddingBottom: '10px',
+                    overflow: 'visible !important',
+                },
+                '& .react-activity-calendar__footer': {
+                    marginLeft: '0 !important',
+                },
+            }}
+        >
+            <RequestSnackbar request={request} />
+            <HeatmapOptions onPopOut={onPopOut} />
+
             <Stack ref={scrollerRef} direction='row' sx={{ overflowX: 'auto' }}>
                 <Paper
                     elevation={1}
@@ -421,44 +410,7 @@ export function Heatmap({
                     <Divider sx={{ mt: '2px' }} />
                 </Stack>
             </Stack>
-        ),
-        [
-            activities,
-            blockSize,
-            clamp,
-            colorMode,
-            editable,
-            field,
-            isLight,
-            maxDate,
-            onBlockContextMenu,
-            onBlockLongPress,
-            slotProps?.weekdayLabelPaper,
-            theme,
-            weekEndOn,
-            weekStartOn,
-            weekSummaries,
-            workGoalHistory,
-        ],
-    );
 
-    return (
-        <Stack
-            maxWidth={1}
-            sx={{
-                '& .react-activity-calendar__scroll-container': {
-                    paddingTop: '1px',
-                    paddingBottom: '10px',
-                    overflow: 'visible !important',
-                },
-                '& .react-activity-calendar__footer': {
-                    marginLeft: '0 !important',
-                },
-            }}
-        >
-            <RequestSnackbar request={request} />
-            <HeatmapOptions onPopOut={onPopOut} />
-            {calendar}
             <Stack
                 direction='row'
                 justifyContent='space-between'
@@ -527,10 +479,7 @@ export function Heatmap({
                         </Stack>
                     </MenuItem>
                 ) : (
-                    <MenuItem
-                        onClick={() => void saveContextMenuRestDay()}
-                        disabled={request.isLoading()}
-                    >
+                    <MenuItem onClick={() => void saveRestDay()} disabled={request.isLoading()}>
                         <Stack direction='row' alignItems='center' gap={1}>
                             <RestDayIcon size={18} />
                             <Typography>Rest Day</Typography>
