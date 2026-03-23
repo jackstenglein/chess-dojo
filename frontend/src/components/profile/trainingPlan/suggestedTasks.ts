@@ -13,7 +13,7 @@ import {
     isComplete,
     isRequirement,
 } from '@/database/requirement';
-import { TimelineEntry } from '@/database/timeline';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import {
     ALL_COHORTS,
     GameScheduleEntry,
@@ -141,6 +141,7 @@ export class TaskSuggestionAlgorithm {
     private user: User;
     private timePerTask: Record<string, number> = {};
     private weeklyPlan?: WeeklyPlan;
+    private adjustedMinutesPerDay?: number[];
 
     constructor(
         user: User,
@@ -164,6 +165,85 @@ export class TaskSuggestionAlgorithm {
     }
 
     /**
+     * Checks if the given date is marked as a rest day in the timeline.
+     * @param date The date to check.
+     * @returns True if the date is a rest day, false otherwise.
+     */
+    isRestDay(date: Date): boolean {
+        const dateStr = toLocalDateString(date, this.user.timezoneOverride);
+        return this.timeline.some((entry) => {
+            if (entry.requirementId !== TimelineSpecialRequirementId.RestDay) {
+                return false;
+            }
+            const entryDate = toLocalDateString(
+                new Date(entry.date || entry.createdAt),
+                this.user.timezoneOverride,
+            );
+            return entryDate === dateStr;
+        });
+    }
+
+    /**
+     * Computes adjusted daily minutes by redistributing rest day minutes
+     * across active (non-rest) days in the week. Uses round-robin to
+     * distribute any remainder evenly.
+     * @param weekStart The start of the week.
+     * @param weekEnd The end of the week.
+     * @returns An array of 7 adjusted minute values indexed by day of week.
+     */
+    private computeAdjustedMinutes(weekStart: Date, weekEnd: Date): number[] {
+        const workGoal = this.user.workGoal || DEFAULT_WORK_GOAL;
+        const baseMinutes = [...workGoal.minutesPerDay];
+
+        // Find rest days in this week
+        const restDayNumbers = new Set<number>();
+        const checkDate = new Date(weekStart);
+        while (checkDate.getTime() < weekEnd.getTime()) {
+            if (this.isRestDay(checkDate)) {
+                restDayNumbers.add(checkDate.getDay());
+            }
+            checkDate.setDate(checkDate.getDate() + 1);
+        }
+
+        if (restDayNumbers.size === 0) {
+            return baseMinutes;
+        }
+
+        // Sum minutes from rest days to redistribute
+        let restMinutes = 0;
+        for (const dayNum of restDayNumbers) {
+            restMinutes += baseMinutes[dayNum];
+            baseMinutes[dayNum] = 0;
+        }
+
+        // Find active days (non-rest days that have a non-zero goal)
+        const activeDays: number[] = [];
+        for (let i = 0; i < 7; i++) {
+            if (!restDayNumbers.has(i) && baseMinutes[i] > 0) {
+                activeDays.push(i);
+            }
+        }
+
+        if (activeDays.length === 0 || restMinutes === 0) {
+            return baseMinutes;
+        }
+
+        // Distribute evenly with round-robin for remainder
+        const perDay = Math.floor(restMinutes / activeDays.length);
+        let remainder = restMinutes - perDay * activeDays.length;
+
+        for (const dayNum of activeDays) {
+            baseMinutes[dayNum] += perDay;
+            if (remainder > 0) {
+                baseMinutes[dayNum] += 1;
+                remainder--;
+            }
+        }
+
+        return baseMinutes;
+    }
+
+    /**
      * @returns The suggested tasks for the current week.
      */
     getWeeklySuggestions(): WeeklySuggestedTasks {
@@ -178,6 +258,9 @@ export class TaskSuggestionAlgorithm {
         }
 
         const reason = this.getGenerationReason(today, this.weeklyPlan);
+
+        // Compute adjusted daily minutes: redistribute rest day minutes across active days
+        this.adjustedMinutesPerDay = this.computeAdjustedMinutes(current, end);
 
         for (; current.getTime() < end.getTime(); current.setDate(current.getDate() + 1)) {
             const suggestions = this.getTasksForDay(reason, current, today);
@@ -410,7 +493,17 @@ export class TaskSuggestionAlgorithm {
             return;
         }
 
-        const goalMinutes = (this.user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay[day.getDay()];
+        // Use adjusted minutes (accounts for rest day redistribution)
+        const goalMinutes = this.adjustedMinutesPerDay
+            ? this.adjustedMinutesPerDay[day.getDay()]
+            : (this.user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay[day.getDay()];
+
+        if (goalMinutes === 0) {
+            for (const suggestion of suggestions) {
+                suggestion.goalMinutes = 0;
+            }
+            return;
+        }
 
         let tasksMissingTime = 0;
         let welcomeTaskMinutes = 0;
