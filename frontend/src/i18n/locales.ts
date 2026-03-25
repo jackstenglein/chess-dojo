@@ -1,4 +1,7 @@
-export const SUPPORTED_LOCALES = [{ code: 'en', label: 'English' }] as const;
+export const SUPPORTED_LOCALES = [
+    { code: 'en', label: 'English' },
+    { code: 'pseudo', label: '[T] Pseudo' },
+] as const;
 
 export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code'];
 

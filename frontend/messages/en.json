@@ -1,1 +1,107 @@
-{}
+{
+    "common": {
+        "timezone": "Timezone",
+        "language": "Language",
+        "browserDefault": "Browser Default ({offset})"
+    },
+    "profile": {
+        "editor": {
+            "title": "Edit Settings",
+            "save": "Save",
+            "cancel": "Cancel",
+            "profileUpdated": "Profile updated",
+            "errorAlert": "Unable to save profile. Fix the errors below and retry.",
+            "cohortAlert": "Invalid cohort: The dojo is phasing out the 0-400 and 400-600 cohorts in favor of more specific cohorts. Please choose a new cohort below.",
+            "sidebarPersonalInfo": "Personal Info",
+            "sidebarRatings": "Ratings",
+            "sidebarNotifications": "Notifications",
+            "sidebarSubscription": "Subscription/Billing",
+            "fieldRequired": "This field is required",
+            "ratingSystemRequired": "This field is required when using {system} rating system.",
+            "ratingInteger": "Rating must be an integer >= 0",
+            "customRatingRequired": "This field is required when using a custom rating",
+            "customRatingSystemRequired": "This field is required when using a custom rating system"
+        },
+        "personalInfo": {
+            "heading": "Personal Info",
+            "profilePicture": "Profile Picture",
+            "uploadPhoto": "Upload Photo",
+            "deletePhoto": "Delete Photo",
+            "displayName": "Display Name",
+            "displayNameHelper": "This is how other users will identify you",
+            "bio": "Bio",
+            "bioHelper": "Supports Markdown-style links like [click here](https://google.com)",
+            "coachBio": "Coach Bio",
+            "coachBioHelper": "An optional coaching-specific bio. If included, it will be displayed on the coaching page and on the coach tab on your profile. If not included, the coaching page will use your regular bio and the coach tab on your profile will not have an additional bio.",
+            "pictureTooLarge": "Profile picture must be 9MB or smaller",
+            "fileReadError": "Failed to read the file."
+        },
+        "ratings": {
+            "heading": "Ratings",
+            "cohort": "ChessDojo Cohort",
+            "preferredSystem": "Preferred Rating System",
+            "startRating": "Start Rating",
+            "currentRating": "Current Rating",
+            "startRatingHelper": "Your rating when you first joined the Dojo",
+            "currentRatingHelper": "Your most up to date rating",
+            "noAccountHelper": "Leave blank if you don't have an account",
+            "dwzHelper": "Learn how to find your DWZ ID",
+            "dwzHelperLink": "here",
+            "customRatingName": "Custom {number} Rating Name",
+            "customRatingHelper": "Manually track your rating",
+            "zenMode": "Enable Zen Mode (hide ratings when viewing your own profile)",
+            "chesscomUsername": "Chess.com Username",
+            "lichessUsername": "Lichess Username",
+            "fideId": "FIDE ID",
+            "uscfId": "USCF ID",
+            "ecfRatingCode": "ECF Rating Code",
+            "cfcId": "CFC ID",
+            "dwzId": "DWZ ID",
+            "acfId": "ACF ID",
+            "knsbId": "KNSB ID",
+            "hideUsername": "Hide Username",
+            "hideId": "Hide ID",
+            "hideRatingCode": "Hide Rating Code",
+            "customSuffix2": " (2)",
+            "customSuffix3": " (3)"
+        },
+        "notifications": {
+            "heading": "Notifications",
+            "site": "Site",
+            "email": "Email",
+            "discord": "Discord",
+            "siteGameComment": "Notify me when a comment is added to my game",
+            "siteGameCommentReplies": "Notify me when a reply is added to a game comment thread I participated in",
+            "siteNewFollower": "Notify me when I have a new follower",
+            "siteNewsfeedComment": "Notify me when a comment is added to my newsfeed activity",
+            "siteNewsfeedReaction": "Notify me when a reaction is added to my newsfeed activity",
+            "siteCalendarInvite": "Notify me when I am invited to an event on the calendar",
+            "emailInactiveWarning": "Notify me via email when I am about to be marked inactive",
+            "emailNewsletter": "Subscribe to the monthly Dojo Digest",
+            "emailRoundRobin": "Notify me when my round robin tournament starts",
+            "emailGettingStarted": "Send me an email with getting started tips when I subscribe to the Dojo",
+            "discordMeetingBooked": "Notify me via a Discord DM when my meeting is booked",
+            "discordMeetingCancelled": "Notify me via a Discord DM when my meeting is cancelled",
+            "discordCalendarInvite": "Notify me via a Discord DM when I am invited to an event on the calendar",
+            "discordRoundRobin": "Notify me when my round robin tournament starts"
+        },
+        "subscription": {
+            "heading": "Subscription/Billing",
+            "statusFree": "Subscription Status: Free Tier",
+            "statusSubscribed": "Subscription Status: Subscribed",
+            "currentTier": "Current Tier: {tier}",
+            "viewPrices": "View Prices",
+            "manageSubscription": "Manage Subscription",
+            "tierFree": "Free Tier",
+            "tierCore": "Core",
+            "tierLecture": "Lecture Tier",
+            "tierGameReview": "Game & Profile Review"
+        },
+        "discord": {
+            "connect": "Connect Discord",
+            "disconnect": "Disconnect Discord",
+            "connectSuccess": "Discord account successfully connected!",
+            "disconnectSuccess": "Discord account disconnected."
+        }
+    }
+}

@@ -6,6 +6,7 @@ import { DiscordIcon } from '@/components/profile/info/DiscordChip';
 import { UserNotificationSettings } from '@/database/user';
 import { Email, Notifications, Web } from '@mui/icons-material';
 import { Checkbox, Divider, FormControlLabel, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 function getSettingValue(
     notificationSettings: UserNotificationSettings | undefined,
@@ -48,82 +49,73 @@ function setSettingValue(
 }
 
 interface NotificationSettingsSection {
-    label: string;
-    settings: { label: string; path: string }[];
+    labelKey: string;
+    settings: { labelKey: string; path: string }[];
     icon: React.ReactNode;
 }
 
 const sections: NotificationSettingsSection[] = [
     {
-        label: 'Site',
+        labelKey: 'site',
         icon: <Web />,
         settings: [
+            { labelKey: 'siteGameComment', path: 'siteNotificationSettings.disableGameComment' },
             {
-                label: 'Notify me when a comment is added to my game',
-                path: 'siteNotificationSettings.disableGameComment',
-            },
-            {
-                label: 'Notify me when a reply is added to a game comment thread I participated in',
+                labelKey: 'siteGameCommentReplies',
                 path: 'siteNotificationSettings.disableGameCommentReplies',
             },
+            { labelKey: 'siteNewFollower', path: 'siteNotificationSettings.disableNewFollower' },
             {
-                label: 'Notify me when I have a new follower',
-                path: 'siteNotificationSettings.disableNewFollower',
-            },
-            {
-                label: 'Notify me when a comment is added to my newsfeed activity',
+                labelKey: 'siteNewsfeedComment',
                 path: 'siteNotificationSettings.disableNewsfeedComment',
             },
             {
-                label: 'Notify me when a reaction is added to my newsfeed activity',
+                labelKey: 'siteNewsfeedReaction',
                 path: 'siteNotificationSettings.disableNewsfeedReaction',
             },
             {
-                label: 'Notify me when I am invited to an event on the calendar',
+                labelKey: 'siteCalendarInvite',
                 path: 'siteNotificationSettings.disableCalendarInvite',
             },
         ],
     },
     {
-        label: 'Email',
+        labelKey: 'email',
         icon: <Email />,
         settings: [
             {
-                label: 'Notify me via email when I am about to be marked inactive',
+                labelKey: 'emailInactiveWarning',
                 path: 'emailNotificationSettings.disableInactiveWarning',
             },
+            { labelKey: 'emailNewsletter', path: 'emailNotificationSettings.disableNewsletter' },
             {
-                label: 'Subscribe to the monthly Dojo Digest',
-                path: 'emailNotificationSettings.disableNewsletter',
-            },
-            {
-                label: 'Notify me when my round robin tournament starts',
+                labelKey: 'emailRoundRobin',
                 path: 'emailNotificationSettings.disableRoundRobinStart',
             },
             {
-                label: 'Send me an email with getting started tips when I subscribe to the Dojo',
+                labelKey: 'emailGettingStarted',
                 path: 'emailNotificationSettings.disableSubscriptionCreated',
             },
         ],
     },
     {
-        label: 'Discord',
+        labelKey: 'discord',
         icon: <DiscordIcon />,
         settings: [
             {
-                label: 'Notify me via a Discord DM when my meeting is booked',
+                labelKey: 'discordMeetingBooked',
                 path: 'discordNotificationSettings.disableMeetingBooking',
             },
             {
-                label: 'Notify me via a Discord DM when my meeting is cancelled',
+                labelKey: 'discordMeetingCancelled',
                 path: 'discordNotificationSettings.disableMeetingCancellation',
             },
             {
-                label: 'Notify me via a Discord DM when I am invited to an event on the calendar',
+                labelKey: 'discordCalendarInvite',
                 path: 'discordNotificationSettings.disableCalendarInvite',
             },
             {
-                label: 'Notify me when my round robin tournament starts',
+                labelKey: 'discordRoundRobin',
                 path: 'discordNotificationSettings.disableRoundRobinStart',
             },
         ],
@@ -139,6 +131,8 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
     notificationSettings,
     setNotificationSettings,
 }) => {
+    const t = useTranslations('profile.notifications');
+
     return (
         <Stack spacing={2}>
             <Stack
@@ -149,23 +143,23 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
             >
                 <Typography variant='h5'>
                     <Notifications style={{ verticalAlign: 'middle', marginRight: '0.1em' }} />{' '}
-                    Notifications
+                    {t('heading')}
                 </Typography>
                 <Divider />
             </Stack>
 
             {sections.map((s) => (
-                <Stack key={s.label} spacing={0.5}>
+                <Stack key={s.labelKey} spacing={0.5}>
                     <Stack direction='row' spacing={1} alignItems='center'>
                         {s.icon}
                         <Typography
-                            id={`notifications-${s.label.toLowerCase()}`}
+                            id={`notifications-${s.labelKey}`}
                             variant='h6'
                             sx={{
                                 scrollMarginTop: '88px',
                             }}
                         >
-                            {s.label}
+                            {t(s.labelKey)}
                         </Typography>
                     </Stack>
 
@@ -186,7 +180,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     }
                                 />
                             }
-                            label={setting.label}
+                            label={t(setting.labelKey)}
                         />
                     ))}
                 </Stack>
