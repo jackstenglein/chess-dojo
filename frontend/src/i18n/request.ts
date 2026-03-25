@@ -1,13 +1,12 @@
 import { AbstractIntlMessages, hasLocale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
-
-const locales = ['en'] as const;
+import { DEFAULT_LOCALE, LOCALE_CODES } from './locales';
 
 export default getRequestConfig(async () => {
     const store = await cookies();
     const requested = store.get('locale')?.value;
-    const locale = hasLocale(locales, requested) ? requested : 'en';
+    const locale = hasLocale(LOCALE_CODES, requested) ? requested : DEFAULT_LOCALE;
 
     let messages: AbstractIntlMessages = {};
     try {
