@@ -1,23 +1,30 @@
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { WebVitals } from '@/components/analytics/WebVitals';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { defaultMetadata } from './(scoreboard)/defaultMetadata';
 
 export const metadata = defaultMetadata;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const locale = await getLocale();
+    const messages = await getMessages();
+
     return (
-        <html lang='en' suppressHydrationWarning className='dark'>
+        <html lang={locale} suppressHydrationWarning className='dark'>
             <head>
                 <link rel='apple-touch-icon' href='/android-chome-192x192.png' />
                 <link rel='manifest' href='/manifest.json' />
             </head>
             <body>
-                <NavigationGuardProvider>
-                    <MetaPixel />
-                    <WebVitals />
-                    <div id='root'>{children}</div>
-                </NavigationGuardProvider>
+                <NextIntlClientProvider locale={locale} messages={messages}>
+                    <NavigationGuardProvider>
+                        <MetaPixel />
+                        <WebVitals />
+                        <div id='root'>{children}</div>
+                    </NavigationGuardProvider>
+                </NextIntlClientProvider>
             </body>
         </html>
     );
