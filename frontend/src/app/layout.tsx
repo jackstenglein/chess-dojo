@@ -1,6 +1,6 @@
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { WebVitals } from '@/components/analytics/WebVitals';
-import { NextIntlClientProvider } from 'next-intl';
+import { I18nProvider } from '@/i18n/I18nProvider';
 import { getLocale, getMessages } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { defaultMetadata } from './(scoreboard)/defaultMetadata';
@@ -18,13 +18,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <link rel='manifest' href='/manifest.json' />
             </head>
             <body>
-                <NextIntlClientProvider locale={locale} messages={messages}>
+                <I18nProvider defaultLocale={locale} defaultMessages={messages}>
                     <NavigationGuardProvider>
                         <MetaPixel />
                         <WebVitals />
                         <div id='root'>{children}</div>
                     </NavigationGuardProvider>
-                </NextIntlClientProvider>
+                </I18nProvider>
             </body>
         </html>
     );
