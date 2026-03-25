@@ -3,9 +3,19 @@ import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { DEFAULT_LOCALE, LOCALE_CODES } from './locales';
 
-export default getRequestConfig(async () => {
-    const store = await cookies();
-    const requested = store.get('locale')?.value;
+export default getRequestConfig(async ({ requestLocale }) => {
+    // Use next-intl's requestLocale first (from middleware/routing, if configured).
+    // Fall back to cookie, then default. The try-catch around cookies() prevents
+    // DYNAMIC_SERVER_USAGE errors during static generation.
+    let requested = await requestLocale;
+    if (!requested) {
+        try {
+            const store = await cookies();
+            requested = store.get('locale')?.value;
+        } catch {
+            // cookies() throws during static generation - fall back to default
+        }
+    }
     const locale = hasLocale(LOCALE_CODES, requested) ? requested : DEFAULT_LOCALE;
 
     let messages: AbstractIntlMessages = {};
