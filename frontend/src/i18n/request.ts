@@ -14,9 +14,11 @@ export default getRequestConfig(async () => {
             default: AbstractIntlMessages;
         };
         messages = imported.default;
-    } catch {
-        // If the messages file fails to load, the app renders with empty messages.
-        // Translation keys will display as-is, which is better than a white page.
+    } catch (err) {
+        // Fall back to empty messages so translation keys display as-is
+        // (better than a white page), but log so we can detect the problem.
+        // eslint-disable-next-line no-console
+        console.error(`[i18n] Failed to load messages for locale "${locale}".`, err);
     }
 
     return {
