@@ -1,22 +1,14 @@
-import { AbstractIntlMessages, hasLocale } from 'next-intl';
+import { AbstractIntlMessages } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
-import { DEFAULT_LOCALE, LOCALE_CODES } from './locales';
+import { DEFAULT_LOCALE } from './locales';
 
-export default getRequestConfig(async ({ requestLocale }) => {
-    // Use next-intl's requestLocale first (from middleware/routing, if configured).
-    // Fall back to cookie, then default. The try-catch around cookies() prevents
-    // DYNAMIC_SERVER_USAGE errors during static generation.
-    let requested = await requestLocale;
-    if (!requested) {
-        try {
-            const store = await cookies();
-            requested = store.get('locale')?.value;
-        } catch {
-            // cookies() throws during static generation - fall back to default
-        }
-    }
-    const locale = hasLocale(LOCALE_CODES, requested) ? requested : DEFAULT_LOCALE;
+export default getRequestConfig(async () => {
+    // TODO (#1997): When locale-prefixed URLs are added (e.g. /de/blog),
+    // read the locale from requestLocale or proxy.ts instead of hardcoding.
+    // Currently hardcoded because accessing requestLocale triggers headers()
+    // internally in next-intl, which forces all pages into dynamic rendering
+    // and breaks static generation (DYNAMIC_SERVER_USAGE errors in CI).
+    const locale = DEFAULT_LOCALE;
 
     let messages: AbstractIntlMessages = {};
     try {
