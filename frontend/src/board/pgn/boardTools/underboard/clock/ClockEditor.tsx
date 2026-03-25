@@ -1,5 +1,6 @@
 import { useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
+import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Edit } from '@mui/icons-material';
 import { Grid, IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
@@ -54,6 +55,11 @@ const ClockEditor = ({
     const isThreeField = clockFieldFormat === ClockFieldFormat.ThreeField;
 
     for (let i = 0; i < moves.length; i += 2) {
+        // Get previous move's clock for validation (previous black move for white, previous white move for black)
+        const whitePrevMoveSeconds =
+            i >= 2 ? clockToSeconds(moves[i - 1]?.commentDiag?.clk) : undefined;
+        const blackPrevMoveSeconds = clockToSeconds(moves[i]?.commentDiag?.clk);
+
         if (isThreeField) {
             grid.push(
                 <Grid key={`${i}-white-label`} size={3}>
@@ -66,7 +72,11 @@ const ClockEditor = ({
 
         grid.push(
             <Grid key={`${i}-white`} size={isThreeField ? 9 : 6}>
-                <ClockTextField label={`${i / 2 + 1}. ${moves[i].san}`} move={moves[i]} />
+                <ClockTextField
+                    label={`${i / 2 + 1}. ${moves[i].san}`}
+                    move={moves[i]}
+                    previousMoveSeconds={whitePrevMoveSeconds}
+                />
             </Grid>,
         );
 
@@ -86,6 +96,7 @@ const ClockEditor = ({
                     <ClockTextField
                         label={`${i / 2 + 1}... ${moves[i + 1].san}`}
                         move={moves[i + 1]}
+                        previousMoveSeconds={blackPrevMoveSeconds}
                     />
                 </Grid>,
             );
