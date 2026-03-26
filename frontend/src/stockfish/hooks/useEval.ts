@@ -39,65 +39,65 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
     }, [threads, setThreads]);
 
     useEffect(() => {
-        if (!enabled || !chess || !engine || !engineName) return;
+        if (!chess || !engineName) {
+            return;
+        }
 
-        if (!engine?.isReady()) {
-            logger.error?.(`Engine ${engineName} not ready`);
+        if (enabled && engine) {
+            if (!engine.isReady()) {
+                logger.error?.(`Engine ${engineName} not ready`);
+            }
         }
 
         const resolvedThreads = threads || navigator.hardwareConcurrency || 4;
 
         const evaluate = async () => {
-            setCurrentPosition(undefined);
             const fen = chess.fen();
             const cacheKey = makeEvalCacheKey(fen, engineName);
 
-            // L1 – in-memory (fastest, no async I/O, lives for component lifetime)
-            const memHit = memCache.current[fen];
-            if (
-                memHit?.engine === engineName &&
-                memHit.lines.length >= multiPv &&
-                memHit.lines[0]?.depth >= depth
-            ) {
-                setCurrentPosition(memHit);
-                return;
+            if (savedEval?.engine === engineName) {
+                const meetsDepth =
+                    savedEval.lines.length >= multiPv && savedEval.lines[0].depth >= depth;
+
+                // When disabled, show whatever was previously evaluated.
+                // When enabled, only reuse if the saved eval meets the
+                // current depth/line requirements.
+                if (meetsDepth || !enabled) {
+                    setCurrentPosition(savedEval);
+                    return;
+                }
             }
 
-            // L2 – IndexedDB (survives page reload; only contains fully-completed evals)
-            const idbHit = await getEvalCache(cacheKey);
-            if (idbHit) {
-                memCache.current[fen] = idbHit;
-                setCurrentPosition(idbHit);
-                return;
-            }
+            if (enabled && engine) {
+                setCurrentPosition(undefined);
+                try {
+                    const rawPositionEval = await engine.evaluatePositionWithUpdate({
+                        fen,
+                        depth,
+                        multiPv,
+                        threads: threads || 4,
+                        hash: Math.pow(2, hash),
+                        setPartialEval: (positionEval: PositionEval) => {
+                            if (positionEval.lines[0]?.fen === chess.fen()) {
+                                setCurrentPosition(positionEval);
+                                savedEvals.current[fen] = {
+                                    ...positionEval,
+                                    engine: engineName,
+                                };
+                            }
+                        },
+                    });
 
-            try {
-                const rawPositionEval = await engine.evaluatePositionWithUpdate({
-                    fen,
-                    depth,
-                    multiPv,
-                    threads: resolvedThreads,
-                    hash: Math.pow(2, hash),
-                    setPartialEval: (positionEval: PositionEval) => {
-                        if (positionEval.lines[0]?.fen === chess.fen()) {
-                            setCurrentPosition(positionEval);
-                        }
-                    },
-                });
-
-                const finalEval: SavedEval = { ...rawPositionEval, engine: engineName };
-
-                // Only cache once the engine has reached the full requested depth
-                if (finalEval.lines.length >= multiPv && finalEval.lines[0]?.depth >= depth) {
-                    memCache.current[fen] = finalEval;
-
-                    void setEvalCache(cacheKey, finalEval);
+                    savedEvals.current[fen] = { ...rawPositionEval, engine: engineName };
+                } catch (err) {
+                    if (err !== E_CANCELED) {
+                        throw err;
+                    }
                 }
             } catch (err) {
                 if (err !== E_CANCELED) throw err;
             }
         };
-
         const observer = {
             types: [EventType.Initialized, EventType.LegalMove],
             handler: evaluate,
@@ -105,6 +105,7 @@ export function useEval(enabled: boolean, engineName?: EngineName): PositionEval
 
         void evaluate();
         chess.addObserver(observer);
+
         return () => {
             void engine?.stopSearch();
             chess.removeObserver(observer);

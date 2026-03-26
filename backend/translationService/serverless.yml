@@ -1,0 +1,84 @@
+# Deploys the translation service.
+
+service: chess-dojo-translations
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  list:
+    handler: list.handler
+    events:
+      - httpApi:
+          path: /public/translations/{locale}/{contentType}
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt TranslationsTable.Arn
+
+  set:
+    handler: set.handler
+    events:
+      - httpApi:
+          path: /translations
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt TranslationsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+
+  Resources:
+    TranslationsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-translations
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: locale
+            AttributeType: S
+          - AttributeName: contentKey
+            AttributeType: S
+        KeySchema:
+          - AttributeName: locale
+            KeyType: HASH
+          - AttributeName: contentKey
+            KeyType: RANGE
+
+  Outputs:
+    TranslationsTableArn:
+      Value: !GetAtt TranslationsTable.Arn

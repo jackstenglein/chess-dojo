@@ -7,6 +7,8 @@ const NotificationEventTypeSchema = z.enum([
     'GAME_COMMENT',
     /** A sensei game review is completed */
     'GAME_REVIEW_COMPLETE',
+    /** A game is submitted for sensei review */
+    'GAME_REVIEW_SUBMITTED',
     /** A user gets a new follower */
     'NEW_FOLLOWER',
     /** A comment is left on a timeline entry */
@@ -25,6 +27,8 @@ const NotificationEventTypeSchema = z.enum([
     'ROUND_ROBIN_START',
     /** A user has created their subscription */
     'SUBSCRIPTION_CREATED',
+    /** A blog post has been published */
+    'BLOG_PUBLISHED',
 ]);
 
 /** The types of a notification event. */
@@ -68,6 +72,22 @@ const GameReviewEventSchema = z.object({
 
 /** The type of a notification event when a game review is completed. */
 export type GameReviewEvent = z.infer<typeof GameReviewEventSchema>;
+
+/** The type of a notification event when a game is submitted for sensei review. */
+const GameReviewSubmittedEventSchema = z.object({
+    /** The type of the event. */
+    type: z.literal(NotificationEventTypes.GAME_REVIEW_SUBMITTED),
+    /** The game submitted for review. */
+    game: z.object({
+        /** The cohort of the game. */
+        cohort: z.string(),
+        /** The id of the game. */
+        id: z.string(),
+    }),
+});
+
+/** The type of a notification event when a game is submitted for sensei review. */
+export type GameReviewSubmittedEvent = z.infer<typeof GameReviewSubmittedEventSchema>;
 
 /** The type of a notification event when a user gets a new follower. */
 const NewFollowerEventSchema = z.object({
@@ -195,11 +215,31 @@ const SubscriptionCreatedEventSchema = z.object({
 /** The type of a notification event when a user has created their subscription. */
 export type SubscriptionCreatedEvent = z.infer<typeof SubscriptionCreatedEventSchema>;
 
+/** The type of a notification event when a blog post is published. */
+const BlogPublishedEventSchema = z.object({
+    /** The type of the event. */
+    type: z.literal(NotificationEventTypes.BLOG_PUBLISHED),
+    /** The id of the blog post that was published. */
+    blogId: z.string(),
+    /** The title of the blog post. */
+    title: z.string(),
+    /** The subtitle of the blog post. */
+    subtitle: z.string(),
+    /** The description of the blog post. */
+    description: z.string(),
+    /** The cover image of the blog post. */
+    coverImage: z.string().optional(),
+});
+
+/** The type of a notification event when a blog post is published. */
+export type BlogPublishedEvent = z.infer<typeof BlogPublishedEventSchema>;
+
 /** The schema of an event that generates notifications. */
 export const NotificationEventSchema = z.discriminatedUnion('type', [
     NewFollowerEventSchema,
     GameCommentEventSchema,
     GameReviewEventSchema,
+    GameReviewSubmittedEventSchema,
     TimelineCommentEventSchema,
     TimelineReactionEventSchema,
     ClubJoinRequesetEventSchema,
@@ -208,6 +248,7 @@ export const NotificationEventSchema = z.discriminatedUnion('type', [
     CalendarInviteEventSchema,
     RoundRobinStartEventSchema,
     SubscriptionCreatedEventSchema,
+    BlogPublishedEventSchema,
 ]);
 
 /** An event that generates notifications. */

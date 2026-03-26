@@ -1,5 +1,6 @@
 import { ExamCard } from '@/components/exams/ExamCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
+import { Visibility } from '@mui/icons-material';
 import { Container, Grid } from '@mui/material';
 
 /**
@@ -29,6 +30,13 @@ export default function ExamLandingPage() {
                     description='All Ratings'
                     href='/tests/endgame'
                     icon={RookIcon}
+                />
+
+                <ExamCard
+                    name='Square Color Drill'
+                    description='All Ratings'
+                    href='/puzzles/square-colors'
+                    icon={Visibility}
                 />
             </Grid>
         </Container>

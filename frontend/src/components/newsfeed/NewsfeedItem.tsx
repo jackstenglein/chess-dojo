@@ -14,6 +14,9 @@ import CommentList from '../comments/CommentList';
 import NewsfeedItemHeader from './NewsfeedItemHeader';
 import ReactionList from './ReactionList';
 
+export const isRestDayEntry = (entry: TimelineEntry) =>
+    entry.requirementId === TimelineSpecialRequirementId.RestDay;
+
 interface NewsfeedItemProps {
     entry: TimelineEntry;
     onEdit: (entry: TimelineEntry) => void;

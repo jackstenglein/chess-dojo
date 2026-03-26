@@ -6,6 +6,7 @@
             "previousCohort": "1100-1200",
             "newCohort": "1200-1300",
             "score": 17,
+            "gamesAnnotated": 5,
             "ratingSystem": "CHESSCOM",
             "startRating": 1407,
             "currentRating": 1428,
@@ -10641,6 +10642,7 @@
             },
             "numberOfGraduations": 2,
             "graduationCohorts": ["0-300", "300-400"],
+            "gamesAnnotated": 12,
             "startedAt": "2023-07-03T03:04:13Z",
             "createdAt": "2023-09-05T23:49:25Z"
         },

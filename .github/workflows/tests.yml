@@ -39,7 +39,21 @@ jobs:
             frontend:
               - 'frontend/**'
               - 'common/**'
+            common:
+              - 'common/**'
       
+      - name: Install Common Dependencies
+        if: steps.filter.outputs.common == 'true'
+        working-directory: common
+        run: npm ci
+
+      - name: Run Common Unit Tests
+        if: steps.filter.outputs.common == 'true'
+        working-directory: common
+        run: npm run test
+        env:
+          CI: true
+
       - name: Install Backend Dependencies
         if: steps.filter.outputs.backend == 'true'
         working-directory: backend
