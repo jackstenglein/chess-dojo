@@ -80,9 +80,9 @@ export function PersonalInfoEditor({
                     setProfilePictureData(encoded);
                     setProfilePictureUrl(URL.createObjectURL(files[0]));
                 })
-                .catch((err) => {
-                    logger.log?.(err);
-                    request.onFailure(err);
+                .catch((err: unknown) => {
+                    logger.warn?.(err);
+                    request.onFailure({ message: t('fileReadError') });
                 });
         }
     };

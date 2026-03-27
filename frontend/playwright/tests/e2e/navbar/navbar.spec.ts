@@ -11,7 +11,13 @@ const navbarStartItems = [
     'Shop',
 ];
 
-const navbarEndItems = ['Help', 'Search Users', 'Timer', 'Notifications', 'navbar-profile-button'];
+const navbarEndItems = [
+    { testId: 'help', name: 'Help' },
+    { testId: 'search', name: 'Search Users' },
+    { testId: 'Timer', name: 'Timer' },
+    { testId: 'Notifications', name: 'Notifications' },
+    { testId: 'navbar-profile-button', name: '' },
+];
 
 const viewPortWidths = [
     { width: 1501, hidden: 0, endHidden: 0 },
@@ -95,7 +101,7 @@ test.describe('Navbar (authenticated)', () => {
             // Check visible end items
             const visibleEndItems = navbarEndItems.slice(endHidden);
             for (const item of visibleEndItems) {
-                await expect(page.getByTestId(item)).toBeVisible();
+                await expect(page.getByTestId(item.testId)).toBeVisible();
             }
 
             // Check hidden items in menu
@@ -110,8 +116,8 @@ test.describe('Navbar (authenticated)', () => {
 
                 const hiddenEndItems = navbarEndItems.slice(0, endHidden);
                 for (const item of hiddenEndItems) {
-                    if (item !== 'navbar-profile-button') {
-                        await expect(menu.getByRole('menuitem', { name: item })).toBeVisible();
+                    if (item.testId !== 'navbar-profile-button') {
+                        await expect(menu.getByRole('menuitem', { name: item.name })).toBeVisible();
                     }
                 }
             }
