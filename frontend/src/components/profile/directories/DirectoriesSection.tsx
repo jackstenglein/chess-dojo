@@ -127,7 +127,7 @@ const DirectorySection = ({
         `/DirectoriesSection/${namespace}/sortModel`,
         [
             {
-                field: 'createdAt',
+                field: 'date',
                 sort: 'desc',
             },
         ],

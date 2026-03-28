@@ -1,8 +1,24 @@
-import { DiagramComment, Move } from '@jackstenglein/chess';
+import { Chess, DiagramComment, Move } from '@jackstenglein/chess';
 import {
     PgnMergeType,
     PgnMergeTypes,
 } from '@jackstenglein/chess-dojo-common/src/pgn/merge';
+import { ApiError } from '../../directoryService/api';
+
+const frontendHost = process.env['frontendHost'];
+
+/** Options for recursiveMergeLine controlling how move data is merged and cited. */
+export interface MergeLineOptions {
+    commentMergeType: PgnMergeType;
+    nagMergeType: PgnMergeType;
+    drawableMergeType: PgnMergeType;
+    /** If provided, a citation comment is appended to the last move of the line. */
+    citation?: {
+        source: Chess;
+        cohort: string;
+        id: string;
+    };
+}
 
 /**
  * Merges the comments from the given source move into the target move.
@@ -106,4 +122,55 @@ export function getPlayer(name: string | undefined, elo: string | undefined): st
         return `${result} (${elo})`;
     }
     return result;
+}
+
+/**
+ * Recursively merges the given line into the target Chess instance.
+ * @param line The line to merge into the Chess instance.
+ * @param target The target Chess to merge the line into.
+ * @param currentTargetMove The current move to start from in the target Chess.
+ * @param options Controls how move data is merged and whether to add a citation comment.
+ */
+export function recursiveMergeLine(
+    line: Move[],
+    target: Chess,
+    currentTargetMove: Move | null,
+    options: MergeLineOptions,
+) {
+    for (const move of line) {
+        const newTargetMove = target.move(move.san, {
+            previousMove: currentTargetMove,
+            skipSeek: true,
+        });
+        if (!newTargetMove) {
+            throw new ApiError({
+                statusCode: 400,
+                publicMessage: `Unable to merge: invalid move ${move.san} at ply ${move.ply}`,
+            });
+        }
+
+        mergeComments(move, newTargetMove, options.commentMergeType);
+        mergeNags(move, newTargetMove, options.nagMergeType);
+        mergeDrawables(move, newTargetMove, options.drawableMergeType);
+
+        for (const variation of move.variations) {
+            recursiveMergeLine(variation, target, currentTargetMove, options);
+        }
+
+        currentTargetMove = newTargetMove;
+    }
+
+    if (options.citation && currentTargetMove) {
+        const { source, cohort, id } = options.citation;
+        const white = getPlayer(source.header().tags.White, source.header().tags.WhiteElo?.value);
+        const black = getPlayer(source.header().tags.Black, source.header().tags.BlackElo?.value);
+        const date = source.header().getRawValue('Date');
+        const comment = `[${white} - ${black}${date ? ` ${date}` : ''}](${frontendHost}/games/${cohort}/${id})`;
+
+        if (currentTargetMove.commentAfter) {
+            currentTargetMove.commentAfter += `\n\n${comment}`;
+        } else {
+            currentTargetMove.commentAfter = comment;
+        }
+    }
 }

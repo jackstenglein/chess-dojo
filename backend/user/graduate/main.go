@@ -16,7 +16,6 @@ import (
 )
 
 var repository database.GraduationCreator = database.DynamoDB
-const annotatedGamesRequirementID = "4d23d689-1284-46e6-b2a2-4b4bfdc37174"
 
 type GraduationRequest struct {
 	Comments string `json:"comments"`
@@ -77,12 +76,21 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	totalTime := user.TimeSpent()
 	dojoTime := user.TimeSpentOnReqs(requirements)
 	nonDojoTime := totalTime - dojoTime
-	gamesAnnotated := 0
-	if progress, ok := user.Progress[annotatedGamesRequirementID]; ok && progress != nil {
-		gamesAnnotated = progress.Counts[user.DojoCohort]
-	}
-
 	log.Debugf("Total Time: %d, Dojo Time: %d, NonDojo Time: %d", totalTime, dojoTime, nonDojoTime)
+
+	gamesAnnotated := 0
+	twoMonthsAgo := now.AddDate(0, -2, 0).Format("2006.01.02")
+	nowDate := now.Format("2006.01.02")
+	var gamesStartKey string
+	for ok := true; ok; ok = gamesStartKey != "" {
+		games, nextKey, err := repository.ListGamesByOwner(false, info.Username, twoMonthsAgo, nowDate, gamesStartKey)
+		if err != nil {
+			log.Errorf("Failed to list games for graduation count: %v", err)
+			break
+		}
+		gamesAnnotated += len(games)
+		gamesStartKey = nextKey
+	}
 
 	ratingHistories := make(map[database.RatingSystem][]database.RatingHistory)
 	for rs, history := range user.RatingHistories {
@@ -115,6 +123,7 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		GraduationCohorts:   graduationCohorts,
 		DojoMinutes:         dojoTime,
 		NonDojoMinutes:      nonDojoTime,
+		GamesAnnotated:      gamesAnnotated,
 		RatingHistories:     ratingHistories,
 	}
 	if err := repository.PutGraduation(&graduation); err != nil {

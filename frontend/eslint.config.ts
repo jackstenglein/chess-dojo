@@ -17,6 +17,8 @@ export default defineConfig([
             'runner-results/**',
             'src/stockfish/engine/sf17-79.js',
             'src/stockfish/engine/sf171-79.js',
+            'src/stockfish/engine/sf18.js',
+            'src/stockfish/engine/sf18-smallnet.js',
             'next-env.d.ts',
             'eslint.config.ts',
             '.next/**',

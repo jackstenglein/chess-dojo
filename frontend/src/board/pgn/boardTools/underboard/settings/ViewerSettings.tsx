@@ -2,7 +2,7 @@ import {
     CORRECT_SOUND_KEY,
     INCORRECT_SOUND_KEY,
 } from '@/components/puzzles/settings/puzzleSettingsKeys';
-import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
+import { HIGHLIGHT_ENGINE_LINES, PERSIST_ENGINE_LINES } from '@/stockfish/engine/engine';
 import {
     Box,
     Checkbox,
@@ -105,6 +105,7 @@ export enum ViewerSetting {
     ShowElapsedTimeNextToMove,
     ShowEngine,
     HighlightEngineLines,
+    PersistEngineLines,
     DisplaySuggestedVariations,
     ScrollOnBoardToMove,
     CorrectSolitaireMoveSound,
@@ -150,6 +151,10 @@ const ViewerSettings = ({
     const [highlightEngineLines, setHighlightEngineLines] = useLocalStorage<boolean>(
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
+    );
+    const [persistEngineLines, setPersistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
     );
     const [showSuggestedVariations, setShowSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
@@ -262,6 +267,8 @@ const ViewerSettings = ({
             )}
 
             <Stack>
+                {!enabledSettings && <Typography variant='h6'>Board</Typography>}
+
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowLegalMoves]) && (
                     <FormControlLabel
                         control={
@@ -286,6 +293,24 @@ const ViewerSettings = ({
                     />
                 )}
 
+                {(!enabledSettings || enabledSettings[ViewerSetting.ScrollOnBoardToMove]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={scrollToMove}
+                                onChange={(e) => setScrollToMove(e.target.checked)}
+                            />
+                        }
+                        label='Scroll on board to go to next/previous move'
+                    />
+                )}
+
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        PGN Text
+                    </Typography>
+                )}
+
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowElapsedTimeNextToMove]) && (
                     <FormControlLabel
                         control={
@@ -296,6 +321,25 @@ const ViewerSettings = ({
                         }
                         label='Show elapsed time next to move'
                     />
+                )}
+
+                {(!enabledSettings ||
+                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showSuggestedVariations}
+                                onChange={(e) => setShowSuggestedVariations(e.target.checked)}
+                            />
+                        }
+                        label="Display other users' suggested variations in PGN text"
+                    />
+                )}
+
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        Engine
+                    </Typography>
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowEngine]) && (
@@ -322,29 +366,22 @@ const ViewerSettings = ({
                     />
                 )}
 
-                {(!enabledSettings ||
-                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
+                {(!enabledSettings || enabledSettings[ViewerSetting.PersistEngineLines]) && (
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={showSuggestedVariations}
-                                onChange={(e) => setShowSuggestedVariations(e.target.checked)}
+                                checked={persistEngineLines}
+                                onChange={(e) => setPersistEngineLines(e.target.checked)}
                             />
                         }
-                        label="Display other users' suggested variations in PGN text"
+                        label='Show already-calculated lines when engine is disabled'
                     />
                 )}
 
-                {(!enabledSettings || enabledSettings[ViewerSetting.ScrollOnBoardToMove]) && (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={scrollToMove}
-                                onChange={(e) => setScrollToMove(e.target.checked)}
-                            />
-                        }
-                        label='Scroll on board to go to next/previous move'
-                    />
+                {!enabledSettings && (
+                    <Typography variant='h6' mt={1}>
+                        Sounds
+                    </Typography>
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (

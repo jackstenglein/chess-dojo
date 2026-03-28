@@ -210,9 +210,15 @@ func handleGameReviewPurchase(checkoutSession *stripe.CheckoutSession) api.Respo
 			StripeId: checkoutSession.ID,
 		},
 	}
-	if _, err := repository.UpdateGame(cohort, id, &update); err != nil {
+	game, err := repository.UpdateGame(cohort, id, &update)
+	if err != nil {
 		return api.Failure(err)
 	}
+
+	if err := database.SendGameReviewSubmittedEvent(game); err != nil {
+		log.Errorf("Failed to send game review submitted notification: %v", err)
+	}
+
 	return api.Success(nil)
 }
 

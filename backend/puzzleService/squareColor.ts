@@ -19,7 +19,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const result: SquareColorSessionResult = {
             ...request,
             username: userInfo.username,
-            createdAt: new Date().toISOString(),
+            createdAt: request.createdAt ?? new Date().toISOString(),
         };
 
         await dynamo.send(

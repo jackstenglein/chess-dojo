@@ -24,6 +24,43 @@ interface SessionSummary {
     questions: SquareColorQuestion[];
 }
 
+/**
+ * Computes aggregate stats for a square color drill session.
+ * @param allQuestions - The list of answered questions.
+ * @param sessionStartTime - The epoch timestamp (ms) when the session started.
+ * @returns The computed session summary stats.
+ */
+export function computeSessionStats(
+    allQuestions: SquareColorQuestion[],
+    sessionStartTime: number,
+): SessionSummary {
+    const totalTimeSeconds = Math.round((Date.now() - sessionStartTime) / 1000);
+    const correctCount = allQuestions.filter((q) => q.userAnswer === q.correctAnswer).length;
+    const avgResponseTimeMs = Math.round(
+        allQuestions.reduce((sum, q) => sum + q.responseTimeMs, 0) / allQuestions.length,
+    );
+
+    let bestStreak = 0;
+    let currentStreak = 0;
+    for (const q of allQuestions) {
+        if (q.userAnswer === q.correctAnswer) {
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+        } else {
+            currentStreak = 0;
+        }
+    }
+
+    return {
+        totalQuestions: allQuestions.length,
+        correctCount,
+        avgResponseTimeMs,
+        bestStreak,
+        totalTimeSeconds,
+        questions: allQuestions,
+    };
+}
+
 export function SquareColorDrillPage() {
     const { user, status } = useAuth();
 
@@ -46,6 +83,7 @@ function SquareColorDrill() {
     const questionStartRef = useRef<number>(0);
     const sessionStartRef = useRef<number>(0);
     const questionsRef = useRef<SquareColorQuestion[]>([]);
+    const sessionCreatedAtRef = useRef<string>('');
     const [summary, setSummary] = useState<SessionSummary | null>(null);
 
     const nextSquare = useCallback(() => {
@@ -63,6 +101,7 @@ function SquareColorDrill() {
         setSummary(null);
         setDrillState('in_progress');
         sessionStartRef.current = Date.now();
+        sessionCreatedAtRef.current = new Date().toISOString();
         nextSquare();
     }, [nextSquare]);
 
@@ -73,39 +112,16 @@ function SquareColorDrill() {
                 return;
             }
 
-            const totalTimeSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-            const correctCount = allQuestions.filter(
-                (q) => q.userAnswer === q.correctAnswer,
-            ).length;
-            const avgResponseTimeMs = Math.round(
-                allQuestions.reduce((sum, q) => sum + q.responseTimeMs, 0) / allQuestions.length,
-            );
-
-            let bestStreak = 0;
-            let currentStreak = 0;
-            for (const q of allQuestions) {
-                if (q.userAnswer === q.correctAnswer) {
-                    currentStreak++;
-                    bestStreak = Math.max(bestStreak, currentStreak);
-                } else {
-                    currentStreak = 0;
-                }
-            }
-
-            const result: SessionSummary = {
-                totalQuestions: allQuestions.length,
-                correctCount,
-                avgResponseTimeMs,
-                bestStreak,
-                totalTimeSeconds,
-                questions: allQuestions,
-            };
+            const result = computeSessionStats(allQuestions, sessionStartRef.current);
 
             setSummary(result);
             setDrillState('complete');
 
             submitRequest.onStart();
-            submitSquareColorSession(result).then(
+            submitSquareColorSession({
+                ...result,
+                createdAt: sessionCreatedAtRef.current,
+            }).then(
                 () => submitRequest.onSuccess(),
                 (err: unknown) => submitRequest.onFailure(err),
             );
@@ -127,11 +143,16 @@ function SquareColorDrill() {
                 responseTimeMs,
             };
 
-            setQuestions((prev) => {
-                const updated = [...prev, question];
-                questionsRef.current = updated;
-                return updated;
-            });
+            const updatedQuestions = [...questionsRef.current, question];
+            questionsRef.current = updatedQuestions;
+            setQuestions(updatedQuestions);
+
+            const stats = computeSessionStats(updatedQuestions, sessionStartRef.current);
+            submitSquareColorSession({
+                ...stats,
+                createdAt: sessionCreatedAtRef.current,
+            }).catch(() => undefined);
+
             setFeedback(answer === correctAnswer ? 'correct' : 'incorrect');
 
             setTimeout(() => {

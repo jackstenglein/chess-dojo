@@ -26,6 +26,8 @@ export const submitSquareColorSessionSchema = z.object({
     totalTimeSeconds: z.number(),
     /** The individual questions and answers. */
     questions: z.array(squareColorQuestionSchema),
+    /** Optional client-generated timestamp to allow updating the same session record. */
+    createdAt: z.string().datetime().optional(),
 });
 
 /** A request to submit a square color drill session. */

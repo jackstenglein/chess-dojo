@@ -182,6 +182,8 @@ export const icons = {
     innerMenuUp: KeyboardArrowUp,
     innerMenuDown: KeyboardArrowDown,
     spar: Link,
+    [EngineName.Stockfish18]: Dvr,
+    [EngineName.Stockfish18Lite]: PhoneAndroid,
     [EngineName.Stockfish11]: ElectricBolt,
     [EngineName.Stockfish16]: PhoneAndroid,
     [EngineName.Stockfish17]: Dvr,

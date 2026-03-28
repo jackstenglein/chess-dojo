@@ -5,6 +5,7 @@ import {
     Events,
     GatewayIntentBits,
     GuildMember,
+    MessageCreateOptions,
     TextChannel,
 } from 'discord.js';
 import { ApiError } from '../directoryService/api';
@@ -33,6 +34,17 @@ export async function sendChannelMessage(channelId: string, message: string) {
     const client = await getClient();
     const channel = client.channels.cache.get(channelId);
     await (channel as TextChannel | undefined)?.send(message);
+}
+
+/**
+ * Sends the given embed message in the given channel.
+ * @param channelId The id of the channel to send the embed in.
+ * @param options The message options including embeds.
+ */
+export async function sendChannelEmbed(channelId: string, options: MessageCreateOptions) {
+    const client = await getClient();
+    const channel = client.channels.cache.get(channelId);
+    await (channel as TextChannel | undefined)?.send(options);
 }
 
 /**

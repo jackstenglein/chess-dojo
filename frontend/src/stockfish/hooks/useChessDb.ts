@@ -39,8 +39,8 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
     );
 
     const fetchPv = useCallback(
-        async (fenString: string): Promise<ChessDbPv | null> => {
-            if (!fenString.trim() || !validateFen(fenString)) return null;
+        async (fenString: string, enabled: boolean) => {
+            if (!fenString.trim() || !validateFen(fenString)) return;
 
             setPvLoading(true);
 
@@ -48,15 +48,16 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 const cached = await getChessDbCache(fenString);
                 if (cached?.pv?.fen) {
                     setPv(cached.pv);
-                    return cached.pv;
+                    return;
+                }
+                if (!enabled) {
+                    return;
                 }
 
                 const pvData = await chessDbService.getPv(fenString);
-
                 if (pvData.data) {
                     await setChessDbCacheEntry(fenString, { pv: pvData.data });
                     setPv(pvData.data);
-                    return pvData.data;
                 } else {
                     throw new Error(pvData.error);
                 }
@@ -71,16 +72,16 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
     );
 
     const fetchChessDBData = useCallback(
-        async (fenString: string): Promise<ChessDbMove[]> => {
+        async (fenString: string, enabled: boolean) => {
             if (!fenString.trim()) {
                 setData([]);
                 setError(null);
-                return [];
+                return;
             }
             if (!validateFen(fenString)) {
                 setError('Invalid FEN provided');
                 setData([]);
-                return [];
+                return;
             }
 
             setLoading(true);
@@ -90,14 +91,16 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 const cached = (await getChessDbCache(fenString)) as ChessDbCacheEntry | null;
                 if (cached?.moves) {
                     setData(cached.moves);
-                    return cached.moves;
+                    return;
+                }
+                if (!enabled) {
+                    return;
                 }
 
                 const chessDbMoves = await chessDbService.getAnalysis(fenString);
                 if (chessDbMoves.data) {
                     await setChessDbCacheEntry(fenString, { moves: chessDbMoves.data.moves });
                     setData(chessDbMoves.data.moves);
-                    return chessDbMoves.data.moves;
                 } else {
                     await queueAnalysis(fenString);
                     throw new Error(chessDbMoves.error);
@@ -105,7 +108,6 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
             } catch (err) {
                 setData([]);
                 setError(err instanceof Error ? err.message : 'Failed to fetch data');
-                return [];
             } finally {
                 setLoading(false);
             }
@@ -114,17 +116,12 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
     );
 
     useEffect(() => {
-        if (!enableMoves && !enablePv) return;
         if (!chess) return;
 
         const onMove = () => {
             const fen = chess.fen();
-            if (enableMoves) {
-                void fetchChessDBData(fen);
-            }
-            if (enablePv) {
-                void fetchPv(fen);
-            }
+            void fetchChessDBData(fen, enableMoves);
+            void fetchPv(fen, enablePv);
         };
         onMove();
 
