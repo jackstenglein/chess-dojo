@@ -85,10 +85,35 @@ export function SubmitGameModal({
         }
         setErrors({});
 
+        const isLichess = gameUrl.includes('lichess.org');
+        const isChessCom = gameUrl.includes('chess.com');
+        const userKey = isLichess
+            ? 'lichessUsername'
+            : isChessCom
+              ? 'chesscomUsername'
+              : 'username';
+
         try {
             request.onStart();
-            // Simulate API call for now
-            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            let request_obj = {
+                cohort,
+                startsAt,
+                url: gameUrl,
+                manualUsernames: {
+                    white:
+                        colorPlayed === 'White'
+                            ? players[user.username][userKey]
+                            : players[selectedOpponent][userKey],
+                    black:
+                        colorPlayed === 'Black'
+                            ? players[user.username][userKey]
+                            : players[selectedOpponent][userKey],
+                },
+            };
+
+            const resp = await api.submitRoundRobinGame(request_obj);
+            onUpdateTournaments({ tournament: resp.data });
+
             request.onSuccess('Game submitted');
             setShowMismatch(false);
             onClose();

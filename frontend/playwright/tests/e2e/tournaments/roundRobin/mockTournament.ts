@@ -1,4 +1,4 @@
-const devUser = '398ee7df-13a1-4fbf-bae3-e156f252512d';
+export const devUser = '398ee7df-13a1-4fbf-bae3-e156f252512d';
 
 export const mockTournament = {
     type: 'ROUND_ROBIN_1500-1600',
@@ -11,8 +11,8 @@ export const mockTournament = {
         shatterednirvana: {
             username: 'shatterednirvana',
             displayName: 'Shattered Nirvana',
-            lichessUsername: 'shatterednirvana',
-            chesscomUsername: 'shatterednirvana',
+            lichessUsername: 'shatterednirvana_lichess',
+            chesscomUsername: 'shatterednirvana_chesscom',
             discordUsername: 'shatterednirvana#1234',
             discordId: '1234',
             status: 'ACTIVE',
@@ -20,8 +20,8 @@ export const mockTournament = {
         [devUser]: {
             username: devUser,
             displayName: 'Test Account',
-            lichessUsername: 'jackstenglein',
-            chesscomUsername: 'jackstenglein',
+            lichessUsername: 'jackstenglein_lichess',
+            chesscomUsername: 'jackstenglein_chesscom',
             discordUsername: 'jackstenglein#1234',
             discordId: '5678',
             status: 'ACTIVE',
@@ -29,8 +29,8 @@ export const mockTournament = {
         chessmaster3000: {
             username: 'chessmaster3000',
             displayName: 'Chess Master 3000',
-            lichessUsername: 'chessmaster3000',
-            chesscomUsername: 'chessmaster3000',
+            lichessUsername: 'chessmaster3000_lichess',
+            chesscomUsername: 'chessmaster3000_chesscom',
             discordUsername: 'chessmaster3000#5678',
             discordId: '9012',
             status: 'ACTIVE',
@@ -38,14 +38,27 @@ export const mockTournament = {
         grandmaster5000: {
             username: 'grandmaster5000',
             displayName: 'Grandmaster 5000',
-            lichessUsername: 'grandmaster5000',
-            chesscomUsername: 'grandmaster5000',
+            lichessUsername: 'grandmaster5000_lichess',
+            chesscomUsername: 'grandmaster5000_chesscom',
             discordUsername: 'grandmaster5000#9012',
             discordId: '3456',
             status: 'ACTIVE',
         },
     },
     playerOrder: ['shatterednirvana', devUser, 'chessmaster3000', 'grandmaster5000'],
-    pairings: [],
+    pairings: [
+        [
+            {
+                white: devUser,
+                black: 'shatterednirvana',
+            },
+        ],
+        [
+            {
+                white: 'chessmaster3000',
+                black: devUser,
+            },
+        ],
+    ],
     updatedAt: '2026-02-22T15:00:00Z',
 };
