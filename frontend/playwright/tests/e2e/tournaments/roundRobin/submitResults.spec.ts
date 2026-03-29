@@ -65,14 +65,17 @@ test.describe('Round-Robin Page', () => {
         await expect(mismatchDialog.getByText('Must select an opponent.')).toBeVisible();
     });
 
-    for (let game of all_games) {
+    for (const game of all_games) {
         test(`submits game correctly for URL: ${game}`, async ({ page }) => {
             const isLichess = game.includes('lichess.org');
             const userKey = isLichess ? 'lichessUsername' : 'chesscomUsername';
 
             await page.route('**/tournaments/round-robin/submit-game', async (route) => {
                 const request = route.request();
-                const body = JSON.parse(request.postData() || '{}');
+                const body = JSON.parse(request.postData() || '{}') as {
+                    manualUsernames?: { white: string; black: string };
+                    [key: string]: unknown;
+                };
 
                 if (body.manualUsernames) {
                     expect(body.manualUsernames.white).toBe(

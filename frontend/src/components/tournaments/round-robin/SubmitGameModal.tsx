@@ -95,7 +95,7 @@ export function SubmitGameModal({
 
         try {
             request.onStart();
-            let request_obj = {
+            const request_obj = {
                 cohort,
                 startsAt,
                 url: gameUrl,
