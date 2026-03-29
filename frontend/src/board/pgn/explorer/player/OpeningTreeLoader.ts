@@ -6,10 +6,13 @@ import { GameData } from '@/database/explorer';
 import { getNormalizedRating } from '@/database/user';
 import { logger } from '@/logging/logger';
 import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { Mutex } from 'async-mutex';
+import { Mutex, Semaphore } from 'async-mutex';
 import { expose, proxy } from 'comlink';
 import { OpeningTree } from './OpeningTree';
 import { Color, MIN_DOWNLOAD_LIMIT, PlayerSource, SourceType } from './PlayerSource';
+
+/** Timeout in milliseconds for Chess.com and Lichess API requests. */
+const REQUEST_TIMEOUT_MS = 30_000;
 
 interface ChesscomListArchivesResponse {
     /**
@@ -31,9 +34,14 @@ export interface OpeningTreeLoaderFactory {
  * OpeningTreeLoader handles the loading of Chess.com and Lichess player opening trees.
  * It is intended to be run in a Web Worker to avoid clogging the main UI thread.
  */
+
+/** Maximum number of concurrent Chess.com archive requests. */
+const MAX_CONCURRENT_ARCHIVE_REQUESTS = 3;
+
 export class OpeningTreeLoader {
     private openingTree: OpeningTree | undefined;
     private mutex = new Mutex();
+    private archiveSemaphore = new Semaphore(MAX_CONCURRENT_ARCHIVE_REQUESTS);
     private incrementIndexedCount: ((inc?: number) => void) | undefined;
     private updateProgress: ((tree: OpeningTree) => void) | undefined;
 
@@ -97,28 +105,32 @@ export class OpeningTreeLoader {
 
         const archiveResponse = await axiosService.get<ChesscomListArchivesResponse>(
             `https://api.chess.com/pub/player/${source.username}/games/archives`,
+            { timeout: REQUEST_TIMEOUT_MS },
         );
         const archives = archiveResponse.data.archives?.toReversed() ?? [];
 
-        for (const archive of archives) {
-            try {
-                const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
-                if (!match) {
-                    logger.warn?.(
-                        `Skipping archive ${archive} because it does not match archive regex ${CHESSCOM_ARCHIVE_REGEX.source}`,
-                    );
-                    continue;
-                }
-                const year = match[1];
-                const month = match[2];
+        const archivePromises = archives.map((archive) =>
+            this.archiveSemaphore
+                .runExclusive(async () => {
+                    const match = CHESSCOM_ARCHIVE_REGEX.exec(archive);
+                    if (!match) {
+                        logger.warn?.(
+                            `Skipping archive ${archive} because it does not match archive regex ${CHESSCOM_ARCHIVE_REGEX.source}`,
+                        );
+                        return;
+                    }
+                    const year = match[1];
+                    const month = match[2];
 
-                const games = await fetchChesscomArchiveGames(source.username, year, month);
-                const promises = games.map((game) => this.indexChesscomGame(source, game));
-                await Promise.allSettled(promises);
-            } catch (err) {
-                logger.error?.(`Failed to load Chess.com archive ${archive}: `, err);
-            }
-        }
+                    const games = await fetchChesscomArchiveGames(source.username, year, month);
+                    const indexPromises = games.map((game) => this.indexChesscomGame(source, game));
+                    await Promise.allSettled(indexPromises);
+                })
+                .catch((err) => {
+                    logger.error?.(`Failed to load Chess.com archive ${archive}: `, err);
+                }),
+        );
+        await Promise.allSettled(archivePromises);
     }
 
     /**
@@ -176,12 +188,18 @@ export class OpeningTreeLoader {
             );
         }
 
+        const controller = new AbortController();
+        const connectionTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
         const response = await fetch(
             `https://lichess.org/api/games/user/${source.username}?pgnInJson=true`,
             {
                 headers: { Accept: 'application/x-ndjson' },
+                signal: controller.signal,
             },
         );
+
+        clearTimeout(connectionTimer);
 
         const reader = response.body?.getReader();
         if (!reader) {

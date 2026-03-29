@@ -12,18 +12,21 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import HelpIcon from '@mui/icons-material/Help';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
     Box,
     Card,
     CardContent,
     Chip,
+    CircularProgress,
     Grid,
+    IconButton,
     Link,
     Stack,
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AxisOptions, Chart } from 'react-charts';
 
 export function getMemberLink(ratingSystem: RatingSystem, username: string): string {
@@ -180,6 +183,8 @@ interface RatingCardProps {
     isPreferred?: boolean;
     ratingHistory?: RatingHistory[];
     isProvisional?: boolean;
+    onRefresh?: () => Promise<void>;
+    refreshCooldown?: number;
 }
 
 const RatingCard: React.FC<RatingCardProps> = ({
@@ -193,9 +198,12 @@ const RatingCard: React.FC<RatingCardProps> = ({
     isPreferred,
     ratingHistory,
     isProvisional,
+    onRefresh,
+    refreshCooldown,
 }) => {
     const { user } = useAuth();
     const dark = !user?.enableLightMode;
+    const [refreshing, setRefreshing] = useState(false);
     const ratingChange = currentRating - startRating;
     const graduation = getRatingBoundary(cohort, system);
 
@@ -251,15 +259,52 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     {currentRating}
                                     {isProvisional && '?'}
                                 </Typography>
-                                <Tooltip title='Ratings are updated every 24 hours'>
-                                    <HelpIcon
-                                        sx={{
-                                            mb: '5px',
-                                            ml: '3px',
-                                            color: 'text.secondary',
-                                        }}
-                                    />
-                                </Tooltip>
+                                {onRefresh ? (
+                                    <Tooltip
+                                        title={
+                                            refreshCooldown
+                                                ? `Try again in ${refreshCooldown}s`
+                                                : 'Refresh rating'
+                                        }
+                                    >
+                                        <span>
+                                            <IconButton
+                                                size='small'
+                                                disabled={refreshing || !!refreshCooldown}
+                                                onClick={async () => {
+                                                    setRefreshing(true);
+                                                    try {
+                                                        await onRefresh();
+                                                    } finally {
+                                                        setRefreshing(false);
+                                                    }
+                                                }}
+                                                sx={{ mb: '2px', ml: '3px' }}
+                                            >
+                                                {refreshing ? (
+                                                    <CircularProgress size={16} />
+                                                ) : (
+                                                    <RefreshIcon
+                                                        sx={{
+                                                            fontSize: '1.25rem',
+                                                            color: 'text.secondary',
+                                                        }}
+                                                    />
+                                                )}
+                                            </IconButton>
+                                        </span>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip title='Ratings are updated every 24 hours'>
+                                        <HelpIcon
+                                            sx={{
+                                                mb: '5px',
+                                                ml: '3px',
+                                                color: 'text.secondary',
+                                            }}
+                                        />
+                                    </Tooltip>
+                                )}
                             </Stack>
                         </Stack>
                     </Grid>

@@ -61,6 +61,8 @@ export const BlogSchema = z.object({
     status: BlogStatusSchema,
     /** Comments on the blog post. */
     comments: z.array(CommentSchema).nullish(),
+    /** Whether a Discord notification has been posted for this blog. */
+    discordPosted: z.boolean().optional(),
 });
 
 /** A blog post. */

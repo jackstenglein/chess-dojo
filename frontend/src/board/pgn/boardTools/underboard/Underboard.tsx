@@ -25,7 +25,14 @@ import {
     ToggleButtonProps,
     Tooltip,
 } from '@mui/material';
-import React, { forwardRef, Fragment, useImperativeHandle, useState } from 'react';
+import React, {
+    forwardRef,
+    Fragment,
+    useCallback,
+    useImperativeHandle,
+    useMemo,
+    useState,
+} from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { AuthStatus, useAuth } from '../../../../auth/Auth';
@@ -146,15 +153,47 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
             hiddenTabs = tabs.slice(maxTabs - 1);
         }
 
-        const [underboard, setUnderboard] = useState(
-            initialTab
-                ? initialTab
-                : isOwner
-                  ? DefaultUnderboardTab.Editor
-                  : game
-                    ? DefaultUnderboardTab.Tags
-                    : DefaultUnderboardTab.Explorer,
+        const fallbackTab = useMemo(
+            () =>
+                isOwner
+                    ? DefaultUnderboardTab.Editor
+                    : game
+                      ? DefaultUnderboardTab.Tags
+                      : DefaultUnderboardTab.Explorer,
+            [isOwner, game],
         );
+
+        const [storedTab, setStoredTab] = useLocalStorage<string>('underboardTab', fallbackTab);
+
+        // Local override for pages with forced initialTab (puzzles, exams, analysis).
+        // Allows tab switching without persisting to localStorage.
+        const [localOverride, setLocalOverride] = useState<string | null>(null);
+
+        const underboard = useMemo(() => {
+            if (localOverride) {
+                const overrideExists = tabs.some(
+                    (t) => (typeof t === 'string' ? t : t.name) === localOverride,
+                );
+                if (overrideExists) return localOverride;
+            }
+            if (initialTab) {
+                return initialTab;
+            }
+            const tabExists = tabs.some((t) => (typeof t === 'string' ? t : t.name) === storedTab);
+            return tabExists ? storedTab : fallbackTab;
+        }, [localOverride, initialTab, tabs, storedTab, fallbackTab]);
+
+        const setUnderboard = useCallback(
+            (tab: string) => {
+                if (initialTab) {
+                    setLocalOverride(tab);
+                } else {
+                    setStoredTab(tab);
+                }
+            },
+            [initialTab, setStoredTab],
+        );
+
         const light = useLightMode();
 
         useImperativeHandle(ref, () => {

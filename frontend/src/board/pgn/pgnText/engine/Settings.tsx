@@ -1,4 +1,5 @@
 import {
+    CLOUD_EVAL_ENABLED,
     ENGINE_ADD_INFO_ON_EVAL_CLICK,
     ENGINE_ADD_INFO_ON_MOVE_CLICK,
     ENGINE_DEPTH,
@@ -6,10 +7,12 @@ import {
     ENGINE_LINE_COUNT,
     ENGINE_NAME,
     ENGINE_PRIMARY_EVAL_TYPE,
+    ENGINE_SHOW_EVAL,
     ENGINE_THREADS,
     EngineName,
     engines,
     HIGHLIGHT_ENGINE_LINES,
+    PERSIST_ENGINE_LINES,
 } from '@/stockfish/engine/engine';
 import Icon from '@/style/Icon';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -31,6 +34,7 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -70,6 +74,19 @@ export default function Settings() {
     const [highlightEngineLines, setHighlightEngineLines] = useLocalStorage<boolean>(
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
+    );
+    const [showEngineEval, setShowEngineEval] = useLocalStorage<boolean>(
+        ENGINE_SHOW_EVAL.Key,
+        ENGINE_SHOW_EVAL.Default,
+    );
+    const [persistEngineLines, setPersistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
+    );
+
+    const [cloudEvalEnabled, setCloudEvalEnabled] = useLocalStorage<boolean>(
+        CLOUD_EVAL_ENABLED.Key,
+        CLOUD_EVAL_ENABLED.Default,
     );
 
     useEffect(() => {
@@ -162,7 +179,7 @@ export default function Settings() {
                     </Stack>
 
                     <Stack rowGap={{ xs: 2, sm: 1 }} sx={{ my: 3 }}>
-                        <FormControl>
+                        <FormControl disabled={!showEngineEval}>
                             <FormLabel>Primary Evaluation Type</FormLabel>
                             <RadioGroup
                                 row
@@ -178,6 +195,11 @@ export default function Settings() {
                                     />
                                 ))}
                             </RadioGroup>
+                            {!showEngineEval && (
+                                <Typography variant='caption' color='warning'>
+                                    Evaluation display is hidden
+                                </Typography>
+                            )}
                         </FormControl>
 
                         <FormControlLabel
@@ -208,6 +230,37 @@ export default function Settings() {
                                 />
                             }
                             label='Highlight engine lines in PGN text'
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={showEngineEval}
+                                    onChange={(e) => setShowEngineEval(e.target.checked)}
+                                />
+                            }
+                            label='Show evaluation score on engine lines'
+                            sx={!showEngineEval ? { color: 'warning.main' } : undefined}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={persistEngineLines}
+                                    onChange={(e) => setPersistEngineLines(e.target.checked)}
+                                />
+                            }
+                            label='Show already-calculated lines when engine is disabled'
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={cloudEvalEnabled}
+                                    onChange={(e) => setCloudEvalEnabled(e.target.checked)}
+                                />
+                            }
+                            label='Show Chess Cloud Database evaluation'
                         />
                     </Stack>
 

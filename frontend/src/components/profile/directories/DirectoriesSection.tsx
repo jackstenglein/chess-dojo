@@ -4,6 +4,7 @@ import { useRequest } from '@/api/Request';
 import { NavigationMenu } from '@/components/directories/navigation/NavigationMenu';
 import { GameCell } from '@/components/games/list/GameListItem';
 import { PAGE_SIZE_OPTIONS } from '@/components/ui/pagination';
+import useGame from '@/context/useGame';
 import { GameResult } from '@/database/game.ts';
 import { useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
@@ -35,6 +36,7 @@ import {
     GridToolbarContainer,
     GridToolbarDensitySelector,
     GridToolbarFilterButton,
+    useGridApiRef,
 } from '@mui/x-data-grid-pro';
 import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -105,6 +107,7 @@ const DirectorySection = ({
         directory: 'home',
     });
     const router = useRouter();
+    const { onNavigateToGame } = useGame();
 
     const [columnVisibility, setColumnVisibility] = useLocalStorage<GridColumnVisibilityModel>(
         `/DirectoryTable/${namespace}/visibility`,
@@ -124,11 +127,18 @@ const DirectorySection = ({
         `/DirectoriesSection/${namespace}/sortModel`,
         [
             {
-                field: 'createdAt',
+                field: 'date',
                 sort: 'desc',
             },
         ],
     );
+
+    const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
+        `/DirectoryTable/${namespace}/columnOrder`,
+        [],
+    );
+
+    const apiRef = useGridApiRef();
 
     const directoryId = searchParams.get('directory') || 'home';
     const directoryOwner = searchParams.get('directoryOwner') || defaultDirectoryOwner;
@@ -191,14 +201,19 @@ const DirectorySection = ({
             });
             setRowSelectionModel({ type: 'include', ids: new Set() });
         } else {
-            const url = `/games/${params.row.metadata.cohort.replaceAll('+', '%2B')}/${params.row.metadata.id.replaceAll(
-                '?',
-                '%3F',
-            )}?directory=${directory.id}&directoryOwner=${directory.owner}`;
-            if (event.shiftKey) {
-                window.open(url, '_blank');
+            const { cohort, id } = params.row.metadata;
+            if (onNavigateToGame && !event.shiftKey) {
+                onNavigateToGame(cohort, id);
             } else {
-                router.push(url);
+                const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll(
+                    '?',
+                    '%3F',
+                )}?directory=${directory.id}&directoryOwner=${directory.owner}`;
+                if (event.shiftKey) {
+                    window.open(url, '_blank');
+                } else {
+                    router.push(url);
+                }
             }
         }
     };
@@ -261,6 +276,7 @@ const DirectorySection = ({
                 )}
 
                 <DataGridPro
+                    apiRef={apiRef}
                     autoHeight
                     listViewColumn={listViewColDef}
                     listView={isMobile}
@@ -268,6 +284,12 @@ const DirectorySection = ({
                     columns={isAdmin ? adminColumns : publicColumns}
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
+                    onColumnOrderChange={() => {
+                        const gridColumns = apiRef.current?.getAllColumns();
+                        if (gridColumns) {
+                            setColumnOrder(gridColumns.map((col) => col.field));
+                        }
+                    }}
                     density={density}
                     onDensityChange={(d) => setDensity(d)}
                     onRowClick={onClickRow}
@@ -287,6 +309,9 @@ const DirectorySection = ({
                         density: 'standard',
                         pagination: {
                             paginationModel: { pageSize: 10 },
+                        },
+                        columns: {
+                            orderedFields: columnOrder.length > 0 ? columnOrder : undefined,
                         },
                     }}
                     sortModel={sortModel}

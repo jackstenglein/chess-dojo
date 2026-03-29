@@ -135,6 +135,7 @@ functions:
 
   updateProgress:
     handler: progress/update/main.go
+    timeout: 10
     events:
       - httpApi:
           path: /user/progress/v2
@@ -148,6 +149,10 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+    environment:
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      discordSenseiRoleId: ${file(../config-${sls:stage}.yml):discordSenseiRoleId}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -157,6 +162,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:Query
         Resource: ${param:RequirementsTableArn}
       - Effect: Allow
         Action:
@@ -734,6 +740,14 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: ${param:TimelineTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:GamesTableArn}
+                - '/index/OwnerIdx'
 
   getStatistics:
     handler: statistics/get/main.go

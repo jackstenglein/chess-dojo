@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 
 export interface UseTimelineResponse {
+    owner: string;
     request: Request;
     entries: TimelineEntry[];
     hasMore: boolean;
@@ -125,6 +126,7 @@ export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, child
     );
 
     const timelineData = {
+        owner,
         request,
         entries,
         hasMore: startKey !== undefined,

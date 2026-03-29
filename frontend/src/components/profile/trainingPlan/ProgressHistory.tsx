@@ -95,6 +95,9 @@ export const ProgressHistoryItem = ({
         updateItem({ ...item, [key]: value });
     };
 
+    const rawSuffix = requirement.progressBarSuffix?.trim();
+    const countLabel = rawSuffix ? rawSuffix.charAt(0).toUpperCase() + rawSuffix.slice(1) : 'Count';
+
     return (
         <Box>
             <Stack
@@ -153,7 +156,7 @@ export const ProgressHistoryItem = ({
                         <Grid size={{ xs: 12, sm: 'grow' }}>
                             <TextField
                                 data-testid='task-history-count'
-                                label='Count'
+                                label={countLabel}
                                 value={item.count}
                                 onChange={(event) => onChange('count', event.target.value)}
                                 fullWidth
@@ -364,7 +367,7 @@ function getTimelineUpdate(
         progress.minutesSpent[item.cohort] =
             (progress.minutesSpent[item.cohort] ?? 0) + minutesSpent;
 
-        const previousCount = progress.counts[cohort] ?? 0;
+        const previousCount = progress.counts[cohort] ?? (requirement.startCount || 0);
         const newCount =
             item.entry.scoreboardDisplay === ScoreboardDisplay.Minutes
                 ? previousCount + minutesSpent
@@ -434,12 +437,15 @@ export function useProgressHistoryEditor({
         requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes;
 
     const initialItems: HistoryItem[] = useMemo(() => {
+        // Older timeline entries in the database may have previousCount < startCount.
+        // It's important to make sure that count will be newCount - startCount
+        // in these cases, so we take Math.max(previousCount, startCount || 0).
         return entries
             .filter((t) => t.requirementId === requirement?.id)
             .sort((a, b) => (a.date || a.createdAt).localeCompare(b.date || b.createdAt))
             .map((t, idx) => ({
                 date: DateTime.fromISO(t.date || t.createdAt),
-                count: `${t.newCount - t.previousCount}`,
+                count: `${t.newCount - Math.max(t.previousCount, requirement?.startCount || 0)}`,
                 hours: `${Math.floor(t.minutesSpent / 60)}`,
                 minutes: `${t.minutesSpent % 60}`,
                 notes: t.notes,
@@ -577,6 +583,9 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         onSuccess: onClose,
     });
 
+    const rawSuffix = requirement?.progressBarSuffix?.trim();
+    const countLabel = rawSuffix ? rawSuffix.charAt(0).toUpperCase() + rawSuffix.slice(1) : 'Count';
+
     if (timelineRequest.isLoading()) {
         return (
             <DialogContent>
@@ -603,7 +612,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
 
                 <Stack spacing={3}>
                     {items.length === 0 ? (
-                        <DialogContentText>
+                        <DialogContentText data-testid='no-history-text'>
                             No history yet. Use the + button above to log your first entry.
                         </DialogContentText>
                     ) : (
@@ -629,8 +638,8 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
                 {!isTimeOnly && (
-                    <Typography color='text.secondary'>
-                        Total Count: {totalCount}. Current Cohort: {cohortCount}
+                    <Typography color='text.secondary' data-testid='total-count-summary'>
+                        Total {countLabel} : {totalCount}. Current Cohort: {cohortCount}
                     </Typography>
                 )}
                 <Typography color='text.secondary'>

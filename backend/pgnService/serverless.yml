@@ -304,6 +304,27 @@ functions:
         Resource:
           - ${param:GamesTableArn}
 
+  mergeMultiple:
+    timeout: 28
+    handler: game/mergeMultiple.handler
+    environment:
+      frontendHost: ${file(../config-${sls:stage}.yml):frontendHost}
+    events:
+      - httpApi:
+          path: /game/merge-multiple
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+          - dynamodb:PutItem
+        Resource:
+          - ${param:GamesTableArn}
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']

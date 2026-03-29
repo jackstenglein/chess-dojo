@@ -4,13 +4,13 @@
     "description": "Common code shared between ChessDojo website, mobile app and backend",
     "main": "index.ts",
     "scripts": {
-        "test": "jest --config jestconfig.json",
+        "test": "vitest run",
         "lint": "eslint ."
     },
     "author": "jackstenglein",
     "license": "MIT",
     "dependencies": {
-        "@jackstenglein/chess": "^2.2.18",
+        "@jackstenglein/chess": "^2.2.19",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
         "uuid": "^13.0.0",
@@ -23,6 +23,7 @@
         "jiti": "^2.6.1",
         "prettier": "^3.8.1",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "typescript-eslint": "^8.54.0"
+        "typescript-eslint": "^8.54.0",
+        "vitest": "^4.1.0"
     }
 }

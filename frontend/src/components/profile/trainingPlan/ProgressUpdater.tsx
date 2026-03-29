@@ -2,8 +2,8 @@ import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { getTimerSeconds } from '@/components/navigation/navbar/TimerButton';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
+import { TimerContext } from '@/components/timer/TimerContext';
 import {
     CustomTask,
     Requirement,
@@ -28,8 +28,8 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
-import { useState } from 'react';
-import InputSlider from './InputSlider';
+import { use, useState } from 'react';
+import { InputSlider } from './InputSlider';
 import { TaskDialogView } from './TaskDialog';
 
 const NUMBER_REGEX = /^[0-9]*$/;
@@ -44,13 +44,13 @@ interface ProgressUpdaterProps {
     setView?: (view: TaskDialogView) => void;
 }
 
-const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
+export const ProgressUpdater = ({
     requirement,
     progress,
     cohort,
     onClose,
     setView,
-}) => {
+}: ProgressUpdaterProps) => {
     const { user } = useAuth();
     const api = useApi();
     const { entries, onNewEntry } = useTimelineContext();
@@ -62,9 +62,13 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
     const [markComplete, setMarkComplete] = useState(true);
     const [date, setDate] = useState<DateTime | null>(DateTime.now());
 
-    const timerSeconds = getTimerSeconds(user);
-    const timerHours = Math.floor(timerSeconds / SECONDS_PER_HOUR);
-    const timerMinutes = Math.floor((timerSeconds % SECONDS_PER_HOUR) / 60);
+    const { task: timerTask, onClear: onClearTimer, timerSeconds } = use(TimerContext);
+    let timerHours = Math.floor(timerSeconds / SECONDS_PER_HOUR);
+    let timerMinutes = Math.floor((timerSeconds % SECONDS_PER_HOUR) / 60);
+    if (timerTask && timerTask.id !== requirement.id) {
+        timerHours = 0;
+        timerMinutes = 0;
+    }
     const [hours, setHours] = useState(timerHours ? `${timerHours}` : '');
     const [minutes, setMinutes] = useState(timerMinutes ? `${timerMinutes}` : '');
 
@@ -144,6 +148,9 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
                 setHours('');
                 setMinutes('');
                 request.reset();
+                if (!timerTask || timerTask.id === requirement.id) {
+                    onClearTimer();
+                }
             })
             .catch((err) => {
                 request.onFailure(err);
@@ -280,5 +287,3 @@ const ProgressUpdater: React.FC<ProgressUpdaterProps> = ({
         </>
     );
 };
-
-export default ProgressUpdater;

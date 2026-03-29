@@ -169,8 +169,6 @@ export function useFilters(): Filters {
                 JSON.parse(searchParams.get('tournaments') || '[]') as TimeControlType[],
             );
         }
-
-        setSearchParams({});
     }, [searchParams, setSearchParams, setSessions, setTypes, setTournamentTimeControls]);
 
     const weekStartOn = user?.weekStart ?? originalWeekStartOn;

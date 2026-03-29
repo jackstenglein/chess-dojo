@@ -36,9 +36,13 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { getUpcomingGameSchedule, SCHEDULE_CLASSICAL_GAME_TASK_ID } from '../suggestedTasks';
+import {
+    getUpcomingGameSchedule,
+    MINIMUM_TASKS,
+    SCHEDULE_CLASSICAL_GAME_TASK_ID,
+} from '../suggestedTasks';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
 
@@ -68,7 +72,13 @@ function getGraduationFakeTask(cohort: string): Requirement {
 }
 
 /** Renders the full training plan view of the training plan tab. */
-export function FullTrainingPlan() {
+export function FullTrainingPlan({
+    cohort,
+    setCohort,
+}: {
+    cohort: string;
+    setCohort: (c: string) => void;
+}) {
     const {
         user,
         timeline,
@@ -79,7 +89,6 @@ export function FullTrainingPlan() {
         isCurrentUser,
     } = use(TrainingPlanContext);
 
-    const [cohort, setCohort] = useState(user.dojoCohort);
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
@@ -95,10 +104,6 @@ export function FullTrainingPlan() {
         [RequirementCategory.NonDojo]: false,
     });
 
-    useEffect(() => {
-        setCohort(user.dojoCohort);
-    }, [user.dojoCohort, setCohort]);
-
     const sections: Section[] = useMemo(() => {
         const sections: Section[] = [];
         const subscriptionTier = getSubscriptionTier(user);
@@ -113,10 +118,11 @@ export function FullTrainingPlan() {
             }
 
             const s = sections.find((s) => s.category === task.category);
-            const complete =
-                task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID
-                    ? isComplete(cohort, task, user.progress[task.id], timeline, false)
-                    : getUpcomingGameSchedule(user.gameSchedule).length > 0;
+            const complete = MINIMUM_TASKS.has(task.id)
+                ? false
+                : task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID
+                  ? isComplete(cohort, task, user.progress[task.id], timeline, false)
+                  : getUpcomingGameSchedule(user.gameSchedule).length > 0;
 
             if (s === undefined) {
                 const value = getCategoryScore(user, cohort, task.category, requirements, timeline);
