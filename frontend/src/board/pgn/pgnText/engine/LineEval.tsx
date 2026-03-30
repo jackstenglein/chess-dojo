@@ -4,13 +4,14 @@ import {
     ENGINE_ADD_INFO_ON_EVAL_CLICK,
     ENGINE_ADD_INFO_ON_MOVE_CLICK,
     ENGINE_PRIMARY_EVAL_TYPE,
+    ENGINE_SHOW_EVAL,
     EngineInfo,
     LineEval,
     PrimaryEvalType,
 } from '@/stockfish/engine/engine';
 import { Chess, Color, Move } from '@jackstenglein/chess';
-import { Box, ListItem, Skeleton, styled, Typography } from '@mui/material';
-import { useCallback, useEffect } from 'react';
+import { Box, ListItem, Skeleton, styled, Tooltip, Typography } from '@mui/material';
+import { ReactElement, useCallback, useEffect } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
 
@@ -18,9 +19,11 @@ interface Props {
     line: LineEval;
     engineInfo: EngineInfo;
     isTop?: boolean;
+    icon?: ReactElement;
+    enabled: boolean;
 }
 
-export default function LineEvaluation({ engineInfo, line, isTop }: Props) {
+export default function LineEvaluation({ engineInfo, line, isTop, icon, enabled }: Props) {
     const { chess, addEngineMoveRef } = useChess();
     const reconcile = useReconcile();
     const [primaryEvalType] = useLocalStorage<PrimaryEvalType>(
@@ -35,6 +38,7 @@ export default function LineEvaluation({ engineInfo, line, isTop }: Props) {
         ENGINE_ADD_INFO_ON_MOVE_CLICK.Key,
         ENGINE_ADD_INFO_ON_MOVE_CLICK.Default,
     );
+    const [showEval] = useLocalStorage(ENGINE_SHOW_EVAL.Key, ENGINE_SHOW_EVAL.Default);
 
     const evaluation = line ? formatLineEval(line) : '?';
 
@@ -114,6 +118,10 @@ export default function LineEvaluation({ engineInfo, line, isTop }: Props) {
     const showSkeleton = line.depth === 0 || line.fen !== chess?.fen();
     const moves = line.pv.map(moveLineUciToMove(line.fen));
 
+    if (!enabled && showSkeleton) {
+        return null;
+    }
+
     const onClick = (index: number, addInfo: boolean = addInfoOnMove) => {
         addEngineMove(index, addInfo);
     };
@@ -126,60 +134,87 @@ export default function LineEvaluation({ engineInfo, line, isTop }: Props) {
 
     return (
         <ListItem disablePadding sx={{ overflowX: 'clip', alignItems: 'center' }}>
-            <Box
-                onClick={onClickEval}
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    mr: 0.5,
-                    my: 0.5,
-                    py: '1px',
-                    backgroundColor: isBlackCp ? 'black' : 'white',
-                    borderRadius: '5px',
-                    border: '1px solid',
-                    borderColor: '#424242',
-                    height: '23px',
-                    minHeight: '23px',
-                    cursor: 'pointer',
-                    '&:hover': {
-                        opacity: 0.85,
-                    },
-                    ...(primaryEvalType === PrimaryEvalType.Eval
-                        ? {
-                              width: '45px',
-                              minWidth: '45px',
-                          }
-                        : {
-                              px: 0.5,
-                              whiteSpace: 'nowrap',
-                          }),
-                }}
-                data-fen={moves.at(-1)?.after}
-                data-from={moves.at(-1)?.from}
-                data-to={moves.at(-1)?.to}
-            >
-                {showSkeleton ? (
-                    <Skeleton variant='rounded' animation='wave' sx={{ color: 'transparent' }}>
-                        placeholder
-                    </Skeleton>
-                ) : (
-                    <Typography
-                        component='span'
+            {icon && (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mr: 0.5,
+                        color: 'text.secondary',
+                        fontSize: '1rem',
+                        flexShrink: 0,
+                    }}
+                >
+                    {icon}
+                </Box>
+            )}
+
+            {showEval && (
+                <Tooltip
+                    title={showSkeleton ? '' : `Depth: ${line.depth}`}
+                    placement='left'
+                    disableInteractive
+                >
+                    <Box
+                        onClick={onClickEval}
                         sx={{
-                            pt: '2px',
-                            fontSize: '0.8rem',
-                            fontWeight: 'bold',
-                            color: isBlackCp ? 'white' : 'black',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            mr: 0.5,
+                            my: 0.5,
+                            py: '1px',
+                            backgroundColor: isBlackCp ? 'black' : 'white',
+                            borderRadius: '5px',
+                            border: '1px solid',
+                            borderColor: '#424242',
+                            height: '23px',
+                            minHeight: '23px',
+                            cursor: 'pointer',
+                            '&:hover': {
+                                opacity: 0.85,
+                            },
+                            ...(primaryEvalType === PrimaryEvalType.Eval
+                                ? {
+                                      width: '45px',
+                                      minWidth: '45px',
+                                  }
+                                : {
+                                      px: 0.5,
+                                      whiteSpace: 'nowrap',
+                                  }),
                         }}
                         data-fen={moves.at(-1)?.after}
                         data-from={moves.at(-1)?.from}
                         data-to={moves.at(-1)?.to}
                     >
-                        {primaryEvalType === PrimaryEvalType.Eval ? evaluation : wdl}
-                    </Typography>
-                )}
-            </Box>
+                        {showSkeleton ? (
+                            <Skeleton
+                                variant='rounded'
+                                animation='wave'
+                                sx={{ color: 'transparent' }}
+                            >
+                                placeholder
+                            </Skeleton>
+                        ) : (
+                            <Typography
+                                component='span'
+                                sx={{
+                                    pt: '2px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 'bold',
+                                    color: isBlackCp ? 'white' : 'black',
+                                }}
+                                data-fen={moves.at(-1)?.after}
+                                data-from={moves.at(-1)?.from}
+                                data-to={moves.at(-1)?.to}
+                            >
+                                {primaryEvalType === PrimaryEvalType.Eval ? evaluation : wdl}
+                            </Typography>
+                        )}
+                    </Box>
+                </Tooltip>
+            )}
 
             <Box sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {showSkeleton ? (

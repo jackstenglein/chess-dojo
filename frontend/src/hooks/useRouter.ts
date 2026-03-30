@@ -6,6 +6,7 @@ export const pagesWithVideos = [
     /\/scoreboard\/.*/,
     /^\/learn\/guides$/,
     /^\/learn\/live-classes$/,
+    /^\/live-classes$/,
 
     // Blog
     /^\/admin\/blog/,

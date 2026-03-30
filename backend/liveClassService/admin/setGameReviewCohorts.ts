@@ -81,6 +81,16 @@ async function handleRequest(request: SetGameReviewCohortsRequest) {
             cohort.id = uuidv4();
         }
 
+        // Whitelist persisted fields to avoid storing backend-enriched output fields
+        for (const [key, member] of Object.entries(cohort.members)) {
+            cohort.members[key] = {
+                username: member.username,
+                displayName: member.displayName,
+                queueDate: member.queueDate,
+                paused: member.paused,
+            };
+        }
+
         const builder = new UpdateItemBuilder<GameReviewCohort>()
             .key('type', 'GAME_REVIEW_COHORT')
             .key('id', cohort.id)

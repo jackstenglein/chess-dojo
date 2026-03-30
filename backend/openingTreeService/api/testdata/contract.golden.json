@@ -1,0 +1,110 @@
+{
+  "positions": {
+    "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1": {
+      "white": 1,
+      "black": 0,
+      "draws": 0,
+      "moves": [],
+      "games": [
+        "https://lichess.org/contract1"
+      ]
+    },
+    "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 1": {
+      "white": 1,
+      "black": 0,
+      "draws": 0,
+      "moves": [
+        {
+          "san": "Nc6",
+          "white": 1,
+          "black": 0,
+          "draws": 0,
+          "games": [
+            "https://lichess.org/contract1"
+          ]
+        }
+      ],
+      "games": [
+        "https://lichess.org/contract1"
+      ]
+    },
+    "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 1": {
+      "white": 1,
+      "black": 0,
+      "draws": 0,
+      "moves": [
+        {
+          "san": "Nf3",
+          "white": 1,
+          "black": 0,
+          "draws": 0,
+          "games": [
+            "https://lichess.org/contract1"
+          ]
+        }
+      ],
+      "games": [
+        "https://lichess.org/contract1"
+      ]
+    },
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1": {
+      "white": 1,
+      "black": 0,
+      "draws": 0,
+      "moves": [
+        {
+          "san": "e5",
+          "white": 1,
+          "black": 0,
+          "draws": 0,
+          "games": [
+            "https://lichess.org/contract1"
+          ]
+        }
+      ],
+      "games": [
+        "https://lichess.org/contract1"
+      ]
+    },
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1": {
+      "white": 1,
+      "black": 0,
+      "draws": 0,
+      "moves": [
+        {
+          "san": "e4",
+          "white": 1,
+          "black": 0,
+          "draws": 0,
+          "games": [
+            "https://lichess.org/contract1"
+          ]
+        }
+      ],
+      "games": [
+        "https://lichess.org/contract1"
+      ]
+    }
+  },
+  "games": {
+    "https://lichess.org/contract1": {
+      "source": {
+        "type": "lichess"
+      },
+      "playerColor": "white",
+      "white": "alice",
+      "black": "bob",
+      "whiteElo": 1800,
+      "blackElo": 1750,
+      "result": "1-0",
+      "plyCount": 4,
+      "rated": true,
+      "url": "https://lichess.org/contract1",
+      "headers": {
+        "Event": "Contract Test",
+        "Result": "1-0"
+      },
+      "timeClass": "blitz"
+    }
+  }
+}

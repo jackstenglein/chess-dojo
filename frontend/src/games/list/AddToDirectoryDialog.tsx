@@ -69,6 +69,7 @@ export const AddToDirectoryDialog = ({
                 blackElo: game.headers.BlackElo,
                 result: game.headers.Result,
                 unlisted: game.unlisted ?? false,
+                date: game.date,
             });
         }
 

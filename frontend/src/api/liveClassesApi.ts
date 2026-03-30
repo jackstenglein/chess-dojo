@@ -7,6 +7,7 @@ import {
     LiveClass,
     PauseQueueDateRequest,
     ResetQueueDateRequest,
+    SAMPLE_LIVE_CLASS_S3_KEY,
     SetGameReviewCohortsRequest,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { AxiosResponse } from 'axios';
@@ -36,10 +37,15 @@ export function listRecordings() {
 }
 
 export function getRecording(request: GetRecordingRequest) {
-    return axiosService.get<{ url: string }>(`/live-classes/recording`, {
-        params: request,
-        functionName: 'getRecording',
-    });
+    return axiosService.get<{ url: string }>(
+        request.s3Key === SAMPLE_LIVE_CLASS_S3_KEY
+            ? `/public/live-classes/recording`
+            : `/live-classes/recording`,
+        {
+            params: request,
+            functionName: 'getRecording',
+        },
+    );
 }
 
 /**
@@ -80,9 +86,16 @@ export function pauseQueueDate(request: PauseQueueDateRequest) {
     );
 }
 
+export interface LectureTierUser {
+    username: string;
+    displayName: string;
+    dojoCohort: string;
+}
+
 export interface ListGameReviewCohortsResponse {
     gameReviewCohorts: GameReviewCohort[];
     unassignedUsers: GameReviewCohortMember[];
+    lectureUsers: LectureTierUser[];
 }
 
 /**
@@ -94,6 +107,7 @@ export async function listGameReviewCohorts(): Promise<
     const response = await axiosService.get<{
         gameReviewCohorts: GameReviewCohort[];
         unassignedUsers: User[];
+        lectureUsers: LectureTierUser[];
     }>(`/admin/game-review-cohorts`, {
         functionName: 'listGameReviewCohorts',
     });
@@ -105,6 +119,7 @@ export async function listGameReviewCohorts(): Promise<
                 username: u.username,
                 displayName: u.displayName,
                 queueDate: u.createdAt,
+                dojoCohort: u.dojoCohort,
             })),
         },
     };

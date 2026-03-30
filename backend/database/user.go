@@ -262,6 +262,9 @@ type User struct {
 	// The user's preferred time format on the calendar
 	TimeFormat string `dynamodbav:"timeFormat" json:"timeFormat"`
 
+	// The user's preferred language for the UI (e.g. "de", "es"). Empty = English.
+	Language string `dynamodbav:"language,omitempty" json:"language,omitempty"`
+
 	// The user's list of custom tasks
 	CustomTasks []*CustomTask `dynamodbav:"customTasks" json:"customTasks"`
 
@@ -357,6 +360,13 @@ type User struct {
 
 	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
 	TimerStartedAt string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt"`
+
+	// The ID of the task associated with the timer, if any.
+	TimerTaskId string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId"`
+
+	// Tracks which milestone notifications have been sent for this user,
+	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
+	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
@@ -738,6 +748,9 @@ type UserUpdate struct {
 	// The user's preferred time format on the calendar
 	TimeFormat *string `dynamodbav:"timeFormat,omitempty" json:"timeFormat,omitempty"`
 
+	// The user's preferred language for the UI (e.g. "de", "es"). Empty = English.
+	Language *string `dynamodbav:"language,omitempty" json:"language,omitempty"`
+
 	// The user's list of custom tasks
 	CustomTasks *[]*CustomTask `dynamodbav:"customTasks,omitempty" json:"customTasks,omitempty"`
 
@@ -814,6 +827,9 @@ type UserUpdate struct {
 
 	// The date the timer was last started or unpaused. If the timer is not running or paused, it will be empty.
 	TimerStartedAt *string `dynamodbav:"timerStartedAt,omitempty" json:"timerStartedAt,omitempty"`
+
+	// The ID of the task associated with the timer, if any.
+	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem
@@ -926,6 +942,10 @@ type UserProgressUpdater interface {
 
 	// UpdateUserProgress sets the given progress entry in the user's progress map.
 	UpdateUserProgress(username string, progressEntry *RequirementProgress) (*User, error)
+
+	// AddSentMilestoneNotification appends a milestone key to the user's
+	// SentMilestoneNotifications string set.
+	AddSentMilestoneNotification(username string, milestoneKey string) error
 }
 
 type AdminUserLister interface {
@@ -1195,6 +1215,26 @@ func (repo *dynamoRepository) UpdateUserProgress(username string, progressEntry 
 		return nil, errors.Wrap(500, "Temporary server error", "Failed to unmarshal UpdateItem result", err)
 	}
 	return &user, nil
+}
+
+// AddSentMilestoneNotification appends a milestone key to the user's
+// SentMilestoneNotifications string set using DynamoDB ADD.
+func (repo *dynamoRepository) AddSentMilestoneNotification(username string, milestoneKey string) error {
+	input := &dynamodb.UpdateItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"username": {S: aws.String(username)},
+		},
+		UpdateExpression: aws.String("ADD #smn :mk"),
+		ExpressionAttributeNames: map[string]*string{
+			"#smn": aws.String("sentMilestoneNotifications"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":mk": {SS: []*string{aws.String(milestoneKey)}},
+		},
+		TableName: aws.String(userTable),
+	}
+	_, err := repo.svc.UpdateItem(input)
+	return errors.Wrap(500, "Temporary server error", "Failed to add milestone notification", err)
 }
 
 // GetUser returns the User object with the provided username.

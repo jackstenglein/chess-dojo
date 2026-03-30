@@ -1,7 +1,9 @@
+import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { formatTime, RequirementCategory } from '@/database/requirement';
-import { TimelineEntry } from '@/database/timeline';
-import { WorkGoalHistory, WorkGoalSettings } from '@/database/user';
+import { formatTime, RequirementCategory, ScoreboardDisplay } from '@/database/requirement';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
+import { User, WorkGoalHistory, WorkGoalSettings } from '@/database/user';
 import CohortIcon, { cohortIcons } from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useLightMode } from '@/style/useLightMode';
@@ -12,19 +14,24 @@ import {
     getActivity,
     mixColors,
 } from '@jackstenglein/chess-dojo-common/src/heatmap/heatmap';
-import { CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
+import { Bedtime, CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
 import {
     Box,
     Checkbox,
     Divider,
     FormControlLabel,
+    Menu,
+    MenuItem,
     Paper,
     PaperProps,
+    PopoverPosition,
     Stack,
     Tooltip,
     Typography,
 } from '@mui/material';
-import { cloneElement, useEffect, useMemo, useState } from 'react';
+import { DateTime } from 'luxon';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityCalendar,
     Activity as BaseActivity,
@@ -32,6 +39,8 @@ import {
     DayIndex,
 } from 'react-activity-calendar';
 import { GiCrossedSwords } from 'react-icons/gi';
+import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long-press';
+import { useTimelineContext } from '../activity/useTimeline';
 import { DEFAULT_WORK_GOAL } from '../trainingPlan/workGoal';
 import { MIN_BLOCK_SIZE } from './HeatmapCard';
 import { HeatmapOptions, TimelineEntryField, useHeatmapOptions } from './HeatmapOptions';
@@ -58,6 +67,9 @@ interface ExtendedBaseActivity extends BaseActivity {
 
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
+
+    /** Whether the user marked the date as a rest day. */
+    restDay?: boolean;
 
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
@@ -93,6 +105,9 @@ interface WeekSummary {
 
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
+
+    /** Whether the user marked any date in the week as a rest day. */
+    restDay?: boolean;
 
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
@@ -160,7 +175,19 @@ export function Heatmap({
 }) {
     const isLight = useLightMode();
     const { user: viewer } = useAuth();
+    const api = useApi();
+    const timeline = useTimelineContext();
+    const editable = viewer?.username === timeline.owner;
+    const request = useRequest();
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
     const [, setCalendarRef] = useState<HTMLElement | null>(null);
+    const [contextMenu, setContextMenu] = useState<
+        | {
+              activity: Activity | ExtendedBaseActivity;
+              position: PopoverPosition;
+          }
+        | undefined
+    >();
     const { field, colorMode, maxPoints, maxMinutes, weekStartOn, weekEndOn } = useHeatmapOptions();
     const clamp = field === 'dojoPoints' ? maxPoints : maxMinutes;
     const theme = isLight ? LIGHT_THEME : DARK_THEME;
@@ -182,11 +209,115 @@ export function Heatmap({
     }, [entries, minDate, maxDate, viewer, weekEndOn]);
 
     useEffect(() => {
-        const scroller = document.getElementById('heatmap-scroll-container');
+        const scroller = scrollerRef.current;
         if (scroller) {
             scroller.scrollLeft = scroller.scrollWidth;
         }
-    });
+    }, []);
+
+    const closeContextMenu = () => setContextMenu(undefined);
+
+    const onBlockContextMenu = (
+        event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
+
+        setContextMenu({
+            activity,
+            position: {
+                top: event.clientY,
+                left: event.clientX,
+            },
+        });
+    };
+
+    const onBlockLongPress = (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
+
+        const touch = 'touches' in event ? event.touches[0] : undefined;
+        if (!touch) {
+            return;
+        }
+
+        setContextMenu({
+            activity,
+            position: {
+                top: touch.clientY,
+                left: touch.clientX,
+            },
+        });
+    };
+
+    const currentRestDayEntry =
+        contextMenu && viewer
+            ? findRestDayEntry(entries, contextMenu.activity.date, viewer)
+            : undefined;
+
+    const saveRestDay = async () => {
+        if (!viewer || !contextMenu || currentRestDayEntry) {
+            return;
+        }
+
+        closeContextMenu();
+        const entry = createRestDayEntry(viewer, contextMenu.activity.date);
+        timeline.onEditEntries([entry]);
+
+        try {
+            request.onStart();
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [entry],
+                deleted: [],
+            });
+            request.onSuccess();
+        } catch (err) {
+            timeline.onDeleteEntries([entry]);
+            request.onFailure(err);
+        }
+    };
+
+    const clearRestDay = async () => {
+        if (!currentRestDayEntry) {
+            return;
+        }
+
+        closeContextMenu();
+        timeline.onDeleteEntries([currentRestDayEntry]);
+        try {
+            request.onStart();
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [],
+                deleted: [currentRestDayEntry],
+            });
+            request.onSuccess();
+        } catch (err) {
+            timeline.onEditEntries([currentRestDayEntry]);
+            request.onFailure(err);
+        }
+    };
 
     return (
         <Stack
@@ -202,9 +333,10 @@ export function Heatmap({
                 },
             }}
         >
+            <RequestSnackbar request={request} />
             <HeatmapOptions onPopOut={onPopOut} />
 
-            <Stack id='heatmap-scroll-container' direction='row' sx={{ overflowX: 'auto' }}>
+            <Stack ref={scrollerRef} direction='row' sx={{ overflowX: 'auto' }}>
                 <Paper
                     elevation={1}
                     sx={{ position: 'sticky', left: 0, pr: 0.75, borderRadius: 0, pb: 4 }}
@@ -263,6 +395,9 @@ export function Heatmap({
                                 workGoalHistory={workGoalHistory}
                                 monochrome={colorMode === 'monochrome'}
                                 maxDate={maxDate}
+                                editable={editable}
+                                onContextMenu={onBlockContextMenu}
+                                onLongPress={onBlockLongPress}
                             />
                         )}
                         maxLevel={MAX_LEVEL}
@@ -275,6 +410,7 @@ export function Heatmap({
                     <Divider sx={{ mt: '2px' }} />
                 </Stack>
             </Stack>
+
             <Stack
                 direction='row'
                 justifyContent='space-between'
@@ -321,6 +457,36 @@ export function Heatmap({
                 </Stack>
             </Stack>
             <CategoryLegend />
+            <Menu
+                open={!!contextMenu}
+                onClose={closeContextMenu}
+                anchorReference='anchorPosition'
+                anchorPosition={contextMenu?.position}
+                slotProps={{
+                    root: {
+                        onContextMenu: (event: ReactMouseEvent) => {
+                            event.preventDefault();
+                            closeContextMenu();
+                        },
+                    },
+                }}
+            >
+                {currentRestDayEntry ? (
+                    <MenuItem onClick={() => void clearRestDay()} disabled={request.isLoading()}>
+                        <Stack direction='row' alignItems='center' gap={1}>
+                            <RestDayIcon size={18} />
+                            <Typography>Clear Rest Day</Typography>
+                        </Stack>
+                    </MenuItem>
+                ) : (
+                    <MenuItem onClick={() => void saveRestDay()} disabled={request.isLoading()}>
+                        <Stack direction='row' alignItems='center' gap={1}>
+                            <RestDayIcon size={18} />
+                            <Typography>Rest Day</Typography>
+                        </Stack>
+                    </MenuItem>
+                )}
+            </Menu>
         </Stack>
     );
 }
@@ -392,6 +558,13 @@ export function CategoryLegend() {
                             Classical Game Played
                         </Typography>
                     </Stack>
+
+                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                        <RestDayIcon size={12} />
+                        <Typography variant='caption' pt='2px'>
+                            Rest Day
+                        </Typography>
+                    </Stack>
                 </Stack>
             )}
         </Stack>
@@ -430,6 +603,9 @@ function Block({
     workGoalHistory,
     monochrome,
     maxDate,
+    editable,
+    onContextMenu,
+    onLongPress,
 }: {
     block: BlockElement;
     activity: Activity | ExtendedBaseActivity;
@@ -441,6 +617,15 @@ function Block({
     workGoalHistory: WorkGoalHistory[];
     monochrome?: boolean;
     maxDate: string;
+    editable?: boolean;
+    onContextMenu?: (
+        event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => void;
+    onLongPress?: (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => void;
 }) {
     let maxCategory: RequirementCategory | undefined = undefined;
     let totalCount = 0;
@@ -476,7 +661,31 @@ function Block({
     }
 
     const newStyle = color ? { ...block.props.style, fill: color } : block.props.style;
-    const icon = Boolean(activity.graduation || activity.gamePlayed);
+    const icon = Boolean(activity.graduation || activity.gamePlayed || activity.restDay);
+    const canOpenContextMenu = editable && canManageRestDay(activity);
+    const longPress = useLongPress<SVGElement>(
+        (event) => {
+            if (canOpenContextMenu) {
+                onLongPress?.(event, activity);
+            }
+        },
+        {
+            detect: LongPressEventType.Touch,
+            threshold: 700,
+            onStart: (event) => {
+                event.preventDefault();
+            },
+        },
+    );
+    const blockProps = {
+        'data-testid': `heatmap-block-${activity.date}`,
+        'data-activity-date': activity.date,
+        'data-can-manage-rest-day': `${canOpenContextMenu}`,
+    };
+    const blockStyle = {
+        ...newStyle,
+        ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
+    };
 
     const isEndOfWeek = new Date(activity.date).getUTCDay() === weekEndOn;
     const isEnd = activity.date === maxDate;
@@ -491,6 +700,37 @@ function Block({
         }
     }
 
+    const showStripedCustomOverlay =
+        isCustom &&
+        !activity.graduation &&
+        !activity.gamePlayed &&
+        !activity.restDay &&
+        hasTrackedActivity(activity);
+
+    const renderedBlock = showStripedCustomOverlay ? (
+        <rect
+            {...blockProps}
+            x={block.props.x}
+            y={block.props.y}
+            width={block.props.width}
+            height={block.props.height}
+            fill='url(#diagonalHatch)'
+            onContextMenu={
+                canOpenContextMenu ? (event) => onContextMenu?.(event, activity) : undefined
+            }
+            {...longPress()}
+        />
+    ) : (
+        cloneElement(block, {
+            ...blockProps,
+            style: blockStyle,
+            onContextMenu: canOpenContextMenu
+                ? (event: ReactMouseEvent<SVGElement>) => onContextMenu?.(event, activity)
+                : undefined,
+            ...longPress(),
+        })
+    );
+
     return (
         <>
             {activity.graduation ? (
@@ -500,23 +740,33 @@ function Block({
                     y={block.props.y}
                     width={block.props.width}
                     height={block.props.height}
+                    style={{ pointerEvents: 'none' }}
                     crossOrigin='anonymous'
                 />
+            ) : activity.gamePlayed ? (
+                <GiCrossedSwords
+                    x={block.props.x}
+                    y={block.props.y}
+                    width={block.props.width}
+                    height={block.props.height}
+                    fontSize={`${block.props.width}px`}
+                    style={{ pointerEvents: 'none' }}
+                />
             ) : (
-                activity.gamePlayed && (
-                    <GiCrossedSwords
-                        x={block.props.x}
-                        y={block.props.y}
-                        width={block.props.width}
-                        height={block.props.height}
-                        fontSize={`${block.props.width}px`}
+                activity.restDay && (
+                    <RestDayIcon
+                        x={block.props.x as number}
+                        y={block.props.y as number}
+                        width={block.props.width as number}
+                        height={block.props.height as number}
                     />
                 )
             )}
 
-            {isCustom && !activity.graduation && !activity.gamePlayed && (
+            {showStripedCustomOverlay && (
                 <>
                     {cloneElement(block, {
+                        ...blockProps,
                         style: {
                             ...newStyle,
                             ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
@@ -531,22 +781,7 @@ function Block({
                 disableInteractive
                 title={<BlockTooltip activity={activity} field={field} />}
             >
-                {isCustom && !activity.graduation && !activity.gamePlayed ? (
-                    <rect
-                        x={block.props.x}
-                        y={block.props.y}
-                        width={block.props.width}
-                        height={block.props.height}
-                        fill='url(#diagonalHatch)'
-                    />
-                ) : (
-                    cloneElement(block, {
-                        style: {
-                            ...newStyle,
-                            ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
-                        },
-                    })
-                )}
+                {renderedBlock}
             </Tooltip>
 
             {(isEndOfWeek || isEnd) && (
@@ -688,6 +923,22 @@ function BlockTooltip({
                     </Stack>
                 </Stack>
             )}
+            {activity.restDay && (
+                <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'
+                    columnGap='1rem'
+                    width={1}
+                >
+                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                        <RestDayIcon size={12} />
+                        <Typography variant='caption' pt='2px'>
+                            Rest Day
+                        </Typography>
+                    </Stack>
+                </Stack>
+            )}
             {categories.map(([category, count]) => {
                 const rows = [
                     { category, count: count[field].trainingPlan },
@@ -820,6 +1071,22 @@ function WeekSummaryTooltip({
                         <GiCrossedSwords />
                         <Typography variant='caption' pt='2px'>
                             Classical Game Played
+                        </Typography>
+                    </Stack>
+                </Stack>
+            )}
+            {weekSummary.restDay && (
+                <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'
+                    columnGap='1rem'
+                    width={1}
+                >
+                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                        <RestDayIcon size={12} />
+                        <Typography variant='caption' pt='2px'>
+                            Rest Day
                         </Typography>
                     </Stack>
                 </Stack>
@@ -969,5 +1236,109 @@ M3,5 l2,-2'
                 style={{ stroke: 'black', strokeWidth: 1 }}
             />
         </pattern>
+    );
+}
+
+function RestDayIcon({
+    size = 16,
+    x,
+    y,
+    width,
+    height,
+}: {
+    size?: number;
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+}) {
+    const finalWidth = width ?? size;
+    const finalHeight = height ?? size;
+    return (
+        <Bedtime
+            sx={{ pointerEvents: 'none', width: `${finalWidth}px`, height: `${finalHeight}px` }}
+            width={finalWidth}
+            height={finalHeight}
+            x={x}
+            y={y}
+        />
+    );
+}
+
+function canManageRestDay(activity: Activity | ExtendedBaseActivity) {
+    return !hasTrackedActivity(activity);
+}
+
+function hasTrackedActivity(activity: Activity | ExtendedBaseActivity) {
+    if (activity.gamePlayed || activity.graduation) {
+        return true;
+    }
+    if ((activity.dojoPoints ?? 0) > 0 || (activity.minutesSpent ?? 0) > 0) {
+        return true;
+    }
+
+    return Object.values(activity.categoryCounts ?? {}).some((count) => {
+        if (!count) {
+            return false;
+        }
+
+        return (
+            count.dojoPoints.custom > 0 ||
+            count.dojoPoints.trainingPlan > 0 ||
+            count.minutesSpent.custom > 0 ||
+            count.minutesSpent.trainingPlan > 0
+        );
+    });
+}
+
+function createRestDayEntry(user: User, date: string): TimelineEntry {
+    const now = DateTime.utc();
+    const timezone = user.timezoneOverride || 'local';
+    const restDate =
+        DateTime.fromISO(date, { zone: timezone })
+            .set({ hour: 12, minute: 0, second: 0, millisecond: 0 })
+            .toUTC()
+            .toISO() ??
+        now.toISO() ??
+        '';
+
+    return {
+        owner: user.username,
+        id: `${date}_${crypto.randomUUID()}`,
+        ownerDisplayName: user.displayName,
+        cohort: user.dojoCohort,
+        requirementId: TimelineSpecialRequirementId.RestDay,
+        requirementName: 'Rest Day',
+        requirementCategory: RequirementCategory.NonDojo,
+        scoreboardDisplay: ScoreboardDisplay.Hidden,
+        progressBarSuffix: '',
+        totalCount: 0,
+        previousCount: 0,
+        newCount: 0,
+        dojoPoints: 0,
+        totalDojoPoints: 0,
+        minutesSpent: 0,
+        totalMinutesSpent: 0,
+        date: restDate,
+        createdAt: now.toISO() ?? '',
+        notes: '',
+        comments: [],
+        reactions: {},
+    };
+}
+
+function findRestDayEntry(entries: TimelineEntry[], date: string, viewer: User) {
+    return entries.find(
+        (entry) =>
+            entry.requirementId === TimelineSpecialRequirementId.RestDay &&
+            getViewerDate(entry.date || entry.createdAt, viewer) === date,
+    );
+}
+
+function getViewerDate(date: string, viewer: User) {
+    const parsed = DateTime.fromISO(date, { setZone: true });
+    return (
+        (viewer.timezoneOverride ? parsed.setZone(viewer.timezoneOverride) : parsed).toISODate() ??
+        date.slice(0, 10)
     );
 }

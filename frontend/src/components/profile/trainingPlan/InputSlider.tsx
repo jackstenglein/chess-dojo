@@ -11,8 +11,8 @@ interface InputSliderProps {
     suffix?: string;
 }
 
-const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, suffix }) => {
-    const timerRef = useRef<NodeJS.Timeout>(null);
+export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderProps) => {
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setValue(newValue as number);
@@ -32,21 +32,23 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
         }
     };
 
-    const handleDecrement = () => {
-        setValue((prev) => Math.max(min, prev - 1));
-        timerRef.current = setInterval(() => setValue((prev) => Math.max(min, prev - 1)), 200);
-    };
-
-    const handleIncrement = () => {
-        setValue((prev) => prev + 1);
-        timerRef.current = setInterval(() => setValue((prev) => prev + 1), 200);
-    };
-
     const stopRepeating = () => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
         }
+    };
+
+    const handleDecrement = () => {
+        stopRepeating();
+        setValue((prev) => Math.max(min, prev - 1));
+        timerRef.current = setInterval(() => setValue((prev) => Math.max(min, prev - 1)), 200);
+    };
+
+    const handleIncrement = () => {
+        stopRepeating();
+        setValue((prev) => prev + 1);
+        timerRef.current = setInterval(() => setValue((prev) => prev + 1), 200);
     };
 
     return (
@@ -97,11 +99,10 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
                     <Stack direction='row' aria-label={suffix ?? 'Progress count'}>
                         <Button
                             data-testid='task-updater-decrement'
-                            onMouseDown={handleDecrement}
-                            onMouseUp={stopRepeating}
-                            onMouseLeave={stopRepeating}
-                            onTouchStart={handleDecrement}
-                            onTouchEnd={stopRepeating}
+                            onPointerDown={handleDecrement}
+                            onPointerUp={stopRepeating}
+                            onPointerLeave={stopRepeating}
+                            onPointerCancel={stopRepeating}
                             disabled={value <= min}
                             variant='outlined'
                             aria-label='Decrement'
@@ -140,11 +141,10 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
 
                         <Button
                             data-testid='task-updater-increment'
-                            onMouseDown={handleIncrement}
-                            onMouseUp={stopRepeating}
-                            onMouseLeave={stopRepeating}
-                            onTouchStart={handleIncrement}
-                            onTouchEnd={stopRepeating}
+                            onPointerDown={handleIncrement}
+                            onPointerUp={stopRepeating}
+                            onPointerLeave={stopRepeating}
+                            onPointerCancel={stopRepeating}
                             variant='outlined'
                             aria-label='Increment'
                             sx={{ px: 1.5, minWidth: 40, borderRadius: '0 4px 4px 0' }}
@@ -157,5 +157,3 @@ const InputSlider: React.FC<InputSliderProps> = ({ value, setValue, max, min, su
         </Grid>
     );
 };
-
-export default InputSlider;

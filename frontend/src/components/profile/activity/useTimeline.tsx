@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 
 export interface UseTimelineResponse {
+    owner: string;
     request: Request;
     entries: TimelineEntry[];
     hasMore: boolean;
@@ -95,11 +96,22 @@ export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, child
 
     const onEditEntries = useCallback(
         (entries: TimelineEntry[]) => {
-            setEntries((currentEntries) =>
-                currentEntries
-                    .map((e) => entries.find((e2) => e.id === e2.id) ?? e)
-                    .sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt)),
-            );
+            setEntries((currentEntries) => {
+                const editedEntriesMap = entries.reduce<Record<string, TimelineEntry>>((acc, e) => {
+                    acc[e.id] = e;
+                    return acc;
+                }, {});
+                const originalEntrySet = new Set<string>();
+                for (const e of currentEntries) {
+                    originalEntrySet.add(e.id);
+                }
+
+                const updatedEntries = currentEntries.map((e) => editedEntriesMap[e.id] ?? e);
+                const newEntries = entries.filter((e) => !originalEntrySet.has(e.id));
+                return updatedEntries
+                    .concat(newEntries)
+                    .sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt));
+            });
         },
         [setEntries],
     );
@@ -114,6 +126,7 @@ export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, child
     );
 
     const timelineData = {
+        owner,
         request,
         entries,
         hasMore: startKey !== undefined,
