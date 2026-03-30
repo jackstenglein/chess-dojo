@@ -1,11 +1,14 @@
 import SocialIcons from '@/components/navigation/navbar/SocialIcons';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { Box, Button, Container, Grid, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
 
 import type { JSX } from 'react';
 
 export function Footer() {
+    const t = useTranslations('landing');
+
     return (
         <Box
             sx={{
@@ -24,7 +27,7 @@ export function Footer() {
                     <FooterItem>
                         <ChessDojoIcon />
                         <Typography sx={{ ml: 1, display: { xs: 'initial', md: 'none' } }}>
-                            ChessDojo
+                            {t('footer.chessDojo')}
                         </Typography>
                     </FooterItem>
                     <FooterItem>
@@ -33,17 +36,17 @@ export function Footer() {
                             href='/blog'
                             sx={{ color: 'white', mt: { xs: 1, md: 0 } }}
                         >
-                            Blog
+                            {t('footer.blog')}
                         </Button>
                     </FooterItem>
                     <FooterItem>
                         <Button component={Link} href='/help' sx={{ color: 'white' }}>
-                            Contact Us
+                            {t('footer.contactUs')}
                         </Button>
                     </FooterItem>
                     <FooterItem>
                         <Button component={Link} href='/donate' sx={{ color: 'white' }}>
-                            Donate to the Dojo
+                            {t('footer.donate')}
                         </Button>
                     </FooterItem>
                     <Grid size={{ xs: 0, md: 'grow' }}></Grid>

@@ -162,5 +162,350 @@
         "shop": "Shop",
         "darkMode": "Dark Mode",
         "navigationMenu": "navigation menu"
+    },
+    "landing": {
+        "joinCommunity": "Join a community of people that love the game",
+        "signUp": "Sign Up",
+        "joinTheDojo": "Join the Dojo",
+        "hero": {
+            "title": "Got Mated?\nTime to join ChessDojo!",
+            "subtitle": "A chess training plan for every level and a community to do it with.",
+            "exploreProgram": "Explore the Program",
+            "ratingPoints": "Since its launch in 2022, ChessDojo members have gained more than <strong>186,000</strong> rating points."
+        },
+        "features": {
+            "heading": "ChessDojo can take you from 0-2400+ with our innovative training plan and features"
+        },
+        "testimonialSection": {
+            "heading": "Our program has a proven\ntrack record of success",
+            "subheading": "Hear from our members"
+        },
+        "communitySection": {
+            "heading": "You don't have to improve alone",
+            "description": "When you join ChessDojo, you become part of a thriving community of chess improvers from beginner to Grandmaster"
+        },
+        "pricing": {
+            "cta": "Start Getting Better at Chess Today",
+            "heading": "We've done the hard work putting<br></br>together a comprehensive training plan.<br></br><bold>You just need to follow it.</bold>",
+            "membershipTitle": "ChessDojo Membership",
+            "membershipSubtitle": "Select between monthly and annual pricing options",
+            "currencySymbol": "$",
+            "eachYear": "Each Year",
+            "eachMonth": "Each Month",
+            "annual": "Annual",
+            "monthly": "Monthly",
+            "freeTitle": "Free Membership",
+            "freeSubtitle": "Access to basic training plans and a limited game database",
+            "signUpFree": "Sign Up For Free"
+        },
+        "senseis": {
+            "heading": "The Senseis",
+            "description": "Led by world class chess trainers, ChessDojo has been meticulously crafted to improve players of any level",
+            "jesse": {
+                "title": "Grandmaster",
+                "name": "Jesse Kraai",
+                "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things."
+            },
+            "kostya": {
+                "title": "International Master",
+                "name": "Kostya Kavutskiy",
+                "bio": "Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites."
+            },
+            "david": {
+                "title": "International Master",
+                "name": "David Pruess",
+                "bio": "David is a chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure."
+            }
+        },
+        "footer": {
+            "chessDojo": "ChessDojo",
+            "blog": "Blog",
+            "contactUs": "Contact Us",
+            "donate": "Donate to the Dojo"
+        },
+        "trainingPlan": {
+            "dailyTasks": "Get daily and weekly tasks with the Dojo smart algorithm",
+            "handpickedMaterial": "Training material is hand-picked by IM and GM coaches",
+            "progressTracking": "Tracking your training progress, not just your rating",
+            "trainingPartners": "Find training partners and mentors in the Dojo community",
+            "annotatedGames": "Access to an extensive database of annotated games",
+            "openingSpy": "Prep your opening with Dojo's Opening Repertoire Spy"
+        },
+        "community": {
+            "studyGroups": {
+                "title": "Study Groups",
+                "description": "ChessDojo community leaders regularly run study groups for each cohort."
+            },
+            "classicalTournaments": {
+                "title": "Classical Tournaments",
+                "description": "Don't have a chess club to play classical games and analyze? We've got your back."
+            },
+            "graduationStreams": {
+                "title": "Graduation Streams",
+                "description": "When you graduate from each cohort, you'll have a game analyzed on stream by a sensei."
+            },
+            "testsAndTactics": {
+                "title": "Innovative Tests and Tactics",
+                "description": "ChessDojo's proprietary tests will pinpoint your tactics strength."
+            },
+            "chessCommunity": {
+                "title": "Access to Our Chess Community",
+                "description": "Find real opponents and chess mentors ready to analyze, spar and help your game."
+            },
+            "privateDiscord": {
+                "title": "Private Discord",
+                "description": "You'll have access to an active Discord server packed full of Dojoers."
+            },
+            "clubs": {
+                "title": "Clubs",
+                "description": "You can join and create your own clubs. So get involved and track your buddies' progress."
+            },
+            "workshops": {
+                "title": "Workshops",
+                "description": "Senseis will run workshops at their discretion."
+            }
+        },
+        "membership": {
+            "dailyTasks": "Daily and Weekly Tasks",
+            "handpickedMaterial": "Hand-picked Training Material",
+            "advancedTracking": "Advanced Improvement Tracking",
+            "openingSpy": "Opening Repertoire Spy",
+            "testsAndTactics": "Innovative Tests and Tactics",
+            "openingCourses": "Opening Courses",
+            "studyGroups": "Study Groups",
+            "privateDiscord": "Private Discord",
+            "workshops": "Workshops"
+        },
+        "free": {
+            "limitedPlans": "Limited Training Plans",
+            "limitedDatabase": "Limited Games Database"
+        },
+        "testimonials": {
+            "lucasimnida": {
+                "quote": "The first month in this program has given me a great roadmap to transition away from being a purely online rapid player and toward playing longer and thinking deeper in a way that is already more rewarding.",
+                "name": "Lucasimnida",
+                "rating": "1619 Lichess"
+            },
+            "pepperchess": {
+                "quote": "The Dojo has single-handedly been the best thing to happen for my chess. I was stuck in the mid 700s on chess.com and showing little improvement. However, in a short time, I managed to break the 1k club. None of this would have been possible without the Dojo's program.",
+                "name": "PepperChess",
+                "rating": "1011 Chess.com Rapid"
+            },
+            "benwick": {
+                "quote": "This program is really helping me treat chess with respect. Meaning that I approach each task with more reverence and more focus, which I am sure is leading to better results and a more consistent mindset.",
+                "name": "Benwick",
+                "rating": "1400 ECF"
+            },
+            "quadexe": {
+                "quote": "I was struggling to get above 1300 when I found the Dojo, and now I am just laughing at 1400s and their timid superficial plans and little tricks.",
+                "name": "quad-exe",
+                "rating": "1445 Chess.com Rapid"
+            }
+        }
+    },
+    "help": {
+        "pageTitle": "Help/FAQs",
+        "pageDescription": "If you are having trouble using the site, ask <helpChatLink>DojoAI</helpChatLink> for assistance or check the FAQs. If you're still stuck, please contact customer support below.",
+        "askDojoAI": "Ask DojoAI",
+        "tableOfContents": "Table of Contents",
+        "openSupportTicket": "Open a Support Ticket",
+        "tutorials": "Tutorials",
+        "launchScoreboard": "Launch Scoreboard Page Tutorial",
+        "launchCalendar": "Launch Calendar Page Tutorial",
+        "launchGames": "Launch Games Page Tutorial",
+        "faq": {
+            "title": "Frequently Asked Questions",
+            "foundationTitle": "What is the foundation of the program?",
+            "foundationContent": "The Dojo Training Program is built around three simple ideas:<ol><li>We need a structure to guide us and to keep us accountable</li><li>We need a coach above us (plus), someone below us to teach (minus), and a cohort to spar with (equal)</li><li>The most substantive form of chess improvement is the analysis of our own games</li></ol>",
+            "howWorksTitle": "How does the program work?",
+            "howWorksContent": "We give you a training plan (list of tasks) and a cohort (in Discord) to support your journey. The most important task is to play long games and then analyze them. The work is entirely self-paced, and you should definitely not try to rush it. Yes, you can quickly skim the required reading and check off a box. But you will find much more success if you spend time, by yourself and with your cohort, truly studying the material.",
+            "communicateTitle": "How do I communicate with other Dojo members?",
+            "communicateContent": "Discord is the primary method of communication between Dojo members. You can join our server <discordLink>here</discordLink>. You can use Discord to schedule sparring sessions, tournament games, and just chat generally with others about chess.",
+            "studyFrequencyTitle": "How often should I study?",
+            "studyFrequencyContent": "You should put in \"sweat work\" at least three times a week. Sweat work should be hard enough that you feel tired afterward. Examples include playing long games, game analysis, solving difficult exercises, etc. Watching videos, playing blitz, and doing lots of puzzle rush does not count as sweat work!",
+            "graduateRequirementTitle": "Do I have to complete the full training plan to graduate?",
+            "graduateRequirementContent": "We recommend graduating once your rating has crossed the threshold into the next cohort. You do not have to complete all the tasks first.",
+            "classicalRequirementsTitle": "What are the classical game requirements?",
+            "classicalRequirementsContent": "A core task of the training plan is to play and annotate classical games. The minimum accepted time controls for each rating are as follows:<ul><li>Under 800: 30+0</li><li>800-1200: 30+30</li><li>1200+: 45+30</li><li>1600+: 60+30</li><li>2000+: 90+30</li></ul>Each cohort has a different amount of games to play, but there is no requirement on how often to play them. Many students try to play one classical game per week; some try to play an OTB tournament every 1-2 months.",
+            "longGamesTitle": "Are long games really necessary?",
+            "longGamesContent": "Yes - you need to have the competitive pressure of long thinking in a classical game to truly hone your skills, and you need that long game to be able to review it after. It is not possible to review your own deep thinking in a blitz/rapid game."
+        },
+        "liveClasses": {
+            "title": "Live Classes",
+            "typesTitle": "What types of live classes are offered?",
+            "typesContent": "There are two types of classes: larger lectures and smaller, more personal Game and Profile Review classes. The lectures cover a variety of different specialized topics (for example endgame fundamentals, calculation or the Najdorf) and rotate monthly. In the Game and Profile Review classes, the sensei focuses on a single player each week, analyzing their training habits and (at least) one of their annotated games.",
+            "calendarTitle": "Where can I view the class calendar?",
+            "calendarContent": "The class calendar is available <calendarLink>here</calendarLink>.",
+            "moreClassesTitle": "Are these the only classes being offered?",
+            "moreClassesContent": "We will add further classes and different time slots as we get more students. This applies to both the lectures and the Game and Profile Review classes. The topics of the lectures will also rotate monthly.",
+            "costTitle": "How much do the classes cost?",
+            "costContent": "The lectures are available on the $75/month subscription tier. The Game and Profile Review classes are available on the $200/month subscription tier. The $200/month subscription tier also provides access to the lecture classes. Both subscription tiers provide full access to the rest of the ChessDojo training plan and website.",
+            "ratingRangesTitle": "What rating ranges are the classes for?",
+            "ratingRangesContent": "The Game and Profile Review classes are split into the following rating ranges: 0-600, 600-1000, 1000-1400, 1400-1800, 1800+ (these ratings all use the <ratingsLink>ChessDojo rating scale</ratingsLink>). For the Game and Profile Review classes, you can only join the class for your specific cohort. The lectures are roughly split among the same rating ranges but may cover broader or more targeted ranges for a given class. Each class will specify its recommended rating range. Any subscriber can join the lecture classes, even if they are outside the recommended rating range. However, the class material will be designed for the recommended rating range.",
+            "classSizeTitle": "How many students can join each class?",
+            "classSizeContent": "The lecture classes have no limit on the amount of students that can join each class. The Game and Profile Review classes will be limited to approximately 10 students. As more students join a given cohort range, they will be split into additional sections. For example, there might be two sections of the 600-1000 Game and Profile Review, each with 7 students.",
+            "joinTitle": "How do I join the classes?",
+            "joinContent": "All classes will be conducted through Google Meet. This allows us to automatically record and upload the classes for viewing on demand. The Google Meet links will be available in the <calendarLink>ChessDojo calendar</calendarLink> after you have subscribed. No special software is required to join. All you need is a standard web browser.",
+            "registerTitle": "Do I have to additionally register for specific classes after subscribing?",
+            "registerContent": "No, all subscribers can join any of the lecture classes using the Google Meet links in the calendar. Game and Profile Review subscribers will automatically have access to their specific cohort's section of the class through the Google Meet link in the calendar as well.",
+            "missClassTitle": "What if I can't make a class?",
+            "missClassContent": "All classes will be recorded and uploaded to Google Drive. Subscribers will be able to view the recordings of all classes.",
+            "communicateTitle": "How do I communicate with other students?",
+            "communicateContent": "Subscribers will get access to a private section of Discord channels. There will be a channel for each lecture class, as well as channels specifically for each Game and Profile Review cohort. Subscribers will have access to all lecture channels, but only the members in a specific Game and Profile Review cohort will have access to the corresponding Discord channel."
+        },
+        "account": {
+            "title": "Account/Profile",
+            "stuckFreeTitle": "I am stuck on the free tier even though I have subscribed",
+            "stuckFreeContent": "Make sure that you subscribed with the same email address that you are using to access the scoreboard. If you used different email addresses, send a Discord message to @JackStenglein so that he can link your email addresses and get you off the free tier.",
+            "cancelTitle": "How do I cancel my subscription?",
+            "cancelContent": "You can cancel at the bottom of the <profileEditLink>profile editor</profileEditLink>.",
+            "graduateTitle": "How do I graduate?",
+            "graduateContent": "At the top of the <profileLink>Profile page</profileLink>, click the <strong>Graduate</strong> button. This will move you to the graduates section on the scoreboard for your current cohort, as well as add you to the list of recent graduates on the <newsfeedLink>Newsfeed</newsfeedLink>.",
+            "communicateTitle": "How do I communicate with other Dojo members?",
+            "communicateContent": "Discord is the primary method of communication between Dojo members. You can join our server <discordLink>here</discordLink>. You can use Discord to schedule sparring sessions, tournament games, and just chat generally with others about chess.",
+            "switchCohortTitle": "How do I switch cohorts without graduating?",
+            "switchCohortContent": "In the <profileEditLink>profile editor</profileEditLink>, choose a new cohort from the dropdown and then click save. This will move you to the scoreboard for the new cohort, but will not add you to the graduates section for the previous cohort nor add you to the recent graduates on the <newsfeedLink>Newsfeed</newsfeedLink>.",
+            "noTimeDataTitle": "Why does my profile activity say \"no time data\"?",
+            "noTimeDataContent": "When updating your training progress, add the amount of time you worked on each requirement in order to get a pie chart of how you are using your time."
+        },
+        "requirements": {
+            "title": "Program Requirements/Ratings",
+            "updateProgressTitle": "How do I update my progress in the training plan?",
+            "updateProgressContent": "At the bottom of the <profileLink>Profile page</profileLink>, select the <strong>Training Plan</strong> tab. From here, you can see the training program requirements for each cohort. On the requirement you'd like to complete, click the checkbox or pencil icon in order to update your progress.",
+            "requirementDetailsTitle": "How do I see the details of a requirement in the training plan?",
+            "requirementDetailsContent": "At the bottom of the <profileLink>Profile page</profileLink>, select the <strong>Training Plan</strong> tab. From here, you can see the training program requirements for each cohort. On the requirement you'd like to learn more about, click <strong>View More</strong>.",
+            "updateRatingsTitle": "How do I update my ratings?",
+            "updateRatingsContent": "Current ratings are updated automatically every 24 hours. If your ratings are not updating, make sure that you have correctly set your usernames/IDs in the <profileEditLink>profile editor</profileEditLink>. If your usernames are correct and your ratings are still not updating, please send a Discord message to @JackStenglein.",
+            "switchRatingTitle": "How do I switch to a different rating system?",
+            "switchRatingContent": "In the <profileEditLink>profile editor</profileEditLink>, choose a new rating system from the dropdown and then click save. This will update your rating system on the scoreboard for your current cohort, but not for any that you have previously graduated from.",
+            "cantFindSelfTitle": "Why can't I find myself on the scoreboard?",
+            "cantFindSelfContent": "The scoreboard only displays users who have updated their progress in the last month. If you cannot find yourself, update your progress on one of the program requirements.",
+            "findDwzTitle": "How do I find my DWZ ID?",
+            "findDwzContent": "The DWZ ID is not the same as your ZPS-Nr. The DWZ ID can be found by going to your player page and copying the ID from the URL. For example, Vincent Keymer's page is located at https://www.schachbund.de/spieler/10283283.html, so his DWZ ID is 10283283."
+        },
+        "scheduling": {
+            "title": "Scheduling",
+            "bookMeetingTitle": "How do I book someone else's meeting?",
+            "bookMeetingContent": "On the <calendarLink>Calendar page</calendarLink>, click the meeting you would like to book. A popup will appear containing a <strong>Book</strong> button at the bottom.",
+            "createMeetingTitle": "How do I create a meeting for others to book?",
+            "createMeetingContent": "On the <calendarLink>Calendar page</calendarLink>, click a time slot on the calendar. This will open a popup where you can specify the start/end times for your availability, the types of meetings you are looking for, how many people can join and which cohorts can join. When you have filled in this info, click the <strong>Save</strong> button at the top of the screen.",
+            "editMeetingTitle": "How do I edit a meeting I previously created?",
+            "editMeetingContent": "On the <calendarLink>Calendar page</calendarLink>, click on the meeting you would like to edit. A popup will appear containing a pencil icon. Click the pencil icon in order to edit your meeting.",
+            "deleteMeetingTitle": "How do I delete/cancel a meeting?",
+            "deleteMeetingContent": "Currently, canceling a booked meeting is only possible for a 1-on-1 meeting. In order to cancel a 1-on-1 meeting, click the <strong>Cancel</strong> button at the top of the meeting details page. In order to delete an availability that has not yet been booked, go to the <calendarLink>Calendar page</calendarLink> and click the availability you would like to delete. A popup will appear containing a trash icon. Click the trash icon in order to delete your availability."
+        },
+        "gameDatabase": {
+            "title": "Game Database",
+            "submitGameTitle": "How do I submit a game to the database?",
+            "submitGameContent": "On the <gamesLink>Games page</gamesLink>, click the Submit a Game button, or go directly to the <gameSubmitLink>Game Submission page</gameSubmitLink>. You can submit a game either through a Lichess Study link or through manual entry. When submitting through a Lichess link, make sure that your Lichess Study is public or unlisted.",
+            "updateGameTitle": "How do I update my game?",
+            "updateGameContent": "Go to the game you want to update. Change the moves and add comments, symbols, and clock times as necessary. When you are done, click the <strong>Save Icon</strong> below the board to save your changes. Any comments on your game will remain.",
+            "deleteGameTitle": "How do I delete my game?",
+            "deleteGameContent": "Go to the game you want to delete. Click the <strong>Trash Icon</strong> below the board to permanently delete your game and any associated comments. For games submitted through the old database (on chessdojo.shop), fill out the following form: <formLink>https://forms.gle/v3JMwxyLQw3LMA1Y9</formLink> instead.",
+            "cantFindGameTitle": "Why can't I find a game I am searching for?",
+            "cantFindGameContent": "Many games were submitted through the old site and therefore are not associated with this site's accounts. These games will not appear on the user's profile page. Additionally, these games can only be searched by the player name used in the PGN. For example, if you are searching for the Chess.com username \"AngryNaartjie\" but the PGN file has the player name as \"Our Hero, Naartjie\", then you will not find the game.",
+            "featuredGamesTitle": "How are games marked as featured?",
+            "featuredGamesContent": "The sensei choose the games that are marked as featured. Featured games are visible at the bottom of the <gamesLink>Games page</gamesLink> for a month after being featured.",
+            "masterGamesTitle": "How often are new master games added?",
+            "masterGamesContent": "New master games are added weekly, on Fridays around midnight UTC."
+        },
+        "helpNotifications": {
+            "title": "Notifications",
+            "keptTitle": "How long are notifications kept before they are deleted?",
+            "keptContent": "Notifications are kept until you delete them.",
+            "limitTitle": "Is there a limit on the number of notifications I can receive?",
+            "limitContent": "No, there is no limit.",
+            "viewAllTitle": "Can I view all my notifications at once?",
+            "viewAllContent": "Yes, you can view them on the <notificationsLink>notifications page</notificationsLink>.",
+            "aggregatedTitle": "Are notifications aggregated together?",
+            "aggregatedContent": "Notifications of the same type will be aggregated. For example, if you subscribe to a position, then notifications for that position will be aggregated together.",
+            "frequencyTitle": "How often are notifications sent out?",
+            "frequencyContent": "Notifications are sent as soon as the action that generates them is performed. For position subscriptions on master games, master games are added weekly on Fridays around midnight UTC."
+        },
+        "unauthenticated": {
+            "accountTitle": "Account",
+            "stuckFreeTitle": "I am stuck on the free tier even though I have subscribed",
+            "stuckFreeContent": "If you previously subscribed on the <oldSiteLink>old site</oldSiteLink>, make sure that you are logging into this site with the same email address. If you are using the same address and still cannot access paid content, please submit a help ticket below.",
+            "noRatingTitle": "I want to sign up but don't have a rating",
+            "noRatingPrefix": "The Dojo currently requires that you have a rating when you sign up. This allows us to determine which cohort you should be placed in. Your rating can be provisional, but must be from one of the currently supported systems:",
+            "noRatingFooter": "If you currently don't have a rating in any of these systems, we recommend creating an account on Chess.com or Lichess and playing a few games. It's free and you will want an account for sparring anyway."
+        },
+        "chat": {
+            "placeholder": "Type a message...",
+            "sendMessage": "Send Message",
+            "openSupportTicket": "Open Support Ticket",
+            "copied": "Copied!",
+            "copyToClipboard": "Copy to clipboard",
+            "title": "DojoAI",
+            "betaWarning": "This chat is in beta. DojoAI may be inaccurate and may give responses that do not reflect the Dojo's values. If you notice issues, please contact support. Message history is temporary.",
+            "profanityWarning": "[SYSTEM] ⚠️ Please avoid using offensive language. Let's keep the chat respectful.",
+            "errorMessage": "[SYSTEM] ⚠️ Failed to generate response. Please contact support if this problem persists.",
+            "thinking": "Thinking...",
+            "signedInQuestion0": "What is DojoAI capable of?",
+            "signedInQuestion1": "How do I setup Discord?",
+            "signedInQuestion2": "How do I schedule a sparring session?",
+            "signedOutQuestion0": "What is ChessDojo?",
+            "signedOutQuestion1": "How do I get a ChessDojo subscription?",
+            "signedOutQuestion2": "How can the ChessDojo Training Plan help me?"
+        },
+        "support": {
+            "title": "Contact Support",
+            "patience": "Please note that we are a small team, and it may take a few business days for us to get back to you. Thank you for your patience.",
+            "ticketSubmitted": "Your ticket has been submitted with ID <strong>{ticketId}</strong>. You have been CC'd on the support email.",
+            "fieldRequired": "This field is required",
+            "fullName": "Full Name",
+            "email": "Email",
+            "subject": "Subject",
+            "message": "Message",
+            "messagePlaceholder": "Please include as much detail about your issue as possible. Help us help you!",
+            "submit": "Submit"
+        }
+    },
+    "tutorial": {
+        "back": "Back",
+        "next": "Next",
+        "close": "Close",
+        "listGames": {
+            "welcomeTitle": "Games Database",
+            "welcomeContent": "Welcome to the Dojo Game Database! Here you can find annotated games submitted by other members of the Dojo.",
+            "analyzeTitle": "Analyzing a Game",
+            "analyzeContent": "To analyze a game, click this button. You can import games from a variety of sources, and you can choose to keep them private if you want.",
+            "publicTitle": "Public Games",
+            "publicContent": "Public games appear in this table. Click on a row to view that game.",
+            "searchCohortTitle": "Searching Games",
+            "searchCohortContent": "By default, you see your current cohort's games, but if you want to view another cohort, you can use this dropdown. You can also search for games within a specific date range.",
+            "searchPlayerTitle": "Searching By Player",
+            "searchPlayerContent": "You can use this section to search by a specific player name. When searching by this method, your search query must exactly match the name as it was written in the PGN.",
+            "downloadTitle": "Downloading the Database",
+            "downloadContent": "If you want to download the full Dojo Database as one large PGN file, you can do so with this link.",
+            "completeTitle": "Tutorial Complete",
+            "completeContent": "Great job completing this tutorial! If you ever need to go through it again, check the help page in the navbar."
+        },
+        "scoreboard": {
+            "welcomeTitle": "Welcome to the Scoreboard",
+            "welcomeContent": "By default, the scoreboard opens to your cohort, but you can use this select box to switch between cohorts.",
+            "mainTitle": "Scoreboard",
+            "mainContent": "This is the main scoreboard, which shows you the active participants in your cohort. If you don't update any of your training plan tasks in a month, you will be considered inactive and taken off the scoreboard, so make sure to keep your tasks up to date!",
+            "graduationTitle": "Graduation Scoreboard",
+            "graduationContent": "Below the main scoreboard is the graduation scoreboard. This shows you the stats of everyone who has graduated from your cohort, at the time of their graduation. You can use this to compare your progress with prior graduates.",
+            "sortingTitle": "Sorting & Searching",
+            "sortingContent": "You can click on a column header to sort by that column. When hovering on the column header, click the menu icon to search the column or to hide it.",
+            "completeTitle": "Tutorial Complete",
+            "completeContent": "Great job completing this tutorial! If you ever need to go through it again, check the help page in the navbar."
+        },
+        "calendar": {
+            "welcomeTitle": "Calendar",
+            "welcomeContent": "Welcome to the calendar! Let's take a quick tour to learn how to use it.",
+            "timezoneTitle": "Timezone",
+            "timezoneContent": "By default, the calendar displays events in your current timezone. If you want to change timezones, you can use this dropdown.",
+            "filtersTitle": "Filters",
+            "filtersContent": "The filters in this section allow you to hide certain events and meetings from the calendar.",
+            "createTitle": "Calendar",
+            "createContent": "To create a new event, click a time slot in the calendar. Your event can span multiple time slots. To book someone else's event, click on the event.",
+            "viewTitle": "View",
+            "viewContent": "The calendar is shown in week view by default, but you can use these buttons to switch to month or day views as well.",
+            "completeTitle": "Tutorial Complete",
+            "completeContent": "Great job completing this tutorial! If you ever need to go through it again, check the help page in the navbar."
+        }
     }
 }

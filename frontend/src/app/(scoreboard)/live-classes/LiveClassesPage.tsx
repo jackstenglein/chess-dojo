@@ -15,9 +15,10 @@ import {
     SAMPLE_LIVE_CLASS_S3_KEY,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { Box, Button, Container, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useSyncExternalStore } from 'react';
-import { liveClassesFaq } from '../help/liveClasses';
+import { getLiveClassesFaq } from '../help/liveClasses';
 import { LiveClassesList } from '../learn/live-classes/LiveClassesList';
 import { compareLiveClasses } from '../learn/live-classes/liveClassUtils';
 import PricingPage from '../prices/PricingPage';
@@ -35,6 +36,7 @@ const SAMPLE_LIVE_CLASS: LiveClass = {
 };
 
 export default function LiveClassesPage() {
+    const t = useTranslations('help');
     const { user } = useAuth();
     const subscriptionTier = getSubscriptionTier(user);
     const isGameReviewUser = subscriptionTier === SubscriptionTier.GameReview;
@@ -193,7 +195,7 @@ export default function LiveClassesPage() {
             <Typography variant='h4' mt={8}>
                 FAQs
             </Typography>
-            {liveClassesFaq.items.map((item) => (
+            {getLiveClassesFaq(t).items.map((item) => (
                 <Stack key={item.title} mt={3}>
                     <Typography variant='h5' fontWeight='bold'>
                         {item.title}

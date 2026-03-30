@@ -1,5 +1,6 @@
 import { fontFamily } from '@/style/font';
 import { Container, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { BulletPoint } from './BulletPoint';
 import { trainingPlanBulletPoints } from './bulletPoints';
@@ -10,6 +11,8 @@ import { JoinDojoButton } from './JoinDojoButton';
 export const FEATURES_ELEMENT_ID = 'features';
 
 export function Features() {
+    const t = useTranslations('landing');
+
     return (
         <Container
             id={FEATURES_ELEMENT_ID}
@@ -29,15 +32,14 @@ export function Features() {
                                 textAlign: { xs: 'center', md: 'start' },
                             }}
                         >
-                            ChessDojo can take you from 0-2400+ with our innovative training plan
-                            and features
+                            {t('features.heading')}
                         </Typography>
 
                         <Stack sx={{ my: '2.5rem', gap: '1.25rem' }}>
-                            {trainingPlanBulletPoints.map((bp) => (
+                            {trainingPlanBulletPoints.map(({ key }) => (
                                 <BulletPoint
-                                    key={bp.description}
-                                    {...bp}
+                                    key={key}
+                                    description={t(`trainingPlan.${key}`)}
                                     slotProps={{
                                         description: { mt: '-0.25rem' },
                                     }}
