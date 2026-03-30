@@ -11,8 +11,8 @@ import {
 } from '@/database/user';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
-import { LoadingButton } from '@mui/lab';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { LoadingButton } from '@mui/lab';
 import { Button, Card, CardContent, Stack, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import RatingCard from './RatingCard';

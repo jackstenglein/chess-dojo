@@ -45,9 +45,13 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
                     <Stack direction='row' gap={1} mt={1} flexWrap='wrap'>
                         {isCurrentUser &&
                             onChangeActivity &&
-                            entry.requirementId !== TimelineSpecialRequirementId.LichessOnlinePlay && (
+                            entry.requirementId !==
+                                TimelineSpecialRequirementId.LichessOnlinePlay && (
                                 <Tooltip title='Edit Activity'>
-                                    <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
+                                    <IconButton
+                                        color='primary'
+                                        onClick={() => onChangeActivity(entry)}
+                                    >
                                         <Edit />
                                     </IconButton>
                                 </Tooltip>
