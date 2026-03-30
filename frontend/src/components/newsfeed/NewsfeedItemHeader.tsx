@@ -31,7 +31,8 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
     });
 
     const category =
-        entry.requirementId === TimelineSpecialRequirementId.GameSubmission
+        entry.requirementId === TimelineSpecialRequirementId.GameSubmission ||
+        entry.requirementId === TimelineSpecialRequirementId.LichessOnlinePlay
             ? RequirementCategory.Games
             : entry.requirementCategory;
 

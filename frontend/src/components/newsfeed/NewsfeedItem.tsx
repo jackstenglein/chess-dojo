@@ -43,13 +43,15 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
                     <NewsfeedItemBody entry={entry} />
 
                     <Stack direction='row' gap={1} mt={1} flexWrap='wrap'>
-                        {isCurrentUser && onChangeActivity && (
-                            <Tooltip title='Edit Activity'>
-                                <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
-                                    <Edit />
-                                </IconButton>
-                            </Tooltip>
-                        )}
+                        {isCurrentUser &&
+                            onChangeActivity &&
+                            entry.requirementId !== TimelineSpecialRequirementId.LichessOnlinePlay && (
+                                <Tooltip title='Edit Activity'>
+                                    <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
+                                        <Edit />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
 
                         <ReactionList
                             owner={entry.owner}
@@ -84,6 +86,18 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
     }
     if (entry.requirementId === TimelineSpecialRequirementId.GameSubmission) {
         return <GameNewsfeedItem entry={entry} />;
+    }
+    if (entry.requirementId === TimelineSpecialRequirementId.LichessOnlinePlay) {
+        return (
+            <Stack spacing={0.5}>
+                <Typography>{entry.notes}</Typography>
+                {entry.minutesSpent > 0 && (
+                    <Typography variant='body2' color='text.secondary'>
+                        Time on chess clock (estimated): {formatTime(entry.minutesSpent)}
+                    </Typography>
+                )}
+            </Stack>
+        );
     }
 
     const isComplete = entry.newCount >= entry.totalCount;

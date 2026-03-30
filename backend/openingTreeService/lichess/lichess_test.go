@@ -116,6 +116,33 @@ func TestGames_SkipsNonStandardVariants(t *testing.T) {
 	}
 }
 
+func TestEachStandardGame_SameFilterAsGames(t *testing.T) {
+	fixture := loadFixture(t)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/x-ndjson")
+		_, _ = w.Write(fixture)
+	}))
+	defer srv.Close()
+
+	client := newTestClient(srv)
+	var n int
+	for g, err := range client.EachStandardGame(context.Background(), FetchParams{
+		Username: "testplayer",
+	}) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		n++
+		if g.ID == "" {
+			t.Fatal("empty game id")
+		}
+	}
+	if n != 5 {
+		t.Fatalf("got %d raw games, want 5", n)
+	}
+}
+
 func TestIsStandard(t *testing.T) {
 	tests := []struct {
 		variant string

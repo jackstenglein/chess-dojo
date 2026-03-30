@@ -324,6 +324,10 @@ type User struct {
 	// if they have been banned on Lichess.
 	LichessBan string `dynamodbav:"lichessBan,omitempty" json:"-"`
 
+	// LichessPlaytimeSyncAt is the lastMoveAt timestamp (Unix ms) of the newest Lichess game
+	// that was imported for playtime tracking. Zero means no import has run yet.
+	LichessPlaytimeSyncAt int64 `dynamodbav:"lichessPlaytimeSyncAt,omitempty" json:"lichessPlaytimeSyncAt,omitempty"`
+
 	// A map from exam id to the user's summary for that exam
 	Exams map[string]UserExamSummary `dynamodbav:"exams" json:"exams"`
 
@@ -830,6 +834,9 @@ type UserUpdate struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
+
+	// LichessPlaytimeSyncAt updates the cursor for Lichess playtime import (Unix ms, lastMoveAt).
+	LichessPlaytimeSyncAt *int64 `dynamodbav:"lichessPlaytimeSyncAt,omitempty" json:"lichessPlaytimeSyncAt,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem
@@ -1337,7 +1344,7 @@ func (repo *dynamoRepository) ScanUsers(startKey string) ([]*User, string, error
 	return users, lastKey, nil
 }
 
-const ratingsProjection = "username, dojoCohort, subscriptionStatus, paymentInfo, wixEmail, updatedAt, progress, minutesSpent, ratingSystem, ratings, ratingHistories, lichessBan"
+const ratingsProjection = "username, displayName, dojoCohort, subscriptionStatus, paymentInfo, wixEmail, updatedAt, progress, minutesSpent, ratingSystem, ratings, ratingHistories, lichessBan, timezoneOverride, lichessPlaytimeSyncAt"
 
 // ListUserRatings returns a list of Users matching the provided cohort, up to 1MB of data.
 // Only the fields necessary for the rating/statistics update are returned.

@@ -202,6 +202,7 @@ import {
     listFollowing,
     listUserTimeline,
     listUsersByCohort,
+    requestLichessPlaytimeImport,
     searchUsers,
     updateUser,
     updateUserProgress,
@@ -269,6 +270,8 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             updateUserTimeline: (request: UpdateUserTimelineRequest) =>
                 updateUserTimeline(idToken, request, auth.updateUser),
             graduate: (comments: string) => graduate(idToken, comments, auth.updateUser),
+            requestLichessPlaytimeImport: () =>
+                requestLichessPlaytimeImport(idToken, auth.updateUser),
             getUserStatistics: () => getUserStatistics(),
             getFollower: (poster: string) => getFollower(idToken, poster),
             editFollower: (poster: string, action: 'follow' | 'unfollow') =>

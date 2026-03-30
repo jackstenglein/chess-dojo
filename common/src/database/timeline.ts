@@ -116,4 +116,6 @@ export enum TimelineSpecialRequirementId {
     GameSubmission = 'GameSubmission',
     Graduation = 'Graduation',
     RestDay = 'RestDay',
+    /** Imported Lichess standard games for activity / heatmap (server-side). */
+    LichessOnlinePlay = 'LichessOnlinePlay',
 }
