@@ -7,6 +7,7 @@ import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { Edit } from '@mui/icons-material';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import { Card, CardContent, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import GameNewsfeedItem from '../../app/(scoreboard)/newsfeed/(detail)/[owner]/[id]/GameNewsfeedItem';
 import GraduationNewsfeedItem from '../../app/(scoreboard)/newsfeed/(detail)/[owner]/[id]/GraduationNewsfeedItem';
 import CommentEditor from '../comments/CommentEditor';
@@ -30,6 +31,7 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
     maxComments,
     onChangeActivity,
 }) => {
+    const t = useTranslations('newsfeed');
     const api = useApi();
     const { user } = useAuth();
 
@@ -44,7 +46,7 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
 
                     <Stack direction='row' gap={1} mt={1} flexWrap='wrap'>
                         {isCurrentUser && onChangeActivity && (
-                            <Tooltip title='Edit Activity'>
+                            <Tooltip title={t('editActivity')}>
                                 <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
                                     <Edit />
                                 </IconButton>
@@ -78,6 +80,7 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
 };
 
 const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }) => {
+    const t = useTranslations('newsfeed');
     const { requirement } = useRequirement(entry.requirementId);
     if (entry.requirementId === TimelineSpecialRequirementId.Graduation) {
         return <GraduationNewsfeedItem entry={entry} />;
@@ -96,13 +99,14 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
     return (
         <Stack spacing={0.5}>
             <Typography>
-                {isComplete ? 'Completed' : 'Updated'} <strong>{entry.requirementName}</strong>
+                {isComplete ? t('completed') : t('updated')}{' '}
+                <strong>{entry.requirementName}</strong>
             </Typography>
 
             {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
                 <Stack direction='row' spacing={1}>
                     <Typography component='span' color='text.secondary'>
-                        Dojo Points:
+                        {t('dojoPoints')}
                     </Typography>
                     <Typography>
                         {Math.round(100 * (entry.totalDojoPoints - entry.dojoPoints)) / 100}
@@ -115,7 +119,7 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
             {entry.totalMinutesSpent > 0 && entry.minutesSpent > 0 && (
                 <Stack direction='row' spacing={1}>
                     <Typography component='span' color='text.secondary'>
-                        Total Time:
+                        {t('totalTime')}
                     </Typography>
                     <Typography>
                         {formatTime(entry.totalMinutesSpent - entry.minutesSpent)}

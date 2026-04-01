@@ -15,6 +15,7 @@ import {
     GridToolbarDensitySelector,
     GridToolbarFilterButton,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export function ClubScoreboardPage({ id }: { id: string }) {
@@ -70,6 +71,8 @@ export function ClubScoreboardPage({ id }: { id: string }) {
 }
 
 function CustomToolbar({ id }: { id?: string }) {
+    const t = useTranslations('scoreboard');
+
     return (
         <Stack>
             <GridToolbarContainer>
@@ -78,7 +81,7 @@ function CustomToolbar({ id }: { id?: string }) {
                 <GridToolbarFilterButton />
             </GridToolbarContainer>
             <Link href={`/clubs/${id}`} sx={{ mt: 0.5, ml: 0.5 }}>
-                Go to Club
+                {t('goToClub')}
             </Link>
         </Stack>
     );
