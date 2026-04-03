@@ -3,6 +3,7 @@ import { useAuth } from '@/auth/Auth';
 import { TimeFormat } from '@/database/user';
 import { MenuItem, Stack, TextField } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers';
+import { useTranslations } from 'next-intl';
 import { Filters, WeekDays } from './CalendarFilters';
 import { TimezoneSelector } from './TimezoneSelector';
 
@@ -11,6 +12,7 @@ interface TimezoneFilterProps {
 }
 
 const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
+    const t = useTranslations('calendar');
     const api = useApi();
     const auth = useAuth();
 
@@ -47,15 +49,15 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
     return (
         <Stack spacing={2.5}>
             <TextField
-                label='Time Format'
+                label={t('timeFormat')}
                 select
                 data-testid='time-format-selector'
                 value={timeFormat}
                 onChange={(e) => onChangeTimeFormat(e.target.value as TimeFormat)}
                 size='small'
             >
-                <MenuItem value={TimeFormat.TwelveHour}>12 Hour</MenuItem>
-                <MenuItem value={TimeFormat.TwentyFourHour}>24 Hour</MenuItem>
+                <MenuItem value={TimeFormat.TwelveHour}>{t('twelveHour')}</MenuItem>
+                <MenuItem value={TimeFormat.TwentyFourHour}>{t('twentyFourHour')}</MenuItem>
             </TextField>
 
             <TimezoneSelector
@@ -65,23 +67,23 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
             />
 
             <TextField
-                label='Week Start'
+                label={t('weekStart')}
                 select
                 value={weekStartOn}
                 onChange={(e) => setWeekStartOn(parseInt(e.target.value) as WeekDays)}
                 size='small'
             >
-                <MenuItem value={0}>Sunday</MenuItem>
-                <MenuItem value={1}>Monday</MenuItem>
-                <MenuItem value={2}>Tuesday</MenuItem>
-                <MenuItem value={3}>Wednesday</MenuItem>
-                <MenuItem value={4}>Thursday</MenuItem>
-                <MenuItem value={5}>Friday</MenuItem>
-                <MenuItem value={6}>Saturday</MenuItem>
+                <MenuItem value={0}>{t('sunday')}</MenuItem>
+                <MenuItem value={1}>{t('monday')}</MenuItem>
+                <MenuItem value={2}>{t('tuesday')}</MenuItem>
+                <MenuItem value={3}>{t('wednesday')}</MenuItem>
+                <MenuItem value={4}>{t('thursday')}</MenuItem>
+                <MenuItem value={5}>{t('friday')}</MenuItem>
+                <MenuItem value={6}>{t('saturday')}</MenuItem>
             </TextField>
 
             <TimePicker
-                label='Min Hour'
+                label={t('minHour')}
                 views={['hours']}
                 ampm={timeFormat === TimeFormat.TwelveHour}
                 value={minHour}
@@ -90,15 +92,12 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                 slotProps={{
                     textField: {
                         size: 'small',
-                        helperText:
-                            minHourNum >= maxHourNum
-                                ? 'Min hour cannot be greater than max hour'
-                                : undefined,
+                        helperText: minHourNum >= maxHourNum ? t('minHourError') : undefined,
                     },
                 }}
             />
             <TimePicker
-                label='Max Hour'
+                label={t('maxHour')}
                 views={['hours']}
                 ampm={timeFormat === TimeFormat.TwelveHour}
                 value={maxHour}
@@ -107,10 +106,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                 slotProps={{
                     textField: {
                         size: 'small',
-                        helperText:
-                            maxHourNum <= minHourNum
-                                ? 'Max hour cannot be less than min hour'
-                                : undefined,
+                        helperText: maxHourNum <= minHourNum ? t('maxHourError') : undefined,
                     },
                 }}
             />
