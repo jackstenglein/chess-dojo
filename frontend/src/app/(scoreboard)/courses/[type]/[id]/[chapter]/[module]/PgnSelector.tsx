@@ -13,6 +13,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 type PermissiveHeaders = PgnParserTags | Record<string, undefined> | PgnHeaders;
 
@@ -47,6 +48,7 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
     hiddenCount,
     noCard,
 }) => {
+    const t = useTranslations('courses.pgnSelector');
     let selectedHeaders: PermissiveHeaders[] = [];
     if (headers) {
         selectedHeaders = headers;
@@ -101,11 +103,10 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
             {hiddenCount !== undefined && hiddenCount > 0 && (
                 <Stack data-testid='upsell-message' px={1} mt={2} spacing={2} alignItems='center'>
                     <Typography textAlign='center'>
-                        Unlock {hiddenCount} more game
-                        {hiddenCount > 1 ? 's' : ''} by upgrading to a full account
+                        {t('unlockMoreGames', { count: hiddenCount })}
                     </Typography>
                     <Button variant='outlined' component={Link} href='/prices'>
-                        View Prices
+                        {t('viewPrices')}
                     </Button>
                 </Stack>
             )}

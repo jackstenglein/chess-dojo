@@ -23,9 +23,11 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 export function ListFollowedPositionsPage() {
+    const t = useTranslations('games.subscriptions');
     const api = useApi();
     const request = useRequest<ListFollowedPositionsResponse>();
     const [copied, setCopied] = useState('');
@@ -95,10 +97,10 @@ export function ListFollowedPositionsPage() {
 
     return (
         <Container sx={{ py: 5 }}>
-            <Typography variant='h5'>Subscriptions</Typography>
+            <Typography variant='h5'>{t('title')}</Typography>
             <Divider sx={{ mb: 3 }} />
 
-            {!request.data?.positions.length && <Typography>No subscriptions</Typography>}
+            {!request.data?.positions.length && <Typography>{t('empty')}</Typography>}
 
             <Grid container spacing={2}>
                 {request.data?.positions.map((position) => (
@@ -115,20 +117,26 @@ export function ListFollowedPositionsPage() {
                                 </Box>
                             </CardMedia>
                             <CardContent>
-                                <Typography>Dojo: {dojoDescription(position)}</Typography>
-                                <Typography>Masters: {mastersDescription(position)}</Typography>
+                                <Typography>
+                                    {t('dojo', { description: dojoDescription(position, t) })}
+                                </Typography>
+                                <Typography>
+                                    {t('masters', {
+                                        description: mastersDescription(position, t),
+                                    })}
+                                </Typography>
                             </CardContent>
                             <CardActions sx={{ flexWrap: 'wrap', columnGap: 1 }}>
-                                <Tooltip title='Edit subscription'>
+                                <Tooltip title={t('editTooltip')}>
                                     <Button
                                         startIcon={<Edit color='dojoOrange' />}
                                         onClick={() => setEditPosition(position)}
                                     >
-                                        Edit
+                                        {t('edit')}
                                     </Button>
                                 </Tooltip>
 
-                                <Tooltip title='Copy position FEN to clipboard'>
+                                <Tooltip title={t('copyFenTooltip')}>
                                     <Button
                                         data-testid='position-fen-copy'
                                         startIcon={
@@ -140,18 +148,18 @@ export function ListFollowedPositionsPage() {
                                         }
                                         onClick={() => onCopy('fen', position.normalizedFen)}
                                     >
-                                        FEN
+                                        {t('fen')}
                                     </Button>
                                 </Tooltip>
 
-                                <Tooltip title='Open in position explorer'>
+                                <Tooltip title={t('explorerTooltip')}>
                                     <Button
                                         startIcon={<Icon name='explore' color='dojoOrange' />}
                                         href={`/games/explorer?fen=${position.normalizedFen}`}
                                         rel='noopener'
                                         target='_blank'
                                     >
-                                        Explorer
+                                        {t('explorer')}
                                     </Button>
                                 </Tooltip>
                             </CardActions>
@@ -175,16 +183,19 @@ export function ListFollowedPositionsPage() {
     );
 }
 
-function dojoDescription(position: ExplorerPositionFollower): string {
+function dojoDescription(
+    position: ExplorerPositionFollower,
+    t: ReturnType<typeof useTranslations<'games.subscriptions'>>,
+): string {
     const metadata = position.followMetadata?.dojo;
     if (!metadata?.enabled) {
-        return 'Disabled';
+        return t('disabled');
     }
 
     let description = '';
 
     if (!metadata.minCohort && !metadata.maxCohort) {
-        description = 'All cohorts';
+        description = t('allCohorts');
     } else if (!metadata.minCohort) {
         description = `0-${metadata.maxCohort?.split('-').at(-1)}`;
     } else if (!metadata.maxCohort) {
@@ -194,16 +205,19 @@ function dojoDescription(position: ExplorerPositionFollower): string {
     }
 
     if (metadata.disableVariations) {
-        description += `, disable variations`;
+        description += t('disableVariations');
     }
 
     return description;
 }
 
-function mastersDescription(position: ExplorerPositionFollower): string {
+function mastersDescription(
+    position: ExplorerPositionFollower,
+    t: ReturnType<typeof useTranslations<'games.subscriptions'>>,
+): string {
     const metadata = position.followMetadata?.masters;
     if (!metadata?.enabled) {
-        return 'Disabled';
+        return t('disabled');
     }
 
     let description = '';
@@ -215,7 +229,7 @@ function mastersDescription(position: ExplorerPositionFollower): string {
     if (metadata.timeControls) {
         description += metadata.timeControls.join(', ');
     } else {
-        description += 'all time controls';
+        description += t('allTimeControls');
     }
     return description;
 }

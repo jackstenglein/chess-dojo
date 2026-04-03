@@ -4,6 +4,7 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GameInfo, GameKey } from '@/database/game';
 import { LoadingButton } from '@mui/lab';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function ChangeVisibilityDialog({
     games,
@@ -26,6 +27,7 @@ export function ChangeVisibilityDialog({
 }) {
     const api = useApi();
     const request = useRequest();
+    const t = useTranslations('games.visibilityDialog');
 
     const onSave = async () => {
         try {
@@ -53,21 +55,15 @@ export function ChangeVisibilityDialog({
     return (
         <Dialog open onClose={request.isLoading() ? undefined : onCancel}>
             <DialogTitle>
-                {unlisted ? 'Unlist' : 'Publish'}
-                {games.length !== 1 ? ` ${games.length}` : ''} Game
-                {games.length !== 1 ? 's' : ''}?
+                {t(unlisted ? 'unlistTitle' : 'publishTitle', { count: games.length })}
             </DialogTitle>
-            <DialogContent>
-                {unlisted
-                    ? 'These games will no longer be searchable in the Dojo database and will be accessible only through folders or the direct URL.'
-                    : 'These games will be searchable in the Dojo database by other Dojo members.'}
-            </DialogContent>
+            <DialogContent>{unlisted ? t('unlistMessage') : t('publishMessage')}</DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onCancel}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <LoadingButton loading={request.isLoading()} onClick={onSave}>
-                    {unlisted ? 'Unlist Games' : 'Publish Games'}
+                    {t(unlisted ? 'unlistGames' : 'publishGames')}
                 </LoadingButton>
             </DialogActions>
 

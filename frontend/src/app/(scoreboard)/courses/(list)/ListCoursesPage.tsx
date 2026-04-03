@@ -7,12 +7,14 @@ import { Course } from '@/database/course';
 import { getCohortRange } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { Container, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { getCheckoutSessionId } from '../localStorage';
 import { CourseFilterEditor, useCourseFilters } from './CourseFilters';
 import CourseListItem from './CourseListItem';
 
 const ListCoursesPage = () => {
+    const t = useTranslations('courses.list');
     const courseFilters = useCourseFilters();
     const request = useRequest<Course[]>();
     const api = useApi();
@@ -107,7 +109,7 @@ const ListCoursesPage = () => {
                         </Stack>
                     )}
                     {noItems && !request.isLoading() && request.isSent() && (
-                        <Typography>No courses found</Typography>
+                        <Typography>{t('noCoursesFound')}</Typography>
                     )}
                 </Grid>
             </Grid>

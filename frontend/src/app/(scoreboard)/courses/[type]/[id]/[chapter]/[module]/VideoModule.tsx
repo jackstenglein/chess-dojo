@@ -1,7 +1,9 @@
 import { Box, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ModuleProps } from './Module';
 
 const VideoModule: React.FC<ModuleProps> = ({ module }) => {
+    const t = useTranslations('courses.video');
     if (!module.videoUrls || module.videoUrls.length === 0) {
         return null;
     }
@@ -23,7 +25,7 @@ const VideoModule: React.FC<ModuleProps> = ({ module }) => {
                     >
                         <iframe
                             src={url}
-                            title={`Video ${idx + 1}`}
+                            title={t('videoTitle', { index: idx + 1 })}
                             allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                             allowFullScreen={true}
                             style={{ width: '100%', height: '100%' }}

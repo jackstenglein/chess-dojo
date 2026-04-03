@@ -19,6 +19,7 @@ import {
     GameOrientations,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useNavigationGuard } from 'next-navigation-guard';
 import { useState } from 'react';
 
@@ -32,6 +33,7 @@ function parseCreateGameRequest(req: CreateGameRequest | null) {
 }
 
 export default function AnalysisBoard() {
+    const t = useTranslations('games.analysis');
     const { stagedGame } = useSaveGame();
     const { pgn, fen } = parseCreateGameRequest(stagedGame);
     const { searchParams } = useNextSearchParams();
@@ -90,22 +92,20 @@ export default function AnalysisBoard() {
                 open={navGuard.active}
                 onClose={navGuard.reject}
             >
-                <DialogTitle>Save Analysis?</DialogTitle>
-                <DialogContent>
-                    This analysis is unsaved. Navigating away will permanently delete it.
-                </DialogContent>
+                <DialogTitle>{t('saveTitle')}</DialogTitle>
+                <DialogContent>{t('unsavedWarning')}</DialogContent>
                 <DialogActions>
-                    <Button onClick={navGuard.reject}>Cancel</Button>
+                    <Button onClick={navGuard.reject}>{t('cancel')}</Button>
                     <Button
                         onClick={() => {
                             navGuard.reject();
                             setShowSaveDialog(true);
                         }}
                     >
-                        Save
+                        {t('save')}
                     </Button>
                     <Button color='error' onClick={navGuard.accept}>
-                        Delete
+                        {t('delete')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -114,7 +114,7 @@ export default function AnalysisBoard() {
                 <SaveGameDialog
                     type={SaveGameDialogType.Save}
                     open={showSaveDialog}
-                    title='Save Analysis'
+                    title={t('saveAnalysis')}
                     loading={request.isLoading()}
                     onSubmit={onSubmit}
                     onClose={() => setShowSaveDialog(false)}

@@ -7,6 +7,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { LoadingButton } from '@mui/lab';
 import { Card, CardContent, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { displayPrice } from '../../../../(list)/CourseListItem';
 
 interface PurchaseOptionProps {
@@ -18,6 +19,7 @@ interface PurchaseOptionProps {
 const PurchaseOption: React.FC<PurchaseOptionProps> = ({ course, purchaseOption, preview }) => {
     const api = useApi();
     const request = useRequest();
+    const t = useTranslations('courses.purchaseOption');
 
     const { name, fullPrice, currentPrice, sellingPoints } = purchaseOption;
     const percentOff = Math.round(((fullPrice - currentPrice) / fullPrice) * 100);
@@ -94,7 +96,7 @@ const PurchaseOption: React.FC<PurchaseOptionProps> = ({ course, purchaseOption,
                         startIcon={<RocketLaunchIcon />}
                         fullWidth
                     >
-                        Buy
+                        {t('buy')}
                     </LoadingButton>
                 </Stack>
             </CardContent>
