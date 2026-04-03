@@ -99,8 +99,10 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
     return (
         <Stack spacing={0.5}>
             <Typography>
-                {isComplete ? t('completed') : t('updated')}{' '}
-                <strong>{entry.requirementName}</strong>
+                {t.rich(isComplete ? 'completedRequirement' : 'updatedRequirement', {
+                    name: entry.requirementName,
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                })}
             </Typography>
 
             {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
