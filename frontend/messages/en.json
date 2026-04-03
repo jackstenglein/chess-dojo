@@ -45,8 +45,7 @@
             "startRatingHelper": "Your rating when you first joined the Dojo",
             "currentRatingHelper": "Your most up to date rating",
             "noAccountHelper": "Leave blank if you don't have an account",
-            "dwzHelper": "Learn how to find your DWZ ID",
-            "dwzHelperLink": "here",
+            "dwzHelper": "Learn how to find your DWZ ID <link>here</link>",
             "customRatingName": "Custom {number} Rating Name",
             "customRatingHelper": "Manually track your rating",
             "zenMode": "Enable Zen Mode (hide ratings when viewing your own profile)",
@@ -62,8 +61,9 @@
             "hideUsername": "Hide Username",
             "hideId": "Hide ID",
             "hideRatingCode": "Hide Rating Code",
-            "customSuffix2": " (2)",
-            "customSuffix3": " (3)"
+            "custom": "Custom",
+            "custom2": "Custom (2)",
+            "custom3": "Custom (3)"
         },
         "notifications": {
             "heading": "Notifications",

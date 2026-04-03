@@ -167,9 +167,13 @@ export function RatingsEditor({
             >
                 {Object.values(RatingSystem).map((option) => (
                     <MenuItem key={option} value={option}>
-                        {formatRatingSystem(option)}
-                        {option === RatingSystem.Custom2 && t('customSuffix2')}
-                        {option === RatingSystem.Custom3 && t('customSuffix3')}
+                        {option === RatingSystem.Custom
+                            ? t('custom')
+                            : option === RatingSystem.Custom2
+                              ? t('custom2')
+                              : option === RatingSystem.Custom3
+                                ? t('custom3')
+                                : formatRatingSystem(option)}
                     </MenuItem>
                 ))}
             </TextField>
@@ -185,12 +189,15 @@ export function RatingsEditor({
                             error={!!rs.usernameError}
                             helperText={
                                 rs.usernameError || rs.system === RatingSystem.Dwz ? (
-                                    <>
-                                        {t('dwzHelper')}{' '}
-                                        <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>
-                                            {t('dwzHelperLink')}
-                                        </Link>
-                                    </>
+                                    <span>
+                                        {t.rich('dwzHelper', {
+                                            link: (chunks) => (
+                                                <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>
+                                                    {chunks}
+                                                </Link>
+                                            ),
+                                        })}
+                                    </span>
                                 ) : (
                                     t('noAccountHelper')
                                 )
