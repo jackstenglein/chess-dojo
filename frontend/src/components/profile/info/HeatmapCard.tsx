@@ -3,6 +3,7 @@ import { WorkGoalHistory } from '@/database/user';
 import { useWindowSizeEffect } from '@/style/useWindowSizeEffect';
 import { Close } from '@mui/icons-material';
 import { Card, CardContent, Dialog, DialogContent, IconButton } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { Heatmap } from './Heatmap';
 
@@ -33,6 +34,7 @@ export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHist
     const { entries } = useTimelineContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [blockSize, setBlockSize] = useState(MIN_BLOCK_SIZE);
+    const t = useTranslations('profile.info');
 
     const resizeDialogBlocks = useCallback(() => {
         if (isModalOpen) {
@@ -66,7 +68,7 @@ export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHist
                 }}
             >
                 <IconButton
-                    aria-label='close'
+                    aria-label={t('close')}
                     onClick={() => setIsModalOpen(false)}
                     sx={{
                         position: 'absolute',
@@ -88,7 +90,7 @@ export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHist
                     <Heatmap
                         entries={entries}
                         blockSize={blockSize}
-                        description='in the past year'
+                        description={t('pastYear')}
                         workGoalHistory={workGoalHistory}
                     />
                 </DialogContent>

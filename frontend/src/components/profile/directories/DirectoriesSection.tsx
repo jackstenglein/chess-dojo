@@ -38,6 +38,7 @@ import {
     GridToolbarFilterButton,
     useGridApiRef,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddButton } from './AddButton';
@@ -345,6 +346,7 @@ const DirectorySection = ({
 };
 
 function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
+    const t = useTranslations('profile.directories');
     if (params.row.type !== DirectoryItemTypes.DIRECTORY) {
         return (
             <GameCell
@@ -411,7 +413,8 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
                 <Grid size={1} />
                 <Grid size={11} mt={0.25}>
                     <Typography variant='body2' color='text.secondary'>
-                        Created <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
+                        {t('createdPrefix')}
+                        <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
                     </Typography>
                 </Grid>
             </Grid>

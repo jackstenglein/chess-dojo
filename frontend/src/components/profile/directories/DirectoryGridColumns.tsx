@@ -15,6 +15,7 @@ import {
 import { Folder, Visibility, VisibilityOff } from '@mui/icons-material';
 import { Badge, Stack, Tooltip, Typography } from '@mui/material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 
 export const publicColumns: GridColDef<DirectoryItem>[] = [
     {
@@ -257,6 +258,7 @@ export const adminColumns: GridColDef<DirectoryItem>[] = [
 
 export function DirectoryCreatedAt({ createdAt }: { createdAt?: string }) {
     const { user } = useAuth();
+    const t = useTranslations('profile.directories');
 
     if (!createdAt) {
         return null;
@@ -267,7 +269,7 @@ export function DirectoryCreatedAt({ createdAt }: { createdAt?: string }) {
     const time = toDojoTimeString(d, user?.timezoneOverride, user?.timeFormat);
 
     return (
-        <Tooltip title={`${date} • ${time}`}>
+        <Tooltip title={t('dateTooltip', { date, time })}>
             <span>{date}</span>
         </Tooltip>
     );

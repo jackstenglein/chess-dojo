@@ -40,6 +40,7 @@ import {
     alpha,
     useTheme,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 const { Custom, Custom2, Custom3, ...validRatingSystems } = RatingSystem;
@@ -49,6 +50,7 @@ interface StatsButtonProps {
 }
 
 export function StatsButton({ directory }: StatsButtonProps) {
+    const t = useTranslations('profile.directories');
     const api = useApi();
 
     const [open, setOpen] = useState(false);
@@ -119,7 +121,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
     return (
         <>
             <Button startIcon={<Assessment />} onClick={handleOpen}>
-                Stats
+                {t('stats')}
             </Button>
 
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth='lg'>
@@ -129,7 +131,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Assessment color='primary' />
                         <Typography variant='h5' fontWeight='bold'>
-                            Performance Stats
+                            {t('performanceStats')}
                         </Typography>
                     </Stack>
                 </DialogTitle>
@@ -139,15 +141,17 @@ export function StatsButton({ directory }: StatsButtonProps) {
                         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
                             <TextField
                                 select
-                                label='Select Player'
+                                label={t('selectPlayer')}
                                 value={playerName}
                                 onChange={(e) => onUpdatePlayerName(e.target.value)}
                                 fullWidth
                                 variant='outlined'
                                 helperText={
                                     playerName
-                                        ? `${playerGameCounts.get(playerName)} games in directory`
-                                        : 'Choose a player to analyze'
+                                        ? t('gamesInDirectory', {
+                                              count: playerGameCounts.get(playerName) ?? 0,
+                                          })
+                                        : t('choosePlayer')
                                 }
                                 slotProps={{
                                     select: {
@@ -159,7 +163,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
                                     <MenuItem key={name} value={name}>
                                         <ListItemText
                                             primary={name}
-                                            secondary={`${count} game${count > 1 ? 's' : ''}`}
+                                            secondary={t('gamesCount', { count })}
                                         />
                                     </MenuItem>
                                 ))}
@@ -167,7 +171,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
 
                             <TextField
                                 select
-                                label='Rating System'
+                                label={t('ratingSystem')}
                                 value={ratingSystem}
                                 onChange={(e) =>
                                     onUpdateRatingSystem(e.target.value as RatingSystem)
@@ -209,7 +213,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
                                 fontSize: '1.1rem',
                             }}
                         >
-                            Generate Stats
+                            {t('generateStats')}
                         </Button>
                     </Stack>
 
@@ -222,7 +226,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Close</Button>
+                    <Button onClick={handleClose}>{t('close')}</Button>
                 </DialogActions>
             </Dialog>
         </>
@@ -238,6 +242,7 @@ function DirectoryStats({
     playerName: string;
     ratingSystem: RatingSystem;
 }) {
+    const t = useTranslations('profile.directories');
     return (
         <Fade in timeout={500}>
             <Stack spacing={4} mt={6}>
@@ -248,19 +253,23 @@ function DirectoryStats({
                     textAlign='center'
                     sx={{ mb: -2 }}
                 >
-                    {playerName}'s Performance Stats
+                    {t('playerPerformance', { name: playerName })}
                 </Typography>
 
                 <Stack spacing={2}>
                     <Typography variant='h6' fontWeight='bold'>
                         <Stack direction='row' alignItems='center' spacing={1}>
                             <RatingSystemIcon system={ratingSystem} size='medium' />
-                            <span>{formatRatingSystem(ratingSystem)} Performance</span>
+                            <span>
+                                {t('ratingPerformance', {
+                                    system: formatRatingSystem(ratingSystem),
+                                })}
+                            </span>
                         </Stack>
                     </Typography>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                         <RatingCard
-                            title='Overall Performance'
+                            title={t('overallPerformance')}
                             rating={stats.rating.total}
                             normalizedRating={stats.normalizedRating.total}
                             wins={stats.wins.total}
@@ -271,7 +280,7 @@ function DirectoryStats({
                             delay={0}
                         />
                         <RatingCard
-                            title='Performance as White'
+                            title={t('performanceAsWhite')}
                             rating={stats.rating.white}
                             normalizedRating={stats.normalizedRating.white}
                             wins={stats.wins.white}
@@ -282,7 +291,7 @@ function DirectoryStats({
                             delay={1}
                         />
                         <RatingCard
-                            title='Performance as Black'
+                            title={t('performanceAsBlack')}
                             rating={stats.rating.black}
                             normalizedRating={stats.normalizedRating.black}
                             wins={stats.wins.black}
@@ -299,12 +308,12 @@ function DirectoryStats({
                     <Typography variant='h6' fontWeight='bold'>
                         <Stack direction='row' alignItems='center' spacing={1}>
                             <StarBorder color='primary' />
-                            <span>Average Opponent Rating</span>
+                            <span>{t('avgOpponentRating')}</span>
                         </Stack>
                     </Typography>
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                         <RatingCard
-                            title='Overall'
+                            title={t('overall')}
                             rating={stats.avgOppRating.total}
                             normalizedRating={stats.normalizedAvgOppRating.total}
                             color='warning'
@@ -312,7 +321,7 @@ function DirectoryStats({
                             delay={0}
                         />
                         <RatingCard
-                            title='When You Play White'
+                            title={t('whenPlayWhite')}
                             rating={stats.avgOppRating.white}
                             normalizedRating={stats.normalizedAvgOppRating.white}
                             color='warning'
@@ -320,7 +329,7 @@ function DirectoryStats({
                             delay={1}
                         />
                         <RatingCard
-                            title='When You Play Black'
+                            title={t('whenPlayBlack')}
                             rating={stats.avgOppRating.black}
                             normalizedRating={stats.normalizedAvgOppRating.black}
                             color='warning'
@@ -359,6 +368,7 @@ function RatingCard({
     icon,
     delay = 0,
 }: RatingCardProps) {
+    const t = useTranslations('profile.directories');
     const theme = useTheme();
 
     const getColorValue = (colorName: string) => {
@@ -427,7 +437,7 @@ function RatingCard({
                         <Typography component='p' variant='h4' fontWeight='bold' color='inherit'>
                             {rating > 0 ? Math.round(rating) : 'N/A'}{' '}
                             {rating > 0 && (
-                                <Tooltip title='The rating normalized to the Dojo system'>
+                                <Tooltip title={t('normalizedRatingTooltip')}>
                                     <Typography
                                         component='span'
                                         variant='h5'
@@ -473,16 +483,17 @@ function RatingCard({
 }
 
 const COHORT_TABLE_COLUMNS = [
-    'Opponent Cohort',
-    'Performance',
-    'Avg Opponent Rating',
-    'Games',
-    'Win %',
-    'Draw %',
-    'Loss %',
+    'colOpponentCohort',
+    'colPerformance',
+    'colAvgOppRating',
+    'colGames',
+    'colWinPct',
+    'colDrawPct',
+    'colLossPct',
 ] as const;
 
 function CohortStatsTable({ stats }: { stats: PerformanceStats }) {
+    const t = useTranslations('profile.directories');
     if (!stats?.cohortRatings || Object.entries(stats.cohortRatings).length === 0) {
         return null;
     }
@@ -492,7 +503,7 @@ function CohortStatsTable({ stats }: { stats: PerformanceStats }) {
             <Typography variant='h6' fontWeight='bold'>
                 <Stack direction='row' alignItems='center' spacing={1}>
                     <PeopleAlt color='primary' />
-                    <span>Performance by Opponent Cohort</span>
+                    <span>{t('performanceByCohort')}</span>
                 </Stack>
             </Typography>
 
@@ -502,14 +513,14 @@ function CohortStatsTable({ stats }: { stats: PerformanceStats }) {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    {COHORT_TABLE_COLUMNS.map((col, i) => (
-                                        <TableCell key={col} align={i === 0 ? 'left' : 'center'}>
+                                    {COHORT_TABLE_COLUMNS.map((key, i) => (
+                                        <TableCell key={key} align={i === 0 ? 'left' : 'center'}>
                                             <Typography
                                                 variant='subtitle2'
                                                 fontWeight='bold'
                                                 color='text.secondary'
                                             >
-                                                {col}
+                                                {t(key)}
                                             </Typography>
                                         </TableCell>
                                     ))}
@@ -542,6 +553,7 @@ function CohortStatsTableRow({
     cohort: string;
     cohortData: CohortPerformanceStats;
 }) {
+    const t = useTranslations('profile.directories');
     const totalGames = cohortData.wins.total + cohortData.draws.total + cohortData.losses.total;
     if (totalGames === 0) {
         return null;
@@ -567,7 +579,7 @@ function CohortStatsTableRow({
                 >
                     {cohortData.rating.total > 0 ? Math.round(cohortData.rating.total) : 'N/A'}{' '}
                     {cohortData.normalizedRating.total > 0 && (
-                        <Tooltip title='The rating normalized to the Dojo system'>
+                        <Tooltip title={t('normalizedRatingTooltip')}>
                             <Typography component='span' variant='body2' color='text.secondary'>
                                 ({Math.round(cohortData.normalizedRating.total)}{' '}
                                 <ChessDojoIcon
@@ -592,7 +604,7 @@ function CohortStatsTableRow({
                         ? round(cohortData.avgOppRating.total)
                         : 'N/A'}{' '}
                     {cohortData.normalizedAvgOppRating.total > 0 && (
-                        <Tooltip title='The rating normalized to the Dojo system'>
+                        <Tooltip title={t('normalizedRatingTooltip')}>
                             <Typography component='span' variant='body2' color='text.secondary'>
                                 ({Math.round(cohortData.normalizedAvgOppRating.total)}{' '}
                                 <ChessDojoIcon

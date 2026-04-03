@@ -7,6 +7,7 @@ import {
 } from '@/database/user';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Alert, Button, Snackbar, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Link } from '../navigation/Link';
 
@@ -16,6 +17,7 @@ import { Link } from '../navigation/Link';
  * displayed as tasks in the daily training plan view.
  */
 export function SwitchCohortPrompt() {
+    const t = useTranslations('profile.switchCohort');
     const { user } = useAuth();
     const api = useApi();
 
@@ -66,7 +68,7 @@ export function SwitchCohortPrompt() {
                 action={
                     <Stack direction='row'>
                         <Button color='inherit' size='small' onClick={handleHideCohortPrompt}>
-                            Hide for 1 month
+                            {t('hideForMonth')}
                         </Button>
                         <Button
                             color='inherit'
@@ -76,14 +78,13 @@ export function SwitchCohortPrompt() {
                             endIcon={<NavigateNextIcon />}
                             component={Link}
                         >
-                            Settings
+                            {t('settings')}
                         </Button>
                     </Stack>
                 }
                 sx={{ width: 1 }}
             >
-                Your rating has been less than your cohort's minimum rating for 90 days. We
-                recommend moving down a cohort in your settings.
+                {t('ratingBelowMinimum')}
             </Alert>
         </Snackbar>
     );

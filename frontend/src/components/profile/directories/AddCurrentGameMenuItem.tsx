@@ -12,6 +12,7 @@ import {
     MenuItem,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useDirectoryCache } from './DirectoryCache';
 
 export const AddCurrentGameMenuItem = ({
@@ -21,6 +22,7 @@ export const AddCurrentGameMenuItem = ({
     directory: Directory;
     onSuccess: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const api = useApi();
     const request = useRequest();
     const { game } = useGame();
@@ -77,10 +79,7 @@ export const AddCurrentGameMenuItem = ({
 
     return (
         <>
-            <Tooltip
-                title={disabled ? 'This game is already in this folder' : ''}
-                disableInteractive
-            >
+            <Tooltip title={disabled ? t('gameAlreadyInFolder') : ''} disableInteractive>
                 <span>
                     <MenuItem disabled={disabled || request.isLoading()} onClick={onAdd}>
                         <ListItemIcon>
@@ -90,7 +89,7 @@ export const AddCurrentGameMenuItem = ({
                                 <DriveFileMove />
                             )}
                         </ListItemIcon>
-                        <ListItemText primary='Add Current Game' />
+                        <ListItemText primary={t('addCurrentGame')} />
                     </MenuItem>
                 </span>
             </Tooltip>

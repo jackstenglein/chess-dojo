@@ -1,6 +1,7 @@
 import { useAuth } from '@/auth/Auth';
 import { ZoomOutMap } from '@mui/icons-material';
 import { IconButton, MenuItem, Stack, TextField, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 
 /**
@@ -79,6 +80,7 @@ export function useHeatmapOptions() {
 export function HeatmapOptions({ onPopOut }: { onPopOut?: () => void }) {
     const { field, setField, maxPoints, setMaxPoints, maxMinutes, setMaxMinutes } =
         useHeatmapOptions();
+    const t = useTranslations('profile.info');
 
     return (
         <Stack
@@ -90,18 +92,18 @@ export function HeatmapOptions({ onPopOut }: { onPopOut?: () => void }) {
         >
             <Stack direction='row' gap={2} alignItems='center' flexWrap='wrap' flexGrow={1}>
                 <TextField
-                    label='Type'
+                    label={t('type')}
                     size='small'
                     select
                     value={field}
                     onChange={(e) => setField(e.target.value as TimelineEntryField)}
                     sx={{ ml: -0.6 }}
                 >
-                    <MenuItem value='dojoPoints'>Dojo Points</MenuItem>
-                    <MenuItem value='minutesSpent'>Hours Worked</MenuItem>
+                    <MenuItem value='dojoPoints'>{t('dojoPoints')}</MenuItem>
+                    <MenuItem value='minutesSpent'>{t('hoursWorked')}</MenuItem>
                 </TextField>
                 <TextField
-                    label='Goal'
+                    label={t('goal')}
                     size='small'
                     select
                     value={field === 'dojoPoints' ? maxPoints : maxMinutes / 60}
@@ -113,15 +115,16 @@ export function HeatmapOptions({ onPopOut }: { onPopOut?: () => void }) {
                 >
                     {[1, 2, 3, 4].map((value) => (
                         <MenuItem key={value} value={value}>
-                            {value} {field === 'dojoPoints' ? 'point' : 'hour'}
-                            {value !== 1 && 's'}
+                            {field === 'dojoPoints'
+                                ? t('goalPoints', { value })
+                                : t('goalHours', { value })}
                         </MenuItem>
                     ))}
                 </TextField>
             </Stack>
 
             {onPopOut && (
-                <Tooltip title='Pop out view'>
+                <Tooltip title={t('popOutView')}>
                     <IconButton color='primary' onClick={onPopOut}>
                         <ZoomOutMap />
                     </IconButton>

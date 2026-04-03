@@ -22,6 +22,7 @@ import {
     VisibilityOff,
 } from '@mui/icons-material';
 import { Alert, IconButton, Paper, Snackbar, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, type JSX } from 'react';
 import { DeleteDialog, DeleteDialogType } from './DeleteDialog';
 import { useDirectoryCache } from './DirectoryCache';
@@ -103,6 +104,7 @@ export function useDirectoryEditor({
     const { user } = useAuth();
     const isFreeTier = useFreeTier();
     const cache = useDirectoryCache();
+    const t = useTranslations('profile.directories');
 
     const items = useMemo(() => {
         return itemIds.map((id) => directory.items[id]).filter((item) => item);
@@ -210,11 +212,11 @@ export function useDirectoryEditor({
         directory.items[itemIds[0]]?.type === DirectoryItemTypes.DIRECTORY;
     const isAdmin = compareRoles(DirectoryAccessRole.Admin, accessRole);
 
-    const actions = [{ title: 'Download PGN', onClick: onDownload, icon: <Download /> }];
+    const actions = [{ title: t('downloadPGN'), onClick: onDownload, icon: <Download /> }];
 
     if (showEdit && isAdmin) {
         actions.push({
-            title: 'Edit Name/Visibility',
+            title: t('editNameVisibility'),
             onClick: onRename,
             icon: <DriveFileRenameOutline />,
         });
@@ -222,7 +224,7 @@ export function useDirectoryEditor({
 
     if (unpublished.length > 0 && !isFreeTier) {
         actions.push({
-            title: `Publish Game${unpublished.length > 1 ? 's' : ''}`,
+            title: t('publishGames', { count: unpublished.length }),
             onClick: () => setVisibilityDialog('published'),
             icon: <Visibility />,
         });
@@ -230,22 +232,22 @@ export function useDirectoryEditor({
 
     if (published.length > 0) {
         actions.push({
-            title: `Unlist Game${published.length > 1 ? 's' : ''}`,
+            title: t('unlistGames', { count: published.length }),
             onClick: () => setVisibilityDialog('unlisted'),
             icon: <VisibilityOff />,
         });
     }
 
     if (!defaultDirectorySelected) {
-        actions.push({ title: 'Move', onClick: onMove, icon: <DriveFileMoveOutlined /> });
+        actions.push({ title: t('move'), onClick: onMove, icon: <DriveFileMoveOutlined /> });
     }
 
     if (showEdit) {
-        actions.push({ title: 'Delete', onClick: onDelete, icon: <Delete /> });
+        actions.push({ title: t('delete'), onClick: onDelete, icon: <Delete /> });
     } else if (!defaultDirectorySelected) {
         actions.push(
-            { title: 'Remove from Folder', onClick: onRemove, icon: <FolderOff /> },
-            { title: 'Delete', onClick: onDelete, icon: <Delete /> },
+            { title: t('removeFromFolder'), onClick: onRemove, icon: <FolderOff /> },
+            { title: t('delete'), onClick: onDelete, icon: <Delete /> },
         );
     }
 
@@ -284,6 +286,7 @@ export const BulkItemEditor = ({
     accessRole: DirectoryAccessRole | undefined;
     onClear: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const editor = useDirectoryEditor({ directory, itemIds, accessRole, onClose: onClear });
     if (editor.items.length === 0) {
         return null;
@@ -292,13 +295,15 @@ export const BulkItemEditor = ({
     return (
         <Paper elevation={4} sx={{ borderRadius: '1.5rem', flexGrow: 1, py: 0.5, px: 1 }}>
             <Stack direction='row' alignItems='center'>
-                <Tooltip title='Clear selection'>
+                <Tooltip title={t('clearSelection')}>
                     <IconButton size='small' onClick={onClear}>
                         <Close />
                     </IconButton>
                 </Tooltip>
 
-                <Typography sx={{ ml: 1, mr: 2.5 }}>{itemIds.length} selected</Typography>
+                <Typography sx={{ ml: 1, mr: 2.5 }}>
+                    {t('selectedCount', { count: itemIds.length })}
+                </Typography>
 
                 {editor.actions.map((action) => (
                     <Tooltip key={action.title} title={action.title}>
@@ -317,6 +322,7 @@ export const BulkItemEditor = ({
 export const ItemEditorDialogs = ({ editor }: { editor: UseDirectoryEditorResponse }) => {
     const api = useApi();
     const cache = useDirectoryCache();
+    const t = useTranslations('profile.directories');
 
     if (
         editor.renameOpen &&
@@ -329,8 +335,8 @@ export const ItemEditorDialogs = ({ editor }: { editor: UseDirectoryEditorRespon
             <UpdateDirectoryDialog
                 initialName={selectedItem.metadata.name}
                 initialVisibility={selectedItem.metadata.visibility}
-                title='Edit Folder'
-                saveLabel='Save'
+                title={t('editFolder')}
+                saveLabel={t('save')}
                 disableSave={(name, visibility) =>
                     name.trim().length === 0 ||
                     name.trim().length > 100 ||
@@ -407,9 +413,7 @@ export const ItemEditorDialogs = ({ editor }: { editor: UseDirectoryEditorRespon
                 variant='filled'
                 onClose={() => editor.setVisibilitySkipped([])}
             >
-                {editor.visibilitySkipped.length} game
-                {editor.visibilitySkipped.length !== 1 ? 's were' : ' was'} not able to be published
-                because {editor.visibilitySkipped.length !== 1 ? 'they are' : 'it is'} missing data.
+                {t('visibilitySkippedError', { count: editor.visibilitySkipped.length })}
             </Alert>
         </Snackbar>
     );

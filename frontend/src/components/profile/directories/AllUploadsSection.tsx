@@ -15,6 +15,7 @@ import UpsellAlert from '@/upsell/UpsellAlert';
 import { ALL_MY_UPLOADS_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Button, Stack } from '@mui/material';
 import { GridPaginationModel, GridRowParams, GridRowSelectionModel } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 
@@ -39,6 +40,7 @@ export function AllUploadsSection({
     /** The namespace for the local storage data. */
     namespace: string;
 }) {
+    const t = useTranslations('profile.directories');
     const api = useApi();
     const { user: currentUser } = useAuth();
     const isFreeTier = useFreeTier();
@@ -108,7 +110,7 @@ export function AllUploadsSection({
                             color='success'
                             startIcon={<Icon name={RequirementCategory.Games} />}
                         >
-                            Analyze a Game
+                            {t('analyzeGame')}
                         </Button>
                         <BulkGameEditor
                             games={[...rowSelectionModel.ids]
@@ -124,11 +126,7 @@ export function AllUploadsSection({
 
                 {isFreeTier && currentUser?.username !== username && (
                     <Stack alignItems='center' mb={5}>
-                        <UpsellAlert>
-                            To avoid unfair preparation against Dojo members, free-tier users cannot
-                            view games by a specific player. Upgrade your account to view the full
-                            Dojo Database.
-                        </UpsellAlert>
+                        <UpsellAlert>{t('freeTierGamesRestriction')}</UpsellAlert>
                     </Stack>
                 )}
 
