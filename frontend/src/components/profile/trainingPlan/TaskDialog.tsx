@@ -299,8 +299,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                                     title={`${task.name} Video ${idx + 1}`}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
-                                    style={{ width: '100%', height: '100%' }}
-                                    frameBorder={0}
+                                    style={{ width: '100%', height: '100%', border: 0 }}
                                 />
                             </Box>
                         ))}
@@ -426,25 +425,18 @@ function ExpirationChip({
 
     const value = expirationYears >= 1 ? expirationYears : Math.round(expirationYears * 12);
 
+    let chipLabel = `${value} ${expirationYears >= 1 ? 'year' : 'month'}${value !== 1 ? 's' : ''}`;
     let title = `Progress on this task expires after ${value} ${
         expirationYears >= 1 ? 'year' : 'month'
-    }${value !== 1 ? 's' : ''}.`;
+    }${value !== 1 ? 's' : ''}`;
 
     // Add exact expiration date if progress exists
     if (progress?.updatedAt) {
         const expirationDate = new Date(progress.updatedAt);
         expirationDate.setDate(expirationDate.getDate() + requirement.expirationDays);
         const formattedDate = expirationDate.toLocaleDateString();
-        title = `Progress on this task expires after ${value} ${
-            expirationYears >= 1 ? 'year' : 'month'
-        }${value !== 1 ? 's' : ''} (on ${formattedDate}).`;
-    }
-
-    let chipLabel = `${value} ${expirationYears >= 1 ? 'year' : 'month'}${value !== 1 ? 's' : ''}`;
-    if (progress?.updatedAt) {
-        const expirationDate = new Date(progress.updatedAt);
-        expirationDate.setDate(expirationDate.getDate() + requirement.expirationDays);
-        chipLabel += ` (expires ${expirationDate.toLocaleDateString()})`;
+        chipLabel += ` (expires ${formattedDate})`;
+        title += ` (on ${formattedDate})`;
     }
 
     return (
