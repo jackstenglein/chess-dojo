@@ -13,6 +13,7 @@ const S3_BUCKET = process.env.s3Bucket;
 const STAGE = process.env.stage || '';
 const MEET_DATE_REGEX = /(\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2})/;
 const S3_CLIENT = new S3Client({ region: 'us-east-1' });
+const S3_INVALID_TAG_REGEX = /[^a-zA-Z\s\d_.:\/=+\-@]/g;
 
 /**
  * Syncs videos from MEET_RECORDINGS_DRIVE_FOLDER to S3.
@@ -202,6 +203,13 @@ async function streamFileToS3({
                 Body: passThrough,
                 ContentType: mimeType || '',
             },
+            tags: [
+                {
+                    Key: 'googleDriveFilename',
+                    Value: fileName.replaceAll(S3_INVALID_TAG_REGEX, '/'),
+                },
+                { Key: 'googleDriveFileId', Value: fileId.replaceAll(S3_INVALID_TAG_REGEX, '/') },
+            ],
             queueSize: 4,
             partSize: 1024 * 1024 * 5, // 5MB min part size
             leavePartsOnError: false, // Clean up incomplete uploads
@@ -209,6 +217,14 @@ async function streamFileToS3({
 
         await upload.done();
         console.log(`Successfully uploaded "${fileName}" to S3 at "${S3_BUCKET}/${s3Key}"`);
+
+        if (STAGE !== 'prod') {
+            console.log(
+                `Not moving "${fileName}" to Finished Uploads folder because current stage "${STAGE}" is not "prod" `,
+            );
+            return;
+        }
+
         await driveClient.files.update({
             fileId,
             addParents: FINISHED_UPLOADS_DRIVE_FOLDER,

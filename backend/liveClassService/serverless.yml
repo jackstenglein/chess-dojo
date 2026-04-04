@@ -20,6 +20,14 @@ provider:
     id: ${param:httpApiId}
   deploymentMethod: direct
 
+custom:
+  prod:
+    schedule: cron(0 * * * ? *) # Every hour
+  dev:
+    schedule: cron(0 0 ? * FRI 1970) # Never
+  simple:
+    schedule: cron(0 0 ? * FRI 1970) # Never
+
 functions:
   copyRecordings:
     handler: copyRecordings.handler
@@ -29,8 +37,7 @@ functions:
         - lectures-${sls:stage}.json
         - game-reviews-${sls:stage}.json
     events:
-      - schedule:
-          rate: cron(0 * * * ? *) # Every hour
+      - schedule: ${self:custom.${sls:stage}.schedule}
     timeout: 600 # 10 min
     environment:
       stage: ${sls:stage}
@@ -41,6 +48,7 @@ functions:
       - Effect: Allow
         Action:
           - s3:PutObject
+          - s3:PutObjectTagging
         Resource: !Join
           - ''
           - - 'arn:aws:s3:::'
