@@ -1,6 +1,7 @@
 import { Button, Popover, Stack } from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { LocaleArrow, MIN_DATE, MIN_YEAR } from './MonthDateButton';
 
@@ -12,6 +13,7 @@ interface YearDateButtonProps {
 const YearDateButton = ({ selectedDate, onChange }: YearDateButtonProps) => {
     const currentYear = selectedDate.year;
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+    const t = useTranslations('tournaments.liga.dateButtons');
 
     const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -36,10 +38,10 @@ const YearDateButton = ({ selectedDate, onChange }: YearDateButtonProps) => {
             <LocaleArrow
                 type='prev'
                 onClick={handlePrev}
-                aria-label='previous year'
+                aria-label={t('previousYear')}
                 disabled={currentYear <= MIN_YEAR}
             />
-            <Button style={{ padding: 4 }} onClick={handleOpen} aria-label='selected year'>
+            <Button style={{ padding: 4 }} onClick={handleOpen} aria-label={t('selectedYear')}>
                 {selectedDate.toFormat('yyyy')}
             </Button>
             <Popover
@@ -63,7 +65,7 @@ const YearDateButton = ({ selectedDate, onChange }: YearDateButtonProps) => {
             <LocaleArrow
                 type='next'
                 onClick={handleNext}
-                aria-label='next year'
+                aria-label={t('nextYear')}
                 disabled={currentYear >= DateTime.now().year}
             />
         </Stack>

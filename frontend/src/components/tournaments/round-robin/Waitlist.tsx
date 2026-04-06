@@ -8,6 +8,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
 import { AccessAlarm, PeopleAlt } from '@mui/icons-material';
 import { Button, Card, CardContent, CardHeader, Chip, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Players } from './Players';
 import { RegisterModal } from './RegisterModal';
@@ -25,6 +26,7 @@ export function Waitlist({
     const isFreeTier = useFreeTier();
     const [showRegistration, setShowRegistration] = useState(false);
     const [showWithdraw, setShowWithdraw] = useState(false);
+    const t = useTranslations('tournaments.roundRobin.waitlist');
 
     const canRegister =
         user &&
@@ -39,10 +41,13 @@ export function Waitlist({
             <CardHeader
                 title={
                     <Stack direction='row' flexWrap='wrap' gap={2} alignItems='center'>
-                        <Typography variant='h4'>Waitlist</Typography>
+                        <Typography variant='h4'>{t('title')}</Typography>
 
                         <Chip
-                            label={`${Object.values(tournament.players).length}/10 players`}
+                            label={t('playerCount', {
+                                current: Object.values(tournament.players).length,
+                                max: 10,
+                            })}
                             icon={<PeopleAlt />}
                             color='secondary'
                         />
@@ -51,7 +56,7 @@ export function Waitlist({
 
                         {daysTillStart > 0 && (
                             <Chip
-                                label={`Starts in ~${daysTillStart} day${daysTillStart !== 1 ? 's' : ''}`}
+                                label={t('startsIn', { days: daysTillStart })}
                                 icon={<AccessAlarm />}
                                 color='warning'
                             />
@@ -67,7 +72,7 @@ export function Waitlist({
                         sx={{ mt: -2, mb: 3 }}
                         onClick={() => setShowRegistration(true)}
                     >
-                        Register {isFreeTier && ' - $2'}
+                        {isFreeTier ? t('registerWithFee') : t('register')}
                     </Button>
                 )}
 
@@ -78,24 +83,17 @@ export function Waitlist({
                         sx={{ mt: -2, mb: 3 }}
                         onClick={() => setShowWithdraw(true)}
                     >
-                        Withdraw
+                        {t('withdraw')}
                     </Button>
                 )}
 
                 <Typography>
-                    {daysTillStart > 0 ? (
-                        <>
-                            The tournament will start automatically in ~{daysTillStart} day
-                            {daysTillStart !== 1 && 's'} or when {MAX_ROUND_ROBIN_PLAYERS} players
-                            have joined.
-                        </>
-                    ) : (
-                        <>
-                            The tournament will start automatically once {MAX_ROUND_ROBIN_PLAYERS}{' '}
-                            players have joined or a week after {MIN_ROUND_ROBIN_PLAYERS} players
-                            have joined.
-                        </>
-                    )}
+                    {daysTillStart > 0
+                        ? t('startMessage', { days: daysTillStart, max: MAX_ROUND_ROBIN_PLAYERS })
+                        : t('startMessageImmediate', {
+                              max: MAX_ROUND_ROBIN_PLAYERS,
+                              min: MIN_ROUND_ROBIN_PLAYERS,
+                          })}
                 </Typography>
 
                 <Players tournament={tournament} />

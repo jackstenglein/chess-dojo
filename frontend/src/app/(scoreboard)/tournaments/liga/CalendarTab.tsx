@@ -15,6 +15,7 @@ import {
 } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Grid } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import TournamentCalendarFilters from './TournamentCalendarFilters';
 
@@ -87,6 +88,7 @@ const CalendarTab = () => {
     const { events } = useEvents();
     const filters = useFilters();
     const [showFilters, setShowFilters] = useState(true);
+    const t = useTranslations('tournaments.liga.calendar');
 
     const toggleFilters = () => {
         setShowFilters(!showFilters);
@@ -161,7 +163,7 @@ const CalendarTab = () => {
                     startIcon={showFilters ? <VisibilityOff /> : <Visibility />}
                     sx={{ display: { xs: 'none', md: 'inline-flex' } }}
                 >
-                    {showFilters ? 'Hide Filters' : 'Show Filters'}
+                    {showFilters ? t('hideFilters') : t('showFilters')}
                 </Button>
                 {showFilters && <TournamentCalendarFilters filters={filters} />}
             </Grid>

@@ -31,6 +31,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { SiLichess } from 'react-icons/si';
 
@@ -38,6 +39,7 @@ const RegistrationPage = () => {
     const { user, status } = useAuth();
     const api = useApi();
     const router = useRouter();
+    const t = useTranslations('tournaments.openClassical.register');
 
     const [email, setEmail] = useState('');
     const [lichessUsername, setLichessUsername] = useState(user?.ratings.LICHESS?.username || '');
@@ -71,12 +73,10 @@ const RegistrationPage = () => {
     if (!user.discordId) {
         return (
             <Container maxWidth='md' sx={{ py: 5 }}>
-                <Typography variant='h5'>Register for the Dojo Open Classical</Typography>
+                <Typography variant='h5'>{t('titleRegister')}</Typography>
 
                 <Typography variant='h6' sx={{ my: 2 }}>
-                    Playing in the Open Classical requires a Discord account linked to your Dojo
-                    profile, in order to facilitate communication and game scheduling between
-                    players.
+                    {t('discordRequired')}
                 </Typography>
 
                 <DiscordOAuthButton />
@@ -92,19 +92,19 @@ const RegistrationPage = () => {
         const newErrors: Record<string, string> = {};
 
         if (!user && email.trim() === '') {
-            newErrors.email = 'This field is required';
+            newErrors.email = t('errorRequired');
         }
         if (lichessUsername.trim() === '') {
-            newErrors.lichessUsername = 'This field is required';
+            newErrors.lichessUsername = t('errorRequired');
         }
         if (region === '') {
-            newErrors.region = 'This field is required';
+            newErrors.region = t('errorRequired');
         }
         if (section === '') {
-            newErrors.section = 'This field is required';
+            newErrors.section = t('errorRequired');
         }
         if (byeRequests.every((v) => v)) {
-            newErrors.byeRequests = 'You cannot request a bye for every round';
+            newErrors.byeRequests = t('errorByeEvery');
         }
         logger.debug?.('New errors: ', newErrors);
 
@@ -140,12 +140,12 @@ const RegistrationPage = () => {
 
             <Stack spacing={4} alignItems='center'>
                 <Typography variant='h6' alignSelf='start'>
-                    Register for the Dojo Open Classical
+                    {t('titleRegister')}
                 </Typography>
 
                 {!user && (
                     <TextField
-                        label='Email'
+                        label={t('labelEmail')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -165,7 +165,7 @@ const RegistrationPage = () => {
                 )}
 
                 <TextField
-                    label='Lichess Username'
+                    label={t('labelLichessUsername')}
                     value={lichessUsername}
                     onChange={(e) => setLichessUsername(e.target.value)}
                     required={!user?.ratings.LICHESS?.username}
@@ -184,7 +184,7 @@ const RegistrationPage = () => {
                 />
 
                 <TextField
-                    label='Title'
+                    label={t('labelTitle')}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     select
@@ -199,7 +199,7 @@ const RegistrationPage = () => {
                         },
                     }}
                 >
-                    <MenuItem value=''>None</MenuItem>
+                    <MenuItem value=''>{t('titleNone')}</MenuItem>
                     <MenuItem value='GM'>GM</MenuItem>
                     <MenuItem value='WGM'>WGM</MenuItem>
                     <MenuItem value='IM'>IM</MenuItem>
@@ -212,7 +212,7 @@ const RegistrationPage = () => {
 
                 <TextField
                     data-testid='region'
-                    label='Region'
+                    label={t('labelRegion')}
                     select
                     required
                     value={region}
@@ -230,13 +230,13 @@ const RegistrationPage = () => {
                     }}
                     fullWidth
                 >
-                    <MenuItem value='A'>Region A (Americas)</MenuItem>
-                    <MenuItem value='B'>Region B (Eurasia/Africa/Oceania)</MenuItem>
+                    <MenuItem value='A'>{t('regionA')}</MenuItem>
+                    <MenuItem value='B'>{t('regionB')}</MenuItem>
                 </TextField>
 
                 <TextField
                     data-testid='section'
-                    label='Section'
+                    label={t('labelSection')}
                     select
                     required
                     value={section}
@@ -254,12 +254,12 @@ const RegistrationPage = () => {
                     }}
                     fullWidth
                 >
-                    <MenuItem value='Open'>Open</MenuItem>
-                    <MenuItem value='U1900'>U1900 (Lichess)</MenuItem>
+                    <MenuItem value='Open'>{t('sectionOpen')}</MenuItem>
+                    <MenuItem value='U1900'>{t('sectionU1900')}</MenuItem>
                 </TextField>
 
                 <FormControl error={Boolean(errors.byeRequests)}>
-                    <FormLabel>Bye Requests</FormLabel>
+                    <FormLabel>{t('labelByeRequests')}</FormLabel>
                     <Stack direction='row' sx={{ flexWrap: 'wrap', columnGap: 2.5 }}>
                         {Array.from(Array(7)).map((_, i) => (
                             <FormControlLabel
@@ -272,7 +272,7 @@ const RegistrationPage = () => {
                                         }
                                     />
                                 }
-                                label={`Round ${i + 1}`}
+                                label={t('roundNumber', { number: i + 1 })}
                             />
                         ))}
                     </Stack>
@@ -285,7 +285,7 @@ const RegistrationPage = () => {
                     onClick={validateAndProceed}
                     color='success'
                 >
-                    Register
+                    {t('register')}
                 </LoadingButton>
             </Stack>
 
@@ -295,11 +295,9 @@ const RegistrationPage = () => {
                 maxWidth='sm'
                 fullWidth
             >
-                <DialogTitle>Registration Confirmation</DialogTitle>
+                <DialogTitle>{t('confirmationTitle')}</DialogTitle>
                 <DialogContent>
-                    <Typography gutterBottom>
-                        Please confirm that you have completed the following:
-                    </Typography>
+                    <Typography gutterBottom>{t('confirmationPrompt')}</Typography>
                     <Stack mt={2}>
                         <FormControlLabel
                             control={
@@ -308,19 +306,17 @@ const RegistrationPage = () => {
                                     onChange={(e) => setConfirmedSteps(e.target.checked)}
                                 />
                             }
-                            label={
-                                <>
-                                    I enabled DMs from Discord server members (
+                            label={t.rich('confirmDmsLabel', {
+                                link: (chunks) => (
                                     <Link
                                         target='_blank'
                                         href='https://medium.com/@ZombieInu/discord-enable-disable-allowing-dms-from-server-members-f84881d896c6'
                                         rel='noreferrer'
                                     >
-                                        instructions
+                                        {chunks}
                                     </Link>
-                                    )
-                                </>
-                            }
+                                ),
+                            })}
                         />
                     </Stack>
                 </DialogContent>
@@ -330,7 +326,7 @@ const RegistrationPage = () => {
                         disabled={!confirmedSteps}
                         onClick={onRegister}
                     >
-                        Agree and Continue
+                        {t('agreeContinue')}
                     </Button>
                 </DialogActions>
             </Dialog>

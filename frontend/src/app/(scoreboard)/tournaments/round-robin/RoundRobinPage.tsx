@@ -3,6 +3,7 @@
 import { RoundRobinStatuses } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
 import { History, Info as InfoIcon, TableChart as TableChartIcon } from '@mui/icons-material';
 import { Box, Container, Tab, Tabs } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { Suspense, useState } from 'react';
 import { InfoPage } from './InfoPage';
 import { TournamentsPage } from './TournamentsPage';
@@ -35,6 +36,7 @@ const TabPanel: React.FC<{
  */
 export const RoundRobinPage = () => {
     const [tabValue, setTabValue] = useState(1);
+    const t = useTranslations('tournaments.roundRobin.tabs');
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
@@ -50,19 +52,19 @@ export const RoundRobinPage = () => {
                     aria-label='tournament viewer tabs'
                 >
                     <Tab
-                        label='Info'
+                        label={t('info')}
                         icon={<InfoIcon />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}
                     />
                     <Tab
-                        label='Tournaments'
+                        label={t('tournaments')}
                         icon={<TableChartIcon />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}
                     />
                     <Tab
-                        label='History'
+                        label={t('history')}
                         icon={<History />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}

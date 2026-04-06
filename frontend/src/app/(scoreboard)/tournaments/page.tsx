@@ -4,6 +4,7 @@ import { TournamentBracketIcon } from '@/style/TournamentIcon';
 import { MilitaryTech } from '@mui/icons-material';
 import { Container, Grid, Typography } from '@mui/material';
 import type { Metadata } from 'next';
+import { useTranslations } from 'next-intl';
 
 export const metadata: Metadata = {
     title: 'ChessDojo Tournaments',
@@ -15,47 +16,46 @@ export const metadata: Metadata = {
  * tournament pages.
  */
 export default function Page() {
+    const t = useTranslations('tournaments.landing');
+
     return (
         <Container
             maxWidth='lg'
             sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
         >
             <Typography variant='h4' textAlign='center' sx={{ mb: 2 }}>
-                ChessDojo Tournaments
+                {t('heading')}
             </Typography>
 
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <ExamCard
-                    name='Round Robin'
-                    description='Nine rounds of classical chess with members of your cohort, scheduled at your own pace.'
+                    name={t('roundRobinName')}
+                    description={t('roundRobinDescription')}
                     href='/tournaments/round-robin'
                     icon={CrossedSwordIcon}
                 />
 
                 <ExamCard
-                    name='Open Classical'
-                    description='Seven-round classical tournament with two sections and one game per week.'
+                    name={t('openClassicalName')}
+                    description={t('openClassicalDescription')}
                     href='/tournaments/open-classical'
                     icon={TournamentBracketIcon}
                 />
 
                 <ExamCard
-                    name='DojoLiga'
-                    description='Weekly blitz, rapid, and classical arenas. No Dojo account required.'
+                    name={t('dojoligaName')}
+                    description={t('dojoligaDescription')}
                     href='/tournaments/liga'
                     icon={MilitaryTech}
                 />
             </Grid>
 
             <Typography variant='h5' textAlign='center' sx={{ mt: 10, mb: 2 }}>
-                Champions' Circuit
+                {t('championsCircuit')}
             </Typography>
 
             <Typography textAlign='center' maxWidth='md'>
-                The winners of the round robin and open classical tournaments will each earn a free
-                year membership to the Dojo, as well as entrance into our end of year tournament of
-                champions. Repeat winners will earn only a single prize. Any players banned for fair
-                play violations will have their subscriptions canceled without warning.
+                {t('championsDescription')}
             </Typography>
         </Container>
     );

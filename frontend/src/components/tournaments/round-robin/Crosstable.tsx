@@ -13,13 +13,16 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 /**
  * Renders the crosstable for the given tournament.
  */
 export function Crosstable({ tournament }: { tournament: RoundRobin }) {
+    const t = useTranslations('tournaments.roundRobin.crosstable');
+
     if (!tournament.players) {
-        return <Typography textAlign={'center'}>No crosstable data available.</Typography>;
+        return <Typography textAlign={'center'}>{t('noData')}</Typography>;
     }
 
     return (
@@ -37,7 +40,7 @@ export function Crosstable({ tournament }: { tournament: RoundRobin }) {
                                     RoundRobinPlayerStatuses.WITHDRAWN && (
                                     <>
                                         <br />
-                                        (Withdrawn)
+                                        {t('withdrawn')}
                                     </>
                                 )}
                             </TableCell>
@@ -55,6 +58,7 @@ export function Crosstable({ tournament }: { tournament: RoundRobin }) {
 }
 
 function CrosstableRow({ player, tournament }: { player: string; tournament: RoundRobin }) {
+    const t = useTranslations('tournaments.roundRobin.crosstable');
     const withdrawn = tournament.players[player].status === RoundRobinPlayerStatuses.WITHDRAWN;
 
     return (
@@ -71,7 +75,7 @@ function CrosstableRow({ player, tournament }: { player: string; tournament: Rou
                 {withdrawn && (
                     <>
                         <br />
-                        (Withdrawn)
+                        {t('withdrawn')}
                     </>
                 )}
             </TableCell>

@@ -1,50 +1,8 @@
 import { Link } from '@/components/navigation/Link';
 import { OpenClassical, OpenClassicalPlayer } from '@/database/tournament';
 import { DataGridPro, GridColDef } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
-const columns: GridColDef<OpenClassicalPlayer>[] = [
-    {
-        field: 'displayName',
-        headerName: 'Name',
-        flex: 1,
-        renderCell(params) {
-            return <Link href={`/profile/${params.row.username}`}>{params.value}</Link>;
-        },
-    },
-    {
-        field: 'lichessUsername',
-        headerName: 'Lichess',
-        flex: 1,
-        renderCell(params) {
-            return (
-                <Link href={`https://lichess.org/@/${params.value}`} target='_blank' rel='noopener'>
-                    {params.value}
-                </Link>
-            );
-        },
-    },
-    {
-        field: 'discordUsername',
-        headerName: 'Discord',
-        flex: 1,
-        renderCell(params) {
-            return (
-                <Link
-                    href={`https://discord.com/users/${params.row.discordId}`}
-                    target='_blank'
-                    rel='noopener'
-                >
-                    {params.value}
-                </Link>
-            );
-        },
-    },
-    {
-        field: 'rating',
-        headerName: 'Rating',
-    },
-];
 
 interface EntrantsTableProps {
     openClassical?: OpenClassical;
@@ -53,6 +11,58 @@ interface EntrantsTableProps {
 }
 
 const EntrantsTable: React.FC<EntrantsTableProps> = ({ openClassical, region, ratingRange }) => {
+    const t = useTranslations('tournaments.openClassical.entrants');
+
+    const columns = useMemo<GridColDef<OpenClassicalPlayer>[]>(
+        () => [
+            {
+                field: 'displayName',
+                headerName: t('columnName'),
+                flex: 1,
+                renderCell(params) {
+                    return <Link href={`/profile/${params.row.username}`}>{params.value}</Link>;
+                },
+            },
+            {
+                field: 'lichessUsername',
+                headerName: t('columnLichess'),
+                flex: 1,
+                renderCell(params) {
+                    return (
+                        <Link
+                            href={`https://lichess.org/@/${params.value}`}
+                            target='_blank'
+                            rel='noopener'
+                        >
+                            {params.value}
+                        </Link>
+                    );
+                },
+            },
+            {
+                field: 'discordUsername',
+                headerName: t('columnDiscord'),
+                flex: 1,
+                renderCell(params) {
+                    return (
+                        <Link
+                            href={`https://discord.com/users/${params.row.discordId}`}
+                            target='_blank'
+                            rel='noopener'
+                        >
+                            {params.value}
+                        </Link>
+                    );
+                },
+            },
+            {
+                field: 'rating',
+                headerName: t('columnRating'),
+            },
+        ],
+        [t],
+    );
+
     const rows = useMemo(() => {
         if (!openClassical) {
             return [];

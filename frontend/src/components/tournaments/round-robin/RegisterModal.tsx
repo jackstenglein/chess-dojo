@@ -18,6 +18,7 @@ import {
     InputAdornment,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
@@ -50,6 +51,7 @@ export function RegisterModal({
 
     const request = useRequest<string>();
     const api = useApi();
+    const t = useTranslations('tournaments.roundRobin.registerModal');
 
     if (!user) {
         return null;
@@ -58,13 +60,13 @@ export function RegisterModal({
     const handleSubmit = async () => {
         const newErrors: Record<string, string> = {};
         if (lichessUsername.trim() === '') {
-            newErrors.lichessUsername = 'This field is required';
+            newErrors.lichessUsername = t('errorRequired');
         }
         if (chesscomUsername.trim() === '') {
-            newErrors.chesscomUsername = 'This field is required';
+            newErrors.chesscomUsername = t('errorRequired');
         }
         if (!hasReadRules || !hasAgreedToScheduling || !hasAgreedNotToCheat) {
-            newErrors.rules = 'Please agree to all conditions';
+            newErrors.rules = t('errorAgreeAll');
         }
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) {
@@ -84,7 +86,7 @@ export function RegisterModal({
             } else if ('url' in resp.data) {
                 window.location.href = resp.data.url;
             } else {
-                request.onSuccess('Successfully registered for the tournament');
+                request.onSuccess(t('successRegistered'));
                 onUpdateTournaments({
                     waitlist: resp.data.waitlist as RoundRobin,
                     tournament: resp.data.tournament,
@@ -99,17 +101,13 @@ export function RegisterModal({
     if (unbanUrl) {
         return (
             <Dialog open={open} onClose={onClose}>
-                <DialogTitle>Register for the Round Robin?</DialogTitle>
+                <DialogTitle>{t('title')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Your account is not in good standing, due to not submitting any games in a
-                        prior round robin tournament. To register for this tournament, you must pay
-                        a fee of $15, in accordance with the terms on the info page.
-                    </DialogContentText>
+                    <DialogContentText>{t('unbannedBody')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button href={unbanUrl}>Continue</Button>
+                    <Button onClick={onClose}>{t('cancel')}</Button>
+                    <Button href={unbanUrl}>{t('continue')}</Button>
                 </DialogActions>
             </Dialog>
         );
@@ -118,26 +116,22 @@ export function RegisterModal({
     return (
         <>
             <Dialog open={open} onClose={request.isLoading() ? undefined : onClose}>
-                <DialogTitle>Register for the Round Robin?</DialogTitle>
+                <DialogTitle>{t('title')}</DialogTitle>
                 <DialogContent>
                     {isFreeTier && (
-                        <DialogContentText sx={{ mb: 2 }}>
-                            You will only be charged $2 once the tournament starts. After the
-                            tournament starts, no refunds will be provided for withdrawals.
-                        </DialogContentText>
+                        <DialogContentText sx={{ mb: 2 }}>{t('freeTierBody')}</DialogContentText>
                     )}
 
                     {user.discordId ? (
                         <>
                             <DialogContentText sx={{ mb: 2 }}>
-                                To prevent cheating, all games in the tournament must be played
-                                using either the Lichess or Chess.com accounts entered here.
+                                {t('accountsBody')}
                             </DialogContentText>
 
                             <TextField
                                 fullWidth
                                 margin='normal'
-                                label='Lichess Username'
+                                label={t('labelLichessUsername')}
                                 value={lichessUsername}
                                 onChange={(e) => setLichessUsername(e.target.value)}
                                 slotProps={{
@@ -156,7 +150,7 @@ export function RegisterModal({
                             <TextField
                                 fullWidth
                                 margin='normal'
-                                label='Chess.com Username'
+                                label={t('labelChesscomUsername')}
                                 value={chesscomUsername}
                                 onChange={(e) => setChesscomUsername(e.target.value)}
                                 slotProps={{
@@ -185,7 +179,7 @@ export function RegisterModal({
                                         }}
                                     />
                                 }
-                                label='I have read all the rules on the info tab'
+                                label={t('checkReadRules')}
                             />
 
                             <FormControlLabel
@@ -197,7 +191,7 @@ export function RegisterModal({
                                         }}
                                     />
                                 }
-                                label='I understand that scheduling games is my responsibility and I will withdraw if I no longer have time to play'
+                                label={t('checkScheduling')}
                             />
 
                             <FormControlLabel
@@ -209,18 +203,18 @@ export function RegisterModal({
                                         }}
                                     />
                                 }
-                                label='I agree not to cheat'
+                                label={t('checkNoCheat')}
                             />
                             {errors.rules && <FormHelperText error>{errors.rules}</FormHelperText>}
                         </>
                     ) : (
                         <>
                             <DialogContentText sx={{ mb: 2 }}>
-                                Playing in the Round Robin requires a Discord account linked to your
-                                Dojo profile, in order to facilitate communication and game
-                                scheduling between players. Link your Discord account in your{' '}
-                                <Link href='/profile/edit'>settings</Link>, then come back to
-                                register.
+                                {t.rich('discordRequired', {
+                                    settingsLink: (chunks) => (
+                                        <Link href='/profile/edit'>{chunks}</Link>
+                                    ),
+                                })}
                             </DialogContentText>
                         </>
                     )}
@@ -228,14 +222,14 @@ export function RegisterModal({
 
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <LoadingButton
                         loading={request.isLoading()}
                         onClick={handleSubmit}
                         disabled={!user.discordId}
                     >
-                        Register
+                        {t('register')}
                     </LoadingButton>
                 </DialogActions>
 

@@ -18,6 +18,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface LichessGameResponse {
@@ -40,6 +41,7 @@ function gamePlayed(result: string): boolean {
 const SubmitResultsPage = () => {
     const api = useApi();
     const router = useRouter();
+    const t = useTranslations('tournaments.openClassical.submit');
 
     const [section, setSection] = useState('');
     const [region, setRegion] = useState('');
@@ -81,8 +83,7 @@ const SubmitResultsPage = () => {
             .catch(() => {
                 setErrors({
                     ...errors,
-                    gameUrl:
-                        'Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting.',
+                    gameUrl: t('errorFetchLichess'),
                 });
             });
     };
@@ -91,22 +92,22 @@ const SubmitResultsPage = () => {
         const newErrors: Record<string, string> = {};
 
         if (region === '') {
-            newErrors.region = 'This field is required';
+            newErrors.region = t('errorRequired');
         }
         if (section === '') {
-            newErrors.section = 'This field is required';
+            newErrors.section = t('errorRequired');
         }
         if (gamePlayed(result) && gameUrl.trim() === '') {
-            newErrors.gameUrl = 'This field is required';
+            newErrors.gameUrl = t('errorRequired');
         }
         if (white.trim() === '') {
-            newErrors.white = 'This field is required';
+            newErrors.white = t('errorRequired');
         }
         if (black.trim() === '') {
-            newErrors.black = 'This field is required';
+            newErrors.black = t('errorRequired');
         }
         if (result.trim() === '') {
-            newErrors.result = 'This field is required';
+            newErrors.result = t('errorRequired');
         }
 
         setErrors(newErrors);
@@ -145,17 +146,14 @@ const SubmitResultsPage = () => {
             <Stack spacing={4}>
                 <Stack spacing={1}>
                     <Typography data-testid='title' variant='h6'>
-                        Submit Results for the Dojo Open Classical
+                        {t('title')}
                     </Typography>
-                    <Typography>
-                        Results are submitted for the current active round. No late results will be
-                        accepted.
-                    </Typography>
+                    <Typography>{t('instructions')}</Typography>
                 </Stack>
 
                 <TextField
                     data-testid='region'
-                    label='Region'
+                    label={t('labelRegion')}
                     select
                     required
                     value={region}
@@ -172,13 +170,13 @@ const SubmitResultsPage = () => {
                         },
                     }}
                 >
-                    <MenuItem value='A'>Region A (Americas)</MenuItem>
-                    <MenuItem value='B'>Region B (Eurasia/Africa/Oceania)</MenuItem>
+                    <MenuItem value='A'>{t('regionA')}</MenuItem>
+                    <MenuItem value='B'>{t('regionB')}</MenuItem>
                 </TextField>
 
                 <TextField
                     data-testid='section'
-                    label='Section'
+                    label={t('labelSection')}
                     select
                     required
                     value={section}
@@ -195,13 +193,13 @@ const SubmitResultsPage = () => {
                     }}
                     helperText={errors.section}
                 >
-                    <MenuItem value='Open'>Open</MenuItem>
-                    <MenuItem value='U1900'>U1900</MenuItem>
+                    <MenuItem value='Open'>{t('sectionOpen')}</MenuItem>
+                    <MenuItem value='U1900'>{t('sectionU1900')}</MenuItem>
                 </TextField>
 
                 <TextField
                     data-testid='game-url'
-                    label='Game URL'
+                    label={t('labelGameUrl')}
                     value={gameUrl}
                     onChange={(e) => setGameUrl(e.target.value)}
                     onBlur={onBlurGameUrl}
@@ -215,12 +213,12 @@ const SubmitResultsPage = () => {
                             ),
                         },
                     }}
-                    helperText={errors.gameUrl || 'Please provide a link to the game'}
+                    helperText={errors.gameUrl || t('gameUrlHelper')}
                 />
 
                 <TextField
                     data-testid='white'
-                    label='White'
+                    label={t('labelWhite')}
                     required
                     value={white}
                     onChange={(e) => setWhite(e.target.value)}
@@ -234,13 +232,11 @@ const SubmitResultsPage = () => {
                             ),
                         },
                     }}
-                    helperText={
-                        errors.white || 'Lichess username of the player with the white pieces'
-                    }
+                    helperText={errors.white || t('whiteHelper')}
                 />
                 <TextField
                     data-testid='black'
-                    label='Black'
+                    label={t('labelBlack')}
                     required
                     value={black}
                     onChange={(e) => setBlack(e.target.value)}
@@ -254,14 +250,12 @@ const SubmitResultsPage = () => {
                             ),
                         },
                     }}
-                    helperText={
-                        errors.black || 'Lichess username of the player with the black pieces'
-                    }
+                    helperText={errors.black || t('blackHelper')}
                 />
 
                 <TextField
                     data-testid='result'
-                    label='Result'
+                    label={t('labelResult')}
                     select
                     required
                     value={result}
@@ -278,12 +272,12 @@ const SubmitResultsPage = () => {
                     error={Boolean(errors.result)}
                     helperText={errors.result}
                 >
-                    <MenuItem value='1-0'>White Wins (1-0)</MenuItem>
-                    <MenuItem value='0-1'>Black Wins (0-1)</MenuItem>
-                    <MenuItem value='1/2-1/2'>Draw (1/2-1/2)</MenuItem>
-                    <MenuItem value='1/2-1/2F'>Did Not Play (1/2-1/2F)</MenuItem>
-                    <MenuItem value='0-1F'>White Forfeits (0-1F)</MenuItem>
-                    <MenuItem value='1-0F'>Black Forfeits (1-0F)</MenuItem>
+                    <MenuItem value='1-0'>{t('resultWhiteWins')}</MenuItem>
+                    <MenuItem value='0-1'>{t('resultBlackWins')}</MenuItem>
+                    <MenuItem value='1/2-1/2'>{t('resultDraw')}</MenuItem>
+                    <MenuItem value='1/2-1/2F'>{t('resultDidNotPlay')}</MenuItem>
+                    <MenuItem value='0-1F'>{t('resultWhiteForfeits')}</MenuItem>
+                    <MenuItem value='1-0F'>{t('resultBlackForfeits')}</MenuItem>
                 </TextField>
 
                 {(result === '0-1F' || result === '1-0F') && (
@@ -295,13 +289,13 @@ const SubmitResultsPage = () => {
                                 onChange={(event) => setReportOpponent(event.target.checked)}
                             />
                         }
-                        label='Report opponent for unresponsiveness or unwillingness to schedule?'
+                        label={t('reportOpponent')}
                     />
                 )}
 
                 <TextField
                     data-testid='notes'
-                    label='Notes'
+                    label={t('labelNotes')}
                     multiline
                     minRows={3}
                     value={notes}
@@ -316,7 +310,7 @@ const SubmitResultsPage = () => {
                     color='success'
                     sx={{ alignSelf: 'center' }}
                 >
-                    Submit
+                    {t('submit')}
                 </LoadingButton>
             </Stack>
         </Container>

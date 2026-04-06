@@ -16,6 +16,7 @@ import {
     RoundRobinStatuses,
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
 import { Container, MenuItem, Stack, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ChangeEvent, useEffect } from 'react';
 
 /** Renders the Round Robin tournaments page. */
@@ -30,6 +31,7 @@ export function TournamentsPage({
     });
     const request = useRequest<RoundRobinListResponse>();
     const waitlistRequest = useRequest<RoundRobinListResponse>();
+    const t = useTranslations('tournaments.roundRobin.list');
 
     const cohort = searchParams.get('cohort') || '0-300';
     const reset = request.reset;
@@ -133,7 +135,7 @@ export function TournamentsPage({
                             tooltip=''
                             size={25}
                         />{' '}
-                        Champions' Circuit
+                        {t('championsCircuit')}
                     </MenuItem>
                 </TextField>
 

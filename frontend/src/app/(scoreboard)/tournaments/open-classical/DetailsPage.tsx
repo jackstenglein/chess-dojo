@@ -23,6 +23,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect } from 'react';
 import EntrantsTable from './EntrantsTable';
 import PairingsTable from './PairingsTable';
@@ -34,6 +35,7 @@ const DetailsPage = () => {
     const { user } = useAuth();
     const { searchParams } = useNextSearchParams({ tournament: 'CURRENT' });
     const tournament = searchParams.get('tournament') || 'CURRENT';
+    const t = useTranslations('tournaments.openClassical.details');
 
     const onSuccess = request.onSuccess;
     const handleData = useCallback(
@@ -74,7 +76,7 @@ const DetailsPage = () => {
             <Stack direction='row' justifyContent='space-between' alignItems='center'>
                 <Stack spacing={1}>
                     <Typography variant='h4' alignItems={'center'}>
-                        Dojo Open Classical
+                        {t('title')}
                     </Typography>
                     <Stack direction='row' spacing={1}>
                         <Button
@@ -83,7 +85,7 @@ const DetailsPage = () => {
                             href='/tournaments/open-classical/info'
                             component={Link}
                         >
-                            Info
+                            {t('info')}
                         </Button>
                         <Button
                             variant='outlined'
@@ -91,7 +93,7 @@ const DetailsPage = () => {
                             href='/tournaments/open-classical/previous'
                             component={Link}
                         >
-                            History
+                            {t('history')}
                         </Button>
                     </Stack>
                 </Stack>
@@ -103,7 +105,7 @@ const DetailsPage = () => {
                         startIcon={<AdminPanelSettingsIcon />}
                         href='/tournaments/open-classical/admin'
                     >
-                        Admin Portal
+                        {t('adminPortal')}
                     </Button>
                 )}
             </Stack>
@@ -124,6 +126,7 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
         view: 'standings',
     });
     const viewer = useAuth().user;
+    const t = useTranslations('tournaments.openClassical.details');
 
     if (!openClassical) {
         return null;
@@ -154,19 +157,15 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
             {openClassical.acceptingRegistrations ? (
                 <Stack mt={4} pb={5} spacing={2} alignItems='start'>
                     <Typography>
-                        {registeredSection ? (
-                            <>
-                                You are registered for the Region {registeredSection.region}{' '}
-                                {registeredSection.section} section. Round one begins{' '}
-                                {registrationCloseDate || 'soon'}.
-                            </>
-                        ) : (
-                            <>
-                                The tournament is still accepting registrations. Round one begins{' '}
-                                {registrationCloseDate || 'soon'}. Register beforehand if you would
-                                like to play.
-                            </>
-                        )}
+                        {registeredSection
+                            ? t('registeredMessage', {
+                                  region: registeredSection.region,
+                                  section: registeredSection.section,
+                                  date: registrationCloseDate || t('soonFallback'),
+                              })
+                            : t('acceptingRegistrationsMessage', {
+                                  date: registrationCloseDate || t('soonFallback'),
+                              })}
                     </Typography>
 
                     <Button
@@ -176,28 +175,28 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
                         href='/tournaments/open-classical/register'
                         component={Link}
                     >
-                        {registeredSection ? 'Update Registration' : 'Register'}
+                        {registeredSection ? t('updateRegistration') : t('register')}
                     </Button>
                 </Stack>
             ) : openClassical.startsAt === 'CURRENT' ? (
                 <Typography>
-                    Results for each round will be posted after the full round is complete.{' '}
+                    {t('resultsPostedMessage')}{' '}
                     <Button
                         variant='text'
                         startIcon={<PublishIcon />}
                         href='/tournaments/open-classical/submit-results'
                         component={Link}
                     >
-                        Submit Results
+                        {t('submitResults')}
                     </Button>
                 </Typography>
             ) : (
-                <Typography>Results from the {openClassical.name} tournament:</Typography>
+                <Typography>{t('previousResults', { name: openClassical.name })}</Typography>
             )}
 
             <Stack direction='row' width={1} spacing={2}>
                 <TextField
-                    label='Region'
+                    label={t('labelRegion')}
                     select
                     value={region}
                     onChange={(e) => updateSearchParams({ region: e.target.value })}
@@ -214,13 +213,13 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
                         },
                     }}
                 >
-                    <MenuItem value='A'>Region A (Americas)</MenuItem>
-                    <MenuItem value='B'>Region B (Eurasia/Africa/Oceania)</MenuItem>
+                    <MenuItem value='A'>{t('regionA')}</MenuItem>
+                    <MenuItem value='B'>{t('regionB')}</MenuItem>
                 </TextField>
 
                 <TextField
                     data-testid='section'
-                    label='Section'
+                    label={t('labelSection')}
                     select
                     value={ratingRange}
                     onChange={(e) => updateSearchParams({ ratingRange: e.target.value })}
@@ -246,7 +245,7 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
 
                 {!openClassical.acceptingRegistrations && (
                     <TextField
-                        label='View'
+                        label={t('labelView')}
                         select
                         value={view}
                         onChange={(e) => updateSearchParams({ view: e.target.value })}
@@ -267,12 +266,12 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
                             },
                         }}
                     >
-                        <MenuItem value='standings'>Overall Standings</MenuItem>
+                        <MenuItem value='standings'>{t('overallStandings')}</MenuItem>
                         {Array(maxRound)
                             .fill(0)
                             .map((_, i) => (
                                 <MenuItem key={i + 1} value={`${i + 1}`}>
-                                    Round {i + 1}
+                                    {t('roundNumber', { number: i + 1 })}
                                 </MenuItem>
                             ))}
                     </TextField>
