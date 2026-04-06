@@ -13,6 +13,7 @@ import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import { Exam, ExamAnswer, ExamType } from '@jackstenglein/chess-dojo-common/src/database/exam';
 import { Button, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function ExamInstructionsPage({ type, id }: { type: ExamType; id: string }) {
     const { user, status } = useAuth();
@@ -26,6 +27,7 @@ export function ExamInstructionsPage({ type, id }: { type: ExamType; id: string 
 }
 
 function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamType; id: string }) {
+    const t = useTranslations('exams.instructionsPage');
     const { request, exam } = useExam({ type, id });
     const answerRequest = useRequest<ExamAnswer>();
     const router = useRouter();
@@ -65,15 +67,9 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
                     />
 
                     <Typography variant='h4' mt={4}>
-                        Example
+                        {t('exampleHeading')}
                     </Typography>
-                    <Typography sx={{ mb: 3 }}>
-                        The following is a sample test similar to the one you will take. You can use
-                        this as an optional, untimed warm-up to see how the test will work. You are
-                        not graded on these problems. When you have finished making your moves,
-                        click the "Finish Early" button to see the score you would have gotten if
-                        this had been a real test.
-                    </Typography>
+                    <Typography sx={{ mb: 3 }}>{t('sampleDescription')}</Typography>
                 </Stack>
             </Container>
 
@@ -97,12 +93,9 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
             <Container>
                 <Stack alignItems='start'>
                     <Typography variant='h6' mt={6}>
-                        Start Test
+                        {t('startTestHeading')}
                     </Typography>
-                    <Typography>
-                        Click the button below to start. Your time begins as soon as you click the
-                        button.
-                    </Typography>
+                    <Typography>{t('startTestBody')}</Typography>
 
                     <Stack direction='row' spacing={2} mt={3}>
                         <Button
@@ -110,7 +103,7 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
                             component={Link}
                             href={`/tests/${type}/${id}/exam`}
                         >
-                            Begin Test
+                            {t('beginTest')}
                         </Button>
 
                         {user?.isAdmin && (
@@ -119,7 +112,7 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
                                 component={Link}
                                 href={`/tests/${type}/${id}/stats`}
                             >
-                                View Stats
+                                {t('viewStats')}
                             </Button>
                         )}
                     </Stack>

@@ -53,6 +53,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useCountdown } from 'react-countdown-circle-timer';
 
@@ -87,6 +88,7 @@ export function ExamPage({ type, id }: { type: ExamType; id: string }) {
 }
 
 function AuthExamPage({ type, id }: { type: ExamType; id: string }) {
+    const t = useTranslations('exams.examPage');
     const router = useRouter();
     const { request, exam, answer } = useExam({ type, id });
     const inProgress = !answer || answer.attempts.slice(-1)[0].inProgress;
@@ -149,20 +151,17 @@ function AuthExamPage({ type, id }: { type: ExamType; id: string }) {
                 exam={exam}
                 answer={answer}
                 onReset={() => setShowRetakeDialog(true)}
-                resetLabel='Retake Test'
+                resetLabel={t('retakeTest')}
                 showLatestAttempt={showLatestAttempt}
             />
             <Dialog open={showRetakeDialog} onClose={() => setShowRetakeDialog(false)}>
-                <DialogTitle>Retake this test?</DialogTitle>
+                <DialogTitle>{t('retakeDialogTitle')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        You can retake this test for practice, but your original score will still be
-                        used for your stats on this test and your Dojo Tactics rating.
-                    </DialogContentText>
+                    <DialogContentText>{t('retakeDialogBody')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowRetakeDialog(false)}>Cancel</Button>
-                    <Button onClick={onRetake}>Retake</Button>
+                    <Button onClick={() => setShowRetakeDialog(false)}>{t('cancel')}</Button>
+                    <Button onClick={onRetake}>{t('retakeButton')}</Button>
                 </DialogActions>
             </Dialog>
         </>
@@ -188,6 +187,7 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
     disableClock,
     disableSave,
 }) => {
+    const t = useTranslations('exams.examPage');
     const { user } = useRequiredAuth();
     const api = useApi();
     const pgnApi = useRef<PgnBoardApi>(null);
@@ -365,7 +365,7 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                 underboardTabs={[
                     {
                         name: 'instructions',
-                        tooltip: 'Instructions',
+                        tooltip: t('tooltipInstructions'),
                         icon: <Info />,
                         element: (
                             <CardContent>
@@ -379,7 +379,7 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                     },
                     {
                         name: 'examInfo',
-                        tooltip: 'Test Info',
+                        tooltip: t('tooltipTestInfo'),
                         icon: <Quiz />,
                         element: (
                             <ExamPgnSelector
@@ -419,14 +419,12 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                 }}
                 fullWidth
             >
-                <DialogTitle>Test Complete</DialogTitle>
+                <DialogTitle>{t('testCompleteTitle')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Your time has run out, and the test is over. Let's see how you did!
-                    </DialogContentText>
+                    <DialogContentText>{t('testCompleteBody')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onComplete}>Continue</Button>
+                    <Button onClick={onComplete}>{t('continueButton')}</Button>
                 </DialogActions>
             </Dialog>
         </Container>
@@ -468,6 +466,7 @@ export function getScores(exam: Exam, answerPgns: string[]): Scores {
 }
 
 export const ExamMoveButtonExtras: React.FC<MoveButtonProps> = ({ move }) => {
+    const t = useTranslations('exams.examPage');
     const { chess, config } = useChess();
 
     if (!chess) {
@@ -484,14 +483,14 @@ export const ExamMoveButtonExtras: React.FC<MoveButtonProps> = ({ move }) => {
 
     if (config?.disableTakebacks?.[0] === move.color) {
         return (
-            <Tooltip title='Only your first move for the solving side is counted in this test. This move and any following moves will not be counted.'>
+            <Tooltip title={t('tooltipOnlyFirstMove')}>
                 <Warning fontSize='small' sx={{ ml: 0.5 }} color='error' />
             </Tooltip>
         );
     }
 
     return (
-        <Tooltip title='This move will not be counted as part of your solution. If you want this move to be counted, promote it by using the editor or right-clicking.'>
+        <Tooltip title={t('tooltipMoveNotCounted')}>
             <Warning fontSize='small' sx={{ ml: 0.5 }} color='error' />
         </Tooltip>
     );
@@ -512,6 +511,7 @@ export const CompletedExam: React.FC<CompletedExamProps> = ({
     resetLabel,
     showLatestAttempt,
 }) => {
+    const t = useTranslations('exams.examPage');
     const [selectedAttempt, setAttempt] = useState(
         showLatestAttempt ? answer.attempts.length - 1 : 0,
     );
@@ -554,7 +554,7 @@ export const CompletedExam: React.FC<CompletedExamProps> = ({
                 underboardTabs={[
                     {
                         name: 'examInfo',
-                        tooltip: 'Test Info',
+                        tooltip: t('tooltipTestInfo'),
                         icon: <Quiz />,
                         element: (
                             <CompletedExamPgnSelector
@@ -576,7 +576,7 @@ export const CompletedExam: React.FC<CompletedExamProps> = ({
                     },
                     {
                         name: 'examStats',
-                        tooltip: 'Test Statistics',
+                        tooltip: t('tooltipTestStatistics'),
                         icon: <Assessment />,
                         element: <ExamStatistics exam={exam} />,
                     },
@@ -592,6 +592,7 @@ export const CompletedExam: React.FC<CompletedExamProps> = ({
 };
 
 const CompletedMoveButtonExtras: React.FC<MoveButtonProps> = ({ move, inline }) => {
+    const t = useTranslations('exams.examPage');
     const { score, found, extra, isAlt, altFound } = (move.userData || {}) as {
         score?: number;
         found?: boolean;
@@ -602,7 +603,7 @@ const CompletedMoveButtonExtras: React.FC<MoveButtonProps> = ({ move, inline }) 
 
     if (extra) {
         return (
-            <Tooltip title='This move was not present in the solution. You neither gained nor lost points for it.'>
+            <Tooltip title={t('tooltipMoveNotInSolution')}>
                 <RemoveCircle fontSize='inherit' sx={{ ml: 0.5 }} color='disabled' />
             </Tooltip>
         );
@@ -611,13 +612,13 @@ const CompletedMoveButtonExtras: React.FC<MoveButtonProps> = ({ move, inline }) 
     if (isAlt) {
         if (found) {
             return (
-                <Tooltip title='This move is an alternate solution. You got full credit for the mainline variation for finding this.'>
+                <Tooltip title={t('tooltipAlternateFound')}>
                     <SwapHorizontalCircle fontSize='small' sx={{ ml: 0.5 }} color='success' />
                 </Tooltip>
             );
         }
         return (
-            <Tooltip title='This move is an alternate solution. You would have received full credit for the mainline variation for finding this.'>
+            <Tooltip title={t('tooltipAlternateNotFound')}>
                 <SwapHorizontalCircle fontSize='small' sx={{ ml: 0.5 }} color='disabled' />
             </Tooltip>
         );

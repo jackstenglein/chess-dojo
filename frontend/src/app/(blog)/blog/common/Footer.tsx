@@ -1,4 +1,5 @@
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import logoBlack from './logoBlack.png';
 
@@ -11,6 +12,7 @@ export function Footer({
     utmMedium?: string;
     utmCampaign: string;
 }) {
+    const t = useTranslations('blog.footer');
     return (
         <Stack alignItems='center' mt={4}>
             <a
@@ -34,7 +36,7 @@ export function Footer({
                 >
                     <Image src={logoBlack} alt='' width={80} height={80} />
                     <Typography fontWeight='bold' textAlign='center' color='black'>
-                        Check Out ChessDojo.Club To Improve Your Chess
+                        {t('cta')}
                     </Typography>
                 </Stack>
             </a>

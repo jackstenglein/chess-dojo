@@ -18,6 +18,10 @@ vi.mock('@/components/navigation/Link', () => ({
     ),
 }));
 
+vi.mock('@/app/(blog)/blog/shareButton/ShareButton', () => ({
+    default: () => null,
+}));
+
 const theme = createTheme();
 
 function renderWithTheme(ui: React.ReactElement) {

@@ -8,6 +8,7 @@ import { Link } from '@/components/navigation/Link';
 import { Blog } from '@jackstenglein/chess-dojo-common/src/blog/api';
 import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
 import { Divider, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface BlogCommentsProps {
@@ -17,6 +18,7 @@ interface BlogCommentsProps {
 }
 
 export default function BlogComments({ comments: initialComments, owner, id }: BlogCommentsProps) {
+    const t = useTranslations('blog.comments');
     const [comments, setComments] = useState<Comment[] | null>(initialComments);
     const { user } = useAuth();
 
@@ -39,7 +41,9 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
         <>
             <Divider sx={{ my: 3 }} />
             <Typography variant='h5' gutterBottom>
-                Comments{comments && comments.length >= 2 ? ` (${comments.length})` : ''}
+                {comments && comments.length >= 2
+                    ? t('headingWithCount', { count: comments.length })
+                    : t('heading')}
             </Typography>
             <CommentList
                 comments={comments}
@@ -56,7 +60,9 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                 />
             ) : (
                 <Typography color='text.secondary'>
-                    <Link href='/signin'>Sign in</Link> to comment
+                    {t.rich('signInToComment', {
+                        link: (chunks) => <Link href='/signin'>{chunks}</Link>,
+                    })}
                 </Typography>
             )}
         </>
