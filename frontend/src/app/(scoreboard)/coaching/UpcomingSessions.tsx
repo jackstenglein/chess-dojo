@@ -6,6 +6,7 @@ import { Event } from '@/database/event';
 import { User } from '@/database/user';
 import { CalendarToday, FormatListBulleted } from '@mui/icons-material';
 import { Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, type JSX } from 'react';
 import CoachingCalendar from './CoachingCalendar';
 import CoachingList, { displayEvent } from './CoachingList';
@@ -19,6 +20,7 @@ interface UpcomingSessionsProps {
 }
 
 const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunction }) => {
+    const t = useTranslations('coaching');
     const viewer = useAuth().user;
     const { events, putEvent, removeEvent, request } = useEvents();
 
@@ -45,13 +47,13 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunct
             ) : (
                 <ToggleButtonGroup exclusive value={view} onChange={onChangeView} size='small'>
                     <ToggleButton value='list'>
-                        <Tooltip title='View as list'>
+                        <Tooltip title={t('upcomingSessions.viewAsList')}>
                             <FormatListBulleted />
                         </Tooltip>
                     </ToggleButton>
 
                     <ToggleButton value='calendar'>
-                        <Tooltip title='View in calendar'>
+                        <Tooltip title={t('upcomingSessions.viewInCalendar')}>
                             <CalendarToday />
                         </Tooltip>
                     </ToggleButton>
@@ -60,7 +62,7 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunct
 
             {coachingEvents.length === 0 ? (
                 <Stack alignItems='center'>
-                    <Typography>No available sessions found for your cohort</Typography>
+                    <Typography>{t('list.noSessionsFound')}</Typography>
                 </Stack>
             ) : view === 'list' ? (
                 <CoachingList events={coachingEvents} request={request} />

@@ -6,8 +6,10 @@ import ConnectStripeAccount from '@/components/coach/stripe/ConnectStripeAccount
 import StripeInfo from '@/components/coach/stripe/StripeInfo';
 import LoadingPage from '@/loading/LoadingPage';
 import { Container, Divider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const CoachPortalPage = () => {
+    const t = useTranslations('coach.portal');
     const { user, status } = useAuth();
 
     if (status === AuthStatus.Loading) {
@@ -22,7 +24,7 @@ const CoachPortalPage = () => {
         <Container sx={{ py: 4 }}>
             <Stack spacing={3}>
                 <Stack>
-                    <Typography variant='h4'>Coach Portal</Typography>
+                    <Typography variant='h4'>{t('title')}</Typography>
                     <Divider />
                 </Stack>
 

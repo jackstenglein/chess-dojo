@@ -10,6 +10,7 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface LeaveClubDialogProps {
     clubId: string;
@@ -28,6 +29,7 @@ export const LeaveClubDialog: React.FC<LeaveClubDialogProps> = ({
     onSuccess,
     onClose,
 }) => {
+    const t = useTranslations('clubs.leaveDialog');
     const api = useApi();
     const request = useRequest();
 
@@ -51,20 +53,18 @@ export const LeaveClubDialog: React.FC<LeaveClubDialogProps> = ({
         >
             <RequestSnackbar request={request} />
 
-            <DialogTitle>Leave {clubName}?</DialogTitle>
+            <DialogTitle>{t('title', { clubName })}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    {approvalRequired
-                        ? 'If you want to rejoin later, you will have to request approval again.'
-                        : 'You can rejoin later if you want.'}
+                    {approvalRequired ? t('bodyApprovalRequired') : t('bodyNoApproval')}
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <LoadingButton loading={request.isLoading()} onClick={onLeave}>
-                    Leave Club
+                    {t('submit')}
                 </LoadingButton>
             </DialogActions>
         </Dialog>

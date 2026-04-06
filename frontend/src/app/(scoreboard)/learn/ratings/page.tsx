@@ -13,6 +13,7 @@ import {
     Typography,
 } from '@mui/material';
 import { Metadata } from 'next';
+import { useTranslations } from 'next-intl';
 
 const { Custom, Custom2, Custom3, ...others } = RatingSystem;
 
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default function RatingConversionsPage() {
+    const t = useTranslations('learn.ratings');
     const ratingSystems = Object.values(others);
 
     return (
@@ -41,7 +43,7 @@ export default function RatingConversionsPage() {
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Dojo Cohort</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{t('dojoCohort')}</TableCell>
                             {ratingSystems.map((rs) => (
                                 <TableCell key={rs} sx={{ fontWeight: 'bold' }}>
                                     {formatRatingSystem(rs)}

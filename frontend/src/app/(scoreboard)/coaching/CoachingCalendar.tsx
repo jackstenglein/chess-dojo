@@ -12,6 +12,7 @@ import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
 import { ProcessedEvent, SchedulerRef } from '@jackstenglein/react-scheduler/types';
 import { Grid, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface CoachingCalendarProps {
@@ -27,6 +28,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
     removeEvent,
     request,
 }) => {
+    const t = useTranslations('coaching.calendar');
     const api = useApi();
     const user = useAuth().user;
     const calendarRef = useRef<SchedulerRef>(null);
@@ -52,13 +54,13 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                 // scheduler library
                 await api.deleteEvent(id);
                 removeEvent(id);
-                deleteRequest.onSuccess('Availability deleted');
+                deleteRequest.onSuccess(t('availabilityDeleted'));
                 return id;
             } catch (err) {
                 deleteRequest.onFailure(err);
             }
         },
-        [api, removeEvent, deleteRequest],
+        [api, removeEvent, deleteRequest, t],
     );
 
     const downHandler = useCallback(

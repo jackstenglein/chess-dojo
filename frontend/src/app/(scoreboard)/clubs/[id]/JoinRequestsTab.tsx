@@ -8,6 +8,7 @@ import { ClubDetails, ClubJoinRequest, ClubJoinRequestStatus } from '@/database/
 import Avatar from '@/profile/Avatar';
 import { Block, Check } from '@mui/icons-material';
 import { CircularProgress, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface JoinRequestsTabProps {
     club: ClubDetails;
@@ -15,6 +16,7 @@ interface JoinRequestsTabProps {
 }
 
 export const JoinRequestsTab: React.FC<JoinRequestsTabProps> = ({ club, onProcessRequest }) => {
+    const t = useTranslations('clubs.joinRequestsTab');
     const viewer = useAuth().user;
     if (viewer?.username !== club.owner) {
         return null;
@@ -31,7 +33,7 @@ export const JoinRequestsTab: React.FC<JoinRequestsTabProps> = ({ club, onProces
     return (
         <Stack spacing={7}>
             <Stack spacing={3}>
-                <Typography variant='h5'>Pending Requests</Typography>
+                <Typography variant='h5'>{t('pendingTitle')}</Typography>
                 {pendingRequests.map((joinRequest, idx) => (
                     <JoinRequest
                         key={joinRequest.username}
@@ -41,11 +43,11 @@ export const JoinRequestsTab: React.FC<JoinRequestsTabProps> = ({ club, onProces
                         onProcessRequest={onProcessRequest}
                     />
                 ))}
-                {pendingRequests.length === 0 && <Typography>No pending requests</Typography>}
+                {pendingRequests.length === 0 && <Typography>{t('noPending')}</Typography>}
             </Stack>
 
             <Stack spacing={3}>
-                <Typography variant='h5'>Rejected Requests</Typography>
+                <Typography variant='h5'>{t('rejectedTitle')}</Typography>
                 {rejectedRequests.map((joinRequest, idx) => (
                     <JoinRequest
                         key={joinRequest.username}
@@ -55,7 +57,7 @@ export const JoinRequestsTab: React.FC<JoinRequestsTabProps> = ({ club, onProces
                         onProcessRequest={onProcessRequest}
                     />
                 ))}
-                {rejectedRequests.length === 0 && <Typography>No rejected requests</Typography>}
+                {rejectedRequests.length === 0 && <Typography>{t('noRejected')}</Typography>}
             </Stack>
         </Stack>
     );
@@ -74,6 +76,7 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
     divider,
     onProcessRequest,
 }) => {
+    const t = useTranslations('clubs.joinRequestsTab');
     const viewer = useAuth().user;
     const api = useApi();
     const request = useRequest();
@@ -89,10 +92,10 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
                 if (status === ClubJoinRequestStatus.Approved) {
                     onProcessRequest(
                         resp.data,
-                        `${joinRequest.displayName} added as a club member`,
+                        t('approvedSnackbar', { displayName: joinRequest.displayName }),
                     );
                 } else if (status === ClubJoinRequestStatus.Rejected) {
-                    onProcessRequest(resp.data, 'Join request rejected');
+                    onProcessRequest(resp.data, t('rejectedSnackbar'));
                 }
             })
             .catch((err) => {
@@ -134,7 +137,7 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
                         <CircularProgress />
                     ) : (
                         <>
-                            <Tooltip title='Approve Request'>
+                            <Tooltip title={t('approveTooltip')}>
                                 <IconButton>
                                     <Check
                                         color='success'
@@ -146,7 +149,7 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
                             </Tooltip>
 
                             {joinRequest.status !== ClubJoinRequestStatus.Rejected && (
-                                <Tooltip title='Reject Request'>
+                                <Tooltip title={t('rejectTooltip')}>
                                     <IconButton>
                                         <Block
                                             color='error'

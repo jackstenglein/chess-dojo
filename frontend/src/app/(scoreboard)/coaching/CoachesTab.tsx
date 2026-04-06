@@ -12,6 +12,7 @@ import { User, compareCohorts } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { LoadingButton } from '@mui/lab';
 import { Card, CardActionArea, CardContent, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 
 const CoachesTab = () => {
@@ -50,6 +51,7 @@ const CoachesTab = () => {
 };
 
 const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
+    const t = useTranslations('coaching.coachesTab');
     const auth = useAuth();
     const currentUser = auth.user;
     const followRequest = useRequest<FollowerEntry>();
@@ -113,7 +115,7 @@ const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
                                     onClick={onFollow}
                                     loading={followRequest.isLoading()}
                                 >
-                                    {followRequest.data ? 'Unfollow' : 'Follow'}
+                                    {followRequest.data ? t('unfollow') : t('follow')}
                                 </LoadingButton>
                             )}
                         </Stack>

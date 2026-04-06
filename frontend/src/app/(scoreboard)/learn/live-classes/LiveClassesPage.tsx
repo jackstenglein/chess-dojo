@@ -21,6 +21,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { LiveClassesList } from './LiveClassesList';
 import {
@@ -34,6 +35,7 @@ import {
 } from './liveClassUtils';
 
 export function LiveClassesPage() {
+    const t = useTranslations('learn.liveClasses');
     const request = useRequest<LiveClass[]>();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -68,7 +70,7 @@ export function LiveClassesPage() {
 
     const toggleTag = (tag: string) => {
         setSelectedTags((prev) =>
-            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+            prev.includes(tag) ? prev.filter((tt) => tt !== tag) : [...prev, tag],
         );
     };
 
@@ -83,10 +85,10 @@ export function LiveClassesPage() {
     return (
         <Container sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
-            <Typography variant='h4'>Live Class Recordings</Typography>
+            <Typography variant='h4'>{t('title')}</Typography>
             <TextField
                 fullWidth
-                placeholder='Search by class name, teacher, or description'
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 size='small'
@@ -103,18 +105,18 @@ export function LiveClassesPage() {
             />
 
             <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center' sx={{ mt: 2 }}>
-                <Tooltip title='Show all recordings'>
+                <Tooltip title={t('showAll')}>
                     <Chip
-                        label='All'
+                        label={t('all')}
                         variant={selectedTags.length === 0 ? 'filled' : 'outlined'}
                         color={selectedTags.length === 0 ? 'primary' : 'default'}
                         onClick={() => setSelectedTags([])}
                         sx={{ cursor: 'pointer' }}
                     />
                 </Tooltip>
-                <Tooltip title='Show recordings with tag: Lecture'>
+                <Tooltip title={t('showTagLecture')}>
                     <Chip
-                        label='Lecture'
+                        label={t('lecture')}
                         variant={
                             selectedTags.includes(SubscriptionTier.Lecture) ? 'filled' : 'outlined'
                         }
@@ -126,9 +128,9 @@ export function LiveClassesPage() {
                         icon={<PresenterIcon sx={{ fontSize: '1.5rem' }} />}
                     />
                 </Tooltip>
-                <Tooltip title='Show recordings with tag: Game & Profile Review'>
+                <Tooltip title={t('showTagGameReview')}>
                     <Chip
-                        label='Game & Profile Review'
+                        label={t('gameReview')}
                         variant={
                             selectedTags.includes(SubscriptionTier.GameReview)
                                 ? 'filled'
@@ -146,7 +148,7 @@ export function LiveClassesPage() {
                 </Tooltip>
 
                 {allTags.map((tag) => (
-                    <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
+                    <Tooltip key={tag} title={t('showTagDynamic', { tag })}>
                         <Chip
                             key={tag}
                             label={tag}
@@ -175,29 +177,29 @@ export function LiveClassesPage() {
                 >
                     {COHORT_LEVELS.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                            {t(`cohortLevels.${opt.value}`)}
                         </MenuItem>
                     ))}
                 </Select>
 
                 <Stack direction='row' alignItems='center' gap={1}>
                     <Typography variant='subtitle2' color='text.secondary'>
-                        {filteredClasses.length} class{filteredClasses.length !== 1 ? 'es' : ''}
+                        {t('classCount', { count: filteredClasses.length })}
                     </Typography>
                     <ToggleButtonGroup
                         value={viewMode}
                         exclusive
                         onChange={(_, v: 'grid' | 'list') => setViewMode(v)}
-                        aria-label='view mode'
+                        aria-label={t('viewModeAriaLabel')}
                         size='small'
                     >
-                        <Tooltip title='Grid view'>
-                            <ToggleButton value='grid' aria-label='grid'>
+                        <Tooltip title={t('gridView')}>
+                            <ToggleButton value='grid' aria-label={t('gridAriaLabel')}>
                                 <ViewModule />
                             </ToggleButton>
                         </Tooltip>
-                        <Tooltip title='List view'>
-                            <ToggleButton value='list' aria-label='list'>
+                        <Tooltip title={t('listView')}>
+                            <ToggleButton value='list' aria-label={t('listAriaLabel')}>
                                 <ViewList />
                             </ToggleButton>
                         </Tooltip>
@@ -215,14 +217,14 @@ export function LiveClassesPage() {
                     />
                 ) : hasFilter ? (
                     <Stack alignItems='center'>
-                        <Typography sx={{ mt: 1 }}>No classes match your filters</Typography>
+                        <Typography sx={{ mt: 1 }}>{t('noClassesMatchFilters')}</Typography>
                         <Button variant='text' color='primary' onClick={onClearFilters}>
-                            Clear Filters
+                            {t('clearFilters')}
                         </Button>
                     </Stack>
                 ) : (
                     <Stack alignItems='center'>
-                        <Typography sx={{ mt: 1 }}>No classes found</Typography>
+                        <Typography sx={{ mt: 1 }}>{t('noClasses')}</Typography>
                     </Stack>
                 )}
             </Stack>

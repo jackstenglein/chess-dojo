@@ -21,6 +21,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 interface SparringRequirementProps {
@@ -120,6 +121,7 @@ interface SparringSubsectionProps {
 }
 
 const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) => {
+    const t = useTranslations('learn.sparring');
     const [open, setOpen] = useState(false);
 
     const toggleOpen = () => {
@@ -193,12 +195,10 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
                                     height={1}
                                 >
                                     <Typography textAlign='center'>
-                                        Unlock {subsection.hidden} more position
-                                        {subsection.hidden > 1 ? 's' : ''} by upgrading to a full
-                                        account
+                                        {t('unlockPositions', { count: subsection.hidden })}
                                     </Typography>
                                     <Button variant='outlined' component={Link} href='/prices'>
-                                        View Prices
+                                        {t('viewPrices')}
                                     </Button>
                                 </Stack>
                             </Grid>
@@ -310,6 +310,7 @@ const sectionData = [
 ];
 
 function AuthSparringPage() {
+    const t = useTranslations('learn.sparring');
     const { requirements, request } = useRequirements(ALL_COHORTS, true);
     const isFreeTier = useFreeTier();
 
@@ -364,13 +365,9 @@ function AuthSparringPage() {
             <Stack spacing={4}>
                 <RequestSnackbar request={request} />
                 <Typography variant='h5' align='center'>
-                    ChessDojo Recommended Sparring Positions
+                    {t('title')}
                 </Typography>
-                <Typography>
-                    Below are the recommended sparring positions per cohort. Ideally, you should
-                    spar positions with someone within one cohort of you and discuss the games
-                    afterward. Detailed instructions per position can be found in the training plan.
-                </Typography>
+                <Typography>{t('intro')}</Typography>
 
                 {sections.map((s) => (
                     <SparringSection key={s.name} section={s} />

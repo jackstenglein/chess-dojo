@@ -7,11 +7,13 @@ import { useRouter } from '@/hooks/useRouter';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { TabContext, TabPanel } from '@mui/lab';
 import { Box, Button, Container, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { AllClubsTab } from './AllClubsTab';
 import { MyClubsTab } from './MyClubsTab';
 
 export const ListClubsPage = () => {
+    const t = useTranslations('clubs.list');
     const { searchParams, setSearchParams } = useNextSearchParams({ view: 'all' });
     const isFreeTier = useFreeTier();
     const [upsellAction, setUpsellAction] = useState('');
@@ -36,10 +38,10 @@ export const ListClubsPage = () => {
                 rowGap={2}
                 mb={3}
             >
-                <Typography variant='h5'>Clubs</Typography>
+                <Typography variant='h5'>{t('title')}</Typography>
 
                 <Button variant='contained' onClick={onCreateClub}>
-                    Create Club
+                    {t('createClub')}
                 </Button>
             </Stack>
 
@@ -47,11 +49,11 @@ export const ListClubsPage = () => {
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs
                         value={searchParams.get('view') || 'all'}
-                        onChange={(_, t: string) => setSearchParams({ view: t })}
+                        onChange={(_, tab: string) => setSearchParams({ view: tab })}
                         variant='scrollable'
                     >
-                        <Tab label='All Clubs' value='all' />
-                        <Tab label='My Clubs' value='mine' />
+                        <Tab label={t('tabs.all')} value='all' />
+                        <Tab label={t('tabs.mine')} value='mine' />
                     </Tabs>
                 </Box>
 

@@ -12,6 +12,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Search } from '@mui/icons-material';
 import { Box, CardContent, MenuItem, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import PgnSelector from '../../courses/[type]/[id]/[chapter]/[module]/PgnSelector';
 
@@ -20,6 +21,7 @@ export function ModelGamesPage() {
 }
 
 function AuthModelGamesPage({ user }: { user: User }) {
+    const t = useTranslations('learn.modelGames');
     const api = useApi();
     const listRequest = useRequest<GameInfo[]>();
     const getRequest = useRequest<Game>();
@@ -96,14 +98,14 @@ function AuthModelGamesPage({ user }: { user: User }) {
                         underboardTabs={[
                             {
                                 name: 'selector',
-                                tooltip: 'Select Game',
+                                tooltip: t('selectGame'),
                                 icon: <Search />,
                                 element: (
                                     <CardContent data-testid='pgn-selector'>
                                         <TextField
                                             data-testid='cohort-select'
                                             select
-                                            label='Cohort'
+                                            label={t('cohortLabel')}
                                             value={cohort}
                                             onChange={(event) => onChangeCohort(event.target.value)}
                                             sx={{ mb: 3 }}
@@ -135,7 +137,7 @@ function AuthModelGamesPage({ user }: { user: User }) {
                                             />
                                         ) : (
                                             <Typography>
-                                                No games found for cohort {cohort}
+                                                {t('noGamesForCohort', { cohort })}
                                             </Typography>
                                         )}
                                     </CardContent>
