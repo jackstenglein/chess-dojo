@@ -2,6 +2,7 @@ import { Link } from '@/components/navigation/Link';
 import { FontAwesomeSvgIcon } from '@/style/Icon';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 import { Chip, SvgIconProps, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function DiscordIcon(props: SvgIconProps) {
     return <FontAwesomeSvgIcon icon={faDiscord} {...props} />;
@@ -15,12 +16,14 @@ interface DiscordChipProps {
 }
 
 const DiscordChip: React.FC<DiscordChipProps> = ({ username, id }) => {
+    const t = useTranslations('profile.info.chip');
+
     if (!username) {
         return null;
     }
 
     return (
-        <Tooltip title={`The user's Discord username.${id ? ' Click to message in Discord.' : ''}`}>
+        <Tooltip title={id ? t('discordTooltipClickable') : t('discordTooltip')}>
             <Link
                 target='_blank'
                 rel='noopener'

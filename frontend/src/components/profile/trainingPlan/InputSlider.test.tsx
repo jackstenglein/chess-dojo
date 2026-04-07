@@ -1,6 +1,26 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InputSlider } from './InputSlider';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const messages = require('../../../../messages/en.json') as Record<string, unknown>;
+
+function renderWithIntl(ui: React.ReactElement) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NextIntlClientProvider } = require('next-intl') as {
+        NextIntlClientProvider: React.FC<{
+            locale: string;
+            messages: Record<string, unknown>;
+            children: React.ReactNode;
+        }>;
+    };
+    return render(
+        <NextIntlClientProvider locale='en' messages={messages}>
+            {ui}
+        </NextIntlClientProvider>,
+    );
+}
 
 describe('InputSlider', () => {
     afterEach(() => {
@@ -10,7 +30,7 @@ describe('InputSlider', () => {
 
     it('increments value by 1 on pointer down', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         const incrementButton = screen.getByLabelText('Increment');
         fireEvent.pointerDown(incrementButton);
@@ -22,7 +42,7 @@ describe('InputSlider', () => {
 
     it('decrements value by 1 on pointer down', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         const decrementButton = screen.getByLabelText('Decrement');
         fireEvent.pointerDown(decrementButton);
@@ -34,7 +54,7 @@ describe('InputSlider', () => {
 
     it('does not decrement below min', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={0} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={0} setValue={setValue} max={100} min={0} />);
 
         const decrementButton = screen.getByLabelText('Decrement');
         expect(decrementButton).toBeDisabled();
@@ -43,7 +63,7 @@ describe('InputSlider', () => {
     it('starts auto-incrementing when pointer is held', () => {
         vi.useFakeTimers();
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         const incrementButton = screen.getByLabelText('Increment');
         fireEvent.pointerDown(incrementButton);
@@ -67,7 +87,7 @@ describe('InputSlider', () => {
     it('stops repeating on pointer leave', () => {
         vi.useFakeTimers();
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         const incrementButton = screen.getByLabelText('Increment');
         fireEvent.pointerDown(incrementButton);
@@ -84,7 +104,7 @@ describe('InputSlider', () => {
 
     it('handles input change correctly', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         const input = screen.getByRole('textbox');
         fireEvent.change(input, { target: { value: '25' } });
@@ -94,7 +114,7 @@ describe('InputSlider', () => {
 
     it('handles slider change correctly', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
+        renderWithIntl(<InputSlider value={10} setValue={setValue} max={100} min={0} />);
 
         // Slider is harder to test with fireEvent, but we can check if it's there
         const slider = screen.getByRole('slider');
@@ -104,7 +124,7 @@ describe('InputSlider', () => {
 
     it('enforces min value on blur', () => {
         const setValue = vi.fn();
-        render(<InputSlider value={5} setValue={setValue} max={100} min={10} />);
+        renderWithIntl(<InputSlider value={5} setValue={setValue} max={100} min={10} />);
 
         const input = screen.getByRole('textbox');
         fireEvent.blur(input);

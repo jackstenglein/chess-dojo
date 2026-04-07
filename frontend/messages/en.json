@@ -126,6 +126,12 @@
                 "mustBeInteger": "This field must be an integer",
                 "fieldRequired": "This field is required"
             },
+            "inputSlider": {
+                "decrement": "Decrement",
+                "increment": "Increment",
+                "progressCount": "Progress count",
+                "count": "Count"
+            },
             "daily": {
                 "today": "Today",
                 "progressCompleted": "{current} / {total} {suffix} completed"
@@ -376,7 +382,83 @@
             "tacticsRating": "Tactics Rating",
             "tacticsRatingTooltip": "For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "close",
-            "pastYear": "in the past year"
+            "pastYear": "in the past year",
+            "chip": {
+                "coach": "Coach",
+                "coachTooltip": "This member is a Dojo coach",
+                "dojoMember10Label": "Dojo 1.0",
+                "dojoMember10Tooltip": "Dojo member since 1.0",
+                "dojoMemberSinceTooltip": "Dojo member since {date}",
+                "discordTooltip": "The user's Discord username.",
+                "discordTooltipClickable": "The user's Discord username. Click to message in Discord.",
+                "inactive": "Inactive",
+                "inactiveTooltip": "User has not updated progress in the past month",
+                "timezoneTooltip": "The user's timezone"
+            },
+            "bio": {
+                "showMore": "Show More",
+                "showLess": "Show Less"
+            },
+            "badge": {
+                "badgesCardTitle": "Badges",
+                "viewAllBadges": "View All Badges",
+                "allBadges": "All Badges",
+                "viewMyPostmortem": "View my {year} postmortem!",
+                "postmortemAlt": "{year} postmortem",
+                "badgeProgress": "You have earned {earned} out of {total} badges ({percent}%)",
+                "categoryAll": "All Badges",
+                "categoryAchieved": "Achieved Badges",
+                "categoryPolgar": "Polgar Mates",
+                "categoryGames": "Games",
+                "categoryAnnotation": "Annotations",
+                "categoryGraduation": "Graduations"
+            },
+            "userCard": {
+                "copyProfileUrl": "Copy Profile URL",
+                "editProfileAndSettings": "Edit Profile and Settings",
+                "follow": "Follow",
+                "unfollow": "Unfollow",
+                "memberOfCohort": "Member of the {cohort} cohort",
+                "followers": "Followers",
+                "follower": "Follower",
+                "following": "Following"
+            },
+            "newsfeedCard": {
+                "newsfeed": "Newsfeed",
+                "viewAll": "View All",
+                "noActivity": "No recent activity from your follows or cohort."
+            },
+            "heatmap": {
+                "weekdaySun": "Sun",
+                "weekdayMon": "Mon",
+                "weekdayTue": "Tue",
+                "weekdayWed": "Wed",
+                "weekdayThur": "Thur",
+                "weekdayFri": "Fri",
+                "weekdaySat": "Sat",
+                "week": "Week",
+                "less": "Less",
+                "more": "More",
+                "totalDojoPointsLine": "{points} Dojo points {description}",
+                "totalMinutesLine": "{time} {description}",
+                "restDay": "Rest Day",
+                "clearRestDay": "Clear Rest Day",
+                "singleColorMode": "Single Color Mode",
+                "customTask": "Custom Task",
+                "classicalGamePlayed": "Classical Game Played",
+                "graduatedFrom": "Graduated from {cohort}",
+                "dojoPointsOnDate": "{points} {pluralCount, plural, =1 {Dojo point} other {Dojo points}} on {date}",
+                "minutesOnDate": "{time} on {date}",
+                "weeklyGoalMet": "Met Weekly Goal",
+                "weeklyGoalMissed": "Missed Weekly Goal",
+                "weeklyGoalInProgress": "Weekly Goal",
+                "tooltipRowDojoPoints": "{points} {pluralCount, plural, =1 {Dojo point} other {Dojo points}}",
+                "legendDojoPointsBase": "{value} Dojo points",
+                "legendMinutesRange": "{minValue} – {maxValue}",
+                "legendDojoPointsRange": "{minValue} – {maxValue} Dojo points",
+                "legendMinutesMax": "{value}+",
+                "legendDojoPointsMax": "{value}+ Dojo points"
+            }
         },
         "directories": {
             "add": "Add",
@@ -519,7 +601,216 @@
             "postmortemHeader": "ChessDojo<br></br>Postmortem<br></br><accent>{period}</accent>",
             "progressIntro": "Let's take a look at your progress over the past year!",
             "sweatWork": "The Dojo is all about sweat work! Let's take a look at the work you've done this year!",
-            "thankYou": "Thank you for being part of the Dojo this year! We can't wait to see what you and the rest of the Dojo will accomplish in {nextYear}!"
+            "thankYou": "Thank you for being part of the Dojo this year! We can't wait to see what you and the rest of the Dojo will accomplish in {nextYear}!",
+            "dojoPoints": {
+                "title": "Dojo Points",
+                "totalPoints": "Total Points",
+                "byCategory": "Points by Category",
+                "byMonth": "Points by Month",
+                "top10Tasks": "Top 10 Tasks",
+                "percentileDescription": "total Dojo points"
+            },
+            "games": {
+                "intro": "Finally, we all know analyzing games is a cornerstone of the Dojo, so let's check your game stats!",
+                "totalGames": "Total Games",
+                "publishedGames": "Published Games",
+                "byResult": "Games by Result",
+                "byMonth": "Games by Month",
+                "published": "Published",
+                "unpublished": "Unpublished",
+                "analysis": "Analysis",
+                "loss": "Loss",
+                "draw": "Draw",
+                "win": "Win",
+                "totalGamesDescription": "total games",
+                "publishedGamesDescription": "published games"
+            },
+            "graduations": {
+                "headerLine": "In {period}, you graduated {count, plural, =1 {# time} other {# times}}!",
+                "congratulationsBelts": "Congratulations on earning {count, plural, =1 {this belt} other {these belts}}!"
+            },
+            "percentiles": {
+                "percentile": "Percentile",
+                "cohortPercentile": "Cohort Percentile",
+                "percentileTooltip": "The percent of Dojo members active in the past 3 months whose {description} is below yours",
+                "cohortPercentileTooltip": "The percent of members in the {cohort} cohort active in the past 3 months whose {description} is below yours"
+            },
+            "time": {
+                "intro": "Now let's see how long it took to earn all those Dojo points!",
+                "title": "Time Spent",
+                "totalTime": "Total Time",
+                "byCategory": "Time by Category",
+                "byMonth": "Time by Month",
+                "top10Tasks": "Top 10 Tasks",
+                "totalTimeDescription": "total time spent"
+            },
+            "ratings": {
+                "intro": "Let's start with your results...",
+                "descriptionSame": "This year, your {system} rating remained the same, at <bold>{current}</bold>. But next year will see some great growth!",
+                "descriptionUp": "This year, your {system} rating increased from <bold>{startRating}</bold> to <bold>{currentRating}</bold>. That's <bold>{ratingChange}</bold> points! Keep up the great work next year!",
+                "descriptionDown": "This year, your {system} rating decreased from <bold>{startRating}</bold> to <bold>{currentRating}</bold>. Don't worry - you'll come back stronger next year!",
+                "otherRatingsIntro": "Now let's see how your other ratings did...",
+                "noRatings": "Whoops, looks like you don't have any ratings yet. Add a rating system to your profile and play some more games next year!"
+            },
+            "ratingCard": {
+                "preferred": "Preferred",
+                "jan1": "Jan 1, {period}",
+                "endDate2025": "Dec 31, 2025",
+                "endDate2024": "Dec 23, 2024",
+                "endDate2023": "Dec 25, 2023",
+                "change": "Change",
+                "normalized": "Normalized",
+                "normalizedTooltip": "Normalized Dojo rating using the table on Material > Rating Conversions",
+                "percentile": "Percentile",
+                "cohortPercentile": "Cohort Percentile",
+                "percentileTooltipPreferred": "The percent of Dojo members whose normalized preferred rating is below yours",
+                "percentileTooltipNonPreferred": "The percent of Dojo members whose {system} rating is below yours",
+                "cohortPercentileTooltipPreferred": "The percent of members in the {cohort} cohort whose normalized preferred rating is below yours",
+                "cohortPercentileTooltipNonPreferred": "The percent of members in the {cohort} cohort whose {system} rating is below yours",
+                "ratingChartLabel": "Rating"
+            }
+        },
+        "stats": {
+            "tab": {
+                "ratingsHidden": "Ratings are hidden in Zen Mode.",
+                "viewAnyway": "View Anyway"
+            },
+            "ratingCard": {
+                "preferred": "Preferred",
+                "current": "Current",
+                "start": "Start",
+                "change": "Change",
+                "normalized": "Normalized",
+                "normalizedTooltip": "Normalized Dojo rating using the table on Material > Rating Conversions",
+                "nextGraduation": "Next Graduation",
+                "naLabel": "N/A",
+                "tryAgainSeconds": "Try again in {seconds}s",
+                "refreshRating": "Refresh rating",
+                "ratingsUpdatedTooltip": "Ratings are updated every 24 hours",
+                "graphsUpdatedNote": "*Graphs are updated weekly",
+                "ratingChartLabel": "Rating",
+                "customRatingDisplayName": " ({name})"
+            },
+            "tacticsCard": {
+                "tacticsRating": "Tactics Rating",
+                "lowTooltip": "Your tactics rating is low for your cohort. It is calculated as the average of the below components.",
+                "highTooltip": "Your tactics rating is at the next level! It is calculated as the average of the below components.",
+                "matchingTooltip": "Your tactics rating is even with your cohort. It is calculated as the average of the below components.",
+                "provisionalSuffix": " Your rating is provisional because one or more components hasn't been started or could not be calculated."
+            }
+        },
+        "liveClassesTab": {
+            "gameReviewHeader": "Game & Profile Review — {name}",
+            "notAssignedYet": "This user has not been assigned to a Game & Profile Review cohort yet. Check back later!",
+            "discord": "Discord",
+            "discordCommunication": "Communicate with the other members of {name} in Discord <link>here</link>. If you are unable to access the channel, make sure you have linked your Discord account in your <settings>settings</settings> or try disconnecting and reconnecting your Discord account.",
+            "classes": "Classes",
+            "classesMethod": "The method of the Game & Profile Review class is simple. You will meet with your group weekly without the sensei. In this <b>peer review session</b>, you will review a game (or multiple games if there is time) from the user who is next up in the review queue. Try to improve the existing annotations of the game(s) and develop some questions about what was going on in the game(s). A few days later, you will meet with the sensei and cover the same user. Each <b>sensei session</b> will begin with a look at the user's profile. After that, the group will look at the game(s) of the user. The sensei will share their perspective on the game and answer the questions the students came up with during the peer review session. After the sensei session, the covered user moves to the bottom of the review queue and the process repeats for the next week.",
+            "joiningClasses": "Joining Classes",
+            "joiningClassesText": "You can find all the Game & Profile Review sessions (as well as the larger group classes) on the <link>calendar</link>. All classes will be conducted through Google Meet. To join, simply click the meeting link in the event details on the calendar. You don't need to download any software ahead of time.",
+            "recordings": "Recordings",
+            "recordingsText": "All classes are recorded. You can view the recordings <link>here</link>. Note that it may take a few hours after a class for the recording to be available.",
+            "scoreboard": "Scoreboard",
+            "scoreboardText": "You can view the team scoreboard <link>here</link>. Use this to see at a glance how much work you and the other members of your team are doing!",
+            "reviewQueue": "Review Queue",
+            "reviewQueueText": "Group members are listed in order of who is next up to have their game and profile reviewed.",
+            "lectures": "Lectures",
+            "lectureClassesText": "You can join any of the lecture classes, although material will be designed for the rating range listed in each class description.",
+            "lectureJoiningText": "You can find all the classes on the <link>calendar</link>. All classes will be conducted through Google Meet. To join, simply click the meeting link in the event details on the calendar. You don't need to download any software ahead of time.",
+            "lectureRecordingsText": "All classes are recorded. You can view the recordings <link>here</link>. Note that it may take a few hours after a class for the recording to be available.",
+            "communicatingPeers": "Communicating with Peers",
+            "communicatingPeersText": "Each class has its own Discord channel to handle organizational questions and to allow you to discuss with your peers. For example, we will use these channels to share sparring positions and you can schedule with other players to play them. You can find these channels in the event details on the calendar."
+        },
+        "gameReviewQueue": {
+            "user": "User",
+            "joinedQueueAt": "Joined Queue At",
+            "peerReview": "Peer Review",
+            "senseiReview": "Sensei Review",
+            "pausedTooltip": "This user is paused. They will be skipped in the queue until they unpause.",
+            "moveToBottom": "Move to Bottom",
+            "pause": "Pause",
+            "unpause": "Unpause"
+        },
+        "creator": {
+            "createProfile": "Create Profile",
+            "stepOptional": "Optional",
+            "stepPersonalInformation": "Personal Information",
+            "stepDojoCohort": "Dojo Cohort",
+            "stepExtraRatingSystems": "Extra Rating Systems",
+            "stepReferralSource": "Referral Source",
+            "personalInfo": {
+                "displayName": "Display Name",
+                "displayNameHelper": "This is how other users will identify you",
+                "bioOptional": "Bio (Optional)",
+                "timezoneOptional": "Timezone (Optional)",
+                "next": "Next"
+            },
+            "preferred": {
+                "intro": "Enter your preferred rating system, and we will place you in a cohort based on your rating. You should choose the rating system that best reflects your strength (IE: the one you play most often). You can always change your cohort later if the program is too hard or too easy.",
+                "label": "Preferred Rating System",
+                "helper": "Choose the rating system you play most often",
+                "back": "Back",
+                "next": "Next"
+            },
+            "extra": {
+                "cohortPlaced": "You have been placed in the <strong>{cohort}</strong> cohort. You can change this later if the program is too hard or too easy.",
+                "additionalRatings": "Add any additional rating systems you would like to track below. These are optional and will not affect your cohort.",
+                "back": "Back",
+                "next": "Next"
+            },
+            "hideMyUsernameFromMembers": "Hide my username from other Dojo members",
+            "hideMyIdFromMembers": "Hide my ID from other Dojo members",
+            "hideMyRatingCodeFromMembers": "Hide my rating code from other Dojo members",
+            "ecfRatingCodeHelper": "Enter your ECF rating code, not your membership number",
+            "referral": {
+                "question": "How did you hear about the training program?",
+                "label": "Referral Source",
+                "fieldRequired": "This field is required",
+                "otherLabel": "Other",
+                "otherSpecify": "Other (Please Specify)",
+                "back": "Back",
+                "next": "Next",
+                "options": {
+                    "twitch": "Twitch",
+                    "youtube": "YouTube",
+                    "discord": "Discord",
+                    "twitter": "Twitter",
+                    "reddit": "Reddit",
+                    "facebook": "Facebook",
+                    "google": "Google",
+                    "friendWordOfMouth": "Friend/Word of Mouth"
+                }
+            }
+        },
+        "clubsTab": {
+            "emptyOwnLine1": "You have not joined any clubs yet.",
+            "emptyOwnLine2": "Go to the <link>Clubs page</link> to join some!",
+            "emptyOther": "This user has not joined any clubs yet."
+        },
+        "coachTab": {
+            "upcomingSessions": "Upcoming Sessions",
+            "viewAsList": "View as list",
+            "viewInCalendar": "View in calendar"
+        },
+        "graduationShare": {
+            "title": "Share your progress!",
+            "description": "Show off your hard work and welcome the world to the Dojo! Download this image and share on social media.",
+            "close": "Close",
+            "download": "Download",
+            "imageAlt": "dojo graduation badge"
+        },
+        "trainingTips": {
+            "programTips": "Program Tips",
+            "close": "Close",
+            "playClassicalGames": "Play Classical Games",
+            "playClassicalGamesDesc1": "The senseis recommend playing 1-2 classical games per week if you’re not regularly playing tournaments. Over-the-board play is best for improvement, but you can also play classical games online!",
+            "playClassicalGamesDesc2": "Join one of Dojo's current tournaments to get some serious games in.",
+            "annotateGames": "Annotate your Games",
+            "annotateGamesDesc": "If you’ve played some classical games recently, it’s time to analyze those games! Use our Game Editor to start annotating and remember to publish your analysis when you’re finished!",
+            "tacticsTest": "Tactics Test",
+            "tacticsTestDesc": "After Games & Analysis, Tactics is the next most important category. Start with a Dojo Tactics Test, or work on completing one of the tasks in the Tactics section of the Training Plan below (Polgar Mates, Puzzle Rush, etc.)",
+            "suggestedTasks": "Suggested Tasks",
+            "suggestedTasksDesc": "Work through one of the suggested tasks listed here. Make sure to mark your progress and log your hours!"
         }
     },
     "notifications": {
