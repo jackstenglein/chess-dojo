@@ -28,6 +28,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useState, type JSX } from 'react';
 import Replies from './Replies';
 import ReplyEditor from './ReplyEditor';
@@ -77,6 +78,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
     hideControls,
     isReadonly,
 }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const { chess } = useChess();
     const [expanded, setExpanded] = useState(true);
     const [isReplying, setIsReplying] = useState(false);
@@ -104,7 +106,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
         <Stack spacing={0.5}>
             <Stack direction='row' spacing={0.5}>
                 {!expanded && (
-                    <Tooltip title='Expand Comment'>
+                    <Tooltip title={t('expandComment')}>
                         <IconButton onClick={() => setExpanded(true)} size='small'>
                             <ExpandMore fontSize='small' sx={{ color: 'text.secondary' }} />
                         </IconButton>
@@ -114,7 +116,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
             </Stack>
             <Collapse in={expanded}>
                 <Stack direction='row'>
-                    <Tooltip title='Collapse Comment'>
+                    <Tooltip title={t('collapseComment')}>
                         <Stack
                             alignItems='center'
                             sx={{
@@ -138,7 +140,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                         ) : comment.suggestedVariation ? (
                             <>
                                 <Typography variant='body2' color='text.secondary'>
-                                    Suggested a variation:
+                                    {t('suggestedVariation')}
                                 </Typography>
                                 {suggestedVariation && (
                                     <Lines
@@ -168,7 +170,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                                         sx={{ textTransform: 'none', minWidth: 0 }}
                                         onClick={() => setIsReplying(true)}
                                     >
-                                        reply
+                                        {t('reply')}
                                     </Button>
                                     {renderControls}
                                 </Stack>
@@ -184,6 +186,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
 };
 
 const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const [editValue, setEditValue] = useState<string>();
     const [showDelete, setShowDelete] = useState(false);
     const api = useApi();
@@ -296,7 +299,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                     sx={{ textTransform: 'none', minWidth: 0 }}
                                     onClick={() => setEditValue(comment.content)}
                                 >
-                                    edit
+                                    {t('edit')}
                                 </Button>
                             )}
                             <Button
@@ -316,25 +319,22 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                 open={showDelete}
                 onClose={deleteRequest.isLoading() ? undefined : () => setShowDelete(false)}
             >
-                <DialogTitle>Delete Comment?</DialogTitle>
+                <DialogTitle>{t('deleteCommentTitle')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete this comment? Any replies will also be
-                        deleted.
-                    </DialogContentText>
+                    <DialogContentText>{t('deleteCommentWarning')}</DialogContentText>
                     <DialogActions>
                         <Button
                             disabled={deleteRequest.isLoading()}
                             onClick={() => setShowDelete(false)}
                         >
-                            Cancel
+                            {t('cancel')}
                         </Button>
                         <LoadingButton
                             loading={deleteRequest.isLoading()}
                             color='error'
                             onClick={onDelete}
                         >
-                            Delete
+                            {t('delete')}
                         </LoadingButton>
                     </DialogActions>
                 </DialogContent>

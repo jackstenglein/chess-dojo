@@ -8,6 +8,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useReconcile } from '../../Board';
@@ -15,9 +16,12 @@ import { compareNags, getStandardNag, nags } from '../Nag';
 import { useChess } from '../PgnBoard';
 import { getWarnings } from './warningRules';
 
-function getMoveText(move: Move | null): string {
+function getMoveText(
+    move: Move | null,
+    t: ReturnType<typeof useTranslations<'analysisBoard.chrome'>>,
+): string {
     if (!move) {
-        return 'Starting Position';
+        return t('startingPosition');
     }
 
     let text = '';
@@ -43,6 +47,7 @@ const AnnotationWarnings = () => {
     const [showDetails, setShowDetails] = useState(false);
     const [forceRender, setForceRender] = useState(0);
     const reconcile = useReconcile();
+    const t = useTranslations('analysisBoard.chrome');
 
     useEffect(() => {
         if (chess) {
@@ -88,19 +93,17 @@ const AnnotationWarnings = () => {
                 severity='warning'
                 action={
                     <Button size='small' color='inherit' onClick={() => setShowDetails(true)}>
-                        Details
+                        {t('annotationWarningsDetailsButton')}
                     </Button>
                 }
                 sx={{ alignItems: 'center' }}
             >
-                {`Your annotations have ${Object.keys(warnings).length} warning${
-                    Object.keys(warnings).length > 1 ? 's' : ''
-                }.`}
+                {t('annotationWarningsCount', { count: Object.keys(warnings).length })}
             </Alert>
 
             <Dialog open={showDetails} onClose={() => setShowDetails(false)}>
                 <DialogTitle component='div'>
-                    <Typography variant='h5'>Annotation Warnings</Typography>
+                    <Typography variant='h5'>{t('annotationWarningsDialogTitle')}</Typography>
                 </DialogTitle>
                 <DialogContent>
                     <Stack spacing={2}>
@@ -116,7 +119,9 @@ const AnnotationWarnings = () => {
                                     alignItems='center'
                                     flexWrap='wrap'
                                 >
-                                    <Typography>Applicable Moves:</Typography>
+                                    <Typography>
+                                        {t('annotationWarningsApplicableMovesLabel')}
+                                    </Typography>
                                     {w.moves.map((m, idx) => (
                                         <Button
                                             key={idx}
@@ -128,7 +133,7 @@ const AnnotationWarnings = () => {
                                             }}
                                             onClick={() => onClickMove(m)}
                                         >
-                                            {getMoveText(m)}
+                                            {getMoveText(m, t)}
                                         </Button>
                                     ))}
                                 </Stack>

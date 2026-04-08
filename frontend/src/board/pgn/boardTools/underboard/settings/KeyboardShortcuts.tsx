@@ -14,137 +14,14 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi } from '../../../../Board';
 import { BlockBoardKeyboardShortcuts } from '../../../PgnBoard';
 import { UnderboardApi } from '../Underboard';
 import { DefaultUnderboardTab } from '../underboardTabs';
 import { KeyBinding, ShortcutAction, ShortcutBindings } from './ShortcutAction';
-
-/**
- * Returns a user-facing display string for the given ShortcutAction.
- * @param action The action to display.
- * @returns The display string for the given ShortcutAction.
- */
-function displayShortcutAction(action: ShortcutAction): string {
-    switch (action) {
-        case ShortcutAction.FirstMove:
-            return 'First Move';
-        case ShortcutAction.PreviousMove:
-            return 'Previous Move';
-        case ShortcutAction.NextMove:
-            return 'Next Move';
-        case ShortcutAction.LastMove:
-            return 'Last Move';
-        case ShortcutAction.ToggleOrientation:
-            return 'Flip Board';
-        case ShortcutAction.FirstVariation:
-            return 'First Variation';
-        case ShortcutAction.FirstMoveVariation:
-            return 'First Move in Variation';
-        case ShortcutAction.LastMoveVariation:
-            return 'Last Move in Variation';
-        case ShortcutAction.OpenFiles:
-            return 'Open Files';
-        case ShortcutAction.OpenTags:
-            return 'Open Tags';
-        case ShortcutAction.OpenEditor:
-            return 'Open Editor';
-        case ShortcutAction.OpenComments:
-            return 'Open Comments';
-        case ShortcutAction.OpenDatabase:
-            return 'Open Position Database';
-        case ShortcutAction.OpenClocks:
-            return 'Open Clock Usage';
-        case ShortcutAction.OpenSettings:
-            return 'Open Settings';
-        case ShortcutAction.OpenShare:
-            return 'Open Share';
-        case ShortcutAction.FocusMainTextField:
-            return 'Focus Main Text Field';
-        case ShortcutAction.FocusCommentTextField:
-            return 'Focus Comment Text Field';
-        case ShortcutAction.UnfocusTextField:
-            return 'Unfocus Text Fields';
-        case ShortcutAction.InsertNullMove:
-            return 'Insert Null Move';
-        case ShortcutAction.InsertEngineMove:
-            return 'Insert Top Engine Move';
-        case ShortcutAction.NextPuzzle:
-            return 'Next Puzzle';
-        case ShortcutAction.ViewShortcuts:
-            return 'Open Keyboard Shortcuts Dialog';
-    }
-}
-
-/**
- * Returns a user-facing description for the given ShortcutAction.
- * @param action The action to get a description for.
- * @returns The description for the given ShortcutAction.
- */
-function shortcutActionDescription(action: ShortcutAction): string {
-    switch (action) {
-        case ShortcutAction.FirstMove:
-            return 'Go to the starting position of the game.';
-        case ShortcutAction.PreviousMove:
-            return 'Go to the previous move.';
-        case ShortcutAction.NextMove:
-            return 'Go to the next move.';
-        case ShortcutAction.LastMove:
-            return 'Go to the last move of the game.';
-        case ShortcutAction.ToggleOrientation:
-            return 'Toggle the orientation of the board.';
-        case ShortcutAction.FirstVariation:
-            return 'Go to the first variation of the next move, if it has a variation. If it does not have a variation, go to the next move.';
-        case ShortcutAction.FirstMoveVariation:
-            return 'Go to the first move of the current variation.';
-        case ShortcutAction.LastMoveVariation:
-            return 'Go to the last move of the current variation.';
-        case ShortcutAction.OpenFiles:
-            return 'Open the Files tab.';
-        case ShortcutAction.OpenTags:
-            return 'Open the Tags tab.';
-        case ShortcutAction.OpenEditor:
-            return 'Open the Editor tab, if present.';
-        case ShortcutAction.OpenComments:
-            return 'Open the Comments tab.';
-        case ShortcutAction.OpenDatabase:
-            return 'Open the Position Database tab.';
-        case ShortcutAction.OpenClocks:
-            return 'Open the Clock Usage tab.';
-        case ShortcutAction.OpenSettings:
-            return 'Open the Settings tab.';
-        case ShortcutAction.OpenShare:
-            return 'Open the Share tab.';
-        case ShortcutAction.FocusMainTextField:
-            return 'Open the Editor tab, if present, and focus the text field. If the Editor tab is not present, open the Comments tab and focus the text field.';
-        case ShortcutAction.FocusCommentTextField:
-            return 'Open the Comments tab and focus the text field.';
-        case ShortcutAction.UnfocusTextField:
-            return 'Unfocuses all text fields, allowing the usage of keyboard shortcuts and board controls.';
-        case ShortcutAction.InsertNullMove:
-            return 'Inserts a null move into the PGN, passing the turn to the other side without changing the position. Null moves cannot be added when in check or immediately after another null move.';
-        case ShortcutAction.InsertEngineMove:
-            return 'Inserts the top engine move into the game (note: the engine must be running).';
-        case ShortcutAction.NextPuzzle:
-            return 'Goes to the next puzzle (has no effect outside of puzzles).';
-        case ShortcutAction.ViewShortcuts:
-            return 'Opens a dialog to view and edit keyboard shortcuts';
-    }
-}
-
-/**
- * Returns a user-facing display name for the given key.
- * @param key The key to display.
- * @returns The display string for the given key, or undefined if key is undefined.
- */
-function displayKey(key?: string): string | undefined {
-    if (key === ' ') {
-        return 'Space';
-    }
-    return key;
-}
 
 /** The valid modifier keys. */
 export const modifierKeys = ['Shift', 'Control', 'Alt'];
@@ -462,6 +339,142 @@ const KeyboardShortcuts = ({
     actions = Object.values(ShortcutAction),
     hideReset,
 }: KeyboardShortcutsProps) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
+
+    const keyLabels = useMemo(
+        (): Record<string, string> => ({
+            ArrowLeft: t('keyArrowLeft'),
+            ArrowRight: t('keyArrowRight'),
+            ArrowUp: t('keyArrowUp'),
+            ArrowDown: t('keyArrowDown'),
+            Space: t('keySpace'),
+            Enter: t('keyEnter'),
+            Escape: t('keyEscape'),
+            Tab: t('keyTab'),
+            Backspace: t('keyBackspace'),
+        }),
+        [t],
+    );
+
+    const displayKey = useCallback(
+        (key: string | undefined): string | undefined => {
+            if (!key) return key;
+            if (key === ' ') return keyLabels.Space;
+            return keyLabels[key] ?? key;
+        },
+        [keyLabels],
+    );
+
+    const displayShortcutAction = useMemo(
+        () =>
+            (action: ShortcutAction): string => {
+                switch (action) {
+                    case ShortcutAction.FirstMove:
+                        return t('shortcutFirstMove');
+                    case ShortcutAction.PreviousMove:
+                        return t('shortcutPreviousMove');
+                    case ShortcutAction.NextMove:
+                        return t('shortcutNextMove');
+                    case ShortcutAction.LastMove:
+                        return t('shortcutLastMove');
+                    case ShortcutAction.ToggleOrientation:
+                        return t('shortcutFlipBoard');
+                    case ShortcutAction.FirstVariation:
+                        return t('shortcutFirstVariation');
+                    case ShortcutAction.FirstMoveVariation:
+                        return t('shortcutFirstMoveInVariation');
+                    case ShortcutAction.LastMoveVariation:
+                        return t('shortcutLastMoveInVariation');
+                    case ShortcutAction.OpenFiles:
+                        return t('shortcutOpenFiles');
+                    case ShortcutAction.OpenTags:
+                        return t('shortcutOpenTags');
+                    case ShortcutAction.OpenEditor:
+                        return t('shortcutOpenEditor');
+                    case ShortcutAction.OpenComments:
+                        return t('shortcutOpenComments');
+                    case ShortcutAction.OpenDatabase:
+                        return t('shortcutOpenPositionDatabase');
+                    case ShortcutAction.OpenClocks:
+                        return t('shortcutOpenClockUsage');
+                    case ShortcutAction.OpenSettings:
+                        return t('shortcutOpenSettings');
+                    case ShortcutAction.OpenShare:
+                        return t('shortcutOpenShare');
+                    case ShortcutAction.FocusMainTextField:
+                        return t('shortcutFocusMainTextField');
+                    case ShortcutAction.FocusCommentTextField:
+                        return t('shortcutFocusCommentTextField');
+                    case ShortcutAction.UnfocusTextField:
+                        return t('shortcutUnfocusTextField');
+                    case ShortcutAction.InsertNullMove:
+                        return t('shortcutInsertNullMove');
+                    case ShortcutAction.InsertEngineMove:
+                        return t('shortcutInsertTopEngineMove');
+                    case ShortcutAction.NextPuzzle:
+                        return t('shortcutNextPuzzle');
+                    case ShortcutAction.ViewShortcuts:
+                        return t('shortcutOpenKeyboardShortcutsDialog');
+                }
+            },
+        [t],
+    );
+
+    const shortcutActionDescription = useMemo(
+        () =>
+            (action: ShortcutAction): string => {
+                switch (action) {
+                    case ShortcutAction.FirstMove:
+                        return t('shortcutFirstMoveDesc');
+                    case ShortcutAction.PreviousMove:
+                        return t('shortcutPreviousMoveDesc');
+                    case ShortcutAction.NextMove:
+                        return t('shortcutNextMoveDesc');
+                    case ShortcutAction.LastMove:
+                        return t('shortcutLastMoveDesc');
+                    case ShortcutAction.ToggleOrientation:
+                        return t('shortcutToggleOrientationDesc');
+                    case ShortcutAction.FirstVariation:
+                        return t('shortcutFirstVariationDesc');
+                    case ShortcutAction.FirstMoveVariation:
+                        return t('shortcutFirstMoveVariationDesc');
+                    case ShortcutAction.LastMoveVariation:
+                        return t('shortcutLastMoveVariationDesc');
+                    case ShortcutAction.OpenFiles:
+                        return t('shortcutOpenFilesDesc');
+                    case ShortcutAction.OpenTags:
+                        return t('shortcutOpenTagsDesc');
+                    case ShortcutAction.OpenEditor:
+                        return t('shortcutOpenEditorDesc');
+                    case ShortcutAction.OpenComments:
+                        return t('shortcutOpenCommentsDesc');
+                    case ShortcutAction.OpenDatabase:
+                        return t('shortcutOpenDatabaseDesc');
+                    case ShortcutAction.OpenClocks:
+                        return t('shortcutOpenClocksDesc');
+                    case ShortcutAction.OpenSettings:
+                        return t('shortcutOpenSettingsDesc');
+                    case ShortcutAction.OpenShare:
+                        return t('shortcutOpenShareDesc');
+                    case ShortcutAction.FocusMainTextField:
+                        return t('shortcutFocusMainTextFieldDesc');
+                    case ShortcutAction.FocusCommentTextField:
+                        return t('shortcutFocusCommentTextFieldDesc');
+                    case ShortcutAction.UnfocusTextField:
+                        return t('shortcutUnfocusTextFieldDesc');
+                    case ShortcutAction.InsertNullMove:
+                        return t('shortcutInsertNullMoveDesc');
+                    case ShortcutAction.InsertEngineMove:
+                        return t('shortcutInsertEngineMoveDesc');
+                    case ShortcutAction.NextPuzzle:
+                        return t('shortcutNextPuzzleDesc');
+                    case ShortcutAction.ViewShortcuts:
+                        return t('shortcutViewShortcutsDesc');
+                }
+            },
+        [t],
+    );
+
     const [keyBindings, setKeyBindings] = useLocalStorage(
         ShortcutBindings.key,
         ShortcutBindings.default,
@@ -548,21 +561,20 @@ const KeyboardShortcuts = ({
 
     return (
         <Stack>
-            <Typography variant='h6'>Keyboard Shortcuts</Typography>
+            <Typography variant='h6'>{t('keyboardShortcutsTitle')}</Typography>
             <Typography variant='subtitle2' color='text.secondary'>
-                Keyboard shortcuts are disabled while editing text fields (comments, clock times,
-                tags, etc).
+                {t('keyboardShortcutsDisabledNote')}
             </Typography>
 
             <Grid container rowGap={2} columnSpacing={2} alignItems='center' mt={1.5}>
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={5}>
-                    <Typography>Action</Typography>
+                    <Typography>{t('actionTableHeader')}</Typography>
                 </Grid>
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={3.5}>
-                    <Typography textAlign='center'>Modifier</Typography>
+                    <Typography textAlign='center'>{t('modifierTableHeader')}</Typography>
                 </Grid>
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={3.5}>
-                    <Typography textAlign='center'>Key</Typography>
+                    <Typography textAlign='center'>{t('keyTableHeader')}</Typography>
                 </Grid>
                 {actions.map((a) => {
                     const binding = keyBindings[a] || ShortcutBindings.default[a];
@@ -591,11 +603,11 @@ const KeyboardShortcuts = ({
                                     }}
                                 >
                                     <MenuItem value=''>
-                                        <em>None</em>
+                                        <em>{t('modifierNone')}</em>
                                     </MenuItem>
-                                    <MenuItem value='Shift'>Shift</MenuItem>
-                                    <MenuItem value='Control'>Control</MenuItem>
-                                    <MenuItem value='Alt'>Alt (Windows) / Option (Mac)</MenuItem>
+                                    <MenuItem value='Shift'>{t('modifierShift')}</MenuItem>
+                                    <MenuItem value='Control'>{t('modifierControl')}</MenuItem>
+                                    <MenuItem value='Alt'>{t('modifierAltOption')}</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid size={3.5}>
@@ -617,7 +629,7 @@ const KeyboardShortcuts = ({
                 {!hideReset && (
                     <Grid size={12}>
                         <Button color='error' onClick={onReset} sx={{ textTransform: 'none' }}>
-                            Reset All to Defaults
+                            {t('resetAllToDefaultsButton')}
                         </Button>
                     </Grid>
                 )}
@@ -634,23 +646,31 @@ const KeyboardShortcuts = ({
             >
                 {editAction && (
                     <DialogTitle>
-                        Edit Shortcut for <em>{displayShortcutAction(editAction)}</em>
+                        {t.rich('editShortcutDialogTitle', {
+                            actionName: displayShortcutAction(editAction),
+                            action: (chunks) => <em>{chunks}</em>,
+                        })}
                     </DialogTitle>
                 )}
                 <DialogContent>
+                    <DialogContentText>{t('editShortcutInstructions')}</DialogContentText>
                     <DialogContentText>
-                        Press any key to change the shortcut, then click save.
-                    </DialogContentText>
-                    <DialogContentText>
-                        Current Key: {displayKey(editKey) || <em>None</em>}
+                        {(() => {
+                            const displayedKey = displayKey(editKey);
+                            return displayedKey
+                                ? t('currentKeyDisplaySet', { key: displayedKey })
+                                : t.rich('currentKeyDisplayNone', {
+                                      em: (chunks) => <em>{chunks}</em>,
+                                  });
+                        })()}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onCloseEditor}>Cancel</Button>
+                    <Button onClick={onCloseEditor}>{t('settingsCancelButton')}</Button>
                     <Button color='error' onClick={onRemoveKey}>
-                        Remove Shortcut
+                        {t('removeShortcutButton')}
                     </Button>
-                    <Button onClick={onSaveEditor}>Save</Button>
+                    <Button onClick={onSaveEditor}>{t('saveButton')}</Button>
                 </DialogActions>
             </Dialog>
         </Stack>

@@ -1,10 +1,13 @@
 import { TimeControl } from '@jackstenglein/chess';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { formatTime } from './ClockUsage';
 
 export function TimeControlDescription({ timeControls }: { timeControls: TimeControl[] }) {
+    const t = useTranslations('analysisBoard.underboard.clock');
+
     if (timeControls.length === 0) {
-        return 'Unknown';
+        return t('unknownTimeControl');
     }
 
     if (timeControls.length === 1) {
@@ -13,11 +16,14 @@ export function TimeControlDescription({ timeControls }: { timeControls: TimeCon
             <Typography>
                 {formatTime(tc.seconds || 0)}{' '}
                 {tc.increment
-                    ? ` + ${tc.increment} sec increment`
+                    ? t('incrementSuffix', { increment: tc.increment })
                     : tc.delay
-                      ? ` + ${tc.delay} sec delay`
+                      ? t('delaySuffix', { delay: tc.delay })
                       : ''}
-                {tc.moves && `every ${tc.moves === 1 ? 'move' : `${tc.moves} moves`}`}
+                {tc.moves &&
+                    (tc.moves === 1
+                        ? t('everyMoveSingular')
+                        : t('everyMovesPlural', { count: tc.moves }))}
             </Typography>
         );
     }
@@ -26,19 +32,22 @@ export function TimeControlDescription({ timeControls }: { timeControls: TimeCon
     const items = [];
     for (let i = 0; i < timeControls.length; i++) {
         const tc = timeControls[i];
+        const moveLabel = tc.moves
+            ? t('moveRange', {
+                  start: currentMove,
+                  end: (currentMove += tc.moves || 0) - 1,
+              })
+            : t('moveRangeOpen', { start: currentMove });
         items.push(
             <Typography key={i}>
                 <Typography variant='subtitle2' component='span' color='text.secondary'>
-                    {tc.moves
-                        ? `Moves ${currentMove}–${(currentMove += tc.moves || 0) - 1}`
-                        : `Moves ${currentMove}+`}
-                    :
+                    {moveLabel}
                 </Typography>{' '}
                 {formatTime(tc.seconds || 0)}{' '}
                 {tc.increment
-                    ? ` + ${tc.increment} sec increment`
+                    ? t('incrementSuffix', { increment: tc.increment })
                     : tc.delay
-                      ? ` + ${tc.delay} sec delay`
+                      ? t('delaySuffix', { delay: tc.delay })
                       : ''}
             </Typography>,
         );

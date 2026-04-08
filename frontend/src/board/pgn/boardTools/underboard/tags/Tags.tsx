@@ -30,7 +30,8 @@ import {
     GridRenderCellParams,
     GridRenderEditCellParams,
 } from '@mui/x-data-grid-pro';
-import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useChess } from '../../../PgnBoard';
 import { EditDateCell } from './DateEditor';
 import { TimeControlGridEditor } from './TimeControlEditor';
@@ -50,110 +51,9 @@ export interface TagRow {
     value: string | OwnerValue | PgnDate | PgnTime | TimeControl;
 }
 
-const columns: GridColDef<TagRow>[] = [
-    { field: 'name', flex: 0.25 },
-    {
-        field: 'value',
-        flex: 0.75,
-        editable: true,
-        renderCell: (params: GridRenderCellParams<TagRow>) => {
-            if (isOwnerValue(params.row.value)) {
-                if (params.row.value.username === MastersCohort) {
-                    return null;
-                }
-                return (
-                    <Stack direction='row' spacing={1} alignItems='center' height={1}>
-                        <Avatar
-                            username={params.row.value.username}
-                            displayName={params.row.value.displayName}
-                            size={28}
-                        />
-                        <Link href={`/profile/${params.row.value.username}`}>
-                            <Typography variant='body2'>{params.row.value.displayName}</Typography>
-                        </Link>
-                        <CohortIcon cohort={params.row.value.previousCohort} size={20} />
-                    </Stack>
-                );
-            }
-
-            if (params.row.name === 'Cohort' && typeof params.row.value === 'string') {
-                return (
-                    <Link
-                        href={`/games/?type=cohort&cohort=${encodeURIComponent(params.row.value)}`}
-                    >
-                        {params.row.value === MastersCohort ? 'Masters DB' : params.row.value}
-                    </Link>
-                );
-            }
-
-            if (typeof params.row.value === 'string') {
-                return params.row.value;
-            }
-
-            return params.row.value.value;
-        },
-        renderEditCell: (params) => <CustomEditComponent {...params} />,
-    },
-];
-
 const dateTags = ['Date', 'EventDate', 'UTCDate', 'EndDate'];
 
 const CHESS_TITLES = ['', 'GM', 'WGM', 'IM', 'WIM', 'FM', 'WFM', 'CM', 'WCM', 'NM', 'WNM'];
-
-function CustomEditComponent(props: GridRenderEditCellParams<TagRow>) {
-    if (props.row.name === 'Result') {
-        return (
-            <GridEditSingleSelectCell
-                {...props}
-                variant='outlined'
-                colDef={{
-                    ...props.colDef,
-                    type: 'singleSelect',
-                    valueOptions: ['1-0', '1/2-1/2', '0-1'],
-                    getOptionValue(value) {
-                        return value;
-                    },
-                    getOptionLabel(value) {
-                        if (typeof value === 'string') {
-                            return value;
-                        }
-                        // This should not happen but is required by eslint
-                        return '';
-                    },
-                }}
-            />
-        );
-    }
-    if (props.row.name === 'WhiteTitle' || props.row.name === 'BlackTitle') {
-        return (
-            <GridEditSingleSelectCell
-                {...props}
-                variant='outlined'
-                colDef={{
-                    ...props.colDef,
-                    type: 'singleSelect',
-                    valueOptions: CHESS_TITLES,
-                    getOptionValue(value) {
-                        return value;
-                    },
-                    getOptionLabel(value) {
-                        if (typeof value === 'string') {
-                            return value || 'None';
-                        }
-                        return '';
-                    },
-                }}
-            />
-        );
-    }
-    if (props.row.name === 'TimeControl') {
-        return <TimeControlGridEditor {...props} />;
-    }
-    if (dateTags.includes(props.row.name)) {
-        return <EditDateCell {...props} />;
-    }
-    return <GridEditInputCell {...props} />;
-}
 
 const defaultTags = [
     'White',
@@ -192,12 +92,157 @@ interface TagsProps {
 
 const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
     const chess = useChess().chess;
+    const t = useTranslations('analysisBoard.underboard.tags');
     const [, setForceRender] = useState(0);
     const [error, setError] = useState('');
     const [customModalOpen, setCustomModalOpen] = useState(false);
     const [customTagLabel, setCustomTagLabel] = useState('');
     const [customTagValue, setCustomTagValue] = useState('');
     const [customTagError, setCustomTagError] = useState<Record<string, string>>({});
+
+    const tagLabels = useMemo<Record<string, string>>(
+        () => ({
+            White: t('whiteTag'),
+            Black: t('blackTag'),
+            WhiteElo: t('whiteEloTag'),
+            BlackElo: t('blackEloTag'),
+            WhiteTitle: t('whiteTitleTag'),
+            BlackTitle: t('blackTitleTag'),
+            Result: t('resultTag'),
+            Date: t('dateTag'),
+            Event: t('eventTag'),
+            Section: t('sectionTag'),
+            Round: t('roundTag'),
+            Board: t('boardTag'),
+            TimeControl: t('timeControlTag'),
+            PlyCount: t('plyCountTag'),
+            Site: t('siteTag'),
+            Annotator: t('annotatorTag'),
+            Termination: t('terminationTag'),
+            Mode: t('modeTag'),
+            WhiteTeam: t('whiteTeamTag'),
+            WhiteFideId: t('whiteFideIdTag'),
+            BlackTeam: t('blackTeamTag'),
+            BlackFideId: t('blackFideIdTag'),
+            GameId: t('gameIdTag'),
+            'Uploaded By': t('uploadedByLabel'),
+            Cohort: t('cohortLabel'),
+        }),
+        [t],
+    );
+
+    function CustomEditComponent(props: GridRenderEditCellParams<TagRow>) {
+        if (props.row.name === 'Result') {
+            return (
+                <GridEditSingleSelectCell
+                    {...props}
+                    variant='outlined'
+                    colDef={{
+                        ...props.colDef,
+                        type: 'singleSelect',
+                        valueOptions: ['1-0', '1/2-1/2', '0-1'],
+                        getOptionValue(value) {
+                            return value;
+                        },
+                        getOptionLabel(value) {
+                            if (typeof value === 'string') {
+                                return value;
+                            }
+                            // This should not happen but is required by eslint
+                            return '';
+                        },
+                    }}
+                />
+            );
+        }
+        if (props.row.name === 'WhiteTitle' || props.row.name === 'BlackTitle') {
+            return (
+                <GridEditSingleSelectCell
+                    {...props}
+                    variant='outlined'
+                    colDef={{
+                        ...props.colDef,
+                        type: 'singleSelect',
+                        valueOptions: CHESS_TITLES,
+                        getOptionValue(value) {
+                            return value;
+                        },
+                        getOptionLabel(value) {
+                            if (typeof value === 'string') {
+                                return value || t('noneTitle');
+                            }
+                            return '';
+                        },
+                    }}
+                />
+            );
+        }
+        if (props.row.name === 'TimeControl') {
+            return <TimeControlGridEditor {...props} />;
+        }
+        if (dateTags.includes(props.row.name)) {
+            return <EditDateCell {...props} />;
+        }
+        return <GridEditInputCell {...props} />;
+    }
+
+    const columns = useMemo<GridColDef<TagRow>[]>(
+        () => [
+            {
+                field: 'name',
+                flex: 0.25,
+                renderCell: (params: GridRenderCellParams<TagRow>) =>
+                    tagLabels[params.row.name] ?? params.row.name,
+            },
+            {
+                field: 'value',
+                flex: 0.75,
+                editable: true,
+                renderCell: (params: GridRenderCellParams<TagRow>) => {
+                    if (isOwnerValue(params.row.value)) {
+                        if (params.row.value.username === MastersCohort) {
+                            return null;
+                        }
+                        return (
+                            <Stack direction='row' spacing={1} alignItems='center' height={1}>
+                                <Avatar
+                                    username={params.row.value.username}
+                                    displayName={params.row.value.displayName}
+                                    size={28}
+                                />
+                                <Link href={`/profile/${params.row.value.username}`}>
+                                    <Typography variant='body2'>
+                                        {params.row.value.displayName}
+                                    </Typography>
+                                </Link>
+                                <CohortIcon cohort={params.row.value.previousCohort} size={20} />
+                            </Stack>
+                        );
+                    }
+
+                    if (params.row.name === 'Cohort' && typeof params.row.value === 'string') {
+                        return (
+                            <Link
+                                href={`/games/?type=cohort&cohort=${encodeURIComponent(params.row.value)}`}
+                            >
+                                {params.row.value === MastersCohort
+                                    ? t('masterDbLabel')
+                                    : params.row.value}
+                            </Link>
+                        );
+                    }
+
+                    if (typeof params.row.value === 'string') {
+                        return params.row.value;
+                    }
+
+                    return params.row.value.value;
+                },
+                renderEditCell: (params) => <CustomEditComponent {...params} />,
+            },
+        ],
+        [tagLabels, t],
+    );
 
     useEffect(() => {
         if (chess) {
@@ -228,10 +273,10 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
     const onAddCustomTag = () => {
         const newErrors: Record<string, string> = {};
         if (customTagLabel.trim().length === 0) {
-            newErrors.label = 'This field is required';
+            newErrors.label = t('fieldRequired');
         }
         if (customTagValue.trim().length === 0) {
-            newErrors.value = 'This field is required';
+            newErrors.value = t('fieldRequired');
         }
         setCustomTagError(newErrors);
         if (Object.entries(newErrors).length > 0) {
@@ -273,7 +318,7 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
         <Box height={1}>
             {allowEdits && (
                 <Typography variant='body2' color='text.secondary' ml={1} mt={1} mb={1}>
-                    Double click a cell to edit
+                    {t('doubleClickHint')}
                 </Typography>
             )}
             {error && (
@@ -317,12 +362,12 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                     const name = newRow.name;
 
                     if (['White', 'Date', 'Black'].includes(name) && stripTagValue(value) === '') {
-                        setError(`${name} tag is required to publish`);
+                        setError(t('tagRequiredError', { tagName: tagLabels[name] ?? name }));
                         return oldRow;
                     }
 
                     if (dateTags.includes(name) && value && !isValidDate(value)) {
-                        setError('PGN dates must be in the format 2024.12.31');
+                        setError(t('dateFormatError'));
                         return oldRow;
                     }
 
@@ -348,10 +393,10 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                     setError(err.message);
                 }}
             />
-            <Button onClick={() => setCustomModalOpen(true)}>Add PGN Tag</Button>
+            <Button onClick={() => setCustomModalOpen(true)}>{t('addPgnTagButton')}</Button>
             <Dialog fullWidth maxWidth='sm' open={customModalOpen}>
                 <IconButton
-                    aria-label='close'
+                    aria-label={t('closeAriaLabel')}
                     onClick={onCloseCustomModal}
                     sx={{
                         position: 'absolute',
@@ -362,7 +407,7 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                 >
                     <Close />
                 </IconButton>
-                <DialogTitle>Add PGN Tag</DialogTitle>
+                <DialogTitle>{t('addPgnTagTitle')}</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ pt: 1 }}>
                         <Grid size={{ xs: 12, sm: 6 }}>
@@ -379,7 +424,7 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label='Tag Label'
+                                        label={t('tagLabelField')}
                                         error={!!customTagError.label}
                                         helperText={customTagError.label}
                                     />
@@ -389,7 +434,7 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
                                 fullWidth
-                                label='Tag Value'
+                                label={t('tagValueField')}
                                 value={customTagValue}
                                 onChange={(e) => setCustomTagValue(e.target.value)}
                                 error={!!customTagError.value}
@@ -399,8 +444,8 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onCloseCustomModal}>Cancel</Button>
-                    <Button onClick={onAddCustomTag}>Add Tag</Button>
+                    <Button onClick={onCloseCustomModal}>{t('cancelButton')}</Button>
+                    <Button onClick={onAddCustomTag}>{t('addTagButton')}</Button>
                 </DialogActions>
             </Dialog>
         </Box>
