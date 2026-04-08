@@ -573,7 +573,30 @@
             "colLossPct": "Loss %",
             "gamesCount": "{count, plural, =1 {1 game} other {{count} games}}",
             "role": "Role",
-            "createdPrefix": "Created "
+            "createdPrefix": "Created ",
+            "cache": {
+                "homeDirectoryName": "Home",
+                "myGamesName": "My Games",
+                "myGamesDescription": "Serious classical games I have played",
+                "sharedDirectoryName": "Shared with Me",
+                "allUploadsBreadcrumb": "All Uploads"
+            },
+            "navigationMenu": {
+                "home": "Home",
+                "sharedWithMe": "Shared with Me",
+                "allMyUploads": "All My Uploads",
+                "expand": "Expand",
+                "collapse": "Collapse"
+            },
+            "select": {
+                "button": {
+                    "addToFolder": "Add to Folder",
+                    "addCurrentGameTitle": "Add current game to {directoryName}?",
+                    "fallbackFolderName": "folder",
+                    "cancel": "Cancel",
+                    "addButton": "Add"
+                }
+            }
         },
         "followers": {
             "noUsersFound": "No users found",
@@ -1709,6 +1732,145 @@
             "allCohorts": "All cohorts",
             "disableVariations": ", disable variations",
             "allTimeControls": "all time controls"
+        },
+        "deleteButton": {
+            "deleteGame": "{count, plural, =1 {Delete Game} other {Delete Games}}",
+            "dialogTitle": "{count, plural, =1 {Permanently Delete Game?} other {Permanently Delete # Games?}}",
+            "confirmPrompt": "{count, plural, =1 {Are you sure you want to delete this game? This action cannot be undone.} other {Are you sure you want to delete these games? This action cannot be undone.}}",
+            "multiFolderWarning": "Games added to multiple folders share a single copy. Deleting this game will remove it from all folders it appears in.",
+            "confirmInputLabel": "Type \"delete\" to confirm",
+            "cancel": "Cancel",
+            "deleteConfirmButton": "Delete"
+        },
+        "import": {
+            "boardEditor": {
+                "whiteToPlay": "White to play",
+                "blackToPlay": "Black to play",
+                "enPassantLabel": "En Passant",
+                "enPassantNone": "None",
+                "moveNumberLabel": "Move Number",
+                "castlingLabel": "Castling",
+                "castlingWhite": "White",
+                "castlingBlack": "Black",
+                "startingPositionButton": "Starting Position",
+                "clearBoardButton": "Clear Board",
+                "flipBoardButton": "Flip Board",
+                "keyboardShortcutTooltip": "Keyboard Shortcut: {key}"
+            },
+            "importButton": {
+                "label": "Import"
+            },
+            "onlineForm": {
+                "sortNewestFirst": "Newest first",
+                "sortOldestFirst": "Oldest first",
+                "sortTcShortest": "Time control (shortest)",
+                "sortTcLongest": "Time control (longest)",
+                "sortTcClassBulletToClassical": "Time class (bullet \u2192 classical)",
+                "sortTcClassClassicalToBullet": "Time class (classical \u2192 bullet)",
+                "sortWhiteWinsFirst": "White wins first",
+                "sortBlackWinsFirst": "Black wins first",
+                "sortDrawsFirst": "Draws first",
+                "filterSourceLabel": "Source",
+                "filterTimeClassLabel": "Time Class",
+                "filterTimeControlLabel": "Time Control",
+                "filterResultLabel": "Result",
+                "filterResultReasonLabel": "Result Reason",
+                "filterRatedLabel": "Rated",
+                "filterCohortMatchLabel": "Meets Cohort Time",
+                "filterOptionAll": "All",
+                "filterSourceLichess": "Lichess",
+                "filterSourceChesscom": "Chess.com",
+                "filterTimeControlDaily": "Daily",
+                "filterResultWhiteWins": "White wins",
+                "filterResultDraw": "Draw",
+                "filterResultBlackWins": "Black wins",
+                "filterResultUnknown": "Unknown",
+                "filterRatedTrue": "Rated",
+                "filterRatedFalse": "Casual",
+                "filterCohortMatchYes": "Yes",
+                "filterCohortMatchNo": "No",
+                "clearFilters": "Clear filters",
+                "cancel": "Cancel",
+                "orDividerRecentGames": "Recent Games",
+                "searchPlaceholder": "Search by player name",
+                "filterButtonHide": "Hide Filters",
+                "filterButtonActive": "Filters (active)",
+                "filterButtonIdle": "Filters",
+                "sortLabel": "Sort",
+                "dialogTitle": "Import Online Game",
+                "urlLabel": "Lichess or Chess.com URL",
+                "errorUrlRequired": "URL is required",
+                "errorUrlRequiredWithGames": "URL is required or select a game below",
+                "errorUrlUnsupported": "The provided URL is unsupported. Please make sure it is correct.",
+                "errorUnexpectedServer": "Unexpected server error",
+                "noGamesMatchFilters": "No games match the current filters.",
+                "noRecentGames": "No recent games found.",
+                "gameCardRated": "Rated",
+                "gameCardCasual": "Casual",
+                "timeClassBullet": "Bullet",
+                "timeClassBlitz": "Blitz",
+                "timeClassRapid": "Rapid",
+                "timeClassClassical": "Classical",
+                "timeClassDaily": "Daily",
+                "resultReasonResignation": "Resignation",
+                "resultReasonCheckmate": "Checkmate",
+                "resultReasonTimeout": "Timeout",
+                "resultReasonAgreement": "Agreement",
+                "resultReasonAbandonment": "Abandonment",
+                "resultReasonInsufficientMaterial": "Insufficient material",
+                "resultReasonStalemate": "Stalemate",
+                "resultReasonRepetition": "Repetition",
+                "byResultReason": "by {reason}",
+                "cohortMinimumTimeControlHint": "Your cohort ({cohort}) minimum time control is <strong>{timeControl}</strong>. Games that meet this requirement are marked with a <checkIcon></checkIcon> but you can still import any game. Your last 50 Lichess games and Chess.com games from the last two months are shown below.",
+                "addUsernameHint": "To list recent games, add your Chess.com or Lichess username to your <link>profile</link>."
+            },
+            "orDivider": {
+                "defaultHeader": "OR"
+            },
+            "page": {
+                "invalidPgn": "Invalid PGN"
+            },
+            "pgnForm": {
+                "oneFieldRequired": "One field is required",
+                "dialogTitle": "Import PGN",
+                "upToNGames": "Up to 100 games per file",
+                "selectFilePlaceholder": "Select a File",
+                "pastePgnLabel": "Paste PGN",
+                "cancel": "Cancel"
+            },
+            "positionForm": {
+                "invalidFen": "Invalid FEN",
+                "dialogTitle": "Custom Position",
+                "chooseFenLabel": "Choose Position or Paste FEN",
+                "cancel": "Cancel"
+            },
+            "wizard": {
+                "startingPositionName": "Starting Position",
+                "startingPositionDescription": "Annotate a blank game",
+                "onlineGameName": "Online Game",
+                "onlineGameDescription": "Import from Chess.com or Lichess",
+                "pgnName": "PGN",
+                "pgnDescription": "Import from PGN file",
+                "customPositionName": "Custom Position",
+                "customPositionDescription": "Annotate from a custom position"
+            }
+        },
+        "missingDataPreflight": {
+            "defaultTitle": "Missing Data",
+            "fieldRequired": "This field is required",
+            "whiteNameLabel": "White's name",
+            "blackNameLabel": "Black's name",
+            "gameResultLabel": "Game Result",
+            "gameResultWhiteWon": "White Won",
+            "gameResultDraw": "Draw",
+            "gameResultBlackWon": "Black Won",
+            "dateLabel": "Date",
+            "defaultOrientationLabel": "Default Orientation",
+            "orientationWhite": "White",
+            "orientationBlack": "Black",
+            "skipForNow": "Skip for now",
+            "cancel": "Cancel",
+            "submit": "Submit"
         }
     },
     "courses": {
@@ -3398,6 +3560,104 @@
                 "cannotStartLastMoveError": "Cannot start from the last move",
                 "cannotStartVariationError": "Cannot start from a variation"
             }
+        }
+    },
+    "ui": {
+        "chessTitleBadge": {
+            "GM": "Grandmaster",
+            "WGM": "Woman Grandmaster",
+            "IM": "International Master",
+            "WIM": "Woman International Master",
+            "FM": "FIDE Master",
+            "WFM": "Woman FIDE Master",
+            "CM": "Candidate Master",
+            "WCM": "Woman Candidate Master",
+            "NM": "National Master",
+            "WNM": "Woman National Master",
+            "LM": "Lifetime Master"
+        },
+        "closeButton": {
+            "ariaLabel": "close"
+        },
+        "cohortSelect": {
+            "allCohorts": "All Cohorts"
+        },
+        "pagination": {
+            "previousPageLabel": "Go to previous page",
+            "nextPageLabel": "Go to next page",
+            "freeTierLimit": "Free-tier users can only access the first page of results",
+            "displayedRowsExact": "{from}\u2013{to} of {count}",
+            "displayedRowsWithMore": "{from}\u2013{to} of {count}+"
+        }
+    },
+    "upsell": {
+        "alert": {
+            "viewOptions": "View Options"
+        },
+        "dialog": {
+            "defaultTitle": "Upgrade to a Full Account",
+            "defaultDescription": "You're currently on the free plan. Subscribe to the full training plan to:",
+            "defaultPostscript": "Your progress on the free plan will be carried over when you subscribe.",
+            "andMore": "And more!",
+            "cancel": "Cancel",
+            "viewOptions": "View Options",
+            "restrictedActionAccessAllTasks": "Access all training plan tasks for all cohorts (0-2500)",
+            "restrictedActionAccessOpenings": "Access all opening courses",
+            "restrictedActionAddCalendarEvents": "Add events to the Dojo Calendar",
+            "restrictedActionSubmitGames": "View the full Dojo Database and publish your games",
+            "restrictedActionJoinScoreboard": "Get added to the Dojo Scoreboard",
+            "restrictedActionGraduate": "Graduate and get featured in the graduation shows on Twitch",
+            "restrictedActionDownloadDatabase": "Download the full Dojo Database",
+            "restrictedActionSearchDatabase": "Search the Dojo Database by player",
+            "restrictedActionDatabaseExplorer": "Search the Dojo Database by position",
+            "restrictedActionCreateClubs": "Create new clubs",
+            "restrictedActionJoinSubscriberClubs": "Join clubs restricted to subscribers",
+            "restrictedActionSubscriberChat": "Access the subscriber-only chat",
+            "restrictedActionTacticsExams": "Take all tactics exams",
+            "restrictedActionViewGroupClassRecording": "Access recordings of live group classes",
+            "restrictedActionViewGameAndProfileReviewRecording": "Access Game & Profile Review class recordings"
+        },
+        "priceMatrix": {
+            "freeTierName": "Free Tier",
+            "continueForFree": "Continue for Free",
+            "coreTierName": "Core",
+            "startTraining": "Start Training",
+            "lecturesTierName": "Lectures",
+            "joinLectures": "Join Lectures",
+            "gameReviewTierName": "Game & Profile Review",
+            "getSenseiFeedback": "Get Sensei Feedback",
+            "alreadySubscribed": "Already Subscribed",
+            "intervalMonth": "month",
+            "intervalMonthWithAsterisk": "month*",
+            "freeLimitedTrainingPlans": "Limited training plans, 0-2500",
+            "freeLimitedGameDatabase": "Limited game database",
+            "freeLimitedPuzzles": "Limited puzzles",
+            "freeOpeningCourses": "Opening courses",
+            "freeCommunityForum": "Community forum access",
+            "coreAllTrainingPlans": "All training plans, 0-2500",
+            "coreRatingDashboard": "Rating dashboard & progress tracking",
+            "coreFullGameDatabase": "Full game database",
+            "coreUnlimitedPuzzles": "Unlimited puzzles",
+            "coreAllOpeningCourses": "All opening courses",
+            "coreCommunityForum": "Community forum access",
+            "lecturesEverythingFromCore": "Everything from ChessDojo Core",
+            "lecturesWeeklyLive": "Weekly live lectures on specialized topics",
+            "lecturesQandA": "Q&A sessions with Dojo coaches",
+            "lecturesHomework": "Structured homework assignments",
+            "lecturesRecordings": "Access to recordings of all lectures",
+            "gameReviewEverythingFromPrevious": "Everything from previous tiers",
+            "gameReviewPersonalizedReview": "Personalized game review classes",
+            "gameReviewDirectFeedback": "Direct feedback from a sensei",
+            "gameReviewRecordings": "Access to recordings of all lectures and classes",
+            "faqClassCalendar": "<faqLink>FAQ</faqLink> / <calendarLink>Class Calendar</calendarLink>",
+            "perClassSubtitle": "(~ {currency}{amount} / class)"
+        },
+        "sellingPoint": {},
+        "pricingPage": {
+            "tabMonthly": "Monthly",
+            "tabYearly": "Yearly",
+            "autoRenewNotice": "Plans automatically renew until canceled",
+            "annualBillingFootnote": "*When billed annually"
         }
     }
 }

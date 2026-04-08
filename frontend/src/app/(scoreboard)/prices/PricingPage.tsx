@@ -9,6 +9,7 @@ import {
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { Container, Grid, Tab, Tabs, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useOnSubscribe } from './useOnSubscribe';
 
@@ -19,6 +20,7 @@ interface PricingPageProps {
 }
 
 function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
+    const t = useTranslations('upsell.pricingPage');
     const { status, user } = useAuth();
     const [interval, setInterval] = useState<'month' | 'year'>(hideInterval ? 'month' : 'year');
     const { tier, request, onSubscribe } = useOnSubscribe();
@@ -52,8 +54,8 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                                 },
                             }}
                         >
-                            <Tab label='Monthly' value='month' />
-                            <Tab label='Yearly' value='year' />
+                            <Tab label={t('tabMonthly')} value='month' />
+                            <Tab label={t('tabYearly')} value='year' />
                         </Tabs>
                     </Grid>
                 )}
@@ -78,12 +80,12 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
 
                 <Grid textAlign='center' size={12}>
                     <Typography variant='body2' color='text.secondary'>
-                        Plans automatically renew until canceled
+                        {t('autoRenewNotice')}
                     </Typography>
 
                     {interval === 'year' && (
                         <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
-                            *When billed annually
+                            {t('annualBillingFootnote')}
                         </Typography>
                     )}
                 </Grid>

@@ -573,7 +573,30 @@
             "colLossPct": "[T] Loss %",
             "gamesCount": "[T] {count, plural, =1 {1 game} other {{count} games}}",
             "role": "[T] Role",
-            "createdPrefix": "[T] Created "
+            "createdPrefix": "[T] Created ",
+            "cache": {
+                "homeDirectoryName": "[T] Home",
+                "myGamesName": "[T] My Games",
+                "myGamesDescription": "[T] Serious classical games I have played",
+                "sharedDirectoryName": "[T] Shared with Me",
+                "allUploadsBreadcrumb": "[T] All Uploads"
+            },
+            "navigationMenu": {
+                "home": "[T] Home",
+                "sharedWithMe": "[T] Shared with Me",
+                "allMyUploads": "[T] All My Uploads",
+                "expand": "[T] Expand",
+                "collapse": "[T] Collapse"
+            },
+            "select": {
+                "button": {
+                    "addToFolder": "[T] Add to Folder",
+                    "addCurrentGameTitle": "[T] Add current game to {directoryName}?",
+                    "fallbackFolderName": "[T] folder",
+                    "cancel": "[T] Cancel",
+                    "addButton": "[T] Add"
+                }
+            }
         },
         "followers": {
             "noUsersFound": "[T] No users found",
@@ -1709,6 +1732,145 @@
             "allCohorts": "[T] All cohorts",
             "disableVariations": "[T] , disable variations",
             "allTimeControls": "[T] all time controls"
+        },
+        "deleteButton": {
+            "deleteGame": "[T] {count, plural, =1 {Delete Game} other {Delete Games}}",
+            "dialogTitle": "[T] {count, plural, =1 {Permanently Delete Game?} other {Permanently Delete # Games?}}",
+            "confirmPrompt": "[T] {count, plural, =1 {Are you sure you want to delete this game? This action cannot be undone.} other {Are you sure you want to delete these games? This action cannot be undone.}}",
+            "multiFolderWarning": "[T] Games added to multiple folders share a single copy. Deleting this game will remove it from all folders it appears in.",
+            "confirmInputLabel": "[T] Type \"delete\" to confirm",
+            "cancel": "[T] Cancel",
+            "deleteConfirmButton": "[T] Delete"
+        },
+        "import": {
+            "boardEditor": {
+                "whiteToPlay": "[T] White to play",
+                "blackToPlay": "[T] Black to play",
+                "enPassantLabel": "[T] En Passant",
+                "enPassantNone": "[T] None",
+                "moveNumberLabel": "[T] Move Number",
+                "castlingLabel": "[T] Castling",
+                "castlingWhite": "[T] White",
+                "castlingBlack": "[T] Black",
+                "startingPositionButton": "[T] Starting Position",
+                "clearBoardButton": "[T] Clear Board",
+                "flipBoardButton": "[T] Flip Board",
+                "keyboardShortcutTooltip": "[T] Keyboard Shortcut: {key}"
+            },
+            "importButton": {
+                "label": "[T] Import"
+            },
+            "onlineForm": {
+                "sortNewestFirst": "[T] Newest first",
+                "sortOldestFirst": "[T] Oldest first",
+                "sortTcShortest": "[T] Time control (shortest)",
+                "sortTcLongest": "[T] Time control (longest)",
+                "sortTcClassBulletToClassical": "[T] Time class (bullet \u2192 classical)",
+                "sortTcClassClassicalToBullet": "[T] Time class (classical \u2192 bullet)",
+                "sortWhiteWinsFirst": "[T] White wins first",
+                "sortBlackWinsFirst": "[T] Black wins first",
+                "sortDrawsFirst": "[T] Draws first",
+                "filterSourceLabel": "[T] Source",
+                "filterTimeClassLabel": "[T] Time Class",
+                "filterTimeControlLabel": "[T] Time Control",
+                "filterResultLabel": "[T] Result",
+                "filterResultReasonLabel": "[T] Result Reason",
+                "filterRatedLabel": "[T] Rated",
+                "filterCohortMatchLabel": "[T] Meets Cohort Time",
+                "filterOptionAll": "[T] All",
+                "filterSourceLichess": "[T] Lichess",
+                "filterSourceChesscom": "[T] Chess.com",
+                "filterTimeControlDaily": "[T] Daily",
+                "filterResultWhiteWins": "[T] White wins",
+                "filterResultDraw": "[T] Draw",
+                "filterResultBlackWins": "[T] Black wins",
+                "filterResultUnknown": "[T] Unknown",
+                "filterRatedTrue": "[T] Rated",
+                "filterRatedFalse": "[T] Casual",
+                "filterCohortMatchYes": "[T] Yes",
+                "filterCohortMatchNo": "[T] No",
+                "clearFilters": "[T] Clear filters",
+                "cancel": "[T] Cancel",
+                "orDividerRecentGames": "[T] Recent Games",
+                "searchPlaceholder": "[T] Search by player name",
+                "filterButtonHide": "[T] Hide Filters",
+                "filterButtonActive": "[T] Filters (active)",
+                "filterButtonIdle": "[T] Filters",
+                "sortLabel": "[T] Sort",
+                "dialogTitle": "[T] Import Online Game",
+                "urlLabel": "[T] Lichess or Chess.com URL",
+                "errorUrlRequired": "[T] URL is required",
+                "errorUrlRequiredWithGames": "[T] URL is required or select a game below",
+                "errorUrlUnsupported": "[T] The provided URL is unsupported. Please make sure it is correct.",
+                "errorUnexpectedServer": "[T] Unexpected server error",
+                "noGamesMatchFilters": "[T] No games match the current filters.",
+                "noRecentGames": "[T] No recent games found.",
+                "gameCardRated": "[T] Rated",
+                "gameCardCasual": "[T] Casual",
+                "timeClassBullet": "[T] Bullet",
+                "timeClassBlitz": "[T] Blitz",
+                "timeClassRapid": "[T] Rapid",
+                "timeClassClassical": "[T] Classical",
+                "timeClassDaily": "[T] Daily",
+                "resultReasonResignation": "[T] Resignation",
+                "resultReasonCheckmate": "[T] Checkmate",
+                "resultReasonTimeout": "[T] Timeout",
+                "resultReasonAgreement": "[T] Agreement",
+                "resultReasonAbandonment": "[T] Abandonment",
+                "resultReasonInsufficientMaterial": "[T] Insufficient material",
+                "resultReasonStalemate": "[T] Stalemate",
+                "resultReasonRepetition": "[T] Repetition",
+                "byResultReason": "[T] by {reason}",
+                "cohortMinimumTimeControlHint": "[T] Your cohort ({cohort}) minimum time control is <strong>{timeControl}</strong>. Games that meet this requirement are marked with a <checkIcon></checkIcon> but you can still import any game. Your last 50 Lichess games and Chess.com games from the last two months are shown below.",
+                "addUsernameHint": "[T] To list recent games, add your Chess.com or Lichess username to your <link>profile</link>."
+            },
+            "orDivider": {
+                "defaultHeader": "[T] OR"
+            },
+            "page": {
+                "invalidPgn": "[T] Invalid PGN"
+            },
+            "pgnForm": {
+                "oneFieldRequired": "[T] One field is required",
+                "dialogTitle": "[T] Import PGN",
+                "upToNGames": "[T] Up to 100 games per file",
+                "selectFilePlaceholder": "[T] Select a File",
+                "pastePgnLabel": "[T] Paste PGN",
+                "cancel": "[T] Cancel"
+            },
+            "positionForm": {
+                "invalidFen": "[T] Invalid FEN",
+                "dialogTitle": "[T] Custom Position",
+                "chooseFenLabel": "[T] Choose Position or Paste FEN",
+                "cancel": "[T] Cancel"
+            },
+            "wizard": {
+                "startingPositionName": "[T] Starting Position",
+                "startingPositionDescription": "[T] Annotate a blank game",
+                "onlineGameName": "[T] Online Game",
+                "onlineGameDescription": "[T] Import from Chess.com or Lichess",
+                "pgnName": "[T] PGN",
+                "pgnDescription": "[T] Import from PGN file",
+                "customPositionName": "[T] Custom Position",
+                "customPositionDescription": "[T] Annotate from a custom position"
+            }
+        },
+        "missingDataPreflight": {
+            "defaultTitle": "[T] Missing Data",
+            "fieldRequired": "[T] This field is required",
+            "whiteNameLabel": "[T] White's name",
+            "blackNameLabel": "[T] Black's name",
+            "gameResultLabel": "[T] Game Result",
+            "gameResultWhiteWon": "[T] White Won",
+            "gameResultDraw": "[T] Draw",
+            "gameResultBlackWon": "[T] Black Won",
+            "dateLabel": "[T] Date",
+            "defaultOrientationLabel": "[T] Default Orientation",
+            "orientationWhite": "[T] White",
+            "orientationBlack": "[T] Black",
+            "skipForNow": "[T] Skip for now",
+            "cancel": "[T] Cancel",
+            "submit": "[T] Submit"
         }
     },
     "courses": {
@@ -3398,6 +3560,104 @@
                 "cannotStartLastMoveError": "[T] Cannot start from the last move",
                 "cannotStartVariationError": "[T] Cannot start from a variation"
             }
+        }
+    },
+    "ui": {
+        "chessTitleBadge": {
+            "GM": "[T] Grandmaster",
+            "WGM": "[T] Woman Grandmaster",
+            "IM": "[T] International Master",
+            "WIM": "[T] Woman International Master",
+            "FM": "[T] FIDE Master",
+            "WFM": "[T] Woman FIDE Master",
+            "CM": "[T] Candidate Master",
+            "WCM": "[T] Woman Candidate Master",
+            "NM": "[T] National Master",
+            "WNM": "[T] Woman National Master",
+            "LM": "[T] Lifetime Master"
+        },
+        "closeButton": {
+            "ariaLabel": "[T] close"
+        },
+        "cohortSelect": {
+            "allCohorts": "[T] All Cohorts"
+        },
+        "pagination": {
+            "previousPageLabel": "[T] Go to previous page",
+            "nextPageLabel": "[T] Go to next page",
+            "freeTierLimit": "[T] Free-tier users can only access the first page of results",
+            "displayedRowsExact": "[T] {from}\u2013{to} of {count}",
+            "displayedRowsWithMore": "[T] {from}\u2013{to} of {count}+"
+        }
+    },
+    "upsell": {
+        "alert": {
+            "viewOptions": "[T] View Options"
+        },
+        "dialog": {
+            "defaultTitle": "[T] Upgrade to a Full Account",
+            "defaultDescription": "[T] You're currently on the free plan. Subscribe to the full training plan to:",
+            "defaultPostscript": "[T] Your progress on the free plan will be carried over when you subscribe.",
+            "andMore": "[T] And more!",
+            "cancel": "[T] Cancel",
+            "viewOptions": "[T] View Options",
+            "restrictedActionAccessAllTasks": "[T] Access all training plan tasks for all cohorts (0-2500)",
+            "restrictedActionAccessOpenings": "[T] Access all opening courses",
+            "restrictedActionAddCalendarEvents": "[T] Add events to the Dojo Calendar",
+            "restrictedActionSubmitGames": "[T] View the full Dojo Database and publish your games",
+            "restrictedActionJoinScoreboard": "[T] Get added to the Dojo Scoreboard",
+            "restrictedActionGraduate": "[T] Graduate and get featured in the graduation shows on Twitch",
+            "restrictedActionDownloadDatabase": "[T] Download the full Dojo Database",
+            "restrictedActionSearchDatabase": "[T] Search the Dojo Database by player",
+            "restrictedActionDatabaseExplorer": "[T] Search the Dojo Database by position",
+            "restrictedActionCreateClubs": "[T] Create new clubs",
+            "restrictedActionJoinSubscriberClubs": "[T] Join clubs restricted to subscribers",
+            "restrictedActionSubscriberChat": "[T] Access the subscriber-only chat",
+            "restrictedActionTacticsExams": "[T] Take all tactics exams",
+            "restrictedActionViewGroupClassRecording": "[T] Access recordings of live group classes",
+            "restrictedActionViewGameAndProfileReviewRecording": "[T] Access Game & Profile Review class recordings"
+        },
+        "priceMatrix": {
+            "freeTierName": "[T] Free Tier",
+            "continueForFree": "[T] Continue for Free",
+            "coreTierName": "[T] Core",
+            "startTraining": "[T] Start Training",
+            "lecturesTierName": "[T] Lectures",
+            "joinLectures": "[T] Join Lectures",
+            "gameReviewTierName": "[T] Game & Profile Review",
+            "getSenseiFeedback": "[T] Get Sensei Feedback",
+            "alreadySubscribed": "[T] Already Subscribed",
+            "intervalMonth": "[T] month",
+            "intervalMonthWithAsterisk": "[T] month*",
+            "freeLimitedTrainingPlans": "[T] Limited training plans, 0-2500",
+            "freeLimitedGameDatabase": "[T] Limited game database",
+            "freeLimitedPuzzles": "[T] Limited puzzles",
+            "freeOpeningCourses": "[T] Opening courses",
+            "freeCommunityForum": "[T] Community forum access",
+            "coreAllTrainingPlans": "[T] All training plans, 0-2500",
+            "coreRatingDashboard": "[T] Rating dashboard & progress tracking",
+            "coreFullGameDatabase": "[T] Full game database",
+            "coreUnlimitedPuzzles": "[T] Unlimited puzzles",
+            "coreAllOpeningCourses": "[T] All opening courses",
+            "coreCommunityForum": "[T] Community forum access",
+            "lecturesEverythingFromCore": "[T] Everything from ChessDojo Core",
+            "lecturesWeeklyLive": "[T] Weekly live lectures on specialized topics",
+            "lecturesQandA": "[T] Q&A sessions with Dojo coaches",
+            "lecturesHomework": "[T] Structured homework assignments",
+            "lecturesRecordings": "[T] Access to recordings of all lectures",
+            "gameReviewEverythingFromPrevious": "[T] Everything from previous tiers",
+            "gameReviewPersonalizedReview": "[T] Personalized game review classes",
+            "gameReviewDirectFeedback": "[T] Direct feedback from a sensei",
+            "gameReviewRecordings": "[T] Access to recordings of all lectures and classes",
+            "faqClassCalendar": "[T] <faqLink>FAQ</faqLink> / <calendarLink>Class Calendar</calendarLink>",
+            "perClassSubtitle": "[T] (~ {currency}{amount} / class)"
+        },
+        "sellingPoint": {},
+        "pricingPage": {
+            "tabMonthly": "[T] Monthly",
+            "tabYearly": "[T] Yearly",
+            "autoRenewNotice": "[T] Plans automatically renew until canceled",
+            "annualBillingFootnote": "[T] *When billed annually"
         }
     }
 }
