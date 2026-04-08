@@ -1253,6 +1253,35 @@
         "currentMembers": "Current Members",
         "graduations": "Graduations",
         "goToClub": "Go to Club",
+        "graduatedFrom": "Graduated from {cohort}",
+        "groupUserInfo": "User Info",
+        "groupRatings": "Ratings",
+        "groupTrainingPlan": "Training Plan",
+        "groupTimeSpent": "Time Spent",
+        "rankColumn": "Rank",
+        "nameColumn": "Name",
+        "cohortColumn": "Cohort",
+        "graduatedColumn": "Graduated",
+        "ratingSystemColumn": "Rating System",
+        "startRatingColumn": "Start Rating",
+        "currentRatingColumn": "Current Rating",
+        "ratingChangeColumn": "Rating Change",
+        "normalizedRatingColumn": "Normalized Dojo Rating",
+        "normalizedRatingTooltip": "Custom ratings cannot be normalized",
+        "timeSpentTooltipDefault": "Data for time spent in last X days is updated every 24 hours and does not include non-dojo activities",
+        "timeSpentTooltipSummary": "Data covers all cohorts and is updated every 24 hours",
+        "unpinRow": "Unpin Row",
+        "pinRow": "Pin Row",
+        "dojoScoreColumn": "Dojo Score",
+        "percentCompleteColumn": "Percent Complete",
+        "allTasksColumn": "All Tasks",
+        "cohortTasksColumn": "Cohort Tasks",
+        "last7DaysColumn": "Last 7 Days",
+        "last30DaysColumn": "Last 30 Days",
+        "last90DaysColumn": "Last 90 Days",
+        "last365DaysColumn": "Last 365 Days",
+        "nonDojoColumn": "Non-Dojo",
+        "customRating": "Custom ({name})",
         "tip": "Tip: hold shift while scrolling to scroll horizontally",
         "view": {
             "label": "View",
@@ -1598,7 +1627,15 @@
         "leaveGroupParticipantButton": "Leave Meeting",
         "leaveGroupParticipantTitle": "Leave this meeting?",
         "leaveGroupParticipantContent": "This will allow the meeting to be booked by other users and you may not be able to re-book it.",
-        "location": "Location"
+        "location": "Location",
+        "messagesTitle": "Messages",
+        "sendMessageLabel": "Send a message",
+        "sendMessageTooltip": "Send Message",
+        "cancelMeetingButton": "Cancel Meeting",
+        "closeAriaLabel": "close",
+        "groupMeeting": "Group Meeting",
+        "canceledChip": "Canceled",
+        "participantsCountFlat": "{count} participants"
     },
     "comments": {
         "addComment": "Add a comment...",
@@ -1899,6 +1936,72 @@
             "skipForNow": "Skip for now",
             "cancel": "Cancel",
             "submit": "Submit"
+        },
+        "edit": {
+            "editGamePage": {
+                "replacePgn": "Replace PGN",
+                "replacePgnDescription": "Overwrite this game's PGN data? Any comments will remain."
+            }
+        },
+        "list": {
+            "addToDirectoryDialog": {
+                "dialogTitle": "Add {count, plural, =1 {# Game} other {# Games}} to {directoryName}?",
+                "fallbackFolder": "Folder",
+                "currentContents": "Current Contents",
+                "folderEmpty": "This folder is empty",
+                "cancel": "Cancel",
+                "alreadyAddedTooltip": "These games are already added to this directory",
+                "addButton": "Add",
+                "allAlreadyPresent": "All games already present in {directoryName}",
+                "gamesAddedTo": "{count, plural, =1 {Game} other {Games}} added to {directoryName}"
+            },
+            "listGamesPage": {
+                "freeTierAlert": "To avoid unfair preparation against Dojo members, free-tier users have limited access to the Dojo Database. Upgrade your account to view the full Database.",
+                "analyzeGame": "Analyze a Game",
+                "senseiReviewQueue": "Sensei Game Review Queue",
+                "downloadDatabase": "Download full database (updated daily)"
+            },
+            "searchFilters": {
+                "cohortLabel": "Cohort",
+                "mastersDb": "Masters DB",
+                "startDate": "Start Date",
+                "endDate": "End Date",
+                "search": "Search",
+                "fieldRequired": "This field is required",
+                "ownerDescription": "Find games that you have uploaded to the Dojo Database. Note that games uploaded previously through Dojo 1.0's Google Form submission will not be matched.",
+                "playerDescription": "Find games based on player name. Note this is the name as it was recorded in the PGN file.",
+                "playerName": "Player Name",
+                "color": "Color",
+                "either": "Either",
+                "white": "White",
+                "black": "Black",
+                "freeTierPlayer": "Free-tier users are not able to search by player name",
+                "openingDescription": "Find games based on opening ECO Codes",
+                "openingEco": "Opening ECO",
+                "fen": "FEN",
+                "freeTierPosition": "Free-tier users are not able to search by position",
+                "positionExplorer": "Position Explorer",
+                "goToMyFiles": "Go to My Files",
+                "searchByCohort": " Search By Cohort ",
+                "searchByPlayer": "Search By Player",
+                "searchByPosition": "Search By Position",
+                "searchByOpening": "Search By Opening ",
+                "searchMyUploads": "Search My Uploads",
+                "myFiles": "My Files"
+            }
+        },
+        "view": {
+            "pgnErrorBoundary": {
+                "invalidPgn": "Invalid PGN",
+                "invalidPgnDescription": "Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see the error message below). This most likely happened due to a malformed PGN. If you manually produced your PGN, it is likely incorrect. If you believe your PGN is correct or are otherwise unable to correct it, please send a Discord DM to @JackStenglein with the link to this page.",
+                "resubmitPgn": "Resubmit PGN",
+                "nullError": "Null error",
+                "noComponentStack": "No component stack",
+                "rawPgnLabel": "Raw PGN:"
+            },
+            "gamePage": {
+                "preflightHint": "You can fill this data out now or later in settings."
+            }
         }
     },
     "courses": {
@@ -2157,6 +2260,23 @@
                 "submit": "Submit",
                 "errorRequired": "This field is required",
                 "errorFetchLichess": "Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting."
+            },
+            "standings": {
+                "byeTooltip": "Player receieved a bye for 0.5 points",
+                "byeText": "Bye",
+                "roundHeader": "Round {num}",
+                "playerWithdrawnTooltip": "Player was withdrawn",
+                "winAgainst": "Win against player {opponent}",
+                "winByForfeit": "Win by forfeit against {opponent}",
+                "lossAgainst": "Loss against player {opponent}",
+                "lossByForfeit": "Loss by forfeit against {opponent}",
+                "drawAgainst": "Draw against player {opponent}",
+                "byeDescription": "Player received a bye for 0.5 points",
+                "notPlayed": "Game against player {opponent} was not played and counts as a draw",
+                "notSubmitted": "Result for game against player {opponent} was not submitted and counts as a 0-0 forfeit",
+                "rankColumn": "Rank",
+                "playerColumn": "Player",
+                "totalColumn": "Total"
             }
         },
         "roundRobin": {
@@ -2164,6 +2284,20 @@
                 "info": "Info",
                 "tournaments": "Tournaments",
                 "history": "History"
+            },
+            "activity": {
+                "noGamesSubmitted": "No games submitted yet",
+                "gamesCompleted": "Games Completed",
+                "completePercent": "{percent}% complete",
+                "lastGameSubmitted": "Last Game Submitted",
+                "lastGameTime": "{days, plural, =0 {Today} =1 {1 day ago} other {# days ago}}",
+                "columnDate": "Date",
+                "columnRound": "Round",
+                "columnWhite": "White",
+                "columnBlack": "Black",
+                "columnResult": "Result",
+                "withdrawnSuffix": "(Withdrawn)",
+                "stalledWarning": "⚠️ Tournament may have stalled - No games submitted in {days} days"
             },
             "list": {
                 "championsCircuit": "Champions' Circuit"
@@ -2829,6 +2963,11 @@
             "showTimer": "Show Timer",
             "playSoundCorrect": "Play sound on correct move",
             "playSoundIncorrect": "Play sound on incorrect move"
+        },
+        "sessionChart": {
+            "puzzleRating": "Puzzle Rating",
+            "yourRating": "Your Rating",
+            "startRating": "Start Rating"
         }
     },
     "exams": {
@@ -3725,6 +3864,17 @@
             "ALL_POSITION_TYPES": "All Position Types",
             "STANDARD": "Standard",
             "CUSTOM": "Custom"
+        }
+    },
+    "material": {
+        "memorizeGames": {
+            "afterPgnText": {
+                "greatJob": "Great job memorizing this game!",
+                "totalMovesGuessed": "You guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "whiteMovesGuessed": "As white, you guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "blackMovesGuessed": "As black, you guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "restart": "Restart"
+            }
         }
     }
 }

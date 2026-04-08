@@ -5,8 +5,11 @@ import {
 } from '@/database/tournament';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import { DataGridPro, GridColDef } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { PlayerCell } from './PairingsTable';
+
+type StandingsT = ReturnType<typeof useTranslations<'tournaments.openClassical.standings'>>;
 
 enum Result {
     Win = 'W',
@@ -22,21 +25,23 @@ enum Result {
 
 const NUM_ROUNDS = 7;
 
-const Bye = (
-    <Stack height={1} alignItems='center' justifyContent='center'>
-        <Tooltip title='Player receieved a bye for 0.5 points'>
-            <Typography>Bye</Typography>
-        </Tooltip>
-    </Stack>
-);
+function getByeElement(t: StandingsT) {
+    return (
+        <Stack height={1} alignItems='center' justifyContent='center'>
+            <Tooltip title={t('byeTooltip')}>
+                <Typography>{t('byeText')}</Typography>
+            </Tooltip>
+        </Stack>
+    );
+}
 
-function getRoundColumns(rounds: number): GridColDef<StandingsTableRow>[] {
+function getRoundColumns(rounds: number, t: StandingsT): GridColDef<StandingsTableRow>[] {
     const result: GridColDef<StandingsTableRow>[] = [];
 
     for (let i = 0; i < rounds; i++) {
         result.push({
             field: `rounds${i}`,
-            headerName: `Round ${i + 1}`,
+            headerName: t('roundHeader', { num: i + 1 }),
             align: 'center',
             headerAlign: 'center',
             valueGetter: (_value, row, _column, api) => {
@@ -53,18 +58,18 @@ function getRoundColumns(rounds: number): GridColDef<StandingsTableRow>[] {
                 const round = params.row.rounds[i];
                 if (!round) {
                     if (params.row.lastActiveRound === 0 || params.row.lastActiveRound >= i + 1) {
-                        return Bye;
+                        return getByeElement(t);
                     }
                     return (
                         <Stack height={1} alignItems='center' justifyContent='center'>
-                            <Tooltip title='Player was withdrawn'>
+                            <Tooltip title={t('playerWithdrawnTooltip')}>
                                 <Typography>-</Typography>
                             </Tooltip>
                         </Stack>
                     );
                 }
                 if (round.result === Result.Bye) {
-                    return Bye;
+                    return getByeElement(t);
                 }
                 if (round.result === Result.Unknown) {
                     return '';
@@ -75,7 +80,7 @@ function getRoundColumns(rounds: number): GridColDef<StandingsTableRow>[] {
 
                 return (
                     <Stack height={1} alignItems='center' justifyContent='center'>
-                        <Tooltip title={getResultDescription(result, opponent)}>
+                        <Tooltip title={getResultDescription(result, opponent, t)}>
                             <Typography>
                                 {result}
                                 {opponent}
@@ -90,82 +95,84 @@ function getRoundColumns(rounds: number): GridColDef<StandingsTableRow>[] {
     return result;
 }
 
-function getResultDescription(result: Result, opponent: number): string {
+function getResultDescription(result: Result, opponent: number, t: StandingsT): string {
     switch (result) {
         case Result.Win:
-            return `Win against player ${opponent}`;
+            return t('winAgainst', { opponent });
 
         case Result.ForfeitWin:
-            return `Win by forfeit against ${opponent}`;
+            return t('winByForfeit', { opponent });
 
         case Result.Loss:
-            return `Loss against player ${opponent}`;
+            return t('lossAgainst', { opponent });
 
         case Result.ForfeitLoss:
-            return `Loss by forfeit against ${opponent}`;
+            return t('lossByForfeit', { opponent });
 
         case Result.Draw:
-            return `Draw against player ${opponent}`;
+            return t('drawAgainst', { opponent });
 
         case Result.Bye:
-            return 'Player received a bye for 0.5 points';
+            return t('byeDescription');
 
         case Result.DidNotPlay:
-            return `Game against player ${opponent} was not played and counts as a draw`;
+            return t('notPlayed', { opponent });
 
         case Result.DidNotSubmit:
-            return `Result for game against player ${opponent} was not submitted and counts as a 0-0 forfeit`;
+            return t('notSubmitted', { opponent });
 
         case Result.Unknown:
             return '';
     }
 }
 
-const standingsTableColumns: GridColDef<StandingsTableRow>[] = [
-    {
-        field: 'rank',
-        headerName: 'Rank',
-        renderHeader: () => '',
-        valueGetter: (_value, row, _col, api) =>
-            api.current.getAllRowIds().indexOf(row.lichessUsername) + 1,
-        sortable: false,
-        filterable: false,
-        align: 'center',
-        width: 50,
-        renderCell(params) {
-            return (
-                <Stack height={1} justifyContent='center'>
-                    <Typography>{params.value}</Typography>
-                </Stack>
-            );
+function getStandingsTableColumns(t: StandingsT): GridColDef<StandingsTableRow>[] {
+    return [
+        {
+            field: 'rank',
+            headerName: t('rankColumn'),
+            renderHeader: () => '',
+            valueGetter: (_value, row, _col, api) =>
+                api.current.getAllRowIds().indexOf(row.lichessUsername) + 1,
+            sortable: false,
+            filterable: false,
+            align: 'center',
+            width: 50,
+            renderCell(params) {
+                return (
+                    <Stack height={1} justifyContent='center'>
+                        <Typography>{params.value}</Typography>
+                    </Stack>
+                );
+            },
         },
-    },
-    {
-        field: 'player',
-        headerName: 'Player',
-        headerAlign: 'center',
-        flex: 1,
-        valueGetter: (_value, row) =>
-            `${row.displayName} ${row.lichessUsername} ${row.discordUsername}`,
-        renderCell(params) {
-            return <PlayerCell player={params.row} />;
+        {
+            field: 'player',
+            headerName: t('playerColumn'),
+            headerAlign: 'center',
+            flex: 1,
+            valueGetter: (_value, row) =>
+                `${row.displayName} ${row.lichessUsername} ${row.discordUsername}`,
+            renderCell(params) {
+                return <PlayerCell player={params.row} />;
+            },
         },
-    },
-    {
-        field: 'total',
-        headerName: 'Total',
-        align: 'center',
-        headerAlign: 'center',
-        renderCell(params) {
-            return (
-                <Stack height={1} justifyContent='center'>
-                    <Typography>{params.value}</Typography>
-                </Stack>
-            );
+        {
+            field: 'total',
+            headerName: t('totalColumn'),
+            align: 'center',
+            headerAlign: 'center',
+            renderCell(params) {
+                return (
+                    <Stack height={1} justifyContent='center'>
+                        <Typography>{params.value}</Typography>
+                    </Stack>
+                );
+            },
         },
-    },
-    ...getRoundColumns(NUM_ROUNDS),
-];
+        ...getRoundColumns(NUM_ROUNDS, t),
+    ];
+}
 
 interface StandingsTableRow extends OpenClassicalPlayer {
     total: number;
@@ -237,6 +244,8 @@ interface StandingsTableProps {
 }
 
 const StandingsTable: React.FC<StandingsTableProps> = ({ openClassical, region, ratingRange }) => {
+    const t = useTranslations('tournaments.openClassical.standings');
+    const columns = useMemo(() => getStandingsTableColumns(t), [t]);
     const rows: StandingsTableRow[] = useMemo(() => {
         if (!openClassical) {
             return [];
@@ -310,7 +319,7 @@ const StandingsTable: React.FC<StandingsTableProps> = ({ openClassical, region, 
             <DataGridPro
                 getRowId={(player) => player.lichessUsername}
                 rows={rows}
-                columns={standingsTableColumns}
+                columns={columns}
                 getRowHeight={() => 'auto'}
             />
         </Stack>

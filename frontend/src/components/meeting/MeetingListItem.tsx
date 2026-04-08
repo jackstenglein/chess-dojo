@@ -19,6 +19,7 @@ interface MeetingListItemProps {
 }
 
 const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
+    const t = useTranslations('meeting');
     const { user } = useRequiredAuth();
     const labelT = useTranslations('eventLabels');
 
@@ -27,7 +28,7 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
     const title = meeting.coaching
         ? meeting.title
         : meeting.maxParticipants > 1
-          ? 'Group Meeting'
+          ? t('groupMeeting')
           : getDisplayString(meeting.bookedType, labelT);
 
     let opponent = Object.values(meeting.participants)[0];
@@ -53,12 +54,14 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
                 />
                 <CardContent sx={{ pt: 0, mt: 1 }}>
                     {meeting.status === EventStatus.Canceled && (
-                        <Chip sx={{ mb: 1 }} color='error' label='Canceled' />
+                        <Chip sx={{ mb: 1 }} color='error' label={t('canceledChip')} />
                     )}
 
                     {meeting.maxParticipants > 1 ? (
                         <Typography variant='subtitle1' color='text.secondary'>
-                            {Object.values(meeting.participants).length + 1} participants
+                            {t('participantsCountFlat', {
+                                count: Object.values(meeting.participants).length + 1,
+                            })}
                         </Typography>
                     ) : (
                         <Stack direction='row' spacing={1} alignItems='center'>
