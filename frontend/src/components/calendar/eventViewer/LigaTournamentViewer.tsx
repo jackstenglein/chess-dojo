@@ -25,6 +25,7 @@ interface LigaTournamentViewerProps {
 }
 
 const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEvent }) => {
+    const t = useTranslations('calendar');
     const labelT = useTranslations('eventLabels');
     const [displayPosition, setDisplayPosition] = useState(false);
 
@@ -43,8 +44,10 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
     return (
         <Stack sx={{ py: 2 }} spacing={2}>
             <Typography variant='body1'>
-                {ligaTournament.rated ? 'Rated' : 'Unrated'}{' '}
-                {displayTournamentType(ligaTournament.type, labelT)}
+                {t('ratedTypeHeader', {
+                    rated: ligaTournament.rated ? 'true' : 'false',
+                    tournamentType: displayTournamentType(ligaTournament.type, labelT),
+                })}
             </Typography>
 
             {event.location && (
@@ -55,7 +58,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
                             color='primary'
                             sx={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
                         />
-                        Location
+                        {t('location')}
                     </Typography>
                     <Link variant='body1' href={event.location} target='_blank' rel='noreferrer'>
                         {event.location}
@@ -71,7 +74,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
                             color='primary'
                             sx={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
                         />
-                        Description
+                        {t('description')}
                     </Typography>
                     <Typography variant='body1' style={{ whiteSpace: 'pre-line' }}>
                         {event.description}
@@ -86,7 +89,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
                         color='primary'
                         sx={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
                     />
-                    Time Control
+                    {t('timeControlLabel')}
                 </Typography>
                 <Typography variant='body1'>
                     {ligaTournament.limitSeconds / 60}+{ligaTournament.incrementSeconds}
@@ -96,7 +99,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
             {ligaTournament.numRounds && (
                 <Stack>
                     <Typography variant='subtitle2' color='text.secondary'>
-                        {ligaTournament.currentRound ? 'Round' : 'Rounds'}
+                        {ligaTournament.currentRound ? t('roundSingular') : t('roundPlural')}
                     </Typography>
                     <Typography variant='body1'>
                         {ligaTournament.currentRound
@@ -109,7 +112,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
             {ligaTournament.fen && (
                 <Stack>
                     <Typography variant='subtitle2' color='text.secondary'>
-                        Position
+                        {t('positionLabel')}
                     </Typography>
                     <Box
                         sx={{
