@@ -27,6 +27,7 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import { Theme, styled } from '@mui/material/styles';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import TimezoneFilter from './TimezoneFilter';
@@ -285,6 +286,7 @@ interface CalendarFiltersProps {
 
 export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => {
     const auth = useAuth();
+    const labelT = useTranslations('eventLabels');
     const [expanded, setExpanded] = useState<string | boolean>(false);
     const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
@@ -426,7 +428,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 setSelected={onChangeSessions}
                                 options={Object.values(CalendarSessionType).map((t) => ({
                                     value: t,
-                                    label: getDisplaySessionString(t),
+                                    label: getDisplaySessionString(t, labelT),
                                     icon: <Icon name={t} color={getSessionTypeColor(t)} />,
                                 }))}
                                 displayEmpty='None'
@@ -453,7 +455,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 setSelected={onChangeTournamentTimeControls}
                                 options={Object.values(TimeControlType).map((t) => ({
                                     value: t,
-                                    label: displayTimeControlType(t),
+                                    label: displayTimeControlType(t, labelT),
                                     icon: <Icon name={t} color='liga' />,
                                 }))}
                                 displayEmpty='None'
@@ -480,7 +482,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 setSelected={onChangeType}
                                 options={Object.values(AvailabilityType).map((t) => ({
                                     value: t,
-                                    label: getDisplayString(t),
+                                    label: getDisplayString(t, labelT),
                                     icon: <Icon name={t} color='book' />,
                                 }))}
                                 displayEmpty='None'

@@ -55,6 +55,7 @@ interface AvailabilityBookerProps {
 
 const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability }) => {
     const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const request = useRequest();
     const api = useApi();
     const cache = useCache();
@@ -237,7 +238,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                 iconName='meet'
                                 title={t('meetingTypes')}
                                 body={availability.types
-                                    ?.map((type) => getDisplayString(type))
+                                    ?.map((type) => getDisplayString(type, labelT))
                                     .join(', ')}
                             />
 
@@ -310,7 +311,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                             key={type}
                                             control={<Radio data-testid='meeting-type-radio' />}
                                             value={type}
-                                            label={getDisplayString(type)}
+                                            label={getDisplayString(type, labelT)}
                                         />
                                     ))}
                                 </RadioGroup>

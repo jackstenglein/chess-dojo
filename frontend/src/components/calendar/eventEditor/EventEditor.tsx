@@ -70,12 +70,13 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
     const api = useApi();
     const { user } = useRequiredAuth();
     const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
 
     const cache = useCache();
     const request = useRequest();
 
     const editor = useEventEditor(defaultStart, defaultEnd, originalEvent?.event as Event);
-    const formConfigs = getFormConfigs(t);
+    const formConfigs = getFormConfigs(t, labelT);
 
     const onSubmit = async () => {
         const [event, errors] = validateEventEditor(user, originalEvent, editor);
@@ -442,6 +443,7 @@ function getClassConfig(t: ReturnType<typeof useTranslations<'calendar'>>): Form
 
 function getFormConfigs(
     t: ReturnType<typeof useTranslations<'calendar'>>,
+    labelT: ReturnType<typeof useTranslations<'eventLabels'>>,
 ): Record<EditableEventType, FormConfig> {
     const classConfig = getClassConfig(t);
     return {
@@ -496,7 +498,7 @@ function getFormConfigs(
                                 setSelected={onChangeType}
                                 options={Object.values(AvailabilityType).map((at) => ({
                                     value: at,
-                                    label: getDisplayString(at),
+                                    label: getDisplayString(at, labelT),
                                     icon: <Icon name={at} color='primary' />,
                                 }))}
                                 error={Boolean(editor.errors.types)}

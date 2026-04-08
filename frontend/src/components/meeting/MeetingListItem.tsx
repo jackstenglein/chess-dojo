@@ -11,17 +11,8 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
-
-function getTitle(event: Event): string {
-    if (event.coaching) {
-        return event.title;
-    }
-    if (event.maxParticipants > 1) {
-        return 'Group Meeting';
-    }
-    return getDisplayString(event.bookedType);
-}
 
 interface MeetingListItemProps {
     meeting: Event;
@@ -29,8 +20,15 @@ interface MeetingListItemProps {
 
 const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
     const { user } = useRequiredAuth();
+    const labelT = useTranslations('eventLabels');
 
     const start = new Date(meeting.bookedStartTime || meeting.startTime);
+
+    const title = meeting.coaching
+        ? meeting.title
+        : meeting.maxParticipants > 1
+          ? 'Group Meeting'
+          : getDisplayString(meeting.bookedType, labelT);
 
     let opponent = Object.values(meeting.participants)[0];
     if (opponent.username === user.username) {
@@ -46,7 +44,7 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
         <Card variant='outlined' sx={{ width: 1 }}>
             <CardActionArea href={`/meeting/${meeting.id}`}>
                 <CardHeader
-                    title={getTitle(meeting)}
+                    title={title}
                     subheader={`${toDojoDateString(
                         start,
                         user.timezoneOverride,

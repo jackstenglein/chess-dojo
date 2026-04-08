@@ -98,6 +98,7 @@ function getCancelDialog(
 
 export function MeetingPage({ meetingId }: { meetingId: string }) {
     const t = useTranslations('meeting');
+    const labelT = useTranslations('eventLabels');
     const cache = useCache();
     const { user } = useAuth();
     const checkoutRequest = useRequest();
@@ -282,9 +283,9 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                                 title={t('meetingTypes')}
                                 body={
                                     meeting.bookedType
-                                        ? getDisplayString(meeting.bookedType)
+                                        ? getDisplayString(meeting.bookedType, labelT)
                                         : meeting.types
-                                              ?.map((type) => getDisplayString(type))
+                                              ?.map((type) => getDisplayString(type, labelT))
                                               .join(', ')
                                 }
                             />

@@ -43,6 +43,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
     const [expanded, setExpanded] = useState<boolean>(false);
     const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const t = useTranslations('tournaments.liga.filters');
+    const labelT = useTranslations('eventLabels');
 
     const onChangeTournamentTimeControls = (tcTypes: string[]) => {
         const addedTcTypes = tcTypes.filter(
@@ -127,7 +128,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 setSelected={onChangeTournamentType}
                                 options={Object.values(TournamentType).map((tt) => ({
                                     value: tt,
-                                    label: displayTournamentType(tt),
+                                    label: displayTournamentType(tt, labelT),
                                     icon: <Icon name={tt} color='liga' />,
                                 }))}
                                 displayEmpty={t('emptyNone')}
@@ -154,7 +155,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 setSelected={onChangeTournamentTimeControls}
                                 options={Object.values(TimeControlType).map((tc) => ({
                                     value: tc,
-                                    label: displayTimeControlType(tc),
+                                    label: displayTimeControlType(tc, labelT),
                                     icon: <Icon name={tc} color={getColor(tc)} />,
                                 }))}
                                 displayEmpty={t('emptyNone')}
@@ -181,7 +182,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                 setSelected={onChangeTournamentPositions}
                                 options={Object.values(PositionType).map((p) => ({
                                     value: p,
-                                    label: displayPositionType(p),
+                                    label: displayPositionType(p, labelT),
                                     icon: <Icon name={p} color='warning' />,
                                 }))}
                                 displayEmpty={t('emptyNone')}

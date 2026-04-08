@@ -3,6 +3,7 @@ import { Event, displayTournamentType } from '@/database/event';
 import Icon, { IconName } from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Box, Link, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 export function getLigaIconBasedOnTimeControl(timeControl: number): IconName | undefined {
@@ -24,6 +25,7 @@ interface LigaTournamentViewerProps {
 }
 
 const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEvent }) => {
+    const labelT = useTranslations('eventLabels');
     const [displayPosition, setDisplayPosition] = useState(false);
 
     useEffect(() => {
@@ -42,7 +44,7 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
         <Stack sx={{ py: 2 }} spacing={2}>
             <Typography variant='body1'>
                 {ligaTournament.rated ? 'Rated' : 'Unrated'}{' '}
-                {displayTournamentType(ligaTournament.type)}
+                {displayTournamentType(ligaTournament.type, labelT)}
             </Typography>
 
             {event.location && (

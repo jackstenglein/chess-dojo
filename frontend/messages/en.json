@@ -3659,5 +3659,44 @@
             "autoRenewNotice": "Plans automatically renew until canceled",
             "annualBillingFootnote": "*When billed annually"
         }
+    },
+    "eventLabels": {
+        "session": {
+            "ALL_SESSIONS": "All Events",
+            "AVAILABILITIES": "Availabilities",
+            "COACHING_SESSIONS": "Coaching Sessions",
+            "DOJO_EVENTS": "Dojo Events",
+            "MEETINGS": "Meetings",
+            "LECTURE_TIER": "Lectures",
+            "GAME_REVIEW_TIER": "Game & Profile Reviews"
+        },
+        "availability": {
+            "ALL_TYPES": "All Types",
+            "CLASSICAL_GAME": "Classical Game",
+            "OPENING_SPARRING": "Opening Sparring",
+            "MIDDLEGAME_SPARRING": "Middlegame Sparring",
+            "ENDGAME_SPARRING": "Endgame Sparring",
+            "ROOK_ENDGAME_PROGRESSION": "Rook Endgame Progression",
+            "CLASSIC_ANALYSIS": "Analyze Classic Game",
+            "ANALYZE_OWN_GAME": "Analyze Own Game",
+            "BOOK_STUDY": "Book Study",
+            "LESSON": "Lesson/Lecture"
+        },
+        "tournamentType": {
+            "ALL_TOURNAMENT_TYPES": "All Tournament Types",
+            "ARENA": "Arena",
+            "SWISS": "Swiss"
+        },
+        "timeControl": {
+            "BLITZ": "Blitz",
+            "CLASSICAL": "Classical",
+            "RAPID": "Rapid",
+            "ALL_TIME_CONTROLS": "All Time Controls"
+        },
+        "position": {
+            "ALL_POSITION_TYPES": "All Position Types",
+            "STANDARD": "Standard",
+            "CUSTOM": "Custom"
+        }
     }
 }
