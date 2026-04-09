@@ -4,16 +4,21 @@ import { Chess } from '@jackstenglein/chess';
 import { assert, test } from 'vitest';
 import { rateGameTimeManagement } from './timeManagement';
 
-const classicalPgnWithClocks = `[Event "Leipzig Olympiad Fin"]
-[Site "Leipzig GDR"]
-[Date "1960.11.08"]
-[Round "11"]
-[Result "1-0"]
-[White "Jonathan Penrose"]
-[Black "Mikhail Tal"]
+// Real prod game from ChessDojo: Fang (FM 2200) vs Kraai (GM 2385), US Masters 2025
+const classicalPgnWithClocks = `[Event "US Masters"]
+[Date "2025.11.28"]
+[Round "4"]
+[White "Fang, Elbert"]
+[Black "Kraai"]
+[Result "1/2-1/2"]
+[WhiteElo "2200"]
+[WhiteTitle "FM"]
+[BlackElo "2385"]
+[BlackTitle "GM"]
 [TimeControl "5400+30"]
+[PlyCount "91"]
 
-1.d4 {[%clk 1:29:40]} Nf6 {[%clk 1:29:30]} 2.c4 {[%clk 1:29:10]} e6 {[%clk 1:28:50]} 3.Nc3 {[%clk 1:28:35]} c5 {[%clk 1:28:00]} 4.d5 {[%clk 1:27:50]} exd5 {[%clk 1:26:45]} 5.cxd5 {[%clk 1:27:20]} d6 {[%clk 1:25:30]} 6.e4 {[%clk 1:26:00]} g6 {[%clk 1:24:10]} 7.Bd3 {[%clk 1:24:15]} Bg7 {[%clk 1:22:40]} 8.Nge2 {[%clk 1:22:30]} O-O {[%clk 1:21:50]} 9.O-O {[%clk 1:21:45]} a6 {[%clk 1:20:30]} 10.a4 {[%clk 1:20:00]} Qc7 {[%clk 1:18:15]} 11.h3 {[%clk 1:18:30]} Nbd7 {[%clk 1:16:00]} 12.f4 {[%clk 1:16:10]} Re8 {[%clk 1:13:20]} 13.Ng3 {[%clk 1:13:45]} c4 {[%clk 1:10:50]} 14.Bc2 {[%clk 1:12:00]} Nc5 {[%clk 1:08:30]} 15.Qf3 {[%clk 1:09:15]} Nfd7 {[%clk 1:05:40]} 16.Be3 {[%clk 1:06:30]} b5 {[%clk 1:02:10]} 17.axb5 {[%clk 1:04:00]} Rb8 {[%clk 0:59:30]} 18.Qf2 {[%clk 1:01:20]} axb5 {[%clk 0:56:45]} 19.e5 {[%clk 0:58:00]} dxe5 {[%clk 0:53:10]} 20.f5 {[%clk 0:55:30]} Bb7 {[%clk 0:49:50]} 21.Rad1 {[%clk 0:52:15]} Ba8 {[%clk 0:46:20]} 22.Nce4 {[%clk 0:48:30]} Na4 {[%clk 0:42:00]} 23.Bxa4 {[%clk 0:45:00]} bxa4 {[%clk 0:39:15]} 24.fxg6 {[%clk 0:42:10]} fxg6 {[%clk 0:36:00]} 25.Qf7+ {[%clk 0:39:30]} Kh8 {[%clk 0:33:45]} 26.Nc5 {[%clk 0:36:00]} Qa7 {[%clk 0:30:20]} 27.Qxd7 {[%clk 0:33:15]} Qxd7 {[%clk 0:27:50]} 28.Nxd7 {[%clk 0:31:00]} Rxb2 {[%clk 0:25:10]} 29.Nb6 {[%clk 0:28:30]} Rb3 {[%clk 0:22:40]} 30.Nxc4 {[%clk 0:26:00]} Rd8 {[%clk 0:20:00]} 31.d6 {[%clk 0:23:15]} Rc3 {[%clk 0:17:30]} 32.Rc1 {[%clk 0:20:45]} Rxc1 {[%clk 0:15:10]} 33.Rxc1 {[%clk 0:19:00]} Bd5 {[%clk 0:12:45]} 34.Nb6 {[%clk 0:16:30]} Bb3 {[%clk 0:10:20]} 35.Ne4 {[%clk 0:14:00]} h6 {[%clk 0:08:15]} 36.d7 {[%clk 0:11:30]} Bf8 {[%clk 0:06:00]} 37.Rc8 {[%clk 0:09:15]} Be7 {[%clk 0:04:10]} 38.Bc5 {[%clk 0:07:00]} Bh4 {[%clk 0:02:30]} 39.g3 {[%clk 0:05:00]} 1-0`;
+1. e4 {[%clk 1:25:00]} 1... e6 2. d4 d5 3. e5 c5 4. c3 Nc6 5. Nf3 Bd7 6. Be2 {[%clk 1:24:00]} 6... Nge7 7. O-O {[%clk 1:22:00]} 7... Ng6 {[%clk 1:33:00]} 8. Bd3 {[%clk 1:15:00]} 8... Be7 {[%clk 1:32:00]} 9. a3 {[%clk 1:14:00]} 9... O-O {[%clk 1:29:00]} 10. Re1 cxd4 {[%clk 1:19:00]} 11. cxd4 Qb6 12. Bc2 {[%clk 00:55:00]} 12... f6 {[%clk 1:16:00]} 13. Nc3 {[%clk 00:51:00]} 13... fxe5 {[%clk 1:16:00]} 14. Bxg6 {[%clk 00:47:00]} 14... hxg6 {[%clk 1:13:00]} 15. dxe5 {[%clk 00:46:00]} 15... Be8 {[%clk 1:10:00]} 16. Be3 {[%clk 00:44:00]} 16... Qd8 {[%clk 1:07:00]} 17. Nd4 {[%clk 00:38:00]} 17... Nxd4 18. Qxd4 b6 {[%clk 1:03:00]} 19. Qg4 {[%clk 00:30:00]} 19... Rf5 {[%clk 1:03:00]} 20. f4 {[%clk 00:27:00]} 20... Bc5 {[%clk 00:52:00]} 21. Rad1 {[%clk 00:25:00]} 21... Qe7 {[%clk 00:45:00]} 22. Kh1 {[%clk 00:22:00]} 22... Bxe3 {[%clk 00:33:00]} 23. Rxe3 g5 {[%clk 00:34:00]} 24. Rf3 {[%clk 00:14:00]} 24... Rd8 {[%clk 00:16:00]} 25. Ne2 {[%clk 00:09:00]} 25... gxf4 26. Nxf4 {[%clk 00:09:00]} 26... Rxe5 {[%clk 00:16:00]} 27. Rdf1 {[%clk 00:09:00]} 27... d4 {[%clk 00:12:00]} 28. Rh3 {[%clk 00:05:00]} 28... Rf5 {[%clk 00:08:00]} 29. Re1 {[%clk 00:05:00]} 29... Qf6 {[%clk 00:06:00]} 30. Rf3 {[%clk 00:03:00]} 30... d3 {[%clk 00:06:00]} 31. Nxe6 {[%clk 00:01:00]} 31... Rxf3 {[%clk 00:02:00]} 32. gxf3 Bd7 {[%clk 00:03:00]} 33. Qc4 {[%clk 00:01:00]} 33... Bxe6 34. Rxe6 Qxf3+ 35. Kg1 Qf7 {[%clk 00:01:00]} 36. Qh4 Rf8 37. Re1 Qg6+ 38. Qg3 d2 39. Rd1 Qc2 40. Qg4 Qc5+ 41. Kh1 Qf2 42. Qe6+ Rf7 43. Qc8+ Kh7 44. Qh3+ Kg6 45. Qd3+ Kh5 46. Qxd2 1/2-1/2`;
 
 const blitzPgn = `[Event "Blitz"]
 [TimeControl "180+0"]
@@ -29,14 +34,14 @@ const noTimeControlPgn = `[Event "Test"]
 
 1.e4 {[%clk 1:29:40]} e5 {[%clk 1:29:30]} 2.Nf3 {[%clk 1:29:10]} Nc6 {[%clk 1:28:50]} 1-0`;
 
-test('returns exact ratings for Penrose vs Tal (Leipzig 1960)', () => {
+test('returns exact ratings for Fang vs Kraai (US Masters 2025)', () => {
     const chess = new Chess({ pgn: classicalPgnWithClocks });
     const ratings = rateGameTimeManagement(chess);
 
-    // Penrose (White) managed time well, declining steadily from 1:30 to 0:05
-    // Tal (Black) used time more aggressively, reaching near-zero
-    assert.equal(ratings.white, 2507);
-    assert.equal(ratings.black, 2673);
+    // FM Fang (White) used time aggressively, dropping from 1:25 to 0:01
+    // GM Kraai (Black) managed time better overall but also reached time trouble
+    assert.equal(ratings.white, 2478);
+    assert.equal(ratings.black, 2437);
 });
 
 test('returns undefined for blitz game (time control < 30 min)', () => {
@@ -79,8 +84,8 @@ test('getGame populates exact TM rating fields for classical game with clocks', 
     const { getGame } = await import('./create');
     const game = getGame(undefined, classicalPgnWithClocks);
 
-    assert.equal(game.timeManagementRatingWhite, 2507);
-    assert.equal(game.timeManagementRatingBlack, 2673);
+    assert.equal(game.timeManagementRatingWhite, 2478);
+    assert.equal(game.timeManagementRatingBlack, 2437);
 });
 
 test('getGame does not populate TM rating fields for blitz game', async () => {
