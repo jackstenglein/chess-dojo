@@ -8,7 +8,7 @@ const K_FACTOR = 32;
 const DRAW_SCORE = 0.5;
 
 /** The current state of a user's time management aggregate. */
-export interface TimeManagementAggregate {
+export interface TimeManagementRating {
     /** The current aggregate rating. */
     currentRating: number;
     /** The number of games included in the aggregate. */
@@ -32,7 +32,7 @@ function expectedScore(playerRating: number, opponentRating: number): number {
  * @param gameRating The time management rating from the new game.
  * @returns The updated rating, rounded to the nearest integer.
  */
-export function calculateDrawEloAdjustment(
+export function updateTimeManagementRating(
     currentRating: number,
     gameRating: number,
 ): number {
@@ -49,10 +49,10 @@ export function calculateDrawEloAdjustment(
  * @param gameRating The time management rating from the new game.
  * @returns The updated aggregate.
  */
-export function updateTimeManagementAggregate(
-    current: TimeManagementAggregate | undefined,
+export function applyGameRatingToTimeManagementRating(
+    current: TimeManagementRating | undefined,
     gameRating: number,
-): TimeManagementAggregate {
+): TimeManagementRating {
     if (!current) {
         return { currentRating: gameRating, numGames: 1 };
     }
@@ -69,7 +69,7 @@ export function updateTimeManagementAggregate(
 
     // Elo draw adjustment
     return {
-        currentRating: calculateDrawEloAdjustment(current.currentRating, gameRating),
+        currentRating: updateTimeManagementRating(current.currentRating, gameRating),
         numGames: newCount,
     };
 }

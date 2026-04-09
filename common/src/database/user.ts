@@ -1,5 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
-import { TimeManagementAggregate } from '../ratings/timeManagement';
+import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -35,7 +35,7 @@ export interface User {
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
 
     /** The user's time management rating aggregate. */
-    timeManagementRating?: TimeManagementAggregate;
+    timeManagementRating?: TimeManagementRating;
 
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
