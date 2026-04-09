@@ -17,6 +17,7 @@ import Scoreboard from '@/scoreboard/Scoreboard';
 import { ScoreboardRow } from '@/scoreboard/scoreboardData';
 import UpsellAlert from '@/upsell/UpsellAlert';
 import { Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export function ScoreboardPage({ type }: { type?: string }) {
@@ -33,6 +34,7 @@ export function ScoreboardPage({ type }: { type?: string }) {
 }
 
 function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
+    const t = useTranslations('scoreboard');
     const isFreeTier = useFreeTier();
 
     const dataRequest = useRequest<ScoreboardRow[]>();
@@ -101,10 +103,7 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
 
             {isFreeTier && (
                 <Stack alignItems='center' mb={3}>
-                    <UpsellAlert>
-                        Free-tier users are not displayed on the scoreboard. Upgrade to get your
-                        account added.
-                    </UpsellAlert>
+                    <UpsellAlert>{t('freeTierMessage')}</UpsellAlert>
                 </Stack>
             )}
 
@@ -112,7 +111,9 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
 
             <GraduationChips cohort={type} />
 
-            {dojoCohorts.includes(type) && <Typography variant='h6'>Current Members</Typography>}
+            {dojoCohorts.includes(type) && (
+                <Typography variant='h6'>{t('currentMembers')}</Typography>
+            )}
             <Scoreboard
                 user={user}
                 cohort={dojoCohorts.includes(type) ? type : undefined}
@@ -130,7 +131,7 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
 
             {dojoCohorts.includes(type) && (
                 <>
-                    <Typography variant='h6'>Graduations</Typography>
+                    <Typography variant='h6'>{t('graduations')}</Typography>
                     <div id='graduation-scoreboard'>
                         <Scoreboard
                             cohort={dojoCohorts.includes(type) ? type : undefined}

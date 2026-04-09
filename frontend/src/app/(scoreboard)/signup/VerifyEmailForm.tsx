@@ -8,6 +8,7 @@ import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -23,6 +24,7 @@ export const VerifyEmailForm = ({
     const auth = useAuth();
     const router = useRouter();
     const redirectUri = useSearchParams().get('redirectUri');
+    const t = useTranslations('auth');
 
     const [code, setCode] = useState('');
     const [codeError, setCodeError] = useState<string>();
@@ -37,7 +39,7 @@ export const VerifyEmailForm = ({
 
     const onSubmit = () => {
         if (code.length === 0) {
-            setCodeError('Verification code is required');
+            setCodeError(t('verify.verificationCodeRequired'));
             return;
         }
         setCodeError(undefined);
@@ -56,10 +58,7 @@ export const VerifyEmailForm = ({
                 }
                 if (err.name === 'AliasExistsException') {
                     submitRequest.onFailure({
-                        message:
-                            'An account with this email already exists. ' +
-                            'Note that if you previously signed in with Google, ' +
-                            'you must continue to use that option.',
+                        message: t('verify.aliasExists'),
                     });
                 } else {
                     submitRequest.onFailure(err);
@@ -72,7 +71,7 @@ export const VerifyEmailForm = ({
 
         auth.resendSignupCode(username)
             .then(() => {
-                codeRequest.onSuccess('New verification code sent');
+                codeRequest.onSuccess(t('verify.newCodeSent'));
             })
             .catch((err: { message?: string }) => {
                 logger.error?.('resendSignupCode: ', err);
@@ -105,7 +104,7 @@ export const VerifyEmailForm = ({
             />
 
             <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
-                ChessDojo
+                {t('chessDojo')}
             </Typography>
 
             <Stack width={{ xs: 1, sm: 0.85 }} spacing={4} alignItems='center'>
@@ -116,14 +115,13 @@ export const VerifyEmailForm = ({
                     textAlign='center'
                     data-testid='description'
                 >
-                    In order to complete your account creation, please enter the verification code
-                    sent to {email}.
+                    {t('verify.description', { email })}
                 </Typography>
 
                 <TextField
                     fullWidth
                     id='code'
-                    label='Verification Code'
+                    label={t('verify.verificationCode')}
                     variant='outlined'
                     value={code}
                     onChange={(event) => setCode(event.target.value)}
@@ -156,7 +154,7 @@ export const VerifyEmailForm = ({
                     onClick={onSubmit}
                     data-testid='verify-button'
                 >
-                    Verify Email
+                    {t('verify.verifyEmail')}
                 </LoadingButton>
 
                 <LoadingButton
@@ -172,7 +170,7 @@ export const VerifyEmailForm = ({
                     loading={codeRequest.isLoading()}
                     data-testid='resend-button'
                 >
-                    Send New Code
+                    {t('verify.sendNewCode')}
                 </LoadingButton>
             </Stack>
         </Stack>
