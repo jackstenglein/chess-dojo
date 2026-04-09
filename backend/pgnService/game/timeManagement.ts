@@ -49,15 +49,13 @@ export function rateGameTimeManagement(chess: Chess): TimeManagementRatings {
             seconds: whiteSeconds ?? whiteClock[whiteClock.length - 1].seconds,
         });
 
-        if (moves[i + 1]) {
-            const blackSeconds = clockToSeconds(moves[i + 1]?.commentDiag?.clk);
-            if (blackSeconds !== undefined) {
-                hasClockData = true;
-            }
-            blackClock.push({
-                seconds: blackSeconds ?? blackClock[blackClock.length - 1].seconds,
-            });
+        const blackSeconds = clockToSeconds(moves[i + 1]?.commentDiag?.clk);
+        if (blackSeconds !== undefined) {
+            hasClockData = true;
         }
+        blackClock.push({
+            seconds: blackSeconds ?? blackClock[blackClock.length - 1].seconds,
+        });
     }
 
     if (!hasClockData) {

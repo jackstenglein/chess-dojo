@@ -38,10 +38,8 @@ test('returns exact ratings for Fang vs Kraai (US Masters 2025)', () => {
     const chess = new Chess({ pgn: classicalPgnWithClocks });
     const ratings = rateGameTimeManagement(chess);
 
-    // FM Fang (White) used time aggressively, dropping from 1:25 to 0:01
-    // GM Kraai (Black) managed time better overall but also reached time trouble
     assert.equal(ratings.white, 2478);
-    assert.equal(ratings.black, 2437);
+    assert.equal(ratings.black, 2456);
 });
 
 test('returns undefined for blitz game (time control < 30 min)', () => {
@@ -85,7 +83,7 @@ test('getGame populates exact TM rating fields for classical game with clocks', 
     const game = getGame(undefined, classicalPgnWithClocks);
 
     assert.equal(game.timeManagementRatingWhite, 2478);
-    assert.equal(game.timeManagementRatingBlack, 2437);
+    assert.equal(game.timeManagementRatingBlack, 2456);
 });
 
 test('getGame does not populate TM rating fields for blitz game', async () => {
