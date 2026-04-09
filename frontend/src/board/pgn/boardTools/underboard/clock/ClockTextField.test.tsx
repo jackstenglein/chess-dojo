@@ -4,7 +4,7 @@ import { secondsToClock } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterLuxon } from '@mui/x-date-pickers-pro/AdapterLuxon';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import ClockTextField from './ClockTextField';
@@ -148,7 +148,7 @@ describe('ClockTextField', () => {
         expect(minutes).toHaveFocus();
     });
 
-    it('three-field: focusing hours redirects to minutes when maxSeconds < 3600', () => {
+    it('three-field: focusing hours redirects to minutes when maxSeconds < 3600', async () => {
         mockUseLocalStorage.mockReturnValue([ClockFieldFormat.ThreeField, vi.fn()]);
         const chess = { setCommand: vi.fn() } as unknown as Chess;
         renderWithChess(<ClockTextField move={makeMove()} maxSeconds={120} />, chess);
@@ -158,7 +158,9 @@ describe('ClockTextField', () => {
 
         fireEvent.focus(hours);
 
-        expect(minutes).toHaveFocus();
+        await waitFor(() => {
+            expect(minutes).toHaveFocus();
+        });
     });
 
     it('total minutes: displays floored minutes and writes clock on change', () => {
