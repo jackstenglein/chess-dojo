@@ -63,25 +63,30 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { ReactNode, useState, type JSX } from 'react';
 import { TimerButton, TimerMenuItem } from '../../timer/TimerButton';
 import DarkModeToggle from './DarkModeToggle';
 import ProfileButton from './ProfileButton';
 import UnauthenticatedMenu from './UnauthenticatedMenu';
 
-const SEARCH_NAVBAR_ITEM = {
-    id: 'search',
-    name: 'Search Users',
-    icon: <SearchIcon />,
-    href: '/scoreboard/search',
-};
+function searchNavbarItem(t: ReturnType<typeof useTranslations>): NavbarItem {
+    return {
+        id: 'search',
+        name: t('searchUsers'),
+        icon: <SearchIcon />,
+        href: '/scoreboard/search',
+    };
+}
 
-const HELP_NAVBAR_ITEM = {
-    id: 'help',
-    name: 'Help',
-    icon: <Help />,
-    href: '/help',
-};
+function helpNavbarItem(t: ReturnType<typeof useTranslations>): NavbarItem {
+    return {
+        id: 'help',
+        name: t('help'),
+        icon: <Help />,
+        href: '/help',
+    };
+}
 
 const config = getConfig();
 
@@ -116,41 +121,44 @@ export interface NavbarItem {
     target?: '_blank';
 }
 
-function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
+function allStartItems(
+    toggleExpansion: (item: string) => void,
+    t: ReturnType<typeof useTranslations>,
+): NavbarItem[] {
     return [
         {
             id: 'training-plan',
-            name: 'Training Plan',
+            name: t('trainingPlan'),
             icon: <Checklist />,
             href: '/profile?view=progress',
         },
         {
             id: 'games',
-            name: 'Games',
+            name: t('games'),
             icon: <PawnIcon />,
             onClick: () => toggleExpansion('games'),
             children: [
                 {
                     id: 'analysis-board',
-                    name: 'Analysis Board',
+                    name: t('analysisBoard'),
                     icon: <Biotech />,
                     href: '/games/import',
                 },
                 {
                     id: 'full-database',
-                    name: 'Full Database',
+                    name: t('fullDatabase'),
                     icon: <Storage />,
                     href: '/games',
                 },
                 {
                     id: 'my-games',
-                    name: 'My Games',
+                    name: t('myGames'),
                     icon: <AccountCircle />,
                     href: '/profile?view=games&directory=mygames',
                 },
                 {
                     id: 'repertoire-spy',
-                    name: 'Repertoire Spy',
+                    name: t('repertoireSpy'),
                     icon: <PersonSearch />,
                     href: '/games/analysis?explorer=player',
                 },
@@ -158,31 +166,31 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
         },
         {
             id: 'calendar',
-            name: 'Calendar',
+            name: t('calendar'),
             icon: <CalendarToday />,
             href: '/calendar',
         },
         {
             id: 'tournaments',
-            name: 'Tournaments',
+            name: t('tournaments'),
             icon: <Tournaments />,
             onClick: () => toggleExpansion('tournaments'),
             children: [
                 {
                     id: 'round-robin',
-                    name: 'Round Robin',
+                    name: t('roundRobin'),
                     icon: <CrossedSwordIcon />,
                     href: '/tournaments/round-robin',
                 },
                 {
                     id: 'open-classical',
-                    name: 'Open Classical',
+                    name: t('openClassical'),
                     icon: <TournamentBracketIcon />,
                     href: '/tournaments/open-classical',
                 },
                 {
                     id: 'dojo-liga',
-                    name: 'DojoLiga',
+                    name: t('dojoLiga'),
                     icon: <MilitaryTech />,
                     href: '/tournaments/liga',
                 },
@@ -192,8 +200,8 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
             id: 'live-classes',
             name: (
                 <>
-                    Live Classes{' '}
-                    <Chip label='NEW' color='success' size='small' sx={{ ml: 1 }} />{' '}
+                    {t('liveClasses')}{' '}
+                    <Chip label={t('new')} color='success' size='small' sx={{ ml: 1 }} />{' '}
                 </>
             ),
             icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
@@ -201,61 +209,61 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
         },
         {
             id: 'learn',
-            name: 'Learn',
+            name: t('learn'),
             icon: <MenuBook />,
             onClick: () => toggleExpansion('learn'),
             children: [
                 {
                     id: 'live-classes',
-                    name: 'Live Classes',
+                    name: t('liveClasses'),
                     icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
                     href: '/learn/live-classes',
                 },
                 {
                     id: 'puzzles',
-                    name: 'Puzzles',
+                    name: t('puzzles'),
                     icon: <Speed />,
                     href: '/tests',
                 },
                 {
                     id: 'courses',
-                    name: 'Courses',
+                    name: t('courses'),
                     icon: <ImportContacts />,
                     href: '/courses',
                 },
                 {
                     id: 'books',
-                    name: 'Books',
+                    name: t('books'),
                     icon: <AutoStories />,
                     href: '/learn/books',
                 },
                 {
                     id: 'sparring-positions',
-                    name: 'Sparring Positions',
+                    name: t('sparringPositions'),
                     icon: <LocalFireDepartment />,
                     href: '/learn/sparring',
                 },
                 {
                     id: 'model-annotations',
-                    name: 'Model Annotations',
+                    name: t('modelAnnotations'),
                     icon: <BorderColor />,
                     href: '/learn/modelgames',
                 },
                 {
                     id: 'games-to-memorize',
-                    name: 'Games to Memorize',
+                    name: t('gamesToMemorize'),
                     icon: <Psychology />,
                     href: '/learn/memorizegames',
                 },
                 {
                     id: 'guides',
-                    name: 'Guides',
+                    name: t('guides'),
                     icon: <Info />,
                     href: '/learn/guides',
                 },
                 {
                     id: 'rating-conversions',
-                    name: 'Rating Conversions',
+                    name: t('ratingConversions'),
                     icon: <SignalCellularAlt />,
                     href: '/learn/ratings',
                 },
@@ -263,37 +271,37 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
         },
         {
             id: 'social',
-            name: 'Social',
+            name: t('social'),
             icon: <Groups />,
             onClick: () => toggleExpansion('social'),
             children: [
                 {
                     id: 'search-users',
-                    name: 'Search Users',
+                    name: t('searchUsers'),
                     icon: <SearchIcon />,
                     href: '/scoreboard/search',
                 },
                 {
                     id: 'newsfeed',
-                    name: 'Newsfeed',
+                    name: t('newsfeed'),
                     icon: <Feed />,
                     href: '/newsfeed',
                 },
                 {
                     id: 'scoreboard',
-                    name: 'Scoreboard',
+                    name: t('scoreboard'),
                     icon: <Scoreboard />,
                     href: '/scoreboard',
                 },
                 {
                     id: 'clubs',
-                    name: 'Clubs',
+                    name: t('clubs'),
                     icon: <Groups />,
                     href: '/clubs',
                 },
                 {
                     id: 'blog',
-                    name: 'Blog',
+                    name: t('blog'),
                     icon: <Forum />,
                     href: '/blog',
                 },
@@ -329,32 +337,32 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
         },
         {
             id: 'shop',
-            name: 'Shop',
+            name: t('shop'),
             icon: <Sell />,
             onClick: () => toggleExpansion('shop'),
             children: [
                 {
                     id: 'courses',
-                    name: 'Courses',
+                    name: t('courses'),
                     icon: <ImportContacts />,
                     href: '/courses',
                 },
                 {
                     id: 'subscribe',
-                    name: 'Membership',
+                    name: t('membership'),
                     icon: <Diamond />,
                     href: '/prices',
                 },
                 {
                     id: 'merch',
-                    name: 'Merch',
+                    name: t('merch'),
                     icon: <Storefront />,
                     href: 'https://www.chessdojo.shop/shop',
                     target: '_blank',
                 },
                 {
                     id: 'donate',
-                    name: 'Donate',
+                    name: t('donate'),
                     href: '/donate',
                     icon: <DonateIcon />,
                 },
@@ -365,6 +373,7 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
 
 function NotificationsMenuItem(): JSX.Element {
     const { notifications } = useNotifications();
+    const t = useTranslations('navbar');
     return (
         <MenuItem component={Link} href='/notifications'>
             <ListItemIcon>
@@ -372,7 +381,7 @@ function NotificationsMenuItem(): JSX.Element {
                     <Notifications />
                 </Badge>
             </ListItemIcon>
-            <Typography textAlign='center'>Notifications</Typography>
+            <Typography textAlign='center'>{t('notifications')}</Typography>
         </MenuItem>
     );
 }
@@ -391,7 +400,7 @@ export const StartItem: React.FC<{ item: NavbarItem; meetingCount: number }> = (
         setAnchorEl(null);
     };
 
-    if (item.name === 'Calendar') {
+    if (item.id === 'calendar') {
         return (
             <Button
                 key={item.id}
@@ -464,8 +473,7 @@ export const NavMenuItem: React.FC<{
             >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <Typography textAlign='center'>
-                    {item.name}{' '}
-                    {item.name === 'Calendar' && meetingCount ? ` (${meetingCount})` : ''}
+                    {item.name} {item.id === 'calendar' && meetingCount ? ` (${meetingCount})` : ''}
                 </Typography>
                 {item.children &&
                     (openItems[item.id] ? (
@@ -510,7 +518,7 @@ export const NavMenuItem: React.FC<{
 function NavIconButton({ item }: { item: NavbarItem }) {
     return (
         <Tooltip title={item.name}>
-            <IconButton data-testid={item.name} sx={{ color: 'white' }} href={item.href ?? ''}>
+            <IconButton data-testid={item.id} sx={{ color: 'white' }} href={item.href ?? ''}>
                 {item.icon}
             </IconButton>
         </Tooltip>
@@ -520,6 +528,7 @@ function NavIconButton({ item }: { item: NavbarItem }) {
 function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
     const auth = useAuth();
+    const t = useTranslations('navbar');
 
     const showAll = useMediaQuery('(min-width:1500px)');
     const hide2 = useMediaQuery('(min-width:1341px)');
@@ -534,8 +543,9 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     const showNotifications = useMediaQuery('(min-width:567px)');
     const showProfileDropdown = useMediaQuery('(min-width:542px)');
 
-    const startItems = allStartItems((item: string) =>
-        setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+    const startItems = allStartItems(
+        (item: string) => setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+        t,
     );
 
     let startItemCount = 0;
@@ -575,14 +585,16 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
         ));
 
     const endItems: JSX.Element[] = [];
+    const searchItem = searchNavbarItem(t);
+    const helpItem = helpNavbarItem(t);
 
     if (showSearch) {
-        endItems.push(<NavIconButton key='search' item={SEARCH_NAVBAR_ITEM} />);
+        endItems.push(<NavIconButton key='search' item={searchItem} />);
     } else {
         menuItems.push(
             <NavMenuItem
                 key='search'
-                item={SEARCH_NAVBAR_ITEM}
+                item={searchItem}
                 openItems={openItems}
                 handleClose={onClose}
             />,
@@ -602,15 +614,10 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
     }
 
     if (showHelp) {
-        endItems.push(<NavIconButton key='help' item={HELP_NAVBAR_ITEM} />);
+        endItems.push(<NavIconButton key='help' item={helpItem} />);
     } else {
         menuItems.push(
-            <NavMenuItem
-                key='help'
-                item={HELP_NAVBAR_ITEM}
-                openItems={openItems}
-                handleClose={onClose}
-            />,
+            <NavMenuItem key='help' item={helpItem} openItems={openItems} handleClose={onClose} />,
         );
     }
 
@@ -630,7 +637,7 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
                     <Logout color='error' />
                 </ListItemIcon>
                 <Typography textAlign='center' color='error'>
-                    Sign Out
+                    {t('signOut')}
                 </Typography>
             </MenuItem>,
         );
@@ -645,6 +652,7 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
 
 const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
     const auth = useAuth();
+    const t = useTranslations('navbar');
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -664,16 +672,16 @@ const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
                 <Logo />
                 <Stack spacing={1} direction='row' sx={{ flexGrow: 1 }}>
                     <Button href='/profile' sx={{ color: 'white' }} startIcon={<Person2Icon />}>
-                        Profile
+                        {t('profile')}
                     </Button>
                 </Stack>
 
                 <Button href='/help' sx={{ color: 'white' }}>
-                    Help
+                    {t('help')}
                 </Button>
 
                 <Button onClick={auth.signout} color='error'>
-                    Sign Out
+                    {t('signOut')}
                 </Button>
             </>
         );
@@ -691,7 +699,7 @@ const AuthenticatedMenu = ({ meetingCount }: MenuProps) => {
 
                 {menuItems.length > 0 && (
                     <>
-                        <Tooltip title='More'>
+                        <Tooltip title={t('more')}>
                             <IconButton
                                 data-testid='navbar-more-button'
                                 onClick={handleOpen}

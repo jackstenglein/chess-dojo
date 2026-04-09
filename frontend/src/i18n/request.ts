@@ -19,7 +19,7 @@ export default getRequestConfig(async () => {
     } catch (err) {
         // Fall back to empty messages so translation keys display as-is
         // (better than a white page), but log so we can detect the problem.
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- logger imports getConfig() which may throw during static generation
         console.error(`[i18n] Failed to load messages for locale "${locale}".`, err);
     }
 

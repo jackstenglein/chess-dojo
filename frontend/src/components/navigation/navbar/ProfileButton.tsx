@@ -6,12 +6,14 @@ import Person2Icon from '@mui/icons-material/Person2';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 import { Button, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import DarkModeToggle from './DarkModeToggle';
 
 const ProfileButton = () => {
     const auth = useAuth();
     const user = auth.user;
+    const t = useTranslations('navbar');
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     if (!user) {
@@ -59,14 +61,14 @@ const ProfileButton = () => {
                     <ListItemIcon>
                         <Person2Icon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>Profile</Typography>
+                    <Typography textAlign='center'>{t('profile')}</Typography>
                 </MenuItem>
 
                 <MenuItem component='a' href='/profile/edit'>
                     <ListItemIcon>
                         <SettingsIcon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>Settings</Typography>
+                    <Typography textAlign='center'>{t('settings')}</Typography>
                 </MenuItem>
 
                 {user.isCoach && (
@@ -74,7 +76,7 @@ const ProfileButton = () => {
                         <ListItemIcon>
                             <SportsIcon />
                         </ListItemIcon>
-                        <Typography textAlign='center'>Coach Portal</Typography>
+                        <Typography textAlign='center'>{t('coachPortal')}</Typography>
                     </MenuItem>
                 )}
 
@@ -85,7 +87,7 @@ const ProfileButton = () => {
                         <ExitToAppIcon color='error' />
                     </ListItemIcon>
                     <Typography textAlign='center' color='error'>
-                        Sign Out
+                        {t('signOut')}
                     </Typography>
                 </MenuItem>
             </Menu>

@@ -1,6 +1,7 @@
 'use client';
 
 import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
+import { logger } from '@/logging/logger';
 import { AbstractIntlMessages, NextIntlClientProvider } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -31,8 +32,8 @@ export function I18nProvider({
                     setLocale(cookieLocale);
                     setMessages(mod.default);
                 })
-                .catch(() => {
-                    // Failed to load messages for this locale, stay on current
+                .catch((err: unknown) => {
+                    logger.error?.('Failed to load messages for locale:', cookieLocale, err);
                 });
         }
     }, [locale]);
