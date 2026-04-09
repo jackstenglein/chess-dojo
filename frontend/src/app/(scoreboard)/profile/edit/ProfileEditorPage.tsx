@@ -19,6 +19,7 @@ import {
     isCustom,
 } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
+import { DEFAULT_LOCALE, setLocaleCookie } from '@/i18n/locales';
 import { logger } from '@/logging/logger';
 import InfoIcon from '@mui/icons-material/Info';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
@@ -147,6 +148,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const [bio, setBio] = useState(user.bio);
     const [coachBio, setCoachBio] = useState(user.coachBio || '');
     const [timezone, setTimezone] = useState(user.timezoneOverride || DefaultTimezone);
+    const [language, setLanguage] = useState(user.language || DEFAULT_LOCALE);
 
     const [ratingSystem, setRatingSystem] = useState(user.ratingSystem);
     const [ratingEditors, setRatingEditors] = useState(getRatingEditors(user.ratings));
@@ -168,6 +170,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
             bio,
             coachBio,
             timezoneOverride: timezone,
+            language,
             ratingSystem,
             ratings: getRatingsFromEditors(ratingEditors),
             enableZenMode,
@@ -242,6 +245,9 @@ export function ProfileEditorPage({ user }: { user: User }) {
 
                 if (update.profilePictureData !== undefined) {
                     setImageBypass(Date.now());
+                }
+                if (update.language) {
+                    setLocaleCookie(update.language);
                 }
                 router.push('/profile');
             })
@@ -399,6 +405,8 @@ export function ProfileEditorPage({ user }: { user: User }) {
                             setCoachBio={setCoachBio}
                             timezone={timezone}
                             setTimezone={setTimezone}
+                            language={language}
+                            setLanguage={setLanguage}
                             profilePictureUrl={profilePictureUrl}
                             setProfilePictureUrl={setProfilePictureUrl}
                             setProfilePictureData={setProfilePictureData}

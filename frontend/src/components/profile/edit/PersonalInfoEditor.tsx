@@ -6,6 +6,7 @@ import Avatar from '@/profile/Avatar';
 import { Delete, Info, Upload } from '@mui/icons-material';
 import { Button, Divider, FormLabel, Stack, TextField, Typography } from '@mui/material';
 import DiscordOAuthButton from './DiscordOAuthButton';
+import { LanguageSelector } from './LanguageSelector';
 
 /** The maximum size of the profile picture. */
 export const MAX_PROFILE_PICTURE_SIZE_MB = 9;
@@ -29,6 +30,10 @@ interface PersonalInfoEditorProps {
     timezone: string;
     /** A callback function to set the timezone. */
     setTimezone: (timezone: string) => void;
+    /** The user's preferred language. */
+    language: string;
+    /** A callback function to set the language. */
+    setLanguage: (language: string) => void;
     /** The URL of the edited profile picture. */
     profilePictureUrl?: string;
     /** A callback function to set the URL of the edited profile picture. */
@@ -51,6 +56,8 @@ export function PersonalInfoEditor({
     setCoachBio,
     timezone,
     setTimezone,
+    language,
+    setLanguage,
     profilePictureUrl,
     setProfilePictureUrl,
     setProfilePictureData,
@@ -165,6 +172,7 @@ export function PersonalInfoEditor({
             )}
 
             <TimezoneSelector value={timezone} onChange={setTimezone} />
+            <LanguageSelector value={language} onChange={setLanguage} />
         </Stack>
     );
 }

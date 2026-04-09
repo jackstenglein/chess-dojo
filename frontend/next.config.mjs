@@ -1,3 +1,7 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     outputFileTracingRoot: import.meta.dirname,
@@ -137,4 +141,4 @@ const pagesWithVideos = [
     '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/2',
 ];
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

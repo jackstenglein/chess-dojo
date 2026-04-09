@@ -4,6 +4,7 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { hasCreatedProfile } from '@/database/user';
+import { setLocaleCookie } from '@/i18n/locales';
 import { AxiosError } from 'axios';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -36,6 +37,12 @@ export function RequireProfile() {
                 });
         }
     }, [request, api, status, updateUser, user]);
+
+    useEffect(() => {
+        if (user?.language) {
+            setLocaleCookie(user.language);
+        }
+    }, [user?.language]);
 
     useEffect(() => {
         if (user && !hasCreatedProfile(user) && !validPathnames.includes(pathname)) {
