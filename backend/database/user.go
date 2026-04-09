@@ -370,6 +370,17 @@ type User struct {
 	// Tracks which milestone notifications have been sent for this user,
 	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
 	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
+
+	// The user's aggregate time management rating, computed from games in their mygames folder
+	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+}
+
+// TimeManagementRating holds the user's aggregate time management rating.
+type TimeManagementRating struct {
+	// The current aggregate rating
+	CurrentRating int `dynamodbav:"currentRating" json:"currentRating"`
+	// The number of games included in the aggregate
+	NumGames int `dynamodbav:"numGames" json:"numGames"`
 }
 
 type PuzzleThemeOverview struct {
