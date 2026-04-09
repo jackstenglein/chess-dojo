@@ -10,6 +10,7 @@ import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { VerifyEmailForm } from './VerifyEmailForm';
@@ -24,6 +25,7 @@ export const SignUpForm = () => {
     const router = useRouter();
     const { searchParams } = useNextSearchParams();
     const redirectUri = searchParams.get('redirectUri');
+    const t = useTranslations('auth');
 
     const [step, setStep] = useState(SignUpStep.SignUp);
     const [username, setUsername] = useState('');
@@ -41,13 +43,13 @@ export const SignUpForm = () => {
     const onSignup = () => {
         const errors: Record<string, string> = {};
         if (name.trim().length === 0) {
-            errors.name = 'Name is required';
+            errors.name = t('signup.nameRequired');
         }
         if (email.trim().length === 0) {
-            errors.email = 'Email is required';
+            errors.email = t('signup.emailRequired');
         }
         if (password.length === 0) {
-            errors.password = 'Password is required';
+            errors.password = t('signup.passwordRequired');
         }
 
         setErrors(errors);
@@ -97,14 +99,14 @@ export const SignUpForm = () => {
             />
 
             <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
-                ChessDojo
+                {t('chessDojo')}
             </Typography>
 
             <Stack width={{ xs: 1, sm: 0.85 }} rowGap={3} alignItems='center'>
                 <TextField
                     fullWidth
                     id='name'
-                    label='Name'
+                    label={t('signup.name')}
                     variant='outlined'
                     value={name}
                     onChange={(event) => setName(event.target.value)}
@@ -124,7 +126,7 @@ export const SignUpForm = () => {
                 <TextField
                     fullWidth
                     id='email'
-                    label='Email'
+                    label={t('signup.email')}
                     variant='outlined'
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -144,7 +146,7 @@ export const SignUpForm = () => {
                 <TextField
                     fullWidth
                     id='password'
-                    label='Password'
+                    label={t('signup.password')}
                     type='password'
                     variant='outlined'
                     value={password}
@@ -177,21 +179,21 @@ export const SignUpForm = () => {
                     onClick={onSignup}
                     loading={request.isLoading()}
                 >
-                    Create Account
+                    {t('signup.createAccount')}
                 </LoadingButton>
 
                 <GoogleButton
                     onClick={onGoogleSignIn}
-                    label='Sign up with Google'
+                    label={t('signup.signUpWithGoogle')}
                     style={{
                         transform: 'scale(1.1)',
                         transformOrigin: 'center',
                     }}
                 />
                 <Typography variant='body2' component='div' gutterBottom>
-                    Already have an account?{' '}
+                    {t('signup.alreadyHaveAccount')}{' '}
                     <Link href='/signin' data-testid='signin-button'>
-                        Sign In
+                        {t('signup.signIn')}
                     </Link>
                 </Typography>
             </Stack>

@@ -18,12 +18,14 @@ import LoadingPage from '@/loading/LoadingPage';
 import { fontFamily } from '@/style/font';
 import { Box, Stack, Typography } from '@mui/material';
 import { Hub } from 'aws-amplify/utils';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export const LandingPage = () => {
     const { searchParams } = useNextSearchParams();
     const auth = useAuth();
     const router = useRouter();
+    const t = useTranslations('landing');
 
     useEffect(() => {
         return Hub.listen('auth', (data) => {
@@ -69,10 +71,10 @@ export const LandingPage = () => {
                             textAlign: 'center',
                         }}
                     >
-                        Join a community of people that love the game
+                        {t('joinCommunity')}
                     </Typography>
 
-                    <JoinDojoButton sx={{ mt: '1.875rem' }}>Sign Up</JoinDojoButton>
+                    <JoinDojoButton sx={{ mt: '1.875rem' }}>{t('signUp')}</JoinDojoButton>
 
                     {/* <Button
                             variant='contained'

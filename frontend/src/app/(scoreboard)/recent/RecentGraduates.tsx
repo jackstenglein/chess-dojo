@@ -10,6 +10,7 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Divider, FormControl, MenuItem, Select, Stack, Typography } from '@mui/material';
 import { DataGridPro, GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 function getUniqueGraduations(graduations: Graduation[]): Graduation[] {
@@ -31,7 +32,9 @@ interface TimeframeOption {
     value: Timeframe;
 }
 
-function getTimeframeOptions() {
+function getTimeframeOptions(
+    t: (key: string, params?: Record<string, string>) => string,
+): TimeframeOption[] {
     let currGraduation = new Date();
     currGraduation.setUTCHours(17, 30, 0, 0);
     currGraduation.setUTCDate(
@@ -45,7 +48,7 @@ function getTimeframeOptions() {
         prevGraduation.setUTCDate(prevGraduation.getUTCDate() - 7);
 
         options.push({
-            label: `Graduation of ${currGraduation.toLocaleDateString()}`,
+            label: t('graduationOf', { date: currGraduation.toLocaleDateString() }),
             value: {
                 minDate: prevGraduation.toISOString(),
                 maxDate: currGraduation.toISOString(),
@@ -58,126 +61,130 @@ function getTimeframeOptions() {
     return options;
 }
 
-const timeframeOptions = getTimeframeOptions();
-
-const graduateTableColumns: GridColDef<Graduation>[] = [
-    {
-        field: 'displayName',
-        headerName: 'Name',
-        minWidth: 200,
-        flex: 1,
-        renderCell: (params: GridRenderCellParams<Graduation, string>) => {
-            return (
-                <Stack direction='row' spacing={1} alignItems='center'>
-                    <Avatar username={params.row.username} displayName={params.value} size={32} />
-                    <Link href={`/profile/${params.row.username}`}>{params.value}</Link>
-                </Stack>
-            );
+function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[] {
+    return [
+        {
+            field: 'displayName',
+            headerName: t('name'),
+            minWidth: 200,
+            flex: 1,
+            renderCell: (params: GridRenderCellParams<Graduation, string>) => {
+                return (
+                    <Stack direction='row' spacing={1} alignItems='center'>
+                        <Avatar
+                            username={params.row.username}
+                            displayName={params.value}
+                            size={32}
+                        />
+                        <Link href={`/profile/${params.row.username}`}>{params.value}</Link>
+                    </Stack>
+                );
+            },
         },
-    },
-    {
-        field: 'graduations',
-        headerName: 'Graduated',
-        align: 'center',
-        headerAlign: 'center',
-        minWidth: 150,
-        flex: 1,
-        valueGetter: (_value, row) => {
-            if (row.graduationCohorts && row.graduationCohorts.length > 0) {
-                return row.graduationCohorts;
-            }
-            return row.previousCohort;
+        {
+            field: 'graduations',
+            headerName: t('graduated'),
+            align: 'center',
+            headerAlign: 'center',
+            minWidth: 150,
+            flex: 1,
+            valueGetter: (_value, row) => {
+                if (row.graduationCohorts && row.graduationCohorts.length > 0) {
+                    return row.graduationCohorts;
+                }
+                return row.previousCohort;
+            },
+            renderCell: (params: GridRenderCellParams<Graduation>) => {
+                const graduationCohorts = [...params.row.graduationCohorts]
+                    .sort(compareCohorts)
+                    .filter((cohort, i, array) => i === array.indexOf(cohort))
+                    .slice(-3);
+                return (
+                    <Stack direction='row' justifyContent='center'>
+                        {graduationCohorts.map((c) => (
+                            <CohortIcon key={c} cohort={c} size={32} />
+                        ))}
+                    </Stack>
+                );
+            },
         },
-        renderCell: (params: GridRenderCellParams<Graduation>) => {
-            const graduationCohorts = [...params.row.graduationCohorts]
-                .sort(compareCohorts)
-                .filter((cohort, i, array) => i === array.indexOf(cohort))
-                .slice(-3);
-            return (
-                <Stack direction='row' justifyContent='center'>
-                    {graduationCohorts.map((c) => (
-                        <CohortIcon key={c} cohort={c} size={32} />
-                    ))}
-                </Stack>
-            );
+        {
+            field: 'previousCohort',
+            headerName: t('oldCohort'),
+            minWidth: 150,
+            headerAlign: 'center',
+            align: 'center',
+            flex: 1,
+            valueGetter: (_value, row) => {
+                return parseInt(row.previousCohort.split('-')[0]);
+            },
+            renderCell: (params: GridRenderCellParams<Graduation>) => {
+                return (
+                    <Stack height='30px' justifyContent='center'>
+                        {params.row.previousCohort}
+                    </Stack>
+                );
+            },
         },
-    },
-    {
-        field: 'previousCohort',
-        headerName: 'Old Cohort',
-        minWidth: 150,
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-        valueGetter: (_value, row) => {
-            return parseInt(row.previousCohort.split('-')[0]);
+        {
+            field: 'newCohort',
+            headerName: t('newCohort'),
+            minWidth: 150,
+            headerAlign: 'center',
+            align: 'center',
+            flex: 1,
+            valueGetter: (_value, row) => {
+                return parseInt(row.newCohort.replaceAll('+', '').split('-')[0]);
+            },
+            renderCell: (params: GridRenderCellParams<Graduation>) => {
+                return (
+                    <Stack height='30px' justifyContent='center'>
+                        {params.row.newCohort}
+                    </Stack>
+                );
+            },
         },
-        renderCell: (params: GridRenderCellParams<Graduation>) => {
-            return (
+        {
+            field: 'score',
+            headerName: t('dojoScore'),
+            headerAlign: 'center',
+            align: 'center',
+            flex: 1,
+            valueFormatter: (value) => Math.round(value * 100) / 100,
+            renderCell: (params) => (
                 <Stack height='30px' justifyContent='center'>
-                    {params.row.previousCohort}
+                    {params.formattedValue}
                 </Stack>
-            );
+            ),
         },
-    },
-    {
-        field: 'newCohort',
-        headerName: 'New Cohort',
-        minWidth: 150,
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-        valueGetter: (_value, row) => {
-            return parseInt(row.newCohort.replaceAll('+', '').split('-')[0]);
-        },
-        renderCell: (params: GridRenderCellParams<Graduation>) => {
-            return (
+        {
+            field: 'gamesAnnotated',
+            headerName: t('gamesAnnotated'),
+            headerAlign: 'center',
+            align: 'center',
+            flex: 1,
+            valueGetter: (_value, row) => row.gamesAnnotated ?? 0,
+            renderCell: (params) => (
                 <Stack height='30px' justifyContent='center'>
-                    {params.row.newCohort}
+                    {params.value}
                 </Stack>
-            );
+            ),
         },
-    },
-    {
-        field: 'score',
-        headerName: 'Dojo Score',
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-        valueFormatter: (value) => Math.round(value * 100) / 100,
-        renderCell: (params) => (
-            <Stack height='30px' justifyContent='center'>
-                {params.formattedValue}
-            </Stack>
-        ),
-    },
-    {
-        field: 'gamesAnnotated',
-        headerName: 'Games Annotated',
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-        valueGetter: (_value, row) => row.gamesAnnotated ?? 0,
-        renderCell: (params) => (
-            <Stack height='30px' justifyContent='center'>
-                {params.value}
-            </Stack>
-        ),
-    },
-    {
-        field: 'createdAt',
-        headerName: 'Date',
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-        valueFormatter: (value) => new Date(value).toLocaleDateString(),
-        renderCell: (params) => (
-            <Stack height='30px' justifyContent='center'>
-                {params.formattedValue}
-            </Stack>
-        ),
-    },
-];
+        {
+            field: 'createdAt',
+            headerName: t('date'),
+            headerAlign: 'center',
+            align: 'center',
+            flex: 1,
+            valueFormatter: (value) => new Date(value).toLocaleDateString(),
+            renderCell: (params) => (
+                <Stack height='30px' justifyContent='center'>
+                    {params.formattedValue}
+                </Stack>
+            ),
+        },
+    ];
+}
 
 function DetailPanelContent(params: GridRowParams<Graduation>) {
     if (!params.row.comments) {
@@ -195,6 +202,9 @@ function getDetailPanelHeight(): 'auto' {
 }
 
 const RecentGraduates = () => {
+    const t = useTranslations('newsfeed.recent');
+    const columns = useMemo(() => getGraduateColumns(t), [t]);
+    const timeframeOptions = useMemo(() => getTimeframeOptions(t), [t]);
     const api = useApi();
     const request = useRequest<Graduation[]>();
     const [timeframe, setTimeframe] = useState<Timeframe>(timeframeOptions[0]?.value);
@@ -222,7 +232,7 @@ const RecentGraduates = () => {
             <RequestSnackbar request={request} />
             <Stack>
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                    <Typography variant='h6'>Recent Graduates</Typography>
+                    <Typography variant='h6'>{t('title')}</Typography>
                     <FormControl
                         data-testid='graduates-timeframe-select'
                         size='small'
@@ -259,12 +269,12 @@ const RecentGraduates = () => {
                 request.isLoading() ? (
                     <LoadingPage />
                 ) : (
-                    <Typography>No graduations in the selected timeframe</Typography>
+                    <Typography>{t('noGraduations')}</Typography>
                 )
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <DataGridPro
-                        columns={graduateTableColumns}
+                        columns={columns}
                         rows={graduations}
                         getRowId={(row: Graduation) => row.username}
                         getRowHeight={() => 'auto'}

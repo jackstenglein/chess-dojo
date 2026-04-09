@@ -1,5 +1,6 @@
 import { fontFamily } from '@/style/font';
 import { Box, Button, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { BackgroundImageContainer } from './BackgroundImage';
 import { FEATURES_ELEMENT_ID } from './Features';
@@ -9,6 +10,8 @@ import { JoinDojoButton } from './JoinDojoButton';
 import backgroundImage from './main-background.webp';
 
 export function MainLanding() {
+    const t = useTranslations('landing');
+
     const scrollToId = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
@@ -63,9 +66,14 @@ export function MainLanding() {
                                     fontFamily={(theme) => fontFamily(theme, anton)}
                                     fontWeight='400'
                                 >
-                                    Got Mated?
-                                    <br />
-                                    Time to join ChessDojo!
+                                    {t('hero.title')
+                                        .split('\n')
+                                        .map((line, i) => (
+                                            <span key={i}>
+                                                {i > 0 && <br />}
+                                                {line}
+                                            </span>
+                                        ))}
                                 </Typography>
                                 <Typography
                                     variant='h5'
@@ -79,8 +87,7 @@ export function MainLanding() {
                                         letterSpacing: 0,
                                     }}
                                 >
-                                    A chess training plan for every level and a community to do it
-                                    with.
+                                    {t('hero.subtitle')}
                                 </Typography>
                             </Stack>
 
@@ -113,7 +120,7 @@ export function MainLanding() {
                                     }}
                                     color='dojoOrange'
                                 >
-                                    Explore the Program
+                                    {t('hero.exploreProgram')}
                                 </Button>
                             </Stack>
                         </Stack>
@@ -143,8 +150,9 @@ export function MainLanding() {
                 }}
             >
                 <Typography sx={{ fontSize: '1.5rem' }} textAlign='center'>
-                    Since its launch in 2022, ChessDojo members have gained more than{' '}
-                    <strong>186,000</strong> rating points.
+                    {t.rich('hero.ratingPoints', {
+                        strong: (chunks) => <strong>{chunks}</strong>,
+                    })}
                 </Typography>
             </Box>
         </>

@@ -9,27 +9,29 @@ import { logger } from '@/logging/logger';
 import { Message } from '@jackstenglein/chess-dojo-common/src/chatBot/api';
 import { Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { Filter } from 'bad-words';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-const SIGNED_IN_QUESTIONS = [
-    'What is DojoAI capable of?',
-    'How do I setup Discord?',
-    'How do I schedule a sparring session?',
-];
-const SIGNED_OUT_QUESTIONS = [
-    'What is ChessDojo?',
-    'How do I get a ChessDojo subscription?',
-    'How can the ChessDojo Training Plan help me?',
-];
-
 export function ChatPage() {
+    const t = useTranslations('help.chat');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isThinking, setIsThinking] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const [anonId] = useState(uuidv4());
     const { user } = useAuth();
+
+    const SIGNED_IN_QUESTIONS = [
+        t('signedInQuestion0'),
+        t('signedInQuestion1'),
+        t('signedInQuestion2'),
+    ];
+    const SIGNED_OUT_QUESTIONS = [
+        t('signedOutQuestion0'),
+        t('signedOutQuestion1'),
+        t('signedOutQuestion2'),
+    ];
 
     let resourceId = '';
     let threadId = '';
@@ -82,8 +84,7 @@ export function ChatPage() {
                 {
                     id: uuidv4(),
                     role: 'assistant',
-                    content:
-                        '[SYSTEM] ⚠️ Please avoid using offensive language. Let’s keep the chat respectful.',
+                    content: t('profanityWarning'),
                     createdAt: new Date().toISOString(),
                     toolInvocations: [],
                 },
@@ -112,8 +113,7 @@ export function ChatPage() {
                 {
                     id: uuidv4(),
                     role: 'assistant',
-                    content:
-                        '[SYSTEM] ⚠️ Failed to generate response. Please contact support if this problem persists.',
+                    content: t('errorMessage'),
                     createdAt: new Date().toISOString(),
                     toolInvocations: [],
                 },
@@ -141,7 +141,7 @@ export function ChatPage() {
                 }}
             >
                 <Typography variant='h4' textAlign='center' mb={2}>
-                    DojoAI
+                    {t('title')}
                 </Typography>
                 <Typography
                     variant='body2'
@@ -149,9 +149,7 @@ export function ChatPage() {
                     textAlign='center'
                     sx={{ mb: 4, maxWidth: 'sm', alignSelf: 'center' }}
                 >
-                    ⚠️ This chat is in beta. DojoAI may be inaccurate and may give responses that do
-                    not reflect the Dojo's values. If you notice issues, please contact support.
-                    Message history is temporary.
+                    ⚠️ {t('betaWarning')}
                 </Typography>
 
                 <Box
@@ -193,7 +191,7 @@ export function ChatPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
                             <CircularProgress size={16} thickness={5} />
                             <Typography variant='body2' color='text.secondary'>
-                                Thinking...
+                                {t('thinking')}
                             </Typography>
                         </Box>
                     )}

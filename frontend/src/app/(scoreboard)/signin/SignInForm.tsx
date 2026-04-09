@@ -8,6 +8,7 @@ import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Lock } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
@@ -16,6 +17,7 @@ export const SignInForm = () => {
     const auth = useAuth();
     const redirectUri = useSearchParams().get('redirectUri');
     const router = useRouter();
+    const t = useTranslations('auth');
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -25,10 +27,10 @@ export const SignInForm = () => {
     const onSignin = () => {
         const errors: Record<string, string> = {};
         if (email.trim().length === 0) {
-            errors.email = 'Email is required';
+            errors.email = t('signin.emailRequired');
         }
         if (password.length === 0) {
-            errors.password = 'Password is required';
+            errors.password = t('signin.passwordRequired');
         }
 
         setErrors(errors);
@@ -42,8 +44,8 @@ export const SignInForm = () => {
             .catch((err: { name?: string }) => {
                 logger.error?.(err);
                 if (err.name === 'NotAuthorizedException' || err.name === 'UserNotFoundException') {
-                    setErrors({ password: 'Incorrect email or password' });
-                    request.onFailure({ message: 'Incorrect email or password' });
+                    setErrors({ password: t('signin.incorrectCredentials') });
+                    request.onFailure({ message: t('signin.incorrectCredentials') });
                 } else {
                     request.onFailure(err);
                 }
@@ -74,14 +76,14 @@ export const SignInForm = () => {
             />
 
             <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
-                ChessDojo
+                {t('chessDojo')}
             </Typography>
 
             <Stack width={{ xs: 1, sm: 0.85 }} rowGap={3} alignItems='center'>
                 <TextField
                     fullWidth
                     id='email'
-                    label='Email'
+                    label={t('signin.email')}
                     variant='outlined'
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -100,7 +102,7 @@ export const SignInForm = () => {
                 <TextField
                     fullWidth
                     id='password'
-                    label='Password'
+                    label={t('signin.password')}
                     type='password'
                     variant='outlined'
                     value={password}
@@ -131,7 +133,7 @@ export const SignInForm = () => {
                     onClick={onSignin}
                     loading={request.isLoading()}
                 >
-                    Sign In
+                    {t('signin.signIn')}
                 </LoadingButton>
 
                 <Stack direction='row' justifyContent='space-between' sx={{ width: 1, mt: -2 }}>
@@ -142,7 +144,7 @@ export const SignInForm = () => {
                         component={Link}
                         href='/signup'
                     >
-                        Sign Up
+                        {t('signin.signUp')}
                     </Button>
                     <Button
                         data-testid='forgot-password-button'
@@ -151,7 +153,7 @@ export const SignInForm = () => {
                         component={Link}
                         href='/forgot-password'
                     >
-                        Reset Password
+                        {t('signin.resetPassword')}
                     </Button>
                 </Stack>
 

@@ -9,6 +9,7 @@ import { RatingSystem, dojoCohorts, formatRatingSystem } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import Chart, { Datum, Series } from '@/scoreboard/statistics/Chart';
 import { Container, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 import { AxisOptions } from 'react-charts';
 
@@ -83,14 +84,17 @@ function getSeries(
     ];
 }
 
-function getAdminParticipantsSeries(data: UserStatistics | undefined): Series[] {
+function getAdminParticipantsSeries(
+    data: UserStatistics | undefined,
+    t: (key: string) => string,
+): Series[] {
     if (!data) {
         return [];
     }
 
     return [
         {
-            label: 'Active',
+            label: t('active'),
             data: dojoCohorts.map((c) => {
                 const result = data.cohorts[c].activeParticipants || 0;
                 return {
@@ -100,7 +104,7 @@ function getAdminParticipantsSeries(data: UserStatistics | undefined): Series[] 
             }),
         },
         {
-            label: 'Inactive',
+            label: t('inactive'),
             data: dojoCohorts.map((c) => {
                 const result = data.cohorts[c].inactiveParticipants || 0;
                 return {
@@ -110,7 +114,7 @@ function getAdminParticipantsSeries(data: UserStatistics | undefined): Series[] 
             }),
         },
         {
-            label: 'Free Active',
+            label: t('freeActive'),
             data: dojoCohorts.map((c) => {
                 const result = data.cohorts[c].freeActiveParticipants || 0;
                 return {
@@ -120,7 +124,7 @@ function getAdminParticipantsSeries(data: UserStatistics | undefined): Series[] 
             }),
         },
         {
-            label: 'Free Inactive',
+            label: t('freeInactive'),
             data: dojoCohorts.map((c) => {
                 const result = data.cohorts[c].freeInactiveParticipants || 0;
                 return {
@@ -133,6 +137,7 @@ function getAdminParticipantsSeries(data: UserStatistics | undefined): Series[] 
 }
 
 export function StatisticsPage() {
+    const t = useTranslations('scoreboard.stats');
     const api = useApi();
     const request = useRequest<UserStatistics>();
     const { user } = useAuth();
@@ -152,94 +157,94 @@ export function StatisticsPage() {
 
     const totalRatingChangeData: Series[] = useMemo(() => {
         return getSeries(
-            'Rating Change',
+            t('ratingChange'),
             request.data,
             (d, c) => d.cohorts[c].activeRatingChanges + d.cohorts[c].inactiveRatingChanges,
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const avgRatingChangeData: Series[] = useMemo(() => {
         return getSeries(
-            'Average Rating Change',
+            t('avgRatingChange'),
             request.data,
             (d, c) =>
                 (d.cohorts[c].activeRatingChanges + d.cohorts[c].inactiveRatingChanges) /
                 (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants),
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const totalTimeData: Series[] = useMemo(() => {
         return getSeries(
-            'Total Time',
+            t('totalTime'),
             request.data,
             (d, c) => d.cohorts[c].activeMinutesSpent + d.cohorts[c].inactiveMinutesSpent,
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const avgTimeData: Series[] = useMemo(() => {
         return getSeries(
-            'Average Time',
+            t('avgTime'),
             request.data,
             (d, c) =>
                 (d.cohorts[c].activeMinutesSpent + d.cohorts[c].inactiveMinutesSpent) /
                 (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants),
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const avgRatingChangePerHourData: Series[] = useMemo(() => {
         return getSeries(
-            'Average Rating Change Per Hour',
+            t('avgRatingChangePerHour'),
             request.data,
             (d, c) =>
                 (d.cohorts[c].activeRatingChangePerHour +
                     d.cohorts[c].inactiveRatingChangePerHour) /
                 (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants),
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const numGraduationsData: Series[] = useMemo(() => {
-        return getSeries('Graduations', request.data, (d, c) => d.cohorts[c].numGraduations);
-    }, [request.data]);
+        return getSeries(t('graduations'), request.data, (d, c) => d.cohorts[c].numGraduations);
+    }, [request.data, t]);
 
     const graduationTimeData: Series[] = useMemo(() => {
         return getSeries(
-            'Average Time to Graduate',
+            t('avgTimeToGraduate'),
             request.data,
             (d, c) => d.cohorts[c].graduationMinutes / d.cohorts[c].numGraduations,
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const totalDojoScoreData: Series[] = useMemo(() => {
         return getSeries(
-            'Total Dojo Score',
+            t('totalDojoScore'),
             request.data,
             (d, c) => d.cohorts[c].activeDojoScores + d.cohorts[c].inactiveDojoScores,
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const avgDojoScoreData: Series[] = useMemo(() => {
         return getSeries(
-            'Average Dojo Score',
+            t('avgDojoScore'),
             request.data,
             (d, c) =>
                 (d.cohorts[c].activeDojoScores + d.cohorts[c].inactiveDojoScores) /
                 (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants),
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const avgRatingChangePerDojoScoreData: Series[] = useMemo(() => {
         return getSeries(
-            'Avg Rating Change / Dojo Point',
+            t('avgRatingChangePerDojoPoint'),
             request.data,
             (d, c) => d.cohorts[c].avgRatingChangePerDojoPoint,
         );
-    }, [request.data]);
+    }, [request.data, t]);
 
     const participantsData: Series[] = useMemo(() => {
         return user?.isAdmin
-            ? getAdminParticipantsSeries(request.data)
+            ? getAdminParticipantsSeries(request.data, t)
             : getSeries(
-                  'Participants',
+                  t('participants'),
                   request.data,
                   (d, c) =>
                       d.cohorts[c].activeParticipants +
@@ -247,7 +252,7 @@ export function StatisticsPage() {
                       d.cohorts[c].freeActiveParticipants +
                       d.cohorts[c].freeInactiveParticipants,
               );
-    }, [request.data, user?.isAdmin]);
+    }, [request.data, user?.isAdmin, t]);
 
     const ratingSystemsData: Series[] = useMemo(() => {
         const data = request.data;
@@ -286,7 +291,7 @@ export function StatisticsPage() {
         }
         return [
             {
-                label: 'Free -> Subscribed',
+                label: t('freeToSubscribed'),
                 data: dojoCohorts.map((c) => {
                     const result = request.data?.cohorts[c].freeTierConversions || 0;
                     return {
@@ -296,7 +301,7 @@ export function StatisticsPage() {
                 }),
             },
             {
-                label: 'Subscribed -> Free',
+                label: t('subscribedToFree'),
                 data: dojoCohorts.map((c) => {
                     const result = request.data?.cohorts[c].subscriptionCancelations || 0;
                     return {
@@ -306,7 +311,7 @@ export function StatisticsPage() {
                 }),
             },
         ];
-    }, [request.data, user?.isAdmin]);
+    }, [request.data, user?.isAdmin, t]);
 
     if (request.isLoading() && request.data === undefined) {
         return <LoadingPage />;
@@ -327,13 +332,13 @@ export function StatisticsPage() {
 
             <Stack spacing={3}>
                 <Chart
-                    title='Total Rating Change'
+                    title={t('totalRatingChange')}
                     series={totalRatingChangeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
                 />
                 <Chart
-                    title='Average Rating Change'
+                    title={t('avgRatingChange')}
                     series={avgRatingChangeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
@@ -341,14 +346,14 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Total Time Spent'
+                    title={t('totalTimeSpent')}
                     series={totalTimeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={timeSecondaryAxes}
                     sumFormatter={formatTime}
                 />
                 <Chart
-                    title='Average Time Spent'
+                    title={t('avgTimeSpent')}
                     series={avgTimeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={timeSecondaryAxes}
@@ -356,7 +361,7 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Average Rating Change Per Hour'
+                    title={t('avgRatingChangePerHour')}
                     series={avgRatingChangePerHourData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
@@ -364,14 +369,14 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Number of Graduations'
+                    title={t('numberOfGraduations')}
                     series={numGraduationsData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={participantsSecondaryAxes}
                 />
 
                 <Chart
-                    title='Average Time to Graduate'
+                    title={t('avgTimeToGraduate')}
                     series={graduationTimeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={timeSecondaryAxes}
@@ -379,14 +384,14 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Total Dojo Score'
+                    title={t('totalDojoScore')}
                     series={totalDojoScoreData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
                     sumFormatter={(sum) => `${Math.round(sum)}`}
                 />
                 <Chart
-                    title='Average Dojo Score'
+                    title={t('avgDojoScore')}
                     series={avgDojoScoreData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
@@ -394,7 +399,7 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Average Rating Change Per Dojo Point'
+                    title={t('avgRatingChangePerDojoPointTitle')}
                     series={avgRatingChangePerDojoScoreData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={decimalSecondaryAxes}
@@ -404,7 +409,7 @@ export function StatisticsPage() {
                 />
 
                 <Chart
-                    title='Participants'
+                    title={t('participants')}
                     series={participantsData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={participantsSecondaryAxes}
@@ -412,7 +417,7 @@ export function StatisticsPage() {
 
                 {user?.isAdmin && (
                     <Chart
-                        title='Subscription Changes'
+                        title={t('subscriptionChanges')}
                         series={subscriptionChangesData}
                         primaryAxis={primaryAxis}
                         secondaryAxes={participantsSecondaryAxes}
@@ -420,7 +425,7 @@ export function StatisticsPage() {
                 )}
 
                 <Chart
-                    title='Rating Systems'
+                    title={t('ratingSystems')}
                     series={ratingSystemsData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={ratingSystemsSecondaryAxes}

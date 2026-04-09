@@ -15,331 +15,40 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import { Fragment, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { Fragment, ReactNode, useEffect } from 'react';
 import HelpItem from './HelpItem';
-import { faq, scrollToId } from './UnauthenticatedHelp';
-import { liveClassesFaq } from './liveClasses';
+import { getFaq, scrollToId } from './UnauthenticatedHelp';
+import { getLiveClassesFaq } from './liveClasses';
 
 const config = getConfig();
 
-const helpSections = [
-    faq,
-    liveClassesFaq,
-    {
-        title: 'Account/Profile',
-        items: [
-            {
-                title: 'I am stuck on the free tier even though I have subscribed',
-                content: (
-                    <>
-                        Make sure that you subscribed with the same email address that you are using
-                        to access the scoreboard. If you used different email addresses, send a
-                        Discord message to @JackStenglein so that he can link your email addresses
-                        and get you off the free tier.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I cancel my subscription?',
-                content: (
-                    <>
-                        You can cancel at the bottom of the{' '}
-                        <Link href='/profile/edit'>profile editor</Link>.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I graduate?',
-                content: (
-                    <>
-                        At the top of the <Link href='/profile'>Profile page</Link>, click the{' '}
-                        <strong>Graduate</strong> button. This will move you to the graduates
-                        section on the scoreboard for your current cohort, as well as add you to the
-                        list of recent graduates on the <Link href='/newsfeed'>Newsfeed</Link>.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I communicate with other Dojo members?',
-                content: (
-                    <>
-                        Discord is the primary method of communication between Dojo members. You can
-                        join our server{' '}
-                        <Link href={config.discord.url} target='_blank' rel='noopener'>
-                            here
-                        </Link>
-                        . You can use Discord to schedule sparring sessions, tournament games, and
-                        just chat generally with others about chess.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I switch cohorts without graduating?',
-                content: (
-                    <>
-                        In the <Link href='/profile/edit'>profile editor</Link>, choose a new cohort
-                        from the dropdown and then click save. This will move you to the scoreboard
-                        for the new cohort, but will not add you to the graduates section for the
-                        previous cohort nor add you to the recent graduates on the{' '}
-                        <Link href='/newsfeed'>Newsfeed</Link>.
-                    </>
-                ),
-            },
-            {
-                title: 'Why does my profile activity say "no time data"?',
-                content: (
-                    <>
-                        When updating your training progress, add the amount of time you worked on
-                        each requirement in order to get a pie chart of how you are using your time.
-                    </>
-                ),
-            },
-        ],
-    },
-    {
-        title: 'Program Requirements/Ratings',
-        items: [
-            {
-                title: 'How do I update my progress in the training plan?',
-                content: (
-                    <>
-                        At the bottom of the <Link href='/profile'>Profile page</Link>, select the{' '}
-                        <strong>Training Plan</strong> tab. From here, you can see the training
-                        program requirements for each cohort. On the requirement you'd like to
-                        complete, click the checkbox or pencil icon in order to update your
-                        progress.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I see the details of a requirement in the training plan?',
-                content: (
-                    <>
-                        At the bottom of the <Link href='/profile'>Profile page</Link>, select the{' '}
-                        <strong>Training Plan</strong> tab. From here, you can see the training
-                        program requirements for each cohort. On the requirement you'd like to learn
-                        more about, click <strong>View More</strong>.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I update my ratings?',
-                content: (
-                    <>
-                        Current ratings are updated automatically every 24 hours. If your ratings
-                        are not updating, make sure that you have correctly set your usernames/IDs
-                        in the <Link href='/profile/edit'>profile editor</Link>. If your usernames
-                        are correct and your ratings are still not updating, please send a Discord
-                        message to @JackStenglein.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I switch to a different rating system?',
-                content: (
-                    <>
-                        In the <Link href='/profile/edit'>profile editor</Link>, choose a new rating
-                        system from the dropdown and then click save. This will update your rating
-                        system on the scoreboard for your current cohort, but not for any that you
-                        have previously graduated from.
-                    </>
-                ),
-            },
-            {
-                title: "Why can't I find myself on the scoreboard?",
-                content: (
-                    <>
-                        The scoreboard only displays users who have updated their progress in the
-                        last month. If you cannot find yourself, update your progress on one of the
-                        program requirements.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I find my DWZ ID?',
-                content: (
-                    <>
-                        The DWZ ID is not the same as your ZPS-Nr. The DWZ ID can be found by going
-                        to your player page and copying the ID from the URL. For example, Vincent
-                        Keymer's page is located at https://www.schachbund.de/spieler/10283283.html,
-                        so his DWZ ID is 10283283.
-                    </>
-                ),
-            },
-        ],
-    },
-    {
-        title: 'Scheduling',
-        items: [
-            {
-                title: "How do I book someone else's meeting?",
-                content: (
-                    <>
-                        On the <Link href='/calendar'>Calendar page</Link>, click the meeting you
-                        would like to book. A popup will appear containing a <strong>Book</strong>{' '}
-                        button at the bottom.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I create a meeting for others to book?',
-                content: (
-                    <>
-                        On the <Link href='/calendar'>Calendar page</Link>, click a time slot on the
-                        calendar. This will open a popup where you can specify the start/end times
-                        for your availability, the types of meetings you are looking for, how many
-                        people can join and which cohorts can join. When you have filled in this
-                        info, click the <strong>Save</strong> button at the top of the screen.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I edit a meeting I previously created?',
-                content: (
-                    <>
-                        On the <Link href='/calendar'>Calendar page</Link>, click on the meeting you
-                        would like to edit. A popup will appear containing a pencil icon. Click the
-                        pencil icon in order to edit your meeting.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I delete/cancel a meeting?',
-                content: (
-                    <>
-                        Currently, canceling a booked meeting is only possible for a 1-on-1 meeting.
-                        In order to cancel a 1-on-1 meeting, click the
-                        <strong>Cancel</strong> button at the top of the meeting details page. In
-                        order to delete an availability that has not yet been booked, go to the{' '}
-                        <Link href='/calendar'>Calendar page</Link>
-                        and click the availability you would like to delete. A popup will appear
-                        containing a trash icon. Click the trash icon in order to delete your
-                        availability.
-                    </>
-                ),
-            },
-        ],
-    },
-    {
-        title: 'Game Database',
-        items: [
-            {
-                title: 'How do I submit a game to the database?',
-                content: (
-                    <>
-                        On the <Link href='/games'>Games page</Link>, click the Submit a Game
-                        button, or go directly to the{' '}
-                        <Link href='/games/submit'>Game Submission page</Link>. You can submit a
-                        game either through a Lichess Study link or through manual entry. When
-                        submitting through a Lichess link, make sure that your Lichess Study is
-                        public or unlisted.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I update my game?',
-                content: (
-                    <>
-                        Go to the game you want to update. Change the moves and add comments,
-                        symbols, and clock times as necessary. When you are done, click the{' '}
-                        <strong>Save Icon</strong> below the board to save your changes. Any
-                        comments on your game will remain.
-                    </>
-                ),
-            },
-            {
-                title: 'How do I delete my game?',
-                content: (
-                    <>
-                        Go to the game you want to delete. Click the <strong>Trash Icon</strong>{' '}
-                        below the board to permanently delete your game and any associated comments.
-                        For games submitted through the old database (on chessdojo.shop), fill out
-                        the following form:{' '}
-                        <Link
-                            href='https://forms.gle/v3JMwxyLQw3LMA1Y9'
-                            target='_blank'
-                            rel='noreferrer'
-                        >
-                            https://forms.gle/v3JMwxyLQw3LMA1Y9
-                        </Link>{' '}
-                        instead.
-                    </>
-                ),
-            },
-            {
-                title: "Why can't I find a game I am searching for?",
-                content: (
-                    <>
-                        Many games were submitted through the old site and therefore are not
-                        associated with this site's accounts. These games will not appear on the
-                        user's profile page. Additionally, these games can only be searched by the
-                        player name used in the PGN. For example, if you are searching for the
-                        Chess.com username "AngryNaartjie" but the PGN file has the player name as
-                        "Our Hero, Naartjie", then you will not find the game.
-                    </>
-                ),
-            },
-            {
-                title: 'How are games marked as featured?',
-                content: (
-                    <>
-                        The sensei choose the games that are marked as featured. Featured games are
-                        visible at the bottom of the <Link href='/games'>Games page</Link> for a
-                        month after being featured.
-                    </>
-                ),
-            },
-            {
-                title: 'How often are new master games added?',
-                content: <>New master games are added weekly, on Fridays around midnight UTC.</>,
-            },
-        ],
-    },
-    {
-        title: 'Notifications',
-        items: [
-            {
-                title: 'How long are notifications kept before they are deleted?',
-                content: <>Notifications are kept until you delete them.</>,
-            },
-            {
-                title: 'Is there a limit on the number of notifications I can receive?',
-                content: <>No, there is no limit.</>,
-            },
-            {
-                title: 'Can I view all my notifications at once?',
-                content: (
-                    <>
-                        Yes, you can view them on the{' '}
-                        <Link href='/notifications'>notifications page</Link>.
-                    </>
-                ),
-            },
-            {
-                title: 'Are notifications aggregated together?',
-                content: (
-                    <>
-                        Notifications of the same type will be aggregated. For example, if you
-                        subscribe to a position, then notifications for that position will be
-                        aggregated together.
-                    </>
-                ),
-            },
-            {
-                title: 'How often are notifications sent out?',
-                content: (
-                    <>
-                        Notifications are sent as soon as the action that generates them is
-                        performed. For position subscriptions on master games, master games are
-                        added weekly on Fridays around midnight UTC.
-                    </>
-                ),
-            },
-        ],
-    },
-];
+const richTags = {
+    strong: (chunks: ReactNode) => <strong>{chunks}</strong>,
+    profileLink: (chunks: ReactNode) => <Link href='/profile'>{chunks}</Link>,
+    profileEditLink: (chunks: ReactNode) => <Link href='/profile/edit'>{chunks}</Link>,
+    calendarLink: (chunks: ReactNode) => <Link href='/calendar'>{chunks}</Link>,
+    gamesLink: (chunks: ReactNode) => <Link href='/games'>{chunks}</Link>,
+    newsfeedLink: (chunks: ReactNode) => <Link href='/newsfeed'>{chunks}</Link>,
+    notificationsLink: (chunks: ReactNode) => <Link href='/notifications'>{chunks}</Link>,
+    gameSubmitLink: (chunks: ReactNode) => <Link href='/games/submit'>{chunks}</Link>,
+    discordLink: (chunks: ReactNode) => (
+        <Link href={config.discord.url} target='_blank' rel='noopener'>
+            {chunks}
+        </Link>
+    ),
+    formLink: (chunks: ReactNode) => (
+        <Link href='https://forms.gle/v3JMwxyLQw3LMA1Y9' target='_blank' rel='noreferrer'>
+            {chunks}
+        </Link>
+    ),
+    ol: (chunks: ReactNode) => <ol>{chunks}</ol>,
+    ul: (chunks: ReactNode) => <ul>{chunks}</ul>,
+    li: (chunks: ReactNode) => <li>{chunks}</li>,
+};
 
 const AuthenticatedHelp = () => {
+    const t = useTranslations('help');
     const { searchParams } = useNextSearchParams();
 
     const id = searchParams.get('id');
@@ -348,6 +57,157 @@ const AuthenticatedHelp = () => {
             scrollToId(undefined, id);
         }
     }, [id]);
+
+    const faq = getFaq(t);
+    const liveClassesFaq = getLiveClassesFaq(t);
+
+    const accountSection = {
+        title: t('account.title'),
+        items: [
+            {
+                title: t('account.stuckFreeTitle'),
+                content: t('account.stuckFreeContent'),
+            },
+            {
+                title: t('account.cancelTitle'),
+                content: t.rich('account.cancelContent', richTags),
+            },
+            {
+                title: t('account.graduateTitle'),
+                content: t.rich('account.graduateContent', richTags),
+            },
+            {
+                title: t('account.communicateTitle'),
+                content: t.rich('account.communicateContent', richTags),
+            },
+            {
+                title: t('account.switchCohortTitle'),
+                content: t.rich('account.switchCohortContent', richTags),
+            },
+            {
+                title: t('account.noTimeDataTitle'),
+                content: t('account.noTimeDataContent'),
+            },
+        ],
+    };
+
+    const requirementsSection = {
+        title: t('requirements.title'),
+        items: [
+            {
+                title: t('requirements.updateProgressTitle'),
+                content: t.rich('requirements.updateProgressContent', richTags),
+            },
+            {
+                title: t('requirements.requirementDetailsTitle'),
+                content: t.rich('requirements.requirementDetailsContent', richTags),
+            },
+            {
+                title: t('requirements.updateRatingsTitle'),
+                content: t.rich('requirements.updateRatingsContent', richTags),
+            },
+            {
+                title: t('requirements.switchRatingTitle'),
+                content: t.rich('requirements.switchRatingContent', richTags),
+            },
+            {
+                title: t('requirements.cantFindSelfTitle'),
+                content: t('requirements.cantFindSelfContent'),
+            },
+            {
+                title: t('requirements.findDwzTitle'),
+                content: t('requirements.findDwzContent'),
+            },
+        ],
+    };
+
+    const schedulingSection = {
+        title: t('scheduling.title'),
+        items: [
+            {
+                title: t('scheduling.bookMeetingTitle'),
+                content: t.rich('scheduling.bookMeetingContent', richTags),
+            },
+            {
+                title: t('scheduling.createMeetingTitle'),
+                content: t.rich('scheduling.createMeetingContent', richTags),
+            },
+            {
+                title: t('scheduling.editMeetingTitle'),
+                content: t.rich('scheduling.editMeetingContent', richTags),
+            },
+            {
+                title: t('scheduling.deleteMeetingTitle'),
+                content: t.rich('scheduling.deleteMeetingContent', richTags),
+            },
+        ],
+    };
+
+    const gameDatabaseSection = {
+        title: t('gameDatabase.title'),
+        items: [
+            {
+                title: t('gameDatabase.submitGameTitle'),
+                content: t.rich('gameDatabase.submitGameContent', richTags),
+            },
+            {
+                title: t('gameDatabase.updateGameTitle'),
+                content: t.rich('gameDatabase.updateGameContent', richTags),
+            },
+            {
+                title: t('gameDatabase.deleteGameTitle'),
+                content: t.rich('gameDatabase.deleteGameContent', richTags),
+            },
+            {
+                title: t('gameDatabase.cantFindGameTitle'),
+                content: t('gameDatabase.cantFindGameContent'),
+            },
+            {
+                title: t('gameDatabase.featuredGamesTitle'),
+                content: t.rich('gameDatabase.featuredGamesContent', richTags),
+            },
+            {
+                title: t('gameDatabase.masterGamesTitle'),
+                content: t('gameDatabase.masterGamesContent'),
+            },
+        ],
+    };
+
+    const notificationsSection = {
+        title: t('helpNotifications.title'),
+        items: [
+            {
+                title: t('helpNotifications.keptTitle'),
+                content: t('helpNotifications.keptContent'),
+            },
+            {
+                title: t('helpNotifications.limitTitle'),
+                content: t('helpNotifications.limitContent'),
+            },
+            {
+                title: t('helpNotifications.viewAllTitle'),
+                content: t.rich('helpNotifications.viewAllContent', richTags),
+            },
+            {
+                title: t('helpNotifications.aggregatedTitle'),
+                content: t('helpNotifications.aggregatedContent'),
+            },
+            {
+                title: t('helpNotifications.frequencyTitle'),
+                content: t('helpNotifications.frequencyContent'),
+            },
+        ],
+    };
+
+    const helpSections = [
+        faq,
+        liveClassesFaq,
+        accountSection,
+        requirementsSection,
+        schedulingSection,
+        gameDatabaseSection,
+        notificationsSection,
+    ];
 
     return (
         <Container maxWidth='xl' sx={{ py: 4 }}>
@@ -367,7 +227,7 @@ const AuthenticatedHelp = () => {
                             height: 'calc(100vh - var(--navbar-height) - 32px - 32px)',
                         }}
                     >
-                        <CardHeader title='Table of Contents' />
+                        <CardHeader title={t('tableOfContents')} />
                         <CardContent>
                             <Stack>
                                 {helpSections.map((section) => (
@@ -397,7 +257,7 @@ const AuthenticatedHelp = () => {
                                     href='#support-ticket'
                                     onClick={(e) => scrollToId(e, 'support-ticket')}
                                 >
-                                    Open a Support Ticket
+                                    {t('openSupportTicket')}
                                 </Link>
                             </Stack>
                         </CardContent>
@@ -412,15 +272,16 @@ const AuthenticatedHelp = () => {
                 >
                     <Stack spacing={5}>
                         <Stack>
-                            <Typography variant='h4'>Help/FAQs</Typography>
+                            <Typography variant='h4'>{t('pageTitle')}</Typography>
                             <Divider />
                             <Typography variant='body1' mt={3}>
-                                If you are having trouble using the site, ask{' '}
-                                <strong>
-                                    <Link href='/help/chat'>DojoAI</Link>
-                                </strong>{' '}
-                                for assistance or check the FAQs. If you're still stuck, please
-                                contact customer support below.
+                                {t.rich('pageDescription', {
+                                    helpChatLink: (chunks) => (
+                                        <strong>
+                                            <Link href='/help/chat'>{chunks}</Link>
+                                        </strong>
+                                    ),
+                                })}
                             </Typography>
                             <Button
                                 variant='contained'
@@ -430,12 +291,12 @@ const AuthenticatedHelp = () => {
                                 href='/help/chat'
                                 sx={{ mt: 2, alignSelf: 'start' }}
                             >
-                                Ask Dojo AI
+                                {t('askDojoAI')}
                             </Button>
                         </Stack>
 
                         <Stack>
-                            <Typography variant='h5'>Tutorials</Typography>
+                            <Typography variant='h5'>{t('tutorials')}</Typography>
                             <Divider />
                             <ul>
                                 <li>
@@ -444,7 +305,7 @@ const AuthenticatedHelp = () => {
                                         href='/scoreboard?tutorial=true'
                                         sx={{ textTransform: 'none' }}
                                     >
-                                        Launch Scoreboard Page Tutorial
+                                        {t('launchScoreboard')}
                                     </Button>
                                 </li>
                                 <li>
@@ -453,7 +314,7 @@ const AuthenticatedHelp = () => {
                                         href='/calendar?tutorial=true'
                                         sx={{ textTransform: 'none' }}
                                     >
-                                        Launch Calendar Page Tutorial
+                                        {t('launchCalendar')}
                                     </Button>
                                 </li>
                                 <li>
@@ -462,7 +323,7 @@ const AuthenticatedHelp = () => {
                                         href='/games?tutorial=true'
                                         sx={{ textTransform: 'none' }}
                                     >
-                                        Launch Games Page Tutorial
+                                        {t('launchGames')}
                                     </Button>
                                 </li>
                             </ul>

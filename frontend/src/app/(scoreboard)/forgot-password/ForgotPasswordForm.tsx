@@ -9,10 +9,8 @@ import { AccountCircle } from '@mui/icons-material';
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-const googleSigninMessage =
-    'Your email is not verified. Note that if you previously signed in with Google, you must continue to use that option. You will not be able to reset your password in that case.';
 
 enum ForgotPasswordStep {
     Start = 'START',
@@ -22,6 +20,7 @@ enum ForgotPasswordStep {
 
 export const ForgotPasswordForm = () => {
     const auth = useAuth();
+    const t = useTranslations('auth');
 
     const [step, setStep] = useState(ForgotPasswordStep.Start);
     const [email, setEmail] = useState('');
@@ -30,7 +29,7 @@ export const ForgotPasswordForm = () => {
 
     const onSubmit = () => {
         if (email.length === 0) {
-            setEmailError('Email is required');
+            setEmailError(t('forgotPassword.emailRequired'));
             return;
         }
         setEmailError(undefined);
@@ -43,14 +42,14 @@ export const ForgotPasswordForm = () => {
             })
             .catch((err: { name?: string; message?: string }) => {
                 if (err.name === 'UserNotFoundException') {
-                    setEmailError('Account with this email does not exist');
+                    setEmailError(t('forgotPassword.accountNotFound'));
                     request.onFailure({
-                        message: 'Account with this email does not exist',
+                        message: t('forgotPassword.accountNotFound'),
                     });
                 } else if (err.name === 'NotAuthorizedException') {
-                    setEmailError('Email is not verified');
+                    setEmailError(t('forgotPassword.emailNotVerified'));
                     request.onFailure({
-                        message: googleSigninMessage,
+                        message: t('forgotPassword.googleSigninMessage'),
                     });
                 } else {
                     setEmailError(err.message);
@@ -73,7 +72,7 @@ export const ForgotPasswordForm = () => {
             />
 
             <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
-                ChessDojo
+                {t('chessDojo')}
             </Typography>
 
             <Stack
@@ -121,6 +120,8 @@ const StartStep: React.FC<StartStepProps> = ({
     onSubmit,
     loading,
 }) => {
+    const t = useTranslations('auth');
+
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter') {
             onSubmit();
@@ -136,13 +137,13 @@ const StartStep: React.FC<StartStepProps> = ({
                 textAlign='center'
                 data-testid='description'
             >
-                Enter your email, and we'll send you a code to reset your password.
+                {t('forgotPassword.startDescription')}
             </Typography>
 
             <TextField
                 fullWidth
                 id='email'
-                label='Email'
+                label={t('forgotPassword.email')}
                 variant='outlined'
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -175,7 +176,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 }}
                 loading={loading}
             >
-                Send Email
+                {t('forgotPassword.sendEmail')}
             </LoadingButton>
 
             <Button
@@ -185,7 +186,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 component={Link}
                 href='/signin'
             >
-                Cancel
+                {t('forgotPassword.cancel')}
             </Button>
         </>
     );
@@ -198,6 +199,7 @@ interface ConfirmStepProps {
 
 const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
     const auth = useAuth();
+    const t = useTranslations('auth');
 
     const [code, setCode] = useState('');
     const [codeError, setCodeError] = useState<string>();
@@ -211,17 +213,17 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
         let failed = false;
 
         if (code.length === 0) {
-            setCodeError('Recovery code is required');
+            setCodeError(t('forgotPassword.recoveryCodeRequired'));
             failed = true;
         } else {
             setCodeError(undefined);
         }
 
         if (password.length < 8) {
-            setPasswordError('Password must be at least 8 characters');
+            setPasswordError(t('forgotPassword.passwordMinLength'));
             failed = true;
         } else if (password !== passwordConfirm) {
-            setPasswordError('Passwords do not match');
+            setPasswordError(t('forgotPassword.passwordsMustMatch'));
             failed = true;
         } else {
             setPasswordError(undefined);
@@ -239,7 +241,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 request.onFailure(err);
                 logger.error?.(err);
                 if (err.code === 'CodeMismatchException') {
-                    setCodeError('Incorrect recovery code');
+                    setCodeError(t('forgotPassword.incorrectCode'));
                 } else {
                     setCodeError(err.message);
                 }
@@ -263,13 +265,13 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 textAlign='center'
                 data-testid='description'
             >
-                Email sent! Enter the code to reset your password.
+                {t('forgotPassword.confirmDescription')}
             </Typography>
 
             <TextField
                 fullWidth
                 id='code'
-                label='Recovery Code'
+                label={t('forgotPassword.recoveryCode')}
                 variant='outlined'
                 value={code}
                 onChange={(event) => setCode(event.target.value)}
@@ -280,7 +282,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
             <TextField
                 fullWidth
                 id='password'
-                label='New Password'
+                label={t('forgotPassword.newPassword')}
                 type='password'
                 variant='outlined'
                 value={password}
@@ -292,7 +294,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
             <TextField
                 fullWidth
                 id='password-confirm'
-                label='Confirm New Password'
+                label={t('forgotPassword.confirmNewPassword')}
                 type='password'
                 variant='outlined'
                 value={passwordConfirm}
@@ -316,17 +318,19 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 loading={request.isLoading()}
                 data-testid='submit-button'
             >
-                Reset Password
+                {t('forgotPassword.resetPassword')}
             </LoadingButton>
 
             <Button variant='text' sx={{ textTransform: 'none' }} component={Link} href='/signin'>
-                Cancel
+                {t('forgotPassword.cancel')}
             </Button>
         </>
     );
 };
 
 const SuccessStep = () => {
+    const t = useTranslations('auth');
+
     return (
         <>
             <Typography
@@ -336,7 +340,7 @@ const SuccessStep = () => {
                 textAlign='center'
                 data-testid='description'
             >
-                You can now sign in using your new password.
+                {t('forgotPassword.successDescription')}
             </Typography>
 
             <Button
@@ -353,7 +357,7 @@ const SuccessStep = () => {
                 }}
                 data-testid='signin-button'
             >
-                Sign In
+                {t('forgotPassword.signIn')}
             </Button>
         </>
     );

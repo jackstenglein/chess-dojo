@@ -7,6 +7,7 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { Box, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
 
 interface NewsfeedItemHeaderProps {
@@ -14,6 +15,7 @@ interface NewsfeedItemHeaderProps {
 }
 
 const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
 
     const timezone = user?.timezoneOverride;
@@ -54,12 +56,14 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                             cohort={entry.graduationInfo?.newCohort || entry.cohort}
                             size={25}
                             sx={{ marginLeft: '0.6rem', verticalAlign: 'middle' }}
-                            tooltip={`Member of the ${entry.graduationInfo?.newCohort || entry.cohort} cohort`}
+                            tooltip={t('memberOfCohort', {
+                                cohort: entry.graduationInfo?.newCohort || entry.cohort,
+                            })}
                         />
                     </Typography>
 
                     <Typography variant='body2' color='text.secondary'>
-                        {date} {displayYear} at {time}
+                        {t('dateTime', { date, year: displayYear, time })}
                     </Typography>
                 </Stack>
             </Stack>
@@ -74,7 +78,7 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                         <Typography sx={{ color: CategoryColors[category] }}>{category}</Typography>
                         {entry.isCustomRequirement && (
                             <Typography variant='body2' color='text.secondary'>
-                                Custom Task
+                                {t('customTask')}
                             </Typography>
                         )}
                         <Typography variant='body2' color='text.secondary'>

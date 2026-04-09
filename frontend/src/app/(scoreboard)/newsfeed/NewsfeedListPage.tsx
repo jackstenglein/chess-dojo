@@ -8,9 +8,11 @@ import LoadingPage from '@/loading/LoadingPage';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon from '@/style/Icon';
 import { Container, Divider, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 export function NewsfeedListPage() {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
     const { clubs, request: clubRequest } = useClubs(user?.clubs || []);
 
@@ -21,12 +23,12 @@ export function NewsfeedListPage() {
         const newsfeedIdOptions = [
             {
                 value: 'following',
-                label: 'Followers',
+                label: t('followers'),
                 icon: <Icon name='followers' color='primary' />,
             },
             {
                 value: user?.dojoCohort || '',
-                label: 'My Cohort',
+                label: t('myCohort'),
                 icon: <CohortIcon cohort={user?.dojoCohort} size={25} tooltip='' />,
             },
         ].concat(
@@ -38,7 +40,7 @@ export function NewsfeedListPage() {
         );
 
         return [newsfeedIds, newsfeedIdOptions];
-    }, [clubs, user?.dojoCohort]);
+    }, [clubs, user?.dojoCohort, t]);
 
     return (
         <Container maxWidth='xl' sx={{ pt: 6, pb: 4 }}>
@@ -50,7 +52,7 @@ export function NewsfeedListPage() {
                     }}
                 >
                     <Stack spacing={3}>
-                        <Typography variant='h6'>Newsfeed</Typography>
+                        <Typography variant='h6'>{t('title')}</Typography>
 
                         {user?.clubs?.length &&
                         (clubRequest.isLoading() || !clubRequest.isSent()) ? (
@@ -80,9 +82,9 @@ export function NewsfeedListPage() {
                                 justifyContent='space-between'
                                 alignItems='center'
                             >
-                                <Typography variant='h6'>Graduations</Typography>
+                                <Typography variant='h6'>{t('graduations')}</Typography>
 
-                                <Link href='/recent'>View All</Link>
+                                <Link href='/recent'>{t('viewAll')}</Link>
                             </Stack>
 
                             <NewsfeedList initialNewsfeedIds={['GRADUATIONS']} />
