@@ -2,7 +2,7 @@
 
 import { Chess } from '@jackstenglein/chess';
 import { assert, test } from 'vitest';
-import { calculateTimeManagementRatings } from './timeManagement';
+import { rateGameTimeManagement } from './timeManagement';
 
 const classicalPgnWithClocks = `[Event "Leipzig Olympiad Fin"]
 [Site "Leipzig GDR"]
@@ -29,21 +29,19 @@ const noTimeControlPgn = `[Event "Test"]
 
 1.e4 {[%clk 1:29:40]} e5 {[%clk 1:29:30]} 2.Nf3 {[%clk 1:29:10]} Nc6 {[%clk 1:28:50]} 1-0`;
 
-test('returns ratings for classical game with clocks', () => {
+test('returns exact ratings for Penrose vs Tal (Leipzig 1960)', () => {
     const chess = new Chess({ pgn: classicalPgnWithClocks });
-    const ratings = calculateTimeManagementRatings(chess);
+    const ratings = rateGameTimeManagement(chess);
 
-    assert.isDefined(ratings.white, 'white rating should be defined');
-    assert.isDefined(ratings.black, 'black rating should be defined');
-    assert.isAbove(ratings.white!, 0, 'white rating should be positive');
-    assert.isAbove(ratings.black!, 0, 'black rating should be positive');
-    assert.isBelow(ratings.white!, 3001, 'white rating should be at most 3000');
-    assert.isBelow(ratings.black!, 3001, 'black rating should be at most 3000');
+    // Penrose (White) managed time well, declining steadily from 1:30 to 0:05
+    // Tal (Black) used time more aggressively, reaching near-zero
+    assert.equal(ratings.white, 2507);
+    assert.equal(ratings.black, 2673);
 });
 
 test('returns undefined for blitz game (time control < 30 min)', () => {
     const chess = new Chess({ pgn: blitzPgn });
-    const ratings = calculateTimeManagementRatings(chess);
+    const ratings = rateGameTimeManagement(chess);
 
     assert.isUndefined(ratings.white, 'blitz game should not produce white rating');
     assert.isUndefined(ratings.black, 'blitz game should not produce black rating');
@@ -55,7 +53,7 @@ test('returns undefined for short classical game without enough moves', () => {
 
 1.e4 {[%clk 1:29:40]} e5 {[%clk 1:29:30]} 2.Nf3 {[%clk 1:29:10]} Nc6 {[%clk 1:28:50]} 3.Bb5 {[%clk 1:28:35]} a6 {[%clk 1:28:00]} 1-0`;
     const chess = new Chess({ pgn: shortPgn });
-    const ratings = calculateTimeManagementRatings(chess);
+    const ratings = rateGameTimeManagement(chess);
 
     assert.isUndefined(ratings.white, 'short game should not produce white rating');
     assert.isUndefined(ratings.black, 'short game should not produce black rating');
@@ -63,7 +61,7 @@ test('returns undefined for short classical game without enough moves', () => {
 
 test('returns undefined for classical game without clock annotations', () => {
     const chess = new Chess({ pgn: noClocksClassicalPgn });
-    const ratings = calculateTimeManagementRatings(chess);
+    const ratings = rateGameTimeManagement(chess);
 
     assert.isUndefined(ratings.white, 'no-clock game should not produce white rating');
     assert.isUndefined(ratings.black, 'no-clock game should not produce black rating');
@@ -71,26 +69,18 @@ test('returns undefined for classical game without clock annotations', () => {
 
 test('returns empty for game without TimeControl header', () => {
     const chess = new Chess({ pgn: noTimeControlPgn });
-    const ratings = calculateTimeManagementRatings(chess);
+    const ratings = rateGameTimeManagement(chess);
 
     assert.isUndefined(ratings.white);
     assert.isUndefined(ratings.black);
 });
 
-test('getGame populates TM rating fields for classical game with clocks', async () => {
+test('getGame populates exact TM rating fields for classical game with clocks', async () => {
     const { getGame } = await import('./create');
     const game = getGame(undefined, classicalPgnWithClocks);
 
-    assert.isDefined(
-        game.timeManagementRatingWhite,
-        'game should have white TM rating',
-    );
-    assert.isDefined(
-        game.timeManagementRatingBlack,
-        'game should have black TM rating',
-    );
-    assert.isAbove(game.timeManagementRatingWhite!, 0);
-    assert.isAbove(game.timeManagementRatingBlack!, 0);
+    assert.equal(game.timeManagementRatingWhite, 2507);
+    assert.equal(game.timeManagementRatingBlack, 2673);
 });
 
 test('getGame does not populate TM rating fields for blitz game', async () => {

@@ -29,10 +29,10 @@ import {
     getGame,
     getPgnTexts,
     getUserInfo,
-    rebuildUserTimeManagementRating,
     success,
     timelineTable,
 } from './create';
+import { rebuildUserTimeManagementRating } from './timeManagement';
 import { Game, GameUpdate, isMissingData } from './types';
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -112,8 +112,8 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
         update.date = game.date;
         update.pgn = game.pgn;
         update.headers = game.headers;
-        update.timeManagementRatingWhite = game.timeManagementRatingWhite;
-        update.timeManagementRatingBlack = game.timeManagementRatingBlack;
+        update.timeManagementRatingWhite = game.timeManagementRatingWhite ?? -1;
+        update.timeManagementRatingBlack = game.timeManagementRatingBlack ?? -1;
 
         const result = game.headers['Result'];
         const missingDataErr = isMissingData({ ...update, result });
