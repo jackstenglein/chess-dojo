@@ -21,11 +21,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
-import {
-    TimeManagementAggregate,
-    updateTimeManagementAggregate,
-} from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
-import { calculateTimeManagementRatings } from './timeManagement';
+import { rateGameTimeManagement, rebuildUserTimeManagementRating } from './timeManagement';
 
 const dynamo = new DynamoDBClient({ region: 'us-east-1' });
 const stage = process.env.stage;
@@ -34,7 +30,6 @@ if (!stage) {
     process.exit(1);
 }
 const gamesTable = `${stage}-games`;
-const usersTable = `${stage}-users`;
 
 interface GameRecord {
     cohort: string;
@@ -49,15 +44,14 @@ interface GameRecord {
 async function main() {
     console.log(`Backfilling time management ratings on stage: ${stage}`);
     console.log(`Games table: ${gamesTable}`);
-    console.log(`Users table: ${usersTable}`);
+    console.log(`Users table: ${stage}-users`);
 
+    // Phase 1: Scan all games and write per-game TM ratings
     let gamesProcessed = 0;
     let gamesUpdated = 0;
     let gamesSkipped = 0;
     let gamesFailed = 0;
-
-    // Accumulate per-owner aggregates in memory
-    const userAggregates = new Map<string, TimeManagementAggregate>();
+    const owners = new Set<string>();
 
     let startKey: Record<string, AttributeValue> | undefined = undefined;
 
@@ -81,11 +75,13 @@ async function main() {
                 gamesProcessed++;
                 const game = unmarshall(item) as GameRecord;
 
+                if (game.owner) {
+                    owners.add(game.owner);
+                }
+
                 // Skip games that already have TM ratings (idempotent)
                 if (game.timeManagementRatingWhite !== undefined) {
                     gamesSkipped++;
-                    // Still accumulate into user aggregate from existing ratings
-                    accumulateUserAggregate(userAggregates, game);
                     continue;
                 }
 
@@ -95,20 +91,14 @@ async function main() {
 
                 try {
                     const chess = new Chess({ pgn: game.pgn });
-                    const tmRatings = calculateTimeManagementRatings(chess);
+                    const tmRatings = rateGameTimeManagement(chess);
 
                     if (tmRatings.white === undefined && tmRatings.black === undefined) {
                         continue;
                     }
 
-                    // Write per-game ratings
                     await updateGameRatings(game, tmRatings.white, tmRatings.black);
                     gamesUpdated++;
-
-                    // Accumulate into user aggregate
-                    game.timeManagementRatingWhite = tmRatings.white;
-                    game.timeManagementRatingBlack = tmRatings.black;
-                    accumulateUserAggregate(userAggregates, game);
                 } catch (err) {
                     gamesFailed++;
                     if (gamesFailed <= 10) {
@@ -121,10 +111,6 @@ async function main() {
         } while (startKey);
     } catch (err) {
         console.error('Fatal error during scan:', err);
-        console.log(
-            `  Progress: processed=${gamesProcessed} updated=${gamesUpdated} skipped=${gamesSkipped}`,
-        );
-        console.log(`  Last start key: ${JSON.stringify(startKey)}`);
         process.exit(1);
     }
 
@@ -133,49 +119,28 @@ async function main() {
     console.log(`  Updated: ${gamesUpdated}`);
     console.log(`  Skipped (already had ratings): ${gamesSkipped}`);
     console.log(`  Failed: ${gamesFailed}`);
-    console.log(`  Users with TM ratings: ${userAggregates.size}`);
 
-    // Write user aggregates
+    // Phase 2: Rebuild user TM ratings from mygames directories
+    console.log(`\nRebuilding TM ratings for ${owners.size} users (scoped to mygames)...`);
     let usersUpdated = 0;
     let usersFailed = 0;
 
-    for (const [owner, aggregate] of userAggregates) {
+    for (const owner of owners) {
         try {
-            await updateUserAggregate(owner, aggregate);
+            await rebuildUserTimeManagementRating(owner);
             usersUpdated++;
         } catch (err) {
             usersFailed++;
             if (usersFailed <= 10) {
-                console.error(`  Failed to update user ${owner}:`, err);
+                console.error(`  Failed to rebuild TM rating for ${owner}:`, err);
             }
         }
     }
 
-    console.log('\n--- User aggregates complete ---');
+    console.log('\n--- User ratings complete ---');
     console.log(`  Updated: ${usersUpdated}`);
     console.log(`  Failed: ${usersFailed}`);
     console.log('\nDone.');
-}
-
-/**
- * Accumulates a game's TM rating into the per-owner aggregate map.
- */
-function accumulateUserAggregate(
-    aggregates: Map<string, TimeManagementAggregate>,
-    game: GameRecord,
-): void {
-    if (!game.owner) return;
-
-    const ownerRating =
-        game.orientation === 'black'
-            ? game.timeManagementRatingBlack
-            : game.timeManagementRatingWhite;
-
-    if (ownerRating === undefined) return;
-
-    const current = aggregates.get(game.owner);
-    const updated = updateTimeManagementAggregate(current, ownerRating);
-    aggregates.set(game.owner, updated);
 }
 
 /**
@@ -210,32 +175,5 @@ async function updateGameRatings(game: GameRecord, white?: number, black?: numbe
     );
 }
 
-/**
- * Writes the rebuilt TM aggregate to the user's top-level timeManagementRating field.
- */
-async function updateUserAggregate(
-    owner: string,
-    aggregate: TimeManagementAggregate,
-): Promise<void> {
-    await dynamo.send(
-        new UpdateItemCommand({
-            Key: marshall({ username: owner }),
-            TableName: usersTable,
-            UpdateExpression: 'SET #tmr = :tmRating',
-            ExpressionAttributeNames: {
-                '#tmr': 'timeManagementRating',
-            },
-            ExpressionAttributeValues: marshall(
-                {
-                    ':tmRating': {
-                        currentRating: aggregate.currentRating,
-                        numGames: aggregate.numGames,
-                    },
-                },
-                { removeUndefinedValues: true },
-            ),
-        }),
-    );
-}
 
 main();
