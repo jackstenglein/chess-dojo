@@ -5,6 +5,7 @@ import { getConfig } from '@/config';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -16,6 +17,7 @@ function DiscordOAuthButton() {
     const request = useRequest<string>();
     const pathname = usePathname();
     const { searchParams, updateSearchParams } = useNextSearchParams();
+    const t = useTranslations('profile.discord');
     const mode = user?.discordId ? 'disconnect' : 'connect';
     const code = searchParams.get('code');
     const redirectUri = `${config.baseUrl}${pathname}`;
@@ -26,7 +28,7 @@ function DiscordOAuthButton() {
             request.onStart();
             api.discordAuth({ mode: 'connect', code, redirectUri })
                 .then((resp) => {
-                    request.onSuccess(`Discord account successfully connected!`);
+                    request.onSuccess(t('connectSuccess'));
                     updateUser(resp.data);
                     updateSearchParams({ code: '' });
                 })
@@ -34,13 +36,13 @@ function DiscordOAuthButton() {
                     request.onFailure(err);
                 });
         }
-    }, [mode, code, request, api, updateUser, redirectUri, updateSearchParams]);
+    }, [mode, code, request, api, updateUser, redirectUri, updateSearchParams, t]);
 
     const handleDisconnect = () => {
         request.onStart();
         api.discordAuth({ mode: 'disconnect' })
             .then(() => {
-                request.onSuccess('Discord account disconnected.');
+                request.onSuccess(t('disconnectSuccess'));
                 updateUser({ discordUsername: '', discordId: '' });
             })
             .catch((err) => {
@@ -58,7 +60,7 @@ function DiscordOAuthButton() {
                         startIcon={<DiscordIcon />}
                         href={discordAuthUrl}
                     >
-                        Connect Discord
+                        {t('connect')}
                     </Button>
                 </Stack>
             ) : (
@@ -71,7 +73,7 @@ function DiscordOAuthButton() {
                         loading={request.isLoading()}
                         onClick={handleDisconnect}
                     >
-                        Disconnect Discord
+                        {t('disconnect')}
                     </Button>
                 </Stack>
             )}

@@ -38,6 +38,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 export const MAX_PROFILE_PICTURE_SIZE_MB = 9;
@@ -140,6 +141,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const api = useApi();
     const { setImageBypass } = useCache();
     const router = useRouter();
+    const t = useTranslations('profile.editor');
 
     const [displayName, setDisplayName] = useState(user.displayName);
     const [dojoCohort, setDojoCohort] = useState(
@@ -186,43 +188,40 @@ export function ProfileEditorPage({ user }: { user: User }) {
         }
         const newErrors: Record<string, string> = {};
         if (!displayName.trim()) {
-            newErrors.displayName = 'This field is required';
+            newErrors.displayName = t('fieldRequired');
         }
         if (dojoCohort === '') {
-            newErrors.dojoCohort = 'This field is required';
+            newErrors.dojoCohort = t('fieldRequired');
         }
         if ((ratingSystem as string) === '') {
-            newErrors.ratingSystem = 'This field is required';
+            newErrors.ratingSystem = t('fieldRequired');
         }
 
         if (!isCustom(ratingSystem) && !ratingEditors[ratingSystem].username.trim()) {
-            newErrors[`${ratingSystem}Username`] =
-                `This field is required when using ${formatRatingSystem(
-                    ratingSystem,
-                )} rating system.`;
+            newErrors[`${ratingSystem}Username`] = t('ratingSystemRequired', {
+                system: formatRatingSystem(ratingSystem),
+            });
         }
 
         for (const rs of Object.keys(ratingEditors)) {
             const startRating = parseRating(ratingEditors[rs as RatingSystem].startRating);
             if (startRating < 0) {
-                newErrors[`${rs}StartRating`] = 'Rating must be an integer >= 0';
+                newErrors[`${rs}StartRating`] = t('ratingInteger');
             }
             if (isCustom(rs)) {
                 const name = ratingEditors[rs as RatingSystem].name;
                 const currentRating = parseRating(ratingEditors[rs as RatingSystem].currentRating);
                 if ((rs === ratingSystem || currentRating > 0 || startRating > 0) && !name.trim()) {
-                    newErrors[`${rs}Name`] = 'This field is required when using a custom rating';
+                    newErrors[`${rs}Name`] = t('customRatingRequired');
                 }
                 if ((rs === ratingSystem || name.trim() || startRating > 0) && currentRating <= 0) {
-                    newErrors[`${rs}CurrentRating`] =
-                        'This field is required when using a custom rating system';
+                    newErrors[`${rs}CurrentRating`] = t('customRatingSystemRequired');
                 }
                 if (
                     (rs === ratingSystem || name.trim() || currentRating > 0) &&
                     startRating === 0
                 ) {
-                    newErrors[`${rs}StartRating`] =
-                        'This field is required when using a custom rating system';
+                    newErrors[`${rs}StartRating`] = t('customRatingSystemRequired');
                 }
             }
         }
@@ -237,7 +236,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
 
         api.updateUser(update)
             .then(() => {
-                request.onSuccess('Profile updated');
+                request.onSuccess(t('profileUpdated'));
                 trackEvent(EventType.EditProfile, {
                     fields: Object.keys(update),
                 });
@@ -298,7 +297,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                             marginRight: '0.2em',
                                         }}
                                     />
-                                    Personal Info
+                                    {t('sidebarPersonalInfo')}
                                 </Link>
                                 <Link href='#ratings' onClick={scrollToId('ratings')}>
                                     <TimelineIcon
@@ -308,7 +307,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                             marginRight: '0.2em',
                                         }}
                                     />
-                                    Ratings
+                                    {t('sidebarRatings')}
                                 </Link>
                                 <Link href='#notifications' onClick={scrollToId('notifications')}>
                                     <NotificationsIcon
@@ -318,7 +317,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                             marginRight: '0.2em',
                                         }}
                                     />
-                                    Notifications
+                                    {t('sidebarNotifications')}
                                 </Link>
                                 <Link href='#subscription' onClick={scrollToId('subscription')}>
                                     <MonetizationOnIcon
@@ -328,7 +327,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                             marginRight: '0.2em',
                                         }}
                                     />
-                                    Subscription/Billing
+                                    {t('sidebarSubscription')}
                                 </Link>
                             </Stack>
                         </CardContent>
@@ -347,9 +346,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                         user.dojoCohort !== '' &&
                         !dojoCohorts.includes(user.dojoCohort) && (
                             <Alert severity='error' sx={{ mb: 3 }}>
-                                Invalid cohort: The dojo is phasing out the 0-400 and 400-600
-                                cohorts in favor of more specific cohorts. Please choose a new
-                                cohort below.
+                                {t('cohortAlert')}
                             </Alert>
                         )}
 
@@ -362,7 +359,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                             rowGap={2}
                         >
                             <Typography variant='h4' mr={2}>
-                                Edit Settings
+                                {t('title')}
                             </Typography>
 
                             <Stack direction='row' spacing={2}>
@@ -373,7 +370,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                     disabled={!changesMade}
                                     startIcon={<SaveIcon />}
                                 >
-                                    Save
+                                    {t('save')}
                                 </LoadingButton>
 
                                 <Button
@@ -384,14 +381,14 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                     href='/profile'
                                     startIcon={<NotInterestedIcon />}
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </Button>
                             </Stack>
                         </Stack>
 
                         {Object.values(errors).length > 0 && (
                             <Alert severity='error' sx={{ mb: 3 }} variant='filled'>
-                                Unable to save profile. Fix the errors below and retry.
+                                {t('errorAlert')}
                             </Alert>
                         )}
 
