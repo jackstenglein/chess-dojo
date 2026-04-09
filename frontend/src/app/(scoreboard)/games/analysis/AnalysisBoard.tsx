@@ -20,7 +20,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useNavigationGuard } from 'next-navigation-guard';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const gameUrlRegex = /^\/games\/.*\/.*/;
 
@@ -48,17 +48,6 @@ export default function AnalysisBoard() {
         onSubmit,
         request,
     } = useUnsavedGame(chess);
-
-    useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            event.preventDefault();
-            // Modern browsers ignore custom messages, but returnValue must be set
-            event.returnValue = '';
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, []);
 
     if (status === AuthStatus.Loading) {
         return <LoadingPage />;
