@@ -81,9 +81,9 @@ export function DownloadGamesDialog({
                     });
             }, delay);
         } else if (retries >= MAX_RETRIES) {
-            onFailure('Request timed out');
+            onFailure(t('requestTimedOut'));
         }
-    }, [api, onFailure, startRequest.data, onSuccess, retries, setRetries, delay, setDelay]);
+    }, [api, onFailure, startRequest.data, onSuccess, retries, setRetries, delay, setDelay, t]);
 
     const onDownload = async () => {
         try {

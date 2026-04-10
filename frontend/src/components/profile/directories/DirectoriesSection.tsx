@@ -47,7 +47,7 @@ import { BulkItemEditor } from './BulkItemEditor';
 import { ContextMenu } from './ContextMenu';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 import { useDirectory } from './DirectoryCache';
-import { adminColumns, DirectoryCreatedAt, publicColumns } from './DirectoryGridColumns';
+import { DirectoryCreatedAt, getAdminColumns, getPublicColumns } from './DirectoryGridColumns';
 import { ShareButton } from './share/ShareButton';
 import { StatsButton } from './stats/StatsButton';
 
@@ -104,6 +104,7 @@ const DirectorySection = ({
     sx,
 }: DirectoriesSectionProps) => {
     const api = useApi();
+    const tDir = useTranslations('profile.directories');
     const { searchParams, updateSearchParams } = useNextSearchParams({
         directory: 'home',
     });
@@ -282,7 +283,7 @@ const DirectorySection = ({
                     listViewColumn={listViewColDef}
                     listView={isMobile}
                     rows={rows}
-                    columns={isAdmin ? adminColumns : publicColumns}
+                    columns={isAdmin ? getAdminColumns(tDir) : getPublicColumns(tDir)}
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
                     onColumnOrderChange={() => {

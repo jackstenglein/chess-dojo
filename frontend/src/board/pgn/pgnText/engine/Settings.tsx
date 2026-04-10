@@ -140,7 +140,7 @@ export default function Settings() {
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={engine.fullName}
-                                        secondary={engine.description}
+                                        secondary={t(`engineDescription_${engine.name}`)}
                                     />
                                 </MenuItem>
                             ))}
@@ -192,7 +192,7 @@ export default function Settings() {
                                     <FormControlLabel
                                         key={opt.value}
                                         value={opt.value}
-                                        label={opt.label}
+                                        label={t(`evalType_${opt.value}`)}
                                         control={<Radio />}
                                     />
                                 ))}

@@ -172,6 +172,7 @@ export function Heatmap({
     };
 }) {
     const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const isLight = useLightMode();
     const { user: viewer } = useAuth();
     const api = useApi();
@@ -437,7 +438,7 @@ export function Heatmap({
                               description,
                           })
                         : t('totalMinutesLine', {
-                              time: formatTime(totalMinutesSpent),
+                              time: formatTime(totalMinutesSpent, tCommon),
                               description,
                           })}
                 </Typography>
@@ -892,6 +893,7 @@ function BlockTooltip({
     field: TimelineEntryField;
 }) {
     const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const categories = Object.entries(activity.categoryCounts ?? {})
         .filter((entry) => VALID_TOOLTIP_CATEGORIES.includes(entry[0] as RequirementCategory))
         .sort(
@@ -911,7 +913,7 @@ function BlockTooltip({
                           date: activity.date,
                       })
                     : t('minutesOnDate', {
-                          time: formatTime(activity.minutesSpent || 0),
+                          time: formatTime(activity.minutesSpent || 0, tCommon),
                           date: activity.date,
                       })}
             </Typography>
@@ -1012,6 +1014,7 @@ function WeekSummaryTooltip({
     inProgress: boolean;
 }) {
     const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const startDate = new Date(weekSummary.date);
     startDate.setDate(startDate.getDate() - 6);
     const startDateStr = `${startDate.getUTCFullYear()}-${`${startDate.getUTCMonth() + 1}`.padStart(2, '0')}-${`${startDate.getUTCDate()}`.padStart(2, '0')}`;
@@ -1069,7 +1072,8 @@ function WeekSummaryTooltip({
                 </Stack>
 
                 <Typography variant='caption' pt='2px'>
-                    {formatTime(weekSummary.minutesSpent)} / {formatTime(goalMinutes)}
+                    {formatTime(weekSummary.minutesSpent, tCommon)} /{' '}
+                    {formatTime(goalMinutes, tCommon)}
                 </Typography>
             </Stack>
 
@@ -1164,6 +1168,7 @@ function TooltipRow({
     striped?: boolean;
 }) {
     const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     return (
         <Stack
             direction='row'
@@ -1202,7 +1207,7 @@ function TooltipRow({
                           points: Math.round(10 * count) / 10,
                           pluralCount: count,
                       })
-                    : formatTime(count)}
+                    : formatTime(count, tCommon)}
             </Typography>
         </Stack>
     );
@@ -1228,9 +1233,12 @@ function LegendTooltip({
     field: TimelineEntryField;
 }) {
     const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const minValue = Math.max(0, (clamp / (MAX_LEVEL - 1)) * (level - 1));
     const baseValue =
-        field === 'minutesSpent' ? formatTime(minValue) : `${Math.round(minValue * 100) / 100}`;
+        field === 'minutesSpent'
+            ? formatTime(minValue, tCommon)
+            : `${Math.round(minValue * 100) / 100}`;
 
     let value: string;
     if (level === 0) {
@@ -1242,7 +1250,7 @@ function LegendTooltip({
             field === 'minutesSpent'
                 ? t('legendMinutesRange', {
                       minValue: baseValue,
-                      maxValue: formatTime(maxValue),
+                      maxValue: formatTime(maxValue, tCommon),
                   })
                 : t('legendDojoPointsRange', {
                       minValue: baseValue,

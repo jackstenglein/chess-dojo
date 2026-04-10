@@ -16,9 +16,10 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
-import { DataGridPro, GridActionsCellItem, GridColDef } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridActionsCellItem } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { PairingsTableProps, pairingTableColumns } from '../PairingsTable';
+import { getPairingTableColumns, PairingsTableProps } from '../PairingsTable';
 import Editor from './Editor';
 import EmailPairingsButton from './EmailPairingsButton';
 
@@ -115,22 +116,6 @@ const PairingsTab: React.FC<PairingsTabProps> = ({ openClassical, onUpdate }) =>
     );
 };
 
-const adminPairingTableColumns: GridColDef<OpenClassicalPairing>[] = [
-    ...pairingTableColumns,
-    {
-        field: 'reportOpponent',
-        headerName: 'Report Opponent',
-        type: 'boolean',
-        width: 125,
-    },
-    {
-        field: 'notes',
-        headerName: 'Notes',
-        headerAlign: 'center',
-        flex: 1,
-    },
-];
-
 interface AdminPairingsTableProps extends PairingsTableProps {
     onUpdate: (openClassical: OpenClassical) => void;
 }
@@ -142,31 +127,47 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
     round,
     onUpdate,
 }) => {
+    const t = useTranslations('tournaments.openClassical.pairings');
     const [updatePairing, setUpdatePairing] = useState<OpenClassicalPairing>();
     const [updateResult, setUpdateResult] = useState('');
     const api = useApi();
     const updateRequest = useRequest();
 
     const columns = useMemo(() => {
-        return adminPairingTableColumns.concat({
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Actions',
-            getActions: (params) => [
-                <Tooltip key='update-result' title='Update Result'>
-                    <GridActionsCellItem
-                        icon={<Edit />}
-                        label='Update Result'
-                        onClick={() => {
-                            setUpdateResult(params.row.result);
-                            setUpdatePairing(params.row);
-                        }}
-                    />
-                </Tooltip>,
-            ],
-            width: 70,
-        });
-    }, [setUpdatePairing]);
+        return [
+            ...getPairingTableColumns(t),
+            {
+                field: 'reportOpponent',
+                headerName: 'Report Opponent',
+                type: 'boolean' as const,
+                width: 125,
+            },
+            {
+                field: 'notes',
+                headerName: 'Notes',
+                headerAlign: 'center' as const,
+                flex: 1,
+            },
+            {
+                field: 'actions',
+                type: 'actions' as const,
+                headerName: 'Actions',
+                getActions: (params: { row: OpenClassicalPairing }) => [
+                    <Tooltip key='update-result' title='Update Result'>
+                        <GridActionsCellItem
+                            icon={<Edit />}
+                            label='Update Result'
+                            onClick={() => {
+                                setUpdateResult(params.row.result);
+                                setUpdatePairing(params.row);
+                            }}
+                        />
+                    </Tooltip>,
+                ],
+                width: 70,
+            },
+        ];
+    }, [t, setUpdatePairing]);
 
     const pairings =
         openClassical.sections[`${region}_${ratingRange}`]?.rounds[round - 1]?.pairings ?? [];

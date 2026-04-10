@@ -5,6 +5,7 @@ import { OpenInNew, Warning } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import { DataGridPro, GridColDef, GridRenderCellParams } from '@mui/x-data-grid-pro';
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 import { SiLichess } from 'react-icons/si';
 
 export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
@@ -49,83 +50,87 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
     );
 }
 
-export const pairingTableColumns: GridColDef<OpenClassicalPairing>[] = [
-    {
-        field: 'white',
-        headerName: 'White',
-        headerAlign: 'center',
-        valueGetter: (_value, row) =>
-            `${row.white.displayName} ${row.white.lichessUsername} ${row.white.discordUsername}`,
-        flex: 1,
-        renderCell(params) {
-            return <PlayerCell player={params.row.white} />;
+export function getPairingTableColumns(
+    t: (key: string) => string,
+): GridColDef<OpenClassicalPairing>[] {
+    return [
+        {
+            field: 'white',
+            headerName: t('headerWhite'),
+            headerAlign: 'center',
+            valueGetter: (_value, row) =>
+                `${row.white.displayName} ${row.white.lichessUsername} ${row.white.discordUsername}`,
+            flex: 1,
+            renderCell(params) {
+                return <PlayerCell player={params.row.white} />;
+            },
         },
-    },
-    {
-        field: 'black',
-        headerName: 'Black',
-        headerAlign: 'center',
-        valueGetter: (_value, row) =>
-            `${row.black.displayName} ${row.black.lichessUsername} ${row.black.discordUsername}`,
-        flex: 1,
-        renderCell(params) {
-            return <PlayerCell player={params.row.black} />;
+        {
+            field: 'black',
+            headerName: t('headerBlack'),
+            headerAlign: 'center',
+            valueGetter: (_value, row) =>
+                `${row.black.displayName} ${row.black.lichessUsername} ${row.black.discordUsername}`,
+            flex: 1,
+            renderCell(params) {
+                return <PlayerCell player={params.row.black} />;
+            },
         },
-    },
-    {
-        field: 'result',
-        headerName: 'Result',
-        flex: 0.5,
-        align: 'center',
-        headerAlign: 'center',
-        renderCell: (params: GridRenderCellParams<OpenClassicalPairing, string>) => {
-            if (params.value === '*' || params.value === '' || params.row.verified) {
+        {
+            field: 'result',
+            headerName: t('headerResult'),
+            flex: 0.5,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: (params: GridRenderCellParams<OpenClassicalPairing, string>) => {
+                if (params.value === '*' || params.value === '' || params.row.verified) {
+                    return (
+                        <Stack alignItems='center' justifyContent='center' height={1}>
+                            {params.value}
+                        </Stack>
+                    );
+                }
                 return (
-                    <Stack alignItems='center' justifyContent='center' height={1}>
-                        {params.value}
+                    <Stack
+                        direction='row'
+                        alignItems='center'
+                        justifyContent='center'
+                        spacing={1}
+                        height={1}
+                    >
+                        <div>{params.value}</div>
+                        <Tooltip title={t('unverifiedResultTooltip')}>
+                            <Warning color='warning' fontSize='small' />
+                        </Tooltip>
                     </Stack>
                 );
-            }
-            return (
-                <Stack
-                    direction='row'
-                    alignItems='center'
-                    justifyContent='center'
-                    spacing={1}
-                    height={1}
-                >
-                    <div>{params.value}</div>
-                    <Tooltip title='This result has not been verified and may be changed later by the TD'>
-                        <Warning color='warning' fontSize='small' />
-                    </Tooltip>
-                </Stack>
-            );
+            },
         },
-    },
-    {
-        field: 'gameUrl',
-        headerName: 'Game',
-        width: 75,
-        align: 'center',
-        headerAlign: 'center',
-        renderCell: (params: GridRenderCellParams<OpenClassicalPairing, string>) => {
-            if (
-                params.value &&
-                (params.value.startsWith('https://lichess.org/') ||
-                    params.value.startsWith('https://www.chess.com/'))
-            ) {
-                return (
-                    <Stack height={1} alignItems='center' justifyContent='center'>
-                        <a target='_blank' rel='noopener noreferrer' href={params.value}>
-                            <OpenInNew color='primary' fontSize='small' />
-                        </a>
-                    </Stack>
-                );
-            }
-            return null;
+        {
+            field: 'gameUrl',
+            headerName: t('headerGame'),
+            width: 75,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: (params: GridRenderCellParams<OpenClassicalPairing, string>) => {
+                if (
+                    params.value &&
+                    (params.value.startsWith('https://lichess.org/') ||
+                        params.value.startsWith('https://www.chess.com/'))
+                ) {
+                    return (
+                        <Stack height={1} alignItems='center' justifyContent='center'>
+                            <a target='_blank' rel='noopener noreferrer' href={params.value}>
+                                <OpenInNew color='primary' fontSize='small' />
+                            </a>
+                        </Stack>
+                    );
+                }
+                return null;
+            },
         },
-    },
-];
+    ];
+}
 
 export interface PairingsTableProps {
     openClassical: OpenClassical;
@@ -140,12 +145,14 @@ const PairingsTable: React.FC<PairingsTableProps> = ({
     ratingRange,
     round,
 }) => {
+    const t = useTranslations('tournaments.openClassical.pairings');
+    const columns = useMemo(() => getPairingTableColumns(t), [t]);
     const pairings =
         openClassical.sections[`${region}_${ratingRange}`]?.rounds[round - 1]?.pairings ?? [];
 
     return (
         <DataGridPro
-            columns={pairingTableColumns}
+            columns={columns}
             rows={pairings}
             getRowId={(pairing) =>
                 `${pairing.white.lichessUsername}-${pairing.black.lichessUsername}`

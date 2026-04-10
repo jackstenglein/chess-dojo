@@ -97,7 +97,7 @@ export function WeeklyTrainingPlan() {
 
             <Collapse in={expanded}>
                 <Stack spacing={2} mb={1}>
-                    <Tooltip title='Only show tasks you have updated this week' placement='right'>
+                    <Tooltip title={t('activeOnlyTooltip')} placement='right'>
                         <FormControlLabel
                             control={
                                 <Switch
@@ -108,7 +108,7 @@ export function WeeklyTrainingPlan() {
                             }
                             label={
                                 <Typography variant='body2' color='text.secondary'>
-                                    Active Only
+                                    {t('activeOnlyLabel')}
                                 </Typography>
                             }
                             sx={{ ml: 1, width: 'fit-content' }}
@@ -252,6 +252,7 @@ function WeeklyTrainingPlanItem({
     activeOnly: boolean;
 }) {
     const { task } = suggestion;
+    const tTime = useTranslations('common');
     const { isCurrentUser, user, timeline } = use(TrainingPlanContext);
     const tasks = useMemo(() => [suggestion], [suggestion]);
     const [goalMinutes, timeWorked, _, __, active] = useTrainingPlanProgress({
@@ -306,7 +307,7 @@ function WeeklyTrainingPlanItem({
             >
                 <Stack spacing={3} width={1}>
                     <Typography variant='body2' fontWeight='bold'>
-                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes })}
+                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes, tCommon: tTime })}
                     </Typography>
 
                     <Stack direction='row' flexWrap='wrap' gap={1}>

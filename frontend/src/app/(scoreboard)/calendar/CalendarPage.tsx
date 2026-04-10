@@ -30,13 +30,17 @@ import type { EventRendererProps, SchedulerRef } from '@jackstenglein/react-sche
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Container, Grid, Snackbar, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RRule } from 'rrule';
+
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 function processAvailability(
     user: User | undefined,
     filters: Filters,
     event: Event,
+    t: TranslateFn,
 ): ProcessedEvent | null {
     if (event.status === EventStatus.Canceled) {
         return null;
@@ -58,10 +62,11 @@ function processAvailability(
         const title =
             event.title ||
             (event.maxParticipants === 1
-                ? 'Meeting'
-                : `Group Meeting (${Object.values(event.participants).length}/${
-                      event.maxParticipants
-                  })`);
+                ? t('meetingTitle')
+                : t('groupMeetingTitle', {
+                      count: Object.values(event.participants).length,
+                      max: event.maxParticipants,
+                  }));
 
         const isOwner = event.owner === user.username;
         const editable =
@@ -92,7 +97,7 @@ function processAvailability(
 
         const title =
             event.title ||
-            (event.maxParticipants === 1 ? 'Available - 1 on 1' : 'Available - Group');
+            (event.maxParticipants === 1 ? t('available1on1Title') : t('availableGroupTitle'));
         return {
             event_id: event.id,
             title: title,
@@ -146,10 +151,11 @@ function processAvailability(
         title:
             event.title ||
             (event.maxParticipants > 1
-                ? `Bookable - Group (${Object.values(event.participants).length}/${
-                      event.maxParticipants
-                  })`
-                : `Bookable - ${event.ownerDisplayName}`),
+                ? t('bookableGroupTitle', {
+                      count: Object.values(event.participants).length,
+                      max: event.maxParticipants,
+                  })
+                : t('bookableTitle', { name: event.ownerDisplayName })),
         start: new Date(event.startTime),
         end: new Date(event.endTime),
         color: 'book.main',
@@ -352,6 +358,7 @@ export function getProcessedEvents(
     user: User | undefined,
     filters: Filters,
     events: Event[],
+    t: TranslateFn,
 ): ProcessedEvent[] {
     const result: ProcessedEvent[] = [];
 
@@ -367,7 +374,7 @@ export function getProcessedEvents(
         }
 
         if (event.type === EventType.Availability) {
-            processedEvent = processAvailability(user, filters, event);
+            processedEvent = processAvailability(user, filters, event, t);
         } else if (event.type === EventType.Dojo) {
             processedEvent = processDojoEvent(user, filters, event);
         } else if (event.type === EventType.LigaTournament) {
@@ -390,6 +397,7 @@ export function getProcessedEvents(
 }
 
 export default function CalendarPage() {
+    const t = useTranslations('calendar');
     const { user } = useAuth();
     const api = useApi();
     const isFreeTier = useFreeTier();
@@ -418,7 +426,7 @@ export default function CalendarPage() {
                 // scheduler library
                 await api.deleteEvent(id);
                 removeEvent(id);
-                deleteRequest.onSuccess('Availability deleted');
+                deleteRequest.onSuccess(t('availabilityDeleted'));
                 return id;
             } catch (err) {
                 deleteRequest.onFailure(err);
@@ -498,8 +506,8 @@ export default function CalendarPage() {
     );
 
     const processedEvents = useMemo(() => {
-        return getProcessedEvents(user, filters, events);
-    }, [user, filters, events]);
+        return getProcessedEvents(user, filters, events, t);
+    }, [user, filters, events, t]);
 
     useEffect(() => {
         calendarRef.current?.scheduler.handleState(processedEvents, 'events');
@@ -569,7 +577,7 @@ export default function CalendarPage() {
                 autoHideDuration={6000}
                 onClose={() => setCanceled(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                message='Meeting canceled'
+                message={t('meetingCanceled')}
             />
 
             <Grid container spacing={2}>
@@ -579,7 +587,7 @@ export default function CalendarPage() {
                         startIcon={showFilters ? <VisibilityOff /> : <Visibility />}
                         sx={{ display: { xs: 'none', md: 'inline-flex' } }}
                     >
-                        {showFilters ? 'Hide Filters' : 'Show Filters'}
+                        {showFilters ? t('hideFilters') : t('showFilters')}
                     </Button>
                     {showFilters && <CalendarFilters filters={filters} />}
                 </Grid>

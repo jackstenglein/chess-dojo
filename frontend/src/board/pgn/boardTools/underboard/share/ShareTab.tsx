@@ -118,7 +118,9 @@ export function ShareTab() {
                     },
                 ],
             });
-            addToFolderRequest.onSuccess(`Game added to ${resp.data.directory.name}`);
+            addToFolderRequest.onSuccess(
+                t('gameAddedToFolder', { name: resp.data.directory.name }),
+            );
             trackEvent(EventType.AddDirectoryItems, {
                 count: 1,
                 method: 'share_tab_add_to_folder',

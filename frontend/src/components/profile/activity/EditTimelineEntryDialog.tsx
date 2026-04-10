@@ -77,7 +77,7 @@ export function EditTimelinEntryDialog({
                 deleted: [entry],
             });
             onDeleteEntry(entry);
-            deleteRequest.onSuccess('Rest day cleared');
+            deleteRequest.onSuccess(t('restDayCleared'));
             onClose();
         } catch (err) {
             deleteRequest.onFailure(err);

@@ -346,6 +346,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
 };
 
 const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const viewer = useAuth().user;
 
     const createdAt = new Date(comment.createdAt);
@@ -380,7 +381,7 @@ const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
                     • {createdAtDate} {createdAtTime}
                 </Typography>
                 {updatedAtDate && (
-                    <Tooltip title={`Updated at ${updatedAtDate} • ${updatedAtTime}`}>
+                    <Tooltip title={t('updatedAt', { date: updatedAtDate, time: updatedAtTime })}>
                         <Edit sx={{ color: 'text.secondary', fontSize: '0.8rem' }} />
                     </Tooltip>
                 )}

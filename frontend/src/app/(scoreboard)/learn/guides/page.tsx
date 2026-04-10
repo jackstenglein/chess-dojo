@@ -311,7 +311,7 @@ export default function Page() {
                             <Box sx={{ mt: 3, mb: 3, width: 1, aspectRatio: '1.77' }}>
                                 <iframe
                                     src='https://www.youtube.com/embed/rGHf_qMR3uo'
-                                    title={`Dojo Guide To Bots`}
+                                    title={t('iframeTitle')}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
                                     style={{ width: '100%', height: '100%' }}
@@ -329,7 +329,7 @@ export default function Page() {
                             <Box sx={{ mt: 3, mb: 3, width: 1, aspectRatio: '1.77' }}>
                                 <iframe
                                     src='https://player.vimeo.com/video/705555806'
-                                    title={`Dojo Guide To Bots`}
+                                    title={t('iframeTitle')}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
                                     style={{ width: '100%', height: '100%' }}
@@ -347,7 +347,7 @@ export default function Page() {
                             <Box sx={{ mt: 3, mb: 3, width: 1, aspectRatio: '1.77' }}>
                                 <iframe
                                     src='https://player.vimeo.com/video/694563363'
-                                    title={`Dojo Guide To Bots`}
+                                    title={t('iframeTitle')}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
                                     style={{ width: '100%', height: '100%' }}
@@ -390,7 +390,7 @@ export default function Page() {
                             <Box sx={{ mt: 3, mb: 3, width: 1, aspectRatio: '1.77' }}>
                                 <iframe
                                     src='https://www.youtube.com/embed/WsZknsdk504'
-                                    title={`Dojo Guide To Bots`}
+                                    title={t('iframeTitle')}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
                                     style={{ width: '100%', height: '100%' }}

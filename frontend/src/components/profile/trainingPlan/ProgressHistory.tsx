@@ -218,7 +218,7 @@ export const ProgressHistoryItem = ({
                 <Tooltip title={t('deleteEntry')}>
                     <IconButton
                         data-testid='task-history-delete-button'
-                        aria-label='delete'
+                        aria-label={t('deleteAriaLabel')}
                         onClick={deleteItem}
                     >
                         <DeleteIcon />

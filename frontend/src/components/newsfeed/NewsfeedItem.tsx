@@ -81,6 +81,7 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
 
 const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }) => {
     const t = useTranslations('newsfeed');
+    const tCommon = useTranslations('common');
     const { requirement } = useRequirement(entry.requirementId);
     if (entry.requirementId === TimelineSpecialRequirementId.Graduation) {
         return <GraduationNewsfeedItem entry={entry} />;
@@ -124,10 +125,10 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
                         {t('totalTime')}
                     </Typography>
                     <Typography>
-                        {formatTime(entry.totalMinutesSpent - entry.minutesSpent)}
+                        {formatTime(entry.totalMinutesSpent - entry.minutesSpent, tCommon)}
                     </Typography>
                     <ArrowRightAltIcon sx={{ color: 'text.secondary' }} />
-                    <Typography>{formatTime(entry.totalMinutesSpent)}</Typography>
+                    <Typography>{formatTime(entry.totalMinutesSpent, tCommon)}</Typography>
                 </Stack>
             )}
 

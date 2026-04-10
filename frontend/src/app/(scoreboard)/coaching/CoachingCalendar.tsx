@@ -29,6 +29,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
     request,
 }) => {
     const t = useTranslations('coaching.calendar');
+    const tCalendar = useTranslations('calendar');
     const api = useApi();
     const user = useAuth().user;
     const calendarRef = useRef<SchedulerRef>(null);
@@ -40,8 +41,8 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
 
     const processedEvents = useMemo(() => {
         const modifiedFilters = { ...filters, coaching: true };
-        return getProcessedEvents(user, modifiedFilters, events);
-    }, [user, filters, events]);
+        return getProcessedEvents(user, modifiedFilters, events, tCalendar);
+    }, [user, filters, events, tCalendar]);
 
     useEffect(() => {
         calendarRef.current?.scheduler.handleState(processedEvents, 'events');

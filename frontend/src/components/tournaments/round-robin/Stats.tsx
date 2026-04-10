@@ -58,7 +58,7 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
                         newViewMode && setViewMode(newViewMode)
                     }
                     size='small'
-                    aria-label='view mode toggle'
+                    aria-label={t('viewModeAriaLabel')}
                 >
                     <ToggleButton value='count'>{t('viewCount')}</ToggleButton>
                     <ToggleButton value='percentage'>{t('viewPercentage')}</ToggleButton>
@@ -71,7 +71,7 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
                     onChange={(_e, newDisplayMode: 'graph' | 'list' | null) =>
                         newDisplayMode && setDisplayMode(newDisplayMode)
                     }
-                    aria-label='display mode toggle'
+                    aria-label={t('displayModeAriaLabel')}
                 >
                     <ToggleButton value='graph'>{t('displayGraph')}</ToggleButton>
                     <ToggleButton value='list'>{t('displayList')}</ToggleButton>

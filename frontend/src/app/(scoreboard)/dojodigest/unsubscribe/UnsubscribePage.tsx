@@ -6,9 +6,11 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import LoadingPage from '@/loading/LoadingPage';
 import { LoadingButton } from '@mui/lab';
 import { Container, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 const UnsubscribePage = () => {
+    const t = useTranslations('dojoDigest');
     const [email, setEmail] = useState('');
     const request = useRequest();
     const auth = useAuth();
@@ -36,12 +38,9 @@ const UnsubscribePage = () => {
         return (
             <Container maxWidth='md' sx={{ py: 4 }}>
                 <Stack spacing={4}>
-                    <Typography variant='h6'>Unsubscribe from Dojo Digest</Typography>
+                    <Typography variant='h6'>{t('unsubscribeTitle')}</Typography>
 
-                    <Typography>
-                        {email} has been unsubscribed. Please allow 24 hours for this change to take
-                        effect.
-                    </Typography>
+                    <Typography>{t('unsubscribeSuccess', { email })}</Typography>
                 </Stack>
             </Container>
         );
@@ -52,16 +51,20 @@ const UnsubscribePage = () => {
             <RequestSnackbar request={request} />
 
             <Stack spacing={4}>
-                <Typography variant='h6'>Unsubscribe from Dojo Digest</Typography>
+                <Typography variant='h6'>{t('unsubscribeTitle')}</Typography>
 
-                <TextField label='Email' value={email} onChange={(e) => setEmail(e.target.value)} />
+                <TextField
+                    label={t('emailLabel')}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
 
                 <LoadingButton
                     variant='contained'
                     loading={request.isLoading()}
                     onClick={onUnsubscribe}
                 >
-                    Unsubscribe
+                    {t('unsubscribeButton')}
                 </LoadingButton>
             </Stack>
         </Container>
