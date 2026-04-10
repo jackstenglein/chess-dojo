@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 import { Close } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
+import { useTranslations } from 'next-intl';
 import { EventType, trackEvent } from '../analytics/events';
 import { useApi } from '../api/Api';
 import { RequestSnackbar, useRequest } from '../api/Request';
@@ -30,6 +31,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
     onSuccess,
     children,
 }) => {
+    const t = useTranslations('meeting');
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const cancelRequest = useRequest();
     const api = useApi();
@@ -64,7 +66,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
                 <DialogTitle>
                     {dialogTitle}
                     <IconButton
-                        aria-label='close'
+                        aria-label={t('closeAriaLabel')}
                         onClick={() => setShowCancelDialog(false)}
                         sx={{
                             position: 'absolute',
@@ -81,7 +83,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
                 </DialogContent>
                 <DialogActions>
                     <LoadingButton onClick={onCancel} loading={cancelRequest.isLoading()}>
-                        Cancel Meeting
+                        {t('cancelMeetingButton')}
                     </LoadingButton>
                 </DialogActions>
             </Dialog>

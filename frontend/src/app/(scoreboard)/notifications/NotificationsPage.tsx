@@ -6,8 +6,10 @@ import { useNotifications } from '@/api/cache/Cache';
 import { NotificationListItem } from '@/components/notifications/NotificationListItem';
 import LoadingPage from '@/loading/LoadingPage';
 import { Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function NotificationsPage() {
+    const t = useTranslations('notifications');
     const { notifications, request, clearNotifications } = useNotifications();
     const api = useApi();
     const clearRequest = useRequest();
@@ -33,7 +35,7 @@ export function NotificationsPage() {
             <RequestSnackbar request={clearRequest} />
 
             <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='h4'>Notifications</Typography>
+                <Typography variant='h4'>{t('title')}</Typography>
 
                 {notifications.length > 0 &&
                     (clearRequest.isLoading() ? (
@@ -44,7 +46,7 @@ export function NotificationsPage() {
                             variant='outlined'
                             onClick={onClearAll}
                         >
-                            Clear All
+                            {t('clearAll')}
                         </Button>
                     ))}
             </Stack>
@@ -53,7 +55,7 @@ export function NotificationsPage() {
                 {notifications.map((n) => (
                     <NotificationListItem key={n.id} notification={n} />
                 ))}
-                {notifications.length === 0 && <Typography>No notifications</Typography>}
+                {notifications.length === 0 && <Typography>{t('empty')}</Typography>}
             </Stack>
         </Container>
     );

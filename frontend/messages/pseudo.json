@@ -1253,6 +1253,35 @@
         "currentMembers": "[T] Current Members",
         "graduations": "[T] Graduations",
         "goToClub": "[T] Go to Club",
+        "graduatedFrom": "[T] Graduated from {cohort}",
+        "groupUserInfo": "[T] User Info",
+        "groupRatings": "[T] Ratings",
+        "groupTrainingPlan": "[T] Training Plan",
+        "groupTimeSpent": "[T] Time Spent",
+        "rankColumn": "[T] Rank",
+        "nameColumn": "[T] Name",
+        "cohortColumn": "[T] Cohort",
+        "graduatedColumn": "[T] Graduated",
+        "ratingSystemColumn": "[T] Rating System",
+        "startRatingColumn": "[T] Start Rating",
+        "currentRatingColumn": "[T] Current Rating",
+        "ratingChangeColumn": "[T] Rating Change",
+        "normalizedRatingColumn": "[T] Normalized Dojo Rating",
+        "normalizedRatingTooltip": "[T] Custom ratings cannot be normalized",
+        "timeSpentTooltipDefault": "[T] Data for time spent in last X days is updated every 24 hours and does not include non-dojo activities",
+        "timeSpentTooltipSummary": "[T] Data covers all cohorts and is updated every 24 hours",
+        "unpinRow": "[T] Unpin Row",
+        "pinRow": "[T] Pin Row",
+        "dojoScoreColumn": "[T] Dojo Score",
+        "percentCompleteColumn": "[T] Percent Complete",
+        "allTasksColumn": "[T] All Tasks",
+        "cohortTasksColumn": "[T] Cohort Tasks",
+        "last7DaysColumn": "[T] Last 7 Days",
+        "last30DaysColumn": "[T] Last 30 Days",
+        "last90DaysColumn": "[T] Last 90 Days",
+        "last365DaysColumn": "[T] Last 365 Days",
+        "nonDojoColumn": "[T] Non-Dojo",
+        "customRating": "[T] Custom ({name})",
         "tip": "[T] Tip: hold shift while scrolling to scroll horizontally",
         "view": {
             "label": "[T] View",
@@ -1524,7 +1553,35 @@
         "canceledParticipant": "[T] This event has been canceled by the coach. If you already paid, you will receive a full refund.",
         "copyLink": "[T] Copy Link",
         "participants": "[T] Participants",
-        "andMore": "[T] ... and {count} more"
+        "andMore": "[T] ... and {count} more",
+        "filtersTitle": "[T] Filters",
+        "resetFilters": "[T] Reset Filters",
+        "myDojoCalendar": "[T] My Dojo Calendar",
+        "dojoLigaTournaments": "[T] DojoLiga Tournaments",
+        "bookableMeetings": "[T] Bookable Meetings",
+        "viewMeetings": "[T] {count, plural, =1 {View # upcoming meeting} other {View # upcoming meetings}}",
+        "ratedTypeHeader": "[T] {rated, select, true {Rated} other {Unrated}} {tournamentType}",
+        "timeControlLabel": "[T] Time Control",
+        "roundSingular": "[T] Round",
+        "roundPlural": "[T] Rounds",
+        "positionLabel": "[T] Position",
+        "colorTomato": "[T] Tomato",
+        "colorFlamingo": "[T] Flamingo",
+        "colorBanana": "[T] Banana",
+        "colorSage": "[T] Sage",
+        "colorBasil": "[T] Basil",
+        "colorPeacock": "[T] Peacock",
+        "colorBlueberry": "[T] Blueberry",
+        "colorLavendar": "[T] Lavendar",
+        "colorGrape": "[T] Grape",
+        "colorGraphite": "[T] Graphite",
+        "colorCoaching": "[T] Coaching",
+        "colorDojoOrange": "[T] DojoOrange",
+        "colorTwitch": "[T] Twitch",
+        "colorYoutube": "[T] Youtube",
+        "eventNotFoundError": "[T] This event cannot be found. It is either fully booked, deleted or not available to your cohort.",
+        "participantPaymentWarningOther": "[T] This user has not paid and will lose their booking in <30 min",
+        "participantPaymentWarningSelf": "[T] You have not completed payment and will lose your booking soon"
     },
     "meeting": {
         "title": "[T] Meetings",
@@ -1570,7 +1627,15 @@
         "leaveGroupParticipantButton": "[T] Leave Meeting",
         "leaveGroupParticipantTitle": "[T] Leave this meeting?",
         "leaveGroupParticipantContent": "[T] This will allow the meeting to be booked by other users and you may not be able to re-book it.",
-        "location": "[T] Location"
+        "location": "[T] Location",
+        "messagesTitle": "[T] Messages",
+        "sendMessageLabel": "[T] Send a message",
+        "sendMessageTooltip": "[T] Send Message",
+        "cancelMeetingButton": "[T] Cancel Meeting",
+        "closeAriaLabel": "[T] close",
+        "groupMeeting": "[T] Group Meeting",
+        "canceledChip": "[T] Canceled",
+        "participantsCountFlat": "[T] {count} participants"
     },
     "comments": {
         "addComment": "[T] Add a comment...",
@@ -1871,6 +1936,72 @@
             "skipForNow": "[T] Skip for now",
             "cancel": "[T] Cancel",
             "submit": "[T] Submit"
+        },
+        "edit": {
+            "editGamePage": {
+                "replacePgn": "[T] Replace PGN",
+                "replacePgnDescription": "[T] Overwrite this game's PGN data? Any comments will remain."
+            }
+        },
+        "list": {
+            "addToDirectoryDialog": {
+                "dialogTitle": "[T] Add {count, plural, =1 {# Game} other {# Games}} to {directoryName}?",
+                "fallbackFolder": "[T] Folder",
+                "currentContents": "[T] Current Contents",
+                "folderEmpty": "[T] This folder is empty",
+                "cancel": "[T] Cancel",
+                "alreadyAddedTooltip": "[T] These games are already added to this directory",
+                "addButton": "[T] Add",
+                "allAlreadyPresent": "[T] All games already present in {directoryName}",
+                "gamesAddedTo": "[T] {count, plural, =1 {Game} other {Games}} added to {directoryName}"
+            },
+            "listGamesPage": {
+                "freeTierAlert": "[T] To avoid unfair preparation against Dojo members, free-tier users have limited access to the Dojo Database. Upgrade your account to view the full Database.",
+                "analyzeGame": "[T] Analyze a Game",
+                "senseiReviewQueue": "[T] Sensei Game Review Queue",
+                "downloadDatabase": "[T] Download full database (updated daily)"
+            },
+            "searchFilters": {
+                "cohortLabel": "[T] Cohort",
+                "mastersDb": "[T] Masters DB",
+                "startDate": "[T] Start Date",
+                "endDate": "[T] End Date",
+                "search": "[T] Search",
+                "fieldRequired": "[T] This field is required",
+                "ownerDescription": "[T] Find games that you have uploaded to the Dojo Database. Note that games uploaded previously through Dojo 1.0's Google Form submission will not be matched.",
+                "playerDescription": "[T] Find games based on player name. Note this is the name as it was recorded in the PGN file.",
+                "playerName": "[T] Player Name",
+                "color": "[T] Color",
+                "either": "[T] Either",
+                "white": "[T] White",
+                "black": "[T] Black",
+                "freeTierPlayer": "[T] Free-tier users are not able to search by player name",
+                "openingDescription": "[T] Find games based on opening ECO Codes",
+                "openingEco": "[T] Opening ECO",
+                "fen": "[T] FEN",
+                "freeTierPosition": "[T] Free-tier users are not able to search by position",
+                "positionExplorer": "[T] Position Explorer",
+                "goToMyFiles": "[T] Go to My Files",
+                "searchByCohort": "[T]  Search By Cohort ",
+                "searchByPlayer": "[T] Search By Player",
+                "searchByPosition": "[T] Search By Position",
+                "searchByOpening": "[T] Search By Opening ",
+                "searchMyUploads": "[T] Search My Uploads",
+                "myFiles": "[T] My Files"
+            }
+        },
+        "view": {
+            "pgnErrorBoundary": {
+                "invalidPgn": "[T] Invalid PGN",
+                "invalidPgnDescription": "[T] Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see the error message below). This most likely happened due to a malformed PGN. If you manually produced your PGN, it is likely incorrect. If you believe your PGN is correct or are otherwise unable to correct it, please send a Discord DM to @JackStenglein with the link to this page.",
+                "resubmitPgn": "[T] Resubmit PGN",
+                "nullError": "[T] Null error",
+                "noComponentStack": "[T] No component stack",
+                "rawPgnLabel": "[T] Raw PGN:"
+            },
+            "gamePage": {
+                "preflightHint": "[T] You can fill this data out now or later in settings."
+            }
         }
     },
     "courses": {
@@ -2129,6 +2260,23 @@
                 "submit": "[T] Submit",
                 "errorRequired": "[T] This field is required",
                 "errorFetchLichess": "[T] Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting."
+            },
+            "standings": {
+                "byeTooltip": "[T] Player receieved a bye for 0.5 points",
+                "byeText": "[T] Bye",
+                "roundHeader": "[T] Round {num}",
+                "playerWithdrawnTooltip": "[T] Player was withdrawn",
+                "winAgainst": "[T] Win against player {opponent}",
+                "winByForfeit": "[T] Win by forfeit against {opponent}",
+                "lossAgainst": "[T] Loss against player {opponent}",
+                "lossByForfeit": "[T] Loss by forfeit against {opponent}",
+                "drawAgainst": "[T] Draw against player {opponent}",
+                "byeDescription": "[T] Player received a bye for 0.5 points",
+                "notPlayed": "[T] Game against player {opponent} was not played and counts as a draw",
+                "notSubmitted": "[T] Result for game against player {opponent} was not submitted and counts as a 0-0 forfeit",
+                "rankColumn": "[T] Rank",
+                "playerColumn": "[T] Player",
+                "totalColumn": "[T] Total"
             }
         },
         "roundRobin": {
@@ -2136,6 +2284,20 @@
                 "info": "[T] Info",
                 "tournaments": "[T] Tournaments",
                 "history": "[T] History"
+            },
+            "activity": {
+                "noGamesSubmitted": "[T] No games submitted yet",
+                "gamesCompleted": "[T] Games Completed",
+                "completePercent": "[T] {percent}% complete",
+                "lastGameSubmitted": "[T] Last Game Submitted",
+                "lastGameTime": "[T] {days, plural, =0 {Today} =1 {1 day ago} other {# days ago}}",
+                "columnDate": "[T] Date",
+                "columnRound": "[T] Round",
+                "columnWhite": "[T] White",
+                "columnBlack": "[T] Black",
+                "columnResult": "[T] Result",
+                "withdrawnSuffix": "[T] (Withdrawn)",
+                "stalledWarning": "[T] ⚠️ Tournament may have stalled - No games submitted in {days} days"
             },
             "list": {
                 "championsCircuit": "[T] Champions' Circuit"
@@ -2801,6 +2963,11 @@
             "showTimer": "[T] Show Timer",
             "playSoundCorrect": "[T] Play sound on correct move",
             "playSoundIncorrect": "[T] Play sound on incorrect move"
+        },
+        "sessionChart": {
+            "puzzleRating": "[T] Puzzle Rating",
+            "yourRating": "[T] Your Rating",
+            "startRating": "[T] Start Rating"
         }
     },
     "exams": {
@@ -3658,6 +3825,56 @@
             "tabYearly": "[T] Yearly",
             "autoRenewNotice": "[T] Plans automatically renew until canceled",
             "annualBillingFootnote": "[T] *When billed annually"
+        }
+    },
+    "eventLabels": {
+        "session": {
+            "ALL_SESSIONS": "[T] All Events",
+            "AVAILABILITIES": "[T] Availabilities",
+            "COACHING_SESSIONS": "[T] Coaching Sessions",
+            "DOJO_EVENTS": "[T] Dojo Events",
+            "MEETINGS": "[T] Meetings",
+            "LECTURE_TIER": "[T] Lectures",
+            "GAME_REVIEW_TIER": "[T] Game & Profile Reviews"
+        },
+        "availability": {
+            "ALL_TYPES": "[T] All Types",
+            "CLASSICAL_GAME": "[T] Classical Game",
+            "OPENING_SPARRING": "[T] Opening Sparring",
+            "MIDDLEGAME_SPARRING": "[T] Middlegame Sparring",
+            "ENDGAME_SPARRING": "[T] Endgame Sparring",
+            "ROOK_ENDGAME_PROGRESSION": "[T] Rook Endgame Progression",
+            "CLASSIC_ANALYSIS": "[T] Analyze Classic Game",
+            "ANALYZE_OWN_GAME": "[T] Analyze Own Game",
+            "BOOK_STUDY": "[T] Book Study",
+            "LESSON": "[T] Lesson/Lecture"
+        },
+        "tournamentType": {
+            "ALL_TOURNAMENT_TYPES": "[T] All Tournament Types",
+            "ARENA": "[T] Arena",
+            "SWISS": "[T] Swiss"
+        },
+        "timeControl": {
+            "BLITZ": "[T] Blitz",
+            "CLASSICAL": "[T] Classical",
+            "RAPID": "[T] Rapid",
+            "ALL_TIME_CONTROLS": "[T] All Time Controls"
+        },
+        "position": {
+            "ALL_POSITION_TYPES": "[T] All Position Types",
+            "STANDARD": "[T] Standard",
+            "CUSTOM": "[T] Custom"
+        }
+    },
+    "material": {
+        "memorizeGames": {
+            "afterPgnText": {
+                "greatJob": "[T] Great job memorizing this game!",
+                "totalMovesGuessed": "[T] You guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "whiteMovesGuessed": "[T] As white, you guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "blackMovesGuessed": "[T] As black, you guessed {correct}/{total} {total, plural, =1 {move} other {moves}} correctly ({percent}%).",
+                "restart": "[T] Restart"
+            }
         }
     }
 }

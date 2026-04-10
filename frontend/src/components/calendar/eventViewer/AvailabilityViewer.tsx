@@ -17,6 +17,7 @@ interface AvailabilityViewerProps {
 
 const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent }) => {
     const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const router = useRouter();
 
     const event = processedEvent.event as Event;
@@ -45,7 +46,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
                 iconName='meet'
                 title={t('availableTypes')}
                 body={event.types
-                    ?.map((type: AvailabilityType) => getDisplayString(type))
+                    ?.map((type: AvailabilityType) => getDisplayString(type, labelT))
                     .join(', ')}
             />
 

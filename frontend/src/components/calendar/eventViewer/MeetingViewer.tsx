@@ -15,6 +15,7 @@ interface MeetingViewerProps {
 
 const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
     const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const event = processedEvent.event as Event;
 
     const participantsLength = Object.values(event.participants).length;
@@ -31,14 +32,16 @@ const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
             {event.bookedType ? (
                 <Field
                     title={t('meetingType')}
-                    body={getDisplayString(event.bookedType)}
+                    body={getDisplayString(event.bookedType, labelT)}
                     iconName='meet'
                 />
             ) : (
                 <Field
                     title={t('meetingTypes')}
                     iconName='meet'
-                    body={event.types?.map((type) => getDisplayString(type)).join(', ') || ''}
+                    body={
+                        event.types?.map((type) => getDisplayString(type, labelT)).join(', ') || ''
+                    }
                 />
             )}
 
