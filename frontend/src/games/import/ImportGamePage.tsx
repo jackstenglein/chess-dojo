@@ -9,10 +9,12 @@ import { MY_GAMES_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/data
 import { CreateGameRequest } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import { Container } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ImportWizard from './ImportWizard';
 
 const ImportGamePage = () => {
+    const t = useTranslations('games.import.page');
     const searchParams = useSearchParams();
     const { setStagedGame, createGame, request } = useSaveGame();
     const router = useRouter();
@@ -43,7 +45,7 @@ const ImportGamePage = () => {
                 router.push('/games/analysis');
             } catch (err) {
                 logger.error?.('setStagedGame: ', err);
-                request.onFailure({ message: 'Invalid PGN' });
+                request.onFailure({ message: t('invalidPgn') });
             }
         } else {
             await createGame(req);
