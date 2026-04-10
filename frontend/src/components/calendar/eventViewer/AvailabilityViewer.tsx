@@ -6,6 +6,7 @@ import Avatar from '@/profile/Avatar';
 import Icon from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import Field from './Field';
 import OwnerField from './OwnerField';
@@ -15,6 +16,7 @@ interface AvailabilityViewerProps {
 }
 
 const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent }) => {
+    const t = useTranslations('calendar');
     const router = useRouter();
 
     const event = processedEvent.event as Event;
@@ -26,24 +28,29 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
 
     return (
         <Stack data-testid='availability-viewer' sx={{ pt: 2 }} spacing={2}>
-            {!isOwner && <OwnerField title='Owner' event={event} />}
+            {!isOwner && <OwnerField title={t('owner')} event={event} />}
 
             {event.maxParticipants > 1 && (
                 <Field
                     iconName='participant'
-                    title='Number of Participants'
-                    body={`${Object.values(event.participants).length} / ${event.maxParticipants}`}
+                    title={t('numberOfParticipants')}
+                    body={t('participantsRatio', {
+                        count: Object.values(event.participants).length,
+                        total: event.maxParticipants,
+                    })}
                 />
             )}
 
             <Field
                 iconName='meet'
-                title='Available Types'
-                body={event.types?.map((t: AvailabilityType) => getDisplayString(t)).join(', ')}
+                title={t('availableTypes')}
+                body={event.types
+                    ?.map((type: AvailabilityType) => getDisplayString(type))
+                    .join(', ')}
             />
 
             {event.description.length > 0 && (
-                <Field title='Description' body={event.description} iconName='notes' />
+                <Field title={t('description')} body={event.description} iconName='notes' />
             )}
 
             {Boolean(event.invited?.length) && isOwner && (
@@ -55,7 +62,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
                             sx={{ marginRight: '0.3rem', verticalAlign: 'middle' }}
                             fontSize='small'
                         />
-                        Invited
+                        {t('invited')}
                     </Typography>
                     {event.invited?.map((invitee) => (
                         <Stack key={invitee.username} direction='row' alignItems='center' gap={1}>
@@ -73,10 +80,10 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
             {!event.inviteOnly && (
                 <Field
                     iconName='cohort'
-                    title='Cohorts'
+                    title={t('cohorts')}
                     body={
                         dojoCohorts.length === event.cohorts.length
-                            ? 'All Cohorts'
+                            ? t('allCohorts')
                             : event.cohorts.join(', ')
                     }
                 />
@@ -90,7 +97,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
                     onClick={startBooking}
                     startIcon={<Icon name='join' />}
                 >
-                    Book
+                    {t('book')}
                 </Button>
             )}
         </Stack>

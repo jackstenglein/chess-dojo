@@ -32,6 +32,7 @@ import {
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { forwardRef, JSX } from 'react';
 import { validateEventEditor } from './eventValidation';
 import CohortsFormSection from './form/CohortsFormSection';
@@ -68,11 +69,13 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
 
     const api = useApi();
     const { user } = useRequiredAuth();
+    const t = useTranslations('calendar');
 
     const cache = useCache();
     const request = useRequest();
 
     const editor = useEventEditor(defaultStart, defaultEnd, originalEvent?.event as Event);
+    const formConfigs = getFormConfigs(t);
 
     const onSubmit = async () => {
         const [event, errors] = validateEventEditor(user, originalEvent, editor);
@@ -113,7 +116,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                 <Toolbar sx={{ gap: 1 }}>
                     <TextField
                         variant='standard'
-                        placeholder='Add title'
+                        placeholder={t('addTitle')}
                         value={editor.title}
                         onChange={(e) => editor.setTitle(e.target.value)}
                         error={Boolean(editor.errors.title)}
@@ -129,7 +132,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         disabled={request.isLoading()}
                         startIcon={<Icon name='cancel' />}
                     >
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button
                         data-testid='save-button'
@@ -140,7 +143,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         }}
                         startIcon={<Icon name='save' />}
                     >
-                        Save
+                        {t('save')}
                     </Button>
                 </Toolbar>
             </AppBar>
@@ -151,7 +154,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         size={{ xs: 12, lg: 6 }}
                         sx={{ display: 'flex', flexDirection: 'column', rowGap: 4 }}
                     >
-                        <Typography variant='h6'>Event Details</Typography>
+                        <Typography variant='h6'>{t('eventDetails')}</Typography>
 
                         {(user.isAdmin || user.isCalendarAdmin || user.isCoach) && (
                             <Stack direction='row' gap={2} flexWrap='wrap' alignItems='center'>
@@ -169,7 +172,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                 color='book'
                                                 sx={{ mr: '0.4rem', verticalAlign: 'medium' }}
                                             />{' '}
-                                            Bookable Availability
+                                            {t('bookableAvailability')}
                                         </Stack>
                                     </MenuItem>
 
@@ -181,7 +184,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                     color='dojoOrange'
                                                     sx={{ mr: '0.4rem', verticalAlign: 'medium' }}
                                                 />{' '}
-                                                Dojo Event
+                                                {t('dojoEvent')}
                                             </Stack>
                                         </MenuItem>
                                     )}
@@ -193,7 +196,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                     color='coaching'
                                                     sx={{ mr: '0.4rem', verticalAlign: 'medium' }}
                                                 />{' '}
-                                                Coaching Session
+                                                {t('coachingSession')}
                                             </Stack>
                                         </MenuItem>
                                     )}
@@ -211,7 +214,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                         fontSize: '24px',
                                                     }}
                                                 />{' '}
-                                                Group Lecture
+                                                {t('groupLecture')}
                                             </Stack>
                                         </MenuItem>,
                                         <MenuItem
@@ -223,7 +226,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                     color='info'
                                                     sx={{ mr: '0.4rem', verticalAlign: 'medium' }}
                                                 />{' '}
-                                                Game & Profile Review
+                                                {t('gameProfileReview')}
                                             </Stack>
                                         </MenuItem>,
                                     ]}
@@ -242,7 +245,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                         size={{ xs: 12, lg: 6 }}
                         sx={{ display: 'flex', flexDirection: 'column', rowGap: 4 }}
                     >
-                        <Typography variant='h6'>Guests</Typography>
+                        <Typography variant='h6'>{t('guests')}</Typography>
 
                         {formConfigs[editor.type].guests.map((config, i) => (
                             <FormSection key={i} config={config} editor={editor} user={user} />
@@ -413,180 +416,180 @@ interface FormConfig {
     guests: FormConfigSection[];
 }
 
-const classConfig: FormConfig = {
-    details: [
-        { type: 'times', enableRecurrence: true, getMinEnd: () => null },
-        {
-            type: 'location',
-            required: true,
-            helperText:
-                'Add a Zoom link, specify a Discord classroom, etc. This is how your students will access your lesson and will only be visible after they pay.',
-        },
-        {
-            type: 'description',
-            required: true,
-        },
-    ],
-    guests: [
-        {
-            type: 'cohorts',
-            helperText:
-                'Choose the cohorts that can see this event. If no cohorts are selected, all cohorts will be able to view the event.',
-            placeholder: 'Choose cohorts',
-        },
-    ],
-};
-
-const formConfigs: Record<EditableEventType, FormConfig> = {
-    [EventType.Availability]: {
+function getClassConfig(t: ReturnType<typeof useTranslations<'calendar'>>): FormConfig {
+    return {
         details: [
+            { type: 'times', enableRecurrence: true, getMinEnd: () => null },
             {
-                type: 'times',
-                getMinEnd,
+                type: 'location',
+                required: true,
+                helperText: t('classLocationHelp'),
             },
             {
-                type: 'custom',
-                element({ editor }) {
-                    const { AllTypes, ...AvailabilityTypes } = AvailabilityType;
+                type: 'description',
+                required: true,
+            },
+        ],
+        guests: [
+            {
+                type: 'cohorts',
+                helperText: t('classCohortsHelp'),
+                placeholder: t('chooseCohorts'),
+            },
+        ],
+    };
+}
 
-                    const {
-                        allAvailabilityTypes,
-                        setAllAvailabilityTypes,
-                        availabilityTypes,
-                        setAvailabilityType,
-                    } = editor;
+function getFormConfigs(
+    t: ReturnType<typeof useTranslations<'calendar'>>,
+): Record<EditableEventType, FormConfig> {
+    const classConfig = getClassConfig(t);
+    return {
+        [EventType.Availability]: {
+            details: [
+                {
+                    type: 'times',
+                    getMinEnd,
+                },
+                {
+                    type: 'custom',
+                    element({ editor }) {
+                        const { AllTypes, ...AvailabilityTypes } = AvailabilityType;
 
-                    const selectedTypes = allAvailabilityTypes
-                        ? [AllTypes]
-                        : Object.keys(availabilityTypes).filter(
-                              (t) => availabilityTypes[t as AvailabilityType],
-                          );
+                        const {
+                            allAvailabilityTypes,
+                            setAllAvailabilityTypes,
+                            availabilityTypes,
+                            setAvailabilityType,
+                        } = editor;
 
-                    const onChangeType = (newTypes: string[]) => {
-                        const addedTypes = newTypes.filter((t) => !selectedTypes.includes(t));
-                        if (addedTypes.includes(AllTypes)) {
-                            setAllAvailabilityTypes(true);
-                            Object.values(AvailabilityTypes).forEach((t) =>
-                                setAvailabilityType(t, false),
-                            );
+                        const selectedTypes = allAvailabilityTypes
+                            ? [AllTypes]
+                            : Object.keys(availabilityTypes).filter(
+                                  (at) => availabilityTypes[at as AvailabilityType],
+                              );
+
+                        const onChangeType = (newTypes: string[]) => {
+                            const addedTypes = newTypes.filter((at) => !selectedTypes.includes(at));
+                            if (addedTypes.includes(AllTypes)) {
+                                setAllAvailabilityTypes(true);
+                                Object.values(AvailabilityTypes).forEach((at) =>
+                                    setAvailabilityType(at, false),
+                                );
+                            } else {
+                                setAllAvailabilityTypes(false);
+                                Object.values(AvailabilityTypes).forEach((at) =>
+                                    setAvailabilityType(at, false),
+                                );
+                                newTypes.forEach((at) => {
+                                    if (at !== AllTypes) {
+                                        setAvailabilityType(at as AvailabilityType, true);
+                                    }
+                                });
+                            }
+                        };
+
+                        return (
+                            <MultipleSelectChip
+                                displayEmpty={t('selectMeetingTypes')}
+                                selected={selectedTypes}
+                                setSelected={onChangeType}
+                                options={Object.values(AvailabilityType).map((at) => ({
+                                    value: at,
+                                    label: getDisplayString(at),
+                                    icon: <Icon name={at} color='primary' />,
+                                }))}
+                                error={Boolean(editor.errors.types)}
+                                helperText={editor.errors.types || t('chooseMeetingTypes')}
+                                data-testid='availability-type-selector'
+                            />
+                        );
+                    },
+                },
+                {
+                    type: 'location',
+                    helperText: t('availabilityLocationHelp'),
+                },
+                {
+                    type: 'description',
+                    subtitle: t('sparringDescription'),
+                },
+            ],
+            guests: [
+                { type: 'invite' },
+                {
+                    type: 'cohorts',
+                    placeholder: t('chooseCohorts'),
+                    helperText: t('availabilityCohortsHelp'),
+                },
+                {
+                    type: 'maxParticipants',
+                    getHelperText: (editor) => {
+                        let defaultMaxParticipants = 1;
+                        if (editor.allAvailabilityTypes) {
+                            defaultMaxParticipants = 100;
                         } else {
-                            setAllAvailabilityTypes(false);
-                            Object.values(AvailabilityTypes).forEach((t) =>
-                                setAvailabilityType(t, false),
-                            );
-                            newTypes.forEach((t) => {
-                                if (t !== AllTypes) {
-                                    setAvailabilityType(t as AvailabilityType, true);
+                            Object.entries(editor.availabilityTypes).forEach(([type, enabled]) => {
+                                if (enabled) {
+                                    defaultMaxParticipants = Math.max(
+                                        defaultMaxParticipants,
+                                        getDefaultNumberOfParticipants(type as AvailabilityType),
+                                    );
                                 }
                             });
                         }
-                    };
-
-                    return (
-                        <MultipleSelectChip
-                            displayEmpty='Select Meeting Types'
-                            selected={selectedTypes}
-                            setSelected={onChangeType}
-                            options={Object.values(AvailabilityType).map((t) => ({
-                                value: t,
-                                label: getDisplayString(t),
-                                icon: <Icon name={t} color='primary' />,
-                            }))}
-                            error={Boolean(editor.errors.types)}
-                            helperText={
-                                editor.errors.types ||
-                                'Choose the meeting types you are available for.'
-                            }
-                            data-testid='availability-type-selector'
-                        />
-                    );
-                },
-            },
-            {
-                type: 'location',
-                helperText: `Add a Zoom link, specify a Discord classroom, etc. Defaults to "Discord" if left blank.`,
-            },
-            {
-                type: 'description',
-                subtitle: 'Add a sparring position or any other notes for your opponent.',
-            },
-        ],
-        guests: [
-            { type: 'invite' },
-            {
-                type: 'cohorts',
-                placeholder: 'Choose cohorts',
-                helperText: 'Choose the cohorts that can book your availability.',
-            },
-            {
-                type: 'maxParticipants',
-                getHelperText: (editor) => {
-                    let defaultMaxParticipants = 1;
-                    if (editor.allAvailabilityTypes) {
-                        defaultMaxParticipants = 100;
-                    } else {
-                        Object.entries(editor.availabilityTypes).forEach(([type, enabled]) => {
-                            if (enabled) {
-                                defaultMaxParticipants = Math.max(
-                                    defaultMaxParticipants,
-                                    getDefaultNumberOfParticipants(type as AvailabilityType),
-                                );
-                            }
+                        return t('availabilityMaxParticipantsHelp', {
+                            default: defaultMaxParticipants,
                         });
-                    }
-                    return `The number of people that can book your availability (not including yourself). Defaults to ${defaultMaxParticipants} if left blank.`;
+                    },
                 },
-            },
-        ],
-    },
-    [EventType.Dojo]: {
-        details: [
-            { type: 'times', enableRecurrence: true, getMinEnd: () => null },
-            {
-                type: 'location',
-                helperText: `Add a Zoom link, specify a Discord classroom, etc. Defaults to "No Location Provided" if left blank.`,
-            },
-            { type: 'description' },
-        ],
-        guests: [
-            {
-                type: 'cohorts',
-                helperText:
-                    'Choose the cohorts that can see this event. If no cohorts are selected, all cohorts will be able to view the event.',
-                placeholder: 'Choose cohorts',
-            },
-        ],
-    },
-    [EventType.Coaching]: {
-        details: [
-            { type: 'times', enableRecurrence: true, getMinEnd: () => null },
-            {
-                type: 'location',
-                required: true,
-                helperText:
-                    'Add a Zoom link, specify a Discord classroom, etc. This is how your students will access your lesson and will only be visible after they pay.',
-            },
-            {
-                type: 'description',
-                subtitle:
-                    'This description will be visible in the calendar and should describe what your coaching session will cover.',
-                required: true,
-            },
-            { type: 'pricing' },
-        ],
-        guests: [
-            {
-                type: 'cohorts',
-                helperText:
-                    'Choose the cohorts that can see this event. If no cohorts are selected, all cohorts will be able to view the event.',
-                placeholder: 'Choose cohorts',
-            },
-            {
-                type: 'maxParticipants',
-                helperText: 'The maximum number of students that can book your coaching session.',
-            },
-        ],
-    },
-    [EventType.LectureTier]: classConfig,
-    [EventType.GameReviewTier]: classConfig,
-};
+            ],
+        },
+        [EventType.Dojo]: {
+            details: [
+                { type: 'times', enableRecurrence: true, getMinEnd: () => null },
+                {
+                    type: 'location',
+                    helperText: t('dojoLocationHelp'),
+                },
+                { type: 'description' },
+            ],
+            guests: [
+                {
+                    type: 'cohorts',
+                    helperText: t('classCohortsHelp'),
+                    placeholder: t('chooseCohorts'),
+                },
+            ],
+        },
+        [EventType.Coaching]: {
+            details: [
+                { type: 'times', enableRecurrence: true, getMinEnd: () => null },
+                {
+                    type: 'location',
+                    required: true,
+                    helperText: t('classLocationHelp'),
+                },
+                {
+                    type: 'description',
+                    subtitle: t('coachingDescriptionHelp'),
+                    required: true,
+                },
+                { type: 'pricing' },
+            ],
+            guests: [
+                {
+                    type: 'cohorts',
+                    helperText: t('classCohortsHelp'),
+                    placeholder: t('chooseCohorts'),
+                },
+                {
+                    type: 'maxParticipants',
+                    helperText: t('coachingMaxParticipantsHelp'),
+                },
+            ],
+        },
+        [EventType.LectureTier]: classConfig,
+        [EventType.GameReviewTier]: classConfig,
+    };
+}

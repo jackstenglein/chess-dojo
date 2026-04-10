@@ -32,6 +32,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Fragment, useEffect } from 'react';
 import { datetime, RRule } from 'rrule';
 
@@ -43,15 +44,19 @@ const CANCELATION_DEADLINE = 24 * 1000 * 60 * 60; // 24 hours
  * @param meeting The meeting being canceled.
  * @returns An array containing the cancel dialog button, title and content.
  */
-function getCancelDialog(user: User, meeting: Event): [string, string, string] {
+function getCancelDialog(
+    t: ReturnType<typeof useTranslations<'meeting'>>,
+    user: User,
+    meeting: Event,
+): [string, string, string] {
     const isOwner = meeting.owner === user.username;
     const isCoaching = meeting.type === EventType.Coaching;
 
     if (isOwner && isCoaching) {
         return [
-            'Cancel Meeting',
-            'Cancel this meeting?',
-            'Canceling this meeting will refund all participants.',
+            t('cancelCoachingOwnerButton'),
+            t('cancelCoachingOwnerTitle'),
+            t('cancelCoachingOwnerContent'),
         ];
     } else if (isCoaching) {
         const now = new Date().getTime();
@@ -59,47 +64,40 @@ function getCancelDialog(user: User, meeting: Event): [string, string, string] {
             new Date(meeting.bookedStartTime || meeting.startTime).getTime() - CANCELATION_DEADLINE;
         if (now >= cancelationTime) {
             return [
-                'Leave Meeting',
-                'Leave this meeting?',
-                'It is within 24 hours of the start of the meeting, so you will not receive a refund.',
+                t('leaveCoachingWithin24hButton'),
+                t('leaveCoachingWithin24hTitle'),
+                t('leaveCoachingWithin24hContent'),
             ];
         }
         return [
-            'Leave Meeting',
-            'Leave this meeting?',
-            'It is greater than 24 hours before the start of the meeting, so you will receive a full refund.',
+            t('leaveCoachingOver24hButton'),
+            t('leaveCoachingOver24hTitle'),
+            t('leaveCoachingOver24hContent'),
         ];
     }
 
     const isSolo = meeting.maxParticipants === 1;
     if (isSolo && isOwner) {
-        return [
-            'Cancel Meeting',
-            'Cancel this meeting?',
-            'Ownership of this meeting will be transferred to your opponent and other users will be able to book the meeting.',
-        ];
+        return [t('cancelSoloOwnerButton'), t('cancelSoloOwnerTitle'), t('cancelSoloOwnerContent')];
     } else if (isOwner) {
-        return [
-            'Leave Meeting',
-            'Leave this meeting?',
-            'Ownership of this meeting will be transferred to one of the participants, and you may not be able to re-join it later if other users book it.',
-        ];
+        return [t('leaveGroupOwnerButton'), t('leaveGroupOwnerTitle'), t('leaveGroupOwnerContent')];
     } else if (isSolo) {
         return [
-            'Cancel Meeting',
-            'Cancel this meeting?',
-            'This will allow the meeting to be booked by other users and you may not be able to re-book it.',
+            t('cancelSoloParticipantButton'),
+            t('cancelSoloParticipantTitle'),
+            t('cancelSoloParticipantContent'),
         ];
     } else {
         return [
-            'Leave Meeting',
-            'Leave this meeting?',
-            'This will allow the meeting to be booked by other users and you may not be able to re-book it.',
+            t('leaveGroupParticipantButton'),
+            t('leaveGroupParticipantTitle'),
+            t('leaveGroupParticipantContent'),
         ];
     }
 }
 
 export function MeetingPage({ meetingId }: { meetingId: string }) {
+    const t = useTranslations('meeting');
     const cache = useCache();
     const { user } = useAuth();
     const checkoutRequest = useRequest();
@@ -145,9 +143,9 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
     if (!isLiveClass && Object.values(meeting.participants).length === 0) {
         return (
             <Container maxWidth='md' sx={{ py: 4 }}>
-                <Typography>This meeting has not been booked yet.</Typography>
+                <Typography>{t('notBooked')}</Typography>
                 <Button component={Link} href='/calendar' variant='contained' sx={{ mt: 2 }}>
-                    Return to Calendar
+                    {t('returnToCalendar')}
                 </Button>
             </Container>
         );
@@ -187,7 +185,11 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
     const isCanceled = meeting.status === EventStatus.Canceled;
     const participant = meeting.participants[user.username];
 
-    const [cancelButton, cancelDialogTitle, cancelDialogContent] = getCancelDialog(user, meeting);
+    const [cancelButton, cancelDialogTitle, cancelDialogContent] = getCancelDialog(
+        t,
+        user,
+        meeting,
+    );
 
     const onCompletePayment = () => {
         if (!meetingId) {
@@ -226,25 +228,23 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                                 loading={checkoutRequest.isLoading()}
                                 onClick={onCompletePayment}
                             >
-                                Complete Payment
+                                {t('completePayment')}
                             </LoadingButton>
                         }
                     >
-                        You have not completed payment for this coaching session and will lose your
-                        booking soon.
+                        {t('paymentWarning')}
                     </Alert>
                 )}
 
                 {isCoaching && isCanceled && (
                     <Alert severity='warning' variant='filled'>
-                        This meeting has been canceled by the coach. If you have already completed
-                        payment, you will receive a full refund.
+                        {t('canceledByCoach')}
                     </Alert>
                 )}
 
                 <Card variant='outlined'>
                     <CardHeader
-                        title={meeting.title || 'Meeting Details'}
+                        title={meeting.title || t('meetingDetails')}
                         action={
                             !isCanceled &&
                             !isLiveClass && (
@@ -262,68 +262,66 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                     <CardContent>
                         <Stack spacing={3}>
                             <Field
-                                title='Times'
-                                body={times.map((t, i) => (
-                                    <Fragment key={t}>
-                                        {t}
+                                title={t('times')}
+                                body={times.map((time, i) => (
+                                    <Fragment key={time}>
+                                        {time}
                                         {i < times.length - 1 && <br />}
                                     </Fragment>
                                 ))}
                             />
 
                             <Field
-                                title='Description'
+                                title={t('description')}
                                 slotProps={{ body: { whiteSpace: 'pre-line' } }}
                                 body={meeting.description}
                             />
-                            <Field title='Location' body={meeting.location || 'Discord'} />
+                            <Field title={t('location')} body={meeting.location || t('discord')} />
 
                             <Field
-                                title='Meeting Type(s)'
+                                title={t('meetingTypes')}
                                 body={
                                     meeting.bookedType
                                         ? getDisplayString(meeting.bookedType)
-                                        : meeting.types?.map((t) => getDisplayString(t)).join(', ')
+                                        : meeting.types
+                                              ?.map((type) => getDisplayString(type))
+                                              .join(', ')
                                 }
                             />
 
                             {isLiveClass && (
                                 <>
                                     <Field
-                                        title='Recordings'
-                                        body={
-                                            <>
-                                                Recordings will be available{' '}
-                                                <Link href='/learn/live-classes'>here</Link> a few
-                                                hours after the class.
-                                            </>
-                                        }
+                                        title={t('recordings')}
+                                        body={t.rich('recordingsInfo', {
+                                            link: (chunks) => (
+                                                <Link href='/learn/live-classes'>{chunks}</Link>
+                                            ),
+                                        })}
                                     />
 
                                     <Field
-                                        title='Discord'
-                                        body={
-                                            <>
-                                                Communicate with other members of the class in{' '}
+                                        title={t('discord')}
+                                        body={t.rich('discordChannel', {
+                                            link: (chunks) => (
                                                 <Link
                                                     href={`https://discord.com/channels/${getConfig().discord.guildId}/${meeting.gameReviewCohort?.discordChannelId || meeting.discordChannelId}`}
                                                     target='_blank'
                                                 >
-                                                    this Discord channel
+                                                    {chunks}
                                                 </Link>
-                                                .
-                                            </>
-                                        }
+                                            ),
+                                        })}
                                     />
                                 </>
                             )}
 
                             {!isSolo && !isGameReviewTier && (
                                 <Field
-                                    title='Cohorts'
+                                    title={t('cohorts')}
                                     body={
                                         meeting.cohorts.length === dojoCohorts.length
-                                            ? 'All Cohorts'
+                                            ? t('allCohorts')
                                             : meeting.cohorts.join(', ')
                                     }
                                 />
@@ -334,7 +332,7 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
 
                 {isGameReviewTier && meeting.gameReviewCohort && (
                     <Stack spacing={1}>
-                        <Typography variant='h5'>Review Queue</Typography>
+                        <Typography variant='h5'>{t('reviewQueue')}</Typography>
                         <GameReviewCohortQueue
                             gameReviewCohort={meeting.gameReviewCohort}
                             setGameReviewCohort={onUpdateGameReviewCohort}
@@ -347,13 +345,13 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                         <CardHeader
                             title={
                                 <Stack direction='row' spacing={2} alignItems='center'>
-                                    <Typography variant='h5'>Participants</Typography>
+                                    <Typography variant='h5'>{t('participants')}</Typography>
                                     {isCoaching &&
                                         isOwner &&
                                         Object.values(meeting.participants).some(
                                             (p) => !p.hasPaid,
                                         ) && (
-                                            <Tooltip title='Some users have not paid and will lose their booking in ~30 min'>
+                                            <Tooltip title={t('unpaidWarning')}>
                                                 <Warning color='warning' />
                                             </Tooltip>
                                         )}

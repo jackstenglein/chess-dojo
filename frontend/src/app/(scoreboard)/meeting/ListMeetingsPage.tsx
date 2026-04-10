@@ -8,10 +8,12 @@ import { Link } from '@/components/navigation/Link';
 import { Event } from '@/database/event';
 import LoadingPage from '@/loading/LoadingPage';
 import { Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const ONE_HOUR = 3600000;
 
 export const ListMeetingsPage = () => {
+    const t = useTranslations('meeting');
     const { user } = useAuth();
     const { events, request } = useEvents();
 
@@ -43,18 +45,15 @@ export const ListMeetingsPage = () => {
             <RequestSnackbar request={request} />
 
             <Stack spacing={2} alignItems='start'>
-                <Typography variant='h4'>Meetings</Typography>
+                <Typography variant='h4'>{t('title')}</Typography>
 
                 {requestLoading && meetings.length === 0 && <CircularProgress />}
 
                 {!requestLoading && meetings.length === 0 && (
                     <>
-                        <Typography variant='body1'>
-                            Looks like you don't have any meetings. Go to the calendar and schedule
-                            one now!
-                        </Typography>
+                        <Typography variant='body1'>{t('emptyMessage')}</Typography>
                         <Button variant='contained' component={Link} href='/calendar'>
-                            Go to Calendar
+                            {t('goToCalendar')}
                         </Button>
                     </>
                 )}
