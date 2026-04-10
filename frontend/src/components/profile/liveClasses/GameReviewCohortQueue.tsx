@@ -24,6 +24,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { datetime, RRule } from 'rrule';
 
 export function GameReviewCohortQueue({
@@ -33,6 +34,7 @@ export function GameReviewCohortQueue({
     gameReviewCohort: GameReviewCohort;
     setGameReviewCohort: (grc: GameReviewCohort) => void;
 }) {
+    const t = useTranslations('profile.gameReviewQueue');
     const { user } = useAuth();
     const request = useRequest();
 
@@ -71,10 +73,10 @@ export function GameReviewCohortQueue({
                 <TableHead>
                     <TableRow>
                         <TableCell></TableCell>
-                        <TableCell>User</TableCell>
-                        <TableCell>Joined Queue At</TableCell>
-                        <TableCell>Peer Review</TableCell>
-                        <TableCell>Sensei Review</TableCell>
+                        <TableCell>{t('user')}</TableCell>
+                        <TableCell>{t('joinedQueueAt')}</TableCell>
+                        <TableCell>{t('peerReview')}</TableCell>
+                        <TableCell>{t('senseiReview')}</TableCell>
                         <TableCell></TableCell>
                     </TableRow>
                 </TableHead>
@@ -92,7 +94,7 @@ export function GameReviewCohortQueue({
                             <TableRow key={member.username}>
                                 <TableCell>
                                     {member.paused ? (
-                                        <Tooltip title='This user is paused. They will be skipped in the queue until they unpause.'>
+                                        <Tooltip title={t('pausedTooltip')}>
                                             <Block sx={{ color: 'text.secondary' }} />
                                         </Tooltip>
                                     ) : (
@@ -193,7 +195,7 @@ export function GameReviewCohortQueue({
                                                 onClick={() => onMoveToBottom(member.username)}
                                                 disabled={request.isLoading()}
                                             >
-                                                Move to Bottom
+                                                {t('moveToBottom')}
                                             </Button>
                                         </Stack>
                                     )}
@@ -222,6 +224,7 @@ function PauseButton({
     member: GameReviewCohortMember;
     onClickPause: (username: string, pause: boolean) => void;
 }) {
+    const t = useTranslations('profile.gameReviewQueue');
     return (
         <Button
             color='secondary'
@@ -229,7 +232,7 @@ function PauseButton({
             onClick={() => onClickPause(member.username, !member.paused)}
             {...props}
         >
-            {member.paused ? 'Unpause' : 'Pause'}
+            {member.paused ? t('unpause') : t('pause')}
         </Button>
     );
 }

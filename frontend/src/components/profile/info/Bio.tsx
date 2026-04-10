@@ -1,4 +1,5 @@
 import { Box, Button, Link, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLayoutEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 
@@ -29,6 +30,7 @@ interface BioProps {
 }
 
 const Bio: React.FC<BioProps> = ({ bio }) => {
+    const t = useTranslations('profile.info.bio');
     const { ref, isTruncated, showMore, toggleShowMore } = useTruncatedElement();
 
     if (!bio) {
@@ -69,7 +71,7 @@ const Bio: React.FC<BioProps> = ({ bio }) => {
             </Box>
             {isTruncated && (
                 <Button onClick={toggleShowMore} size='small'>
-                    Show {showMore ? 'Less' : 'More'}
+                    {showMore ? t('showLess') : t('showMore')}
                 </Button>
             )}
         </Stack>

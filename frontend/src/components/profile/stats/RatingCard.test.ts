@@ -48,7 +48,7 @@ describe('RatingCard.tsx', () => {
 
             const history = [{ date: stringifyDate(today), rating: 1500 }];
 
-            expect(getChartData(history, 1500)[0].label).toBe('Rating');
+            expect(getChartData(history, 1500, 'Rating')[0].label).toBe('Rating');
         });
 
         it('provides correct data for a normal sample case', () => {
@@ -60,7 +60,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 6)), rating: 1300 },
             ];
 
-            const result = simplify(getChartData(history, 1400));
+            const result = simplify(getChartData(history, 1400, 'Rating'));
 
             expect(result[0].date).toBe(stringifyDate(subtractDays(today, 20)));
             expect(result[0].rating).toBe(1100);
@@ -74,11 +74,11 @@ describe('RatingCard.tsx', () => {
         });
 
         it('returns an empty array when history is undefined', () => {
-            expect(getChartData(undefined, 1500)).toEqual([]);
+            expect(getChartData(undefined, 1500, 'Rating')).toEqual([]);
         });
 
         it('returns an empty array when history is empty', () => {
-            expect(getChartData([], 1500)).toEqual([]);
+            expect(getChartData([], 1500, 'Rating')).toEqual([]);
         });
 
         it('returns an empty array when all ratings are zero', () => {
@@ -89,7 +89,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(today), rating: 0 },
             ];
 
-            const result = getChartData(history, 1500);
+            const result = getChartData(history, 1500, 'Rating');
 
             expect(result).toEqual([]);
         });
@@ -104,7 +104,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 1)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result.every((datum) => datum.rating > 0)).toBe(true);
         });
@@ -119,7 +119,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 1)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1400));
+            const result = simplify(getChartData(history, 1400, 'Rating'));
 
             expect(result[0].date).toBe(stringifyDate(subtractDays(today, 8)));
         });
@@ -132,7 +132,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 8)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[result.length - 1].rating).toBe(1300);
         });
@@ -146,7 +146,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 1)), rating: 1300 },
             ];
 
-            const result = simplify(getChartData(history, 1400));
+            const result = simplify(getChartData(history, 1400, 'Rating'));
 
             expect(result[result.length - 1].rating).toBe(1400);
         });
@@ -160,7 +160,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(today), rating: 1300 },
             ];
 
-            const result = simplify(getChartData(history, 1400));
+            const result = simplify(getChartData(history, 1400, 'Rating'));
 
             expect(result[result.length - 1].rating).toBe(1300);
         });
@@ -173,7 +173,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 7)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[1].date).toBe(stringifyDate(subtractDays(today, 14)));
         });
@@ -186,7 +186,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 7)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[1].rating).toBe(1100);
         });
@@ -200,7 +200,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 7)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[1].date).toBe(stringifyDate(subtractDays(today, 14)));
             expect(result[1].rating).toBe(1100);
@@ -214,7 +214,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 7)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[2].date).toBe(stringifyDate(subtractDays(today, 7)));
             expect(result[2].rating).toBe(1200);
@@ -228,7 +228,7 @@ describe('RatingCard.tsx', () => {
                 { date: stringifyDate(subtractDays(today, 7)), rating: 1200 },
             ];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[0].date).toBe(stringifyDate(subtractDays(today, 21)));
             expect(result[0].rating).toBe(1100);
@@ -239,14 +239,14 @@ describe('RatingCard.tsx', () => {
 
             const history = [{ date: stringifyDate(subtractDays(today, 7)), rating: 1200 }];
 
-            const result = simplify(getChartData(history, 1300));
+            const result = simplify(getChartData(history, 1300, 'Rating'));
 
             expect(result[1].date).toBe(stringifyDate(today));
             expect(result[1].rating).toBe(1300);
 
             const history2 = [{ date: stringifyDate(subtractDays(today, 14)), rating: 1200 }];
 
-            const result2 = simplify(getChartData(history2, 1300));
+            const result2 = simplify(getChartData(history2, 1300, 'Rating'));
 
             expect(result2[2].date).toBe(stringifyDate(today));
             expect(result2[2].rating).toBe(1300);

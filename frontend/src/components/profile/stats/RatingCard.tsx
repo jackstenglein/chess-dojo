@@ -26,6 +26,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { AxisOptions, Chart } from 'react-charts';
 
@@ -74,7 +75,11 @@ function datesAreSameDay(first: Date, second: Date) {
     );
 }
 
-export function getChartData(ratingHistory: RatingHistory[] | undefined, currentRating: number) {
+export function getChartData(
+    ratingHistory: RatingHistory[] | undefined,
+    currentRating: number,
+    label: string,
+) {
     if (!ratingHistory) {
         return [];
     }
@@ -125,7 +130,7 @@ export function getChartData(ratingHistory: RatingHistory[] | undefined, current
         });
     }
 
-    return [{ label: 'Rating', data }];
+    return [{ label, data }];
 }
 
 function RatingProfileLink({
@@ -201,6 +206,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
     onRefresh,
     refreshCooldown,
 }) => {
+    const t = useTranslations('profile.stats.ratingCard');
     const { user } = useAuth();
     const dark = !user?.enableLightMode;
     const [refreshing, setRefreshing] = useState(false);
@@ -208,8 +214,8 @@ const RatingCard: React.FC<RatingCardProps> = ({
     const graduation = getRatingBoundary(cohort, system);
 
     const historyData = useMemo(() => {
-        return getChartData(ratingHistory, currentRating);
-    }, [ratingHistory, currentRating]);
+        return getChartData(ratingHistory, currentRating, t('ratingChartLabel'));
+    }, [ratingHistory, currentRating, t]);
 
     if (!system || (!currentRating && !startRating)) {
         return null;
@@ -225,7 +231,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         <Stack>
                             <Typography variant='h6' sx={{ mb: -1 }}>
                                 {formatRatingSystem(system)}
-                                {isCustom(system) && name && ` (${name})`}
+                                {isCustom(system) && name && t('customRatingDisplayName', { name })}
                             </Typography>
                             <RatingProfileLink
                                 usernameHidden={usernameHidden}
@@ -235,7 +241,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         </Stack>
                     </Stack>
 
-                    {isPreferred && <Chip label='Preferred' variant='outlined' color='success' />}
+                    {isPreferred && (
+                        <Chip label={t('preferred')} variant='outlined' color='success' />
+                    )}
                 </Stack>
 
                 <Grid container justifyContent='space-around' rowGap={2}>
@@ -246,7 +254,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                     >
                         <Stack alignItems='center'>
                             <Typography variant='subtitle2' color='text.secondary'>
-                                Current
+                                {t('current')}
                             </Typography>
                             <Stack direction='row' alignItems='end'>
                                 <Typography
@@ -263,8 +271,8 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     <Tooltip
                                         title={
                                             refreshCooldown
-                                                ? `Try again in ${refreshCooldown}s`
-                                                : 'Refresh rating'
+                                                ? t('tryAgainSeconds', { seconds: refreshCooldown })
+                                                : t('refreshRating')
                                         }
                                     >
                                         <span>
@@ -295,7 +303,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                         </span>
                                     </Tooltip>
                                 ) : (
-                                    <Tooltip title='Ratings are updated every 24 hours'>
+                                    <Tooltip title={t('ratingsUpdatedTooltip')}>
                                         <HelpIcon
                                             sx={{
                                                 mb: '5px',
@@ -316,7 +324,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                     >
                         <Stack alignItems='center'>
                             <Typography variant='subtitle2' color='text.secondary'>
-                                Start
+                                {t('start')}
                             </Typography>
 
                             <Typography
@@ -338,7 +346,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                     >
                         <Stack alignItems='center'>
                             <Typography variant='subtitle2' color='text.secondary'>
-                                Change
+                                {t('change')}
                             </Typography>
 
                             <Stack direction='row' alignItems='start'>
@@ -384,7 +392,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         >
                             <Stack alignItems='center'>
                                 <Typography variant='subtitle2' color='text.secondary'>
-                                    Normalized
+                                    {t('normalized')}
                                 </Typography>
                                 <Stack direction='row' alignItems='end'>
                                     <Typography
@@ -396,7 +404,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     >
                                         {Math.round(getNormalizedRating(currentRating, system))}
                                     </Typography>
-                                    <Tooltip title='Normalized Dojo rating using the table on Material > Rating Conversions'>
+                                    <Tooltip title={t('normalizedTooltip')}>
                                         <HelpIcon
                                             sx={{
                                                 mb: '5px',
@@ -421,7 +429,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                 color='text.secondary'
                                 whiteSpace='nowrap'
                             >
-                                Next Graduation
+                                {t('nextGraduation')}
                             </Typography>
 
                             <Typography
@@ -431,7 +439,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     fontWeight: 'bold',
                                 }}
                             >
-                                {graduation || 'N/A'}
+                                {graduation || t('naLabel')}
                             </Typography>
                         </Stack>
                     </Grid>
@@ -452,7 +460,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
                             />
                         </Box>
                         <Typography variant='caption' color='text.secondary' mt={0.5} ml={0.5}>
-                            *Graphs are updated weekly
+                            {t('graphsUpdatedNote')}
                         </Typography>
                     </Stack>
                 )}
