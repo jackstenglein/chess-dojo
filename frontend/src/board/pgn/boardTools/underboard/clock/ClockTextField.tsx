@@ -4,6 +4,7 @@ import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Stack, TextField } from '@mui/material';
 import { TimeField } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import { convertSecondsToDateTime, onChangeClock } from './ClockEditor';
@@ -21,6 +22,7 @@ interface ClockTextFieldProps {
 
 const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.underboard.clock');
     const [clockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
         ClockFieldFormat.SingleField,
@@ -37,8 +39,8 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
         return (
             <TextField
                 id={BlockBoardKeyboardShortcuts}
-                label={label || 'Clock (total minutes)'}
-                placeholder='Total minutes'
+                label={label || t('clockTotalMinutesLabel')}
+                placeholder={t('totalMinutesPlaceholder')}
                 value={displayValue}
                 disabled={!move}
                 onChange={(event) => {
@@ -69,7 +71,7 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
         return (
             <TimeField
                 id={BlockBoardKeyboardShortcuts}
-                label={label || 'Clock (hh:mm:ss)'}
+                label={label || t('clockHhmmssLabel')}
                 format='HH:mm:ss'
                 value={
                     convertSecondsToDateTime(clockToSeconds(move.commentDiag?.clk)) ||
@@ -88,7 +90,7 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
         return (
             <Stack direction='row' spacing={1}>
                 <TextField
-                    label='Hours'
+                    label={t('hoursLabel')}
                     id={BlockBoardKeyboardShortcuts}
                     value={timeSlots.hours}
                     disabled={!move}
@@ -98,7 +100,7 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
                     fullWidth
                 />
                 <TextField
-                    label='Minutes'
+                    label={t('minutesLabel')}
                     id={BlockBoardKeyboardShortcuts}
                     value={timeSlots.minutes}
                     disabled={!move}
@@ -108,7 +110,7 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
                     fullWidth
                 />
                 <TextField
-                    label='Seconds'
+                    label={t('secondsLabel')}
                     id={BlockBoardKeyboardShortcuts}
                     value={timeSlots.seconds}
                     disabled={!move}

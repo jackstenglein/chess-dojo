@@ -21,6 +21,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 import { useReconcile } from '../../../Board';
 import {
@@ -79,6 +80,8 @@ interface EditorProps {
     setFocusEditor: (v: boolean) => void;
 }
 
+type EditorT = ReturnType<typeof useTranslations<'analysisBoard.underboard'>>;
+
 const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
     const { chess, config } = useChess();
     const reconcile = useReconcile();
@@ -88,6 +91,8 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
     const [commentType, setCommentType] = useState(CommentType.After);
     const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess);
     const [moreNagAnchorEl, setMoreNagAnchorEl] = useState<HTMLElement>();
+
+    const t = useTranslations('analysisBoard.underboard');
 
     useEffect(() => {
         if (chess) {
@@ -186,7 +191,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
         config?.disableTakebacks === 'both' ||
         (Boolean(move) && config?.disableTakebacks?.[0] === move?.color);
 
-    const nullMoveStatus = getNullMoveStatus(chess);
+    const nullMoveStatus = getNullMoveStatus(chess, t);
 
     return (
         <CardContent sx={{ height: { md: 1 } }}>
@@ -197,9 +202,9 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                     !move && (
                         <Stack>
                             <Stack direction='row' alignItems='center' spacing={0.5}>
-                                <Typography variant='subtitle1'>Time Control</Typography>
+                                <Typography variant='subtitle1'>{t('timeControl')}</Typography>
 
-                                <Tooltip title='Edit time control'>
+                                <Tooltip title={t('editTimeControl')}>
                                     <IconButton
                                         size='small'
                                         sx={{ position: 'relative', top: '-2px' }}
@@ -232,7 +237,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                 >
                     <TextField
                         inputRef={textFieldRef}
-                        label='Comments'
+                        label={t('editorComments')}
                         id={BlockBoardKeyboardShortcuts}
                         multiline
                         minRows={isMainline ? 3 : 7}
@@ -267,12 +272,12 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                             <FormControlLabel
                                 value={CommentType.Before}
                                 control={<Radio size='small' />}
-                                label='Comment Before'
+                                label={t('commentBefore')}
                             />
                             <FormControlLabel
                                 value={CommentType.After}
                                 control={<Radio size='small' />}
-                                label='Comment After'
+                                label={t('commentAfter')}
                             />
                         </RadioGroup>
                     )}
@@ -321,7 +326,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                             />
                         ))}
 
-                        <Tooltip title='View more' disableInteractive>
+                        <Tooltip title={t('viewMore')} disableInteractive>
                             <span style={{ width: `${100 / 8}%` }}>
                                 <ToggleButton
                                     value='more'
@@ -370,13 +375,13 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                                     color='primary'
                                     variant='outlined'
                                 >
-                                    Null
+                                    {t('nullMove')}
                                 </Button>
                             </span>
                         </Tooltip>
                     )}
 
-                    <Tooltip title='Make main line'>
+                    <Tooltip title={t('makeMainLine')}>
                         <span>
                             <Button
                                 disabled={chess.isInMainline(move) || takebacksDisabled}
@@ -389,7 +394,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         </span>
                     </Tooltip>
 
-                    <Tooltip title='Move variation up'>
+                    <Tooltip title={t('moveVariationUp')}>
                         <span>
                             <Button
                                 disabled={!chess.canPromoteVariation(move) || takebacksDisabled}
@@ -402,7 +407,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         </span>
                     </Tooltip>
 
-                    <Tooltip title='Delete this move and all moves after it'>
+                    <Tooltip title={t('deleteMovesAfter')}>
                         <span>
                             <Button
                                 onClick={() => onDelete(move, 'after')}
@@ -415,12 +420,15 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         </span>
                     </Tooltip>
                     <Tooltip
-                        title={getDeleteBeforeTooltip({
-                            allowDeleteBefore: config?.allowDeleteBefore,
-                            takebacksDisabled,
-                            isMainline,
-                            move,
-                        })}
+                        title={getDeleteBeforeTooltip(
+                            {
+                                allowDeleteBefore: config?.allowDeleteBefore,
+                                takebacksDisabled,
+                                isMainline,
+                                move,
+                            },
+                            t,
+                        )}
                     >
                         <span>
                             <Button
@@ -450,51 +458,53 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
 
 export default Editor;
 
-function getNullMoveStatus(chess: Chess): { disabled: boolean; tooltip: string } {
+function getNullMoveStatus(chess: Chess, t: EditorT): { disabled: boolean; tooltip: string } {
     if (chess.isCheck()) {
         return {
             disabled: true,
-            tooltip: 'Add a null move. Null moves cannot be added while in check.',
+            tooltip: t('nullMoveCheckWarning'),
         };
     }
     if (chess.isGameOver()) {
         return {
             disabled: true,
-            tooltip: 'Add a null move. Null moves cannot be added while the game is over.',
+            tooltip: t('nullMoveGameOverWarning'),
         };
     }
     if (chess.currentMove()?.san === 'Z0') {
         return {
             disabled: true,
-            tooltip: 'Add a null move. Multiple null moves cannot be added in a row.',
+            tooltip: t('nullMoveMultipleWarning'),
         };
     }
     return {
         disabled: false,
-        tooltip:
-            'Add a null move. You can also add a null move by moving the king onto the enemy king.',
+        tooltip: t('nullMoveDefault'),
     };
 }
 
-function getDeleteBeforeTooltip({
-    allowDeleteBefore,
-    takebacksDisabled,
-    isMainline,
-    move,
-}: {
-    allowDeleteBefore?: boolean;
-    takebacksDisabled?: boolean;
-    isMainline?: boolean;
-    move?: Move | null;
-}) {
+function getDeleteBeforeTooltip(
+    {
+        allowDeleteBefore,
+        takebacksDisabled,
+        isMainline,
+        move,
+    }: {
+        allowDeleteBefore?: boolean;
+        takebacksDisabled?: boolean;
+        isMainline?: boolean;
+        move?: Move | null;
+    },
+    t: EditorT,
+) {
     if (!allowDeleteBefore || takebacksDisabled) {
-        return 'Make this the first move and delete all moves before it. This action is not allowed';
+        return t('deleteBeforeNotAllowed');
     }
     if (!isMainline) {
-        return 'Make this the first move and delete all moves before it. This action is only available for mainline moves';
+        return t('deleteBeforeNotMainline');
     }
     if (!move?.previous) {
-        return 'Make this the first move and delete all moves before it. This action is not available for the first move';
+        return t('deleteBeforeNoFirstMove');
     }
-    return 'Make this the first move and delete all moves before it';
+    return t('deleteBefore');
 }

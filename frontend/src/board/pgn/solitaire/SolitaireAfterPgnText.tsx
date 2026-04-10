@@ -1,5 +1,6 @@
 import { EventType } from '@jackstenglein/chess';
 import { Button, Divider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useChess } from '../PgnBoard';
 
@@ -13,6 +14,7 @@ export function SolitaireAfterPgnText() {
 
 function CompletedAfterPgnText() {
     const { solitaire } = useChess();
+    const t = useTranslations('analysisBoard.chrome');
     if (!solitaire) {
         return;
     }
@@ -23,35 +25,44 @@ function CompletedAfterPgnText() {
     const totalMoves = white.total + black.total;
     const totalPercentage =
         totalMoves === 0 ? 0 : Math.round((100 * (white.correct + black.correct)) / totalMoves);
+    const whitePercentage = white.total === 0 ? 0 : Math.round((100 * white.correct) / white.total);
+    const blackPercentage = black.total === 0 ? 0 : Math.round((100 * black.correct) / black.total);
 
     return (
         <Stack alignItems='center' sx={{ pb: 1, textAlign: 'center' }}>
             <Divider sx={{ width: 1, mb: 2 }} />
-            <Typography>Great job completing this game!</Typography>
+            <Typography>{t('solitaireCompletionMessage')}</Typography>
             <Typography sx={{ mt: 1 }}>
-                You guessed {white.correct + black.correct}/{totalMoves} move
-                {totalMoves !== 1 ? 's' : ''} correctly ({totalPercentage}%).
+                {t('solitaireGuessedSummary', {
+                    correct: white.correct + black.correct,
+                    total: totalMoves,
+                    percentage: totalPercentage,
+                })}
             </Typography>
             {solitaire.playAs === 'both' && (
                 <>
                     <Typography>
-                        As white, you guessed {white.correct}/{white.total} move
-                        {white.total !== 1 ? 's' : ''} correctly (
-                        {white.total === 0 ? 0 : Math.round((100 * white.correct) / white.total)}
-                        %).
+                        {t('solitaireWhiteGuessedSummary', {
+                            correct: white.correct,
+                            total: white.total,
+                            percentage: whitePercentage,
+                        })}
                     </Typography>
                     <Typography>
-                        As black, you guessed {black.correct}/{black.total} move
-                        {black.total !== 1 ? 's' : ''} correctly (
-                        {black.total === 0 ? 0 : Math.round((100 * black.correct) / black.total)}
-                        %).
+                        {t('solitaireBlackGuessedSummary', {
+                            correct: black.correct,
+                            total: black.total,
+                            percentage: blackPercentage,
+                        })}
                     </Typography>
                 </>
             )}
 
             <Stack direction='row' sx={{ mt: 1 }}>
-                <Button onClick={() => solitaire?.start(null)}>Restart</Button>
-                <Button onClick={solitaire?.stop}>Exit Solitaire Mode</Button>
+                <Button onClick={() => solitaire?.start(null)}>
+                    {t('solitaireRestartButton')}
+                </Button>
+                <Button onClick={solitaire?.stop}>{t('solitaireExitButton')}</Button>
             </Stack>
         </Stack>
     );
@@ -60,6 +71,7 @@ function CompletedAfterPgnText() {
 export function InProgressAfterPgnText() {
     const { chess, board, solitaire } = useChess();
     const [, setForceRender] = useState(0);
+    const t = useTranslations('analysisBoard.chrome');
 
     useEffect(() => {
         const observer = {
@@ -92,10 +104,10 @@ export function InProgressAfterPgnText() {
             <Divider sx={{ width: 1 }} />
             <Stack direction='row' sx={{ my: 1, px: 1 }}>
                 <Button disabled={solitaire?.complete} onClick={() => onHint('hint')}>
-                    Hint
+                    {t('solitaireHintButton')}
                 </Button>
                 <Button disabled={solitaire?.complete} onClick={() => onHint('answer')}>
-                    Show Answer
+                    {t('solitaireAnswerButton')}
                 </Button>
             </Stack>
         </Stack>

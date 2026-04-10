@@ -12,6 +12,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Database from '../Database';
 import { ExplorerDatabaseType } from '../Explorer';
@@ -25,6 +26,7 @@ function onClickGame(game: GameInfo) {
 }
 
 export function PlayerTab({ fen }: { fen: string }) {
+    const t = useTranslations('analysisBoard.explorer.player');
     const {
         sources,
         setSources,
@@ -43,7 +45,7 @@ export function PlayerTab({ fen }: { fen: string }) {
     if (isFreeTier) {
         return (
             <Box mt={2}>
-                <UpsellAlert>Upgrade to a full account to search by player.</UpsellAlert>
+                <UpsellAlert>{t('upsellSearchByPlayer')}</UpsellAlert>
             </Box>
         );
     }
@@ -71,7 +73,7 @@ export function PlayerTab({ fen }: { fen: string }) {
                     }}
                     expandIcon={<ExpandMore />}
                 >
-                    <Typography>Filters</Typography>
+                    <Typography>{t('filtersLabel')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 0 }}>
                     <PlayerSources
@@ -86,9 +88,7 @@ export function PlayerTab({ fen }: { fen: string }) {
 
             {isLoading && (
                 <Stack direction='row' spacing={1} my={1}>
-                    <Typography>
-                        {indexedCount} game{indexedCount === 1 ? '' : 's'} loaded...
-                    </Typography>
+                    <Typography>{t('gamesLoadedCount', { count: indexedCount })}</Typography>
                     <CircularProgress size={20} />
                 </Stack>
             )}
@@ -106,7 +106,7 @@ export function PlayerTab({ fen }: { fen: string }) {
 
             {!isLoading && !openingTree.current && (
                 <Button variant='contained' onClick={onLoad} sx={{ mt: 3 }} color='dojoOrange'>
-                    Load Games
+                    {t('loadGamesButton')}
                 </Button>
             )}
         </Stack>

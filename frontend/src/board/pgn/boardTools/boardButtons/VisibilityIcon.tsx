@@ -1,6 +1,7 @@
 import { Game } from '@/database/game';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { UnderboardApi } from '../underboard/Underboard';
 import { DefaultUnderboardTab } from '../underboard/underboardTabs';
 
@@ -11,14 +12,9 @@ export const VisibilityIcon = ({
     game: Game;
     underboardRef: React.RefObject<UnderboardApi | null>;
 }) => {
+    const t = useTranslations('analysisBoard.boardButtons');
     return (
-        <Tooltip
-            title={
-                game.unlisted
-                    ? 'This game is unlisted. Other users can only find it if they have the URL. You can update this in the settings.'
-                    : 'This game is public. Other users can find it on the games tab and on your profile. You can update this in the settings.'
-            }
-        >
+        <Tooltip title={game.unlisted ? t('unlistedGameTooltip') : t('publicGameTooltip')}>
             <IconButton
                 onClick={() => underboardRef.current?.switchTab(DefaultUnderboardTab.Settings)}
             >

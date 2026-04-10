@@ -3,7 +3,8 @@ import { Chess, Event, EventType, Move, Pgn } from '@jackstenglein/chess';
 
 import { PlayerNameWithTitle } from '@/components/ui/PlayerNameWithTitle';
 import { Divider, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from './PgnBoard';
 import {
@@ -47,11 +48,6 @@ export function getInitialClock(pgn?: Pgn): string | undefined {
 
     return result;
 }
-
-export const ClockTypeDescriptions: Record<string, string> = {
-    emt: 'Elapsed Move Time. The time spent to play the current move. h:mm:ss',
-    clk: 'h:mm:ss. The time displayed on the clock after the current move was played.',
-};
 
 function getMoveClockText(
     clockCommand: 'emt' | 'clk',
@@ -106,6 +102,14 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
     const { chess, board } = useChess();
     const [, setForceRender] = useState(0);
     const light = useLightMode();
+    const t = useTranslations('analysisBoard.chrome');
+    const ClockTypeDescriptions = useMemo(
+        () => ({
+            emt: t('emtDescription'),
+            clk: t('clkDescription'),
+        }),
+        [t],
+    );
 
     useEffect(() => {
         if (chess) {

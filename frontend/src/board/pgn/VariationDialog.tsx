@@ -10,6 +10,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { useReconcile } from '../Board';
 import { compareNags, getStandardNag, nags } from './Nag';
@@ -27,6 +28,7 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
     const [selected, setSelected] = useState(0);
     const { chess } = useChess();
     const reconcile = useReconcile();
+    const t = useTranslations('analysisBoard.chrome');
 
     const selectMove = useCallback(
         (move: Move) => {
@@ -110,8 +112,8 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
             hideBackdrop
         >
             <DialogTitle>
-                Choose Variation
-                <Tooltip title='Use arrow keys/enter, numbers or click to select a move. Use left arrow or escape to cancel.'>
+                {t('variationDialogTitle')}
+                <Tooltip title={t('variationDialogHelpTooltip')}>
                     <Help
                         fontSize='small'
                         sx={{ color: 'text.secondary', ml: 1, verticalAlign: 'middle' }}
