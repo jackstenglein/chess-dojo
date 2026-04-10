@@ -36,6 +36,7 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
@@ -89,6 +90,7 @@ export function FullTrainingPlan({
         isCurrentUser,
     } = use(TrainingPlanContext);
 
+    const t = useTranslations('profile.trainingPlan.full');
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
@@ -218,7 +220,7 @@ export function FullTrainingPlan({
     return (
         <Stack spacing={2} width={1}>
             <Typography variant='h5' fontWeight='bold'>
-                Full Training Plan
+                {t('heading')}
             </Typography>
 
             <Stack alignItems='start' width={1}>
@@ -234,7 +236,7 @@ export function FullTrainingPlan({
                     <TextField
                         id='training-plan-cohort-select'
                         select
-                        label='Cohort'
+                        label={t('cohort')}
                         value={cohort}
                         onChange={(event) => onChangeCohort(event.target.value)}
                         size='small'
@@ -259,8 +261,8 @@ export function FullTrainingPlan({
                                 <Tooltip
                                     title={
                                         showCompleted
-                                            ? 'Hide Completed Tasks'
-                                            : 'Show Completed Tasks'
+                                            ? t('hideCompletedTasksTooltip')
+                                            : t('showCompletedTasksTooltip')
                                     }
                                 >
                                     <IconButton
@@ -270,12 +272,12 @@ export function FullTrainingPlan({
                                         {showCompleted ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title='Expand All'>
+                                <Tooltip title={t('expandAll')}>
                                     <IconButton onClick={onExpandAll} color='primary'>
                                         <KeyboardDoubleArrowDown />
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title='Collapse All'>
+                                <Tooltip title={t('collapseAll')}>
                                     <IconButton onClick={onCollapseAll} color='primary'>
                                         <KeyboardDoubleArrowUp />
                                     </IconButton>
@@ -289,19 +291,19 @@ export function FullTrainingPlan({
                                         showCompleted ? <CheckBox /> : <CheckBoxOutlineBlank />
                                     }
                                 >
-                                    Show Completed Tasks
+                                    {t('showCompletedTasks')}
                                 </Button>
                                 <Button
                                     onClick={onExpandAll}
                                     startIcon={<KeyboardDoubleArrowDown />}
                                 >
-                                    Expand All
+                                    {t('expandAll')}
                                 </Button>
                                 <Button
                                     onClick={onCollapseAll}
                                     startIcon={<KeyboardDoubleArrowUp />}
                                 >
-                                    Collapse All
+                                    {t('collapseAll')}
                                 </Button>
                             </>
                         )}

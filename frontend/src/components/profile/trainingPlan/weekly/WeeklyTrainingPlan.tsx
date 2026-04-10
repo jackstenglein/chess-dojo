@@ -18,6 +18,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
@@ -31,6 +32,8 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
 export function WeeklyTrainingPlan() {
+    const t = useTranslations('profile.trainingPlan.weekly');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { startDate, endDate, weekSuggestions, timeline, isCurrentUser, isLoading, user } =
         use(TrainingPlanContext);
 
@@ -67,7 +70,7 @@ export function WeeklyTrainingPlan() {
     return (
         <Stack spacing={2} width={1}>
             <Stack direction='row' alignItems='center' width={1}>
-                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
                             sx={{
@@ -79,7 +82,7 @@ export function WeeklyTrainingPlan() {
                 </Tooltip>
 
                 <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
-                    This Week
+                    {t('thisWeek')}
                 </Typography>
 
                 <WorkGoalSettingsEditor
@@ -153,6 +156,7 @@ function WeeklyTrainingPlanDay({
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
     activeOnly: boolean;
 }) {
+    const t = useTranslations('profile.trainingPlan.weekly');
     const { suggestionsByDay, startDate, timeline, user, allRequirements, pinnedTasks } =
         use(TrainingPlanContext);
     const suggestedTasks = suggestionsByDay[dayIndex];
@@ -191,7 +195,7 @@ function WeeklyTrainingPlanDay({
                 color={todayIndex === dayIndex ? 'primary' : 'text.secondary'}
                 sx={{ ml: 0.25 }}
             >
-                {days[dayIndex]}
+                {t(days[dayIndex])}
             </Typography>
 
             <Card

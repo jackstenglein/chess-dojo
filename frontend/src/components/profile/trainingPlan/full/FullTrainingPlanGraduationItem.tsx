@@ -18,6 +18,7 @@ import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Lock } from '@mui/icons-material';
 import { Box, Divider, Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { GraduationDialog } from '../GraduationDialog';
 
@@ -34,6 +35,7 @@ export function FullTrainingPlanGraduationItem({
     cohort,
     isCurrentUser,
 }: FullTrainingPlanGraduationItemProps) {
+    const t = useTranslations('profile.trainingPlan.full');
     const isFreeTier = useFreeTier();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [upsellOpen, setUpsellOpen] = useState(false);
@@ -63,12 +65,7 @@ export function FullTrainingPlanGraduationItem({
 
     return (
         <>
-            <Tooltip
-                title={
-                    disabled ? 'Reach the required rating for your cohort to unlock graduation' : ''
-                }
-                followCursor
-            >
+            <Tooltip title={disabled ? t('reachRatingToUnlock') : ''} followCursor>
                 <Stack spacing={2} mt={2}>
                     <Grid
                         container
@@ -128,7 +125,10 @@ export function FullTrainingPlanGraduationItem({
                                                         tooltip={
                                                             disabled
                                                                 ? ''
-                                                                : `Next graduation: from ${cohort} to ${nextCohort}`
+                                                                : t('nextGraduation', {
+                                                                      cohort,
+                                                                      nextCohort,
+                                                                  })
                                                         }
                                                         size={20}
                                                         sx={{ marginTop: '-3px' }}

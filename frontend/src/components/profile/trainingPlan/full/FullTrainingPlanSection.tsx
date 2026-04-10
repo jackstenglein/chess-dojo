@@ -22,6 +22,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import CustomTaskEditor from '../CustomTaskEditor';
 import { ScheduleClassicalGame } from '../ScheduleClassicalGame';
@@ -82,6 +83,8 @@ export function FullTrainingPlanSection({
     showCompleted,
     setShowCompleted,
 }: TrainingPlanSectionProps) {
+    const t = useTranslations('profile.trainingPlan.full');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
 
@@ -178,9 +181,11 @@ export function FullTrainingPlanSection({
                                     fontWeight={700}
                                     sx={{ ml: 1, flexGrow: 1 }}
                                 >
-                                    Completed Tasks
+                                    {t('completedTasks')}
                                 </Typography>
-                                <Button onClick={() => setShowCompleted(false)}>Hide</Button>
+                                <Button onClick={() => setShowCompleted(false)}>
+                                    {tCommon('hide')}
+                                </Button>
                             </Stack>
 
                             <Divider sx={{ mb: 2 }} />
@@ -197,8 +202,7 @@ export function FullTrainingPlanSection({
                     ) : (
                         <>
                             <Button sx={{ my: 2 }} onClick={() => setShowCompleted(true)}>
-                                Show {section.completedTasks.length} completed task
-                                {section.completedTasks.length !== 1 && 's'}
+                                {t('showCompleted', { count: section.completedTasks.length })}
                             </Button>
                             <Divider />
                         </>
@@ -210,7 +214,7 @@ export function FullTrainingPlanSection({
                         onClick={() => setShowCustomTaskEditor(true)}
                         data-testid={`add-custom-task-button-${section.category.replaceAll(' ', '-')}`}
                     >
-                        Add Custom Task
+                        {t('addCustomTask')}
                     </Button>
                 )}
 
@@ -218,12 +222,9 @@ export function FullTrainingPlanSection({
                     section.category !== RequirementCategory.NonDojo &&
                     hiddenTaskCount > 0 && (
                         <Stack mt={2} spacing={2} alignItems='center'>
-                            <Typography>
-                                Unlock {hiddenTaskCount} more task
-                                {hiddenTaskCount > 1 ? 's' : ''} by upgrading to a full account
-                            </Typography>
+                            <Typography>{t('unlockTasks', { count: hiddenTaskCount })}</Typography>
                             <Button variant='outlined' href='/prices'>
-                                View Prices
+                                {t('viewPrices')}
                             </Button>
                         </Stack>
                     )}

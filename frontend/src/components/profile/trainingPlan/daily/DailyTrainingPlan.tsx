@@ -33,6 +33,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { displayProgress } from '../full/FullTrainingPlanItem';
@@ -48,6 +49,8 @@ import { GraduationTask } from './GraduationTask';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
 
 export function DailyTrainingPlan() {
+    const t = useTranslations('profile.trainingPlan.daily');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
 
     const [startDate, endDate] = useMemo(() => {
@@ -76,7 +79,7 @@ export function DailyTrainingPlan() {
     return (
         <Stack data-testid='training-plan-today' spacing={2} width={1}>
             <Stack direction='row' alignItems='center'>
-                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
                             sx={{
@@ -88,7 +91,7 @@ export function DailyTrainingPlan() {
                 </Tooltip>
 
                 <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
-                    Today
+                    {t('today')}
                 </Typography>
 
                 <WorkGoalSettingsEditor
@@ -213,6 +216,8 @@ function DailyTrainingPlanItem({
     endDate: string;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
 }) {
+    const t = useTranslations('profile.trainingPlan.daily');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { task } = suggestion;
     const { isCurrentUser, pinnedTasks, togglePin, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
@@ -280,17 +285,19 @@ function DailyTrainingPlanItem({
                             {displayProgress(task) && (
                                 <Stack sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}>
                                     <Typography color='textSecondary'>
-                                        {Math.max(
-                                            getCurrentCount({
-                                                cohort: user.dojoCohort,
-                                                requirement: task,
-                                                progress: user.progress[task.id],
-                                                timeline,
-                                            }) - (task.startCount || 0),
-                                            0,
-                                        )}{' '}
-                                        / {Math.max(totalCount - (task.startCount || 0), 0)}{' '}
-                                        {task.progressBarSuffix.toLowerCase()} completed
+                                        {t('progressCompleted', {
+                                            current: Math.max(
+                                                getCurrentCount({
+                                                    cohort: user.dojoCohort,
+                                                    requirement: task,
+                                                    progress: user.progress[task.id],
+                                                    timeline,
+                                                }) - (task.startCount || 0),
+                                                0,
+                                            ),
+                                            total: Math.max(totalCount - (task.startCount || 0), 0),
+                                            suffix: task.progressBarSuffix.toLowerCase(),
+                                        })}
                                     </Typography>
                                 </Stack>
                             )}
@@ -298,7 +305,7 @@ function DailyTrainingPlanItem({
                     </CardContent>
                 </CardActionArea>
                 <CardActions disableSpacing>
-                    <Tooltip title='View task details'>
+                    <Tooltip title={tCommon('viewTaskDetails')}>
                         <IconButton
                             sx={{ color: 'text.secondary' }}
                             onClick={() => onOpenTask(task, TaskDialogView.Details)}
@@ -309,7 +316,7 @@ function DailyTrainingPlanItem({
 
                     {isCurrentUser && (
                         <>
-                            <Tooltip title='Skip for the rest of the week'>
+                            <Tooltip title={tCommon('skipForWeek')}>
                                 <IconButton
                                     onClick={() => toggleSkip(task.id)}
                                     sx={{
@@ -324,7 +331,7 @@ function DailyTrainingPlanItem({
                             {isPinnable(task) && (
                                 <Tooltip
                                     title={
-                                        isPinned ? 'Unpin from Daily Tasks' : 'Pin to Daily Tasks'
+                                        isPinned ? tCommon('unpinFromDaily') : tCommon('pinToDaily')
                                     }
                                 >
                                     <IconButton onClick={() => togglePin(task)}>
@@ -341,7 +348,7 @@ function DailyTrainingPlanItem({
                         </>
                     )}
 
-                    <Tooltip title={isCurrentUser ? 'Update Progress' : ''}>
+                    <Tooltip title={isCurrentUser ? tCommon('updateProgress') : ''}>
                         <TimeProgressChip
                             value={timeWorkedMinutes}
                             goal={goalMinutes}
