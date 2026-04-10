@@ -20,9 +20,11 @@ import {
     RadioGroup,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 export function MemorizeGamesPage({ user }: { user: User }) {
+    const t = useTranslations('learn.memorizeGames');
     const api = useApi();
     const pgnRef = useRef<PgnBoardApi>(null);
     const listRequest = useRequest<GameInfo[]>();
@@ -71,7 +73,7 @@ export function MemorizeGamesPage({ user }: { user: User }) {
     }
 
     if (!listRequest.data || listRequest.data.length === 0) {
-        return <Typography>No games found</Typography>;
+        return <Typography>{t('noGames')}</Typography>;
     }
 
     const onSwitchGame = (idx: number) => {
@@ -104,7 +106,7 @@ export function MemorizeGamesPage({ user }: { user: User }) {
                 underboardTabs={[
                     {
                         name: 'gameList',
-                        tooltip: 'Games',
+                        tooltip: t('gamesTooltip'),
                         icon: <Info />,
                         element: (
                             <CardContent>
@@ -120,12 +122,12 @@ export function MemorizeGamesPage({ user }: { user: User }) {
                                         <FormControlLabel
                                             value='study'
                                             control={<Radio />}
-                                            label='Study'
+                                            label={t('study')}
                                         />
                                         <FormControlLabel
                                             value='test'
                                             control={<Radio />}
-                                            label='Test'
+                                            label={t('test')}
                                         />
                                     </RadioGroup>
                                 </FormControl>

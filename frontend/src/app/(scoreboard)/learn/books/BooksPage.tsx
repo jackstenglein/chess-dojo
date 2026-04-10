@@ -14,6 +14,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Book as BookModel, BookSection, sections } from './books';
 
@@ -64,6 +65,7 @@ const Section: React.FC<SectionProps> = ({ section, cohort }) => {
 };
 
 export default function BooksPage() {
+    const t = useTranslations('learn.books');
     const { user } = useAuth();
     const [cohorts, setCohorts] = useState([user?.dojoCohort || ALL_COHORTS]);
 
@@ -83,13 +85,9 @@ export default function BooksPage() {
         <Container sx={{ py: 3 }}>
             <Stack spacing={3}>
                 <Typography variant='h5' align='center'>
-                    ChessDojo Recommended Books
+                    {t('title')}
                 </Typography>
-                <Typography>
-                    The following books have been handpicked by the Senseis for each cohort. Below
-                    you'll see the list of books that are assigned for each rating band, split among
-                    the main recommendations, tactics books, and endgame books.
-                </Typography>
+                <Typography>{t('intro')}</Typography>
             </Stack>
             <Stack mt={3} spacing={3}>
                 <MultipleSelectChip
@@ -98,7 +96,7 @@ export default function BooksPage() {
                     setSelected={onChangeCohort}
                     options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
                         value: opt,
-                        label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+                        label: opt === ALL_COHORTS ? t('allCohorts') : opt,
                         icon: (
                             <CohortIcon
                                 cohort={opt}
@@ -109,7 +107,7 @@ export default function BooksPage() {
                             />
                         ),
                     }))}
-                    label='Cohorts'
+                    label={t('cohortsLabel')}
                     sx={{ mb: 3, width: 1 }}
                     size='small'
                     error={cohorts.length === 0}

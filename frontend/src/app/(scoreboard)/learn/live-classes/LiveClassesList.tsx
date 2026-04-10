@@ -26,6 +26,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { formatRecordingDate } from './liveClassUtils';
 
@@ -53,6 +54,7 @@ export function LiveClassesList({
     selectedTags: string[];
     variant?: 'grid' | 'list';
 }) {
+    const t = useTranslations('learn.liveClasses');
     const [playingUrl, setPlayingUrl] = useState<string>();
     const [showUpsell, setShowUpsell] = useState<SubscriptionTier>();
     const [presignedUrls, setPresignedUrls] = useState<Record<string, PresignedUrlData>>({});
@@ -137,9 +139,9 @@ export function LiveClassesList({
                 <UpsellDialog
                     open
                     onClose={() => setShowUpsell(undefined)}
-                    title={`Upgrade to Access All Live Classes`}
-                    description="Your current plan doesn't provide access to this class. Upgrade to:"
-                    postscript='Your progress on your current plan will carry over when you upgrade.'
+                    title={t('upsell.title')}
+                    description={t('upsell.description')}
+                    postscript={t('upsell.postscript')}
                     currentAction={
                         showUpsell === SubscriptionTier.GameReview
                             ? RestrictedAction.ViewGameAndProfileReviewRecording
@@ -148,15 +150,15 @@ export function LiveClassesList({
                     bulletPoints={
                         showUpsell === SubscriptionTier.GameReview
                             ? [
-                                  'Attend weekly personalized game review classes',
-                                  'Get direct feedback from a sensei',
-                                  'Attend weekly live group classes on specialized topics',
-                                  'Get full access to the ChessDojo website',
+                                  t('upsell.gameReviewBullet1'),
+                                  t('upsell.gameReviewBullet2'),
+                                  t('upsell.gameReviewBullet3'),
+                                  t('upsell.gameReviewBullet4'),
                               ]
                             : [
-                                  'Attend weekly live group classes on specialized topics',
-                                  'Access structured homework assignments',
-                                  'Get full access to the core ChessDojo website',
+                                  t('upsell.lectureBullet1'),
+                                  t('upsell.lectureBullet2'),
+                                  t('upsell.lectureBullet3'),
                               ]
                     }
                 />
@@ -178,6 +180,7 @@ function LiveClassCard({
     selectedTags: string[];
     variant?: 'grid' | 'list';
 }) {
+    const t = useTranslations('learn.liveClasses');
     const isList = variant === 'list';
     return (
         <Card
@@ -203,7 +206,7 @@ function LiveClassCard({
                 <CardMedia
                     component='img'
                     image={c.imageUrl}
-                    alt={`${c.name} cover`}
+                    alt={t('card.cover', { name: c.name })}
                     sx={{
                         objectFit: 'cover',
                         ...(isList
@@ -256,9 +259,9 @@ function LiveClassCard({
 
                 <Stack direction='row' flexWrap='wrap' gap={0.75} sx={{ mb: 1.5 }}>
                     {c.type === SubscriptionTier.GameReview ? (
-                        <Tooltip title='Show recordings with tag: Game & Profile Review'>
+                        <Tooltip title={t('showTagGameReview')}>
                             <Chip
-                                label='Game & Profile Review'
+                                label={t('gameReview')}
                                 size='small'
                                 variant='outlined'
                                 icon={<Troubleshoot />}
@@ -275,9 +278,9 @@ function LiveClassCard({
                             />
                         </Tooltip>
                     ) : (
-                        <Tooltip title='Show recordings with tag: Lecture'>
+                        <Tooltip title={t('showTagLecture')}>
                             <Chip
-                                label='Lecture'
+                                label={t('lecture')}
                                 size='small'
                                 variant='outlined'
                                 icon={<PresenterIcon />}
@@ -295,7 +298,7 @@ function LiveClassCard({
                         </Tooltip>
                     )}
                     {c.tags?.map((tag) => (
-                        <Tooltip key={tag} title={`Show recordings with tag: ${tag}`}>
+                        <Tooltip key={tag} title={t('showTagDynamic', { tag })}>
                             <Chip
                                 key={tag}
                                 label={tag}
@@ -345,7 +348,7 @@ function LiveClassCard({
                         }}
                     >
                         <Typography variant='subtitle2' color='primary.main'>
-                            {c.recordings.length} recording{c.recordings.length !== 1 ? 's' : ''}
+                            {t('card.recordingCount', { count: c.recordings.length })}
                         </Typography>
                     </AccordionSummary>
                     <AccordionDetails sx={{ py: 0 }}>
@@ -367,7 +370,7 @@ function LiveClassCard({
                                         startIcon={<PlayArrow />}
                                         onClick={() => onPlay(r.s3Key, c.type)}
                                     >
-                                        Play
+                                        {t('card.play')}
                                     </Button>
                                 </Stack>
                             ))}

@@ -10,20 +10,22 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 /**
  * Converts a ClubSortMethod into a user-facing display string.
  * @param sortMethod The sort method to convert.
+ * @param t The translations function scoped to `clubs.filters.sortMethods`.
  * @returns A user-facing display string.
  */
-function displayClubSortMethod(sortMethod: ClubSortMethod): string {
+function displayClubSortMethod(sortMethod: ClubSortMethod, t: (key: string) => string): string {
     switch (sortMethod) {
         case ClubSortMethod.Alphabetical:
-            return 'Alphabetical';
+            return t('alphabetical');
         case ClubSortMethod.MemberCount:
-            return 'Member Count';
+            return t('memberCount');
         case ClubSortMethod.CreationDate:
-            return 'Creation Date';
+            return t('creationDate');
     }
 }
 
@@ -76,10 +78,12 @@ interface ClubFilterEditorProps {
 }
 
 export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) => {
+    const t = useTranslations('clubs.filters');
+    const tSort = useTranslations('clubs.filters.sortMethods');
     return (
         <Stack direction='row' spacing={3} alignItems='center' flexWrap='wrap' rowGap={3}>
             <TextField
-                label='Search...'
+                label={t('search')}
                 value={filters.search}
                 onChange={(e) => filters.setSearch(e.target.value)}
                 sx={{ flexGrow: 1 }}
@@ -88,26 +92,30 @@ export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) =
             <Stack direction='row' spacing={2} alignItems='center'>
                 <TextField
                     select
-                    label='Sort By'
+                    label={t('sortBy')}
                     value={filters.sortMethod}
                     onChange={(e) => filters.setSortMethod(e.target.value as ClubSortMethod)}
                 >
                     {Object.values(ClubSortMethod).map((method) => (
                         <MenuItem key={method} value={method}>
-                            {displayClubSortMethod(method)}
+                            {displayClubSortMethod(method, tSort)}
                         </MenuItem>
                     ))}
                 </TextField>
 
                 <FormControl>
-                    <FormLabel>Sort Direction</FormLabel>
+                    <FormLabel>{t('sortDirection')}</FormLabel>
                     <RadioGroup
                         value={filters.sortDirection}
                         onChange={(e) => filters.setSortDirection(e.target.value as 'asc' | 'desc')}
                         row
                     >
-                        <FormControlLabel control={<Radio />} label='Ascending' value='asc' />
-                        <FormControlLabel control={<Radio />} label='Descending' value='desc' />
+                        <FormControlLabel control={<Radio />} label={t('ascending')} value='asc' />
+                        <FormControlLabel
+                            control={<Radio />}
+                            label={t('descending')}
+                            value='desc'
+                        />
                     </RadioGroup>
                 </FormControl>
             </Stack>

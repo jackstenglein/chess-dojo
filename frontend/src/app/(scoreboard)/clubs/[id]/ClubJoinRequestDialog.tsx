@@ -10,6 +10,7 @@ import {
     DialogTitle,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface ClubJoinRequestDialogProps {
@@ -27,6 +28,7 @@ export const ClubJoinRequestDialog: React.FC<ClubJoinRequestDialogProps> = ({
     onSuccess,
     onClose,
 }) => {
+    const t = useTranslations('clubs.joinRequestDialog');
     const api = useApi();
     const request = useRequest();
     const [notes, setNotes] = useState('');
@@ -52,10 +54,10 @@ export const ClubJoinRequestDialog: React.FC<ClubJoinRequestDialogProps> = ({
         >
             <RequestSnackbar request={request} />
 
-            <DialogTitle>Request to join {clubName}?</DialogTitle>
+            <DialogTitle>{t('title', { clubName })}</DialogTitle>
             <DialogContent>
                 <TextField
-                    label='Optionally explain your request'
+                    label={t('notesLabel')}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     multiline
@@ -66,10 +68,10 @@ export const ClubJoinRequestDialog: React.FC<ClubJoinRequestDialogProps> = ({
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <LoadingButton loading={request.isLoading()} onClick={onJoin}>
-                    Request to Join
+                    {t('submit')}
                 </LoadingButton>
             </DialogActions>
         </Dialog>

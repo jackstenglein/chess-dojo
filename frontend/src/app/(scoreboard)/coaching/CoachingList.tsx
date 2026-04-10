@@ -13,6 +13,7 @@ import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import { LoadingButton } from '@mui/lab';
 import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function displayEvent(event: Event, viewer?: User): boolean {
     if (event.type !== EventType.Coaching) {
@@ -59,6 +60,7 @@ interface CoachingListProps {
 }
 
 const CoachingList: React.FC<CoachingListProps> = ({ events, request }) => {
+    const t = useTranslations('coaching.list');
     if (!request.isSent() || request.isLoading()) {
         return <LoadingPage />;
     }
@@ -66,7 +68,7 @@ const CoachingList: React.FC<CoachingListProps> = ({ events, request }) => {
     if (events.length === 0) {
         return (
             <Stack alignItems='center'>
-                <Typography>No available sessions found for your cohort</Typography>
+                <Typography>{t('noSessionsFound')}</Typography>
             </Stack>
         );
     }
@@ -81,6 +83,7 @@ const CoachingList: React.FC<CoachingListProps> = ({ events, request }) => {
 };
 
 const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
+    const t = useTranslations('coaching.list');
     const viewer = useAuth().user;
     const api = useApi();
     const request = useRequest();
@@ -128,7 +131,7 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
                 action={
                     isOwner || isParticipant ? (
                         <Button variant='contained' component={Link} href={`/meeting/${event.id}`}>
-                            View Details
+                            {t('viewDetails')}
                         </Button>
                     ) : (
                         <LoadingButton
@@ -137,32 +140,32 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
                             loading={request.isLoading()}
                             onClick={onBook}
                         >
-                            Book
+                            {t('book')}
                         </LoadingButton>
                     )
                 }
             />
             <CardContent>
                 <Stack spacing={2}>
-                    <OwnerField title='Coach' event={event} />
+                    <OwnerField title={t('coach')} event={event} />
 
                     <PriceField event={event} />
 
-                    <Field title='Description' body={event.description} />
+                    <Field title={t('description')} body={event.description} />
 
                     <Field
-                        title='Number of Participants'
+                        title={t('numberOfParticipants')}
                         body={`${Object.values(event.participants).length} / ${
                             event.maxParticipants
                         }`}
                     />
 
                     <Field
-                        title='Cohorts'
+                        title={t('cohorts')}
                         body={
                             dojoCohorts.length === event.cohorts.length ||
                             event.cohorts.length === 0
-                                ? 'All Cohorts'
+                                ? t('allCohorts')
                                 : event.cohorts.join(', ')
                         }
                     />

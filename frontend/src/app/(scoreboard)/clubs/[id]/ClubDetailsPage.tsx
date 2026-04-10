@@ -27,6 +27,7 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -36,6 +37,7 @@ import { LeaveClubDialog } from './LeaveClubDialog';
 import { ScoreboardTab } from './ScoreboardTab';
 
 export const ClubDetailsPage = ({ id }: { id: string }) => {
+    const t = useTranslations('clubs.details');
     const auth = useAuth();
     const viewer = auth.user;
     const api = useApi();
@@ -97,7 +99,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
             joinRequest.onStart();
             api.joinClub(id || '')
                 .then((resp) => {
-                    onProcessRequest(resp.data, 'Joined club');
+                    onProcessRequest(resp.data, t('joinedSnackbar'));
                     joinRequest.onSuccess();
                 })
                 .catch((err) => {
@@ -167,7 +169,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                                     router.push(`/clubs/${club.id}/edit`)
                                                 }
                                             >
-                                                Edit Settings
+                                                {t('editSettings')}
                                             </Button>
                                         ) : isMember ? (
                                             <Button
@@ -175,11 +177,11 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                                 color='error'
                                                 onClick={onLeaveClub}
                                             >
-                                                Leave Club
+                                                {t('leaveClub')}
                                             </Button>
                                         ) : hasSentJoinRequest ? (
                                             <Button variant='contained' disabled>
-                                                Join Request Pending
+                                                {t('joinRequestPending')}
                                             </Button>
                                         ) : (
                                             <LoadingButton
@@ -188,8 +190,8 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                                 loading={joinRequest.isLoading()}
                                             >
                                                 {club.approvalRequired
-                                                    ? 'Request to Join Club'
-                                                    : 'Join Club'}
+                                                    ? t('requestToJoinClub')
+                                                    : t('joinClub')}
                                             </LoadingButton>
                                         )}
                                     </Stack>
@@ -206,16 +208,19 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <Tabs
                                         value={searchParams.get('view')}
-                                        onChange={(_, t: string) =>
-                                            setSearchParams({ view: t }, { scroll: false })
+                                        onChange={(_, tab: string) =>
+                                            setSearchParams({ view: tab }, { scroll: false })
                                         }
-                                        aria-label='profile tabs'
+                                        aria-label={t('tabsAriaLabel')}
                                         variant='scrollable'
                                     >
-                                        <Tab label='Scoreboard' value='scoreboard' />
-                                        <Tab label='Newsfeed' value='newsfeed' />
+                                        <Tab label={t('tabs.scoreboard')} value='scoreboard' />
+                                        <Tab label={t('tabs.newsfeed')} value='newsfeed' />
                                         {isOwner && club.approvalRequired && (
-                                            <Tab label='Join Requests' value='joinRequests' />
+                                            <Tab
+                                                label={t('tabs.joinRequests')}
+                                                value='joinRequests'
+                                            />
                                         )}
                                     </Tabs>
                                 </Box>
