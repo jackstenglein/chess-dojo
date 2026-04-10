@@ -3,6 +3,7 @@ import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
 import { Button, IconButton, IconButtonProps, Popover, Stack } from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { MouseEvent, useState } from 'react';
 
 export const MIN_YEAR = 2023;
@@ -46,6 +47,7 @@ const MonthDateButton = ({ selectedDate, onChange }: MonthDateButtonProps) => {
     const currentYear = selectedDate.year;
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const now = DateTime.now();
+    const t = useTranslations('tournaments.liga.dateButtons');
 
     const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -70,10 +72,10 @@ const MonthDateButton = ({ selectedDate, onChange }: MonthDateButtonProps) => {
             <LocaleArrow
                 type='prev'
                 onClick={handlePrev}
-                aria-label='previous month'
+                aria-label={t('previousMonth')}
                 disabled={currentMonth <= MIN_MONTH && currentYear === MIN_YEAR}
             />
-            <Button style={{ padding: 4 }} onClick={handleOpen} aria-label='selected month'>
+            <Button style={{ padding: 4 }} onClick={handleOpen} aria-label={t('selectedMonth')}>
                 {selectedDate.toFormat('MMMM yyyy')}
             </Button>
             <Popover
@@ -97,7 +99,7 @@ const MonthDateButton = ({ selectedDate, onChange }: MonthDateButtonProps) => {
             <LocaleArrow
                 type='next'
                 onClick={handleNext}
-                aria-label='next month'
+                aria-label={t('nextMonth')}
                 disabled={currentMonth >= now.month && currentYear >= now.year}
             />
         </Stack>

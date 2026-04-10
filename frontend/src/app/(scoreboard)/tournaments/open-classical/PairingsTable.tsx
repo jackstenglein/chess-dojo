@@ -4,13 +4,16 @@ import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { OpenInNew, Warning } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import { DataGridPro, GridColDef, GridRenderCellParams } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { SiLichess } from 'react-icons/si';
 
 export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
+    const t = useTranslations('tournaments.openClassical.pairings');
+
     if (player.lichessUsername === 'No Opponent' || player.lichessUsername === '') {
         return (
             <Stack alignItems='center' justifyContent='center' height={1}>
-                No Opponent
+                {t('noOpponent')}
             </Stack>
         );
     }

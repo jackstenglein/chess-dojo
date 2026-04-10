@@ -16,8 +16,11 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export function Players({ tournament }: { tournament: RoundRobin | RoundRobinWaitlist }) {
+    const t = useTranslations('tournaments.roundRobin.players');
+
     if (Object.values(tournament.players).length === 0) {
         return null;
     }
@@ -45,20 +48,20 @@ export function Players({ tournament }: { tournament: RoundRobin | RoundRobinWai
             <TableHead>
                 <TableRow>
                     <TableCell>
-                        <Typography fontWeight='bold'>Player</Typography>
+                        <Typography fontWeight='bold'>{t('columnPlayer')}</Typography>
                     </TableCell>
                     <TableCell align='center'>
-                        <Typography fontWeight='bold'>Lichess Username</Typography>
+                        <Typography fontWeight='bold'>{t('columnLichess')}</Typography>
                     </TableCell>
                     <TableCell align='center'>
-                        <Typography fontWeight='bold'>Chess.com Username</Typography>
+                        <Typography fontWeight='bold'>{t('columnChesscom')}</Typography>
                     </TableCell>
                     <TableCell align='center'>
-                        <Typography fontWeight='bold'>Discord Username</Typography>
+                        <Typography fontWeight='bold'>{t('columnDiscord')}</Typography>
                     </TableCell>
                     {isTournament && (
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>Score</Typography>
+                            <Typography fontWeight='bold'>{t('columnScore')}</Typography>
                         </TableCell>
                     )}
                 </TableRow>
@@ -82,7 +85,7 @@ export function Players({ tournament }: { tournament: RoundRobin | RoundRobinWai
                                         {player.displayName}
                                     </Link>
                                     {player.status === RoundRobinPlayerStatuses.WITHDRAWN &&
-                                        ' (Withdrawn)'}
+                                        t('withdrawnSuffix')}
                                 </Typography>
                             </Stack>
                         </TableCell>

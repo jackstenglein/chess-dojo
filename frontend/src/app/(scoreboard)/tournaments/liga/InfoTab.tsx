@@ -25,14 +25,16 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { SiChessdotcom, SiDiscord, SiLichess } from 'react-icons/si';
 
 const InfoTab = () => {
     const config = getConfig();
+    const t = useTranslations('tournaments.liga.info');
     return (
         <Stack spacing={2}>
             <Typography variant='h5' textAlign='center' color='text.secondary'>
-                Welcome to the DojoLiga!
+                {t('welcome')}
                 <WavingHandIcon sx={{ verticalAlign: 'middle', ml: 1 }} color='dojoOrange' />
             </Typography>
 
@@ -40,47 +42,44 @@ const InfoTab = () => {
 
             <Typography variant='h6' color='text.secondary'>
                 <MilitaryTechIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
-                DojoLiga Info
+                {t('infoHeader')}
             </Typography>
             <List>
                 <ListItem>
                     <ListItemIcon>
                         <PublicIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText
-                        primary="The DojoLiga is ChessDojo's blitz, rapid, and classical league. It is open
-            to all players worldwide."
-                    />
+                    <ListItemText primary={t('worldwide')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <GroupIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Participate in any league tournaments on either Lichess or Chess.com. All players will be automatically tracked on the leaderboard.' />
+                    <ListItemText primary={t('participation')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <AllInclusiveIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='The league consists of both arena and swiss tournaments with various time controls: blitz, rapid, and classical.' />
+                    <ListItemText primary={t('arenaSwiss')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <EmojiEventsIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='At the end of each year, the top players on the leaderboard will be invited to the annual Dojo Championship. More info to be announced in September.' />
+                    <ListItemText primary={t('endOfYear')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <NotInterestedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Strict anti-cheat measures in place to allow players to learn and grow in the game they love.' />
+                    <ListItemText primary={t('antiCheatSummary')} />
                 </ListItem>
             </List>
 
             <Typography variant='h6' color='text.secondary'>
                 <HelpCenterIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
-                Registration Info
+                {t('registrationHeader')}
             </Typography>
 
             <List>
@@ -89,9 +88,8 @@ const InfoTab = () => {
                         <SiLichess fontSize={25} />
                     </ListItemIcon>
                     <ListItemText
-                        primary={
-                            <>
-                                Join{' '}
+                        primary={t.rich('lichessJoin', {
+                            link: (chunks) => (
                                 <Link
                                     data-testid='lichess-team-link'
                                     href='https://lichess.org/team/chessdojo'
@@ -99,11 +97,10 @@ const InfoTab = () => {
                                     rel='noreferrer'
                                     color='primary'
                                 >
-                                    ChessDojo's Team
-                                </Link>{' '}
-                                on Lichess.
-                            </>
-                        }
+                                    {chunks}
+                                </Link>
+                            ),
+                        })}
                     />
                 </ListItem>
                 <ListItem>
@@ -111,9 +108,8 @@ const InfoTab = () => {
                         <SiChessdotcom fontSize={25} style={{ color: '#81b64c' }} />
                     </ListItemIcon>
                     <ListItemText
-                        primary={
-                            <>
-                                Join{' '}
+                        primary={t.rich('chesscomJoin', {
+                            link: (chunks) => (
                                 <Link
                                     data-testid='chesscom-team-link'
                                     href='https://www.chess.com/club/chessdojo'
@@ -121,11 +117,10 @@ const InfoTab = () => {
                                     rel='noreferrer'
                                     color='primary'
                                 >
-                                    ChessDojo's Team
-                                </Link>{' '}
-                                on Chess.com.
-                            </>
-                        }
+                                    {chunks}
+                                </Link>
+                            ),
+                        })}
                     />
                 </ListItem>
                 <ListItem>
@@ -133,9 +128,8 @@ const InfoTab = () => {
                         <SiDiscord fontSize={25} style={{ color: '#5865f2' }} />
                     </ListItemIcon>
                     <ListItemText
-                        primary={
-                            <>
-                                Join{' '}
+                        primary={t.rich('discordJoin', {
+                            link: (chunks) => (
                                 <Link
                                     data-testid='discord-invite-link'
                                     href={config.discord.url}
@@ -143,11 +137,10 @@ const InfoTab = () => {
                                     rel='noreferrer'
                                     color='primary'
                                 >
-                                    ChessDojo's Discord
-                                </Link>{' '}
-                                to optionally connect your Lichess and Chess.com accounts!
-                            </>
-                        }
+                                    {chunks}
+                                </Link>
+                            ),
+                        })}
                     />
                 </ListItem>
             </List>
@@ -156,76 +149,69 @@ const InfoTab = () => {
 
             <Typography variant='h6' color='text.secondary'>
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
-                Leaderboard Info
+                {t('leaderboardHeader')}
             </Typography>
 
-            <Typography>
-                The points scored from each arena and swiss tournament are tracked to formulate the
-                leaderboard for various categories. The Grand Prix leaderboard tracks the total
-                number of Top 10 finishes in all events of a particular time control, with points
-                awarded as follows:
-            </Typography>
+            <Typography>{t('leaderboardIntro')}</Typography>
 
             <List>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Blitz/Rapid/Classical Arena - Total points scored per individual in all league arenas.' />
+                    <ListItemText primary={t('leaderboardArena')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Blitz/Rapid/Classical Swiss - Total points scored per individual in all league swisses.' />
+                    <ListItemText primary={t('leaderboardSwiss')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Blitz/Rapid/Classical Grand Prix - Total points earned via top-10 finishes, with 10 points for 1st place, 9 for 2nd, ..., 1 point for 10th.' />
+                    <ListItemText primary={t('leaderboardGrandPrix')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Middlegame Sparring - Total points scored in middlegame sparring tournaments.' />
+                    <ListItemText primary={t('leaderboardMiddlegame')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Endgame Sparring - Total points scored in endgame sparring tournaments.' />
+                    <ListItemText primary={t('leaderboardEndgame')} />
                 </ListItem>
             </List>
 
             <Typography variant='h6' color='text.secondary'>
                 <NotInterestedIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
-                Anti-cheat Info
+                {t('antiCheatHeader')}
             </Typography>
 
-            <Typography>
-                DojoLiga takes cheating very seriously and has the following anti-cheat policies:
-            </Typography>
+            <Typography>{t('antiCheatIntro')}</Typography>
 
             <List>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary="If a player's account gets closed for cheating/fair play violations on Chess.com/Lichess, they are subject to being banned from ChessDojo's Discord server." />
+                    <ListItemText primary={t('antiCheatBanned')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='If a player is caught cheating but immediately admits wrongdoing and apologizes, based on the severity of their actions they may be given a second chance. However, they will still be prohibited from playing in DojoLiga for at least 3 months.' />
+                    <ListItemText primary={t('antiCheatAdmit')} />
                 </ListItem>
                 <ListItem>
                     <ListItemIcon>
                         <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
                     </ListItemIcon>
-                    <ListItemText primary='Cheaters are tracked by the system automatically and are evicted from the leaderboards immediately.' />
+                    <ListItemText primary={t('antiCheatTracked')} />
                 </ListItem>
             </List>
 
@@ -233,54 +219,45 @@ const InfoTab = () => {
 
             <Typography variant='h6' color='text.secondary'>
                 <SiDiscord style={{ verticalAlign: 'middle', marginRight: 9, color: '#5865f2' }} />
-                Discord Info
+                {t('discordHeader')}
             </Typography>
 
-            <Typography>
-                Join the the ChessDojo Discord and connect your accounts, run additional commands in
-                #player-commands channel to stay up to date with the liga!
-            </Typography>
+            <Typography>{t('discordIntro')}</Typography>
 
             <TableContainer component={Paper}>
                 <Table>
                     <TableBody>
                         <TableRow>
                             <TableCell>/verify</TableCell>
-                            <TableCell>
-                                Join the league & connect your Discord to Lichess account
-                            </TableCell>
+                            <TableCell>{t('cmdVerify')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/verifychesscom</TableCell>
-                            <TableCell>
-                                Join the league & connect your Discord to Chess.com account
-                            </TableCell>
+                            <TableCell>{t('cmdVerifyChesscom')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/profile</TableCell>
-                            <TableCell>View your ratings & stats</TableCell>
+                            <TableCell>{t('cmdProfile')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/update</TableCell>
-                            <TableCell>Update your ratings/belt role</TableCell>
+                            <TableCell>{t('cmdUpdate')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/score</TableCell>
-                            <TableCell>View your individual scores in the league</TableCell>
+                            <TableCell>{t('cmdScore')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/rank</TableCell>
-                            <TableCell>View your individual rankings in the league</TableCell>
+                            <TableCell>{t('cmdRank')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/top10</TableCell>
-                            <TableCell>
-                                View top 10 players for blitz, classical, rapid ratings in league
-                            </TableCell>
+                            <TableCell>{t('cmdTop10')}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>/help</TableCell>
-                            <TableCell>See list of commands</TableCell>
+                            <TableCell>{t('cmdHelp')}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

@@ -17,6 +17,7 @@ import {
 import { RequirementCategory } from '@/database/requirement';
 import Icon from '@/style/Icon';
 import { Stack, Theme, Typography, useMediaQuery } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export function getColor(timeControlType: TimeControlType) {
@@ -41,6 +42,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
 }) => {
     const [expanded, setExpanded] = useState<boolean>(false);
     const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
+    const t = useTranslations('tournaments.liga.filters');
 
     const onChangeTournamentTimeControls = (tcTypes: string[]) => {
         const addedTcTypes = tcTypes.filter(
@@ -98,7 +100,7 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                 {!forceExpansion && (
                     <AccordionSummary forceExpansion={forceExpansion}>
                         <Typography variant='h6' color='text.secondary'>
-                            Filters
+                            {t('filters')}
                         </Typography>
                     </AccordionSummary>
                 )}
@@ -118,17 +120,17 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                     fontSize='medium'
                                     color='liga'
                                 />
-                                Types
+                                {t('types')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.tournamentTypes}
                                 setSelected={onChangeTournamentType}
-                                options={Object.values(TournamentType).map((t) => ({
-                                    value: t,
-                                    label: displayTournamentType(t),
-                                    icon: <Icon name={t} color='liga' />,
+                                options={Object.values(TournamentType).map((tt) => ({
+                                    value: tt,
+                                    label: displayTournamentType(tt),
+                                    icon: <Icon name={tt} color='liga' />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('emptyNone')}
                                 size='small'
                                 data-testid='tournament-types'
                             />
@@ -145,17 +147,17 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                     fontSize='medium'
                                     color='primary'
                                 />
-                                Time Controls
+                                {t('timeControls')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.tournamentTimeControls}
                                 setSelected={onChangeTournamentTimeControls}
-                                options={Object.values(TimeControlType).map((t) => ({
-                                    value: t,
-                                    label: displayTimeControlType(t),
-                                    icon: <Icon name={t} color={getColor(t)} />,
+                                options={Object.values(TimeControlType).map((tc) => ({
+                                    value: tc,
+                                    label: displayTimeControlType(tc),
+                                    icon: <Icon name={tc} color={getColor(tc)} />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('emptyNone')}
                                 size='small'
                                 data-testid='time-controls'
                             />
@@ -172,17 +174,17 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                                     fontSize='medium'
                                     color='warning'
                                 />
-                                Starting Position
+                                {t('startingPosition')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.tournamentPositions}
                                 setSelected={onChangeTournamentPositions}
-                                options={Object.values(PositionType).map((t) => ({
-                                    value: t,
-                                    label: displayPositionType(t),
-                                    icon: <Icon name={t} color='warning' />,
+                                options={Object.values(PositionType).map((p) => ({
+                                    value: p,
+                                    label: displayPositionType(p),
+                                    icon: <Icon name={p} color='warning' />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('emptyNone')}
                                 size='small'
                                 data-testid='starting-position'
                             />

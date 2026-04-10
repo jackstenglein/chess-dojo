@@ -15,46 +15,51 @@ import Icon from '@/style/Icon';
 import { Button, MenuItem, Stack, TextField } from '@mui/material';
 import { DataGridPro, GridColDef, GridRowModel } from '@mui/x-data-grid-pro';
 import { DateTime } from 'luxon';
-import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import MonthDateButton from './MonthDateButton';
 import { getColor } from './TournamentCalendarFilters';
 import YearDateButton from './YearDateButton';
 
-const columns: GridColDef<LeaderboardPlayer>[] = [
-    {
-        field: 'rank',
-        headerName: 'Rank',
-    },
-    {
-        field: 'username',
-        headerName: 'Username',
-        minWidth: 250,
-        flex: 1,
-    },
-    {
-        field: 'rating',
-        headerName: 'Rating',
-        minWidth: 100,
-        flex: 1,
-    },
-    {
-        field: 'score',
-        headerName: 'Score',
-        minWidth: 100,
-        flex: 1,
-    },
-];
-
 const LeaderboardTab = () => {
     const api = useApi();
     const request = useRequest<Leaderboard>();
+    const t = useTranslations('tournaments.liga.leaderboard');
 
     const [site, setSite] = useState<LeaderboardSite>(LeaderboardSite.Lichess);
     const [tournamentType, setTournamentType] = useState(TournamentType.Arena);
     const [timeControl, setTimeControl] = useState<TimeControl>('blitz');
     const [selectedDate, setSelectedDate] = useState(DateTime.now());
     const [timePeriod, setTimePeriod] = useState<TimePeriod>('monthly');
+
+    const columns = useMemo<GridColDef<LeaderboardPlayer>[]>(
+        () => [
+            {
+                field: 'rank',
+                headerName: t('columnRank'),
+            },
+            {
+                field: 'username',
+                headerName: t('columnUsername'),
+                minWidth: 250,
+                flex: 1,
+            },
+            {
+                field: 'rating',
+                headerName: t('columnRating'),
+                minWidth: 100,
+                flex: 1,
+            },
+            {
+                field: 'score',
+                headerName: t('columnScore'),
+                minWidth: 100,
+                flex: 1,
+            },
+        ],
+        [t],
+    );
 
     useEffect(() => {
         if (!request.isSent()) {
@@ -104,7 +109,7 @@ const LeaderboardTab = () => {
                     <TextField
                         data-testid='site-control-selector'
                         select
-                        label='Site'
+                        label={t('labelSite')}
                         value={site}
                         onChange={(e) => setSite(e.target.value as LeaderboardSite)}
                     >
@@ -132,7 +137,7 @@ const LeaderboardTab = () => {
                         data-testid='time-control-selector'
                         sx={{ minWidth: 130 }}
                         select
-                        label='Time Control'
+                        label={t('labelTimeControl')}
                         value={timeControl}
                         onChange={(e) => setTimeControl(e.target.value as TimeControl)}
                     >
@@ -142,7 +147,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={getColor(TimeControlType.Blitz)}
                             />{' '}
-                            Blitz
+                            {t('optionBlitz')}
                         </MenuItem>
                         <MenuItem value='rapid'>
                             <Icon
@@ -150,7 +155,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={getColor(TimeControlType.Rapid)}
                             />
-                            Rapid
+                            {t('optionRapid')}
                         </MenuItem>
                         <MenuItem value='classical'>
                             <Icon
@@ -158,7 +163,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={getColor(TimeControlType.Classical)}
                             />
-                            Classical
+                            {t('optionClassical')}
                         </MenuItem>
                     </TextField>
 
@@ -166,7 +171,7 @@ const LeaderboardTab = () => {
                         data-testid='tournament-type-selector'
                         sx={{ minWidth: 130 }}
                         select
-                        label='Tournament Type'
+                        label={t('labelTournamentType')}
                         value={tournamentType}
                         onChange={(e) => setTournamentType(e.target.value as TournamentType)}
                     >
@@ -177,7 +182,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={'secondary'}
                             />
-                            Arena
+                            {t('optionArena')}
                         </MenuItem>
                         <MenuItem value={TournamentType.Swiss}>
                             <Icon
@@ -185,7 +190,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={'secondary'}
                             />
-                            Swiss
+                            {t('optionSwiss')}
                         </MenuItem>
                         <MenuItem value={TournamentType.GrandPrix}>
                             <Icon
@@ -193,7 +198,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={'secondary'}
                             />
-                            Grand Prix
+                            {t('optionGrandPrix')}
                         </MenuItem>
                         <MenuItem value={TournamentType.MiddlegameSparring}>
                             <Icon
@@ -201,7 +206,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={'secondary'}
                             />
-                            Middlegame Sparring
+                            {t('optionMiddlegameSparring')}
                         </MenuItem>
                         <MenuItem value={TournamentType.EndgameSparring}>
                             <Icon
@@ -209,7 +214,7 @@ const LeaderboardTab = () => {
                                 sx={{ verticalAlign: 'middle', marginRight: 1 }}
                                 color={'secondary'}
                             />
-                            Endgame Sparring
+                            {t('optionEndgameSparring')}
                         </MenuItem>
                     </TextField>
                 </Stack>
@@ -226,13 +231,13 @@ const LeaderboardTab = () => {
                         color={timePeriod === 'monthly' ? 'primary' : 'inherit'}
                         onClick={() => setTimePeriod('monthly')}
                     >
-                        Monthly
+                        {t('monthly')}
                     </Button>
                     <Button
                         color={timePeriod === 'yearly' ? 'primary' : 'inherit'}
                         onClick={() => setTimePeriod('yearly')}
                     >
-                        Yearly
+                        {t('yearly')}
                     </Button>
                 </Stack>
             </Stack>

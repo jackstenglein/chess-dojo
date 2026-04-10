@@ -4,37 +4,39 @@ import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import Icon from '@/style/Icon';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Tab } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import CalendarTab from './CalendarTab';
 import InfoTab from './InfoTab';
 import LeaderboardTab from './LeaderboardTab';
 
 export default function TournamentsPage() {
     const { searchParams, setSearchParams } = useNextSearchParams({ type: 'calendar' });
+    const t = useTranslations('tournaments.liga.tabs');
 
     return (
         <TabContext value={searchParams.get('type') || 'calendar'}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <TabList
                     data-testid='tournaments-tab-list'
-                    onChange={(_, t: string) => setSearchParams({ type: t })}
+                    onChange={(_, tab: string) => setSearchParams({ type: tab })}
                     variant='scrollable'
                 >
                     <Tab
-                        label='Calendar'
+                        label={t('calendar')}
                         value='calendar'
                         icon={<Icon name='ligaCalendar' color='primary' />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}
                     />
                     <Tab
-                        label='Leaderboard'
+                        label={t('leaderboard')}
                         value='leaderboard'
                         icon={<Icon name='leaderboard' color='primary' />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}
                     />
                     <Tab
-                        label='Info'
+                        label={t('info')}
                         value='info'
                         icon={<Icon name='info' color='primary' />}
                         iconPosition='start'

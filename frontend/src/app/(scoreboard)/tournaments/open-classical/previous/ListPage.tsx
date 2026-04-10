@@ -15,11 +15,13 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 const ListPage = () => {
     const api = useApi();
     const request = useRequest<OpenClassical[]>();
+    const t = useTranslations('tournaments.openClassical.previous');
 
     useEffect(() => {
         if (!request.isSent()) {
@@ -42,7 +44,7 @@ const ListPage = () => {
         <Container sx={{ py: 5 }} maxWidth='md'>
             <RequestSnackbar request={request} />
             <Typography variant='h4' gutterBottom textAlign='center'>
-                Dojo Open Classical History
+                {t('heading')}
             </Typography>
 
             <Stack spacing={3} mt={4}>
@@ -62,7 +64,7 @@ const ListPage = () => {
                             }}
                         >
                             <Typography variant='h6' component='div'>
-                                Current Tournament
+                                {t('currentTournament')}
                             </Typography>
                             <Box display='flex' alignItems='center' mt={1}>
                                 <AccessTimeIcon
@@ -70,7 +72,7 @@ const ListPage = () => {
                                     sx={{ mr: 1, color: 'text.secondary' }}
                                 />
                                 <Typography variant='body2' color='text.secondary'>
-                                    Ongoing Now
+                                    {t('ongoingNow')}
                                 </Typography>
                             </Box>
                         </CardContent>
