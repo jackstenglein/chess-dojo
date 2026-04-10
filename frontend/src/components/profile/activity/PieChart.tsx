@@ -1,5 +1,6 @@
 import CircleIcon from '@mui/icons-material/Circle';
 import { Box, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, type JSX, type ReactNode } from 'react';
 import { PieChart as ReactPieChart } from 'react-minimal-pie-chart';
 import Tooltip from 'react-tooltip';
@@ -33,6 +34,7 @@ const PieChart: React.FC<PieChartProps> = ({
     getTooltip,
     onClick,
 }) => {
+    const t = useTranslations('profile.activity');
     const [hovered, setHovered] = useState<number | null>(null);
     const totalScore = useMemo(() => {
         return data.reduce((sum, curr) => sum + curr.value, 0);
@@ -45,7 +47,7 @@ const PieChart: React.FC<PieChartProps> = ({
             </Typography>
             {renderTotal(totalScore)}
 
-            {data.length === 0 && <Typography>No data</Typography>}
+            {data.length === 0 && <Typography>{t('noData')}</Typography>}
 
             {data.length > 0 && (
                 <Container maxWidth='sm' sx={{ mt: 1 }}>

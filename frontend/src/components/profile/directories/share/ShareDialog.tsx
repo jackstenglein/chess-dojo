@@ -34,6 +34,7 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { useDirectoryCache } from '../DirectoryCache';
@@ -72,6 +73,7 @@ export const ShareDialog = ({
     directory: Directory;
     onClose: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const api = useApi();
     const [copied, setCopied] = useState(false);
     const [addedUsers, setAddedUsers] = useState<User[]>([]);
@@ -140,7 +142,7 @@ export const ShareDialog = ({
 
     return (
         <Dialog fullWidth open onClose={onClose}>
-            <DialogTitle>Share {directory.name}?</DialogTitle>
+            <DialogTitle>{t('shareTitle', { name: directory.name })}</DialogTitle>
             <DialogContent>
                 <AddAccessSection
                     owner={directory.owner}
@@ -159,20 +161,20 @@ export const ShareDialog = ({
             </DialogContent>
             <DialogActions>
                 <Box sx={{ flexGrow: 1 }}>
-                    <Tooltip title='Copy Link'>
+                    <Tooltip title={t('copyLink')}>
                         <IconButton color='primary' onClick={onCopyLink}>
                             {copied ? <Check /> : <Link />}
                         </IconButton>
                     </Tooltip>
                 </Box>
 
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>{t('cancel')}</Button>
                 <LoadingButton
                     loading={request.isLoading()}
                     disabled={!changesMade}
                     onClick={onSave}
                 >
-                    Save
+                    {t('save')}
                 </LoadingButton>
             </DialogActions>
 
@@ -196,6 +198,7 @@ function AddAccessSection({
     setRole: (r: DirectoryAccessRole) => void;
     currentAccess: Record<string, DirectoryAccessRole>;
 }) {
+    const t = useTranslations('profile.directories');
     const [options, setOptions] = useState<User[]>([]);
     const [inputValue, setInputValue] = useState('');
     const api = useApi();
@@ -248,7 +251,7 @@ function AddAccessSection({
                 filterOptions={(x) => x}
                 filterSelectedOptions
                 onInputChange={(_event, newInputValue) => setInputValue(newInputValue)}
-                renderInput={(params) => <TextField {...params} label='Add people' />}
+                renderInput={(params) => <TextField {...params} label={t('addPeople')} />}
                 renderTags={(users, getTagProps) =>
                     users.map((user, index) => {
                         const { key, ...tagProps } = getTagProps({ index });
@@ -287,10 +290,15 @@ function AddAccessSection({
                         </Fragment>
                     );
                 }}
-                noOptionsText='Search for users...'
+                noOptionsText={t('searchUsers')}
             />
 
-            <RoleSelect label='Role' sx={{ width: 1, mt: 2 }} value={role} onChange={setRole} />
+            <RoleSelect
+                label={t('role')}
+                sx={{ width: 1, mt: 2 }}
+                value={role}
+                onChange={setRole}
+            />
         </>
     );
 }
@@ -304,6 +312,7 @@ function CurrentAccessSection({
     access: Record<string, RemovableDirectoryAccessRole>;
     setAccess: (a: Record<string, RemovableDirectoryAccessRole>) => void;
 }) {
+    const t = useTranslations('profile.directories');
     const request = useRequest<Record<string, UserSummary>>();
     const api = useApi();
 
@@ -333,7 +342,7 @@ function CurrentAccessSection({
             <RequestSnackbar request={request} />
 
             <Typography variant='h6' mt={3}>
-                Current Access
+                {t('currentAccess')}
             </Typography>
 
             {!request.isSent() || request.isLoading() ? (
@@ -343,7 +352,7 @@ function CurrentAccessSection({
                     <ListItem
                         disableGutters
                         disablePadding
-                        secondaryAction={<Button disabled>Owner</Button>}
+                        secondaryAction={<Button disabled>{t('owner')}</Button>}
                     >
                         <ListItemAvatar>
                             <Avatar
@@ -429,6 +438,21 @@ function RoleSelect({
     sx?: SxProps;
     size?: 'small' | 'medium';
 }) {
+    const t = useTranslations('profile.directories');
+    const translatedRoles: Record<string, { label: string; description?: string }> = {
+        [DirectoryAccessRole.Viewer]: {
+            label: t('roleViewer'),
+            description: t('roleViewerDescription'),
+        },
+        [DirectoryAccessRole.Editor]: {
+            label: t('roleEditor'),
+            description: t('roleEditorDescription'),
+        },
+        [DirectoryAccessRole.Admin]: {
+            label: t('roleAdmin'),
+            description: t('roleAdminDescription'),
+        },
+    };
     return (
         <TextField
             select
@@ -439,22 +463,27 @@ function RoleSelect({
             slotProps={{
                 select: {
                     renderValue: (value) =>
-                        roleOptions.find((opt) => opt.role === value)?.label ??
-                        specialOptions.find((opt) => opt.role === value)?.label,
+                        translatedRoles[value as string]?.label ??
+                        (value === 'REMOVE' ? t('removeAccess') : (value as string)),
                 },
             }}
             size={size}
         >
             {roleOptions.map((opt) => (
                 <MenuItem key={opt.role} value={opt.role}>
-                    <ListItemText primary={opt.label} secondary={opt.description} />
+                    <ListItemText
+                        primary={translatedRoles[opt.role]?.label ?? opt.label}
+                        secondary={translatedRoles[opt.role]?.description ?? opt.description}
+                    />
                 </MenuItem>
             ))}
             {showRemove && [
                 <Divider key='divider' />,
                 specialOptions.map((opt) => (
                     <MenuItem key={opt.role} value={opt.role}>
-                        <ListItemText primary={opt.label} />
+                        <ListItemText
+                            primary={opt.role === 'REMOVE' ? t('removeAccess') : opt.label}
+                        />
                     </MenuItem>
                 )),
             ]}

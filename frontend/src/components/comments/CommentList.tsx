@@ -24,6 +24,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { groupCommentsIntoThreads } from './threadComments';
 
@@ -49,6 +50,7 @@ const CommentList: React.FC<CommentListProps> = ({
     threaded,
     onSubmitReply,
 }) => {
+    const t = useTranslations('comments');
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
     const replyRequest = useRequest();
@@ -102,8 +104,7 @@ const CommentList: React.FC<CommentListProps> = ({
 
                 {hiddenThreads > 0 && viewCommentsLink && (
                     <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
-                        View {hiddenThreads} earlier comment
-                        {hiddenThreads !== 1 ? 's' : ''}
+                        {t('viewEarlierComments', { count: hiddenThreads })}
                     </Link>
                 )}
 
@@ -142,8 +143,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                         justifyContent: 'flex-start',
                                     }}
                                 >
-                                    Show {hiddenReplies.length} more{' '}
-                                    {hiddenReplies.length === 1 ? 'reply' : 'replies'}
+                                    {t('showMoreReplies', { count: hiddenReplies.length })}
                                 </Button>
                             )}
                             {isCollapsible && isExpanded && (
@@ -156,7 +156,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                         justifyContent: 'flex-start',
                                     }}
                                 >
-                                    Hide replies
+                                    {t('hideReplies')}
                                 </Button>
                             )}
                             {visibleReplies.map((reply) => (
@@ -195,7 +195,7 @@ const CommentList: React.FC<CommentListProps> = ({
         <Stack spacing={2} width={1} alignItems='start' mb={2}>
             {hiddenComments > 0 && viewCommentsLink && (
                 <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
-                    View {hiddenComments} earlier comment{hiddenComments !== 1 ? 's' : ''}
+                    {t('viewEarlierComments', { count: hiddenComments })}
                 </Link>
             )}
 
@@ -224,6 +224,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     onDelete,
     onReply,
 }) => {
+    const t = useTranslations('comments');
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
@@ -304,7 +305,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                             {canModify && !editing && (
                                 <Stack direction='row' spacing={0.5}>
                                     {onEdit && (
-                                        <Tooltip title='Edit'>
+                                        <Tooltip title={t('edit')}>
                                             <IconButton
                                                 size='small'
                                                 onClick={() => {
@@ -317,7 +318,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                         </Tooltip>
                                     )}
                                     {onDelete && (
-                                        <Tooltip title='Delete'>
+                                        <Tooltip title={t('delete')}>
                                             <IconButton
                                                 size='small'
                                                 onClick={() => {
@@ -343,7 +344,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                                 />
                                 <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                                    <Tooltip title='Cancel'>
+                                    <Tooltip title={t('cancel')}>
                                         <IconButton
                                             size='small'
                                             onClick={() => setEditing(false)}
@@ -352,7 +353,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                             <CloseIcon fontSize='small' />
                                         </IconButton>
                                     </Tooltip>
-                                    <Tooltip title='Save'>
+                                    <Tooltip title={t('save')}>
                                         <IconButton
                                             size='small'
                                             color='primary'
@@ -394,14 +395,14 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                             alignSelf: 'flex-start',
                                         }}
                                     >
-                                        {expanded ? 'Show less' : 'Show more'}
+                                        {expanded ? t('showLess') : t('showMore')}
                                     </Button>
                                 )}
                             </>
                         )}
 
                         {onReply && user && !editing && (
-                            <Tooltip title='Reply'>
+                            <Tooltip title={t('reply')}>
                                 <IconButton
                                     size='small'
                                     onClick={() => onReply(comment.id)}
@@ -417,26 +418,24 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                     <Typography variant='caption' color='text.secondary'>
                         {toDojoDateString(createdAt, timezone)} •{' '}
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
-                        {isEdited && ' • (edited)'}
+                        {isEdited && ` • ${t('edited')}`}
                     </Typography>
                 </Stack>
             </Stack>
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-                <DialogTitle>Delete Comment</DialogTitle>
+                <DialogTitle>{t('deleteComment')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete this comment? This action cannot be undone.
-                    </DialogContentText>
+                    <DialogContentText>{t('deleteConfirmation')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>{t('cancel')}</Button>
                     <Button
                         color='error'
                         onClick={handleDelete}
                         disabled={deleteRequest.isLoading()}
                     >
-                        Delete
+                        {t('delete')}
                     </Button>
                 </DialogActions>
                 <RequestSnackbar request={deleteRequest} />
@@ -460,13 +459,14 @@ const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
     onCancel,
     isLoading,
 }) => {
+    const t = useTranslations('comments');
     const [content, setContent] = useState('');
 
     return (
         <Stack pl='52px' spacing={0.5} width={1}>
             <Stack direction='row' alignItems='center' spacing={1}>
                 <Typography variant='body2' color='text.secondary'>
-                    Replying to {parentName}
+                    {t('replyingTo', { name: parentName })}
                 </Typography>
                 <IconButton size='small' onClick={onCancel} disabled={isLoading}>
                     <CloseIcon fontSize='small' />
@@ -477,12 +477,12 @@ const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
                     fullWidth
                     multiline
                     size='small'
-                    label='Write a reply...'
+                    label={t('writeReply')}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                 />
-                <Tooltip title='Post Reply'>
+                <Tooltip title={t('postReply')}>
                     <span>
                         <IconButton
                             color='primary'
