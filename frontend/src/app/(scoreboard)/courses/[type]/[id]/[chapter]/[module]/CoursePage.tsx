@@ -11,6 +11,7 @@ import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
 import { Alert, Box, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { getCheckoutSessionId, setCheckoutSessionId } from '../../../../localStorage';
 import Contents from './Contents';
@@ -22,6 +23,7 @@ export const CoursePage = ({
 }: {
     params: { type: string; id: string; chapter?: string; module?: string };
 }) => {
+    const t = useTranslations('courses.page');
     const auth = useAuth();
     const anonymousUser = auth.user === undefined;
     const isFreeTier = useFreeTier();
@@ -92,12 +94,11 @@ export const CoursePage = ({
                     sx={{ mb: 4 }}
                     action={
                         <Button component={Link} href='/signup' size='small' color='inherit'>
-                            Create Account
+                            {t('createAccount')}
                         </Button>
                     }
                 >
-                    You are not signed into an account, so this course is available only on this
-                    device and browser. Create an account to access this course anywhere.
+                    {t('anonymousWarning')}
                 </Alert>
             )}
             <Grid container rowGap={2}>
@@ -126,7 +127,7 @@ export const CoursePage = ({
                                 component={Link}
                                 href={`/courses/${params.type}/${params.id}/${prevModule.chapterIndex}/${prevModule.moduleIndex}`}
                             >
-                                Previous: {prevModule.name}
+                                {t('previous', { name: prevModule.name })}
                             </Button>
                         )}
 
@@ -136,7 +137,7 @@ export const CoursePage = ({
                                 component={Link}
                                 href={`/courses/${params.type}/${params.id}/${nextModule.chapterIndex}/${nextModule.moduleIndex}`}
                             >
-                                Next: {nextModule.name}
+                                {t('next', { name: nextModule.name })}
                             </Button>
                         )}
                     </Stack>

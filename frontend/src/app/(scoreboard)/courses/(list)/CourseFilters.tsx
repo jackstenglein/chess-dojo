@@ -16,6 +16,7 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getCategoryColor } from './CourseListItem';
 
@@ -71,6 +72,7 @@ interface CourseFilterEditorProps {
 }
 
 export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters }) => {
+    const t = useTranslations('courses.filters');
     const [expanded, setExpanded] = useState<string | boolean>(false);
     const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
@@ -96,7 +98,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
                     <Typography variant='h6' color='text.secondary'>
-                        Categories
+                        {t('categories')}
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -126,7 +128,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
                     <Typography variant='h6' color='text.secondary'>
-                        Cohort Range
+                        {t('cohortRange')}
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -134,7 +136,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                         <TextField
                             select
                             fullWidth
-                            label='Min Cohort'
+                            label={t('minCohort')}
                             value={filters.minCohort}
                             onChange={(e) => filters.setMinCohort(e.target.value)}
                         >
@@ -159,7 +161,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                         <TextField
                             select
                             fullWidth
-                            label='Max Cohort'
+                            label={t('maxCohort')}
                             value={filters.maxCohort}
                             onChange={(e) => filters.setMaxCohort(e.target.value)}
                         >
@@ -196,7 +198,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
                     <Typography variant='h6' color='text.secondary'>
-                        Accessibility
+                        {t('accessibility')}
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -210,7 +212,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                                     }
                                 />
                             }
-                            label='Only show courses I have access to'
+                            label={t('onlyAccessible')}
                         />
                     </Stack>
                 </AccordionDetails>

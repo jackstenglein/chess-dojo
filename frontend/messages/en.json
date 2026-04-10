@@ -1258,5 +1258,193 @@
         "writeReply": "Write a reply...",
         "postReply": "Post Reply",
         "edited": "(edited)"
+    },
+    "games": {
+        "saveDialog": {
+            "fieldRequired": "This field is required",
+            "invalidDate": "Invalid date",
+            "cancel": "Cancel",
+            "save": "Save",
+            "saveAndPublish": "Save & Publish",
+            "publish": "Publish",
+            "freeUserTooltip": "Free users are not able to publish games. Upgrade to publish your game.",
+            "reviewFields": "Review these fields before proceeding. You can update them later in the game settings section of the editor.",
+            "whiteName": "White's name",
+            "blackName": "Black's name",
+            "result": "Result",
+            "whiteWon": "White Won",
+            "draw": "Draw",
+            "blackWon": "Black Won",
+            "analysis": "Analysis",
+            "date": "Date",
+            "defaultOrientation": "Default Orientation",
+            "white": "White",
+            "black": "Black",
+            "addToFolder": "Add to Folder",
+            "select": "Select"
+        },
+        "downloadDialog": {
+            "title": "Download PGN?",
+            "exportCompleted": "Export completed for {total} games. If your download did not start automatically, please click the download button below.",
+            "download": "Download",
+            "close": "Close",
+            "exporting": "Exporting PGN. For a large number of games, this may take a few minutes...",
+            "games": "games",
+            "exportFailed": "Failed to export games. Please reach out to the support team for help.",
+            "help": "Help",
+            "includeSubfolders": "Include games from nested subfolders",
+            "options": "Options",
+            "comments": "Comments",
+            "glyphs": "Glyphs (!, !?, etc)",
+            "arrowsHighlights": "Arrows/Highlights",
+            "variations": "Variations",
+            "nullMoves": "Null Moves",
+            "tags": "Tags",
+            "clockTimes": "Clock Times",
+            "cancel": "Cancel"
+        },
+        "visibilityDialog": {
+            "unlistTitle": "{count, plural, =1 {Unlist Game?} other {Unlist {count} Games?}}",
+            "publishTitle": "{count, plural, =1 {Publish Game?} other {Publish {count} Games?}}",
+            "unlistMessage": "These games will no longer be searchable in the Dojo database and will be accessible only through folders or the direct URL.",
+            "publishMessage": "These games will be searchable in the Dojo database by other Dojo members.",
+            "cancel": "Cancel",
+            "unlistGames": "Unlist Games",
+            "publishGames": "Publish Games"
+        },
+        "bulkEditor": {
+            "addToFolder": "Add to Folder",
+            "publishGame": "Publish {count, plural, =1 {Game} other {Games}}",
+            "unlistGame": "Unlist {count, plural, =1 {Game} other {Games}}",
+            "downloadPgn": "Download PGN",
+            "deleteGame": "Delete {count, plural, =1 {Game} other {Games}}",
+            "clearSelection": "Clear selection",
+            "selected": "{count} selected",
+            "visibilitySkipped": "{count, plural, =1 {# game was} other {# games were}} not able to be published because {count, plural, =1 {it is} other {they are}} missing data."
+        },
+        "table": {
+            "cohort": "Cohort",
+            "result": "Result",
+            "players": "Players",
+            "whiteRating": "White Rating",
+            "blackRating": "Black Rating",
+            "time": "Time",
+            "moves": "Moves",
+            "played": "Played",
+            "published": "Published",
+            "updated": "Updated",
+            "uploadedBy": "Uploaded By",
+            "visibility": "Visibility",
+            "unlisted": "Unlisted",
+            "public": "Public"
+        },
+        "unpublishedBanner": {
+            "dismiss": "Dismiss",
+            "publish": "Publish",
+            "publishGame": "Publish Game",
+            "notPublished": "This game is not published",
+            "notPublishedTooltip": "This game is not published. Other users can find it only if they have the URL.",
+            "publishedTooltip": "This game is published. Other users can find it on the games tab and on your profile. You can update this in the settings."
+        },
+        "unsavedBanner": {
+            "dismiss": "Dismiss",
+            "save": "Save",
+            "saveAnalysis": "Save Analysis",
+            "analysisNotSaved": "Analysis not saved"
+        },
+        "moveExtras": {
+            "unsavedVariation": "This variation is not saved. Right click to save as a comment.",
+            "suggestedBy": "Variation suggested by {displayName}",
+            "engineLine": "This line was found with the engine."
+        },
+        "listItem": {
+            "rating": "Rating",
+            "mastersDb": "Masters DB",
+            "moves": "{count, plural, =1 {# move} other {# moves}}"
+        },
+        "reviewQueue": {
+            "cohort": "Cohort",
+            "uploadedBy": "Uploaded By",
+            "players": "Players",
+            "result": "Result",
+            "moves": "Moves",
+            "datePlayed": "Date Played",
+            "dateRequested": "Date Requested",
+            "reviewType": "Review Type",
+            "quick": "Quick",
+            "deepDive": "Deep Dive",
+            "deadline": "Deadline",
+            "description": "These games will be reviewed by one of the senseis on a future <link>Twitch stream</link>. To submit your <strong>annotated</strong> game for review, check the settings tab on your game."
+        },
+        "analysis": {
+            "saveTitle": "Save Analysis?",
+            "unsavedWarning": "This analysis is unsaved. Navigating away will permanently delete it.",
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": "Delete",
+            "saveAnalysis": "Save Analysis"
+        },
+        "subscriptions": {
+            "title": "Subscriptions",
+            "empty": "No subscriptions",
+            "dojo": "Dojo: {description}",
+            "masters": "Masters: {description}",
+            "editTooltip": "Edit subscription",
+            "edit": "Edit",
+            "copyFenTooltip": "Copy position FEN to clipboard",
+            "fen": "FEN",
+            "explorerTooltip": "Open in position explorer",
+            "explorer": "Explorer",
+            "disabled": "Disabled",
+            "allCohorts": "All cohorts",
+            "disableVariations": ", disable variations",
+            "allTimeControls": "all time controls"
+        }
+    },
+    "courses": {
+        "filters": {
+            "categories": "Categories",
+            "cohortRange": "Cohort Range",
+            "minCohort": "Min Cohort",
+            "maxCohort": "Max Cohort",
+            "accessibility": "Accessibility",
+            "onlyAccessible": "Only show courses I have access to"
+        },
+        "listItem": {
+            "by": "By ",
+            "purchased": "Purchased",
+            "includedWithSubscription": "Included with subscription",
+            "subscriptionRequired": "Subscription Required",
+            "buy": "Buy"
+        },
+        "list": {
+            "noCoursesFound": "No courses found"
+        },
+        "page": {
+            "createAccount": "Create Account",
+            "anonymousWarning": "You are not signed into an account, so this course is available only on this device and browser. Create an account to access this course anywhere.",
+            "previous": "Previous: {name}",
+            "next": "Next: {name}"
+        },
+        "purchase": {
+            "whatsIncluded": "What's Included:",
+            "subscribersOnly": "This course is only available to subscribers",
+            "alsoUnlockBySubscribing": "You can also unlock this and all other opening courses by subscribing to the Training Program",
+            "viewPrices": "View Prices",
+            "soldSeparately": "This course is sold separately from the Training Plan. Unlock it by purchasing it below."
+        },
+        "purchaseOption": {
+            "buy": "Buy"
+        },
+        "exercises": {
+            "exerciseNumber": "Exercise #{index}"
+        },
+        "pgnSelector": {
+            "unlockMoreGames": "Unlock {count, plural, =1 {# more game} other {# more games}} by upgrading to a full account",
+            "viewPrices": "View Prices"
+        },
+        "video": {
+            "videoTitle": "Video {index}"
+        }
     }
 }

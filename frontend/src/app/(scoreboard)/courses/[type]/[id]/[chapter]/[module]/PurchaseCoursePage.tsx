@@ -2,6 +2,7 @@ import { Course } from '@/database/course';
 import { useRouter } from '@/hooks/useRouter';
 import UpsellAlert from '@/upsell/UpsellAlert';
 import { Alert, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import PurchaseOption from './PurchaseOption';
 
 interface PurchaseCoursePageProps {
@@ -11,6 +12,8 @@ interface PurchaseCoursePageProps {
 }
 
 const PurchaseCoursePage: React.FC<PurchaseCoursePageProps> = ({ course, preview, isFreeTier }) => {
+    const t = useTranslations('courses.purchase');
+
     if (!course) {
         return null;
     }
@@ -46,7 +49,7 @@ const PurchaseCoursePage: React.FC<PurchaseCoursePageProps> = ({ course, preview
 
                                 {course.whatsIncluded?.length && (
                                     <Stack>
-                                        <Typography>What's Included:</Typography>
+                                        <Typography>{t('whatsIncluded')}</Typography>
                                         <ul style={{ marginTop: 0 }}>
                                             {course.whatsIncluded.map((item, i) => (
                                                 <li key={i}>{item}</li>
@@ -88,6 +91,7 @@ interface PurchaseMessageProps {
 }
 
 const PurchaseMessage: React.FC<PurchaseMessageProps> = ({ course, isFreeTier }) => {
+    const t = useTranslations('courses.purchase');
     const router = useRouter();
 
     const onViewPrices = (event: React.MouseEvent) => {
@@ -100,29 +104,23 @@ const PurchaseMessage: React.FC<PurchaseMessageProps> = ({ course, isFreeTier })
     let content = null;
     if (isFreeTier) {
         if (!course.availableForFreeUsers) {
-            content = <UpsellAlert>This course is only available to subscribers</UpsellAlert>;
+            content = <UpsellAlert>{t('subscribersOnly')}</UpsellAlert>;
         } else if (course.includedWithSubscription) {
             content = (
                 <Alert
                     severity='info'
                     action={
                         <Button color='inherit' href='/prices' size='small' onClick={onViewPrices}>
-                            View Prices
+                            {t('viewPrices')}
                         </Button>
                     }
                 >
-                    You can also unlock this and all other opening courses by subscribing to the
-                    Training Program
+                    {t('alsoUnlockBySubscribing')}
                 </Alert>
             );
         }
     } else {
-        content = (
-            <Alert severity='info'>
-                This course is sold separately from the Training Plan. Unlock it by purchasing it
-                below.
-            </Alert>
-        );
+        content = <Alert severity='info'>{t('soldSeparately')}</Alert>;
     }
 
     if (!content) {

@@ -16,6 +16,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { CourseFilters } from './CourseFilters';
 
@@ -34,6 +35,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
     filters,
     preview,
 }) => {
+    const t = useTranslations('courses.listItem');
     const api = useApi();
     const request = useRequest();
     const isAccessible = isPurchased || (course.includedWithSubscription && !isFreeTier);
@@ -96,7 +98,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                 <CardContent>
                     <Typography variant='h5'>{course.name}</Typography>
                     <Typography variant='body2'>
-                        By{' '}
+                        {t('by')}
                         <Link
                             href={`/profile/${course.owner}`}
                             onClick={(e) => e.stopPropagation()}
@@ -109,14 +111,14 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         <Stack direction='row' alignItems='center' mb={1} spacing={0.5}>
                             <CheckCircleOutlineIcon color='success' fontSize='small' />
                             <Typography variant='subtitle1' color='text.secondary'>
-                                Purchased
+                                {t('purchased')}
                             </Typography>
                         </Stack>
                     ) : course.includedWithSubscription && !isFreeTier ? (
                         <Stack direction='row' alignItems='center' mb={1} spacing={0.5}>
                             <CheckCircleOutlineIcon color='success' fontSize='small' />
                             <Typography variant='subtitle1' color='text.secondary'>
-                                Included with subscription
+                                {t('includedWithSubscription')}
                             </Typography>
                         </Stack>
                     ) : purchaseOption ? (
@@ -143,7 +145,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         </Stack>
                     ) : (
                         <Typography variant='subtitle1' color='text.secondary'>
-                            Subscription Required
+                            {t('subscriptionRequired')}
                         </Typography>
                     )}
 
@@ -167,7 +169,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         color='success'
                         startIcon={<RocketLaunchIcon />}
                     >
-                        Buy
+                        {t('buy')}
                     </LoadingButton>
                     <RequestSnackbar request={request} />
                 </CardActions>

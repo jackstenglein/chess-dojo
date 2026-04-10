@@ -6,6 +6,7 @@ import { Coach, CourseModule, coachUrls } from '@/database/course';
 import { User } from '@/database/user';
 import PgnErrorBoundary from '@/games/view/PgnErrorBoundary';
 import { Box, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { ModuleProps } from './Module';
 import PgnSelector from './PgnSelector';
@@ -27,6 +28,7 @@ function getCompleted(user: User | undefined, module: CourseModule): boolean[] {
 }
 
 const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
+    const t = useTranslations('courses.exercises');
     const { user } = useAuth();
     const [completed, setCompleted] = useState(getCompleted(user, module));
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -115,7 +117,7 @@ const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
 
                 <Stack mt={3} gridArea='subtitle'>
                     <Typography variant='subtitle2' fontWeight='bold' color='text.secondary'>
-                        Exercise #{selectedIndex + 1}
+                        {t('exerciseNumber', { index: selectedIndex + 1 })}
                     </Typography>
                 </Stack>
 
