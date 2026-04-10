@@ -2,6 +2,7 @@
 
 import { FacebookOutlined, Link, Reddit, Share, Twitter } from '@mui/icons-material';
 import { Button, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 function objectToGetParams(object: Record<string, string | number | undefined | null>) {
@@ -18,6 +19,7 @@ interface ShareButtonProps {
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({ title, href }) => {
+    const t = useTranslations('blog.share');
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const onShare = async (platform: string) => {
@@ -64,7 +66,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ title, href }) => {
                 startIcon={<Share fontSize='small' />}
                 onClick={(e) => setAnchorEl(e.currentTarget)}
             >
-                Share
+                {t('share')}
             </Button>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
                 <MenuItem onClick={() => onShare('facebook')}>
@@ -89,7 +91,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ title, href }) => {
                     <ListItemIcon>
                         <Link />
                     </ListItemIcon>
-                    <ListItemText primary='Copy Link' />
+                    <ListItemText primary={t('copyLink')} />
                 </MenuItem>
             </Menu>
         </>

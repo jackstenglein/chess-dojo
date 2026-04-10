@@ -1,5 +1,6 @@
 import { ExamType } from '@jackstenglein/chess-dojo-common/src/database/exam';
 import { Box, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 interface InstructionsProps {
@@ -33,63 +34,29 @@ export default Instructions;
  * Renders instructions for tactics exams.
  */
 export const TacticsInstructions: React.FC<InstructionsProps> = ({ length, timeLimitSeconds }) => {
+    const t = useTranslations('exams.testInstructions');
     return (
         <>
             <Typography variant='h4' mt={4}>
-                Instructions
+                {t('heading')}
             </Typography>
             <Typography component='div'>
                 <Box component='ul' sx={{ m: 0, '& li': { mt: 1 } }}>
+                    <li>{t('bulletPlayBothSides')}</li>
+                    <li>{t('bulletTacticsPoints')}</li>
+                    <li>{t('bulletPromoteVariations')}</li>
+                    <li>{t('bulletNoTactical')}</li>
+                    <li>{t('bulletBoardOriented')}</li>
+                    <li>{t('bulletPgnEditor')}</li>
+                    <li>{t('bulletRightClick')}</li>
                     <li>
-                        Unlike most online trainers, you play both your moves and your opponent's.
-                        You will not receive feedback on any moves until the test is fully complete.
+                        {t('bulletTimeLimit', {
+                            minutes: Math.round(timeLimitSeconds / 60),
+                            length,
+                        })}
                     </li>
-                    <li>
-                        Points are awarded based on how many critical moves you find. A single
-                        problem may have multiple variations for your opponent, so make sure to look
-                        for different defenses and respond against each of them. It's up to you to
-                        decide which variations are critical and how deep to continue each
-                        variation.
-                    </li>
-                    <li>
-                        In each variation, only your main move will be counted as part of your
-                        solution. You can promote variations to select which moves will be included
-                        in your solution.
-                    </li>
-                    <li>
-                        Not every problem has a tactical solution. In this case, just play a move
-                        that improves your position in some way.
-                    </li>
-                    <li>
-                        For each problem, the board will be oriented with the side to move on the
-                        bottom. The side to move will also be displayed in the list of problems.
-                    </li>
-                    <li>
-                        The PGN editor is available for you to add comments or annotations if this
-                        helps you think, but you are not graded on these. You are graded solely on
-                        which moves are present in your final PGN.
-                    </li>
-                    <li>
-                        You can right-click in the list of problems to mark them as complete or
-                        needs review. This is purely an organizational tool for you to use as you
-                        take the test. You grade will not be based on which problems have which
-                        status.
-                    </li>
-                    <li>
-                        You will have {Math.round(timeLimitSeconds / 60)} minutes for {length}{' '}
-                        positions. Some problems may be harder than others. You can split the time
-                        up among the positions however you choose. You can also return to positions
-                        you previously worked on to update your answers.
-                    </li>
-                    <li>
-                        The test ends when your time runs out or when you click the "Finish Early"
-                        button.
-                    </li>
-                    <li>
-                        The test autosaves as you work. If you need to stop during the test, click
-                        the Pause button. This will save your progress, and you can come back later
-                        to resume from where you left off.
-                    </li>
+                    <li>{t('bulletFinishEarly')}</li>
+                    <li>{t('bulletAutosave')}</li>
                 </Box>
             </Typography>
         </>
@@ -103,56 +70,32 @@ export const PolgarMateInstructions: React.FC<InstructionsProps> = ({
     timeLimitSeconds,
     length,
 }) => {
+    const t = useTranslations('exams.testInstructions');
     return (
         <>
             <Typography variant='h4' mt={4}>
-                Instructions
+                {t('heading')}
             </Typography>
             <Typography component='div'>
                 <Box component='ul' sx={{ m: 0, '& li': { mt: 1 } }}>
+                    <li>{t('bulletPlayBothSides')}</li>
+                    <li>{t('bulletPolgarPoints')}</li>
                     <li>
-                        Unlike most online trainers, you play both your moves and your opponent's.
-                        You will not receive feedback on any moves until the test is fully complete.
+                        {t.rich('bulletNoTakebacks', {
+                            strong: (chunks) => <strong>{chunks}</strong>,
+                        })}
                     </li>
+                    <li>{t('bulletBoardOriented')}</li>
+                    <li>{t('bulletPgnEditor')}</li>
+                    <li>{t('bulletRightClick')}</li>
                     <li>
-                        Points are awarded based on how many correct moves you find. A single
-                        problem may have multiple variations for your opponent, so make sure to look
-                        for different defenses and respond against each of them.
+                        {t('bulletTimeLimit', {
+                            minutes: Math.round(timeLimitSeconds / 60),
+                            length,
+                        })}
                     </li>
-                    <li>
-                        <strong>There are no takebacks</strong>, so make sure you've calculated to
-                        mate for all defenses before you play your first move.
-                    </li>
-                    <li>
-                        For each problem, the board will be oriented with the side to move on the
-                        bottom. The side to move will also be displayed in the list of problems.
-                    </li>
-                    <li>
-                        The PGN editor is available for you to add comments or annotations if this
-                        helps you think, but you are not graded on these. You are graded solely on
-                        which moves are present in your final PGN.
-                    </li>
-                    <li>
-                        You can right-click in the list of problems to mark them as complete or
-                        needs review. This is purely an organizational tool for you to use as you
-                        take the test. You grade will not be based on which problems have which
-                        status.
-                    </li>
-                    <li>
-                        You will have {Math.round(timeLimitSeconds / 60)} minutes for {length}{' '}
-                        positions. Some problems may be harder than others. You can split the time
-                        up among the positions however you choose. You can also return to positions
-                        you previously worked on to update your answers.
-                    </li>
-                    <li>
-                        The test ends when your time runs out or when you click the "Finish Early"
-                        button.
-                    </li>
-                    <li>
-                        The test autosaves as you work. If you need to stop during the test, click
-                        the Pause button. This will save your progress, and you can come back later
-                        to resume from where you left off.
-                    </li>
+                    <li>{t('bulletFinishEarly')}</li>
+                    <li>{t('bulletAutosave')}</li>
                 </Box>
             </Typography>
         </>

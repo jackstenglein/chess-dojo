@@ -14,9 +14,11 @@ import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
 import { ExpandMore } from '@mui/icons-material';
 import { Box, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 const YearReviewPage = ({ username, year }: { username: string; year: string }) => {
+    const t = useTranslations('profile.yearReview');
     const request = useRequest<YearReview>();
 
     useEffect(() => {
@@ -118,13 +120,15 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                                 textAlign: 'center',
                             }}
                         >
-                            ChessDojo
-                            <br />
-                            Postmortem
-                            <br />
-                            <Box component='span' sx={{ color: 'dojoOrange.main' }}>
-                                {review.period}
-                            </Box>
+                            {t.rich('postmortemHeader', {
+                                period: review.period,
+                                br: () => <br />,
+                                accent: (chunks) => (
+                                    <Box component='span' sx={{ color: 'dojoOrange.main' }}>
+                                        {chunks}
+                                    </Box>
+                                ),
+                            })}
                         </Typography>
                     </Stack>
 
@@ -135,7 +139,7 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                             fontSize='clamp(24px,3vw,40px)'
                             textAlign='center'
                         >
-                            Let's take a look at your progress over the past year!
+                            {t('progressIntro')}
                         </Typography>
                     </Stack>
 
@@ -158,8 +162,7 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                         textAlign='center'
                         pt={5}
                     >
-                        The Dojo is all about sweat work! Let's take a look at the work you've done
-                        this year!
+                        {t('sweatWork')}
                     </Typography>
                 </Stack>
             </Container>
@@ -180,8 +183,7 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                         fontSize='clamp(16px,3vw,32px)'
                         textAlign='center'
                     >
-                        Thank you for being part of the Dojo this year! We can't wait to see what
-                        you and the rest of the Dojo will accomplish in {parseInt(year) + 1}!
+                        {t('thankYou', { nextYear: parseInt(year) + 1 })}
                     </Typography>
                 </Stack>
             </Container>

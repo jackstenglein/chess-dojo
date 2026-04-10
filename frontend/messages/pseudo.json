@@ -495,12 +495,31 @@
         },
         "followers": {
             "noUsersFound": "[T] No users found",
-            "unfollow": "[T] Unfollow"
+            "unfollow": "[T] Unfollow",
+            "followersTitle": "[T] Followers",
+            "followingTitle": "[T] Following"
         },
         "switchCohort": {
             "hideForMonth": "[T] Hide for 1 month",
             "settings": "[T] Settings",
             "ratingBelowMinimum": "[T] Your rating has been less than your cohort's minimum rating for 90 days. We recommend moving down a cohort in your settings."
+        },
+        "profilePage": {
+            "tabsAriaLabel": "[T] profile tabs",
+            "tabLiveClasses": "[T] Live Classes",
+            "newChip": "[T] New",
+            "tabRatings": "[T] Ratings",
+            "tabCoaching": "[T] Coaching",
+            "tabTrainingPlan": "[T] Training Plan",
+            "tabActivity": "[T] Activity",
+            "tabGames": "[T] Games",
+            "tabClubs": "[T] Clubs"
+        },
+        "yearReview": {
+            "postmortemHeader": "[T] ChessDojo<br></br>Postmortem<br></br><accent>{period}</accent>",
+            "progressIntro": "[T] Let's take a look at your progress over the past year!",
+            "sweatWork": "[T] The Dojo is all about sweat work! Let's take a look at the work you've done this year!",
+            "thankYou": "[T] Thank you for being part of the Dojo this year! We can't wait to see what you and the rest of the Dojo will accomplish in {nextYear}!"
         }
     },
     "notifications": {
@@ -2251,6 +2270,237 @@
                 "lectureBullet2": "[T] Access structured homework assignments",
                 "lectureBullet3": "[T] Get full access to the core ChessDojo website"
             }
+        }
+    },
+    "puzzles": {
+        "checkmate": {
+            "tooltipPuzzleDetails": "[T] Puzzle Details",
+            "tooltipSettings": "[T] Settings",
+            "whiteToMove": "[T] White to move",
+            "blackToMove": "[T] Black to move",
+            "mateIn": "[T] Mate in {count}",
+            "unrated": "[T] Unrated",
+            "streakRow": "[T] {streak} in a row!",
+            "puzzleId": "[T] Puzzle ID",
+            "puzzleRating": "[T] Puzzle Rating",
+            "puzzleRatingDeviation": "[T] Puzzle Rating Deviation",
+            "yourRatingDeviation": "[T] Your Rating Deviation",
+            "totalAttempts": "[T] Total Attempts",
+            "successfulAttempts": "[T] Successful Attempts",
+            "targetTime": "[T] Target Time",
+            "usedTime": "[T] Used Time",
+            "viewPuzzleHistory": "[T] View Puzzle History",
+            "shortcut": "[T] Shortcut: {keys}",
+            "nextPuzzle": "[T] Next Puzzle"
+        },
+        "squareColors": {
+            "title": "[T] Square Color Drill",
+            "intro": "[T] You'll see a square name (like \"g7\") and choose whether it's a white or black square.",
+            "readyArmed": "[T] Ready? Hit GO! to start the timer.",
+            "readyUnarmed": "[T] Answer as quickly and accurately as possible. Stop whenever you're ready!",
+            "keyboardShortcuts": "[T] Keyboard shortcuts: <strong>W</strong> for White, <strong>B</strong> for Black",
+            "bestRating": "[T] Your best rating: {personalBest}",
+            "startButton": "[T] Start",
+            "goButton": "[T] GO!",
+            "questionLabel": "[T] Question {number}",
+            "questionsRemaining": "[T] Answer {count, plural, =1 {# more question} other {# more questions}} to receive a rating",
+            "whiteButton": "[T] White (W)",
+            "blackButton": "[T] Black (B)",
+            "stop": "[T] Stop",
+            "sessionComplete": "[T] Session Complete!",
+            "yourRating": "[T] Your Rating",
+            "answerAtLeast": "[T] Answer at least {count} questions to receive a rating",
+            "newPersonalBest": "[T] New Personal Best!",
+            "personalBest": "[T] Personal Best: {personalBest}",
+            "accuracy": "[T] Accuracy",
+            "avgResponseTime": "[T] Avg Response Time",
+            "bestStreak": "[T] Best Streak",
+            "totalTime": "[T] Total Time",
+            "correct": "[T] Correct",
+            "wrong": "[T] Wrong",
+            "playAgain": "[T] Play Again"
+        },
+        "history": {
+            "title": "[T] Puzzle History for {displayName}",
+            "columnDate": "[T] Date",
+            "columnId": "[T] ID",
+            "columnPuzzleRating": "[T] Puzzle Rating",
+            "columnTimeSpent": "[T] Time Spent",
+            "columnResult": "[T] Result",
+            "unrated": "[T] Unrated"
+        },
+        "settings": {
+            "title": "[T] Puzzle Settings",
+            "inProgressNote": "[T] Some options can not be changed while in the middle of a puzzle.",
+            "themesLabel": "[T] Themes",
+            "themeMateIn1": "[T] Mate in 1",
+            "themeMateIn2": "[T] Mate in 2",
+            "themeMateIn3": "[T] Mate in 3",
+            "difficultyLabel": "[T] Difficulty",
+            "difficultyEasiest": "[T] Easiest (-600)",
+            "difficultyEasier": "[T] Easier (-300)",
+            "difficultyStandard": "[T] Standard (\u00b1200)",
+            "difficultyHarder": "[T] Harder (+300)",
+            "difficultyHardest": "[T] Hardest (+600)",
+            "rated": "[T] Rated",
+            "showStreak": "[T] Show Streak",
+            "showRating": "[T] Show Rating",
+            "showTimer": "[T] Show Timer",
+            "playSoundCorrect": "[T] Play sound on correct move",
+            "playSoundIncorrect": "[T] Play sound on incorrect move"
+        }
+    },
+    "exams": {
+        "landing": {
+            "tacticsTests": "[T] Tactics Tests",
+            "checkmatePuzzles": "[T] Checkmate Puzzles",
+            "endgameTests": "[T] Endgame Tests",
+            "squareColorDrill": "[T] Square Color Drill",
+            "allRatings": "[T] All Ratings"
+        },
+        "tactics": {
+            "heading": "[T] Tactics Tests"
+        },
+        "endgame": {
+            "heading": "[T] Endgame Tests"
+        },
+        "checkmate": {
+            "heading": "[T] Checkmate Tests"
+        },
+        "list": {
+            "tooltipCollapseSection": "[T] Collapse Section",
+            "tooltipExpandSection": "[T] Expand Section",
+            "tooltipExamLocked": "[T] This exam is locked until you complete the previous exam",
+            "alertExamLocked": "[T] This exam is locked until you complete the previous exam.",
+            "columnName": "[T] Name",
+            "columnNumProblems": "[T] # of Problems",
+            "columnTimeLimit": "[T] Time Limit",
+            "timeLimitMin": "[T] {minutes} min",
+            "columnTakebacks": "[T] Takebacks",
+            "tooltipTakebacksDisabled": "[T] Takebacks are disabled for this exam. Once you make a move, it is locked in.",
+            "tooltipTakebacksEnabled": "[T] Takebacks are enabled for this exam. After making a move, you can promote another move instead.",
+            "columnAvgScore": "[T] Avg Score",
+            "columnYourScore": "[T] Your Score",
+            "columnAvgRating": "[T] Avg Rating",
+            "tooltipAvgRatingNotCalculated": "[T] Avg rating is not calculated until enough people have taken the exam.",
+            "columnYourRating": "[T] Your Rating",
+            "tooltipYourRatingNotCalculated": "[T] Your rating is not calculated until enough people have taken the exam.",
+            "columnDateTaken": "[T] Date Taken"
+        },
+        "examPage": {
+            "retakeTest": "[T] Retake Test",
+            "retakeDialogTitle": "[T] Retake this test?",
+            "retakeDialogBody": "[T] You can retake this test for practice, but your original score will still be used for your stats on this test and your Dojo Tactics rating.",
+            "cancel": "[T] Cancel",
+            "retakeButton": "[T] Retake",
+            "tooltipInstructions": "[T] Instructions",
+            "tooltipTestInfo": "[T] Test Info",
+            "tooltipTestStatistics": "[T] Test Statistics",
+            "testCompleteTitle": "[T] Test Complete",
+            "testCompleteBody": "[T] Your time has run out, and the test is over. Let's see how you did!",
+            "continueButton": "[T] Continue",
+            "tooltipOnlyFirstMove": "[T] Only your first move for the solving side is counted in this test. This move and any following moves will not be counted.",
+            "tooltipMoveNotCounted": "[T] This move will not be counted as part of your solution. If you want this move to be counted, promote it by using the editor or right-clicking.",
+            "tooltipMoveNotInSolution": "[T] This move was not present in the solution. You neither gained nor lost points for it.",
+            "tooltipAlternateFound": "[T] This move is an alternate solution. You got full credit for the mainline variation for finding this.",
+            "tooltipAlternateNotFound": "[T] This move is an alternate solution. You would have received full credit for the mainline variation for finding this."
+        },
+        "instructionsPage": {
+            "exampleHeading": "[T] Example",
+            "sampleDescription": "[T] The following is a sample test similar to the one you will take. You can use this as an optional, untimed warm-up to see how the test will work. You are not graded on these problems. When you have finished making your moves, click the \"Finish Early\" button to see the score you would have gotten if this had been a real test.",
+            "startTestHeading": "[T] Start Test",
+            "startTestBody": "[T] Click the button below to start. Your time begins as soon as you click the button.",
+            "beginTest": "[T] Begin Test",
+            "viewStats": "[T] View Stats"
+        },
+        "testInstructions": {
+            "heading": "[T] Instructions",
+            "bulletPlayBothSides": "[T] Unlike most online trainers, you play both your moves and your opponent's. You will not receive feedback on any moves until the test is fully complete.",
+            "bulletTacticsPoints": "[T] Points are awarded based on how many critical moves you find. A single problem may have multiple variations for your opponent, so make sure to look for different defenses and respond against each of them. It's up to you to decide which variations are critical and how deep to continue each variation.",
+            "bulletPolgarPoints": "[T] Points are awarded based on how many correct moves you find. A single problem may have multiple variations for your opponent, so make sure to look for different defenses and respond against each of them.",
+            "bulletPromoteVariations": "[T] In each variation, only your main move will be counted as part of your solution. You can promote variations to select which moves will be included in your solution.",
+            "bulletNoTactical": "[T] Not every problem has a tactical solution. In this case, just play a move that improves your position in some way.",
+            "bulletNoTakebacks": "[T] <strong>There are no takebacks</strong>, so make sure you've calculated to mate for all defenses before you play your first move.",
+            "bulletBoardOriented": "[T] For each problem, the board will be oriented with the side to move on the bottom. The side to move will also be displayed in the list of problems.",
+            "bulletPgnEditor": "[T] The PGN editor is available for you to add comments or annotations if this helps you think, but you are not graded on these. You are graded solely on which moves are present in your final PGN.",
+            "bulletRightClick": "[T] You can right-click in the list of problems to mark them as complete or needs review. This is purely an organizational tool for you to use as you take the test. You grade will not be based on which problems have which status.",
+            "bulletTimeLimit": "[T] You will have {minutes} minutes for {length} positions. Some problems may be harder than others. You can split the time up among the positions however you choose. You can also return to positions you previously worked on to update your answers.",
+            "bulletFinishEarly": "[T] The test ends when your time runs out or when you click the \"Finish Early\" button.",
+            "bulletAutosave": "[T] The test autosaves as you work. If you need to stop during the test, click the Pause button. This will save your progress, and you can come back later to resume from where you left off."
+        },
+        "pgnSelector": {
+            "saving": "[T] Saving...",
+            "pause": "[T] Pause",
+            "white": "[T] White",
+            "black": "[T] Black",
+            "problemFallback": "[T] Problem {number}",
+            "tooltipMarkedComplete": "[T] You marked this problem as complete. Right click to change.",
+            "tooltipMarkedNeedsReview": "[T] You marked this problem as needs review. Right click to change.",
+            "finishEarly": "[T] Finish Early",
+            "finishEarlyDialogTitle": "[T] Finish Early?",
+            "finishEarlyDialogBody": "[T] Are you sure you want to finish the test early? This will end the entire test, and you will not be able to change your answers if you continue.",
+            "cancel": "[T] Cancel",
+            "finish": "[T] Finish",
+            "markAsCompleted": "[T] Mark as Completed",
+            "markAsNeedsReview": "[T] Mark as Needs Review",
+            "clearStatus": "[T] Clear Status"
+        },
+        "completedSelector": {
+            "attemptNum": "[T] Attempt #{number}",
+            "totalScore": "[T] Total Score: {user} / {solution}",
+            "timeUsed": "[T] Time Used: {time}",
+            "problemFallback": "[T] Problem {number}",
+            "resetSample": "[T] Reset Sample"
+        },
+        "statistics": {
+            "cohortsLabel": "[T] Cohorts",
+            "allCohorts": "[T] All Cohorts",
+            "bestFitCohortRange": "[T] Best Fit Cohort Range ({range})",
+            "usersLine": "[T] <dim>Users:</dim> {count}",
+            "avgScoreLine": "[T] <dim>Avg Score:</dim> {score}",
+            "regressionCaptionRange": "[T] Best fit is calculated as a linear regression over all users {min}\u2013{max}",
+            "regressionCaptionPlus": "[T] Best fit is calculated as a linear regression over all users {min}+",
+            "seriesTestRating": "[T] Test Rating",
+            "seriesYourScore": "[T] Your Score",
+            "tooltipScoreRating": "[T] Score: {x}, Rating: {y}",
+            "tooltipScoreRatingNewline": "[T] Score: {x},\nRating: {y}",
+            "xAxisLabel": "[T] Score",
+            "yAxisLabel": "[T] Normalized Rating"
+        }
+    },
+    "donate": {
+        "title": "[T] Support the Dojo",
+        "introParagraph": "[T] Interested in supporting the Dojo without getting a membership? All contributions are greatly appreciated and help keep the Dojo going! We have many ways you can help out:",
+        "linkSponsorContent": "[T] Sponsor Dojo content",
+        "linkSponsorMembership": "[T] Sponsor another user's Dojo membership",
+        "linkSponsorPrizes": "[T] Sponsor tournament prizes",
+        "linkPatreon": "[T] Join our Patreon",
+        "linkCourses": "[T] Purchase one of our courses",
+        "linkMerch": "[T] Purchase merch",
+        "linkChessComReferral": "[T] Use our referral for a Chess.com diamond membership",
+        "freeWaysIntro": "[T] There are many free ways to support the Dojo as well! For example:",
+        "freeClipTwitch": "[T] Clipping your favorite moments on Twitch",
+        "freeShareVideos": "[T] Sharing our videos and clips with your friends and on social media",
+        "freeLikeYoutube": "[T] Liking and commenting on our YouTube videos",
+        "freeVolunteer": "[T] Offering volunteer help",
+        "volunteeringHeading": "[T] Volunteering",
+        "volunteeringIntro": "[T] Please message @hellokostya on Discord if you're interested in helping out with any of the following categories:",
+        "volunteerAdmin": "[T] Admin/Organizational \u2014 organizing events, both on-stream and off-stream, modding, etc.",
+        "volunteerProgramming": "[T] Programming \u2014 Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
+        "volunteerContent": "[T] Content \u2014 thumbnails, posting clips on social media, etc."
+    },
+    "blog": {
+        "footer": {
+            "cta": "[T] Check Out ChessDojo.Club To Improve Your Chess"
+        },
+        "share": {
+            "share": "[T] Share",
+            "copyLink": "[T] Copy Link"
+        },
+        "comments": {
+            "heading": "[T] Comments",
+            "headingWithCount": "[T] Comments ({count})",
+            "signInToComment": "[T] <link>Sign in</link> to comment"
         }
     }
 }

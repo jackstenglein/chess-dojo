@@ -32,6 +32,7 @@ import {
 import { Groups, PieChart, RocketLaunch, Star, Timeline } from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
 import { Box, Chip, Container, Stack, Tab, Tabs, useMediaQuery } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ReactNode, useEffect, type JSX } from 'react';
 
 export function ProfilePage({ username }: { username?: string }) {
@@ -47,6 +48,7 @@ export function ProfilePage({ username }: { username?: string }) {
 }
 
 function AuthProfilePage({ currentUser, username }: { currentUser: User; username?: string }) {
+    const t = useTranslations('profile.profilePage');
     const api = useApi();
     const request = useRequest<User>();
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
@@ -148,8 +150,8 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <Tabs
                                 value={searchParams.get('view') || 'stats'}
-                                onChange={(_, t: string) => updateSearchParams({ view: t })}
-                                aria-label='profile tabs'
+                                onChange={(_, tab: string) => updateSearchParams({ view: tab })}
+                                aria-label={t('tabsAriaLabel')}
                                 variant='scrollable'
                             >
                                 {(getSubscriptionTier(user) === SubscriptionTier.GameReview ||
@@ -157,9 +159,9 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     <ProfileTab
                                         label={
                                             <Stack direction='row' alignItems='center'>
-                                                Live Classes
+                                                {t('tabLiveClasses')}
                                                 <Chip
-                                                    label='New'
+                                                    label={t('newChip')}
                                                     color='success'
                                                     size='small'
                                                     sx={{ ml: 1 }}
@@ -171,35 +173,35 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     />
                                 )}
                                 <ProfileTab
-                                    label='Ratings'
+                                    label={t('tabRatings')}
                                     value='stats'
                                     icon={<Timeline fontSize='small' />}
                                 />
                                 {user.isCoach && (
                                     <ProfileTab
-                                        label='Coaching'
+                                        label={t('tabCoaching')}
                                         value='coaching'
                                         icon={<RocketLaunch fontSize='small' />}
                                     />
                                 )}
                                 <ProfileTab
                                     id='training-plan-tab'
-                                    label='Training Plan'
+                                    label={t('tabTrainingPlan')}
                                     value='progress'
                                     icon={<Star fontSize='small' />}
                                 />
                                 <ProfileTab
-                                    label='Activity'
+                                    label={t('tabActivity')}
                                     value='activity'
                                     icon={<PieChart fontSize='small' />}
                                 />
                                 <ProfileTab
-                                    label='Games'
+                                    label={t('tabGames')}
                                     value='games'
                                     icon={<PawnIcon fontSize='small' />}
                                 />
                                 <ProfileTab
-                                    label='Clubs'
+                                    label={t('tabClubs')}
                                     value='clubs'
                                     icon={<Groups fontSize='small' />}
                                 />

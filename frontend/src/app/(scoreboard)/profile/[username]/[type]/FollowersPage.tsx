@@ -9,6 +9,7 @@ import UserInfo from '@/components/profile/info/UserInfo';
 import { User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { Container, Divider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export function FollowersPage({
@@ -18,6 +19,7 @@ export function FollowersPage({
     username: string;
     type: 'followers' | 'following';
 }) {
+    const t = useTranslations('profile.followers');
     const api = useApi();
     const { user: currentUser } = useAuth();
     const request = useRequest<User>();
@@ -45,7 +47,7 @@ export function FollowersPage({
         return <NotFoundPage />;
     }
 
-    const title = type === 'followers' ? 'Followers' : 'Following';
+    const title = type === 'followers' ? t('followersTitle') : t('followingTitle');
 
     return (
         <Container maxWidth='md' sx={{ pt: 6, pb: 4 }}>

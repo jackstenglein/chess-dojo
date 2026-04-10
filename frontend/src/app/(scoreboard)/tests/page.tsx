@@ -2,39 +2,41 @@ import { ExamCard } from '@/components/exams/ExamCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
 import { Visibility } from '@mui/icons-material';
 import { Container, Grid } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 /**
  * Renders a simple landing page that directs users to the different types of exams
  * (tactics, polgar, endgame, etc).
  */
 export default function ExamLandingPage() {
+    const t = useTranslations('exams.landing');
     return (
         <Container maxWidth='lg' sx={{ py: 5 }}>
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <ExamCard
-                    name='Tactics Tests'
-                    description='All Ratings'
+                    name={t('tacticsTests')}
+                    description={t('allRatings')}
                     href='/tests/tactics'
                     icon={QueenIcon}
                 />
 
                 <ExamCard
-                    name='Checkmate Puzzles'
-                    description='All Ratings'
+                    name={t('checkmatePuzzles')}
+                    description={t('allRatings')}
                     href='/puzzles/checkmate'
                     icon={KingIcon}
                 />
 
                 <ExamCard
-                    name='Endgame Tests'
-                    description='All Ratings'
+                    name={t('endgameTests')}
+                    description={t('allRatings')}
                     href='/tests/endgame'
                     icon={RookIcon}
                 />
 
                 <ExamCard
-                    name='Square Color Drill'
-                    description='All Ratings'
+                    name={t('squareColorDrill')}
+                    description={t('allRatings')}
                     href='/puzzles/square-colors'
                     icon={Visibility}
                 />
