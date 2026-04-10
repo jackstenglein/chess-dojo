@@ -411,14 +411,18 @@ function getTrainingPlanColumns(
  * @param allCohorts Whether all cohorts should be included for time spent.
  * @returns The columns for the Time Spent column group.
  */
-function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<ScoreboardRow>[] {
+function getTimeSpentColumns(
+    t: ScoreboardT,
+    tCommon: (key: string, values?: Record<string, string | number>) => string,
+    allCohorts?: boolean,
+): GridColDef<ScoreboardRow>[] {
     return [
         {
             field: 'totalTime',
             headerName: allCohorts ? t('allTasksColumn') : t('cohortTasksColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_ALL_TIME' : 'ALL_TIME'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -428,7 +432,7 @@ function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<S
             headerName: t('last7DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_7_DAYS' : 'LAST_7_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -438,7 +442,7 @@ function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<S
             headerName: t('last30DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_30_DAYS' : 'LAST_30_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -448,7 +452,7 @@ function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<S
             headerName: t('last90DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_90_DAYS' : 'LAST_90_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -458,7 +462,7 @@ function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<S
             headerName: t('last365DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_365_DAYS' : 'LAST_365_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -468,7 +472,7 @@ function getTimeSpentColumns(t: ScoreboardT, allCohorts?: boolean): GridColDef<S
             headerName: t('nonDojoColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_NON_DOJO' : 'NON_DOJO'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -498,6 +502,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     slotProps,
 }) => {
     const t = useTranslations('scoreboard');
+    const tCommon = useTranslations('common');
     const isSummary = cohort === undefined;
     const isFreeTier = useFreeTier();
 
@@ -513,7 +518,10 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
         [t, cohort, requirements],
     );
 
-    const timeSpentColumns = useMemo(() => getTimeSpentColumns(t, isSummary), [t, isSummary]);
+    const timeSpentColumns = useMemo(
+        () => getTimeSpentColumns(t, tCommon, isSummary),
+        [t, tCommon, isSummary],
+    );
 
     const ratingsColumns = useMemo(() => getRatingsColumns(t), [t]);
     const summaryUserInfoColumns = useMemo(() => getSummaryUserInfoColumns(t), [t]);

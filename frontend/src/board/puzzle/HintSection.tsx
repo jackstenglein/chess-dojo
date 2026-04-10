@@ -1,5 +1,6 @@
 import { Move } from '@jackstenglein/chess';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useRef } from 'react';
 
 import { BoardApi, Chess, reconcile, toColor } from '../Board';
@@ -23,14 +24,16 @@ interface HintSectionProps {
 }
 
 const TurnPrompt = ({ chess, playBothSides }: { chess: Chess; playBothSides: boolean }) => {
+    const t = useTranslations('puzzles.hintSection');
     return (
         <Stack>
             <Typography variant='h6' fontWeight='bold' color='text.secondary'>
-                Your turn
+                {t('yourTurn')}
             </Typography>
             <Typography color='text.secondary'>
-                {playBothSides ? 'Recall the move for ' : 'Find the best move for '}
-                {toColor(chess)}.
+                {playBothSides
+                    ? t('recallMove', { color: toColor(chess) })
+                    : t('findBestMove', { color: toColor(chess) })}
             </Typography>
         </Stack>
     );
@@ -42,11 +45,12 @@ const WaitingForMoveHint: React.FC<HintSectionProps> = ({
     coachUrl,
     playBothSides = false,
 }) => {
+    const t = useTranslations('puzzles.hintSection');
     let comment = move ? move.commentAfter : chess.pgn.gameComment.comment;
     if (!comment || comment.includes('[#]')) {
         comment = playBothSides
-            ? `What did ${toColor(chess)} play in this position?`
-            : 'What would you play in this position?';
+            ? t('whatDidPlay', { color: toColor(chess) })
+            : t('whatWouldYouPlay');
     }
 
     return (
@@ -68,6 +72,7 @@ const IncorrectMoveHint: React.FC<HintSectionProps> = ({
     coachUrl,
     onRetry,
 }) => {
+    const t = useTranslations('puzzles.hintSection');
     const upHandler = useCallback(
         (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
@@ -87,7 +92,7 @@ const IncorrectMoveHint: React.FC<HintSectionProps> = ({
 
     return (
         <>
-            <ChatBubble>{move?.commentAfter || 'Incorrect, please try again.'}</ChatBubble>
+            <ChatBubble>{move?.commentAfter || t('incorrectRetry')}</ChatBubble>
             <Stack direction='row' justifyContent='space-between'>
                 <Button
                     variant='contained'
@@ -96,9 +101,9 @@ const IncorrectMoveHint: React.FC<HintSectionProps> = ({
                     sx={{ flexGrow: 1 }}
                     onClick={() => onRetry(board, chess)}
                 >
-                    Retry
+                    {t('retry')}
                     <br />
-                    (Enter)
+                    {t('enterHint')}
                 </Button>
                 <Coach src={coachUrl} />
             </Stack>
@@ -114,6 +119,7 @@ const CorrectMoveHint: React.FC<HintSectionProps> = ({
     playBothSides,
     onNext,
 }) => {
+    const t = useTranslations('puzzles.hintSection');
     const upHandler = useCallback(
         (event: KeyboardEvent) => {
             if (event.key === 'Enter' && !playBothSides) {
@@ -131,10 +137,10 @@ const CorrectMoveHint: React.FC<HintSectionProps> = ({
         };
     }, [upHandler]);
 
-    let chatText = move?.commentAfter || 'Good move!';
+    let chatText = move?.commentAfter || t('goodMove');
 
     if (playBothSides) {
-        chatText = `What did ${toColor(chess)} play in this position?`;
+        chatText = t('whatDidPlay', { color: toColor(chess) });
     }
 
     return (
@@ -151,9 +157,9 @@ const CorrectMoveHint: React.FC<HintSectionProps> = ({
                         sx={{ flexGrow: 1 }}
                         onClick={() => onNext(board, chess)}
                     >
-                        Next
+                        {t('next')}
                         <br />
-                        (Enter)
+                        {t('enterHint')}
                     </Button>
                 )}
                 <Coach src={coachUrl} />
@@ -217,9 +223,8 @@ const CompleteHint: React.FC<HintSectionProps> = ({
         };
     }, [onKeyDown, onKeyUp]);
 
-    const chatText = playBothSides
-        ? 'Great job memorizing this game!'
-        : 'Great job completing this puzzle';
+    const t = useTranslations('puzzles.hintSection');
+    const chatText = playBothSides ? t('memorizeComplete') : t('puzzleComplete');
 
     return (
         <>
@@ -237,7 +242,7 @@ const CompleteHint: React.FC<HintSectionProps> = ({
                             sx={{ flexGrow: 1 }}
                             onClick={() => onRestart(board, chess)}
                         >
-                            Restart
+                            {t('restart')}
                         </Button>
                         {onNextPuzzle && (
                             <Button
@@ -247,7 +252,7 @@ const CompleteHint: React.FC<HintSectionProps> = ({
                                 sx={{ flexGrow: 1 }}
                                 onClick={onNextPuzzle}
                             >
-                                Next Puzzle
+                                {t('nextPuzzle')}
                             </Button>
                         )}
                     </Stack>

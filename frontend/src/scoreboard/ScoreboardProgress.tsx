@@ -1,6 +1,7 @@
 import { TimelineProvider } from '@/components/profile/activity/useTimeline';
 import { TaskDialog, TaskDialogView } from '@/components/profile/trainingPlan/TaskDialog';
 import { Box, LinearProgress, LinearProgressProps, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useAuth } from '../auth/Auth';
 import { Requirement, formatTime } from '../database/requirement';
@@ -22,12 +23,13 @@ export const ProgressText = ({
     suffix = '',
     isTime,
 }: ProgressTextProps) => {
+    const tCommon = useTranslations('common');
     let formattedLabel: string;
 
     if (label) {
         formattedLabel = label;
     } else if (isTime) {
-        formattedLabel = `${formatTime(value)} / ${formatTime(max)}`;
+        formattedLabel = `${formatTime(value, tCommon)} / ${formatTime(max, tCommon)}`;
     } else {
         formattedLabel = `${Math.max(value, min)} / ${max} ${suffix}`;
     }

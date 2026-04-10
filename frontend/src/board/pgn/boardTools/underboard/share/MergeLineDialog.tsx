@@ -88,7 +88,7 @@ export function MergeLineDialog({
 
         const renderMove = move || chess.currentMove();
         if (!renderMove) {
-            request.onFailure({ message: 'Cannot merge line from start position' });
+            request.onFailure({ message: t('mergeLineError') });
             return;
         }
 

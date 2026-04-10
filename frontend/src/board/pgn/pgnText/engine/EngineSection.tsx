@@ -125,7 +125,10 @@ export default function EngineSection() {
                                 {engineInfo.shortName}
                             </Typography>
 
-                            <Tooltip title={engineInfo.techDescription} disableInteractive>
+                            <Tooltip
+                                title={t(`engineTechDescription_${engineInfo.name}`)}
+                                disableInteractive
+                            >
                                 <Typography
                                     color='dojoOrange'
                                     variant='caption'
@@ -148,7 +151,7 @@ export default function EngineSection() {
                         {(function engineDescription() {
                             if (!enabled) {
                                 return (
-                                    <Typography variant='caption'>{engineInfo.location}</Typography>
+                                    <Typography variant='caption'>{t('engineLocation')}</Typography>
                                 );
                             }
                             if (isGameOver) {

@@ -9,18 +9,24 @@ import { Datum, getCategoryData, getMonthData, getTaskData, primaryAxis } from '
 import Percentiles from './Percentiles';
 import { SectionProps } from './section';
 
-const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        position: 'bottom',
-        getValue: (datum) => datum.secondary,
-        formatters: {
-            scale: formatTime,
+function getSecondaryAxes(
+    tCommon: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum>[] {
+    return [
+        {
+            position: 'bottom',
+            getValue: (datum) => datum.secondary,
+            formatters: {
+                scale: (value: number) => formatTime(value, tCommon),
+            },
         },
-    },
-];
+    ];
+}
 
 const TimeSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.time');
+    const tCommon = useTranslations('common');
+    const secondaryAxes = useMemo(() => getSecondaryAxes(tCommon), [tCommon]);
     const viewer = useAuth().user;
     const dark = !viewer?.enableLightMode;
 
@@ -64,7 +70,7 @@ const TimeSection = ({ review }: SectionProps) => {
                                         fontWeight: 'bold',
                                     }}
                                 >
-                                    {formatTime(data.total.value)}
+                                    {formatTime(data.total.value, tCommon)}
                                 </Typography>
                             </Stack>
                         </Grid>

@@ -81,14 +81,18 @@ export interface Datum {
     eval?: number;
 }
 
-const primaryAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.moveNumber,
-    scaleType: 'linear',
-    formatters: {
-        scale: (value) => (value % 1 === 0 ? `${value}` : ''),
-        tooltip: (value) => (value % 1 === 0 ? `Move ${value}` : ''),
-    },
-};
+function getPrimaryAxis(
+    t: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum> {
+    return {
+        getValue: (datum) => datum.moveNumber,
+        scaleType: 'linear',
+        formatters: {
+            scale: (value) => (value % 1 === 0 ? `${value}` : ''),
+            tooltip: (value) => (value % 1 === 0 ? t('moveTooltip', { value }) : ''),
+        },
+    };
+}
 
 const secondaryAxes: AxisOptions<Datum>[] = [
     {
@@ -135,14 +139,18 @@ const secondaryAxes: AxisOptions<Datum>[] = [
     },
 ];
 
-const barAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.moveNumber,
-    scaleType: 'band',
-    position: 'left',
-    formatters: {
-        tooltip: (value) => `Move ${(value as number)?.toString()}`,
-    },
-};
+function getBarAxis(
+    t: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum> {
+    return {
+        getValue: (datum) => datum.moveNumber,
+        scaleType: 'band',
+        position: 'left',
+        formatters: {
+            tooltip: (value) => t('moveTooltip', { value: (value as number)?.toString() }),
+        },
+    };
+}
 
 const secondaryBarAxis: AxisOptions<Datum>[] = [
     {
@@ -246,6 +254,8 @@ interface ClockUsageProps {
 const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
     const { chess } = useChess();
     const t = useTranslations('analysisBoard.underboard.clock');
+    const primaryAxis = useMemo(() => getPrimaryAxis(t), [t]);
+    const barAxis = useMemo(() => getBarAxis(t), [t]);
     const light = useLightMode();
     const [forceRender, setForceRender] = useState(0);
     const reconcile = useReconcile();

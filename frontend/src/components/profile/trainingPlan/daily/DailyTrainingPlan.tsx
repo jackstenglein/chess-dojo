@@ -218,6 +218,7 @@ function DailyTrainingPlanItem({
 }) {
     const t = useTranslations('profile.trainingPlan.daily');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tTime = useTranslations('common');
     const { task } = suggestion;
     const { isCurrentUser, pinnedTasks, togglePin, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
@@ -259,7 +260,12 @@ function DailyTrainingPlanItem({
                                 />
 
                                 <Typography variant='h6' fontWeight='bold'>
-                                    {taskTitle({ task, cohort: user.dojoCohort, goalMinutes })}
+                                    {taskTitle({
+                                        task,
+                                        cohort: user.dojoCohort,
+                                        goalMinutes,
+                                        tCommon: tTime,
+                                    })}
                                 </Typography>
                             </Stack>
 
@@ -383,20 +389,22 @@ export function taskTitle({
     task,
     cohort,
     goalMinutes,
+    tCommon,
 }: {
     task: Requirement | CustomTask;
     cohort: string;
     goalMinutes: number;
+    tCommon: (key: string, values?: Record<string, string | number>) => string;
 }) {
     const totalCount = getTotalCount(cohort, task, true);
 
     let title = goalMinutes > 0 ? task.dailyName : task.name;
     title = (title || task.name)
         .replaceAll('{{count}}', `${totalCount}`)
-        .replaceAll('{{time}}', formatTime(goalMinutes));
+        .replaceAll('{{time}}', formatTime(goalMinutes, tCommon));
 
     if (!isRequirement(task) && goalMinutes > 0) {
-        title += ` - ${formatTime(goalMinutes)}`;
+        title += ` - ${formatTime(goalMinutes, tCommon)}`;
     }
 
     return title;

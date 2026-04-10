@@ -2,7 +2,10 @@
     "common": {
         "timezone": "[T] Timezone",
         "language": "[T] Language",
-        "browserDefault": "[T] Browser Default ({offset})"
+        "browserDefault": "[T] Browser Default ({offset})",
+        "timeMinutes": "[T] {minutes}m",
+        "timeHours": "[T] {hours}h",
+        "timeHoursMinutes": "[T] {hours}h {minutes}m"
     },
     "profile": {
         "editor": {
@@ -144,7 +147,9 @@
                 "Wed": "[T] Wed",
                 "Thur": "[T] Thur",
                 "Fri": "[T] Fri",
-                "Sat": "[T] Sat"
+                "Sat": "[T] Sat",
+                "activeOnlyTooltip": "[T] Only show tasks you have updated this week",
+                "activeOnlyLabel": "[T] Active Only"
             },
             "full": {
                 "heading": "[T] Full Training Plan",
@@ -164,7 +169,11 @@
                 "renewTooltip": "[T] It's time for you to renew this task!",
                 "renewLabel": "[T] Renew",
                 "minimumReachedTooltip": "[T] You've reached the minimum, keep going!",
-                "minimumReachedLabel": "[T] Minimum Reached"
+                "minimumReachedLabel": "[T] Minimum Reached",
+                "checkboxAriaLabel": "[T] Checkbox {name}",
+                "updateAriaLabel": "[T] Update {name}",
+                "graduateName": "[T] Graduate from {cohort}",
+                "graduateDescription": "[T] Move to the next cohort and get featured in the graduation show."
             },
             "graduation": {
                 "title": "[T] Graduate from {cohort}?",
@@ -254,7 +263,8 @@
                 "cohort": "[T] Cohort",
                 "deleteEntry": "[T] Delete entry",
                 "totalCount": "[T] Total {label} : {total}. Current Cohort: {cohortCount}",
-                "totalTime": "[T] Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m"
+                "totalTime": "[T] Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m",
+                "deleteAriaLabel": "[T] delete"
             },
             "progressUpdater": {
                 "markComplete": "[T] Mark as Completed?",
@@ -365,7 +375,8 @@
             "save": "[T] Save",
             "updateTitle": "[T] Update {name}?",
             "totalCount": "[T] Total Count: {totalCount}. Current Cohort: {cohortCount}",
-            "totalTime": "[T] Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m"
+            "totalTime": "[T] Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m",
+            "restDayCleared": "[T] Rest day cleared"
         },
         "info": {
             "type": "[T] Type",
@@ -841,14 +852,31 @@
         "clearAll": "[T] Clear All",
         "empty": "[T] No notifications",
         "view": "[T] View",
-        "delete": "[T] Delete notification"
+        "delete": "[T] Delete notification",
+        "newFollowerTitle": "[T] You have a new follower",
+        "explorerGameTitle": "[T] {count} new games were added with a position you follow.",
+        "calendarInviteTitle": "[T] You've been invited to an event on the calendar",
+        "roundRobinStartTitle": "[T] Round robin {cohort} {name} has started",
+        "gameCommentDescription": "[T] There are new comments on your game.",
+        "gameCommentReplyDescription": "[T] {count, plural, =1 {There is a new reply to a comment thread you participated in.} other {There are # new replies in comment threads you participated in.}}",
+        "gameReviewCompleteDescription": "[T] {reviewer} reviewed your game. Check the game settings for more info.",
+        "timelineCommentDescription": "[T] {count, plural, =1 {There is a new comment on your activity.} other {There are # new comments on your activity.}}",
+        "timelineReactionDescription": "[T] {count, plural, =1 {There is a new reaction on your activity.} other {There are # new reactions on your activity.}}",
+        "explorerGameDescription": "[T] A new game was added containing a position you follow.",
+        "clubJoinRequestDescription": "[T] {count, plural, =1 {There is a new request to join your club.} other {There are # new requests to join your club.}}",
+        "clubJoinApprovedDescription": "[T] Your request to join the club was approved.",
+        "calendarInviteDescription": "[T] {owner} invited you to an event at {date} {time}"
     },
     "timer": {
         "title": "[T] Timer",
         "workTimer": "[T] Work Timer",
         "pause": "[T] Pause",
         "start": "[T] Start",
-        "reset": "[T] Reset"
+        "reset": "[T] Reset",
+        "pauseTimer": "[T] Pause Timer ({time})",
+        "resumeTimer": "[T] Resume Timer ({time})",
+        "startTimer": "[T] Start Timer",
+        "clearAndRestart": "[T] Clear and Restart Timer"
     },
     "navbar": {
         "searchUsers": "[T] Search Users",
@@ -1581,7 +1609,29 @@
         "colorYoutube": "[T] Youtube",
         "eventNotFoundError": "[T] This event cannot be found. It is either fully booked, deleted or not available to your cohort.",
         "participantPaymentWarningOther": "[T] This user has not paid and will lose their booking in <30 min",
-        "participantPaymentWarningSelf": "[T] You have not completed payment and will lose your booking soon"
+        "participantPaymentWarningSelf": "[T] You have not completed payment and will lose your booking soon",
+        "meetingTitle": "[T] Meeting",
+        "groupMeetingTitle": "[T] Group Meeting ({count}/{max})",
+        "available1on1Title": "[T] Available - 1 on 1",
+        "availableGroupTitle": "[T] Available - Group",
+        "bookableGroupTitle": "[T] Bookable - Group ({count}/{max})",
+        "bookableTitle": "[T] Bookable - {name}",
+        "meetingCanceled": "[T] Meeting canceled",
+        "availabilityDeleted": "[T] Availability deleted",
+        "hideFilters": "[T] Hide Filters",
+        "showFilters": "[T] Show Filters",
+        "validationRequired": "[T] This field is required",
+        "validationStartInvalid": "[T] Start time must be a valid time",
+        "validationEndInvalid": "[T] End time must be a valid time",
+        "validationEndTooEarly": "[T] End time must be at least one hour after start time",
+        "validationIntegerRequired": "[T] You must specify an integer greater than 0",
+        "validationNumberRequired": "[T] You must specify a number",
+        "validationDollarAmount": "[T] You must specify a valid dollar amount with up to 2 decimal places",
+        "validationMinPrice": "[T] Price must be at least $5",
+        "validationTypeRequired": "[T] At least one type is required",
+        "validationCohortRequired": "[T] At least one cohort is required",
+        "validationInviteRequired": "[T] At least one user is required when the event is invite-only",
+        "validationCountPositive": "[T] Must be greater than 0"
     },
     "meeting": {
         "title": "[T] Meetings",
@@ -1699,7 +1749,8 @@
             "nullMoves": "[T] Null Moves",
             "tags": "[T] Tags",
             "clockTimes": "[T] Clock Times",
-            "cancel": "[T] Cancel"
+            "cancel": "[T] Cancel",
+            "requestTimedOut": "[T] Request timed out"
         },
         "visibilityDialog": {
             "unlistTitle": "[T] {count, plural, =1 {Unlist Game?} other {Unlist {count} Games?}}",
@@ -2002,7 +2053,9 @@
             "gamePage": {
                 "preflightHint": "[T] You can fill this data out now or later in settings."
             }
-        }
+        },
+        "reviewTypeQuick": "[T] Quick",
+        "reviewTypeDeepDive": "[T] Deep Dive"
     },
     "courses": {
         "filters": {
@@ -2171,7 +2224,12 @@
                 "columnRating": "[T] Rating"
             },
             "pairings": {
-                "noOpponent": "[T] No Opponent"
+                "noOpponent": "[T] No Opponent",
+                "headerWhite": "[T] White",
+                "headerBlack": "[T] Black",
+                "headerResult": "[T] Result",
+                "headerGame": "[T] Game",
+                "unverifiedResultTooltip": "[T] This result has not been verified and may be changed later by the TD"
             },
             "info": {
                 "title": "[T] ChessDojo Open Classical",
@@ -2283,7 +2341,8 @@
             "tabs": {
                 "info": "[T] Info",
                 "tournaments": "[T] Tournaments",
-                "history": "[T] History"
+                "history": "[T] History",
+                "tabsAriaLabel": "[T] tournament viewer tabs"
             },
             "activity": {
                 "noGamesSubmitted": "[T] No games submitted yet",
@@ -2482,7 +2541,9 @@
                 "daysUnit": "[T] {days, plural, =1 {# day} other {# days}}",
                 "hoursUnit": "[T] {hours, plural, =1 {# hour} other {# hours}}",
                 "minutesUnit": "[T] {minutes, plural, =1 {# minute} other {# minutes}}",
-                "lessThanMinute": "[T] less than a minute"
+                "lessThanMinute": "[T] less than a minute",
+                "viewModeAriaLabel": "[T] view mode toggle",
+                "displayModeAriaLabel": "[T] display mode toggle"
             }
         }
     },
@@ -2840,7 +2901,8 @@
                 "tableHeaderCohort": "[T] Dojo Cohort",
                 "tableHeaderChesscom": "[T] Chess.com Bot",
                 "tableHeaderLichess": "[T] Lichess Bot"
-            }
+            },
+            "iframeTitle": "[T] Dojo Guide To Bots"
         },
         "liveClasses": {
             "title": "[T] Live Class Recordings",
@@ -2968,6 +3030,22 @@
             "puzzleRating": "[T] Puzzle Rating",
             "yourRating": "[T] Your Rating",
             "startRating": "[T] Start Rating"
+        },
+        "hintSection": {
+            "yourTurn": "[T] Your turn",
+            "recallMove": "[T] Recall the move for {color}.",
+            "findBestMove": "[T] Find the best move for {color}.",
+            "whatDidPlay": "[T] What did {color} play in this position?",
+            "whatWouldYouPlay": "[T] What would you play in this position?",
+            "incorrectRetry": "[T] Incorrect, please try again.",
+            "retry": "[T] Retry",
+            "enterHint": "[T] (Enter)",
+            "goodMove": "[T] Good move!",
+            "next": "[T] Next",
+            "memorizeComplete": "[T] Great job memorizing this game!",
+            "puzzleComplete": "[T] Great job completing this puzzle",
+            "restart": "[T] Restart",
+            "nextPuzzle": "[T] Next Puzzle"
         }
     },
     "exams": {
@@ -3086,7 +3164,10 @@
             "tooltipScoreRatingNewline": "[T] Score: {x},\nRating: {y}",
             "xAxisLabel": "[T] Score",
             "yAxisLabel": "[T] Normalized Rating"
-        }
+        },
+        "tacticsTest": "[T] Tactics Test",
+        "checkmateTest": "[T] Checkmate Test",
+        "endgameTest": "[T] Endgame Test"
     },
     "donate": {
         "title": "[T] Support the Dojo",
@@ -3187,7 +3268,23 @@
             "persistLinesLabel": "[T] Show already-calculated lines when engine is disabled",
             "showCloudDbLabel": "[T] Show Chess Cloud Database evaluation",
             "doneButton": "[T] Done",
-            "depthDisplay": "[T] Depth {depth}"
+            "depthDisplay": "[T] Depth {depth}",
+            "engineDescription_stockfish_18": "[T] Best for desktop",
+            "engineDescription_stockfish_18_lite": "[T] Best for mobile and weaker desktops",
+            "engineDescription_stockfish_17": "[T] Previous version",
+            "engineDescription_stockfish_16": "[T] Previous version",
+            "engineDescription_stockfish_11": "[T] Faster than NNUE but less accurate",
+            "engineTechDescription_stockfish_18": "[T] Evaluation is performed by Stockfish's neural network.",
+            "engineTechDescription_stockfish_18_lite": "[T] Evaluation is performed by a smaller Stockfish neural network.",
+            "engineTechDescription_stockfish_17": "[T] Evaluation is performed by Stockfish's neural network.",
+            "engineTechDescription_stockfish_16": "[T] Evaluation is performed by Stockfish's neural network.",
+            "engineTechDescription_stockfish_11": "[T] Evaluation is performed using various heuristics and rules. Faster, but much less accurate than NNUE.",
+            "engineLocation": "[T] in local browser",
+            "evalType_eval": "[T] Evaluation",
+            "evalType_wdl": "[T] Win / Draw / Loss",
+            "failedToQueueAnalysis": "[T] Failed to queue analysis",
+            "invalidFen": "[T] Invalid FEN provided",
+            "failedToFetchData": "[T] Failed to fetch data"
         },
         "explorer": {
             "columnMove": "[T] Move",
@@ -3536,7 +3633,8 @@
                 "keyEnter": "[T] Enter",
                 "keyEscape": "[T] Escape",
                 "keyTab": "[T] Tab",
-                "keyBackspace": "[T] Backspace"
+                "keyBackspace": "[T] Backspace",
+                "fieldRequired": "[T] This field is required"
             },
             "comments": {
                 "showCommentsLabel": "[T] Show Comments From",
@@ -3560,7 +3658,8 @@
                 "postCommentTooltip": "[T] Post Comment. Tip: you can also use shift+enter while typing.",
                 "replyPlaceholder": "[T] Reply to {displayName} ({cohort})",
                 "replyCancelButton": "[T] cancel",
-                "replyPostButton": "[T] reply"
+                "replyPostButton": "[T] reply",
+                "updatedAt": "[T] Updated at {date} \u2022 {time}"
             },
             "directories": {},
             "share": {
@@ -3613,7 +3712,9 @@
                 "mergeCancelButton": "[T] Cancel",
                 "mergeLineButton": "[T] Merge Line into Game",
                 "mergeSuccessMessage": "[T] Line merged into game",
-                "openButton": "[T] Open"
+                "openButton": "[T] Open",
+                "gameAddedToFolder": "[T] Game added to {name}",
+                "mergeLineError": "[T] Cannot merge line from start position"
             },
             "tags": {
                 "doubleClickHint": "[T] Double click a cell to edit",
@@ -3709,7 +3810,8 @@
                 "everyMoveSingular": "[T] every move",
                 "everyMovesPlural": "[T] every {count} moves",
                 "moveRange": "[T] Moves {start}–{end}:",
-                "moveRangeOpen": "[T] Moves {start}+:"
+                "moveRangeOpen": "[T] Moves {start}+:",
+                "moveTooltip": "[T] Move {value}"
             },
             "tools": {
                 "solitaireChessTitle": "[T] Solitaire Chess (Guess the Move)",
@@ -3876,5 +3978,34 @@
                 "restart": "[T] Restart"
             }
         }
+    },
+    "liveClasses": {
+        "pageTitle": "[T] ChessDojo Live Classes",
+        "lectureTierHeading": "[T] Lecture Tier",
+        "lectureTierDescription": "[T] The Lecture Tier provides access to larger lecture-style classes on various topics like endgames, calculation, and openings. For $75/month, you get access to all lecture classes and recordings, as well as full access to the rest of the ChessDojo website.",
+        "freeSamplePrompt": "[T] Not sure if these classes are for you? Watch a free sample of Kostya's calculation course below.",
+        "alreadySubscribed": "[T] Already Subscribed",
+        "joinLectureTier": "[T] Join Lecture Tier",
+        "gameReviewHeading": "[T] Game & Profile Review",
+        "gameReviewDescription": "[T] The Game & Profile Review tier provides access to smaller seminar-style classes. In these classes, the sensei reviews one player's game and profile each week. The highlighted player rotates each week. For $200/month, you get placed with a team of similarly rated players and access to weekly peer review and sensei review sessions with your team. You also get access to all lecture classes, as well as recordings from all lecture classes and the peer review and sensei review sessions of all game review teams.",
+        "viewGameReviewTeam": "[T] View Game Review Team",
+        "joinGameReview": "[T] Join Game & Profile Review",
+        "recordingsHeading": "[T] Recordings",
+        "recordingsLink": "[T] All recordings can be found <link>here</link>.",
+        "recordingsAvailable": "[T] All classes are recorded and available for viewing on demand.",
+        "faqsHeading": "[T] FAQs"
+    },
+    "errors": {
+        "notFound": "[T] Resource not found",
+        "unknownError": "[T] Unknown Error",
+        "errorDescription": "[T] Congratulations! You have broken the site in a new and interesting way. To report this error, please send a Discord message to @jackstenglein with a description of what you were doing when the site broke and a copy of the error message below. Then refresh the page to continue using the site.",
+        "nullError": "[T] Null error",
+        "noComponentStack": "[T] No component stack"
+    },
+    "dojoDigest": {
+        "unsubscribeTitle": "[T] Unsubscribe from Dojo Digest",
+        "unsubscribeSuccess": "[T] {email} has been unsubscribed. Please allow 24 hours for this change to take effect.",
+        "emailLabel": "[T] Email",
+        "unsubscribeButton": "[T] Unsubscribe"
     }
 }

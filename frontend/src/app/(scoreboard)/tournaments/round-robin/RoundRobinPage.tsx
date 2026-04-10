@@ -49,7 +49,7 @@ export const RoundRobinPage = () => {
                     value={tabValue}
                     onChange={handleTabChange}
                     variant='fullWidth'
-                    aria-label='tournament viewer tabs'
+                    aria-label={t('tabsAriaLabel')}
                 >
                     <Tab
                         label={t('info')}

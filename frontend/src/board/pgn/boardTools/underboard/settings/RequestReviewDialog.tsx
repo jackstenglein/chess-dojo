@@ -109,10 +109,10 @@ const SubmitDialogContent: React.FC<{
     const onPurchase = () => {
         const newErrors: Record<string, string> = {};
         if (!reviewType) {
-            newErrors.reviewType = 'This field is required';
+            newErrors.reviewType = t('fieldRequired');
         }
         if (!isConfirmed) {
-            newErrors.isConfirmed = 'This field is required';
+            newErrors.isConfirmed = t('fieldRequired');
         }
 
         setErrors(newErrors);
@@ -250,6 +250,7 @@ const SubmitDialogContent: React.FC<{
  */
 const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
     const t = useTranslations('analysisBoard.underboard.settings');
+    const tGames = useTranslations('games');
     const user = useAuth().user;
 
     const review = game.review;
@@ -328,7 +329,7 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
                     {review.type && (
                         <Typography>
                             {t('reviewTypeDisplayLabel', {
-                                type: displayGameReviewType(review.type),
+                                type: displayGameReviewType(review.type, tGames),
                             })}
                         </Typography>
                     )}
@@ -343,6 +344,7 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
  */
 const PendingDialogContent: React.FC<{ game: Game }> = ({ game }) => {
     const t = useTranslations('analysisBoard.underboard.settings');
+    const tGames = useTranslations('games');
     const user = useAuth().user;
     const queueRequest = useRequest<number>();
     const api = useApi();
@@ -436,7 +438,7 @@ const PendingDialogContent: React.FC<{ game: Game }> = ({ game }) => {
                     {game.review?.type && (
                         <Typography>
                             {t('reviewTypeDisplayLabel', {
-                                type: displayGameReviewType(game.review.type),
+                                type: displayGameReviewType(game.review.type, tGames),
                             })}
                         </Typography>
                     )}

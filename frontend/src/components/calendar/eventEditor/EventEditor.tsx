@@ -79,7 +79,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
     const formConfigs = getFormConfigs(t, labelT);
 
     const onSubmit = async () => {
-        const [event, errors] = validateEventEditor(user, originalEvent, editor);
+        const [event, errors] = validateEventEditor(user, originalEvent, editor, t);
         editor.setErrors(errors);
         if (Object.entries(errors).length > 0 || !event) {
             return;

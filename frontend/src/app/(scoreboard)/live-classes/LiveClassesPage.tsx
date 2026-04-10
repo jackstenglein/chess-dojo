@@ -36,6 +36,7 @@ const SAMPLE_LIVE_CLASS: LiveClass = {
 };
 
 export default function LiveClassesPage() {
+    const tPage = useTranslations('liveClasses');
     const t = useTranslations('help');
     const { user } = useAuth();
     const subscriptionTier = getSubscriptionTier(user);
@@ -76,7 +77,7 @@ export default function LiveClassesPage() {
     return (
         <Container sx={{ py: 5 }}>
             <Typography variant='h3' fontWeight='bold' mx='auto' textAlign='center'>
-                ChessDojo Live Classes
+                {tPage('pageTitle')}
             </Typography>
 
             {!isGameReviewUser && (
@@ -87,15 +88,10 @@ export default function LiveClassesPage() {
             )}
 
             <Typography variant='h5' mt={4} fontWeight='bold'>
-                Lecture Tier
+                {tPage('lectureTierHeading')}
             </Typography>
             <Typography variant='h6' mt={2}>
-                The Lecture Tier provides access to larger lecture-style classes on various topics
-                like endgames, calculation, and openings. For $75/month, you get access to all
-                lecture classes and recordings, as well as full access to the rest of the ChessDojo
-                website.{' '}
-                {!isLiveClassUser &&
-                    `Not sure if these classes are for you? Watch a free sample of Kostya's calculation course below.`}
+                {tPage('lectureTierDescription')} {!isLiveClassUser && tPage('freeSamplePrompt')}
             </Typography>
 
             <Button
@@ -111,7 +107,7 @@ export default function LiveClassesPage() {
                 color='subscribe'
                 loading={request.isLoading() && tier === SubscriptionTier.Lecture}
             >
-                {isLectureUser ? 'Already Subscribed' : 'Join Lecture Tier'}
+                {isLectureUser ? tPage('alreadySubscribed') : tPage('joinLectureTier')}
             </Button>
 
             <Box mt={4}>
@@ -124,7 +120,7 @@ export default function LiveClassesPage() {
             </Box>
 
             <Typography variant='h5' mt={8} fontWeight='bold'>
-                Game & Profile Review
+                {tPage('gameReviewHeading')}
             </Typography>
 
             <Grid
@@ -135,13 +131,7 @@ export default function LiveClassesPage() {
             >
                 <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant='h6' mt={2}>
-                        The Game & Profile Review tier provides access to smaller seminar-style
-                        classes. In these classes, the sensei reviews one player's game and profile
-                        each week. The highlighted player rotates each week. For $200/month, you get
-                        placed with a team of similarly rated players and access to weekly peer
-                        review and sensei review sessions with your team. You also get access to all
-                        lecture classes, as well as recordings from all lecture classes and the peer
-                        review and sensei review sessions of all game review teams.
+                        {tPage('gameReviewDescription')}
                     </Typography>
                     <Button
                         href={isGameReviewUser ? '/profile?view=classes' : undefined}
@@ -162,7 +152,7 @@ export default function LiveClassesPage() {
                         color='subscribe'
                         loading={request.isLoading() && tier === SubscriptionTier.GameReview}
                     >
-                        {isGameReviewUser ? 'View Game Review Team' : 'Join Game & Profile Review'}
+                        {isGameReviewUser ? tPage('viewGameReviewTeam') : tPage('joinGameReview')}
                     </Button>
                 </Grid>
                 <Grid
@@ -180,20 +170,18 @@ export default function LiveClassesPage() {
             </Grid>
 
             <Typography variant='h5' mt={8} fontWeight='bold'>
-                Recordings
+                {tPage('recordingsHeading')}
             </Typography>
             <Typography variant='h6' mt={2}>
-                {isLiveClassUser ? (
-                    <>
-                        All recordings can be found <Link href='/learn/live-classes'>here</Link>.
-                    </>
-                ) : (
-                    <>All classes are recorded and available for viewing on demand.</>
-                )}
+                {isLiveClassUser
+                    ? tPage.rich('recordingsLink', {
+                          link: (chunks) => <Link href='/learn/live-classes'>{chunks}</Link>,
+                      })
+                    : tPage('recordingsAvailable')}
             </Typography>
 
             <Typography variant='h4' mt={8}>
-                FAQs
+                {tPage('faqsHeading')}
             </Typography>
             {getLiveClassesFaq(t).items.map((item) => (
                 <Stack key={item.title} mt={3}>

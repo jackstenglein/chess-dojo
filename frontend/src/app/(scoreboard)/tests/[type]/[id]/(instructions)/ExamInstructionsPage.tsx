@@ -28,6 +28,7 @@ export function ExamInstructionsPage({ type, id }: { type: ExamType; id: string 
 
 function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamType; id: string }) {
     const t = useTranslations('exams.instructionsPage');
+    const tExams = useTranslations('exams');
     const { request, exam } = useExam({ type, id });
     const answerRequest = useRequest<ExamAnswer>();
     const router = useRouter();
@@ -55,7 +56,7 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
         <Container sx={{ py: 4 }} maxWidth={false}>
             <Container>
                 <Stack alignItems='start'>
-                    <Typography variant='h4'>{displayExamType(exam.type)}</Typography>
+                    <Typography variant='h4'>{displayExamType(exam.type, tExams)}</Typography>
                     <Typography variant='h5'>
                         {exam.cohortRange} {exam.name}
                     </Typography>

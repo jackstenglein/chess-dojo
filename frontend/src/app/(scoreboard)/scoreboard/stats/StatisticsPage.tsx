@@ -4,6 +4,7 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import ScoreboardViewSelector from '@/components/scoreboard/ScoreboardViewSelector';
+import { formatTime } from '@/database/requirement';
 import { UserStatistics } from '@/database/statistics';
 import { RatingSystem, dojoCohorts, formatRatingSystem } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
@@ -42,24 +43,19 @@ const decimalSecondaryAxes: AxisOptions<Datum>[] = [
     },
 ];
 
-export function formatTime(value: number) {
-    const hours = Math.floor(value / 60);
-    const minutes = Math.round(value % 60);
-    if (minutes === 0 && hours > 0) {
-        return `${hours}h`;
-    }
-    return `${hours}h ${minutes}m`;
-}
-
-const timeSecondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.value,
-        formatters: {
-            scale: formatTime,
+function getTimeSecondaryAxes(
+    t: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum>[] {
+    return [
+        {
+            scaleType: 'linear',
+            getValue: (datum) => datum.value,
+            formatters: {
+                scale: (value: number) => formatTime(value, t),
+            },
         },
-    },
-];
+    ];
+}
 
 function getSeries(
     label: string,
@@ -138,6 +134,8 @@ function getAdminParticipantsSeries(
 
 export function StatisticsPage() {
     const t = useTranslations('scoreboard.stats');
+    const tCommon = useTranslations('common');
+    const timeSecondaryAxes = useMemo(() => getTimeSecondaryAxes(tCommon), [tCommon]);
     const api = useApi();
     const request = useRequest<UserStatistics>();
     const { user } = useAuth();
@@ -350,7 +348,7 @@ export function StatisticsPage() {
                     series={totalTimeData}
                     primaryAxis={primaryAxis}
                     secondaryAxes={timeSecondaryAxes}
-                    sumFormatter={formatTime}
+                    sumFormatter={(v) => formatTime(v, tCommon)}
                 />
                 <Chart
                     title={t('avgTimeSpent')}

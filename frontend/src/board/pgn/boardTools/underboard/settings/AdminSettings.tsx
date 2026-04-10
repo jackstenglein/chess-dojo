@@ -30,6 +30,7 @@ const GameReviewDetails: React.FC<AdminSettingsProps> = ({ game, onSaveGame }) =
     const request = useRequest();
     const api = useApi();
     const t = useTranslations('analysisBoard.underboard.settings');
+    const tGames = useTranslations('games');
 
     const requestDate = new Date(game.reviewRequestedAt || '');
     const requestDateStr = toDojoDateString(requestDate, user?.timezoneOverride);
@@ -78,7 +79,7 @@ const GameReviewDetails: React.FC<AdminSettingsProps> = ({ game, onSaveGame }) =
                     {review.type && (
                         <Typography>
                             {t('reviewTypeDisplayLabel', {
-                                type: displayGameReviewType(review.type),
+                                type: displayGameReviewType(review.type, tGames),
                             })}
                         </Typography>
                     )}
@@ -112,7 +113,7 @@ const GameReviewDetails: React.FC<AdminSettingsProps> = ({ game, onSaveGame }) =
                     </Typography>
                     <Typography>
                         {t('reviewTypeDisplayLabel', {
-                            type: displayGameReviewType(game.review.type),
+                            type: displayGameReviewType(game.review.type, tGames),
                         })}
                     </Typography>
                     <Typography>

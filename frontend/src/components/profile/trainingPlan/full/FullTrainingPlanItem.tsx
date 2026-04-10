@@ -54,6 +54,7 @@ export const FullTrainingPlanItem = ({
 }: FullTrainingPlanItemProps) => {
     const t = useTranslations('profile.trainingPlan.full');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tTime = useTranslations('common');
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const { entries } = useTimelineContext();
@@ -64,7 +65,7 @@ export const FullTrainingPlanItem = ({
 
     const totalCount = getTotalCount(cohort, requirement, true);
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
-    const time = formatTime(getTotalTime(cohort, progress));
+    const time = formatTime(getTotalTime(cohort, progress), tTime);
     const expired = isExpired(requirement, progress);
     const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
     const minimumReached = isMinimumTask && currentCount >= totalCount;
@@ -77,7 +78,7 @@ export const FullTrainingPlanItem = ({
             UpdateElement = (
                 <Tooltip title={tCommon('updateProgress')}>
                     <Checkbox
-                        aria-label={`Checkbox ${requirement.name}`}
+                        aria-label={t('checkboxAriaLabel', { name: requirement.name })}
                         checked={currentCount >= totalCount}
                         onClick={() => setTaskDialogView(TaskDialogView.Progress)}
                         disabled={!isCurrentUser}
@@ -102,7 +103,7 @@ export const FullTrainingPlanItem = ({
                 ) : !isCurrentUser ? null : (
                     <Tooltip title={tCommon('updateProgress')}>
                         <IconButton
-                            aria-label={`Update ${requirement.name}`}
+                            aria-label={t('updateAriaLabel', { name: requirement.name })}
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
                             data-testid='update-task-button'
                         >
