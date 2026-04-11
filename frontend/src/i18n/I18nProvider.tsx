@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
 import { logger } from '@/logging/logger';
 import { AbstractIntlMessages, NextIntlClientProvider } from 'next-intl';
 import { useEffect, useState } from 'react';
+import enMessages from '../../messages/en.json';
 
 function getLocaleCookie(): string {
     if (typeof document === 'undefined') return DEFAULT_LOCALE;
@@ -12,17 +13,11 @@ function getLocaleCookie(): string {
     return LOCALE_CODES.includes(value) ? value : DEFAULT_LOCALE;
 }
 
-export function I18nProvider({
-    defaultLocale,
-    defaultMessages,
-    children,
-}: {
-    defaultLocale: string;
-    defaultMessages: AbstractIntlMessages;
-    children: React.ReactNode;
-}) {
-    const [locale, setLocale] = useState(defaultLocale);
-    const [messages, setMessages] = useState(defaultMessages);
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+    const [locale, setLocale] = useState<string>(DEFAULT_LOCALE);
+    const [messages, setMessages] = useState<AbstractIntlMessages>(
+        enMessages as AbstractIntlMessages,
+    );
 
     useEffect(() => {
         const cookieLocale = getLocaleCookie();
