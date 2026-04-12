@@ -1,7 +1,7 @@
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { WebVitals } from '@/components/analytics/WebVitals';
 import { I18nProvider } from '@/i18n/I18nProvider';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { defaultMetadata } from './(scoreboard)/defaultMetadata';
 
@@ -9,7 +9,6 @@ export const metadata = defaultMetadata;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     const locale = await getLocale();
-    const messages = await getMessages();
 
     return (
         <html lang={locale} suppressHydrationWarning className='dark'>
@@ -18,7 +17,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <link rel='manifest' href='/manifest.json' />
             </head>
             <body>
-                <I18nProvider defaultLocale={locale} defaultMessages={messages}>
+                <I18nProvider>
                     <NavigationGuardProvider>
                         <MetaPixel />
                         <WebVitals />
