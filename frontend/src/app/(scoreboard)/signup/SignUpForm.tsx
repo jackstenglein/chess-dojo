@@ -12,6 +12,7 @@ import { LoadingButton } from '@mui/lab';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
+import { AppleButton } from '../signin/AppleButton';
 import { VerifyEmailForm } from './VerifyEmailForm';
 
 enum SignUpStep {
@@ -69,8 +70,8 @@ export const SignUpForm = () => {
             });
     };
 
-    const onGoogleSignIn = () => {
-        auth.socialSignin('Google', redirectUri ? decodeURIComponent(redirectUri) : '');
+    const onSocialSignIn = (provider: 'Google' | 'Apple') => {
+        auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -180,14 +181,22 @@ export const SignUpForm = () => {
                     Create Account
                 </LoadingButton>
 
-                <GoogleButton
-                    onClick={onGoogleSignIn}
-                    label='Sign up with Google'
-                    style={{
-                        transform: 'scale(1.1)',
-                        transformOrigin: 'center',
-                    }}
-                />
+                <Stack>
+                    <GoogleButton
+                        onClick={() => onSocialSignIn('Google')}
+                        label='Sign up with Google'
+                        style={{
+                            transform: 'scale(1.1)',
+                            transformOrigin: 'center',
+                            margin: '20px 0',
+                        }}
+                    />
+
+                    <AppleButton onClick={() => onSocialSignIn('Apple')}>
+                        Sign up with Apple
+                    </AppleButton>
+                </Stack>
+
                 <Typography variant='body2' component='div' gutterBottom>
                     Already have an account?{' '}
                     <Link href='/signin' data-testid='signin-button'>

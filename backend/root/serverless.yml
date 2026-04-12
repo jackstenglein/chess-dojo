@@ -126,7 +126,7 @@ resources:
           - ${file(../config-${sls:stage}.yml):mobileHost}
           - https://www.dojoscoreboard.com
           - https://beta.chessdojo.club
-        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google], [COGNITO]]
+        SupportedIdentityProviders: !If [IsNotSimple, [COGNITO, Google, SignInWithApple], [COGNITO]]
         AccessTokenValidity: 24
         IdTokenValidity: 24
 
@@ -166,6 +166,8 @@ resources:
         CustomDomainConfig:
           CertificateArn: !Ref CustomDomainCertificate
 
+    # Configures Google social provider. Apple is configured manually through
+    # Cognito service console, due to limitations with serverless.
     UserPoolIdentityProvider:
       Condition: IsNotSimple
       Type: AWS::Cognito::UserPoolIdentityProvider

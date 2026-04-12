@@ -66,7 +66,7 @@ interface AuthContextType {
     getCurrentUser: () => Promise<void>;
     updateUser: (update: Partial<User>) => void;
 
-    socialSignin: (provider: 'Google', redirectUri: string) => void;
+    socialSignin: (provider: 'Google' | 'Apple', redirectUri: string) => void;
     signin: (email: string, password: string) => Promise<void>;
 
     signup: (
@@ -105,8 +105,8 @@ const AuthContext = createContext<AuthContextType>({
     signout: defaultAuthContextFunction,
 });
 
-function socialSignin(provider: 'Google', redirectUri: string) {
-    trackEvent(EventType.Login, { method: 'Google' });
+function socialSignin(provider: 'Google' | 'Apple', redirectUri: string) {
+    trackEvent(EventType.Login, { method: provider });
     signInWithRedirect({
         provider,
         customState: redirectUri,
