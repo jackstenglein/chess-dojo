@@ -37,7 +37,6 @@
         "aws4": "^1.13.2",
         "axios": "^1.13.3",
         "bad-words": "^4.0.0",
-        "chess-dojo-directory-service": "file:../directoryService",
         "deep-equal": "^2.2.3",
         "discord.js": "^14.25.1",
         "glicko2": "^1.2.1",
