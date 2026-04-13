@@ -12,14 +12,14 @@ import postmortem2024 from './2024-postmortem.png';
 import postmortem2025 from './2025-postmortem.png';
 import { BadgCabinetDialog } from './BadgeCabinetDialog';
 import BadgeDialog from './BadgeDialog';
-import { Badge, getBadges } from './badgeHandler';
+import { Badge, detectNewBadge, getBadges } from './badgeHandler';
 import { BadgeImage } from './BadgeImage';
 
 export const BadgeCard = ({ user }: { user: User }) => {
     const [selectedBadge, setSelectedBadge] = useState<Badge>();
     const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
-    const { requirements } = useRequirements(ALL_COHORTS, true);
-    const { entries: timeline } = useTimelineContext();
+    const { requirements, request: requirementsRequest } = useRequirements(ALL_COHORTS, true);
+    const { entries: timeline, request: timelineRequest } = useTimelineContext();
 
     const [allBadges, earnedBadges] = useMemo(() => {
         const tacticsRating = calculateTacticsRating(user, requirements);
@@ -39,28 +39,29 @@ export const BadgeCard = ({ user }: { user: User }) => {
         setSelectedBadge(undefined);
     };
 
-    useEffect(() => {
-        if (!previousEarnedBadges) {
-            if (requirements.length && timeline.length) {
-                setPreviousEarnedBadges(earnedBadges);
-            }
-            return;
-        }
+    const dataFullyLoaded =
+        requirements.length > 0 &&
+        timeline.length > 0 &&
+        !requirementsRequest.isLoading() &&
+        !timelineRequest.isLoading();
 
-        const newBadge = earnedBadges.find((b) =>
-            previousEarnedBadges.every((b2) => b.image !== b2.image),
-        );
-        if (newBadge) {
-            setSelectedBadge(newBadge);
-            setPreviousEarnedBadges(earnedBadges);
+    useEffect(() => {
+        const result = detectNewBadge(previousEarnedBadges, earnedBadges, dataFullyLoaded);
+        switch (result.action) {
+            case 'initialize':
+                setPreviousEarnedBadges(result.badges);
+                break;
+            case 'new_badge':
+                setSelectedBadge(result.newBadge);
+                setPreviousEarnedBadges(result.allEarned);
+                break;
         }
     }, [
         earnedBadges,
         previousEarnedBadges,
         setSelectedBadge,
         setPreviousEarnedBadges,
-        requirements,
-        timeline,
+        dataFullyLoaded,
     ]);
 
     if (!user.createdAt || user.createdAt < '2025-12-31') {

@@ -1,6 +1,6 @@
 import { GetItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { Chess, Move } from '@jackstenglein/chess';
+import { Chess } from '@jackstenglein/chess';
 import {
     PgnMergeRequest,
     PgnMergeSchema,
@@ -14,10 +14,8 @@ import {
     success,
 } from '../../directoryService/api';
 import { dynamo, gamesTable } from './create';
-import { getPlayer, mergeComments, mergeDrawables, mergeNags } from './mergeUtils';
+import { recursiveMergeLine } from './mergeUtils';
 import { Game } from './types';
-
-const frontendHost = process.env['frontendHost'];
 
 /**
  * Lambda handler that merges a PGN into an existing game.
@@ -128,59 +126,17 @@ export function mergePgn(source: Chess, target: Chess, request: PgnMergeRequest)
         });
     }
 
-    recursiveMergeLine(source.history(), source, target, null, request);
+    const citation =
+        request.citeSource && request.sourceCohort && request.sourceId
+            ? { source, cohort: request.sourceCohort, id: request.sourceId }
+            : undefined;
+
+    recursiveMergeLine(source.history(), target, null, {
+        commentMergeType: request.commentMergeType,
+        nagMergeType: request.nagMergeType,
+        drawableMergeType: request.drawableMergeType,
+        citation,
+    });
     return target.renderPgn();
-}
-
-/**
- * Recursively merges the given line into the target Chess instance.
- * @param line The line to merge into the Chess instance.
- * @param source The source Chess to merge into the target.
- * @param target The target Chess to merge the line into.
- * @param currentTargetMove The current move to start from in the target Chess.
- * @param request The merge options.
- */
-function recursiveMergeLine(
-    line: Move[],
-    source: Chess,
-    target: Chess,
-    currentTargetMove: Move | null,
-    request: PgnMergeRequest,
-) {
-    for (const move of line) {
-        const newTargetMove = target.move(move.san, {
-            previousMove: currentTargetMove,
-            skipSeek: true,
-        });
-        if (!newTargetMove) {
-            throw new ApiError({
-                statusCode: 400,
-                publicMessage: `Unable to merge: invalid move ${move.san} at ply ${move.ply}`,
-            });
-        }
-
-        mergeComments(move, newTargetMove, request.commentMergeType);
-        mergeNags(move, newTargetMove, request.nagMergeType);
-        mergeDrawables(move, newTargetMove, request.drawableMergeType);
-
-        for (const variation of move.variations) {
-            recursiveMergeLine(variation, source, target, currentTargetMove, request);
-        }
-
-        currentTargetMove = newTargetMove;
-    }
-
-    if (request.citeSource && request.sourceCohort && request.sourceId && currentTargetMove) {
-        const white = getPlayer(source.header().tags.White, source.header().tags.WhiteElo?.value);
-        const black = getPlayer(source.header().tags.Black, source.header().tags.BlackElo?.value);
-        const date = source.header().getRawValue('Date');
-        const comment = `[${white} - ${black}${date ? ` ${date}` : ''}](${frontendHost}/games/${request.sourceCohort}/${request.sourceId})`;
-
-        if (currentTargetMove.commentAfter) {
-            currentTargetMove.commentAfter += `\n\n${comment}`;
-        } else {
-            currentTargetMove.commentAfter = comment;
-        }
-    }
 }
 

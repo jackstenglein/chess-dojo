@@ -4,7 +4,10 @@ import {
     NextPuzzleRequest,
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
-import { SubmitSquareColorSessionRequest } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+import {
+    SubmitSquareColorSessionRequest,
+    SubmitSquareColorSessionResponse,
+} from '@jackstenglein/chess-dojo-common/src/squareColors/api';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -38,7 +41,7 @@ export function getPuzzleHistory(idToken: string, request: GetPuzzleHistoryReque
  * @returns A promise that resolves to the response from the API.
  */
 export function submitSquareColorSession(request: SubmitSquareColorSessionRequest) {
-    return axiosService.post<{ message: string }>(`/puzzle/square-color`, request, {
+    return axiosService.post<SubmitSquareColorSessionResponse>(`/puzzle/square-color`, request, {
         functionName: 'submitSquareColorSession',
     });
 }

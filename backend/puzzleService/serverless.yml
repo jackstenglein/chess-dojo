@@ -79,6 +79,10 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: !GetAtt SquareColorResultsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
 
 resources:
   Conditions:

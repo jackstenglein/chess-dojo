@@ -36,7 +36,7 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
     getUpcomingGameSchedule,
@@ -72,7 +72,13 @@ function getGraduationFakeTask(cohort: string): Requirement {
 }
 
 /** Renders the full training plan view of the training plan tab. */
-export function FullTrainingPlan() {
+export function FullTrainingPlan({
+    cohort,
+    setCohort,
+}: {
+    cohort: string;
+    setCohort: (c: string) => void;
+}) {
     const {
         user,
         timeline,
@@ -83,7 +89,6 @@ export function FullTrainingPlan() {
         isCurrentUser,
     } = use(TrainingPlanContext);
 
-    const [cohort, setCohort] = useState(user.dojoCohort);
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
@@ -98,10 +103,6 @@ export function FullTrainingPlan() {
         [RequirementCategory.Graduation]: false,
         [RequirementCategory.NonDojo]: false,
     });
-
-    useEffect(() => {
-        setCohort(user.dojoCohort);
-    }, [user.dojoCohort, setCohort]);
 
     const sections: Section[] = useMemo(() => {
         const sections: Section[] = [];

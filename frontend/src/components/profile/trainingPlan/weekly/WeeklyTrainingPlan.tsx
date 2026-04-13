@@ -10,9 +10,11 @@ import {
     Card,
     Chip,
     Collapse,
+    FormControlLabel,
     Grid,
     IconButton,
     Stack,
+    Switch,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -40,6 +42,10 @@ export function WeeklyTrainingPlan() {
     });
 
     const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
+    const [activeOnly, setActiveOnly] = useLocalStorage<boolean>(
+        'training-plan-weekly-active-only',
+        false,
+    );
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
@@ -87,20 +93,41 @@ export function WeeklyTrainingPlan() {
             </Stack>
 
             <Collapse in={expanded}>
-                {isLoading ? (
-                    <LoadingPage />
-                ) : (
-                    <Grid container columns={7}>
-                        {days.map((_, i) => (
-                            <Grid key={i} size={1}>
-                                <WeeklyTrainingPlanDay
-                                    dayIndex={(i + user.weekStart) % 7}
-                                    onOpenTask={onOpenTask}
+                <Stack spacing={2} mb={1}>
+                    <Tooltip title='Only show tasks you have updated this week' placement='right'>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={activeOnly}
+                                    onChange={(e) => setActiveOnly(e.target.checked)}
+                                    size='small'
                                 />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+                            }
+                            label={
+                                <Typography variant='body2' color='text.secondary'>
+                                    Active Only
+                                </Typography>
+                            }
+                            sx={{ ml: 1, width: 'fit-content' }}
+                        />
+                    </Tooltip>
+
+                    {isLoading ? (
+                        <LoadingPage />
+                    ) : (
+                        <Grid container columns={7} sx={{ minHeight: '158px' }}>
+                            {days.map((_, i) => (
+                                <Grid key={i} size={1}>
+                                    <WeeklyTrainingPlanDay
+                                        dayIndex={(i + user.weekStart) % 7}
+                                        onOpenTask={onOpenTask}
+                                        activeOnly={activeOnly}
+                                    />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
+                </Stack>
             </Collapse>
 
             {taskDialogView && selectedTask && (
@@ -120,9 +147,11 @@ export function WeeklyTrainingPlan() {
 function WeeklyTrainingPlanDay({
     dayIndex,
     onOpenTask,
+    activeOnly,
 }: {
     dayIndex: number;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
+    activeOnly: boolean;
 }) {
     const { suggestionsByDay, startDate, timeline, user, allRequirements, pinnedTasks } =
         use(TrainingPlanContext);
@@ -184,6 +213,7 @@ function WeeklyTrainingPlanDay({
                                     onOpenTask={onOpenTask}
                                     startDate={dayStart}
                                     endDate={dayEnd}
+                                    activeOnly={activeOnly}
                                 />
                             ),
                     )}
@@ -195,6 +225,7 @@ function WeeklyTrainingPlanDay({
                             onOpenTask={onOpenTask}
                             startDate={dayStart}
                             endDate={dayEnd}
+                            activeOnly={false} // Extra tasks are always active
                         />
                     ))}
                 </Stack>
@@ -208,16 +239,18 @@ function WeeklyTrainingPlanItem({
     onOpenTask,
     startDate,
     endDate,
+    activeOnly,
 }: {
     suggestion: SuggestedTask;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
     startDate: string;
     endDate: string;
+    activeOnly: boolean;
 }) {
     const { task } = suggestion;
     const { isCurrentUser, user, timeline } = use(TrainingPlanContext);
     const tasks = useMemo(() => [suggestion], [suggestion]);
-    const [goalMinutes, timeWorked] = useTrainingPlanProgress({
+    const [goalMinutes, timeWorked, _, __, active] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks,
@@ -225,6 +258,10 @@ function WeeklyTrainingPlanItem({
     });
 
     const isComplete = timeWorked >= goalMinutes;
+
+    if (activeOnly && !active) {
+        return null;
+    }
 
     const onOpenProgress = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault();

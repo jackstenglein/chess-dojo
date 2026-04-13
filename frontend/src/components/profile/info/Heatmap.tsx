@@ -31,7 +31,7 @@ import {
 } from '@mui/material';
 import { DateTime } from 'luxon';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { cloneElement, useEffect, useMemo, useState } from 'react';
+import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityCalendar,
     Activity as BaseActivity,
@@ -39,6 +39,7 @@ import {
     DayIndex,
 } from 'react-activity-calendar';
 import { GiCrossedSwords } from 'react-icons/gi';
+import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long-press';
 import { useTimelineContext } from '../activity/useTimeline';
 import { DEFAULT_WORK_GOAL } from '../trainingPlan/workGoal';
 import { MIN_BLOCK_SIZE } from './HeatmapCard';
@@ -178,6 +179,7 @@ export function Heatmap({
     const timeline = useTimelineContext();
     const editable = viewer?.username === timeline.owner;
     const request = useRequest();
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
     const [, setCalendarRef] = useState<HTMLElement | null>(null);
     const [contextMenu, setContextMenu] = useState<
         | {
@@ -207,11 +209,11 @@ export function Heatmap({
     }, [entries, minDate, maxDate, viewer, weekEndOn]);
 
     useEffect(() => {
-        const scroller = document.getElementById('heatmap-scroll-container');
+        const scroller = scrollerRef.current;
         if (scroller) {
             scroller.scrollLeft = scroller.scrollWidth;
         }
-    });
+    }, []);
 
     const closeContextMenu = () => setContextMenu(undefined);
 
@@ -233,6 +235,29 @@ export function Heatmap({
         });
     };
 
+    const onBlockLongPress = (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
+
+        const touch = 'touches' in event ? event.touches[0] : undefined;
+        if (!touch) {
+            return;
+        }
+
+        setContextMenu({
+            activity,
+            position: {
+                top: touch.clientY,
+                left: touch.clientX,
+            },
+        });
+    };
+
     const currentRestDayEntry =
         contextMenu && viewer
             ? findRestDayEntry(entries, contextMenu.activity.date, viewer)
@@ -243,10 +268,12 @@ export function Heatmap({
             return;
         }
 
-        request.onStart();
+        closeContextMenu();
         const entry = createRestDayEntry(viewer, contextMenu.activity.date);
+        timeline.onEditEntries([entry]);
 
         try {
+            request.onStart();
             await api.updateUserTimeline({
                 requirementId: TimelineSpecialRequirementId.RestDay,
                 progress: {
@@ -258,10 +285,9 @@ export function Heatmap({
                 updated: [entry],
                 deleted: [],
             });
-            timeline.onEditEntries([entry]);
             request.onSuccess();
-            closeContextMenu();
         } catch (err) {
+            timeline.onDeleteEntries([entry]);
             request.onFailure(err);
         }
     };
@@ -271,8 +297,10 @@ export function Heatmap({
             return;
         }
 
-        request.onStart();
+        closeContextMenu();
+        timeline.onDeleteEntries([currentRestDayEntry]);
         try {
+            request.onStart();
             await api.updateUserTimeline({
                 requirementId: TimelineSpecialRequirementId.RestDay,
                 progress: {
@@ -284,10 +312,9 @@ export function Heatmap({
                 updated: [],
                 deleted: [currentRestDayEntry],
             });
-            timeline.onDeleteEntries([currentRestDayEntry]);
             request.onSuccess();
-            closeContextMenu();
         } catch (err) {
+            timeline.onEditEntries([currentRestDayEntry]);
             request.onFailure(err);
         }
     };
@@ -309,7 +336,7 @@ export function Heatmap({
             <RequestSnackbar request={request} />
             <HeatmapOptions onPopOut={onPopOut} />
 
-            <Stack id='heatmap-scroll-container' direction='row' sx={{ overflowX: 'auto' }}>
+            <Stack ref={scrollerRef} direction='row' sx={{ overflowX: 'auto' }}>
                 <Paper
                     elevation={1}
                     sx={{ position: 'sticky', left: 0, pr: 0.75, borderRadius: 0, pb: 4 }}
@@ -370,6 +397,7 @@ export function Heatmap({
                                 maxDate={maxDate}
                                 editable={editable}
                                 onContextMenu={onBlockContextMenu}
+                                onLongPress={onBlockLongPress}
                             />
                         )}
                         maxLevel={MAX_LEVEL}
@@ -382,6 +410,7 @@ export function Heatmap({
                     <Divider sx={{ mt: '2px' }} />
                 </Stack>
             </Stack>
+
             <Stack
                 direction='row'
                 justifyContent='space-between'
@@ -576,6 +605,7 @@ function Block({
     maxDate,
     editable,
     onContextMenu,
+    onLongPress,
 }: {
     block: BlockElement;
     activity: Activity | ExtendedBaseActivity;
@@ -590,6 +620,10 @@ function Block({
     editable?: boolean;
     onContextMenu?: (
         event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => void;
+    onLongPress?: (
+        event: LongPressReactEvents<SVGElement>,
         activity: Activity | ExtendedBaseActivity,
     ) => void;
 }) {
@@ -629,6 +663,20 @@ function Block({
     const newStyle = color ? { ...block.props.style, fill: color } : block.props.style;
     const icon = Boolean(activity.graduation || activity.gamePlayed || activity.restDay);
     const canOpenContextMenu = editable && canManageRestDay(activity);
+    const longPress = useLongPress<SVGElement>(
+        (event) => {
+            if (canOpenContextMenu) {
+                onLongPress?.(event, activity);
+            }
+        },
+        {
+            detect: LongPressEventType.Touch,
+            threshold: 700,
+            onStart: (event) => {
+                event.preventDefault();
+            },
+        },
+    );
     const blockProps = {
         'data-testid': `heatmap-block-${activity.date}`,
         'data-activity-date': activity.date,
@@ -670,6 +718,7 @@ function Block({
             onContextMenu={
                 canOpenContextMenu ? (event) => onContextMenu?.(event, activity) : undefined
             }
+            {...longPress()}
         />
     ) : (
         cloneElement(block, {
@@ -678,6 +727,7 @@ function Block({
             onContextMenu: canOpenContextMenu
                 ? (event: ReactMouseEvent<SVGElement>) => onContextMenu?.(event, activity)
                 : undefined,
+            ...longPress(),
         })
     );
 

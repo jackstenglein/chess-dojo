@@ -135,6 +135,7 @@ functions:
 
   updateProgress:
     handler: progress/update/main.go
+    timeout: 10
     events:
       - httpApi:
           path: /user/progress/v2

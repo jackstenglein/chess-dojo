@@ -271,7 +271,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     {isRequirement(task) && (
                         <Stack direction='row' spacing={2} flexWrap='wrap' rowGap={1}>
                             <DojoPointChip requirement={task} cohort={selectedCohort} />
-                            <ExpirationChip requirement={task} />
+                            <ExpirationChip requirement={task} progress={progress} />
                             <RepeatChip requirement={task} />
                             {task.blockers && <BlockerChips requirement={task} />}
                         </Stack>
@@ -299,8 +299,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                                     title={`${task.name} Video ${idx + 1}`}
                                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
                                     allowFullScreen={true}
-                                    style={{ width: '100%', height: '100%' }}
-                                    frameBorder={0}
+                                    style={{ width: '100%', height: '100%', border: 0 }}
                                 />
                             </Box>
                         ))}
@@ -396,7 +395,13 @@ function DojoPointChip({ requirement, cohort }: { requirement: Requirement; coho
     );
 }
 
-function ExpirationChip({ requirement }: { requirement: Requirement }) {
+function ExpirationChip({
+    requirement,
+    progress,
+}: {
+    requirement: Requirement;
+    progress?: RequirementProgress;
+}) {
     if (!isRequirement(requirement)) {
         return null;
     }
@@ -420,19 +425,23 @@ function ExpirationChip({ requirement }: { requirement: Requirement }) {
 
     const value = expirationYears >= 1 ? expirationYears : Math.round(expirationYears * 12);
 
-    const title = `Progress on this task expires after ${value} ${
+    let chipLabel = `${value} ${expirationYears >= 1 ? 'year' : 'month'}${value !== 1 ? 's' : ''}`;
+    let title = `Progress on this task expires after ${value} ${
         expirationYears >= 1 ? 'year' : 'month'
-    }${value !== 1 ? 's' : ''}.`;
+    }${value !== 1 ? 's' : ''}`;
+
+    // Add exact expiration date if progress exists
+    if (progress?.updatedAt) {
+        const expirationDate = new Date(progress.updatedAt);
+        expirationDate.setDate(expirationDate.getDate() + requirement.expirationDays);
+        const formattedDate = expirationDate.toLocaleDateString();
+        chipLabel += ` (expires ${formattedDate})`;
+        title += ` (on ${formattedDate})`;
+    }
 
     return (
         <Tooltip title={title}>
-            <Chip
-                color='secondary'
-                icon={<AccessAlarm />}
-                label={`${value} ${expirationYears >= 1 ? 'year' : 'month'}${
-                    value !== 1 ? 's' : ''
-                }`}
-            />
+            <Chip color='secondary' icon={<AccessAlarm />} label={chipLabel} />
         </Tooltip>
     );
 }

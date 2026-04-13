@@ -1,6 +1,6 @@
 import CircleIcon from '@mui/icons-material/Circle';
 import { Box, Container, Stack, Typography } from '@mui/material';
-import { useMemo, useState, type JSX } from 'react';
+import { useMemo, useState, type JSX, type ReactNode } from 'react';
 import { PieChart as ReactPieChart } from 'react-minimal-pie-chart';
 import Tooltip from 'react-tooltip';
 
@@ -21,7 +21,7 @@ interface PieChartProps {
     title: string;
     data: PieChartData[];
     renderTotal: (value: number) => JSX.Element;
-    getTooltip: (entry: PieChartData) => string;
+    getTooltip: (entry: PieChartData) => ReactNode;
     onClick: (event: React.MouseEvent, dataIndex: number) => void;
 }
 
@@ -66,7 +66,11 @@ const PieChart: React.FC<PieChartProps> = ({
                         <Tooltip
                             id={id}
                             getContent={() =>
-                                hovered === null ? undefined : getTooltip(data[hovered])
+                                hovered === null ? undefined : (
+                                    <div style={{ whiteSpace: 'pre-line' }}>
+                                        {getTooltip(data[hovered])}
+                                    </div>
+                                )
                             }
                         />
                     </Box>

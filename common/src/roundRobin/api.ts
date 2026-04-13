@@ -85,6 +85,8 @@ const RoundRobinPairingSchema = z.object({
     result: z.union([z.literal('1-0'), z.literal('1/2-1/2'), z.literal('0-1')]).optional(),
     /** The URL of the game. */
     url: z.string().optional(),
+    /** The ISO timestamp when the game was submitted. */
+    submittedAt: z.string().optional(),
 });
 
 export type RoundRobinPairing = z.infer<typeof RoundRobinPairingSchema>;

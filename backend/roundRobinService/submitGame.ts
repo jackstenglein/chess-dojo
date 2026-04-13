@@ -61,6 +61,7 @@ async function submitGame({
         .set([...path, 'url'], request.url)
         .set([...path, 'white'], white)
         .set([...path, 'black'], black)
+        .set([...path, 'submittedAt'], new Date().toISOString())
         .condition(attributeExists(path))
         .table(tournamentsTable)
         .return('ALL_NEW')

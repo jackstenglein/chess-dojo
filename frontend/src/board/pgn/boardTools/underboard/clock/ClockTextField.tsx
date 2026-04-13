@@ -1,9 +1,10 @@
 import { BlockBoardKeyboardShortcuts, useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
-import { Stack, TextField } from '@mui/material';
+import { FormHelperText, Stack, TextField } from '@mui/material';
 import { TimeField } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useRef } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import { convertSecondsToDateTime, onChangeClock } from './ClockEditor';
@@ -17,14 +18,24 @@ const defaultDateTime = DateTime.fromJSDate(d);
 interface ClockTextFieldProps {
     move: Move;
     label?: string;
+    /**
+     * The maximum time in seconds this move's clock can have, based on the time control.
+     * If not undefined, it will be used to validate the user's input.
+     */
+    maxSeconds?: number;
 }
 
-const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
+const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
     const { chess } = useChess();
     const [clockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
         ClockFieldFormat.SingleField,
     );
+
+    const hoursRef = useRef<HTMLInputElement>(null);
+    const minutesRef = useRef<HTMLInputElement>(null);
+    const secondsRef = useRef<HTMLInputElement>(null);
+    const hoursRedirected = useRef(false);
 
     if (!chess) {
         return null;
@@ -61,62 +72,149 @@ const ClockTextField: React.FC<ClockTextFieldProps> = ({ move, label }) => {
                 slotProps={{
                     htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
                 }}
+                error={Boolean(maxSeconds && seconds > maxSeconds)}
+                helperText={
+                    maxSeconds && seconds > maxSeconds
+                        ? 'Gained more time than possible according to time control'
+                        : undefined
+                }
             />
         );
     }
 
     if (clockFieldFormat === ClockFieldFormat.SingleField) {
+        const seconds = clockToSeconds(move.commentDiag?.clk) ?? 0;
         return (
             <TimeField
                 id={BlockBoardKeyboardShortcuts}
                 label={label || 'Clock (hh:mm:ss)'}
                 format='HH:mm:ss'
-                value={
-                    convertSecondsToDateTime(clockToSeconds(move.commentDiag?.clk)) ||
-                    defaultDateTime
-                }
+                value={convertSecondsToDateTime(seconds) || defaultDateTime}
                 onChange={(value) => onChangeClock(chess, move, value)}
                 fullWidth
                 className={BlockBoardKeyboardShortcuts}
+                error={Boolean(maxSeconds && seconds > maxSeconds)}
+                helperText={
+                    maxSeconds && seconds > maxSeconds
+                        ? 'Gained more time than possible according to time control'
+                        : undefined
+                }
             />
         );
     }
 
     if (clockFieldFormat === ClockFieldFormat.ThreeField) {
         const timeSlots = getTimeSlotsFromMove(move);
+        const seconds = timeSlots.hours * 3600 + timeSlots.minutes * 60 + timeSlots.seconds;
+
+        const error = maxSeconds !== undefined && seconds > maxSeconds;
+        const shouldAutoFocusMinutes = maxSeconds !== undefined && maxSeconds < 3600;
+
+        const handleHoursFocus = () => {
+            if (shouldAutoFocusMinutes && !hoursRedirected.current) {
+                hoursRedirected.current = true;
+                requestAnimationFrame(() => {
+                    minutesRef.current?.focus();
+                    minutesRef.current?.select();
+                });
+            }
+        };
+
+        const handleKeyDown = (
+            e: React.KeyboardEvent<HTMLInputElement>,
+            currentField: 'hours' | 'minutes' | 'seconds',
+        ) => {
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentField === 'hours') {
+                    minutesRef.current?.focus();
+                    minutesRef.current?.select();
+                } else if (currentField === 'minutes') {
+                    secondsRef.current?.focus();
+                    secondsRef.current?.select();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentField === 'seconds') {
+                    minutesRef.current?.focus();
+                    minutesRef.current?.select();
+                } else if (currentField === 'minutes') {
+                    hoursRef.current?.focus();
+                    hoursRef.current?.select();
+                }
+            }
+        };
 
         return (
-            <Stack direction='row' spacing={1}>
-                <TextField
-                    label='Hours'
-                    id={BlockBoardKeyboardShortcuts}
-                    value={timeSlots.hours}
-                    disabled={!move}
-                    onChange={(event) =>
-                        onChangeTimeSlot('hours', event.target.value, timeSlots, chess, move)
-                    }
-                    fullWidth
-                />
-                <TextField
-                    label='Minutes'
-                    id={BlockBoardKeyboardShortcuts}
-                    value={timeSlots.minutes}
-                    disabled={!move}
-                    onChange={(event) =>
-                        onChangeTimeSlot('minutes', event.target.value, timeSlots, chess, move)
-                    }
-                    fullWidth
-                />
-                <TextField
-                    label='Seconds'
-                    id={BlockBoardKeyboardShortcuts}
-                    value={timeSlots.seconds}
-                    disabled={!move}
-                    onChange={(event) =>
-                        onChangeTimeSlot('seconds', event.target.value, timeSlots, chess, move)
-                    }
-                    fullWidth
-                />
+            <Stack>
+                <Stack direction='row' spacing={1}>
+                    <TextField
+                        label='Hours'
+                        id={BlockBoardKeyboardShortcuts}
+                        value={timeSlots.hours}
+                        disabled={!move}
+                        error={error}
+                        onChange={(event) =>
+                            onChangeTimeSlot('hours', event.target.value, timeSlots, chess, move)
+                        }
+                        onKeyDown={(e) =>
+                            handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, 'hours')
+                        }
+                        onFocus={handleHoursFocus}
+                        fullWidth
+                        slotProps={{
+                            htmlInput: {
+                                ref: hoursRef,
+                                'data-testid': 'clock-hours-field',
+                            },
+                        }}
+                    />
+                    <TextField
+                        label='Minutes'
+                        id={BlockBoardKeyboardShortcuts}
+                        value={timeSlots.minutes}
+                        disabled={!move}
+                        error={error}
+                        onChange={(event) =>
+                            onChangeTimeSlot('minutes', event.target.value, timeSlots, chess, move)
+                        }
+                        onKeyDown={(e) =>
+                            handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, 'minutes')
+                        }
+                        fullWidth
+                        slotProps={{
+                            htmlInput: {
+                                ref: minutesRef,
+                                'data-testid': 'clock-minutes-field',
+                            },
+                        }}
+                    />
+                    <TextField
+                        label='Seconds'
+                        id={BlockBoardKeyboardShortcuts}
+                        value={timeSlots.seconds}
+                        disabled={!move}
+                        error={error}
+                        onChange={(event) =>
+                            onChangeTimeSlot('seconds', event.target.value, timeSlots, chess, move)
+                        }
+                        onKeyDown={(e) =>
+                            handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, 'seconds')
+                        }
+                        fullWidth
+                        slotProps={{
+                            htmlInput: {
+                                ref: secondsRef,
+                                'data-testid': 'clock-seconds-field',
+                            },
+                        }}
+                    />
+                </Stack>
+                {error && (
+                    <FormHelperText error>
+                        Gained more time than possible according to time control
+                    </FormHelperText>
+                )}
             </Stack>
         );
     }

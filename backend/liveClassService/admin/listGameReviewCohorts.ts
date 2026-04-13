@@ -48,12 +48,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             userCohortMap.set(u.username, u.dojoCohort);
         }
 
-        // Enrich each cohort member with their dojoCohort
+        // Enrich each cohort member with their dojoCohort and remove lapsed members
         for (const cohort of gameReviewCohorts) {
-            for (const [username, member] of Object.entries(cohort.members)) {
+            for (const username of Object.keys(cohort.members)) {
                 const dojoCohort = userCohortMap.get(username);
                 if (dojoCohort) {
-                    cohort.members[username] = { ...member, dojoCohort };
+                    cohort.members[username] = { ...cohort.members[username], dojoCohort };
+                } else {
+                    delete cohort.members[username];
                 }
             }
         }

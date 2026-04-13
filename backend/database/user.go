@@ -352,6 +352,9 @@ type User struct {
 	// overall stats will be under the theme OVERALL.
 	Puzzles map[string]PuzzleThemeOverview `dynamodbav:"puzzles,omitempty" json:"puzzles,omitempty"`
 
+	// The user's best-ever square color drill rating (0-1500).
+	SquareColorRating float32 `dynamodbav:"squareColorRating,omitempty" json:"squareColorRating,omitempty"`
+
 	// The id of the user's game review cohort, if they are a member of the Game & Profile Review tier.
 	GameReviewCohortId string `dynamodbav:"gameReviewCohortId,omitempty" json:"gameReviewCohortId,omitempty"`
 

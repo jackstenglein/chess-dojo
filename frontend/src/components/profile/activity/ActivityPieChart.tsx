@@ -1,9 +1,11 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth } from '@/auth/Auth';
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
+import { RequirementCategory } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, User } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
-import { Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import Icon, { type IconName } from '@/style/Icon';
+import { Box, Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { displayTimeframe, getScoreChartData, getTimeChartData, Timeframe } from './activity';
@@ -11,32 +13,23 @@ import PieChart, { PieChartData } from './PieChart';
 import { UseTimelineResponse } from './useTimeline';
 
 /**
- * Returns a string for the score chart tooltip.
- * @param entry The PieChartData entry to get the tooltip for.
- * @returns The string for the tooltip.
+ * Maps activity pie chart category labels to icon names for tooltip display.
+ *
+ * @param name The displayed activity category name.
+ * @returns The matching icon name, if one exists.
  */
-function getScoreChartTooltip(entry?: PieChartData) {
-    if (!entry) {
-        return '';
-    }
-    const score = Math.round(entry.value * 100) / 100;
-    if (entry.count) {
-        return `${entry.name} - Count: ${entry.count}, Score: ${score}`;
-    }
-    return `${entry.name} - ${score}`;
-}
+const getCategoryIconName = (name: string): IconName | undefined => {
+    const iconMap: Record<string, IconName> = {
+        'Games + Analysis': RequirementCategory.Games,
+        Tactics: RequirementCategory.Tactics,
+        'Middlegames + Strategy': RequirementCategory.Middlegames,
+        Endgame: RequirementCategory.Endgame,
+        Opening: RequirementCategory.Opening,
+        'Welcome to the Dojo': RequirementCategory.Welcome,
+    };
 
-/**
- * Returns a string for the time chart tooltip.
- * @param entry The PieChartData entry to get the tooltip for.
- * @returns The string for the tooltip.
- */
-function getTimeChartTooltip(entry?: PieChartData) {
-    if (!entry) {
-        return '';
-    }
-    return `${entry.name} - ${getTimeDisplay(entry.value)}`;
-}
+    return iconMap[name];
+};
 
 /**
  * Converts a number of minutes to a display string in the format `1h 23m`.
@@ -125,6 +118,167 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
             requirements,
         );
     }, [user, cohorts, timeframe, timeline.entries, timeChartCategory, requirements]);
+
+    /**
+     * Returns tooltip content for a hovered time chart slice.
+     *
+     * On the top-level chart, this includes the parent category time and its
+     * subcategory breakdown. On a drilled-in chart, it shows only the hovered
+     * subcategory values.
+     *
+     * @param entry The hovered pie chart entry.
+     * @returns The tooltip content for that entry.
+     */
+    const getTimeChartTooltip = (entry?: PieChartData) => {
+        if (!entry) {
+            return '';
+        }
+
+        if (timeChartCategory) {
+            return (
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box>{entry.name}</Box>
+                    </Box>
+                    <Box sx={{ fontWeight: 700 }}>{getTimeDisplay(entry.value)}</Box>
+                </Box>
+            );
+        }
+
+        const breakdown = [
+            ...getTimeChartData(
+                user,
+                cohorts,
+                timeframe,
+                timeline.entries,
+                entry.name,
+                requirements,
+            ),
+        ].sort((a, b) => b.value - a.value);
+
+        return (
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mb: 0.75,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>{entry.name}</Box>
+                    </Box>
+
+                    <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
+                        {getTimeDisplay(entry.value)}
+                    </Box>
+                </Box>
+
+                {breakdown.map((item) => (
+                    <Box key={item.name} sx={{ pl: 1, mb: 0.25 }}>
+                        <Box component='span' sx={{ fontWeight: 700 }}>
+                            {item.name}
+                        </Box>{' '}
+                        - {getTimeDisplay(item.value)}
+                    </Box>
+                ))}
+
+                {!!breakdown.length && (
+                    <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
+                        Click for more details
+                    </Box>
+                )}
+            </Box>
+        );
+    };
+
+    /**
+     * Returns tooltip content for a hovered score chart slice.
+     *
+     * On the top-level chart, this includes the parent category score and its
+     * subcategory breakdown. On a drilled-in chart, it shows only the hovered
+     * subcategory values.
+     *
+     * @param entry The hovered pie chart entry.
+     * @returns The tooltip content for that entry.
+     */
+    const getScoreChartTooltip = (entry?: PieChartData) => {
+        if (!entry) {
+            return '';
+        }
+
+        const score = Math.round(entry.value * 100) / 100;
+
+        if (scoreChartCategory) {
+            return (
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box>{entry.name}</Box>
+                    </Box>
+                    <Box>{entry.count ? `Count: ${entry.count}, Score: ${score}` : score}</Box>
+                </Box>
+            );
+        }
+
+        const breakdown = [
+            ...getScoreChartData(
+                user,
+                cohorts,
+                timeframe,
+                timeline.entries,
+                entry.name,
+                requirements,
+            ),
+        ].sort((a, b) => b.value - a.value);
+
+        return (
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mb: 0.75,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>{entry.name}</Box>
+                    </Box>
+
+                    <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
+                        {entry.count ? `Count: ${entry.count}, Score: ${score}` : score}
+                    </Box>
+                </Box>
+
+                {breakdown.map((item) => {
+                    const childScore = Math.round(item.value * 100) / 100;
+
+                    return (
+                        <Box key={item.name} sx={{ pl: 1, mb: 0.25 }}>
+                            <Box component='span' sx={{ fontWeight: 700 }}>
+                                {item.name}
+                            </Box>{' '}
+                            -{' '}
+                            {item.count ? `Count: ${item.count}, Score: ${childScore}` : childScore}
+                        </Box>
+                    );
+                })}
+
+                {!!breakdown.length && (
+                    <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
+                        Click for more details
+                    </Box>
+                )}
+            </Box>
+        );
+    };
 
     const onChangeCohort = (newCohorts: string[]) => {
         setScoreChartCategory('');

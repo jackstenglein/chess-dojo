@@ -283,6 +283,38 @@ function getBetaTesterBadge(isEarned: boolean): Badge {
  * @param isEarned Whether the user has earned the badge.
  * @returns A badge for being a tactics champion.
  */
+export type BadgeDetectionResult =
+    | { action: 'none' }
+    | { action: 'initialize'; badges: Badge[] }
+    | { action: 'new_badge'; newBadge: Badge; allEarned: Badge[] };
+
+/**
+ * Determines whether to initialize the badge baseline, display a newly earned
+ * badge, or do nothing. Requires `dataFullyLoaded` to be true before the
+ * baseline is set, which prevents false-positive popups caused by partial data
+ * during loading.
+ */
+export function detectNewBadge(
+    previousEarnedBadges: Badge[] | undefined,
+    earnedBadges: Badge[],
+    dataFullyLoaded: boolean,
+): BadgeDetectionResult {
+    if (!previousEarnedBadges) {
+        if (dataFullyLoaded) {
+            return { action: 'initialize', badges: earnedBadges };
+        }
+        return { action: 'none' };
+    }
+
+    const newBadge = earnedBadges.find((b) =>
+        previousEarnedBadges.every((b2) => b.image !== b2.image),
+    );
+    if (newBadge) {
+        return { action: 'new_badge', newBadge, allEarned: earnedBadges };
+    }
+    return { action: 'none' };
+}
+
 export function getTacticsChampionBadge(isEarned: boolean) {
     return {
         image: `/static/badges/misc/tacticschampion.png`,

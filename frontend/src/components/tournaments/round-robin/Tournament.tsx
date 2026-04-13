@@ -7,7 +7,12 @@ import {
     RoundRobin,
     RoundRobinPlayerStatuses,
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
-import { PeopleAlt, TableChart, Timeline } from '@mui/icons-material';
+import {
+    CalendarMonth,
+    PeopleAlt,
+    TableChart,
+    Timeline as TimelineIcon,
+} from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
 import {
     Button,
@@ -21,6 +26,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { GiCrossedSwords } from 'react-icons/gi';
+import { Activity } from './Activity';
 import { Crosstable } from './Crosstable';
 import { Games } from './Games';
 import { Pairings } from './Pairings';
@@ -98,7 +104,8 @@ export function Tournament({
                             icon={<GiCrossedSwords size={24} />}
                         />
                         <Tab label='Games' value='games' icon={<PawnIcon />} />
-                        <Tab label='Stats' value='stats' icon={<Timeline />} />
+                        <Tab label='Activity' value='activity' icon={<CalendarMonth />} />
+                        <Tab label='Stats' value='stats' icon={<TimelineIcon />} />
                     </Tabs>
 
                     <TabPanel value='players' sx={{ px: 0 }}>
@@ -115,6 +122,10 @@ export function Tournament({
 
                     <TabPanel value='games' sx={{ px: 0 }}>
                         <Games tournament={tournament} />
+                    </TabPanel>
+
+                    <TabPanel value='activity' sx={{ px: 0 }}>
+                        <Activity tournament={tournament} />
                     </TabPanel>
 
                     <TabPanel value='stats' sx={{ px: 0 }}>

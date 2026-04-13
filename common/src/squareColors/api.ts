@@ -26,6 +26,12 @@ export const submitSquareColorSessionSchema = z.object({
     totalTimeSeconds: z.number(),
     /** The individual questions and answers. */
     questions: z.array(squareColorQuestionSchema),
+    /** Optional client-generated timestamp to allow updating the same session record. */
+    createdAt: z.string().datetime().optional(),
+    /** Optional client-computed rating for this session (0-1500). */
+    rating: z.number().min(0).max(1500).optional(),
+    /** Whether this is the final submission for the session (triggers rating persistence). */
+    isFinal: z.boolean().optional(),
 });
 
 /** A request to submit a square color drill session. */
@@ -40,4 +46,10 @@ export interface SquareColorSessionResult extends SubmitSquareColorSessionReques
     username: string;
     /** The ISO 8601 timestamp when the session was created. */
     createdAt: string;
+}
+
+/** Response from submitting a square color drill session. */
+export interface SubmitSquareColorSessionResponse {
+    /** The server-computed rating for this session, if enough questions were answered. */
+    rating?: number;
 }

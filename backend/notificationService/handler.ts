@@ -14,7 +14,8 @@ import { ApiError } from '../directoryService/api';
 import { dynamo, UpdateItemBuilder } from '../directoryService/database';
 import { handleClubJoinRequest, handleClubJoinRequestApproved } from './club';
 import { handleCalendarInvite, handleEventBooked } from './events';
-import { handleGameComment, handleGameReview } from './game';
+import { handleGameComment, handleGameReview, handleGameReviewSubmitted } from './game';
+import { handleBlogPublished } from './blog';
 import { handleRoundRobinStart } from './roundRobin';
 import { handleSubscriptionCreated } from './subscription';
 import { handleTimelineComment, handleTimelineReaction } from './timeline';
@@ -46,6 +47,8 @@ function handleEvent(event: NotificationEvent) {
             return handleGameComment(event);
         case NotificationEventTypes.GAME_REVIEW_COMPLETE:
             return handleGameReview(event);
+        case NotificationEventTypes.GAME_REVIEW_SUBMITTED:
+            return handleGameReviewSubmitted(event);
         case NotificationEventTypes.NEW_FOLLOWER:
             return handleNewFollower(event);
         case NotificationEventTypes.TIMELINE_COMMENT:
@@ -64,6 +67,8 @@ function handleEvent(event: NotificationEvent) {
             return handleRoundRobinStart(event);
         case NotificationEventTypes.SUBSCRIPTION_CREATED:
             return handleSubscriptionCreated(event);
+        case NotificationEventTypes.BLOG_PUBLISHED:
+            return handleBlogPublished(event);
         default:
             throw new ApiError({
                 statusCode: 400,
