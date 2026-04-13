@@ -35,6 +35,16 @@ custom:
             parallelizationFactor: 10
             filterPatterns:
               - eventName: [INSERT]
+      simple:
+        - stream:
+            type: dynamodb
+            arn: !GetAtt ExplorerTable.StreamArn
+            batchWindow: 20
+            batchSize: 1000
+            maximumRetryAttempts: 2
+            parallelizationFactor: 10
+            filterPatterns:
+              - eventName: [INSERT]
       prod:
         - stream:
             type: dynamodb
@@ -59,7 +69,7 @@ functions:
   processGame:
     handler: explorer/processGame.handler
     timeout: 900
-    memorySize: 4096
+    memorySize: 3008
     events:
       - stream:
           type: dynamodb
@@ -245,6 +255,11 @@ functions:
         Action:
           - dynamodb:DeleteItem
         Resource: ${param:GamesTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PartiQLUpdate
+        Resource: ${param:DirectoriesTableArn}
 
   recalculateExamScores:
     handler: exam/recalculateScores.handler
