@@ -142,6 +142,7 @@ export function Tournament({
                         user={user}
                         cohort={tournament.cohort}
                         startsAt={tournament.startsAt}
+                        players={tournament.players}
                         onUpdateTournaments={onUpdateTournaments}
                     />
 
