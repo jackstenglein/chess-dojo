@@ -166,81 +166,22 @@ export class TaskSuggestionAlgorithm {
 
     /**
      * Checks if the given date is marked as a rest day in the timeline.
-     * @param date The date to check.
-     * @returns True if the date is a rest day, false otherwise.
      */
     isRestDay(date: Date): boolean {
-        const dateStr = toLocalDateString(date, this.user.timezoneOverride);
-        return this.timeline.some((entry) => {
-            if (entry.requirementId !== TimelineSpecialRequirementId.RestDay) {
-                return false;
-            }
-            const entryDate = toLocalDateString(
-                new Date(entry.date || entry.createdAt),
-                this.user.timezoneOverride,
-            );
-            return entryDate === dateStr;
-        });
+        return isRestDay(date, this.timeline, this.user.timezoneOverride);
     }
 
     /**
-     * Computes adjusted daily minutes by redistributing rest day minutes
-     * across active (non-rest) days in the week. Uses round-robin to
-     * distribute any remainder evenly.
-     * @param weekStart The start of the week.
-     * @param weekEnd The end of the week.
-     * @returns An array of 7 adjusted minute values indexed by day of week.
+     * Computes adjusted daily minutes for this week.
      */
     private computeAdjustedMinutes(weekStart: Date, weekEnd: Date): number[] {
-        const workGoal = this.user.workGoal || DEFAULT_WORK_GOAL;
-        const baseMinutes = [...workGoal.minutesPerDay];
-
-        // Find rest days in this week
-        const restDayNumbers = new Set<number>();
-        const checkDate = new Date(weekStart);
-        while (checkDate.getTime() < weekEnd.getTime()) {
-            if (this.isRestDay(checkDate)) {
-                restDayNumbers.add(checkDate.getDay());
-            }
-            checkDate.setDate(checkDate.getDate() + 1);
-        }
-
-        if (restDayNumbers.size === 0) {
-            return baseMinutes;
-        }
-
-        // Sum minutes from rest days to redistribute
-        let restMinutes = 0;
-        for (const dayNum of restDayNumbers) {
-            restMinutes += baseMinutes[dayNum];
-            baseMinutes[dayNum] = 0;
-        }
-
-        // Find active days (non-rest days that have a non-zero goal)
-        const activeDays: number[] = [];
-        for (let i = 0; i < 7; i++) {
-            if (!restDayNumbers.has(i) && baseMinutes[i] > 0) {
-                activeDays.push(i);
-            }
-        }
-
-        if (activeDays.length === 0 || restMinutes === 0) {
-            return baseMinutes;
-        }
-
-        // Distribute evenly with round-robin for remainder
-        const perDay = Math.floor(restMinutes / activeDays.length);
-        let remainder = restMinutes - perDay * activeDays.length;
-
-        for (const dayNum of activeDays) {
-            baseMinutes[dayNum] += perDay;
-            if (remainder > 0) {
-                baseMinutes[dayNum] += 1;
-                remainder--;
-            }
-        }
-
-        return baseMinutes;
+        return computeAdjustedMinutes(
+            weekStart,
+            weekEnd,
+            this.user.workGoal || DEFAULT_WORK_GOAL,
+            this.timeline,
+            this.user.timezoneOverride,
+        );
     }
 
     /**
@@ -916,6 +857,95 @@ export function getUpcomingGameSchedule(gameSchedule?: GameScheduleEntry[]): Gam
             ?.filter((e) => toLocalDateString(new Date(e.date)) >= today)
             .sort((lhs, rhs) => lhs.date.localeCompare(rhs.date)) ?? []
     );
+}
+
+/**
+ * Checks if the given date is marked as a rest day in the timeline.
+ * @param date The date to check.
+ * @param timeline The user's timeline entries.
+ * @param timezone The user's timezone override.
+ * @returns True if the date is a rest day, false otherwise.
+ */
+export function isRestDay(date: Date, timeline: TimelineEntry[], timezone?: string): boolean {
+    const dateStr = toLocalDateString(date, timezone);
+    return timeline.some((entry) => {
+        if (entry.requirementId !== TimelineSpecialRequirementId.RestDay) {
+            return false;
+        }
+        const entryDate = toLocalDateString(
+            new Date(entry.date || entry.createdAt),
+            timezone,
+        );
+        return entryDate === dateStr;
+    });
+}
+
+/**
+ * Computes adjusted daily minutes by redistributing rest day minutes
+ * across active (non-rest) days in the week. Uses round-robin to
+ * distribute any remainder evenly.
+ * @param weekStart The start of the week.
+ * @param weekEnd The end of the week.
+ * @param workGoal The user's work goal settings.
+ * @param timeline The user's timeline entries.
+ * @param timezone The user's timezone override.
+ * @returns An array of 7 adjusted minute values indexed by day of week.
+ */
+export function computeAdjustedMinutes(
+    weekStart: Date,
+    weekEnd: Date,
+    workGoal: WorkGoalSettings,
+    timeline: TimelineEntry[],
+    timezone?: string,
+): number[] {
+    const baseMinutes = [...workGoal.minutesPerDay];
+
+    // Find rest days in this week
+    const restDayNumbers = new Set<number>();
+    const checkDate = new Date(weekStart);
+    while (checkDate.getTime() < weekEnd.getTime()) {
+        if (isRestDay(checkDate, timeline, timezone)) {
+            restDayNumbers.add(checkDate.getDay());
+        }
+        checkDate.setDate(checkDate.getDate() + 1);
+    }
+
+    if (restDayNumbers.size === 0) {
+        return baseMinutes;
+    }
+
+    // Sum minutes from rest days to redistribute
+    let restMinutes = 0;
+    for (const dayNum of restDayNumbers) {
+        restMinutes += baseMinutes[dayNum];
+        baseMinutes[dayNum] = 0;
+    }
+
+    // Find active days (non-rest days that have a non-zero goal)
+    const activeDays: number[] = [];
+    for (let i = 0; i < 7; i++) {
+        if (!restDayNumbers.has(i) && baseMinutes[i] > 0) {
+            activeDays.push(i);
+        }
+    }
+
+    if (activeDays.length === 0 || restMinutes === 0) {
+        return baseMinutes;
+    }
+
+    // Distribute evenly with round-robin for remainder
+    const perDay = Math.floor(restMinutes / activeDays.length);
+    let remainder = restMinutes - perDay * activeDays.length;
+
+    for (const dayNum of activeDays) {
+        baseMinutes[dayNum] += perDay;
+        if (remainder > 0) {
+            baseMinutes[dayNum] += 1;
+            remainder--;
+        }
+    }
+
+    return baseMinutes;
 }
 
 /**
