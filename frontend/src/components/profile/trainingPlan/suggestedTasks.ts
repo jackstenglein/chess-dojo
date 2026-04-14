@@ -873,10 +873,7 @@ export function isRestDay(date: Date, timeline: TimelineEntry[], timezone?: stri
         if (entry.requirementId !== TimelineSpecialRequirementId.RestDay) {
             return false;
         }
-        const entryDate = toLocalDateString(
-            new Date(entry.date || entry.createdAt),
-            timezone,
-        );
+        const entryDate = toLocalDateString(new Date(entry.date || entry.createdAt), timezone);
         return entryDate === dateStr;
     });
 }

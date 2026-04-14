@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import { RequirementCategory, ScoreboardDisplay } from '@/database/requirement';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import { WorkGoalSettings } from '@/database/user';
+import { describe, expect, it } from 'vitest';
 import { computeAdjustedMinutes, isRestDay } from './suggestedTasks';
 
 /** Creates a rest day timeline entry for the given date. */
