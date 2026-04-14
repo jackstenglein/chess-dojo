@@ -434,10 +434,11 @@ export class TaskSuggestionAlgorithm {
             return;
         }
 
-        // Use adjusted minutes (accounts for rest day redistribution)
+        const today = day.getDay();
+        const workGoal = this.user.workGoal || DEFAULT_WORK_GOAL;
         const goalMinutes = this.adjustedMinutesPerDay
-            ? this.adjustedMinutesPerDay[day.getDay()]
-            : (this.user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay[day.getDay()];
+            ? this.adjustedMinutesPerDay[today]
+            : workGoal.minutesPerDay[today];
 
         if (goalMinutes === 0) {
             for (const suggestion of suggestions) {
