@@ -1,53 +1,55 @@
 {
-  "expo": {
-    "name": "chess-dojo",
-    "slug": "chess-dojo",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "chessdojo",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "club.chessdojo.chessdojo",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "club.chessdojo.chessdojo",
-      "googleServicesFile": "./google-services.json"
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#F7941F"
-        }
-      ],
-      "expo-notifications"
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "383cc351-92a9-4ecb-8daa-8a38e5cf31d0"
-      }
-    },
-    "owner": "chessdojo"
-  }
+    "expo": {
+        "name": "chess-dojo",
+        "slug": "chess-dojo",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "scheme": "chessdojo",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "club.chessdojo.chessdojo",
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false
+            },
+            "usesAppleSignIn": true
+        },
+        "android": {
+            "edgeToEdgeEnabled": true,
+            "predictiveBackGestureEnabled": false,
+            "package": "club.chessdojo.chessdojo",
+            "googleServicesFile": "./google-services.json"
+        },
+        "web": {
+            "output": "static",
+            "favicon": "./assets/images/favicon.png"
+        },
+        "plugins": [
+            "expo-router",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/splash-icon.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#F7941F"
+                }
+            ],
+            "expo-notifications",
+            "expo-apple-authentication"
+        ],
+        "experiments": {
+            "typedRoutes": true,
+            "reactCompiler": true
+        },
+        "extra": {
+            "router": {},
+            "eas": {
+                "projectId": "383cc351-92a9-4ecb-8daa-8a38e5cf31d0"
+            }
+        },
+        "owner": "chessdojo"
+    }
 }
