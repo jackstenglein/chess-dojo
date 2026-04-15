@@ -19,6 +19,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@mui/icons-material';
 import {
     Box,
@@ -53,8 +54,9 @@ interface TaskDialogProps {
     cohort: string;
 }
 
-export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
+export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskDialogProps) {
     const [view, setView] = useState(initialView);
+    const task = useTranslatedRequirement(rawTask) ?? rawTask;
     return (
         <Dialog
             open={open}
@@ -62,9 +64,11 @@ export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
             maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
             fullWidth
         >
-            {view === TaskDialogView.Details && <DetailsDialog {...props} setView={setView} />}
+            {view === TaskDialogView.Details && (
+                <DetailsDialog {...props} task={task} setView={setView} />
+            )}
             {(view === TaskDialogView.Progress || view === TaskDialogView.History) && (
-                <ProgressDialog {...props} view={view} setView={setView} />
+                <ProgressDialog {...props} task={task} view={view} setView={setView} />
             )}
         </Dialog>
     );
@@ -134,6 +138,7 @@ type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort'> &
 function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { user } = useAuth();
     const { entries: timeline } = useTimelineContext();
     const [showEditor, setShowEditor] = useState(false);
@@ -229,7 +234,9 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         <Stack>
                             <Typography variant='h4'>{requirementName}</Typography>
                             <Typography variant='h5' color='text.secondary'>
-                                {task.category}
+                                {tCategory.has(task.category)
+                                    ? tCategory(task.category)
+                                    : task.category}
                             </Typography>
                         </Stack>
                     </ModalTitle>

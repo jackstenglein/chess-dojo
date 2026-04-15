@@ -23,7 +23,7 @@ const testUrls = {
 async function importUrl(page: Page, url: string): Promise<void> {
     await page.getByRole('textbox', { name: /Lichess or Chess\.com URL/i }).fill(url);
     await page.getByRole('button', { name: 'Import' }).click();
-    await expect(page).toHaveURL('/games/analysis');
+    await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
 }
 
 test.describe('Import Games Page - Import Online Games', () => {
@@ -165,7 +165,7 @@ test.describe('Import Games Page - Import Online Games', () => {
         const recentGameButton = page.getByTestId(/online-game-card-/).first();
         await recentGameButton.click();
         // Just verify we get to the analysis page - game content varies
-        await expect(page).toHaveURL('/games/analysis');
+        await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
     });
 
     test('submits Lichess game from position', async ({ page }) => {

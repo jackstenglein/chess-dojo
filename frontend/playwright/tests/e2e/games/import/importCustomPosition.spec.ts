@@ -8,7 +8,7 @@ test.describe('Import Games Page - Custom Position', () => {
 
     test('submits with default FEN', async ({ page }) => {
         await page.getByRole('button', { name: 'Import' }).click();
-        await expect(page).toHaveURL('/games/analysis');
+        await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
     });
 
     test('submits with custom FEN', async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe('Import Games Page - Custom Position', () => {
         await positionEntry.press('Enter');
         await page.getByRole('button', { name: 'Import' }).click();
 
-        await expect(page).toHaveURL('/games/analysis');
+        await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
 
         await page.getByTestId('underboard-button-tags').click();
         await expect(page.getByText(fen)).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('Import Games Page - Custom Position', () => {
         await positionEntry.blur();
         await page.getByRole('button', { name: 'Import' }).click();
 
-        await expect(page).toHaveURL('/games/analysis');
+        await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
 
         await page.getByTestId('underboard-button-tags').click();
         await expect(page.getByText(fen)).toBeVisible();

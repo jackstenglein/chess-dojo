@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
 
-import { displayPrice } from '@/app/(scoreboard)/courses/(list)/CourseListItem';
+import { displayPrice } from '@/app/[locale]/(scoreboard)/courses/(list)/CourseListItem';
 import { useAuth } from '@/auth/Auth';
 import { Event } from '@/database/event';
 import { useTranslations } from 'next-intl';

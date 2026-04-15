@@ -23,6 +23,7 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 export function GraduationTask() {
     const t = useTranslations('profile.trainingPlan.graduationTask');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tRating = useTranslations('enums.ratingSystem');
     const { user, isCurrentUser, skippedTaskIds, toggleSkip } = use(TrainingPlanContext);
     const shouldGraduate = shouldPromptGraduation(user);
 
@@ -65,12 +66,12 @@ export function GraduationTask() {
                                 {isCustom(user.ratingSystem) && ratingSystemName
                                     ? t('descriptionWithName', {
                                           rating: getCurrentRating(user),
-                                          system: formatRatingSystem(user.ratingSystem),
+                                          system: formatRatingSystem(user.ratingSystem, tRating),
                                           name: ratingSystemName,
                                       })
                                     : t('descriptionBase', {
                                           rating: getCurrentRating(user),
-                                          system: formatRatingSystem(user.ratingSystem),
+                                          system: formatRatingSystem(user.ratingSystem, tRating),
                                       })}
                             </Typography>
                         </CardContent>

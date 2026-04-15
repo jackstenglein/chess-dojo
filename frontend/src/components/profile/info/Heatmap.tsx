@@ -7,7 +7,6 @@ import { User, WorkGoalHistory, WorkGoalSettings } from '@/database/user';
 import CohortIcon, { cohortIcons } from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useLightMode } from '@/style/useLightMode';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import {
     calculateColor,
     calculateLevel,
@@ -514,6 +513,7 @@ export function Heatmap({
  */
 export function CategoryLegend() {
     const t = useTranslations('profile.info.heatmap');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { colorMode, setColorMode } = useHeatmapOptions();
 
     return (
@@ -565,7 +565,9 @@ export function CategoryLegend() {
                                 <Typography variant='caption' pt='2px'>
                                     {category === RequirementCategory.NonDojo
                                         ? t('customTask')
-                                        : displayRequirementCategory(category)}
+                                        : tCategory.has(category)
+                                          ? tCategory(category)
+                                          : category}
                                 </Typography>
                             </Stack>
                         );
@@ -1169,6 +1171,7 @@ function TooltipRow({
 }) {
     const t = useTranslations('profile.info.heatmap');
     const tCommon = useTranslations('common');
+    const tCategory = useTranslations('enums.requirementCategory');
     return (
         <Stack
             direction='row'
@@ -1197,7 +1200,9 @@ function TooltipRow({
                 </svg>
 
                 <Typography variant='caption' pt='2px'>
-                    {displayRequirementCategory(category as RequirementCategory)}
+                    {tCategory.has(category)
+                        ? tCategory(category as RequirementCategory)
+                        : category}
                 </Typography>
             </Stack>
 

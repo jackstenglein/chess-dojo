@@ -3,7 +3,7 @@ import { getSubscriptionStatus } from '@jackstenglein/chess-dojo-common/src/data
 import { Box, Container, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import PricingPage from '../../app/(scoreboard)/prices/PricingPage';
+import PricingPage from '../../app/[locale]/(scoreboard)/prices/PricingPage';
 import { useRequiredAuth } from '../../auth/Auth';
 import { SubscriptionStatus, User, dojoCohorts } from '../../database/user';
 import ExtraRatingSystemsForm from './ExtraRatingSystemsForm';

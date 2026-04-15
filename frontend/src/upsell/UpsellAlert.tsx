@@ -1,7 +1,7 @@
 import { Link } from '@/components/navigation/Link';
+import { usePathname } from '@/i18n/navigation';
 import { Alert, Button } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
 
 interface UpsellAlertProps {
     children: string;

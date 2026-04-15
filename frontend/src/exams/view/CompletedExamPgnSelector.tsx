@@ -11,7 +11,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { Scores } from '../../app/(scoreboard)/tests/[type]/[id]/exam/ExamPage';
+import { Scores } from '../../app/[locale]/(scoreboard)/tests/[type]/[id]/exam/ExamPage';
 import { ExamPgnSelectorProps, formatTime } from './ExamPgnSelector';
 
 interface CompletedExamPgnSelectorProps extends Omit<

@@ -21,7 +21,7 @@ import {
     getLichessChapter,
     getLichessGame,
     PgnImportResult,
-} from '@/app/(scoreboard)/games/analysis/server';
+} from '@/app/[locale]/(scoreboard)/games/analysis/server';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { RenderPlayers } from '@/components/games/list/GameListItem';

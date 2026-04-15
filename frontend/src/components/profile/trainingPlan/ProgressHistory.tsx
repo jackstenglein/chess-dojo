@@ -15,6 +15,7 @@ import {
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, compareCohorts, dojoCohorts, TimeFormat, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from '@mui/lab';
@@ -579,7 +580,12 @@ interface ProgressHistoryProps {
     setView?: (view: TaskDialogView) => void;
 }
 
-const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps) => {
+const ProgressHistory = ({
+    requirement: rawRequirement,
+    onClose,
+    setView,
+}: ProgressHistoryProps) => {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
     const t = useTranslations('profile.trainingPlan.progressHistory');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
@@ -598,7 +604,9 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         addItem,
         onSubmit,
     } = useProgressHistoryEditor({
-        requirement,
+        // Pass the raw requirement so persisted TimelineEntry fields stay in
+        // the source language; the translated requirement is used for display only.
+        requirement: rawRequirement,
         initialCohort: user?.dojoCohort,
         onSuccess: onClose,
     });

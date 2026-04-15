@@ -6,7 +6,7 @@ import { useCache } from '@/api/cache/Cache';
 import {
     MAX_PROFILE_PICTURE_SIZE_MB,
     encodeFileToBase64,
-} from '@/app/(scoreboard)/profile/edit/ProfileEditorPage';
+} from '@/app/[locale]/(scoreboard)/profile/edit/ProfileEditorPage';
 import { ClubDetails } from '@/database/club';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';

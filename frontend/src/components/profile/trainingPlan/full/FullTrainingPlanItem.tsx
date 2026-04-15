@@ -14,6 +14,7 @@ import {
 } from '@/database/requirement';
 import { ALL_COHORTS, User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AddCircle, Lock, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
     Box,
@@ -46,12 +47,13 @@ interface FullTrainingPlanItemProps {
 export const FullTrainingPlanItem = ({
     user,
     progress,
-    requirement,
+    requirement: rawRequirement,
     cohort,
     isCurrentUser,
     togglePin,
     isPinned,
 }: FullTrainingPlanItemProps) => {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
     const t = useTranslations('profile.trainingPlan.full');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tTime = useTranslations('common');

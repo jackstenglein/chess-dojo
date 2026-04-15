@@ -51,6 +51,7 @@ interface StatsButtonProps {
 
 export function StatsButton({ directory }: StatsButtonProps) {
     const t = useTranslations('profile.directories');
+    const tRating = useTranslations('enums.ratingSystem');
     const api = useApi();
 
     const [open, setOpen] = useState(false);
@@ -191,7 +192,9 @@ export function StatsButton({ directory }: StatsButtonProps) {
                                             >
                                                 <RatingSystemIcon system={system} size='small' />
                                             </Box>
-                                            <Typography>{formatRatingSystem(system)}</Typography>
+                                            <Typography>
+                                                {formatRatingSystem(system, tRating)}
+                                            </Typography>
                                         </Stack>
                                     </MenuItem>
                                 ))}
@@ -243,6 +246,7 @@ function DirectoryStats({
     ratingSystem: RatingSystem;
 }) {
     const t = useTranslations('profile.directories');
+    const tRating = useTranslations('enums.ratingSystem');
     return (
         <Fade in timeout={500}>
             <Stack spacing={4} mt={6}>
@@ -262,7 +266,7 @@ function DirectoryStats({
                             <RatingSystemIcon system={ratingSystem} size='medium' />
                             <span>
                                 {t('ratingPerformance', {
-                                    system: formatRatingSystem(ratingSystem),
+                                    system: formatRatingSystem(ratingSystem, tRating),
                                 })}
                             </span>
                         </Stack>

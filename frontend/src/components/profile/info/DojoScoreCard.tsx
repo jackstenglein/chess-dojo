@@ -21,7 +21,6 @@ import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -125,6 +124,8 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const { requirements } = useRequirements(cohort, false);
     const { entries: timeline } = useTimelineContext();
     const t = useTranslations('profile.info');
+    const tCategory = useTranslations('enums.requirementCategory');
+    const tRating = useTranslations('enums.ratingSystem');
 
     const totalScore = getTotalScore(cohort, requirements);
     const cohortScore = getCohortScore(user, cohort, requirements, timeline);
@@ -164,7 +165,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                                         color='text.secondary'
                                         sx={{ fontWeight: 'bold' }}
                                     >
-                                        {formatRatingSystem(user.ratingSystem)}
+                                        {formatRatingSystem(user.ratingSystem, tRating)}
                                         {isCustom(user.ratingSystem) &&
                                             ratingSystemName &&
                                             ` (${ratingSystemName})`}
@@ -216,7 +217,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                         return (
                             <DojoScoreCardProgressBar
                                 key={idx}
-                                title={displayRequirementCategory(c)}
+                                title={tCategory.has(c) ? tCategory(c) : c}
                                 value={percent}
                                 min={0}
                                 max={100}

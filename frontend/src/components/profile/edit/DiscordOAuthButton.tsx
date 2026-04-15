@@ -3,10 +3,10 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { getConfig } from '@/config';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
+import { usePathname } from '@/i18n/navigation';
 import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 const config = getConfig();
