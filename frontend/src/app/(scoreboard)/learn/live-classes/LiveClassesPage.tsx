@@ -112,9 +112,9 @@ export function LiveClassesPage() {
                         sx={{ cursor: 'pointer' }}
                     />
                 </Tooltip>
-                <Tooltip title='Show recordings with tag: Lecture'>
+                <Tooltip title='Show recordings with tag: Workshops'>
                     <Chip
-                        label='Lecture'
+                        label='Workshops'
                         variant={
                             selectedTags.includes(SubscriptionTier.Lecture) ? 'filled' : 'outlined'
                         }

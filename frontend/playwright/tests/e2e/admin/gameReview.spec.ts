@@ -86,8 +86,8 @@ test.describe('Admin game review page', () => {
         await expect(page.getByText('Dave')).toBeVisible();
     });
 
-    test('displays Lecture Tier Users card', async ({ page }) => {
-        await expect(page.getByText('Lecture Tier Users')).toBeVisible();
+    test('displays Workshops Tier Users card', async ({ page }) => {
+        await expect(page.getByText('Workshops Tier Users')).toBeVisible();
         await expect(page.getByText('Eve')).toBeVisible();
         await expect(page.getByText('Frank')).toBeVisible();
         await expect(page.getByText('Grace')).toBeVisible();

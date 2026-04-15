@@ -95,7 +95,7 @@ function displaySubscriptionTier(user: User): string {
         case SubscriptionTier.Basic:
             return 'Core';
         case SubscriptionTier.Lecture:
-            return 'Lecture Tier';
+            return 'Workshops Tier';
         case SubscriptionTier.GameReview:
             return 'Game & Profile Review';
     }

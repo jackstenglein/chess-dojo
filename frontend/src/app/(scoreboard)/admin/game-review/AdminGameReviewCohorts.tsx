@@ -496,10 +496,10 @@ export function AdminGameReviewCohorts() {
                 </Stack>
 
                 <Card variant='outlined' data-testid='lecture-tier-card'>
-                    <CardHeader title={`Lecture Tier Users (${lectureUsers.length})`} />
+                    <CardHeader title={`Workshops Tier Users (${lectureUsers.length})`} />
                     <CardContent>
                         {lectureUsers.length === 0 ? (
-                            <Typography>No lecture tier users</Typography>
+                            <Typography>No workshops tier users</Typography>
                         ) : (
                             <Stack spacing={2}>
                                 {[...groupedLectureUsers.entries()].map(

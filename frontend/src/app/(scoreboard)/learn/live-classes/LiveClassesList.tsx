@@ -275,9 +275,9 @@ function LiveClassCard({
                             />
                         </Tooltip>
                     ) : (
-                        <Tooltip title='Show recordings with tag: Lecture'>
+                        <Tooltip title='Show recordings with tag: Workshops'>
                             <Chip
-                                label='Lecture'
+                                label='Workshops'
                                 size='small'
                                 variant='outlined'
                                 icon={<PresenterIcon />}

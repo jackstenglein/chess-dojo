@@ -337,7 +337,7 @@ export default function Page() {
                     <br />
                     <br />
                     <br />
-                    <strong>Lecture Classes</strong>
+                    <strong>Workshop Classes</strong>
                     <br />
                     <br /> Largely due to the intimacy of the Game and Review Classes, I was
                     determined to keep the class sizes small. At the moment, eight seems like the
@@ -350,7 +350,7 @@ export default function Page() {
                     <br />
                     <br />
                     This has been the story of how we came to launch our new venture on January 1st.
-                    The Game and Profile Review will cost $200/month and the lecture classes will
+                    The Game and Profile Review will cost $200/month and the workshops classes will
                     cost $75/month. The more players that subscribe, the easier it will be to add
                     time slots, tighter rating ranges and more classes – especially classes with
                     famous instructors. Our biggest hurdle is certainly finding times that work best
