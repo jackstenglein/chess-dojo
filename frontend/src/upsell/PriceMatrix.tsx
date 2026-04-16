@@ -293,7 +293,7 @@ function PriceMatrix({
                                 {' / '}
                                 <Link
                                     target='_blank'
-                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Workshops])}&types=[]&tournaments=[]`}
+                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures])}&types=[]&tournaments=[]`}
                                 >
                                     Class Calendar
                                 </Link>
@@ -354,7 +354,7 @@ function PriceMatrix({
                                 {' / '}
                                 <Link
                                     target='_blank'
-                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Workshops, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
+                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
                                 >
                                     Class Calendar
                                 </Link>
