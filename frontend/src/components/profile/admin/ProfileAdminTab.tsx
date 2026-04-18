@@ -165,6 +165,11 @@ export function ProfileAdminTab({
                 loadRequest.onSuccess(r.data);
                 if (r.data.user.paymentInfo?.customerId === PAYMENT_CUSTOMER_ID_OVERRIDE) {
                     setTier(r.data.user.subscriptionTier ?? SubscriptionTier.Basic);
+                    setExpiresLocal(
+                        r.data.user.paymentInfo?.expiresAt
+                            ? DateTime.fromISO(r.data.user.paymentInfo.expiresAt)
+                            : null,
+                    );
                 }
             }
         } catch (e: unknown) {
