@@ -7,6 +7,7 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import { SwitchCohortPrompt } from '@/components/profile/SwitchCohortPrompt';
 import ActivityTab from '@/components/profile/activity/ActivityTab';
 import { TimelineProvider } from '@/components/profile/activity/useTimeline';
+import { ProfileAdminTab } from '@/components/profile/admin/ProfileAdminTab';
 import { DirectoriesSection } from '@/components/profile/directories/DirectoriesSection';
 import { DirectoryCacheProvider } from '@/components/profile/directories/DirectoryCache';
 import { BadgeCard } from '@/components/profile/info/BadgeCard';
@@ -29,7 +30,14 @@ import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { Groups, PieChart, RocketLaunch, Star, Timeline } from '@mui/icons-material';
+import {
+    AdminPanelSettings,
+    Groups,
+    PieChart,
+    RocketLaunch,
+    Star,
+    Timeline,
+} from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
 import { Box, Chip, Container, Stack, Tab, Tabs, useMediaQuery } from '@mui/material';
 import { ReactNode, useEffect, type JSX } from 'react';
@@ -152,6 +160,14 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                 aria-label='profile tabs'
                                 variant='scrollable'
                             >
+                                {currentUser.isAdmin && (
+                                    <ProfileTab
+                                        label='Admin'
+                                        value='admin'
+                                        icon={<AdminPanelSettings fontSize='small' />}
+                                    />
+                                )}
+
                                 {(getSubscriptionTier(user) === SubscriptionTier.GameReview ||
                                     getSubscriptionTier(user) === SubscriptionTier.Lecture) && (
                                     <ProfileTab
@@ -240,6 +256,16 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                         <TabPanel value='clubs' sx={{ px: 0, pl: { lg: 1 } }}>
                             <ClubsTab user={user} />
                         </TabPanel>
+                        {currentUser.isAdmin && (
+                            <TabPanel value='admin' sx={{ px: 0, pl: { lg: 1 } }}>
+                                <ProfileAdminTab
+                                    profileUsername={user.username}
+                                    onProfileUserUpdated={
+                                        currentUserProfile ? undefined : (u) => request.onSuccess(u)
+                                    }
+                                />
+                            </TabPanel>
+                        )}
                     </TabContext>
                 </Box>
 

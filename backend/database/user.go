@@ -399,7 +399,7 @@ type UserExamSummary struct {
 }
 
 type PaymentInfo struct {
-	// The Stripe customer id
+	// The Stripe customer id, or WIX, or OVERRIDE for admin-granted complimentary access
 	CustomerId string `dynamodbav:"customerId" json:"customerId"`
 
 	// The Stripe subscription id for the training program
@@ -407,6 +407,27 @@ type PaymentInfo struct {
 
 	// The date the subscription was last updated
 	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
+
+	// When admin OVERRIDE access expires (RFC3339). Empty means no expiry until revoked.
+	ExpiresAt string `dynamodbav:"expiresAt,omitempty" json:"expiresAt,omitempty"`
+
+	// The date the OVERRIDE access was granted, in ISO 8601.
+	OverrideGrantedAt string `dynamodbav:"overrideGrantedAt,omitempty" json:"overrideGrantedAt,omitempty"`
+
+	// The username of the user who granted the OVERRIDE access.
+	OverrideGrantedBy string `dynamodbav:"overrideGrantedBy,omitempty" json:"overrideGrantedBy,omitempty"`
+
+	// The date the OVERRIDE access was last updated, in ISO 8601.
+	OverrideUpdatedAt string `dynamodbav:"overrideUpdatedAt,omitempty" json:"overrideUpdatedAt,omitempty"`
+
+	// The username of the user who last updated the OVERRIDE access.
+	OverrideUpdatedBy string `dynamodbav:"overrideUpdatedBy,omitempty" json:"overrideUpdatedBy,omitempty"`
+
+	// The date the OVERRIDE access was revoked, in ISO 8601.
+	OverrideRevokedAt string `dynamodbav:"overrideRevokedAt,omitempty" json:"overrideRevokedAt,omitempty"`
+
+	// The username of the user who revoked the OVERRIDE access.
+	OverrideRevokedBy string `dynamodbav:"overrideRevokedBy,omitempty" json:"overrideRevokedBy,omitempty"`
 }
 
 type WorkGoalSettings struct {

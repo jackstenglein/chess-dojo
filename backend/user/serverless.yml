@@ -222,6 +222,54 @@ functions:
           - dynamodb:PutItem
         Resource: ${param:DirectoriesTableArn}
 
+  adminGetUser:
+    handler: admin/get/main.go
+    events:
+      - httpApi:
+          path: /admin/user/{username}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
+  adminPutComplimentary:
+    handler: admin/complimentary/put/main.go
+    events:
+      - httpApi:
+          path: /admin/user/{username}/complimentary
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
+  adminDeleteComplimentary:
+    handler: admin/complimentary/delete/main.go
+    events:
+      - httpApi:
+          path: /admin/user/{username}/complimentary
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
   getByDiscordId:
     handler: get/discord/main.go
     events:
