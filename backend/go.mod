@@ -54,5 +54,5 @@ require (
 	go.mongodb.org/mongo-driver v1.17.9
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	google.golang.org/api v0.275.0
+	google.golang.org/api v0.276.0
 )
