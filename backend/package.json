@@ -38,7 +38,7 @@
         "axios": "^1.13.3",
         "bad-words": "^4.0.0",
         "deep-equal": "^2.2.3",
-        "discord.js": "^14.25.1",
+        "discord.js": "^14.26.4",
         "glicko2": "^1.2.1",
         "google-auth-library": "^10.5.0",
         "happy-dom": "^19.0.2",
