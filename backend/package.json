@@ -10,7 +10,7 @@
         "csv-parser": "^3.2.0",
         "esbuild": "^0.25.10",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "serverless": "^3.39.0",
+        "serverless": "^4.35.0",
         "serverless-esbuild": "^1.55.1",
         "serverless-go-plugin": "^2.4.1",
         "serverless-plugin-custom-roles": "^3.1.1",
@@ -46,7 +46,7 @@
         "mongodb": "^6.20.0",
         "qrcode": "^1.5.3",
         "rrule": "^2.8.1",
-        "serverless": "^3.39.0",
+        "serverless": "^4.35.0",
         "stripe": "^17.5.0",
         "uuid": "^13.0.0",
         "zod": "^4.3.6"
