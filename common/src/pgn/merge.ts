@@ -25,17 +25,13 @@ export const PgnMergeSchema = z.object({
     pgn: z.string(),
 
     /** How to handle the comments from the merged PGN. Defaults to MERGE. */
-    commentMergeType: pgnMergeType
-        .optional()
-        .transform((val) => val || PgnMergeTypes.MERGE),
+    commentMergeType: pgnMergeType.optional().transform((val) => val || PgnMergeTypes.MERGE),
 
     /** How to handle the NAGs from the merged PGN. Defaults to MERGE. */
     nagMergeType: pgnMergeType.optional().transform((val) => val || PgnMergeTypes.MERGE),
 
     /** How to handle the drawables from the merged PGN. Defaults to MERGE. */
-    drawableMergeType: pgnMergeType
-        .optional()
-        .transform((val) => val || PgnMergeTypes.MERGE),
+    drawableMergeType: pgnMergeType.optional().transform((val) => val || PgnMergeTypes.MERGE),
 
     /** Whether to cite the original game in a comment at the end of the added line. */
     citeSource: z.boolean().optional(),

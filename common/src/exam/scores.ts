@@ -105,9 +105,7 @@ export function getSolutionScore(
                 move.userData = {
                     score: parseInt(scoreSearch[1]),
                 };
-                move.commentAfter = move.commentAfter
-                    ?.replace(scoreSearch[0], '')
-                    .trimStart();
+                move.commentAfter = move.commentAfter?.replace(scoreSearch[0], '').trimStart();
             } else {
                 move.userData = { score: 1 };
             }
@@ -118,9 +116,7 @@ export function getSolutionScore(
                     ...(move.userData as ExamMoveUserData),
                     isAlt: true,
                 };
-                move.commentAfter = move.commentAfter
-                    ?.replace(altSearch[0], '')
-                    .trimStart();
+                move.commentAfter = move.commentAfter?.replace(altSearch[0], '').trimStart();
             }
         }
 
