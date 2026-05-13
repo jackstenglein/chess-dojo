@@ -79,6 +79,7 @@
         "chessground": "^9.2.1",
         "comlink": "^4.4.2",
         "copy-to-clipboard": "^3.3.3",
+        "date-fns": "^4.1.0",
         "deep-equal": "^2.2.3",
         "lodash.debounce": "^4.0.8",
         "luxon": "^3.7.2",

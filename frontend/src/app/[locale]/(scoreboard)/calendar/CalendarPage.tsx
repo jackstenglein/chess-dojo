@@ -30,9 +30,16 @@ import type { EventRendererProps, SchedulerRef } from '@jackstenglein/react-sche
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Container, Grid, Snackbar, Stack, Typography } from '@mui/material';
-import { useTranslations } from 'next-intl';
+import { de as dateFnsDe, enUS as dateFnsEnUS } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RRule } from 'rrule';
+
+const SCHEDULER_LOCALES = {
+    en: dateFnsEnUS,
+    pseudo: dateFnsEnUS,
+    de: dateFnsDe,
+} as const;
 
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
@@ -398,6 +405,9 @@ export function getProcessedEvents(
 
 export default function CalendarPage() {
     const t = useTranslations('calendar');
+    const locale = useLocale();
+    const schedulerLocale =
+        SCHEDULER_LOCALES[locale as keyof typeof SCHEDULER_LOCALES] ?? dateFnsEnUS;
     const { user } = useAuth();
     const api = useApi();
     const isFreeTier = useFreeTier();
@@ -601,6 +611,7 @@ export default function CalendarPage() {
                     <Stack spacing={3}>
                         <Scheduler
                             ref={calendarRef}
+                            locale={schedulerLocale}
                             agenda={false}
                             month={{
                                 weekDays: [0, 1, 2, 3, 4, 5, 6],
