@@ -1,7 +1,3 @@
-// 'use client' is required: these functions are passed as props from the
-// server LocaleLayout to NextIntlClientProvider (a client component).
-// Without the directive, static export fails with "Event handlers cannot
-// be passed to Client Component props."
 'use client';
 
 import { logger } from '@/logging/logger';

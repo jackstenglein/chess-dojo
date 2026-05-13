@@ -1,27 +1,4 @@
 {
-    "_translationMeta": {
-        "_about": "Instructions for whoever produces a translated copy of this file. Paths listed under skipAutoTranslate should not be passed through an automated translator; manual human translation of those paths is welcome where appropriate. preserveStructure rules apply to every key during translation. This block is stripped at message-load time and never reaches the runtime UI.",
-        "skipAutoTranslate": {
-            "enums.ratingSystem": "Backend wire values plus brand-name display labels. Keep English so users can match the labels on the actual rating-system websites. Manual translation OK if the translator knows the local convention.",
-            "enums.requirementCategory": "Display labels for a backend category enum. Manual translation welcome.",
-            "enums.requirementCategoryShort": "Same as requirementCategory.",
-            "landing.senseis": "Trainer names are proper nouns; bios are credential prose with embedded titles and platform names. Manual translation only.",
-            "coach.stripe.connect": "References a payment processor brand. Manual translation if surrounding text needs it.",
-            "coach.stripe.dashboard": "Same.",
-            "profile.ratings.chesscomUsername": "Brand name in label.",
-            "profile.ratings.lichessUsername": "Brand name in label.",
-            "profile.ratings.fideId": "Acronym for an international chess federation.",
-            "profile.ratings.uscfId": "Acronym for a national chess federation.",
-            "profile.ratings.ecfRatingCode": "Acronym for a national chess federation.",
-            "profile.ratings.cfcId": "Acronym for a national chess federation.",
-            "profile.ratings.dwzId": "Acronym for a national rating system."
-        },
-        "preserveStructure": {
-            "icuPlurals": "Preserve {count, plural, =1 {...} other {...}} syntax verbatim. Translate only the text inside the inner braces.",
-            "tagPlaceholders": "Preserve <tagName>...</tagName> tags including the tag name itself. Translate only the text between tags.",
-            "variables": "Preserve {variableName} placeholders verbatim. Surrounding sentence may be restructured for word order, but placeholder spelling and case must not change."
-        }
-    },
     "common": {
         "timezone": "[T] Timezone",
         "language": "[T] Language",
@@ -183,9 +160,9 @@
                 "expandAll": "[T] Expand All",
                 "collapseAll": "[T] Collapse All",
                 "completedTasks": "[T] Completed Tasks",
-                "showCompleted": "{count, plural, =1 {[T] Show # completed task} other {[T] Show # completed tasks}}",
+                "showCompleted": "[T] {count, plural, =1 {Show # completed task} other {Show # completed tasks}}",
                 "addCustomTask": "[T] Add Custom Task",
-                "unlockTasks": "{count, plural, =1 {[T] Unlock # more task by upgrading to a full account} other {[T] Unlock # more tasks by upgrading to a full account}}",
+                "unlockTasks": "[T] {count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "[T] View Prices",
                 "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
                 "reachRatingToUnlock": "[T] Reach the required rating for your cohort to unlock graduation",
@@ -261,8 +238,8 @@
                 "totalPerWeek": "[T] Total Per Week: {time}",
                 "hoursError": "[T] Must be numeric",
                 "minutesError": "[T] Must be numeric",
-                "hoursDisplay": "{hours, plural, =0 {} =1 {# hour} other {# hours}}",
-                "minutesDisplay": "{minutes, plural, =0 {} =1 {# minute} other {# minutes}}"
+                "hoursDisplay": "[T] {hours, plural, =0 {} =1 {# hour} other {# hours}}",
+                "minutesDisplay": "[T] {minutes, plural, =0 {} =1 {# minute} other {# minutes}}"
             },
             "position": {
                 "toPlay": "[T] {color} to play",
@@ -305,7 +282,7 @@
                 "calendarItem": "[T] <calendarLink>Calendar</calendarLink> — Schedule one-off games with other Dojo members.",
                 "updateSchedule": "[T] Update Schedule",
                 "scheduleGameTooltip": "[T] Schedule Game",
-                "gamesLabel": "{count, plural, =1 {# game} other {# games}}",
+                "gamesLabel": "[T] {count, plural, =1 {# game} other {# games}}",
                 "updateTooltip": "[T] Update",
                 "numberOfGames": "[T] Number of Games",
                 "addDate": "[T] Add Date",
@@ -324,10 +301,10 @@
                 "editTask": "[T] Edit Task",
                 "deleteTask": "[T] Delete Task",
                 "pauseTimer": "[T] Pause Timer ({time})",
-                "dojoPointsTotal": "{score, plural, =1 {[T] This task awards # Dojo Point upon completion.} other {[T] This task awards # Dojo Points upon completion.}}",
+                "dojoPointsTotal": "[T] This task awards {score, plural, =1 {# Dojo Point} other {# Dojo Points}} upon completion.",
                 "dojoPointsNone": "[T] This task awards no Dojo Points.",
-                "dojoPointsPerUnit": "{score, plural, =1 {[T] This task awards # Dojo Point per {unit} completed.} other {[T] This task awards # Dojo Points per {unit} completed.}}",
-                "pointsLabel": "{score, plural, =1 {# point} other {# points}}",
+                "dojoPointsPerUnit": "[T] This task awards {score, plural, =1 {# Dojo Point} other {# Dojo Points}} per {unit} completed.",
+                "pointsLabel": "[T] {score, plural, =1 {# point} other {# points}}",
                 "expirationYearly": "[T] Activity logged on this task expires after 1 year",
                 "expirationYears": "[T] Progress on this task expires after {value, plural, =1 {# year} other {# years}}.",
                 "expirationMonths": "[T] Progress on this task expires after {value, plural, =1 {# month} other {# months}}.",
@@ -550,7 +527,7 @@
             "public": "[T] Public",
             "private": "[T] Private",
             "unlisted": "[T] Unlisted",
-            "dateTooltip": "[T] {date} \u2022 {time}",
+            "dateTooltip": "[T] {date} • {time}",
             "moveDirectoryTitle": "[T] Move {name}?",
             "moveGameTitle": "[T] Move game?",
             "moveFoldersAndGamesTitle": "[T] Move {dirCount} {dirCount, plural, =1 {folder} other {folders}} and {gameCount} {gameCount, plural, =1 {game} other {games}}?",
@@ -1904,8 +1881,8 @@
                 "sortOldestFirst": "[T] Oldest first",
                 "sortTcShortest": "[T] Time control (shortest)",
                 "sortTcLongest": "[T] Time control (longest)",
-                "sortTcClassBulletToClassical": "[T] Time class (bullet \u2192 classical)",
-                "sortTcClassClassicalToBullet": "[T] Time class (classical \u2192 bullet)",
+                "sortTcClassBulletToClassical": "[T] Time class (bullet → classical)",
+                "sortTcClassClassicalToBullet": "[T] Time class (classical → bullet)",
                 "sortWhiteWinsFirst": "[T] White wins first",
                 "sortBlackWinsFirst": "[T] Black wins first",
                 "sortDrawsFirst": "[T] Draws first",
@@ -3039,7 +3016,7 @@
             "difficultyLabel": "[T] Difficulty",
             "difficultyEasiest": "[T] Easiest (-600)",
             "difficultyEasier": "[T] Easier (-300)",
-            "difficultyStandard": "[T] Standard (\u00b1200)",
+            "difficultyStandard": "[T] Standard (±200)",
             "difficultyHarder": "[T] Harder (+300)",
             "difficultyHardest": "[T] Hardest (+600)",
             "rated": "[T] Rated",
@@ -3179,7 +3156,7 @@
             "bestFitCohortRange": "[T] Best Fit Cohort Range ({range})",
             "usersLine": "[T] <dim>Users:</dim> {count}",
             "avgScoreLine": "[T] <dim>Avg Score:</dim> {score}",
-            "regressionCaptionRange": "[T] Best fit is calculated as a linear regression over all users {min}\u2013{max}",
+            "regressionCaptionRange": "[T] Best fit is calculated as a linear regression over all users {min}–{max}",
             "regressionCaptionPlus": "[T] Best fit is calculated as a linear regression over all users {min}+",
             "seriesTestRating": "[T] Test Rating",
             "seriesYourScore": "[T] Your Score",
@@ -3209,9 +3186,9 @@
         "freeVolunteer": "[T] Offering volunteer help",
         "volunteeringHeading": "[T] Volunteering",
         "volunteeringIntro": "[T] Please message @hellokostya on Discord if you're interested in helping out with any of the following categories:",
-        "volunteerAdmin": "[T] Admin/Organizational \u2014 organizing events, both on-stream and off-stream, modding, etc.",
-        "volunteerProgramming": "[T] Programming \u2014 Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
-        "volunteerContent": "[T] Content \u2014 thumbnails, posting clips on social media, etc."
+        "volunteerAdmin": "[T] Admin/Organizational — organizing events, both on-stream and off-stream, modding, etc.",
+        "volunteerProgramming": "[T] Programming — Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
+        "volunteerContent": "[T] Content — thumbnails, posting clips on social media, etc."
     },
     "blog": {
         "footer": {
@@ -3638,15 +3615,15 @@
                 "gameReviewCompleteDialogTitle": "[T] Game Review Complete",
                 "completedReviewDescription": "[T] Your game review was reviewed on a previous <stream>Twitch stream</stream>. If you missed the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "reviewerLabel": "[T] Reviewer:",
-                "dateReviewedLabel": "[T] Date Reviewed: {date} \u2022 {time}",
-                "dateRequestedLabel": "[T] Date Requested: {date} \u2022 {time}",
+                "dateReviewedLabel": "[T] Date Reviewed: {date} • {time}",
+                "dateRequestedLabel": "[T] Date Requested: {date} • {time}",
                 "reviewTypeDisplayLabel": "[T] Review Type: {type}",
                 "gameReviewPendingDialogTitle": "[T] Game Review Pending",
                 "pendingReviewDescription": "[T] Your game review is still in the queue. One of the senseis will review this game on a future <stream>Twitch stream</stream>. If you miss the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "currentQueuePositionLabel": "[T] Current Position in Queue: <value></value>",
                 "estimatedReviewDateByLabel": "[T] Estimated Review Date: by {date}",
                 "adminSettingsTitle": "[T] Admin Settings",
-                "reviewRequestedLabel": "[T] Review Requested: {date} \u2022 {time}",
+                "reviewRequestedLabel": "[T] Review Requested: {date} • {time}",
                 "markReviewedButton": "[T] Mark Reviewed",
                 "keyArrowLeft": "[T] Arrow Left",
                 "keyArrowRight": "[T] Arrow Right",
@@ -3682,9 +3659,8 @@
                 "replyPlaceholder": "[T] Reply to {displayName} ({cohort})",
                 "replyCancelButton": "[T] cancel",
                 "replyPostButton": "[T] reply",
-                "updatedAt": "[T] Updated at {date} \u2022 {time}"
+                "updatedAt": "[T] Updated at {date} • {time}"
             },
-            "directories": {},
             "share": {
                 "addToFolder": "[T] Add to Folder",
                 "copyUrl": "[T] Copy URL",
@@ -3878,8 +3854,8 @@
             "previousPageLabel": "[T] Go to previous page",
             "nextPageLabel": "[T] Go to next page",
             "freeTierLimit": "[T] Free-tier users can only access the first page of results",
-            "displayedRowsExact": "[T] {from}\u2013{to} of {count}",
-            "displayedRowsWithMore": "[T] {from}\u2013{to} of {count}+"
+            "displayedRowsExact": "[T] {from}–{to} of {count}",
+            "displayedRowsWithMore": "[T] {from}–{to} of {count}+"
         }
     },
     "upsell": {
@@ -3944,7 +3920,6 @@
             "faqClassCalendar": "[T] <faqLink>FAQ</faqLink> / <calendarLink>Class Calendar</calendarLink>",
             "perClassSubtitle": "[T] (~ {currency}{amount} / class)"
         },
-        "sellingPoint": {},
         "pricingPage": {
             "tabMonthly": "[T] Monthly",
             "tabYearly": "[T] Yearly",
