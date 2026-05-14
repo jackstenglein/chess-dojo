@@ -120,7 +120,7 @@
         "@types/react-copy-to-clipboard": "^5.0.7",
         "@types/react-resizable": "^3.0.8",
         "@types/uuid": "^10.0.0",
-        "@vitejs/plugin-react": "^5.1.2",
+        "@vitejs/plugin-react": "^6.0.2",
         "command-line-args": "^6.0.1",
         "command-line-usage": "^7.0.3",
         "dotenv": "^17.4.2",
