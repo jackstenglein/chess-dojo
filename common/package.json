@@ -23,7 +23,7 @@
         "jiti": "^2.6.1",
         "prettier": "^3.8.1",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "typescript-eslint": "^8.54.0",
+        "typescript-eslint": "^8.59.3",
         "vitest": "^4.1.5"
     }
 }
