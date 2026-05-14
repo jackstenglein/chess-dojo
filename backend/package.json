@@ -42,7 +42,7 @@
         "glicko2": "^1.2.1",
         "happy-dom": "^19.0.2",
         "moment": "^2.30.1",
-        "mongodb": "^6.20.0",
+        "mongodb": "^7.2.0",
         "qrcode": "^1.5.3",
         "rrule": "^2.8.1",
         "serverless": "^3.39.0",
