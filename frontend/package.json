@@ -128,7 +128,7 @@
         "eslint-config-next": "^16.1.6",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^7.0.1",
-        "globals": "^17.1.0",
+        "globals": "^17.6.0",
         "happy-dom": "^19.0.2",
         "jiti": "^2.6.1",
         "nyc": "^18.0.0",
