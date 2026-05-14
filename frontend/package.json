@@ -72,7 +72,7 @@
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
         "async-mutex": "^0.5.0",
-        "aws-amplify": "^6.15.7",
+        "aws-amplify": "^6.17.0",
         "axios": "^1.15.2",
         "bad-words": "^4.0.0",
         "chessground": "^9.2.1",
