@@ -1,7 +1,25 @@
 import { runWithAmplifyServerContext } from '@/auth/amplifyServerUtils';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
+import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_LOCALE, LOCALE_CODES } from './i18n/locales';
+import { routing } from './i18n/routing';
 import { logger } from './logging/logger';
+
+const intlMiddleware = createIntlMiddleware(routing);
+
+// Derived from LOCALE_CODES so adding a locale in locales.ts covers every
+// matcher site. A hard-coded alternation here would silently strip new
+// locales and emit wrong-prefix redirects.
+if (LOCALE_CODES.length === 0) {
+    throw new Error('proxy: LOCALE_CODES is empty; SUPPORTED_LOCALES must have at least one entry');
+}
+const LOCALE_PREFIX_REGEX = new RegExp(`^/(${LOCALE_CODES.join('|')})(?=/|$)`);
+
+function withPrefix(prefix: string, path: string): string {
+    if (path.startsWith('http')) return path;
+    return `${prefix}${path}`;
+}
 
 const publicPaths = [
     /^\/_next\/.*$/,
@@ -60,7 +78,25 @@ const legacyRoutes = [
 ];
 
 export async function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    // Run next-intl first so bare URLs get redirected to /<locale>/<path>
+    // before auth/legacy matchers see them. Try/catch keeps a library throw
+    // from 500'ing every page.
+    let intlResponse: NextResponse | undefined;
+    try {
+        intlResponse = intlMiddleware(request);
+    } catch (error) {
+        logger.error?.('next-intl middleware threw; falling through', error);
+    }
+    if (intlResponse?.headers.get('location')) {
+        return intlResponse;
+    }
+
+    // Strip the locale prefix so the matchers below stay locale-agnostic.
+    const localeMatch = LOCALE_PREFIX_REGEX.exec(request.nextUrl.pathname);
+    const locale = localeMatch?.[1] ?? DEFAULT_LOCALE;
+    const prefix = `/${locale}`;
+    const pathname = request.nextUrl.pathname.replace(LOCALE_PREFIX_REGEX, '') || '/';
+
     const response = NextResponse.next();
 
     for (const path of publicPaths) {
@@ -71,7 +107,7 @@ export async function proxy(request: NextRequest) {
 
     for (const route of legacyRoutes) {
         if (pathname === route.oldPath) {
-            return NextResponse.redirect(new URL(route.newPath, request.url));
+            return NextResponse.redirect(new URL(withPrefix(prefix, route.newPath), request.url));
         }
     }
 
@@ -94,7 +130,7 @@ export async function proxy(request: NextRequest) {
     if (authenticated) {
         for (const [path, redirect] of authenticatedRedirects) {
             if (pathname.match(path)) {
-                return NextResponse.redirect(new URL(redirect, request.url));
+                return NextResponse.redirect(new URL(withPrefix(prefix, redirect), request.url));
             }
         }
     }
@@ -111,23 +147,15 @@ export async function proxy(request: NextRequest) {
     }
 
     if (authenticated) {
-        return NextResponse.redirect(new URL('/profile', request.url));
+        return NextResponse.redirect(new URL(`${prefix}/profile`, request.url));
     }
 
-    return NextResponse.redirect(new URL(`/?redirectUri=${pathname}`, request.url));
+    // Pass the unprefixed pathname so signin's router doesn't double-prefix.
+    return NextResponse.redirect(new URL(`${prefix}/?redirectUri=${pathname}`, request.url));
 }
 
 export const config = {
     matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - opengraph-image.png
-         * - twitter-image.png
-         */
         '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|opengraph-image.png|twitter-image.png).*)',
     ],
 };

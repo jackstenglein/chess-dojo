@@ -1,7 +1,9 @@
+import { useRouter } from '@/i18n/navigation';
+import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
 import { LoadingButton } from '@mui/lab';
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { EventType, trackEvent } from '../../analytics/events';
 import { useApi } from '../../api/Api';
@@ -77,7 +79,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
         })
             .then(() => {
                 if (redirectUri) {
-                    router.push(decodeURIComponent(redirectUri));
+                    router.push(sanitizeRedirectUri(redirectUri));
                 }
                 trackEvent(EventType.CreateProfile);
             })

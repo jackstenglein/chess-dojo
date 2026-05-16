@@ -14,6 +14,7 @@ import {
 import CohortIcon from '@/scoreboard/CohortIcon';
 import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Lock } from '@mui/icons-material';
@@ -30,12 +31,14 @@ interface FullTrainingPlanGraduationItemProps {
 }
 
 export function FullTrainingPlanGraduationItem({
-    requirement,
+    requirement: rawRequirement,
     user,
     cohort,
     isCurrentUser,
 }: FullTrainingPlanGraduationItemProps) {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
     const t = useTranslations('profile.trainingPlan.full');
+    const tRating = useTranslations('enums.ratingSystem');
     const isFreeTier = useFreeTier();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [upsellOpen, setUpsellOpen] = useState(false);
@@ -100,7 +103,7 @@ export function FullTrainingPlanGraduationItem({
                                                     color='text.secondary'
                                                     sx={{ fontWeight: 'bold' }}
                                                 >
-                                                    {formatRatingSystem(user.ratingSystem)}
+                                                    {formatRatingSystem(user.ratingSystem, tRating)}
                                                     {isCustom(user.ratingSystem) &&
                                                         ratingSystemName &&
                                                         ` (${ratingSystemName})`}

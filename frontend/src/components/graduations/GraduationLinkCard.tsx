@@ -2,10 +2,10 @@
 
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { Graduation } from '@/database/graduation';
+import { Link } from '@/i18n/navigation';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Card, CardActionArea, CardContent, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 
 interface GraduationLinkCardProps {
     graduation: Graduation;

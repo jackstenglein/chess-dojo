@@ -10,7 +10,7 @@ import {
 import { shouldPromptGraduation } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import {
     Check,
     ExpandMore,
@@ -219,7 +219,8 @@ function DailyTrainingPlanItem({
     const t = useTranslations('profile.trainingPlan.daily');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tTime = useTranslations('common');
-    const { task } = suggestion;
+    const tCategory = useTranslations('enums.requirementCategory');
+    const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
     const { isCurrentUser, pinnedTasks, togglePin, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
     const isPinned = pinnedTasks.some((t) => t.id === task.id);
@@ -254,7 +255,11 @@ function DailyTrainingPlanItem({
                             <Stack spacing={1} alignItems='start'>
                                 <Chip
                                     variant='outlined'
-                                    label={displayRequirementCategory(task.category)}
+                                    label={
+                                        tCategory.has(task.category)
+                                            ? tCategory(task.category)
+                                            : task.category
+                                    }
                                     color={themeRequirementCategory(task.category)}
                                     size='small'
                                 />
@@ -350,7 +355,7 @@ function DailyTrainingPlanItem({
                                 </Tooltip>
                             )}
 
-                            <TaskTimerIconButton taskId={suggestion.task.id} />
+                            <TaskTimerIconButton taskId={task.id} />
                         </>
                     )}
 

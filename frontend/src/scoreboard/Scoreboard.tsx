@@ -39,6 +39,7 @@ import {
 } from './scoreboardData';
 
 type ScoreboardT = ReturnType<typeof useTranslations<'scoreboard'>>;
+type RatingT = ReturnType<typeof useTranslations<'enums.ratingSystem'>>;
 
 interface ColumnGroupChild {
     field: string;
@@ -177,13 +178,13 @@ function getRatingsColumnGroup(t: ScoreboardT) {
     };
 }
 
-function getRatingsColumns(t: ScoreboardT): GridColDef<ScoreboardRow>[] {
+function getRatingsColumns(t: ScoreboardT, tRating: RatingT): GridColDef<ScoreboardRow>[] {
     return [
         {
             field: 'ratingSystem',
             headerName: t('ratingSystemColumn'),
             minWidth: 175,
-            valueGetter: (_value, row) => getRatingSystem(row, t),
+            valueGetter: (_value, row) => getRatingSystem(row, t, tRating),
             align: 'center',
             headerAlign: 'center',
         },
@@ -503,6 +504,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
 }) => {
     const t = useTranslations('scoreboard');
     const tCommon = useTranslations('common');
+    const tRating = useTranslations('enums.ratingSystem');
     const isSummary = cohort === undefined;
     const isFreeTier = useFreeTier();
 
@@ -523,7 +525,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
         [t, tCommon, isSummary],
     );
 
-    const ratingsColumns = useMemo(() => getRatingsColumns(t), [t]);
+    const ratingsColumns = useMemo(() => getRatingsColumns(t, tRating), [t, tRating]);
     const summaryUserInfoColumns = useMemo(() => getSummaryUserInfoColumns(t), [t]);
     const defaultUserInfoColumns = useMemo(() => getDefaultUserInfoColumns(t), [t]);
 

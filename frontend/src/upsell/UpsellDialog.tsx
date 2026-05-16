@@ -1,5 +1,6 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { Link } from '@/components/navigation/Link';
+import { usePathname } from '@/i18n/navigation';
 import {
     Button,
     Dialog,
@@ -9,7 +10,6 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 
 export enum RestrictedAction {

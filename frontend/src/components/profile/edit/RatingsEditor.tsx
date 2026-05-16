@@ -54,6 +54,7 @@ export function RatingsEditor({
     errors,
 }: RatingsEditorProps) {
     const t = useTranslations('profile.ratings');
+    const tRating = useTranslations('enums.ratingSystem');
 
     const setUsername = (ratingSystem: RatingSystem, username: string) => {
         setRatingEditors({
@@ -173,7 +174,7 @@ export function RatingsEditor({
                               ? t('custom2')
                               : option === RatingSystem.Custom3
                                 ? t('custom3')
-                                : formatRatingSystem(option)}
+                                : formatRatingSystem(option, tRating)}
                     </MenuItem>
                 ))}
             </TextField>

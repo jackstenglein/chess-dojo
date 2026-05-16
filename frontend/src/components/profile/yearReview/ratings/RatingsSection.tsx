@@ -9,6 +9,7 @@ import RatingCard from './RatingCard';
 
 const RatingsSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.ratings');
+    const tRating = useTranslations('enums.ratingSystem');
     const viewer = useAuth().user;
     const dark = !viewer?.enableLightMode;
 
@@ -25,13 +26,13 @@ const RatingsSection = ({ review }: SectionProps) => {
     function getDescription(system: RatingSystem, data: YearReviewRatingData): React.ReactNode {
         if (data.ratingChange === 0) {
             return t.rich('descriptionSame', {
-                system: formatRatingSystem(system),
+                system: formatRatingSystem(system, tRating),
                 current: data.currentRating.value,
                 bold,
             });
         } else if (data.ratingChange > 0) {
             return t.rich('descriptionUp', {
-                system: formatRatingSystem(system),
+                system: formatRatingSystem(system, tRating),
                 startRating: data.startRating,
                 currentRating: data.currentRating.value,
                 ratingChange: data.ratingChange,
@@ -39,7 +40,7 @@ const RatingsSection = ({ review }: SectionProps) => {
             });
         } else {
             return t.rich('descriptionDown', {
-                system: formatRatingSystem(system),
+                system: formatRatingSystem(system, tRating),
                 startRating: data.startRating,
                 currentRating: data.currentRating.value,
                 bold,

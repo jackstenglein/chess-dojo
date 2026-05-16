@@ -32,6 +32,7 @@ interface RatingCardProps {
 
 const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, period }) => {
     const t = useTranslations('profile.yearReview.ratingCard');
+    const tRating = useTranslations('enums.ratingSystem');
     const endDateByPeriod = useMemo<Record<string, string>>(
         () => ({
             '2025': t('endDate2025'),
@@ -71,7 +72,7 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
             <CardContent>
                 <Stack direction='row' justifyContent='space-between'>
                     <Stack>
-                        <Typography variant='h6'>{formatRatingSystem(system)}</Typography>
+                        <Typography variant='h6'>{formatRatingSystem(system, tRating)}</Typography>
                         <Stack direction='row' alignItems='center' sx={{ mb: 2 }}>
                             {Boolean(data.username) && (
                                 <>
@@ -262,7 +263,10 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                                                 data.isPreferred
                                                     ? t('percentileTooltipPreferred')
                                                     : t('percentileTooltipNonPreferred', {
-                                                          system: formatRatingSystem(system),
+                                                          system: formatRatingSystem(
+                                                              system,
+                                                              tRating,
+                                                          ),
                                                       })
                                             }
                                         >
@@ -309,7 +313,10 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                                                       })
                                                     : t('cohortPercentileTooltipNonPreferred', {
                                                           cohort,
-                                                          system: formatRatingSystem(system),
+                                                          system: formatRatingSystem(
+                                                              system,
+                                                              tRating,
+                                                          ),
                                                       })
                                             }
                                         >

@@ -12,12 +12,12 @@ test.describe('Signin Page', () => {
 
     test('should link to signup', async ({ page }) => {
         await page.getByTestId('signup-button').click();
-        await expect(page).toHaveURL('/signup');
+        await expect(page).toHaveURL(/\/signup(?:\?|$)/);
     });
 
     test('should link to forgot password', async ({ page }) => {
         await page.getByTestId('forgot-password-button').click();
-        await expect(page).toHaveURL('/forgot-password');
+        await expect(page).toHaveURL(/\/forgot-password(?:\?|$)/);
     });
 
     test('has sign in with google button', async ({ page }) => {
@@ -53,6 +53,6 @@ test.describe('Signin Page', () => {
         await page.locator('#email').fill(getEnv('email'));
         await page.locator('#password').fill(getEnv('password'));
         await page.getByTestId('signin-button').click();
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL(/\/profile(?:\?|$)/);
     });
 });

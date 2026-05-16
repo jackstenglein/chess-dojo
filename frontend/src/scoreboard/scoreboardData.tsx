@@ -220,11 +220,12 @@ export function formatPercentComplete(value: number) {
 export function getRatingSystem(
     row: ScoreboardRow,
     t: ReturnType<typeof useTranslations<'scoreboard'>>,
+    tRating: ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
 ) {
     if (isCustom(row.ratingSystem) && !isGraduation(row) && row.ratings[row.ratingSystem]?.name) {
         return t('customRating', { name: row.ratings[row.ratingSystem]?.name ?? '' });
     }
-    return formatRatingSystem(row.ratingSystem);
+    return formatRatingSystem(row.ratingSystem, tRating);
 }
 
 export function getStartRating(row: ScoreboardRow): number {

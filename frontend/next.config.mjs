@@ -2,6 +2,12 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
+// Keep in sync with SUPPORTED_LOCALES in src/i18n/locales.ts and the regexes
+// in src/proxy.ts. When a new locale lands, extend the alternation here or
+// legacy redirects and video-embed COEP headers will silently stop matching
+// the new locale's URLs.
+const LOCALE_PATTERN = ':locale(en|pseudo)';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     outputFileTracingRoot: import.meta.dirname,
@@ -51,13 +57,13 @@ const nextConfig = {
     },
     redirects: () => [
         {
-            source: '/games/explorer',
-            destination: '/games/analysis',
+            source: `/${LOCALE_PATTERN}/games/explorer`,
+            destination: '/:locale/games/analysis',
             permanent: true,
         },
         {
-            source: '/material/bots',
-            destination: '/learn/guides',
+            source: `/${LOCALE_PATTERN}/material/bots`,
+            destination: '/:locale/learn/guides',
             permanent: true,
         },
     ],
@@ -81,7 +87,7 @@ const VIDEO_EMBED_HEADERS = [
     },
 ];
 
-const pagesWithVideos = [
+const pagesWithVideosRaw = [
     '/',
     '/profile/:path*',
     '/scoreboard/:path*',
@@ -140,5 +146,9 @@ const pagesWithVideos = [
     '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/1',
     '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/2',
 ];
+
+const pagesWithVideos = pagesWithVideosRaw.map((p) =>
+    p === '/' ? `/${LOCALE_PATTERN}` : `/${LOCALE_PATTERN}${p}`,
+);
 
 export default withNextIntl(nextConfig);

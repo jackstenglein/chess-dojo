@@ -85,7 +85,7 @@ test.describe('Default Time Control (localStorage)', () => {
         await page.getByRole('button', { name: 'Import' }).click();
 
         // Should be on analysis page
-        await expect(page).toHaveURL('/games/analysis');
+        await expect(page).toHaveURL(/\/games\/analysis(?:\?|$)/);
 
         // Open the Tags tab
         await page.getByRole('button', { name: 'PGN Tags' }).click();

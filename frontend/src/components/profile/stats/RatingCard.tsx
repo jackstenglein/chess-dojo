@@ -207,6 +207,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
     refreshCooldown,
 }) => {
     const t = useTranslations('profile.stats.ratingCard');
+    const tRating = useTranslations('enums.ratingSystem');
     const { user } = useAuth();
     const dark = !user?.enableLightMode;
     const [refreshing, setRefreshing] = useState(false);
@@ -230,7 +231,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
 
                         <Stack>
                             <Typography variant='h6' sx={{ mb: -1 }}>
-                                {formatRatingSystem(system)}
+                                {formatRatingSystem(system, tRating)}
                                 {isCustom(system) && name && t('customRatingDisplayName', { name })}
                             </Typography>
                             <RatingProfileLink

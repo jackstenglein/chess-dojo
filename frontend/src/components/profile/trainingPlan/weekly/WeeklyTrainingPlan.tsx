@@ -1,7 +1,7 @@
 import { CustomTask, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { Check, ExpandMore } from '@mui/icons-material';
 import {
     alpha,
@@ -251,8 +251,9 @@ function WeeklyTrainingPlanItem({
     endDate: string;
     activeOnly: boolean;
 }) {
-    const { task } = suggestion;
+    const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
     const tTime = useTranslations('common');
+    const tCategoryShort = useTranslations('enums.requirementCategoryShort');
     const { isCurrentUser, user, timeline } = use(TrainingPlanContext);
     const tasks = useMemo(() => [suggestion], [suggestion]);
     const [goalMinutes, timeWorked, _, __, active] = useTrainingPlanProgress({
@@ -312,7 +313,11 @@ function WeeklyTrainingPlanItem({
 
                     <Stack direction='row' flexWrap='wrap' gap={1}>
                         <Chip
-                            label={displayRequirementCategoryShort(task.category)}
+                            label={
+                                tCategoryShort.has(task.category)
+                                    ? tCategoryShort(task.category)
+                                    : task.category
+                            }
                             color={themeRequirementCategory(task.category)}
                             size='small'
                             sx={{

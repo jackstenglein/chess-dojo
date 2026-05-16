@@ -19,6 +19,7 @@ interface MetricsDashboardProps {
 const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
     const { requirements } = useRequirements(ALL_COHORTS, true);
     const t = useTranslations('profile.info');
+    const tRating = useTranslations('enums.ratingSystem');
 
     return (
         <Card variant='outlined' sx={sx}>
@@ -70,7 +71,7 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                                 }}
                             >
                                 <Stack direction='row' alignItems='center'>
-                                    <Typography>{formatRatingSystem(rs)}</Typography>
+                                    <Typography>{formatRatingSystem(rs, tRating)}</Typography>
 
                                     <Typography ml={1} fontWeight='bold'>
                                         {currentRating}

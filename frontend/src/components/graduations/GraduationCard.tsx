@@ -125,6 +125,7 @@ interface GraduationCardProps {
 
 export default function GraduationCard({ graduation }: GraduationCardProps) {
     const t = useTranslations('graduations.card');
+    const tRating = useTranslations('enums.ratingSystem');
     const {
         newCohort,
         ratingSystem: preferredSystem,
@@ -200,7 +201,7 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
             <Stack direction='row' gridArea='system-name' spacing={1.5} alignItems='center'>
                 <RatingSystemIcon system={preferredSystem} />
                 <Typography variant='h6' sx={{ mb: -1 }}>
-                    {formatRatingSystem(preferredSystem)}
+                    {formatRatingSystem(preferredSystem, tRating)}
                 </Typography>
             </Stack>
             <Box display='grid' gridArea='chart'>

@@ -1,7 +1,7 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, RequestStatus, useRequest } from '@/api/Request';
-import { displayPrice } from '@/app/(scoreboard)/courses/(list)/CourseListItem';
+import { displayPrice } from '@/app/[locale]/(scoreboard)/courses/(list)/CourseListItem';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';

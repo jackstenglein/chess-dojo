@@ -9,7 +9,6 @@ import {
 } from '@/database/requirement';
 import { User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { Checklist } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -85,6 +84,7 @@ export function FullTrainingPlanSection({
 }: TrainingPlanSectionProps) {
     const t = useTranslations('profile.trainingPlan.full');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
 
@@ -126,7 +126,9 @@ export function FullTrainingPlanSection({
                                     verticalAlign: 'middle',
                                 }}
                             />
-                            {displayRequirementCategory(section.category)}
+                            {tCategory.has(section.category)
+                                ? tCategory(section.category)
+                                : section.category}
                         </Typography>
                     </Grid>
 

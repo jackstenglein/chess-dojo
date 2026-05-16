@@ -129,6 +129,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     const tRatings = useTranslations('profile.ratings');
     const tCreator = useTranslations('profile.creator');
     const tPreferred = useTranslations('profile.creator.preferred');
+    const tRating = useTranslations('enums.ratingSystem');
     const api = useApi();
     const request = useRequest();
 
@@ -161,7 +162,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
             >
                 {Object.values(RatingSystems).map((option) => (
                     <MenuItem key={option} value={option}>
-                        {formatRatingSystem(option)}
+                        {formatRatingSystem(option, tRating)}
                     </MenuItem>
                 ))}
             </TextField>

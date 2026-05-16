@@ -5,7 +5,6 @@ import { Link } from '@/components/navigation/Link';
 import { RequirementCategory } from '@/database/requirement';
 import { dojoCohorts, GameScheduleEntry } from '@/database/user';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { AddCircle, Check, Delete, Help, NotInterested } from '@mui/icons-material';
 import {
     Box,
@@ -44,6 +43,7 @@ import { TrainingPlanContext } from './TrainingPlanTab';
 export function ScheduleClassicalGameDaily() {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { user, isCurrentUser, toggleSkip } = use(TrainingPlanContext);
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
@@ -69,7 +69,7 @@ export function ScheduleClassicalGameDaily() {
                         <Stack spacing={1} alignItems='start'>
                             <Chip
                                 variant='outlined'
-                                label={displayRequirementCategory(RequirementCategory.Games)}
+                                label={tCategory(RequirementCategory.Games)}
                                 color={themeRequirementCategory(RequirementCategory.Games)}
                                 size='small'
                             />

@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
-/** Validates a locale code (ISO 639-1, optionally with region). */
-const localeSchema = z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/, 'Invalid locale code');
+/**
+ * Validates a locale code (ISO 639-1, optionally with region).
+ * Also accepts `pseudo`, the non-translating QA locale retained indefinitely
+ * on nonprod so the DB-translation fetch path stays exercised end-to-end.
+ */
+const localeSchema = z
+    .string()
+    .regex(/^(pseudo|[a-z]{2}(-[A-Z]{2})?)$/, 'Invalid locale code');
 
 /** The type of content being translated. */
 export const TranslationContentTypeSchema = z.enum(['REQUIREMENT', 'COURSE']);

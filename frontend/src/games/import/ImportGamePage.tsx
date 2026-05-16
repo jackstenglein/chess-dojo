@@ -3,6 +3,7 @@
 import { RequestSnackbar } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import useSaveGame from '@/hooks/useSaveGame';
+import { useRouter } from '@/i18n/navigation';
 import { logger } from '@/logging/logger';
 import { Chess } from '@jackstenglein/chess';
 import { MY_GAMES_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
@@ -10,7 +11,7 @@ import { CreateGameRequest } from '@jackstenglein/chess-dojo-common/src/database
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import { Container } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import ImportWizard from './ImportWizard';
 
 const ImportGamePage = () => {
