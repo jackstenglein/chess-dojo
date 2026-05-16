@@ -11,7 +11,7 @@ import { TranslationContext, TranslationContextValue } from './TranslationContex
 
 const EMPTY_MAP: ReadonlyMap<string, Translation> = new Map();
 
-const NO_OVERLAY_LOCALES: readonly string[] = ['en', 'pseudo'];
+const NO_OVERLAY_LOCALES: readonly string[] = ['en'];
 
 /**
  * Provides a per-locale overlay of DB-sourced translations (requirement

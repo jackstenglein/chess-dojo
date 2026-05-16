@@ -6,9 +6,6 @@ export const routing = defineRouting({
     defaultLocale: DEFAULT_LOCALE,
     localePrefix: 'always',
     localeDetection: true,
-    // Name + maxAge must match setLocaleCookie in locales.ts. Without an
-    // explicit maxAge next-intl writes a session cookie that silently
-    // downgrades the picker's 1-year cookie on every detection redirect.
     localeCookie: {
         name: 'locale',
         maxAge: 60 * 60 * 24 * 365,

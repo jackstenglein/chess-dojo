@@ -150,11 +150,35 @@ describe('TranslationProvider', () => {
         );
     });
 
-    it('makes no API calls on pseudo (frontend-only QA locale)', async () => {
+    it('fetches translations for pseudo (DB-overlay canary locale)', async () => {
+        mockListTranslations.mockImplementation((_locale: string, contentType: string) => {
+            if (contentType === 'REQUIREMENT') {
+                return Promise.resolve([
+                    {
+                        contentType: 'REQUIREMENT',
+                        contentKey: 'REQUIREMENT#r1',
+                        locale: 'pseudo',
+                        name: '[T] Req 1',
+                        shortName: '[T] Short 1',
+                        dailyName: '[T] Daily 1',
+                        description: '[T] Desc 1',
+                        freeDescription: '[T] Free 1',
+                        progressBarSuffix: '[T] Suffix 1',
+                        updatedAt: '2026-04-14',
+                        updatedBy: 'admin',
+                    },
+                ]);
+            }
+            return Promise.resolve([]);
+        });
+
         renderWithLocale('pseudo');
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        expect(mockListTranslations).not.toHaveBeenCalled();
-        expect(screen.getByTestId('count').textContent).toBe('0');
+
+        await waitFor(() => {
+            expect(screen.getByTestId('count').textContent).toBe('1');
+        });
+        expect(mockListTranslations).toHaveBeenCalledWith('pseudo', 'REQUIREMENT');
+        expect(mockListTranslations).toHaveBeenCalledWith('pseudo', 'COURSE');
         expect(screen.getByTestId('failed').textContent).toBe('false');
     });
 });

@@ -24,13 +24,13 @@ test.describe('Landing Page (unauthenticated)', () => {
 
     test('has explore button', async ({ page }) => {
         await page.getByRole('button', { name: 'Explore the Program' }).click();
-        await expect(page).toHaveURL(/^http:\/\/localhost:3000\/(en|pseudo)\/?$/);
+        await expect(page).toHaveURL(/^http:\/\/localhost:3000\/(en|pseudo|de)\/?$/);
     });
 
     test('should redirect unauthenticated user to landing', async ({ page }) => {
         await page.goto('/profile');
         // URL may include redirectUri query param to remember intended destination
-        await expect(page).toHaveURL(/^http:\/\/localhost:3000\/(en|pseudo)\/?\??(.*)$/);
+        await expect(page).toHaveURL(/^http:\/\/localhost:3000\/(en|pseudo|de)\/?\??(.*)$/);
     });
 });
 

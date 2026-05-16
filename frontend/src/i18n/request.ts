@@ -7,8 +7,6 @@ import { stripMeta } from './stripMeta';
 
 export default getRequestConfig(async ({ requestLocale }) => {
     const requested = await requestLocale;
-    // `requestLocale` is undefined outside `[locale]/`; a non-undefined value
-    // that fails `hasLocale` signals a routing bug, hence the warn.
     let locale: string;
     if (hasLocale(routing.locales, requested)) {
         locale = requested;

@@ -10,7 +10,7 @@ test.describe('URL-prefixed locales - unauthenticated', () => {
         // Chrome's default Accept-Language is en-US, so middleware should
         // redirect to /en. Accept /pseudo as a fallback in case the server
         // is running in pseudo-locale mode.
-        await expect(page).toHaveURL(/\/(en|pseudo)\/?$/);
+        await expect(page).toHaveURL(/\/(en|pseudo|de)\/?$/);
     });
 
     test('bare /profile redirects to /en/profile (unauthenticated user sees landing)', async ({
@@ -20,7 +20,7 @@ test.describe('URL-prefixed locales - unauthenticated', () => {
         // Middleware redirects /profile -> /en/profile; the page itself may
         // then redirect an unauthenticated user back to the root with a
         // redirectUri param. Either way the locale prefix /en must appear.
-        await expect(page).toHaveURL(/\/(en|pseudo)([/?#]|$)/);
+        await expect(page).toHaveURL(/\/(en|pseudo|de)([/?#]|$)/);
     });
 
     test('pseudo locale route renders on nonprod', async ({ page }) => {

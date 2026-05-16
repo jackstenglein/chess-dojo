@@ -10,6 +10,10 @@ describe('routing config', () => {
         expect(routing.locales).toContain('pseudo');
     });
 
+    it('includes de in locales', () => {
+        expect(routing.locales).toContain('de');
+    });
+
     it('defaults to en', () => {
         expect(routing.defaultLocale).toBe('en');
     });
