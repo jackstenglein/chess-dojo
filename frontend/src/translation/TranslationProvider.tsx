@@ -13,6 +13,13 @@ const EMPTY_MAP: ReadonlyMap<string, Translation> = new Map();
 
 const NO_OVERLAY_LOCALES: readonly string[] = ['en'];
 
+/**
+ * Provides a per-locale overlay of DB-sourced translations (requirement
+ * and course fields). Locales in NO_OVERLAY_LOCALES skip the fetch; a
+ * generation counter guards stale responses across locale changes.
+ * Partial failures surface via a dismissible Snackbar and a `fetchFailed`
+ * flag on the context.
+ */
 export function TranslationProvider({ children }: { children: ReactNode }) {
     const locale = useLocale();
     const request = useRequest<ReadonlyMap<string, Translation>>();

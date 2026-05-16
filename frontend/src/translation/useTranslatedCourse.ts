@@ -7,6 +7,11 @@ import { TranslationContentTypes } from '@jackstenglein/chess-dojo-common/src/tr
 import { useMemo } from 'react';
 import { useTranslationContext } from './TranslationContext';
 
+/**
+ * Returns `course` with DB-overlay fields (and nested chapter/module
+ * names) substituted. The default locale short-circuits with the same
+ * reference.
+ */
 export function useTranslatedCourse(course: Course | undefined): Course | undefined {
     const { translations, locale } = useTranslationContext();
     const translation = course ? translations.get(`COURSE#${course.id}`) : undefined;
