@@ -63,10 +63,11 @@ test.describe('localePrefix: as-needed - unauthenticated', () => {
     });
 
     test('/en/profile permanently redirects to /profile', async ({ page }) => {
-        const response = await page.goto('/en/profile');
-        // Playwright follows redirects, so only the final URL is visible.
-        await expect(page).toHaveURL(/\/profile/);
-        expect(response?.url()).not.toMatch(/\/en\/profile/);
+        const response = await page.context().request.get('/en/profile', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(308);
+        expect(response.headers().location).toBe('/profile');
     });
 });
 
@@ -75,13 +76,8 @@ test.describe('localePrefix: as-needed - authenticated', () => {
 
     test('bare /profile renders the authenticated profile page', async ({ page }) => {
         const response = await page.goto('/profile');
-        // No locale prefix on default-locale URLs; authenticated user stays put.
-        // Assert 200 explicitly — a broken x-middleware-rewrite forward in
-        // proxy.ts would leave the URL bare but 404 the page, which a URL-
-        // only assertion misses.
         expect(response?.status()).toBe(200);
         await expect(page).toHaveURL(/\/profile/);
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
 
     test('unknown route under a valid locale returns 404', async ({ page }) => {

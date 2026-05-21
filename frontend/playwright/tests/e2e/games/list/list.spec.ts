@@ -53,7 +53,7 @@ test.describe('List Games Page', () => {
 
         await waitForNavigation(
             page,
-            /\/(en|pseudo|de)\/games\?type=player&player=JackStenglein&color=either&startDate=&endDate=$/,
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=player&player=JackStenglein&color=either&startDate=&endDate=$/,
         );
     });
 
@@ -69,7 +69,7 @@ test.describe('List Games Page', () => {
 
         await waitForNavigation(
             page,
-            /\/(en|pseudo|de)\/games\?type=opening&eco=B01&startDate=&endDate=$/,
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=opening&eco=B01&startDate=&endDate=$/,
         );
     });
 
@@ -81,7 +81,10 @@ test.describe('List Games Page', () => {
         await expect(searchForm.getByTestId('owner-search-button')).toBeVisible();
         await searchForm.getByTestId('owner-search-button').click();
 
-        await waitForNavigation(page, /\/(en|pseudo|de)\/games\?type=owner&startDate=&endDate=$/);
+        await waitForNavigation(
+            page,
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=owner&startDate=&endDate=$/,
+        );
     });
 
     test('links to game page on row click', async ({ page }) => {
