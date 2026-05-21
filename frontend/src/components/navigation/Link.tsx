@@ -1,7 +1,7 @@
 'use client';
 
 import { pagesWithVideos } from '@/hooks/useRouter';
-import { LOCALE_CODES } from '@/i18n/locales';
+import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
 import { Link as NextLink, usePathname } from '@/i18n/navigation';
 import { LinkProps, Link as MuiLink } from '@mui/material';
 import { useLocale } from 'next-intl';
@@ -84,9 +84,13 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
                     }
 
                     guard.enabled = () => false;
-                    // Absolute URLs pass through; relative ones get the active locale prefix.
+                    // Absolute URLs pass through. Relative URLs get the active
+                    // locale prefix — except under localePrefix: 'as-needed',
+                    // the default locale uses bare paths.
                     if (hrefIsExternal || !hrefStripped) {
                         window.location.href = rawHref;
+                    } else if (locale === DEFAULT_LOCALE) {
+                        window.location.href = hrefStripped;
                     } else {
                         window.location.href = `/${locale}${hrefStripped}`;
                     }

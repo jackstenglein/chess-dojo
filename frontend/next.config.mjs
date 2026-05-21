@@ -56,11 +56,22 @@ const nextConfig = {
         return headers;
     },
     redirects: () => [
+        // SEO: permanent redirect for default-locale prefix removal under
+        // localePrefix: 'as-needed'. next-intl's middleware emits a 307
+        // (temporary) for /en/foo -> /foo, which search engines do not
+        // honour for canonicalization. A Next-level 308 transfers authority
+        // and also cuts one middleware invocation per /en/... request.
+        { source: '/en', destination: '/', permanent: true },
+        { source: '/en/:path*', destination: '/:path*', permanent: true },
+
+        // Each legacy redirect needs a bare AND a prefixed variant.
+        { source: '/games/explorer', destination: '/games/analysis', permanent: true },
         {
             source: `/${LOCALE_PATTERN}/games/explorer`,
             destination: '/:locale/games/analysis',
             permanent: true,
         },
+        { source: '/material/bots', destination: '/learn/guides', permanent: true },
         {
             source: `/${LOCALE_PATTERN}/material/bots`,
             destination: '/:locale/learn/guides',
@@ -147,8 +158,14 @@ const pagesWithVideosRaw = [
     '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/2',
 ];
 
-const pagesWithVideos = pagesWithVideosRaw.map((p) =>
-    p === '/' ? `/${LOCALE_PATTERN}` : `/${LOCALE_PATTERN}${p}`,
-);
+// Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',
+// '/blog/...'). Emit BOTH bare and prefixed variants so COEP overrides land
+// for English visitors as well — otherwise bare URLs fall through to the
+// catch-all '/:path*' ENGINE_HEADERS rule (require-corp), breaking video
+// embeds and the stockfish engine.
+const pagesWithVideos = pagesWithVideosRaw.flatMap((p) => {
+    const prefixed = p === '/' ? `/${LOCALE_PATTERN}` : `/${LOCALE_PATTERN}${p}`;
+    return [p, prefixed];
+});
 
 export default withNextIntl(nextConfig);

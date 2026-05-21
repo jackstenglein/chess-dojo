@@ -18,8 +18,8 @@ describe('routing config', () => {
         expect(routing.defaultLocale).toBe('en');
     });
 
-    it('uses always prefix mode', () => {
-        expect(routing.localePrefix).toBe('always');
+    it('uses as-needed prefix mode', () => {
+        expect(routing.localePrefix).toBe('as-needed');
     });
 
     it('enables locale detection', () => {

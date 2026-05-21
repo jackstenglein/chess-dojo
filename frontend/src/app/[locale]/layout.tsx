@@ -34,11 +34,15 @@ export async function generateMetadata({
     const { locale } = await params;
     const base = config.baseUrl.replace(/\/$/, '');
 
+    // Under localePrefix: 'as-needed' the default locale lives at the bare
+    // domain root; non-default locales keep their prefix. x-default and the
+    // default-locale entry must both point at `base` to match the URL Google
+    // actually crawls.
     const languages: Record<string, string> = {};
     for (const code of PUBLIC_LOCALES) {
-        languages[code] = `${base}/${code}`;
+        languages[code] = code === DEFAULT_LOCALE ? base : `${base}/${code}`;
     }
-    languages['x-default'] = `${base}/${DEFAULT_LOCALE}`;
+    languages['x-default'] = base;
 
     return {
         ...defaultMetadata,
@@ -47,7 +51,7 @@ export async function generateMetadata({
         },
         openGraph: {
             ...(defaultMetadata.openGraph ?? {}),
-            url: `${base}/${locale}`,
+            url: locale === DEFAULT_LOCALE ? base : `${base}/${locale}`,
         },
     };
 }

@@ -253,7 +253,10 @@ export function ProfileEditorPage({ user }: { user: User }) {
                     // navigation leaves some client components holding on to
                     // the previous locale's messages (the language changes
                     // only after a second switch), so force a full fetch.
-                    window.location.href = `/${update.language}/profile`;
+                    window.location.href =
+                        update.language === DEFAULT_LOCALE
+                            ? '/profile'
+                            : `/${update.language}/profile`;
                 } else {
                     router.push('/profile');
                 }
