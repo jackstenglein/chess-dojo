@@ -5,7 +5,19 @@
 import { DiscordIcon } from '@/components/profile/info/DiscordChip';
 import { UserNotificationSettings } from '@/database/user';
 import { Email, Notifications, Web } from '@mui/icons-material';
-import { Checkbox, Divider, FormControlLabel, Stack, Typography } from '@mui/material';
+import {
+    Checkbox,
+    Divider,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+} from '@mui/material';
 
 function getSettingValue(
     notificationSettings: UserNotificationSettings | undefined,
@@ -47,86 +59,63 @@ function setSettingValue(
     return result;
 }
 
-interface NotificationSettingsSection {
+interface NotificationRow {
     label: string;
-    settings: { label: string; path: string }[];
-    icon: React.ReactNode;
+    sitePath?: string;
+    emailPath?: string;
+    discordPath?: string;
 }
 
-const sections: NotificationSettingsSection[] = [
+const notificationRows: NotificationRow[] = [
     {
-        label: 'Site',
-        icon: <Web />,
-        settings: [
-            {
-                label: 'Notify me when a comment is added to my game',
-                path: 'siteNotificationSettings.disableGameComment',
-            },
-            {
-                label: 'Notify me when a reply is added to a game comment thread I participated in',
-                path: 'siteNotificationSettings.disableGameCommentReplies',
-            },
-            {
-                label: 'Notify me when I have a new follower',
-                path: 'siteNotificationSettings.disableNewFollower',
-            },
-            {
-                label: 'Notify me when a comment is added to my newsfeed activity',
-                path: 'siteNotificationSettings.disableNewsfeedComment',
-            },
-            {
-                label: 'Notify me when a reaction is added to my newsfeed activity',
-                path: 'siteNotificationSettings.disableNewsfeedReaction',
-            },
-            {
-                label: 'Notify me when I am invited to an event on the calendar',
-                path: 'siteNotificationSettings.disableCalendarInvite',
-            },
-        ],
+        label: 'Game Comment (New)',
+        sitePath: 'siteNotificationSettings.disableGameComment',
     },
     {
-        label: 'Email',
-        icon: <Email />,
-        settings: [
-            {
-                label: 'Notify me via email when I am about to be marked inactive',
-                path: 'emailNotificationSettings.disableInactiveWarning',
-            },
-            {
-                label: 'Subscribe to the monthly Dojo Digest',
-                path: 'emailNotificationSettings.disableNewsletter',
-            },
-            {
-                label: 'Notify me when my round robin tournament starts',
-                path: 'emailNotificationSettings.disableRoundRobinStart',
-            },
-            {
-                label: 'Send me an email with getting started tips when I subscribe to the Dojo',
-                path: 'emailNotificationSettings.disableSubscriptionCreated',
-            },
-        ],
+        label: 'Game Comment (Reply)',
+        sitePath: 'siteNotificationSettings.disableGameCommentReplies',
     },
     {
-        label: 'Discord',
-        icon: <DiscordIcon />,
-        settings: [
-            {
-                label: 'Notify me via a Discord DM when my meeting is booked',
-                path: 'discordNotificationSettings.disableMeetingBooking',
-            },
-            {
-                label: 'Notify me via a Discord DM when my meeting is cancelled',
-                path: 'discordNotificationSettings.disableMeetingCancellation',
-            },
-            {
-                label: 'Notify me via a Discord DM when I am invited to an event on the calendar',
-                path: 'discordNotificationSettings.disableCalendarInvite',
-            },
-            {
-                label: 'Notify me when my round robin tournament starts',
-                path: 'discordNotificationSettings.disableRoundRobinStart',
-            },
-        ],
+        label: 'New Follower',
+        sitePath: 'siteNotificationSettings.disableNewFollower',
+    },
+    {
+        label: 'Newsfeed Comment',
+        sitePath: 'siteNotificationSettings.disableNewsfeedComment',
+    },
+    {
+        label: 'Newsfeed Reaction',
+        sitePath: 'siteNotificationSettings.disableNewsfeedReaction',
+    },
+    {
+        label: 'Calendar Event Invite',
+        sitePath: 'siteNotificationSettings.disableCalendarInvite',
+        discordPath: 'discordNotificationSettings.disableCalendarInvite',
+    },
+    {
+        label: 'Meeting Booked',
+        discordPath: 'discordNotificationSettings.disableMeetingBooking',
+    },
+    {
+        label: 'Meeting Cancelled',
+        discordPath: 'discordNotificationSettings.disableMeetingCancellation',
+    },
+    {
+        label: 'Round Robin Tournament Start',
+        emailPath: 'emailNotificationSettings.disableRoundRobinStart',
+        discordPath: 'discordNotificationSettings.disableRoundRobinStart',
+    },
+    {
+        label: 'Account Inactivity Warning',
+        emailPath: 'emailNotificationSettings.disableInactiveWarning',
+    },
+    {
+        label: 'Dojo Digest (Newsletter)',
+        emailPath: 'emailNotificationSettings.disableNewsletter',
+    },
+    {
+        label: 'Getting Started Tips',
+        emailPath: 'emailNotificationSettings.disableSubscriptionCreated',
     },
 ];
 
@@ -139,6 +128,27 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
     notificationSettings,
     setNotificationSettings,
 }) => {
+    const renderCheckbox = (path?: string) => {
+        if (!path) {
+            return (
+                <Typography variant='body2' color='text.secondary' sx={{ userSelect: 'none' }}>
+                    —
+                </Typography>
+            );
+        }
+
+        return (
+            <Checkbox
+                checked={!getSettingValue(notificationSettings, path)}
+                onChange={(e) =>
+                    setNotificationSettings(
+                        setSettingValue(notificationSettings, path, !e.target.checked),
+                    )
+                }
+            />
+        );
+    };
+
     return (
         <Stack spacing={2}>
             <Stack
@@ -154,43 +164,66 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                 <Divider />
             </Stack>
 
-            {sections.map((s) => (
-                <Stack key={s.label} spacing={0.5}>
-                    <Stack direction='row' spacing={1} alignItems='center'>
-                        {s.icon}
-                        <Typography
-                            id={`notifications-${s.label.toLowerCase()}`}
-                            variant='h6'
-                            sx={{
-                                scrollMarginTop: '88px',
-                            }}
-                        >
-                            {s.label}
-                        </Typography>
-                    </Stack>
-
-                    {s.settings.map((setting) => (
-                        <FormControlLabel
-                            key={setting.path}
-                            control={
-                                <Checkbox
-                                    checked={!getSettingValue(notificationSettings, setting.path)}
-                                    onChange={(e) =>
-                                        setNotificationSettings(
-                                            setSettingValue(
-                                                notificationSettings,
-                                                setting.path,
-                                                !e.target.checked,
-                                            ),
-                                        )
-                                    }
-                                />
-                            }
-                            label={setting.label}
-                        />
-                    ))}
-                </Stack>
-            ))}
+            <TableContainer component={Paper} elevation={0} variant='outlined'>
+                <Table aria-label='notification preferences table'>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                <Typography fontWeight='bold'>Notification Type</Typography>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <Web fontSize='small' />
+                                    <Typography fontWeight='bold'>Site</Typography>
+                                </Stack>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <Email fontSize='small' />
+                                    <Typography fontWeight='bold'>Email</Typography>
+                                </Stack>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <DiscordIcon />
+                                    <Typography fontWeight='bold'>Discord</Typography>
+                                </Stack>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {notificationRows.map((row) => (
+                            <TableRow key={row.label} hover>
+                                <TableCell component='th' scope='row'>
+                                    {row.label}
+                                </TableCell>
+                                <TableCell align='center'>{renderCheckbox(row.sitePath)}</TableCell>
+                                <TableCell align='center'>
+                                    {renderCheckbox(row.emailPath)}
+                                </TableCell>
+                                <TableCell align='center'>
+                                    {renderCheckbox(row.discordPath)}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Stack>
     );
 };
