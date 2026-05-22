@@ -617,6 +617,70 @@ functions:
               - - ${param:UsersTableArn}
                 - '/index/CohortIdx'
 
+  importLichessPlaytime:
+    handler: lichessPlaytime/import/main.go
+    events:
+      - schedule:
+          rate: cron(30 1 * * ? *)
+          input:
+            id: LichessPlaytimeImport
+            detail-type: Scheduled Event
+            source: Serverless
+            region: ${aws:region}
+            detail: {}
+    timeout: 900
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:UsersTableArn}
+                - '/index/CohortIdx'
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: ${param:TimelineTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:Scan
+        Resource: ${param:RequirementsTableArn}
+
+  requestLichessPlaytimeImport:
+    handler: lichessPlaytime/requestImport/main.go
+    timeout: 120
+    events:
+      - httpApi:
+          path: /user/lichess-playtime/import
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: ${param:TimelineTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:Scan
+        Resource: ${param:RequirementsTableArn}
+
   updateStatistics:
     handler: statistics/update/main.go
     events:

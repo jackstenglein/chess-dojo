@@ -362,6 +362,10 @@ function getName(entry: TimelineEntry): string {
         return 'Published Game';
     }
 
+    if (entry.requirementId === TimelineSpecialRequirementId.LichessOnlinePlay) {
+        return entry.requirementName;
+    }
+
     if (entry.requirementId === TimelineSpecialRequirementId.Graduation) {
         return `Graduation: ${entry.cohort}`;
     }
@@ -386,7 +390,8 @@ function getProcessedEvents(
 
         const date = new Date(entry.date || entry.createdAt);
         const category =
-            entry.requirementId === TimelineSpecialRequirementId.GameSubmission
+            entry.requirementId === TimelineSpecialRequirementId.GameSubmission ||
+            entry.requirementId === TimelineSpecialRequirementId.LichessOnlinePlay
                 ? RequirementCategory.Games
                 : entry.requirementCategory;
 

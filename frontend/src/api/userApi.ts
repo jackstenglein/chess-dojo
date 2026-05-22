@@ -141,6 +141,11 @@ export interface UserApiContextType {
     ) => Promise<AxiosResponse<ListFollowersResponse>>;
 
     /**
+     * Fetches the latest Lichess standard games for the current user and updates training plan progress and activity.
+     */
+    requestLichessPlaytimeImport: () => Promise<AxiosResponse<User>>;
+
+    /**
      * Connects or disconnects a user's Discord account.
      * @param request The connection or disconnection request.
      * @returns An empty AxiosResponse.
@@ -359,6 +364,27 @@ export async function updateUser(
         },
         functionName: 'updateUser',
     });
+    callback(result.data);
+    return result;
+}
+
+/**
+ * requestLichessPlaytimeImport runs the Lichess games import for the signed-in user (same logic as the nightly job).
+ */
+export async function requestLichessPlaytimeImport(
+    idToken: string,
+    callback: (update: Partial<User>) => void,
+) {
+    const result = await axiosService.post<User>(
+        '/user/lichess-playtime/import',
+        {},
+        {
+            headers: {
+                Authorization: 'Bearer ' + idToken,
+            },
+            functionName: 'requestLichessPlaytimeImport',
+        },
+    );
     callback(result.data);
     return result;
 }

@@ -118,6 +118,12 @@ func (g *Game) IsStandard() bool {
 	return g.Variant == "standard"
 }
 
+// IsHumanVsHuman returns true if both sides are human Lichess accounts (not vs computer).
+func (g *Game) IsHumanVsHuman() bool {
+	return g.Players.White.User != nil && g.Players.Black.User != nil &&
+		g.Players.White.AILevel == 0 && g.Players.Black.AILevel == 0
+}
+
 // URL returns the full Lichess URL for this game.
 func (g *Game) URL() string {
 	return baseURL + "/" + g.ID
@@ -213,6 +219,71 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 
 		if err := scanner.Err(); err != nil {
 			yield(game.Game{}, fmt.Errorf("lichess: reading stream: %w", err))
+		}
+	}
+}
+
+// EachStandardGame streams standard chess games as raw API records (variant standard only).
+// Unlike Games, this does not convert to the opening-tree game model.
+func (c *Client) EachStandardGame(ctx context.Context, params FetchParams) iter.Seq2[Game, error] {
+	return func(yield func(Game, error) bool) {
+		url := c.buildURL(params)
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			yield(Game{}, fmt.Errorf("lichess: creating request: %w", err))
+			return
+		}
+		req.Header.Set("Accept", "application/x-ndjson")
+		req.Header.Set("User-Agent", defaultUserAgent)
+
+		resp, err := c.HTTPClient.Do(req)
+		if err != nil {
+			yield(Game{}, fmt.Errorf("lichess: executing request: %w", err))
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			yield(Game{}, fmt.Errorf("lichess: unexpected status %d for user %q", resp.StatusCode, params.Username))
+			return
+		}
+
+		scanner := bufio.NewScanner(resp.Body)
+		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+
+		count := 0
+		for scanner.Scan() {
+			if err := ctx.Err(); err != nil {
+				return
+			}
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" {
+				continue
+			}
+
+			var lg Game
+			if err := json.Unmarshal([]byte(line), &lg); err != nil {
+				yield(Game{}, fmt.Errorf("lichess: parsing game JSON: %w", err))
+				return
+			}
+
+			if !lg.IsStandard() {
+				continue
+			}
+
+			if !yield(lg, nil) {
+				return
+			}
+
+			count++
+			if params.Max > 0 && count >= params.Max {
+				return
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			yield(Game{}, fmt.Errorf("lichess: reading stream: %w", err))
 		}
 	}
 }
