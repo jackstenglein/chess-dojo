@@ -229,6 +229,19 @@ functions:
               - - ${param:UsersTableArn}
                 - '/index/SubscriptionTierIdx'
 
+postWeeklySchedule:
+    handler: postWeeklySchedule.handler
+    events:
+      - schedule: cron(0 12 ? * SUN *)
+    environment:
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordScheduleChannelId: ${file(../config-${sls:stage}.yml):discordScheduleChannelId}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: ${param:EventsTableArn}
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']
