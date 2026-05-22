@@ -1,4 +1,4 @@
-import { LOCALE_CODES } from '@/i18n/locales';
+import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
 import { useRouter as useNextRouter, usePathname } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 
@@ -8,6 +8,10 @@ function isAbsoluteUrl(href: string): boolean {
     return /^[a-z]+:/i.test(href) || href.startsWith('//');
 }
 
+// Regexes match the locale-stripped pathname returned by next-intl's
+// usePathname(). Do NOT prefix with /${locale} — next.config.mjs handles
+// COEP-header source matching separately via its own flatMap that emits
+// both bare and prefixed variants.
 export const pagesWithVideos = [
     /^\/$/,
     /\/profile.*/,
@@ -78,6 +82,8 @@ export function useRouter() {
 
         if (currentHasVideo === newHasVideo) {
             router.push(normalized, options);
+        } else if (targetLocale === DEFAULT_LOCALE) {
+            window.location.href = normalized;
         } else {
             window.location.href = `/${targetLocale}${normalized}`;
         }

@@ -1,40 +1,54 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('URL-prefixed locales - unauthenticated', () => {
+test.describe('localePrefix: as-needed - unauthenticated', () => {
     // Run these routing tests without auth so bare-URL redirects are not
     // confounded by the authenticated-user redirect to /profile.
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    test('bare / redirects to a locale-prefixed root', async ({ page }) => {
+    test('bare / stays bare for en-US Accept-Language (no cookie)', async ({ browser }) => {
+        const context = await browser.newContext({
+            locale: 'en-US',
+            storageState: { cookies: [], origins: [] },
+        });
+        const page = await context.newPage();
         await page.goto('/');
-        // Chrome's default Accept-Language is en-US, so middleware should
-        // redirect to /en. Accept /pseudo as a fallback in case the server
-        // is running in pseudo-locale mode.
-        await expect(page).toHaveURL(/\/(en|pseudo|de)\/?$/);
+        await expect(page).toHaveURL(/\/$/);
+        await context.close();
     });
 
-    test('bare /profile redirects to /en/profile (unauthenticated user sees landing)', async ({
-        page,
+    test('bare / redirects to /de for de-DE Accept-Language (no cookie)', async ({ browser }) => {
+        const context = await browser.newContext({
+            locale: 'de-DE',
+            storageState: { cookies: [], origins: [] },
+        });
+        const page = await context.newPage();
+        await page.goto('/');
+        await expect(page).toHaveURL(/\/de\/?$/);
+        await context.close();
+    });
+
+    test('bare /profile redirects to bare landing for en-US (unauthenticated)', async ({
+        browser,
     }) => {
+        const context = await browser.newContext({
+            locale: 'en-US',
+            storageState: { cookies: [], origins: [] },
+        });
+        const page = await context.newPage();
         await page.goto('/profile');
-        // Middleware redirects /profile -> /en/profile; the page itself may
-        // then redirect an unauthenticated user back to the root with a
-        // redirectUri param. Either way the locale prefix /en must appear.
-        await expect(page).toHaveURL(/\/(en|pseudo|de)([/?#]|$)/);
+        await expect(page).toHaveURL(/\/\?redirectUri=/);
+        await context.close();
     });
 
     test('pseudo locale route renders on nonprod', async ({ page }) => {
         await page.goto('/pseudo');
-        // The route should not redirect away from /pseudo.
         await expect(page).toHaveURL(/\/pseudo\/?$/);
-        // The pseudo locale prepends "[T] " to translated strings, so the
-        // page body should contain that prefix somewhere.
+        // The pseudo locale prepends "[T] " to translated strings.
         await expect(page.locator('body')).toContainText('[T]', { timeout: 15000 });
     });
 
     test('cookie-set locale is honoured on bare URL visit', async ({ page, context }) => {
-        // Simulate a user who previously selected the pseudo locale by
-        // injecting the locale cookie that the picker writes.
+        // Simulate a user who previously selected the pseudo locale.
         await context.addCookies([
             {
                 name: 'locale',
@@ -44,27 +58,32 @@ test.describe('URL-prefixed locales - unauthenticated', () => {
             },
         ]);
         await page.goto('/profile');
-        // Middleware reads the cookie and prefixes with /pseudo instead of /en.
+        // Cookie wins over Accept-Language; bare URL gets prefixed to /pseudo.
         await expect(page).toHaveURL(/\/pseudo([/?#]|$)/);
+    });
+
+    test('/en/profile permanently redirects to /profile', async ({ page }) => {
+        const response = await page.context().request.get('/en/profile', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(308);
+        expect(response.headers().location).toBe('/profile');
     });
 });
 
-test.describe('URL-prefixed locales - authenticated', () => {
+test.describe('localePrefix: as-needed - authenticated', () => {
     // Uses the default storageState from playwright.config.ts (authenticated).
 
-    test('/en/profile passes through without redirect loop', async ({ page }) => {
-        await page.goto('/en/profile');
-        // An authenticated user visiting /en/profile should stay at
-        // /en/profile (or /en/profile?... if the profile page adds params),
-        // NOT get bounced back to /?redirectUri=... since they are logged in.
-        await expect(page).toHaveURL(/\/en\/profile/);
+    test('bare /profile renders the authenticated profile page', async ({ page }) => {
+        const response = await page.goto('/profile');
+        expect(response?.status()).toBe(200);
+        await expect(page).toHaveURL(/\/profile/);
     });
 
     test('unknown route under a valid locale returns 404', async ({ page }) => {
-        // /fr/profile gets prefixed by next-intl to /en/fr/profile (fr is not
-        // in SUPPORTED_LOCALES), which Next.js renders via [locale]/not-found.
-        // An unauthenticated user would instead get bounced to the landing
-        // with a redirectUri by the proxy, so this test must run authenticated.
+        // /fr/profile is not a registered locale; next-intl renders the
+        // [locale]/not-found page. An unauthenticated user would be bounced
+        // by the proxy, so this test must run authenticated.
         const response = await page.goto('/fr/profile');
         expect(response?.status()).toBe(404);
     });

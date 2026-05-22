@@ -4,7 +4,7 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { hasCreatedProfile } from '@/database/user';
-import { LOCALE_CODES, setLocaleCookie } from '@/i18n/locales';
+import { DEFAULT_LOCALE, LOCALE_CODES, setLocaleCookie } from '@/i18n/locales';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { AxiosError } from 'axios';
 import { useLocale } from 'next-intl';
@@ -53,7 +53,15 @@ export function RequireProfile() {
             preferred !== currentLocale &&
             (LOCALE_CODES as readonly string[]).includes(preferred)
         ) {
-            router.replace(pathname, { locale: preferred });
+            // next-intl 4.x: passing { locale } always emits a prefixed URL
+            // even under as-needed (to let the cookie write before hydration).
+            // For the default locale we drop the option and rely on the cookie
+            // set above, so the URL lands at the bare path instead of /en/...
+            if (preferred === DEFAULT_LOCALE) {
+                router.replace(pathname);
+            } else {
+                router.replace(pathname, { locale: preferred });
+            }
         }
     }, [user?.language, currentLocale, router, pathname]);
 
