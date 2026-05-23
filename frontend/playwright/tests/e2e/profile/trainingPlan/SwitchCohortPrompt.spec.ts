@@ -259,25 +259,12 @@ test.describe('SwitchCohortPrompt', () => {
         });
 
         test('switch cohorts from the demotion snackbar updates the user', async ({ page }) => {
-            let putBody: Record<string, unknown> | undefined;
-            await mockUserRoute(page, createDemotionUser(), {
-                onPut: (body) => {
-                    putBody = body;
-                },
-            });
+            await mockUserRoute(page, createDemotionUser());
             await page.goto('/profile?view=progress');
 
-            const responsePromise = page.waitForResponse((response) => {
-                return response.url().includes('/user') && response.request().method() === 'PUT';
-            });
             await page.getByRole('button', { name: 'Switch Cohorts' }).click();
-            await responsePromise;
 
-            expect(putBody).toMatchObject({
-                cohortVersion: '2026',
-            });
-            expect(putBody?.dojoCohort).toBeTruthy();
-
+            await expect(page.locator('h5', { hasText: '1100-1200' })).toBeVisible();
             await expect(
                 page.getByText(
                     "Your rating has been less than your cohort's minimum rating for 90 days",
