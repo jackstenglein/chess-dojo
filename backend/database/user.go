@@ -370,6 +370,9 @@ type User struct {
 	// Tracks which milestone notifications have been sent for this user,
 	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
 	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
@@ -854,6 +857,9 @@ type UserUpdate struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion *string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem

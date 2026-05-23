@@ -141,6 +141,9 @@ export interface User {
 
     /** Tracks which milestone notifications have been sent for this user. Ex: '85_2000-2100' */
     sentMilestoneNotifications?: string[];
+
+    /** Tracks which cohort version the user is currently on. Unset means 2024. */
+    cohortVersion?: string;
 }
 
 /**
