@@ -105,6 +105,23 @@ def init_course_item(content_key):
     }
 
 
+def set_requirement_field(item, field_path, value):
+    parts = field_path.split('.')
+    if len(parts) == 1 and parts[0] in REQUIREMENT_FIELDS:
+        item[parts[0]] = value
+        return
+
+    if parts[0] == 'positions' and len(parts) == 2:
+        idx = int(parts[1])
+        positions = item.setdefault('positions', [])
+        while len(positions) <= idx:
+            positions.append('')
+        positions[idx] = value
+        return
+
+    raise ValueError(f'unrecognized requirement field path: {field_path}')
+
+
 def set_course_field(item, field_path, value):
     parts = field_path.split('.')
     if len(parts) == 1 and parts[0] in ('name', 'description'):
@@ -149,10 +166,10 @@ def build_translation_items(rows_db, locale, updated_by):
             continue
         if row['source'] == 'requirement':
             item = grouped.setdefault(content_key, init_requirement_item(content_key))
-            if field_path not in REQUIREMENT_FIELDS:
-                print(f'warning: skipping unknown requirement field: {key}', file=sys.stderr)
-                continue
-            item[field_path] = value
+            try:
+                set_requirement_field(item, field_path, value)
+            except ValueError as e:
+                print(f'warning: {e} (key={key})', file=sys.stderr)
         elif row['source'] == 'course':
             item = grouped.setdefault(content_key, init_course_item(content_key))
             try:

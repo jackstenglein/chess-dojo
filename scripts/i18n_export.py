@@ -105,6 +105,21 @@ def rows_for_requirement(req, existing_translations, locale, pseudo_fill):
             locale: target,
         }
 
+    existing_positions = existing_row.get('positions', []) or []
+    for i, position in enumerate(req.get('positions', []) or []):
+        english = (position.get('title', '') or '') if isinstance(position, dict) else ''
+        if not english:
+            continue
+        existing = existing_positions[i] if i < len(existing_positions) else ''
+        target = ('[T] ' + english) if pseudo_fill else existing
+        yield {
+            'source': 'requirement',
+            'key': f'{content_key}.positions.{i}',
+            'english': english,
+            'existing': existing,
+            locale: target,
+        }
+
 
 def rows_for_course(course, existing_translations, locale, pseudo_fill):
     content_key = f'COURSE#{course["id"]}'

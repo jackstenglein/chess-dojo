@@ -81,6 +81,31 @@ const fullTranslation: RequirementTranslation = {
     updatedBy: 'admin',
 };
 
+const requirementWithPositions: Requirement = {
+    ...requirement,
+    positions: [
+        {
+            title: 'Minors Promoting Pawns #1',
+            fen: '8/8/8/8/8/8/8/8 w - - 0 1',
+            limitSeconds: 180,
+            incrementSeconds: 0,
+            result: 'win',
+        },
+        {
+            title: 'Minors Promoting Pawns #2',
+            fen: '8/8/8/8/8/8/8/8 b - - 0 1',
+            limitSeconds: 180,
+            incrementSeconds: 0,
+            result: 'win',
+        },
+    ],
+};
+
+const translationWithPositions: RequirementTranslation = {
+    ...fullTranslation,
+    positions: ['[T] Minors Promoting Pawns #1', '[T] Minors Promoting Pawns #2'],
+};
+
 describe('useTranslatedRequirement', () => {
     it('returns the source object identity-equal for English locale', () => {
         const { result } = renderHook(() => useTranslatedRequirement(requirement), {
@@ -160,5 +185,50 @@ describe('useTranslatedRequirement', () => {
         const first = result.current;
         rerender();
         expect(result.current).toBe(first);
+    });
+
+    it('overlays position titles when counts match', () => {
+        const { result } = renderHook(() => useTranslatedRequirement(requirementWithPositions), {
+            wrapper: makeWrapper(makeContext('pseudo', [translationWithPositions])),
+        });
+        expect(result.current?.positions?.map((p) => p.title)).toEqual([
+            '[T] Minors Promoting Pawns #1',
+            '[T] Minors Promoting Pawns #2',
+        ]);
+        expect(result.current?.positions?.[0].fen).toBe(
+            requirementWithPositions.positions?.[0].fen,
+        );
+    });
+
+    it('falls back to the English title per index when a translated title is empty', () => {
+        const partial: RequirementTranslation = {
+            ...translationWithPositions,
+            positions: ['[T] Minors Promoting Pawns #1', ''],
+        };
+        const { result } = renderHook(() => useTranslatedRequirement(requirementWithPositions), {
+            wrapper: makeWrapper(makeContext('pseudo', [partial])),
+        });
+        expect(result.current?.positions?.map((p) => p.title)).toEqual([
+            '[T] Minors Promoting Pawns #1',
+            'Minors Promoting Pawns #2',
+        ]);
+    });
+
+    it('leaves positions untouched when translation count does not match', () => {
+        const mismatched: RequirementTranslation = {
+            ...translationWithPositions,
+            positions: ['[T] only one'],
+        };
+        const { result } = renderHook(() => useTranslatedRequirement(requirementWithPositions), {
+            wrapper: makeWrapper(makeContext('pseudo', [mismatched])),
+        });
+        expect(result.current?.positions).toBe(requirementWithPositions.positions);
+    });
+
+    it('leaves positions untouched when the translation has no positions', () => {
+        const { result } = renderHook(() => useTranslatedRequirement(requirementWithPositions), {
+            wrapper: makeWrapper(makeContext('pseudo', [fullTranslation])),
+        });
+        expect(result.current?.positions).toBe(requirementWithPositions.positions);
     });
 });
