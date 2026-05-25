@@ -4,9 +4,12 @@ import { Link } from '@/components/navigation/Link';
 import {
     RatingSystem,
     User,
+    dojoCohorts,
     formatRatingSystem,
     getRatingUsername,
     hideRatingUsername,
+    isCustom,
+    isRatingInRange,
 } from '@/database/user';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -115,7 +118,40 @@ function getUpdate(rs: RatingSystem, username: string, hideUsername: boolean): P
     return result;
 }
 
-const { Custom, Custom2, Custom3, ...RatingSystems } = RatingSystem;
+function getCustomUpdate(name: string, currentRating: number): Partial<User> {
+    return {
+        ratingSystem: RatingSystem.Custom,
+        ratings: {
+            [RatingSystem.Custom]: {
+                username: '',
+                hideUsername: false,
+                name: name.trim(),
+                startRating: currentRating,
+                currentRating,
+            },
+        },
+        dojoCohort: customRatingToCohort(currentRating),
+    };
+}
+
+function customRatingToCohort(rating: number): string {
+    return dojoCohorts.find((cohort) => isRatingInRange(rating, cohort)) ?? '2400+';
+}
+
+function parseRating(rating: string): number {
+    const trimmed = rating.trim();
+    if (trimmed === '') {
+        return -1;
+    }
+    const normalized = trimmed.replace(/^0+/, '') || '0';
+    const n = Math.floor(Number(normalized));
+    if (!Number.isFinite(n) || n < 0 || String(n) !== normalized) {
+        return -1;
+    }
+    return n;
+}
+
+const { Custom2, Custom3, ...RatingSystems } = RatingSystem;
 
 const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     user,
@@ -128,16 +164,28 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     const [ratingSystem, setRatingSystem] = useState(user.ratingSystem);
     const [username, setUsername] = useState(getRatingUsername(user, ratingSystem) || '');
     const [hideUsername, setHideUsername] = useState(hideRatingUsername(user, ratingSystem));
+    const [customName, setCustomName] = useState(user.ratings[RatingSystem.Custom]?.name ?? '');
+    const [customRating, setCustomRating] = useState(() => {
+        const existing = user.ratings[RatingSystem.Custom]?.currentRating;
+        return existing ? String(existing) : '';
+    });
 
-    const canSave = (ratingSystem as string) !== '' && username !== '';
+    const isCustomSelected = isCustom(ratingSystem);
+    const parsedCustomRating = parseRating(customRating);
+    const customRatingError = customRating.trim() !== '' && parsedCustomRating < 0;
+
+    const canSave = isCustomSelected
+        ? parsedCustomRating >= 0
+        : (ratingSystem as string) !== '' && username !== '';
 
     const onSave = () => {
         request.onStart();
-        api.updateUser(getUpdate(ratingSystem, username, hideUsername), true)
-            .then(onNextStep)
-            .catch((err) => {
-                request.onFailure(err);
-            });
+        const promise = isCustomSelected
+            ? api.updateUser(getCustomUpdate(customName, parsedCustomRating), false)
+            : api.updateUser(getUpdate(ratingSystem, username, hideUsername), true);
+        promise.then(onNextStep).catch((err) => {
+            request.onFailure(err);
+        });
     };
 
     return (
@@ -164,7 +212,35 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                 ))}
             </TextField>
 
-            {(ratingSystem as string) !== '' && (
+            {isCustomSelected && (
+                <Stack spacing={3}>
+                    <TextField
+                        label='Custom Rating Name'
+                        value={customName}
+                        onChange={(event) => setCustomName(event.target.value)}
+                        helperText='Optional name for your rating system (e.g. "School Tournament")'
+                    />
+
+                    <TextField
+                        required
+                        label='Current Rating'
+                        value={customRating}
+                        onChange={(event) => setCustomRating(event.target.value)}
+                        error={customRatingError}
+                        helperText={
+                            customRatingError
+                                ? 'Rating must be a non-negative integer'
+                                : parsedCustomRating >= 0
+                                  ? `You will be placed in the ${customRatingToCohort(
+                                        parsedCustomRating,
+                                    )} cohort`
+                                  : 'Your most up-to-date rating'
+                        }
+                    />
+                </Stack>
+            )}
+
+            {(ratingSystem as string) !== '' && !isCustomSelected && (
                 <Stack spacing={3}>
                     <TextField
                         required
