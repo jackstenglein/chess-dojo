@@ -243,6 +243,10 @@ type Requirement struct {
 
 	// The subscription tiers that have access to this task.
 	SubscriptionTiers []SubscriptionTier `dynamodbav:"subscriptionTiers,omitempty" json:"subscriptionTiers,omitempty"`
+
+	// The ID of another requirement whose progress should be incremented
+	// when this requirement's progress is updated (one-way cascade).
+	LinkedRequirementId string `dynamodbav:"linkedRequirementId,omitempty" json:"linkedRequirementId,omitempty"`
 }
 
 func (r *Requirement) clampCount(cohort DojoCohort, count int) int {

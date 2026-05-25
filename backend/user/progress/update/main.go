@@ -178,6 +178,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		return api.Failure(err), nil
 	}
 
+	user = cascadeLinkedProgress(request, user, task)
 	milestone.checkNotification(user)
 
 	return api.Success(ProgressUpdateResponse{User: user, TimelineEntry: timelineEntry}), nil
@@ -233,4 +234,74 @@ func (mc *milestoneChecker) fetchAllRequirements(cohort database.DojoCohort) ([]
 		startKey = nextKey
 	}
 	return requirements, nil
+}
+
+// cascadeLinkedProgress updates the linked requirement's progress when the
+// source requirement has a LinkedRequirementId set. This is a one-way cascade:
+// incrementing the source also increments the linked target by the same delta.
+// No timeline entry is written for the linked requirement; only the raw
+// progress count and minutes are updated.
+// Errors are logged but do not block the primary update.
+func cascadeLinkedProgress(request *ProgressUpdateRequest, user *database.User, task database.Task) *database.User {
+	req, ok := task.(*database.Requirement)
+	if !ok || req.LinkedRequirementId == "" {
+		return user
+	}
+
+	delta := request.NewCount - request.PreviousCount
+	if delta <= 0 && request.IncrementalMinutesSpent <= 0 {
+		return user
+	}
+
+	linkedReq, err := repository.GetRequirement(req.LinkedRequirementId)
+	if err != nil {
+		log.Errorf("Cascade: failed to get linked requirement %s for user %s (source: %s): %v", req.LinkedRequirementId, user.Username, req.Id, err)
+		return user
+	}
+
+	if _, ok := linkedReq.Counts[request.Cohort]; !ok {
+		log.Infof("Cascade: cohort %s not in linked requirement %s counts, skipping", request.Cohort, req.LinkedRequirementId)
+		return user
+	}
+
+	if user.Progress == nil {
+		user.Progress = make(map[string]*database.RequirementProgress)
+	}
+	linkedProgress, ok := user.Progress[req.LinkedRequirementId]
+	if !ok {
+		linkedProgress = &database.RequirementProgress{
+			RequirementId: req.LinkedRequirementId,
+			Counts:        make(map[database.DojoCohort]int),
+			MinutesSpent:  make(map[database.DojoCohort]int),
+		}
+	}
+	if linkedProgress.Counts == nil {
+		linkedProgress.Counts = make(map[database.DojoCohort]int)
+	}
+	if linkedProgress.MinutesSpent == nil {
+		linkedProgress.MinutesSpent = make(map[database.DojoCohort]int)
+	}
+
+	if delta > 0 {
+		maxCount := linkedReq.Counts[request.Cohort]
+		if linkedReq.NumberOfCohorts == 1 || linkedReq.NumberOfCohorts == 0 {
+			linkedProgress.Counts[database.AllCohorts] = min(linkedProgress.Counts[database.AllCohorts]+delta, maxCount)
+		} else {
+			linkedProgress.Counts[request.Cohort] = min(linkedProgress.Counts[request.Cohort]+delta, maxCount)
+		}
+	}
+
+	if request.IncrementalMinutesSpent > 0 {
+		linkedProgress.MinutesSpent[request.Cohort] += request.IncrementalMinutesSpent
+	}
+
+	linkedProgress.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	updatedUser, err := repository.UpdateUserProgress(user.Username, linkedProgress)
+	if err != nil {
+		log.Errorf("Cascade: failed to update linked progress for user %s, requirement %s: %v", user.Username, req.LinkedRequirementId, err)
+		return user
+	}
+
+	return updatedUser
 }
