@@ -4,10 +4,13 @@ import csv
 import datetime
 import json
 import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 
 import boto3
+from boto3.dynamodb.conditions import Key
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MESSAGES_DIR = REPO_ROOT / 'frontend' / 'messages'
@@ -21,6 +24,16 @@ REQUIREMENT_FIELDS = (
     'freeDescription',
     'progressBarSuffix',
 )
+COURSE_TOP_FIELDS = ('name', 'description')
+
+LOCALE_RE = re.compile(r'^(pseudo|[a-z]{2}(-[A-Z]{2})?)$')
+ICU_TOKEN = re.compile(r'{{\s*\w+\s*}}')
+ALLOWED_ICU_TOKENS = {'{{time}}', '{{count}}'}
+ICU_FIELD_ALLOW = {
+    'dailyName': {'{{time}}'},
+    'name': {'{{count}}'},
+    'description': {'{{count}}'},
+}
 
 
 def en_key_order(node, prefix=''):
@@ -201,34 +214,361 @@ def write_ddb_seed(path, items):
         f.write('\n')
 
 
-def batch_write(dynamodb, stage, items):
+def apply_items(dynamodb, stage, items):
     table = dynamodb.Table(f'{stage}-translations')
-    with table.batch_writer() as batch:
+    with table.batch_writer(overwrite_by_pkeys=['locale', 'contentKey']) as batch:
         for item in items:
             batch.put_item(Item=item)
+    if items:
+        print(f'first contentKey: {items[0]["contentKey"]}')
+        print(f'last  contentKey: {items[-1]["contentKey"]}')
+    return len(items)
+
+
+def check_prod_gate(args):
+    if args.stage == 'dev':
+        return None
+    if args.prod_confirmed != args.stage:
+        return (f'Refusing --apply against stage={args.stage} without '
+                f'--prod-confirmed {args.stage} (got {args.prod_confirmed!r}).')
+    return None
+
+
+def valid_locale(locale):
+    return bool(locale) and bool(LOCALE_RE.match(locale))
+
+
+def validate_seed_items(items):
+    if not isinstance(items, list):
+        return ['seed root must be a JSON array']
+
+    errors = []
+    req_key_re = re.compile(r'^REQUIREMENT#.+$')
+    course_key_re = re.compile(r'^COURSE#.+$')
+
+    for i, item in enumerate(items):
+        tag = f'item[{i}]'
+        if not isinstance(item, dict):
+            errors.append(f'{tag}: not an object')
+            continue
+        content_type = item.get('contentType')
+        content_key = item.get('contentKey', '')
+        if not valid_locale(item.get('locale', '')):
+            errors.append(f'{tag} ({content_key}): invalid locale {item.get("locale")!r}')
+
+        def need_str(field):
+            if not isinstance(item.get(field), str):
+                errors.append(f'{tag} ({content_key}): {field} must be a string')
+
+        def need_str_array(field, optional):
+            value = item.get(field)
+            if value is None:
+                if not optional:
+                    errors.append(f'{tag} ({content_key}): {field} must be an array of strings')
+                return
+            if not isinstance(value, list) or any(not isinstance(x, str) for x in value):
+                errors.append(f'{tag} ({content_key}): {field} must be an array of strings')
+
+        if content_type == 'REQUIREMENT':
+            if not req_key_re.match(content_key):
+                errors.append(f'{tag}: contentKey must match REQUIREMENT#<id> (got {content_key!r})')
+            for field in REQUIREMENT_FIELDS:
+                need_str(field)
+            need_str_array('positions', optional=True)
+        elif content_type == 'COURSE':
+            if not course_key_re.match(content_key):
+                errors.append(f'{tag}: contentKey must match COURSE#<id> (got {content_key!r})')
+            for field in COURSE_TOP_FIELDS:
+                need_str(field)
+            need_str_array('whatsIncluded', optional=False)
+            chapters = item.get('chapters')
+            if not isinstance(chapters, list):
+                errors.append(f'{tag} ({content_key}): chapters must be an array')
+            else:
+                for ci, chapter in enumerate(chapters):
+                    if not isinstance(chapter, dict) or not isinstance(chapter.get('name'), str):
+                        errors.append(f'{tag} ({content_key}): chapters[{ci}].name must be a string')
+                    modules = (chapter or {}).get('modules')
+                    if not isinstance(modules, list):
+                        errors.append(f'{tag} ({content_key}): chapters[{ci}].modules must be an array')
+                    else:
+                        for mi, module in enumerate(modules):
+                            if not isinstance(module, dict) or not isinstance(module.get('name'), str):
+                                errors.append(
+                                    f'{tag} ({content_key}): chapters[{ci}].modules[{mi}].name must be a string')
+        else:
+            errors.append(f'{tag} ({content_key}): contentType must be REQUIREMENT or COURSE (got {content_type!r})')
+
+        for field in ('updatedAt', 'updatedBy'):
+            if field in item and not isinstance(item[field], str):
+                errors.append(f'{tag} ({content_key}): {field} must be a string')
+
+    return errors
+
+
+def check_icu_consistency(items):
+    errors = []
+
+    def scan(content_key, field, value):
+        if not isinstance(value, str) or not value:
+            return
+        if '{' in ICU_TOKEN.sub('', value) or '}' in ICU_TOKEN.sub('', value):
+            errors.append(f'{content_key}: {field} has malformed/stray braces: {value!r}')
+            return
+        tokens = set(ICU_TOKEN.findall(value))
+        unknown = tokens - ALLOWED_ICU_TOKENS
+        if unknown:
+            errors.append(f'{content_key}: {field} has unknown placeholder(s) {sorted(unknown)}: {value!r}')
+        allowed_here = ICU_FIELD_ALLOW.get(field)
+        if allowed_here is not None and tokens - allowed_here:
+            errors.append(f'{content_key}: {field} may only use {sorted(allowed_here)}, found {sorted(tokens)}')
+
+    for item in items:
+        content_key = item.get('contentKey', '?')
+        if item.get('contentType') == 'REQUIREMENT':
+            for field in REQUIREMENT_FIELDS:
+                scan(content_key, field, item.get(field, ''))
+            for j, position in enumerate(item.get('positions') or []):
+                scan(content_key, f'positions[{j}]', position)
+        elif item.get('contentType') == 'COURSE':
+            for field in COURSE_TOP_FIELDS:
+                scan(content_key, field, item.get(field, ''))
+            for j, included in enumerate(item.get('whatsIncluded') or []):
+                scan(content_key, f'whatsIncluded[{j}]', included)
+            for ci, chapter in enumerate(item.get('chapters') or []):
+                scan(content_key, f'chapters[{ci}].name', (chapter or {}).get('name', ''))
+                for mi, module in enumerate((chapter or {}).get('modules') or []):
+                    scan(content_key, f'chapters[{ci}].modules[{mi}].name', (module or {}).get('name', ''))
+
+    return errors
+
+
+def normalize_item(item):
+    content_type = item.get('contentType')
+    if content_type == 'REQUIREMENT':
+        norm = {field: (item.get(field) or '') for field in REQUIREMENT_FIELDS}
+        norm['positions'] = list(item.get('positions') or [])
+    elif content_type == 'COURSE':
+        norm = {field: (item.get(field) or '') for field in COURSE_TOP_FIELDS}
+        norm['whatsIncluded'] = list(item.get('whatsIncluded') or [])
+        norm['chapters'] = [
+            {
+                'name': (chapter or {}).get('name') or '',
+                'modules': [{'name': (module or {}).get('name') or ''}
+                            for module in ((chapter or {}).get('modules') or [])],
+            }
+            for chapter in (item.get('chapters') or [])
+        ]
+    else:
+        norm = {}
+    norm['contentType'] = content_type
+    norm['contentKey'] = item.get('contentKey')
+    norm['locale'] = item.get('locale')
+    return norm
+
+
+def items_differ(seed_item, existing_item):
+    if existing_item is None:
+        return True
+    return normalize_item(seed_item) != normalize_item(existing_item)
+
+
+def report_mismatches(items, existing, stage):
+    mismatches = [item['contentKey'] for item in items
+                  if items_differ(item, existing.get(item['contentKey']))]
+    if mismatches:
+        print(f'VERIFY FAILED: {len(mismatches)} item(s) differ from {stage}-translations:', file=sys.stderr)
+        for key in mismatches[:50]:
+            print(f'  - {key}', file=sys.stderr)
+        if len(mismatches) > 50:
+            print(f'  ... and {len(mismatches) - 50} more', file=sys.stderr)
+    return mismatches
+
+
+def fetch_existing_translations(dynamodb, stage, locale):
+    table = dynamodb.Table(f'{stage}-translations')
+    items = {}
+    kwargs = {'KeyConditionExpression': Key('locale').eq(locale)}
+    while True:
+        resp = table.query(**kwargs)
+        for item in resp.get('Items', []):
+            items[item['contentKey']] = item
+        if 'LastEvaluatedKey' not in resp:
+            return items
+        kwargs['ExclusiveStartKey'] = resp['LastEvaluatedKey']
+
+
+def restamp(items, updated_by):
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    for item in items:
+        item['updatedAt'] = now
+        item['updatedBy'] = updated_by
+    return items
+
+
+def warn_if_seed_dirty(seed_path):
+    try:
+        result = subprocess.run(
+            ['git', 'status', '--porcelain', '--', str(seed_path)],
+            cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=10)
+        if result.stdout.strip():
+            print(f'warning: {seed_path} has uncommitted git changes; applying anyway.', file=sys.stderr)
+    except Exception as e:
+        print(f'warning: could not check git status of seed ({e}); continuing.', file=sys.stderr)
+
+
+def run_seed_apply(args):
+    if args.ddb_out:
+        print('--ddb-out is a CSV-mode flag; ignored with --seed-in.', file=sys.stderr)
+    if args.verify and args.apply:
+        print('Use either --verify or --apply, not both.', file=sys.stderr)
+        return 2
+    if args.no_verify and not args.apply:
+        print('--no-verify only applies to --apply.', file=sys.stderr)
+        return 2
+
+    seed_path = Path(args.seed_in)
+    try:
+        with seed_path.open(encoding='utf-8') as f:
+            items = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f'Failed to read seed {seed_path}: {e}', file=sys.stderr)
+        return 2
+
+    errors = validate_seed_items(items)
+    if errors:
+        print(f'Seed schema validation failed ({len(errors)} error(s)):', file=sys.stderr)
+        for error in errors:
+            print(f'  - {error}', file=sys.stderr)
+        return 2
+
+    icu_errors = check_icu_consistency(items)
+    if icu_errors:
+        print(f'ICU placeholder check failed ({len(icu_errors)} error(s)):', file=sys.stderr)
+        for error in icu_errors:
+            print(f'  - {error}', file=sys.stderr)
+        return 2
+
+    locales = {item.get('locale') for item in items}
+    if len(locales) != 1:
+        print(f'Seed mixes locales: {sorted(locales)}', file=sys.stderr)
+        return 2
+    locale = next(iter(locales))
+    if locale == 'en':
+        print('Refusing to import into the source locale (en).', file=sys.stderr)
+        return 2
+    if args.locale and args.locale != locale:
+        print(f'--locale {args.locale} != seed locale {locale}.', file=sys.stderr)
+        return 2
+
+    requirements = sum(1 for item in items if item['contentType'] == 'REQUIREMENT')
+    courses = sum(1 for item in items if item['contentType'] == 'COURSE')
+    print(f'Seed: {len(items)} items (REQUIREMENT={requirements} COURSE={courses}) locale={locale}')
+    print('Schema OK. ICU OK.')
+
+    if not (args.apply or args.verify or args.only_changed):
+        print('No --apply/--verify/--only-changed: validation only. Done.')
+        return 0
+
+    if args.apply:
+        gate_error = check_prod_gate(args)
+        if gate_error:
+            print(gate_error, file=sys.stderr)
+            return 2
+        if not args.updated_by and not args.dry_run:
+            print('--updated-by is required when --apply.', file=sys.stderr)
+            return 2
+
+    dynamodb = boto3.resource('dynamodb', region_name=args.region)
+    existing = fetch_existing_translations(dynamodb, args.stage, locale)
+    print(f'Existing rows in {args.stage}-translations for {locale}: {len(existing)}')
+
+    if args.verify:
+        if report_mismatches(items, existing, args.stage):
+            return 1
+        print(f'VERIFY OK: all {len(items)} seed items match {args.stage}-translations.')
+        return 0
+
+    to_write = items
+    if args.only_changed:
+        to_write = [item for item in items if items_differ(item, existing.get(item['contentKey']))]
+        print(f'--only-changed: {len(to_write)}/{len(items)} items differ and will be written.')
+
+    if args.dry_run:
+        print(f'--dry-run: would write {len(to_write)} item(s) to {args.stage}-translations. No writes.')
+        return 0
+    if not args.apply:
+        print(f'{len(to_write)}/{len(items)} item(s) differ from {args.stage}-translations. '
+              f'Pass --apply to write.')
+        return 0
+
+    if not to_write:
+        print('Nothing to write (0 items).')
+        return 0
+
+    restamp(to_write, args.updated_by)
+    warn_if_seed_dirty(seed_path)
+    applied = apply_items(dynamodb, args.stage, to_write)
+    print(f'Applied {applied} items to {args.stage}-translations')
+
+    if args.no_verify:
+        print('Skipped post-apply verify (--no-verify).')
+        return 0
+    existing_after = fetch_existing_translations(dynamodb, args.stage, locale)
+    if report_mismatches(items, existing_after, args.stage):
+        return 1
+    print(f'Post-apply verify OK: all {len(items)} seed items match {args.stage}-translations.')
+    return 0
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Import a filled translation CSV.')
-    parser.add_argument('--csv', required=True, help='Path to filled CSV.')
-    parser.add_argument('--stage', required=True, help='DynamoDB stage (dev required for --apply).')
-    parser.add_argument('--locale', required=True, help='Target locale (e.g. de, pseudo).')
+    parser = argparse.ArgumentParser(
+        description='Import translations: build from a filled CSV, or apply a prebuilt seed JSON.')
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--csv', help='Path to filled CSV (build messages + DDB items).')
+    source.add_argument('--seed-in',
+                        help='Path to a prebuilt seed JSON array; apply directly to ${stage}-translations.')
+    parser.add_argument('--stage', required=True,
+                        help='DynamoDB stage. Non-dev --apply requires --prod-confirmed <stage>.')
+    parser.add_argument('--locale',
+                        help='Target locale. Required for --csv; for --seed-in it is validated against the seed.')
     parser.add_argument('--updated-by', help='Audit field for DDB updatedBy. Required if --apply or --ddb-out.')
-    parser.add_argument('--ddb-out', help='Write the DDB seed JSON to this path.')
+    parser.add_argument('--ddb-out', help='(CSV mode) Write the DDB seed JSON to this path.')
     parser.add_argument('--apply', action='store_true',
-                        help='BatchWriteItem the seed into ${stage}-translations. Dev-only.')
+                        help='BatchWriteItem into ${stage}-translations. Non-dev requires --prod-confirmed.')
+    parser.add_argument('--prod-confirmed', metavar='STAGE',
+                        help='Confirm writes to a non-dev stage. Value MUST equal --stage (e.g. --prod-confirmed prod).')
+    parser.add_argument('--only-changed', action='store_true',
+                        help='(--seed-in) Write only items that differ from existing ${stage}-translations rows.')
+    parser.add_argument('--verify', action='store_true',
+                        help='(--seed-in) Diff seed against ${stage}-translations (ignoring provenance); '
+                             'exit nonzero on mismatch. No writes.')
+    parser.add_argument('--no-verify', action='store_true',
+                        help='(--seed-in --apply) Skip the default post-apply seed<->table verification.')
     parser.add_argument('--dry-run', action='store_true',
                         help='Print summary; write no files; do not apply.')
     parser.add_argument('--region', default=os.environ.get('AWS_REGION', 'us-east-1'))
     args = parser.parse_args()
 
+    if args.seed_in:
+        return run_seed_apply(args)
+
+    if not args.locale:
+        print('--locale is required in CSV mode.', file=sys.stderr)
+        return 2
+    if args.only_changed or args.verify or args.no_verify:
+        print('--only-changed/--verify/--no-verify are only valid with --seed-in.', file=sys.stderr)
+        return 2
+
     locale = args.locale
     if locale == 'en':
         print('Refusing to import into the source locale (en).', file=sys.stderr)
         return 2
-    if args.apply and args.stage != 'dev':
-        print(f'Refusing --apply against stage={args.stage}. Dev-only.', file=sys.stderr)
-        return 2
+    if args.apply:
+        gate_error = check_prod_gate(args)
+        if gate_error:
+            print(gate_error, file=sys.stderr)
+            return 2
     if (args.apply or args.ddb_out) and not args.updated_by and not args.dry_run:
         print('--updated-by is required when --apply or --ddb-out is set.', file=sys.stderr)
         return 2
@@ -283,8 +623,8 @@ def main():
 
     if args.apply:
         dynamodb = boto3.resource('dynamodb', region_name=args.region)
-        batch_write(dynamodb, args.stage, items)
-        print(f'Applied {len(items)} items to {args.stage}-translations')
+        applied = apply_items(dynamodb, args.stage, items)
+        print(f'Applied {applied} items to {args.stage}-translations')
 
     return 0
 
