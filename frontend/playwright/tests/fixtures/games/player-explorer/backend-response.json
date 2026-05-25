@@ -1,0 +1,288 @@
+{
+    "positions": {
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1": {
+            "white": 6,
+            "black": 3,
+            "draws": 2,
+            "moves": [
+                {
+                    "san": "e4",
+                    "white": 5,
+                    "black": 1,
+                    "draws": 2,
+                    "games": [
+                        "https://lichess.org/game001",
+                        "https://lichess.org/game003",
+                        "https://lichess.org/game004",
+                        "https://lichess.org/game005",
+                        "https://www.chess.com/game/live/1001",
+                        "https://www.chess.com/game/live/1003",
+                        "https://www.chess.com/game/live/1004",
+                        "https://www.chess.com/game/live/1005"
+                    ]
+                },
+                {
+                    "san": "d4",
+                    "white": 1,
+                    "black": 1,
+                    "draws": 0,
+                    "games": ["https://lichess.org/game002", "https://www.chess.com/game/live/1002"]
+                }
+            ],
+            "games": [
+                "https://lichess.org/game001",
+                "https://lichess.org/game002",
+                "https://lichess.org/game003",
+                "https://lichess.org/game004",
+                "https://lichess.org/game005",
+                "https://www.chess.com/game/live/1001",
+                "https://www.chess.com/game/live/1002",
+                "https://www.chess.com/game/live/1003",
+                "https://www.chess.com/game/live/1004",
+                "https://www.chess.com/game/live/1005"
+            ]
+        }
+    },
+    "games": {
+        "https://www.chess.com/game/live/1001": {
+            "source": { "type": "chesscom" },
+            "playerColor": "white",
+            "white": "testuser",
+            "black": "opponent1",
+            "whiteElo": 1500,
+            "blackElo": 1480,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://www.chess.com/game/live/1001",
+            "headers": {
+                "Event": "Live Chess",
+                "Site": "Chess.com",
+                "Date": "2024.01.28",
+                "White": "testuser",
+                "Black": "opponent1",
+                "Result": "1-0",
+                "WhiteElo": "1500",
+                "BlackElo": "1480",
+                "TimeControl": "600"
+            },
+            "timeClass": "rapid"
+        },
+        "https://www.chess.com/game/live/1002": {
+            "source": { "type": "chesscom" },
+            "playerColor": "black",
+            "white": "opponent2",
+            "black": "testuser",
+            "whiteElo": 1520,
+            "blackElo": 1490,
+            "result": "0-1",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://www.chess.com/game/live/1002",
+            "headers": {
+                "Event": "Live Chess",
+                "Site": "Chess.com",
+                "Date": "2024.01.25",
+                "White": "opponent2",
+                "Black": "testuser",
+                "Result": "0-1",
+                "WhiteElo": "1520",
+                "BlackElo": "1490",
+                "TimeControl": "600"
+            },
+            "timeClass": "rapid"
+        },
+        "https://www.chess.com/game/live/1003": {
+            "source": { "type": "chesscom" },
+            "playerColor": "white",
+            "white": "testuser",
+            "black": "opponent3",
+            "whiteElo": 1495,
+            "blackElo": 1510,
+            "result": "1/2-1/2",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://www.chess.com/game/live/1003",
+            "headers": {
+                "Event": "Live Chess",
+                "Site": "Chess.com",
+                "Date": "2024.01.20",
+                "White": "testuser",
+                "Black": "opponent3",
+                "Result": "1/2-1/2",
+                "WhiteElo": "1495",
+                "BlackElo": "1510",
+                "TimeControl": "180"
+            },
+            "timeClass": "blitz"
+        },
+        "https://www.chess.com/game/live/1004": {
+            "source": { "type": "chesscom" },
+            "playerColor": "black",
+            "white": "opponent4",
+            "black": "testuser",
+            "whiteElo": 1550,
+            "blackElo": 1485,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://www.chess.com/game/live/1004",
+            "headers": {
+                "Event": "Live Chess",
+                "Site": "Chess.com",
+                "Date": "2024.01.15",
+                "White": "opponent4",
+                "Black": "testuser",
+                "Result": "1-0",
+                "WhiteElo": "1550",
+                "BlackElo": "1485",
+                "TimeControl": "600"
+            },
+            "timeClass": "rapid"
+        },
+        "https://www.chess.com/game/live/1005": {
+            "source": { "type": "chesscom" },
+            "playerColor": "white",
+            "white": "testuser",
+            "black": "opponent5",
+            "whiteElo": 1505,
+            "blackElo": 1470,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://www.chess.com/game/live/1005",
+            "headers": {
+                "Event": "Live Chess",
+                "Site": "Chess.com",
+                "Date": "2024.01.10",
+                "White": "testuser",
+                "Black": "opponent5",
+                "Result": "1-0",
+                "WhiteElo": "1505",
+                "BlackElo": "1470",
+                "TimeControl": "600"
+            },
+            "timeClass": "rapid"
+        },
+        "https://lichess.org/game001": {
+            "source": { "type": "lichess" },
+            "playerColor": "white",
+            "white": "testplayer",
+            "black": "liopponent1",
+            "whiteElo": 1600,
+            "blackElo": 1580,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://lichess.org/game001",
+            "headers": {
+                "Event": "Rated Rapid game",
+                "Site": "https://lichess.org/game001",
+                "Date": "2024.01.28",
+                "White": "TestPlayer",
+                "Black": "LiOpponent1",
+                "Result": "1-0",
+                "WhiteElo": "1600",
+                "BlackElo": "1580",
+                "TimeControl": "600+0"
+            },
+            "timeClass": "rapid"
+        },
+        "https://lichess.org/game002": {
+            "source": { "type": "lichess" },
+            "playerColor": "black",
+            "white": "liopponent2",
+            "black": "testplayer",
+            "whiteElo": 1620,
+            "blackElo": 1595,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://lichess.org/game002",
+            "headers": {
+                "Event": "Rated Rapid game",
+                "Site": "https://lichess.org/game002",
+                "Date": "2024.01.25",
+                "White": "LiOpponent2",
+                "Black": "TestPlayer",
+                "Result": "1-0",
+                "WhiteElo": "1620",
+                "BlackElo": "1595",
+                "TimeControl": "600+0"
+            },
+            "timeClass": "rapid"
+        },
+        "https://lichess.org/game003": {
+            "source": { "type": "lichess" },
+            "playerColor": "white",
+            "white": "testplayer",
+            "black": "liopponent3",
+            "whiteElo": 1590,
+            "blackElo": 1610,
+            "result": "1/2-1/2",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://lichess.org/game003",
+            "headers": {
+                "Event": "Rated Blitz game",
+                "Site": "https://lichess.org/game003",
+                "Date": "2024.01.20",
+                "White": "TestPlayer",
+                "Black": "LiOpponent3",
+                "Result": "1/2-1/2",
+                "WhiteElo": "1590",
+                "BlackElo": "1610",
+                "TimeControl": "180+0"
+            },
+            "timeClass": "blitz"
+        },
+        "https://lichess.org/game004": {
+            "source": { "type": "lichess" },
+            "playerColor": "black",
+            "white": "liopponent4",
+            "black": "testplayer",
+            "whiteElo": 1640,
+            "blackElo": 1590,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://lichess.org/game004",
+            "headers": {
+                "Event": "Rated Rapid game",
+                "Site": "https://lichess.org/game004",
+                "Date": "2024.01.15",
+                "White": "LiOpponent4",
+                "Black": "TestPlayer",
+                "Result": "1-0",
+                "WhiteElo": "1640",
+                "BlackElo": "1590",
+                "TimeControl": "600+0"
+            },
+            "timeClass": "rapid"
+        },
+        "https://lichess.org/game005": {
+            "source": { "type": "lichess" },
+            "playerColor": "white",
+            "white": "testplayer",
+            "black": "liopponent5",
+            "whiteElo": 1595,
+            "blackElo": 1570,
+            "result": "1-0",
+            "plyCount": 12,
+            "rated": true,
+            "url": "https://lichess.org/game005",
+            "headers": {
+                "Event": "Rated Rapid game",
+                "Site": "https://lichess.org/game005",
+                "Date": "2024.01.10",
+                "White": "TestPlayer",
+                "Black": "LiOpponent5",
+                "Result": "1-0",
+                "WhiteElo": "1595",
+                "BlackElo": "1570",
+                "TimeControl": "600+0"
+            },
+            "timeClass": "rapid"
+        }
+    }
+}

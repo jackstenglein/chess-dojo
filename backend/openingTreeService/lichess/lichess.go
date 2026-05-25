@@ -20,75 +20,75 @@ const (
 	defaultUserAgent = "chess-dojo (https://github.com/jackstenglein/chess-dojo)"
 )
 
-// TimeClass represents a Lichess game speed category.
-type TimeClass string
+// timeClass represents a Lichess game speed category.
+type timeClass string
 
 const (
-	TimeClassUltraBullet    TimeClass = "ultraBullet"
-	TimeClassBullet         TimeClass = "bullet"
-	TimeClassBlitz          TimeClass = "blitz"
-	TimeClassRapid          TimeClass = "rapid"
-	TimeClassClassical      TimeClass = "classical"
-	TimeClassCorrespondence TimeClass = "correspondence"
+	timeClassUltraBullet    timeClass = "ultraBullet"
+	timeClassBullet         timeClass = "bullet"
+	timeClassBlitz          timeClass = "blitz"
+	timeClassRapid          timeClass = "rapid"
+	timeClassClassical      timeClass = "classical"
+	timeClassCorrespondence timeClass = "correspondence"
 )
 
-// Player holds a single side's data within a Lichess game.
-type Player struct {
-	User        *User `json:"user,omitempty"`
+// player holds a single side's data within a Lichess game.
+type player struct {
+	User        *user `json:"user,omitempty"`
 	Rating      int   `json:"rating,omitempty"`
 	RatingDiff  int   `json:"ratingDiff,omitempty"`
 	AILevel     int   `json:"aiLevel,omitempty"`
 	Provisional bool  `json:"provisional,omitempty"`
 }
 
-// User holds the identity of a Lichess player.
-type User struct {
+// user holds the identity of a Lichess player.
+type user struct {
 	Name   string `json:"name"`
 	ID     string `json:"id"`
 	Title  string `json:"title,omitempty"`
 	Patron bool   `json:"patron,omitempty"`
 }
 
-// Players holds the white and black players.
-type Players struct {
-	White Player `json:"white"`
-	Black Player `json:"black"`
+// players holds the white and black players.
+type players struct {
+	White player `json:"white"`
+	Black player `json:"black"`
 }
 
-// Opening holds ECO/name data for a game's opening.
-type Opening struct {
+// opening holds ECO/name data for a game's opening.
+type opening struct {
 	ECO  string `json:"eco"`
 	Name string `json:"name"`
 	Ply  int    `json:"ply"`
 }
 
-// Clock holds time-control data for a game.
-type Clock struct {
+// clock holds time-control data for a game.
+type clock struct {
 	Initial   int `json:"initial"`
 	Increment int `json:"increment"`
 	TotalTime int `json:"totalTime"`
 }
 
-// Game represents a single game from the Lichess NDJSON export.
-type Game struct {
-	ID        string    `json:"id"`
-	Rated     bool      `json:"rated"`
-	Variant   string    `json:"variant"`
-	Speed     TimeClass `json:"speed"`
-	Perf      string    `json:"perf"`
-	CreatedAt int64     `json:"createdAt"`
-	LastMoveAt int64    `json:"lastMoveAt"`
-	Status    string    `json:"status"`
-	Players   Players   `json:"players"`
-	Winner    string    `json:"winner,omitempty"`
-	Opening   Opening   `json:"opening"`
-	Moves     string    `json:"moves"`
-	Clock     Clock     `json:"clock"`
-	PGN       string    `json:"pgn"`
+// lichessGame represents a single game from the Lichess NDJSON export.
+type lichessGame struct {
+	ID         string    `json:"id"`
+	Rated      bool      `json:"rated"`
+	Variant    string    `json:"variant"`
+	Speed      timeClass `json:"speed"`
+	Perf       string    `json:"perf"`
+	CreatedAt  int64     `json:"createdAt"`
+	LastMoveAt int64     `json:"lastMoveAt"`
+	Status     string    `json:"status"`
+	Players    players   `json:"players"`
+	Winner     string    `json:"winner,omitempty"`
+	Opening    opening   `json:"opening"`
+	Moves      string    `json:"moves"`
+	Clock      clock     `json:"clock"`
+	PGN        string    `json:"pgn"`
 }
 
 // Result returns the game result as a PGN-style string: "1-0", "0-1", or "1/2-1/2".
-func (g *Game) Result() string {
+func (g *lichessGame) Result() string {
 	switch g.Winner {
 	case "white":
 		return "1-0"
@@ -102,7 +102,7 @@ func (g *Game) Result() string {
 // PlayerColor returns "white" or "black" depending on which side the given
 // username (case-insensitive) is playing. It returns an error if the
 // username matches neither player.
-func (g *Game) PlayerColor(username string) (string, error) {
+func (g *lichessGame) PlayerColor(username string) (string, error) {
 	lower := strings.ToLower(username)
 	if g.Players.White.User != nil && strings.ToLower(g.Players.White.User.ID) == lower {
 		return "white", nil
@@ -114,17 +114,17 @@ func (g *Game) PlayerColor(username string) (string, error) {
 }
 
 // IsStandard returns true if the game uses the standard chess variant.
-func (g *Game) IsStandard() bool {
+func (g *lichessGame) IsStandard() bool {
 	return g.Variant == "standard"
 }
 
 // URL returns the full Lichess URL for this game.
-func (g *Game) URL() string {
+func (g *lichessGame) URL() string {
 	return baseURL + "/" + g.ID
 }
 
-// FetchParams configures which games to fetch from Lichess.
-type FetchParams struct {
+// fetchParams configures which games to fetch from Lichess.
+type fetchParams struct {
 	Username string
 	Max      int       // 0 means no limit
 	Since    time.Time // zero means no lower bound
@@ -148,9 +148,9 @@ func NewClient(httpClient *http.Client) *Client {
 // Games returns an iterator that yields one game.Game at a time from the
 // Lichess NDJSON stream. Each game is converted to the common game model.
 // The iterator stops on the first error, yielding it as the error value.
-func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.Game, error] {
+func (c *Client) Games(ctx context.Context, username string, since, until time.Time) iter.Seq2[game.Game, error] {
 	return func(yield func(game.Game, error) bool) {
-		url := c.buildURL(params)
+		url := c.buildURL(fetchParams{Username: username, Since: since, Until: until})
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
@@ -168,7 +168,7 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			yield(game.Game{}, fmt.Errorf("lichess: unexpected status %d for user %q", resp.StatusCode, params.Username))
+			yield(game.Game{}, fmt.Errorf("lichess: unexpected status %d for user %q", resp.StatusCode, username))
 			return
 		}
 
@@ -176,7 +176,6 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 		// Lichess games can have large PGNs; allow up to 1MB per line.
 		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
-		count := 0
 		for scanner.Scan() {
 			if err := ctx.Err(); err != nil {
 				return
@@ -186,7 +185,7 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 				continue
 			}
 
-			var lg Game
+			var lg lichessGame
 			if err := json.Unmarshal([]byte(line), &lg); err != nil {
 				yield(game.Game{}, fmt.Errorf("lichess: parsing game JSON: %w", err))
 				return
@@ -196,17 +195,12 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 				continue
 			}
 
-			cg, err := ToGame(&lg, params.Username)
+			cg, err := ToGame(&lg, username)
 			if err != nil {
 				yield(game.Game{}, err)
 				return
 			}
 			if !yield(cg, nil) {
-				return
-			}
-
-			count++
-			if params.Max > 0 && count >= params.Max {
 				return
 			}
 		}
@@ -217,7 +211,7 @@ func (c *Client) Games(ctx context.Context, params FetchParams) iter.Seq2[game.G
 	}
 }
 
-func (c *Client) buildURL(params FetchParams) string {
+func (c *Client) buildURL(params fetchParams) string {
 	username := strings.TrimSpace(params.Username)
 
 	u := fmt.Sprintf("%s/api/games/user/%s?pgnInJson=true", baseURL, url.PathEscape(username))

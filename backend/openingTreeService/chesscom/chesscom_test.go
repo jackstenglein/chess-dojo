@@ -33,7 +33,7 @@ func TestFetchArchives(t *testing.T) {
 	// Override baseURL by using a client that hits the test server.
 	client := NewClientWithHTTP(srv.Client())
 	// We need to call the test server URL directly, so we test the low-level method.
-	body, err := client.doGet(context.Background(), srv.URL+"/pub/player/testuser/games/archives")
+	body, err := client.doGet(t.Context(), srv.URL+"/pub/player/testuser/games/archives")
 	if err != nil {
 		t.Fatalf("doGet failed: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestDoGetSetsUserAgent(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	body, err := client.doGet(context.Background(), srv.URL)
+	body, err := client.doGet(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("doGet failed: %v", err)
 	}
@@ -70,7 +70,7 @@ func TestFetchGames(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	result, err := client.FetchGames(context.Background(), srv.URL)
+	result, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("FetchGames failed: %v", err)
 	}
@@ -93,7 +93,7 @@ func TestFetchGames(t *testing.T) {
 	if g.Black.Rating != 1450 {
 		t.Errorf("unexpected black rating: %d", g.Black.Rating)
 	}
-	if g.TimeClass != TimeClassRapid {
+	if g.TimeClass != timeClassRapid {
 		t.Errorf("unexpected time class: %s", g.TimeClass)
 	}
 	if !g.Rated {
@@ -113,19 +113,19 @@ func TestGameResult(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	result, err := client.FetchGames(context.Background(), srv.URL)
+	result, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("FetchGames failed: %v", err)
 	}
 
 	tests := []struct {
 		idx      int
-		expected GameResult
+		expected gameResult
 	}{
-		{0, ResultWhite}, // white wins
-		{1, ResultBlack}, // black wins
-		{2, ResultDraw},  // draw
-		{3, ResultWhite}, // white wins (chess960, but Result still works)
+		{0, resultWhite}, // white wins
+		{1, resultBlack}, // black wins
+		{2, resultDraw},  // draw
+		{3, resultWhite}, // white wins (chess960, but Result still works)
 	}
 
 	for _, tt := range tests {
@@ -145,7 +145,7 @@ func TestPlayerColor(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	result, err := client.FetchGames(context.Background(), srv.URL)
+	result, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("FetchGames failed: %v", err)
 	}
@@ -173,7 +173,7 @@ func TestIsStandard(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	result, err := client.FetchGames(context.Background(), srv.URL)
+	result, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("FetchGames failed: %v", err)
 	}
@@ -232,7 +232,7 @@ func TestFilterArchives(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FilterArchives(archives, tt.since, tt.until)
+			result := filterArchives(archives, tt.since, tt.until)
 			if len(result) != tt.expected {
 				t.Errorf("expected %d archives, got %d: %v", tt.expected, len(result), result)
 			}
@@ -255,7 +255,7 @@ func TestRateLimitRetry(t *testing.T) {
 
 	client := NewClientWithHTTP(srv.Client())
 	client.baseRetryDelay = 0
-	games, err := client.FetchGames(context.Background(), srv.URL)
+	games, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("expected retry to succeed, got: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestRateLimitExhausted(t *testing.T) {
 
 	client := NewClientWithHTTP(srv.Client())
 	client.baseRetryDelay = 0
-	_, err := client.FetchGames(context.Background(), srv.URL)
+	_, err := client.fetchGames(t.Context(), srv.URL)
 	if err == nil {
 		t.Fatal("expected error for rate limited request")
 	}
@@ -291,7 +291,7 @@ func TestNotFoundHandling(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	_, err := client.FetchGames(context.Background(), srv.URL)
+	_, err := client.fetchGames(t.Context(), srv.URL)
 	if err == nil {
 		t.Fatal("expected error for 404 response")
 	}
@@ -307,10 +307,10 @@ func TestContextCancellation(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel() // Cancel immediately.
 
-	_, err := client.FetchGames(ctx, srv.URL)
+	_, err := client.fetchGames(ctx, srv.URL)
 	if err == nil {
 		t.Fatal("expected error for cancelled context")
 	}
@@ -325,7 +325,7 @@ func TestPGNExtracted(t *testing.T) {
 	defer srv.Close()
 
 	client := NewClientWithHTTP(srv.Client())
-	result, err := client.FetchGames(context.Background(), srv.URL)
+	result, err := client.fetchGames(t.Context(), srv.URL)
 	if err != nil {
 		t.Fatalf("FetchGames failed: %v", err)
 	}
@@ -339,7 +339,7 @@ func TestPGNExtracted(t *testing.T) {
 	}
 }
 
-func TestGamesByArchiveIterator(t *testing.T) {
+func TestGames(t *testing.T) {
 	gamesFixture := mustReadFile(t, "testdata/games.json")
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -363,18 +363,11 @@ func TestGamesByArchiveIterator(t *testing.T) {
 	}
 
 	var collected []game.Game
-	var batchCount int
-	for batch, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, true) {
+	for g, err := range client.Games(t.Context(), "testuser", time.Time{}, time.Time{}) {
 		if err != nil {
-			t.Fatalf("GamesByArchive iterator error: %v", err)
+			t.Fatalf("Games iterator error: %v", err)
 		}
-		batchCount++
-		collected = append(collected, batch.Games...)
-	}
-
-	// 4 archives = 4 batches.
-	if batchCount != 4 {
-		t.Errorf("expected 4 batches, got %d", batchCount)
+		collected = append(collected, g)
 	}
 
 	// 4 archives × 3 standard games per archive = 12 games.
@@ -401,7 +394,7 @@ func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return t.base.RoundTrip(req)
 }
 
-func TestGamesByArchiveParallelOrdering(t *testing.T) {
+func TestGamesParallelOrdering(t *testing.T) {
 	// Each archive returns a unique game URL so we can verify ordering.
 	// With 10 archives and concurrency of 5, this exercises the parallel
 	// fetch path while asserting deterministic oldest-first output.
@@ -434,20 +427,15 @@ func TestGamesByArchiveParallelOrdering(t *testing.T) {
 	}
 
 	var collected []game.Game
-	var batchCount int
-	for batch, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
+	for g, err := range client.Games(t.Context(), "testuser", time.Time{}, time.Time{}) {
 		if err != nil {
-			t.Fatalf("GamesByArchive iterator error: %v", err)
+			t.Fatalf("Games iterator error: %v", err)
 		}
-		batchCount++
-		collected = append(collected, batch.Games...)
+		collected = append(collected, g)
 	}
 
 	if len(collected) != numArchives {
 		t.Fatalf("expected %d games, got %d", numArchives, len(collected))
-	}
-	if batchCount != numArchives {
-		t.Errorf("expected %d batches, got %d", numArchives, batchCount)
 	}
 
 	// Verify oldest-first ordering: archive 1 (month 01) should come first.
@@ -460,7 +448,7 @@ func TestGamesByArchiveParallelOrdering(t *testing.T) {
 	}
 }
 
-func TestGamesByArchivePerGameDateFiltering(t *testing.T) {
+func TestGamesPerGameDateFiltering(t *testing.T) {
 	// The archive covers all of January 2024, but we request only Jan 16–17.
 	// Games on Jan 15 and Jan 18 should be excluded even though their archive is included.
 	gamesFixture := mustReadFile(t, "testdata/games.json")
@@ -489,11 +477,11 @@ func TestGamesByArchivePerGameDateFiltering(t *testing.T) {
 	until := time.Date(2024, 1, 18, 0, 0, 0, 0, time.UTC)
 
 	var collected []game.Game
-	for batch, err := range client.GamesByArchive(context.Background(), "testuser", since, until, false) {
+	for g, err := range client.Games(t.Context(), "testuser", since, until) {
 		if err != nil {
-			t.Fatalf("GamesByArchive iterator error: %v", err)
+			t.Fatalf("Games iterator error: %v", err)
 		}
-		collected = append(collected, batch.Games...)
+		collected = append(collected, g)
 	}
 
 	// Fixture has 4 games: Jan 15, 16, 17, 18 (all at 16:00 UTC).
@@ -542,9 +530,9 @@ func benchGames(b *testing.B, numArchives int) {
 
 	b.ResetTimer()
 	for range b.N {
-		for _, err := range client.GamesByArchive(context.Background(), "testuser", time.Time{}, time.Time{}, false) {
+		for _, err := range client.Games(b.Context(), "testuser", time.Time{}, time.Time{}) {
 			if err != nil {
-				b.Fatalf("GamesByArchive iterator error: %v", err)
+				b.Fatalf("Games iterator error: %v", err)
 			}
 		}
 	}
@@ -562,4 +550,3 @@ func mustReadFileB(b *testing.B, path string) []byte {
 func BenchmarkGames_12Archives(b *testing.B) {
 	benchGames(b, 12)
 }
-

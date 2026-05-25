@@ -40,9 +40,7 @@ func TestGames_AllGames(t *testing.T) {
 
 	client := newTestClient(srv)
 	var collected []game.Game
-	for g, err := range client.Games(context.Background(), FetchParams{
-		Username: "testplayer",
-	}) {
+	for g, err := range client.Games(t.Context(), "testplayer", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -95,9 +93,7 @@ func TestGames_SkipsNonStandardVariants(t *testing.T) {
 
 	client := newTestClient(srv)
 	var ids []string
-	for g, err := range client.Games(context.Background(), FetchParams{
-		Username: "testplayer",
-	}) {
+	for g, err := range client.Games(t.Context(), "testplayer", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -128,39 +124,10 @@ func TestIsStandard(t *testing.T) {
 		{"", false},
 	}
 	for _, tt := range tests {
-		g := Game{Variant: tt.variant}
+		g := lichessGame{Variant: tt.variant}
 		if got := g.IsStandard(); got != tt.want {
 			t.Errorf("Game{Variant:%q}.IsStandard() = %v, want %v", tt.variant, got, tt.want)
 		}
-	}
-}
-
-func TestGames_WithMax(t *testing.T) {
-	fixture := loadFixture(t)
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("max") != "2" {
-			t.Errorf("max = %q, want 2", r.URL.Query().Get("max"))
-		}
-		w.Header().Set("Content-Type", "application/x-ndjson")
-		_, _ = w.Write(fixture)
-	}))
-	defer srv.Close()
-
-	client := newTestClient(srv)
-	var count int
-	for _, err := range client.Games(context.Background(), FetchParams{
-		Username: "testplayer",
-		Max:      2,
-	}) {
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		count++
-	}
-
-	if count != 2 {
-		t.Fatalf("got %d games, want 2 (client-side max)", count)
 	}
 }
 
@@ -175,9 +142,7 @@ func TestGames_DrawResult(t *testing.T) {
 
 	client := newTestClient(srv)
 	var collected []game.Game
-	for g, err := range client.Games(context.Background(), FetchParams{
-		Username: "testplayer",
-	}) {
+	for g, err := range client.Games(t.Context(), "testplayer", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -205,9 +170,7 @@ func TestGames_PlayerColorBlack(t *testing.T) {
 
 	client := newTestClient(srv)
 	var collected []game.Game
-	for g, err := range client.Games(context.Background(), FetchParams{
-		Username: "testplayer",
-	}) {
+	for g, err := range client.Games(t.Context(), "testplayer", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -233,14 +196,12 @@ func TestGames_ContextCancellation(t *testing.T) {
 	defer srv.Close()
 
 	client := newTestClient(srv)
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 200*time.Millisecond)
 	defer cancel()
 
 	var count int
 	var lastErr error
-	for _, err := range client.Games(ctx, FetchParams{
-		Username: "a",
-	}) {
+	for _, err := range client.Games(ctx, "a", time.Time{}, time.Time{}) {
 		if err != nil {
 			lastErr = err
 			break
@@ -265,9 +226,7 @@ func TestGames_HTTPError(t *testing.T) {
 	client := newTestClient(srv)
 	var gotErr error
 	var count int
-	for _, err := range client.Games(context.Background(), FetchParams{
-		Username: "nonexistent",
-	}) {
+	for _, err := range client.Games(t.Context(), "nonexistent", time.Time{}, time.Time{}) {
 		if err != nil {
 			gotErr = err
 			break
@@ -291,9 +250,7 @@ func TestGames_EmptyResponse(t *testing.T) {
 
 	client := newTestClient(srv)
 	var count int
-	for _, err := range client.Games(context.Background(), FetchParams{
-		Username: "newuser",
-	}) {
+	for _, err := range client.Games(t.Context(), "newuser", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -317,9 +274,7 @@ func TestGames_BlankLines(t *testing.T) {
 
 	client := newTestClient(srv)
 	var count int
-	for _, err := range client.Games(context.Background(), FetchParams{
-		Username: "a",
-	}) {
+	for _, err := range client.Games(t.Context(), "a", time.Time{}, time.Time{}) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -335,22 +290,22 @@ func TestBuildURL(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		params FetchParams
+		params fetchParams
 		want   string
 	}{
 		{
 			name:   "basic",
-			params: FetchParams{Username: "testplayer"},
+			params: fetchParams{Username: "testplayer"},
 			want:   "https://lichess.org/api/games/user/testplayer?pgnInJson=true",
 		},
 		{
 			name:   "with max",
-			params: FetchParams{Username: "testplayer", Max: 100},
+			params: fetchParams{Username: "testplayer", Max: 100},
 			want:   "https://lichess.org/api/games/user/testplayer?pgnInJson=true&max=100",
 		},
 		{
 			name:   "trimmed username",
-			params: FetchParams{Username: "  spacey  "},
+			params: fetchParams{Username: "  spacey  "},
 			want:   "https://lichess.org/api/games/user/spacey?pgnInJson=true",
 		},
 	}
@@ -375,7 +330,7 @@ func TestGameResult(t *testing.T) {
 		{"", "1/2-1/2"},
 	}
 	for _, tt := range tests {
-		g := Game{Winner: tt.winner}
+		g := lichessGame{Winner: tt.winner}
 		if got := g.Result(); got != tt.want {
 			t.Errorf("Game{Winner:%q}.Result() = %q, want %q", tt.winner, got, tt.want)
 		}

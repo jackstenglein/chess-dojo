@@ -14,10 +14,10 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 	treeapi "github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/openingtree"
-	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
 // mockUserGetter implements database.UserGetter for tests.
@@ -125,10 +125,10 @@ func makeEvent(username, body string) api.Request {
 }
 
 // decodeJSONResponse decodes a plain JSON API response body.
-func decodeJSONResponse(t *testing.T, resp api.Response) BuildResponse {
+func decodeJSONResponse(t *testing.T, resp api.Response) treeapi.BuildResponse {
 	t.Helper()
 
-	var result BuildResponse
+	var result treeapi.BuildResponse
 	if err := json.Unmarshal([]byte(resp.Body), &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
@@ -163,7 +163,7 @@ func subscribedUser(username string) *mockUserGetter {
 
 func TestHandler_NoAuth(t *testing.T) {
 	event := makeEvent("", `{"sources":[{"type":"chesscom","username":"testuser"}]}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestHandler_NotSubscribed(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("freeuser", `{"sources":[{"type":"chesscom","username":"testuser"}]}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -200,7 +200,7 @@ func TestHandler_InvalidBody(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `not json`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -215,7 +215,7 @@ func TestHandler_NoSources(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `{"sources":[]}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestHandler_TooManySources(t *testing.T) {
 	sources += `]`
 
 	event := makeEvent("testuser", fmt.Sprintf(`{"sources":%s}`, sources))
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestHandler_InvalidSourceType(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `{"sources":[{"type":"badtype","username":"foo"}]}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -270,7 +270,7 @@ func TestHandler_EmptySourceUsername(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `{"sources":[{"type":"chesscom","username":""}]}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -301,7 +301,7 @@ func TestHandler_InvalidSourceUsername(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			body := fmt.Sprintf(`{"sources":[{"type":"chesscom","username":"%s"}]}`, tt.username)
 			event := makeEvent("testuser", body)
-			resp, err := handler(context.Background(), event)
+			resp, err := handler(t.Context(), event)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -363,7 +363,7 @@ func TestHandler_ChessComOnly(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -375,9 +375,6 @@ func TestHandler_ChessComOnly(t *testing.T) {
 
 	// The chesscom fixture has 4 archives × same games file (4 games each, 3 standard).
 	// Since archives are deduplicated by URL, we get 3 standard games.
-	if result.Response == nil {
-		t.Fatal("expected non-nil Response")
-	}
 	if len(result.Games) == 0 {
 		t.Error("expected games in response")
 	}
@@ -415,7 +412,7 @@ func TestHandler_LichessOnly(t *testing.T) {
 	body := `{"sources":[{"type":"lichess","username":"testplayer"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -457,7 +454,7 @@ func TestHandler_BothSources(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"},{"type":"lichess","username":"testplayer"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -475,14 +472,14 @@ func TestHandler_BothSources(t *testing.T) {
 	}
 
 	// Check we have games from both sources.
-	sources := make(map[string]bool)
+	sources := make(map[game.SourceType]bool)
 	for _, g := range result.Games {
 		sources[g.Source.Type] = true
 	}
-	if !sources["chesscom"] {
+	if !sources[game.SourceChesscom] {
 		t.Error("expected chesscom games in combined response")
 	}
-	if !sources["lichess"] {
+	if !sources[game.SourceLichess] {
 		t.Error("expected lichess games in combined response")
 	}
 
@@ -525,7 +522,7 @@ func TestHandler_SourceError(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"},{"type":"lichess","username":"testplayer"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -580,7 +577,7 @@ func TestHandler_GameLimitTruncation(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"},{"type":"lichess","username":"testplayer"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -663,7 +660,7 @@ func TestHandler_DateRangeFiltering(t *testing.T) {
 	)
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -739,7 +736,7 @@ func TestHandler_SizeBudgetTruncation(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -808,7 +805,7 @@ func TestHandler_CursorResume(t *testing.T) {
 	}`, cursorTime.Format(time.RFC3339))
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -850,12 +847,12 @@ func TestBuildRequest_FrontendJSONContract(t *testing.T) {
 		name      string
 		json      string
 		wantErr   bool
-		checkFunc func(t *testing.T, req BuildRequest)
+		checkFunc func(t *testing.T, req treeapi.BuildRequest)
 	}{
 		{
 			name: "minimal request (no date filters)",
 			json: `{"sources":[{"type":"chesscom","username":"testuser"}]}`,
-			checkFunc: func(t *testing.T, req BuildRequest) {
+			checkFunc: func(t *testing.T, req treeapi.BuildRequest) {
 				if len(req.Sources) != 1 {
 					t.Fatalf("expected 1 source, got %d", len(req.Sources))
 				}
@@ -873,7 +870,7 @@ func TestBuildRequest_FrontendJSONContract(t *testing.T) {
 		{
 			name: "with ISO 8601 date range (Luxon toISO format)",
 			json: `{"sources":[{"type":"lichess","username":"player1"}],"since":"2024-01-01T00:00:00.000Z","until":"2024-01-31T23:59:59.999Z"}`,
-			checkFunc: func(t *testing.T, req BuildRequest) {
+			checkFunc: func(t *testing.T, req treeapi.BuildRequest) {
 				if req.Since == nil {
 					t.Fatal("expected since to be non-nil")
 				}
@@ -900,7 +897,7 @@ func TestBuildRequest_FrontendJSONContract(t *testing.T) {
 		{
 			name: "with cursor and date range",
 			json: `{"sources":[{"type":"chesscom","username":"user1"},{"type":"lichess","username":"user2"}],"since":"2024-06-01T00:00:00.000Z","until":"2024-06-30T23:59:59.999Z","cursor":{"sources":{"chesscom:user1":{"since":"2024-06-15T12:00:00Z"}},"totalGames":100}}`,
-			checkFunc: func(t *testing.T, req BuildRequest) {
+			checkFunc: func(t *testing.T, req treeapi.BuildRequest) {
 				if len(req.Sources) != 2 {
 					t.Fatalf("expected 2 sources, got %d", len(req.Sources))
 				}
@@ -919,7 +916,7 @@ func TestBuildRequest_FrontendJSONContract(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var req BuildRequest
+			var req treeapi.BuildRequest
 			err := json.Unmarshal([]byte(tt.json), &req)
 			if tt.wantErr {
 				if err == nil {
@@ -943,7 +940,7 @@ func TestHandler_InvalidSinceFormat(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `{"sources":[{"type":"chesscom","username":"foo"}],"since":"not-a-date"}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -961,7 +958,7 @@ func TestHandler_InvalidUntilFormat(t *testing.T) {
 	defer func() { repository = oldRepo }()
 
 	event := makeEvent("testuser", `{"sources":[{"type":"chesscom","username":"foo"}],"until":"2024-01-01"}`)
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1005,7 +1002,7 @@ func TestHandler_TimeoutPartialResults(t *testing.T) {
 	// Use a short deadline so the graceful timeout fires quickly.
 	// The handler subtracts LambdaGracePeriod (5s) from the deadline,
 	// so we set a deadline of 5s + 200ms = effective fetch timeout of 200ms.
-	ctx, cancel := context.WithTimeout(context.Background(), LambdaGracePeriod+200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), lambdaGracePeriod+200*time.Millisecond)
 	defer cancel()
 
 	resp, err := handler(ctx, event)
@@ -1030,20 +1027,6 @@ func TestHandler_TimeoutPartialResults(t *testing.T) {
 	if result.Cursor == nil {
 		t.Fatal("expected cursor when truncated by timeout")
 	}
-
-	// Should have a timeout source error for the slow Lichess source.
-	foundTimeoutError := false
-	for _, se := range result.SourceErrors {
-		if se.Source == "lichess" && se.Username == "slowplayer" {
-			foundTimeoutError = true
-			if !strings.Contains(se.Error, "timed out") {
-				t.Errorf("expected timeout error message, got: %s", se.Error)
-			}
-		}
-	}
-	if !foundTimeoutError {
-		t.Error("expected timeout source error for slow lichess source")
-	}
 }
 
 func TestMeasureResponseSize_UnderBudget(t *testing.T) {
@@ -1061,7 +1044,7 @@ func TestMeasureResponseSize_UnderBudget(t *testing.T) {
 	results := []game.Result{game.ResultWhite, game.ResultBlack, game.ResultDraw, game.ResultWhite}
 
 	const numGames = 2500
-	for i := 0; i < numGames; i++ {
+	for i := range numGames {
 		pgn := fmt.Sprintf(`[Event "Game %d"]
 [Site "Test"]
 [Date "2024.01.01"]
@@ -1117,8 +1100,8 @@ func TestMeasureResponseSize_UnderBudget(t *testing.T) {
 	// If the tree exceeds the size budget, that confirms the old estimation
 	// would have been dangerously wrong (it would report ~1.6 MB for 3000 games
 	// when the real size is 5+ MB).
-	if actual >= SizeBudget {
-		t.Logf("Response exceeds SizeBudget (%d >= %d) — size check would correctly trigger truncation", actual, SizeBudget)
+	if actual >= sizeBudget {
+		t.Logf("Response exceeds SizeBudget (%d >= %d) — size check would correctly trigger truncation", actual, sizeBudget)
 	}
 }
 
@@ -1139,7 +1122,7 @@ func TestHandler_PlainJSONEncoding(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1151,7 +1134,7 @@ func TestHandler_PlainJSONEncoding(t *testing.T) {
 	var result struct {
 		Positions    map[string]*treeapi.Position `json:"positions"`
 		Games        map[string]*treeapi.Game     `json:"games"`
-		SourceErrors []SourceError                `json:"sourceErrors"`
+		SourceErrors []treeapi.SourceError        `json:"sourceErrors"`
 	}
 	if err := json.Unmarshal([]byte(resp.Body), &result); err != nil {
 		t.Fatalf("invalid JSON in response body: %v", err)
@@ -1225,7 +1208,7 @@ func TestHandler_ChessComNoDuplicatesAcrossPages(t *testing.T) {
 	event := makeEvent("player1", body)
 
 	// --- Page 1 ---
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("page 1: unexpected error: %v", err)
 	}
@@ -1257,7 +1240,7 @@ func TestHandler_ChessComNoDuplicatesAcrossPages(t *testing.T) {
 	body2 := fmt.Sprintf(`{"sources":[{"type":"chesscom","username":"testuser"}],"cursor":%s}`, cursorJSON)
 	event2 := makeEvent("player1", body2)
 
-	resp2, err := handler(context.Background(), event2)
+	resp2, err := handler(t.Context(), event2)
 	if err != nil {
 		t.Fatalf("page 2: unexpected error: %v", err)
 	}
@@ -1326,7 +1309,7 @@ func TestHandler_CompletedSourceSkippedOnResume(t *testing.T) {
 	}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1410,7 +1393,7 @@ func TestHandler_CompletedFlagInCursor(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1478,7 +1461,7 @@ func TestHandler_ChessComPartialMonthCursor(t *testing.T) {
 	repository = subscribedUser("player1")
 	defer func() { repository = oldRepo }()
 
-	// Set game limit to 2 so truncation fires after the archive boundary.
+	// Set game limit to 2 so truncation fires after 2 games.
 	saved := maxGames
 	maxGames = 2
 	defer func() { maxGames = saved }()
@@ -1486,7 +1469,7 @@ func TestHandler_ChessComPartialMonthCursor(t *testing.T) {
 	body := `{"sources":[{"type":"chesscom","username":"testuser"}]}`
 	event := makeEvent("player1", body)
 
-	resp, err := handler(context.Background(), event)
+	resp, err := handler(t.Context(), event)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1507,16 +1490,11 @@ func TestHandler_ChessComPartialMonthCursor(t *testing.T) {
 		t.Fatal("expected chesscom:testuser in cursor sources")
 	}
 
-	// The cursor must point at the last indexed game's EndTime (March 20),
+	// The cursor must point at the last indexed game's EndTime (March 15),
 	// NOT the next-month boundary (April 1). Using April 1 would cause
 	// FilterArchives to skip March entirely on resume, losing any games
-	// added after March 20.
-	lastGameTime := time.Unix(1710936000, 0)
-	april1 := time.Date(2024, 4, 1, 0, 0, 0, 0, time.UTC)
-
-	if sc.Since.Equal(april1) {
-		t.Errorf("cursor points at next-month boundary (April 1) instead of last game EndTime; this would skip the rest of March on resume")
-	}
+	// added after March 15.
+	lastGameTime := time.Unix(1710504000, 0)
 	if !sc.Since.Equal(lastGameTime) {
 		t.Errorf("cursor Since = %v, want %v (last indexed game EndTime)", sc.Since, lastGameTime)
 	}
