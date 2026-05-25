@@ -178,7 +178,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		return api.Failure(err), nil
 	}
 
-	milestone.checkNotification(user)
+	// milestone.checkNotification(user)
 
 	return api.Success(ProgressUpdateResponse{User: user, TimelineEntry: timelineEntry}), nil
 }

@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -50,18 +48,7 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(errors.New(400, "Invalid request: user does not have an active admin complimentary subscription", "")), nil
 	}
 
-	now := time.Now().Format(time.RFC3339)
-	pi := database.PaymentInfo{
-		UpdatedAt:         now,
-		OverrideRevokedAt: now,
-		OverrideRevokedBy: info.Username,
-	}
-
-	update := &database.UserUpdate{
-		SubscriptionStatus: aws.String(string(database.SubscriptionStatus_NotSubscribed)),
-		SubscriptionTier:   aws.String(string(database.SubscriptionTier_Free)),
-		PaymentInfo:        &pi,
-	}
+	update := database.BuildUserUpdateEndPaymentOverride(user, info.Username)
 
 	newUser, err := repository.UpdateUser(targetUsername, update)
 	if err != nil {

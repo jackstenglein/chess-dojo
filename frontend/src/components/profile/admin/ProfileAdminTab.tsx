@@ -185,8 +185,11 @@ export function ProfileAdminTab({
     const hints = loadRequest.data?.adminHints;
     const cid = user?.paymentInfo?.customerId ?? '';
     const isOverride = cid === PAYMENT_CUSTOMER_ID_OVERRIDE;
-    const stripeUrl = cid.startsWith('cus_')
-        ? `https://dashboard.stripe.com/customers/${encodeURIComponent(cid)}`
+    const stripeCustomerId = cid.startsWith('cus_')
+        ? cid
+        : (user?.paymentInfo?.preservedCustomerId ?? '');
+    const stripeUrl = stripeCustomerId.startsWith('cus_')
+        ? `https://dashboard.stripe.com/customers/${encodeURIComponent(stripeCustomerId)}`
         : '';
 
     const onSubmitComplimentary = () => {
@@ -260,10 +263,16 @@ export function ProfileAdminTab({
                     Username: <strong>{profileUsername}</strong>
                 </Typography>
                 <Typography variant='body2'>
-                    Subscription Status: <strong>{user.subscriptionStatus}</strong>
+                    Subscription Status:{' '}
+                    {user.paymentInfo?.preservedSubscriptionStatus ?? (
+                        <s>{user.subscriptionStatus} </s>
+                    )}
+                    <strong>{user.subscriptionStatus}</strong>
                 </Typography>
                 <Typography variant='body2'>
-                    Tier: <strong>{user.subscriptionTier ?? '—'}</strong>
+                    Tier:{' '}
+                    {user.paymentInfo?.preservedSubscriptionTier ?? <s>{user.subscriptionTier} </s>}
+                    <strong>{user.subscriptionTier ?? '—'}</strong>
                 </Typography>
                 <Typography variant='body2'>
                     Billing path: <strong>{hints?.billingPath ?? '—'}</strong>
@@ -274,6 +283,9 @@ export function ProfileAdminTab({
                         {user.paymentInfo?.expiresAt
                             ? ` Expires: ${user.paymentInfo.expiresAt}`
                             : ' No expiration set.'}
+                        {user.paymentInfo?.preservedCustomerId
+                            ? ' Stripe subscription will be restored when complimentary access ends.'
+                            : ''}
                     </Alert>
                 )}
                 {(user.paymentInfo?.overrideGrantedAt || user.paymentInfo?.overrideGrantedBy) && (
@@ -331,9 +343,7 @@ export function ProfileAdminTab({
                     </Button>
                 ) : (
                     <Typography variant='body2' color='text.secondary'>
-                        {isOverride
-                            ? 'Stripe customer link is unavailable while complimentary access is active.'
-                            : 'No Stripe customer id on file.'}
+                        No Stripe customer id on file.
                     </Typography>
                 )}
             </Stack>

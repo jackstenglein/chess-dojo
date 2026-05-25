@@ -271,6 +271,10 @@ export interface PaymentInfo {
     overrideRevokedAt?: string;
     /** The username of the user who revoked the OVERRIDE access. */
     overrideRevokedBy?: string;
+    /** Stripe customer id preserved while OVERRIDE is active (restored when override ends). */
+    preservedCustomerId?: string;
+    preservedSubscriptionStatus?: string;
+    preservedSubscriptionTier?: string;
 }
 
 export interface CoachInfo {
