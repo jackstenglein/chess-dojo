@@ -2354,7 +2354,7 @@
                 "columnRound": "Runde",
                 "columnWhite": "Weiß",
                 "columnBlack": "Schwarz",
-                "columnResult": "Ready. Send the English strings to translate.",
+                "columnResult": "Ergebnis",
                 "withdrawnSuffix": "(Zurückgezogen)",
                 "stalledWarning": "⚠️ Turnier könnte stagniert sein - Keine Spiele in {days} Tagen eingereicht"
             },
