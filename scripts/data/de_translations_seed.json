@@ -9,8 +9,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Bauernumwandlung mit Leichtfiguren #1",
+      "Bauernumwandlung mit Leichtfiguren #2",
+      "Bauernumwandlung mit Leichtfiguren #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -425,8 +430,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "K+Q Matt #1",
+      "K+Q Matt #2",
+      "K+Q Matt #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -516,8 +526,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "B+N Matt #1",
+      "B+N Matt #2",
+      "B+N Matt #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -724,8 +739,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Turm mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -1231,8 +1249,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Qualität mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -1426,8 +1447,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Katalanischer Druck"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -1712,8 +1736,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Zwei Figuren mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -1816,8 +1843,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Läufer mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -1855,8 +1885,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Ungleichfarbige Läufer #1",
+      "Ungleichfarbige Läufer #2",
+      "Ungleichfarbige Läufer #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2115,8 +2150,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Turm mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2219,8 +2257,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "B+N Matt 2 #1",
+      "B+N Matt 2 #2",
+      "B+N Matt 2 #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2388,8 +2431,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Verirrter Springer #1",
+      "Verirrter Springer #2",
+      "Verirrter Springer #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2440,8 +2488,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Springer mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2752,8 +2803,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Eine Figur mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -2804,8 +2858,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Zwei-Läufer-Matt #1",
+      "Zwei-Läufer-Matt #2",
+      "Zwei-Läufer-Matt #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -3636,8 +3695,13 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "K+R Matt #1",
+      "K+R Matt #2",
+      "K+R Matt #3"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -3870,8 +3934,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Außenfreibauer"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
@@ -3909,8 +3976,11 @@
     "freeDescription": "",
     "progressBarSuffix": "",
     "locale": "de",
-    "updatedAt": "2026-05-12T07:59:07.113997+00:00",
-    "updatedBy": "falk"
+    "updatedAt": "2026-05-25T13:18:09.345617+00:00",
+    "updatedBy": "falk",
+    "positions": [
+      "Dame mehr"
+    ]
   },
   {
     "contentType": "REQUIREMENT",
