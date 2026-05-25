@@ -265,8 +265,8 @@
                 "minutesDisplay": "[T] {minutes, plural, =0 {} =1 {# minute} other {# minutes}}"
             },
             "position": {
-                "toPlay": "[T] {color} to play",
-                "toPlayAndResult": "[T] {color} to play and {result}",
+                "toPlay": "[T] {color, select, white {White} black {Black} other {White}} to play",
+                "toPlayAndResult": "[T] {color, select, white {White} black {Black} other {White}} to play and {result, select, win {win} draw {draw} other {win}}",
                 "copyFenTooltip": "[T] Copy position FEN to clipboard",
                 "openAnalysisTooltip": "[T] Open in analysis board",
                 "challengeUrlTooltip": "[T] Copy a URL and send to another player to play on Lichess",

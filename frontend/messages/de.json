@@ -242,8 +242,8 @@
                 "minutesDisplay": "{minutes, plural, =0 {} =1 {# Minute} other {# Minuten}}"
             },
             "position": {
-                "toPlay": "{color} am Zug",
-                "toPlayAndResult": "{color} am Zug und {result}",
+                "toPlay": "{color, select, white {Weiß} black {Schwarz} other {Weiß}} am Zug",
+                "toPlayAndResult": "{color, select, white {Weiß} black {Schwarz} other {Weiß}} am Zug und {result, select, win {Gewinn} draw {Remis} other {Gewinn}}",
                 "copyFenTooltip": "Kopiere Position FEN in die Zwischenablage",
                 "openAnalysisTooltip": "Öffne im Analysebrett",
                 "challengeUrlTooltip": "Kopiere eine URL und schicke sie an einen anderen Spieler, um auf Lichess zu spielen",
@@ -253,7 +253,7 @@
                 "challengeUrlButton": "Herausforderungs-URL",
                 "playComputerButton": "Gegen Computer spielen",
                 "playAsWhite": "Spiele als Weiß",
-                "playAsBlack": "Als Schwarz spielen"
+                "playAsBlack": "Spiele als Schwarz"
             },
             "progressHistory": {
                 "addNew": "Neu hinzufügen",

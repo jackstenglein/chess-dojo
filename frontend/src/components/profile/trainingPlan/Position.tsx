@@ -121,12 +121,10 @@ const Position = ({ position, orientation }: PositionProps) => {
                             <Typography variant='body1' color='text.secondary'>
                                 {position.result
                                     ? t('toPlayAndResult', {
-                                          color: turn[0].toLocaleUpperCase() + turn.slice(1),
+                                          color: turn,
                                           result: position.result.toLocaleLowerCase(),
                                       })
-                                    : t('toPlay', {
-                                          color: turn[0].toLocaleUpperCase() + turn.slice(1),
-                                      })}
+                                    : t('toPlay', { color: turn })}
                             </Typography>
                         </Stack>
                     </Stack>
