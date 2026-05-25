@@ -264,14 +264,16 @@ export function ProfileAdminTab({
                 </Typography>
                 <Typography variant='body2'>
                     Subscription Status:{' '}
-                    {user.paymentInfo?.preservedSubscriptionStatus ?? (
-                        <s>{user.subscriptionStatus} </s>
+                    {user.paymentInfo?.preservedSubscriptionStatus && (
+                        <s>{user.paymentInfo?.preservedSubscriptionStatus} </s>
                     )}
                     <strong>{user.subscriptionStatus}</strong>
                 </Typography>
                 <Typography variant='body2'>
                     Tier:{' '}
-                    {user.paymentInfo?.preservedSubscriptionTier ?? <s>{user.subscriptionTier} </s>}
+                    {user.paymentInfo?.preservedSubscriptionTier && (
+                        <s>{user.paymentInfo?.preservedSubscriptionTier} </s>
+                    )}
                     <strong>{user.subscriptionTier ?? '—'}</strong>
                 </Typography>
                 <Typography variant='body2'>
@@ -281,11 +283,11 @@ export function ProfileAdminTab({
                     <Alert severity='info' sx={{ mt: 1 }}>
                         Admin complimentary (OVERRIDE) is active.
                         {user.paymentInfo?.expiresAt
-                            ? ` Expires: ${user.paymentInfo.expiresAt}`
+                            ? ` Expires: ${user.paymentInfo.expiresAt}.`
                             : ' No expiration set.'}
                         {user.paymentInfo?.preservedCustomerId
                             ? ' Stripe subscription will be restored when complimentary access ends.'
-                            : ''}
+                            : ' User will revert to free tier when complimentary access ends.'}
                     </Alert>
                 )}
                 {(user.paymentInfo?.overrideGrantedAt || user.paymentInfo?.overrideGrantedBy) && (
