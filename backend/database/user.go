@@ -434,12 +434,6 @@ type PaymentInfo struct {
 
 	// The username of the user who revoked the OVERRIDE access.
 	OverrideRevokedBy string `dynamodbav:"overrideRevokedBy,omitempty" json:"overrideRevokedBy,omitempty"`
-
-	// Stripe billing preserved while customerId is OVERRIDE (restored when override ends).
-	PreservedCustomerId         string `dynamodbav:"preservedCustomerId,omitempty" json:"preservedCustomerId,omitempty"`
-	PreservedSubscriptionId     string `dynamodbav:"preservedSubscriptionId,omitempty" json:"-"`
-	PreservedSubscriptionStatus string `dynamodbav:"preservedSubscriptionStatus,omitempty" json:"preservedSubscriptionStatus,omitempty"`
-	PreservedSubscriptionTier   string `dynamodbav:"preservedSubscriptionTier,omitempty" json:"preservedSubscriptionTier,omitempty"`
 }
 
 type WorkGoalSettings struct {

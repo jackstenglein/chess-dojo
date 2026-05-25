@@ -78,30 +78,29 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
-	now := time.Now().Format(time.RFC3339)
-	onActiveOverride := database.IsPaymentOverrideActive(user.PaymentInfo, time.Now())
+	if user.SubscriptionStatus == database.SubscriptionStatus_Subscribed &&
+		database.IsStripeCustomerID(user.PaymentInfo.GetCustomerId()) {
+		return api.Failure(errors.New(409, "This user has an active Stripe subscription. Cancel or adjust it in Stripe before granting complimentary access.", "")), nil
+	}
 
 	var pi database.PaymentInfo
 	if user.PaymentInfo != nil {
 		pi = *user.PaymentInfo
 	}
+	pi.CustomerId = database.PaymentCustomerIdOverride
+	pi.SubscriptionId = ""
+	pi.UpdatedAt = time.Now().Format(time.RFC3339)
+	pi.ExpiresAt = expiresAt
+	pi.OverrideRevokedAt = ""
+	pi.OverrideRevokedBy = ""
+	pi.OverrideUpdatedAt = pi.UpdatedAt
+	pi.OverrideUpdatedBy = info.Username
 
-	if onActiveOverride {
-		pi.ExpiresAt = expiresAt
-		pi.OverrideUpdatedAt = now
-		pi.OverrideUpdatedBy = info.Username
-	} else {
-		database.ApplyStripePreservationForOverride(&pi, user)
-		pi.CustomerId = database.PaymentCustomerIdOverride
-		pi.SubscriptionId = ""
-		pi.UpdatedAt = now
-		pi.ExpiresAt = expiresAt
-		pi.OverrideRevokedAt = ""
-		pi.OverrideRevokedBy = ""
-		pi.OverrideGrantedAt = now
+	if pi.OverrideGrantedAt == "" {
+		pi.OverrideGrantedAt = pi.UpdatedAt
+	}
+	if pi.OverrideGrantedBy == "" {
 		pi.OverrideGrantedBy = info.Username
-		pi.OverrideUpdatedAt = now
-		pi.OverrideUpdatedBy = info.Username
 	}
 
 	update := &database.UserUpdate{
