@@ -30,6 +30,7 @@ export function useTranslatedRequirement<T extends Requirement | CustomTask>(
             );
             return req;
         }
+        const translatedPositions = translation.positions;
         return {
             ...req,
             name: translation.name || req.name,
@@ -38,6 +39,13 @@ export function useTranslatedRequirement<T extends Requirement | CustomTask>(
             description: translation.description || req.description,
             freeDescription: translation.freeDescription || req.freeDescription,
             progressBarSuffix: translation.progressBarSuffix || req.progressBarSuffix,
+            positions:
+                req.positions && translatedPositions?.length === req.positions.length
+                    ? req.positions.map((p, i) => {
+                          const t = translatedPositions?.[i];
+                          return t ? { ...p, title: t } : p;
+                      })
+                    : req.positions,
         } as T;
     }, [req, translation, locale]);
 }

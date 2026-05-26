@@ -5,9 +5,7 @@ import { z } from 'zod';
  * Also accepts `pseudo`, the non-translating QA locale retained indefinitely
  * on nonprod so the DB-translation fetch path stays exercised end-to-end.
  */
-const localeSchema = z
-    .string()
-    .regex(/^(pseudo|[a-z]{2}(-[A-Z]{2})?)$/, 'Invalid locale code');
+const localeSchema = z.string().regex(/^(pseudo|[a-z]{2}(-[A-Z]{2})?)$/, 'Invalid locale code');
 
 export const TranslationContentTypeSchema = z.enum(['REQUIREMENT', 'COURSE']);
 export const TranslationContentTypes = TranslationContentTypeSchema.enum;
@@ -23,6 +21,7 @@ export const RequirementTranslationSchema = z.object({
     description: z.string(),
     freeDescription: z.string(),
     progressBarSuffix: z.string(),
+    positions: z.array(z.string()).optional(),
     updatedAt: z.string(),
     updatedBy: z.string(),
 });

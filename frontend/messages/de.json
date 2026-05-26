@@ -242,8 +242,8 @@
                 "minutesDisplay": "{minutes, plural, =0 {} =1 {# Minute} other {# Minuten}}"
             },
             "position": {
-                "toPlay": "{color} am Zug",
-                "toPlayAndResult": "{color} am Zug und {result}",
+                "toPlay": "{color, select, white {Weiß} black {Schwarz} other {Weiß}} am Zug",
+                "toPlayAndResult": "{color, select, white {Weiß} black {Schwarz} other {Weiß}} am Zug und {result, select, win {Gewinn} draw {Remis} other {Gewinn}}",
                 "copyFenTooltip": "Kopiere Position FEN in die Zwischenablage",
                 "openAnalysisTooltip": "Öffne im Analysebrett",
                 "challengeUrlTooltip": "Kopiere eine URL und schicke sie an einen anderen Spieler, um auf Lichess zu spielen",
@@ -253,7 +253,7 @@
                 "challengeUrlButton": "Herausforderungs-URL",
                 "playComputerButton": "Gegen Computer spielen",
                 "playAsWhite": "Spiele als Weiß",
-                "playAsBlack": "Als Schwarz spielen"
+                "playAsBlack": "Spiele als Schwarz"
             },
             "progressHistory": {
                 "addNew": "Neu hinzufügen",
@@ -276,7 +276,7 @@
                 "cardDescription": "Es ist wichtig, längere Spiele zu spielen, um deine Intuition und Berechnungsfähigkeiten zu entwickeln. Du brauchst auch etwas Substanzielles, das du danach analysieren kannst. Im Allgemeinen sind Blitz-/Rapid-Spiele viel weniger nützlich, um langfristige Verbesserungen zu maximieren.",
                 "detailsParagraph1": "Es ist wichtig, längere Partien zu spielen, um deine Intuition und Rechenfähigkeiten zu entwickeln. Du brauchst auch etwas Sinnvolles, das du danach analysieren kannst. Im Allgemeinen sind Blitz-/Rapidpartien viel weniger nützlich, um langfristige Verbesserungen zu erreichen.",
                 "detailsParagraph2": "Für die {cohort}-Kohorte, <strong>empfehlen wir dir eine Mindestbedenkzeit von {minTimeControl}</strong>. Du kannst auch mit einer anderen Bedenkzeit spielen, solange die Grundzeit + Zuschlag größer oder gleich dem ist, was wir empfohlen haben. Z.B. für 60+30 (was zusammen 90 ergibt), sind 45+45, 75+15, 85+5, usw. auch akzeptabel, solange du eine Mindestanfangszeit von 30 Minuten hast (du kannst nicht 1+90 spielen).",
-                "detailsParagraph3": "Wir empfehlen, OTB bei lokalen Turnieren oder clubs zu spielen. The Dojo bietet auch mehrere Möglichkeiten, klassische Spiele online zu spielen:",
+                "detailsParagraph3": "Wir empfehlen, OTB bei lokalen Turnieren oder Clubs zu spielen. Das Dojo bietet auch mehrere Möglichkeiten, klassische Spiele online zu spielen:",
                 "roundRobinItem": "<roundRobinLink>Rundenturnier</roundRobinLink> - 9-Runden-Turnier mit bis zu 3 Monaten zum Planen und Spielen aller deiner Spiele. Die Anmeldung ist jederzeit offen.",
                 "openClassicalItem": "<openClassicalLink>Offene Klassische</openClassicalLink> - 7-Runden-Turnier mit einem Spiel pro Woche. Die Anmeldung öffnet sich alle 7 Wochen.",
                 "calendarItem": "<calendarLink>Kalender</calendarLink> - Vereinbare Einzelspiele mit anderen Dojo-Mitgliedern.",
@@ -431,8 +431,8 @@
                 "unfollow": "Entfolgen",
                 "memberOfCohort": "Mitglied der {cohort} Kohorte",
                 "followers": "Follower",
-                "follower": "Anhänger",
-                "following": "Folgende"
+                "follower": "Follower",
+                "following": "Following"
             },
             "newsfeedCard": {
                 "newsfeed": "Feed",
@@ -917,7 +917,7 @@
         "signIn": "Anmelden",
         "signUp": "Registrieren",
         "membership": "Mitgliedschaft",
-        "merch": "Waren",
+        "merch": "Merch",
         "donate": "Spende",
         "shop": "Shop",
         "darkMode": "Dunkler Modus",
@@ -928,8 +928,8 @@
         "signUp": "Registrieren",
         "joinTheDojo": "Tritt dem Dojo bei",
         "hero": {
-            "title": "Schachmatt erhalten?\nZeit, ChessDojo beizutreten!",
-            "subtitle": "Ein Schachtrainingsplan für jeden Level und eine Community zum gemeinsamen Trainieren.",
+            "title": "Mattgesetzt worden?\nWird Zeit für ChessDojo!",
+            "subtitle": "Ein Schachtrainingsplan für jede Spielstärke, plus die passende Community dazu.",
             "exploreProgram": "Erkunde das Programm",
             "ratingPoints": "Seit seinem Start im Jahr 2022 haben ChessDojo-Mitglieder mehr als <strong>186,000</strong> Ratingpunkte gewonnen."
         },
@@ -959,7 +959,7 @@
             "signUpFree": "Melde dich kostenlos an"
         },
         "senseis": {
-            "heading": "The Senseis",
+            "heading": "Die Senseis",
             "description": "Von Weltklasse-Schachtrainern geleitet, wurde ChessDojo sorgfältig gestaltet, um Spieler jedes Niveaus zu verbessern",
             "jesse": {
                 "title": "Großmeister",
@@ -1002,7 +1002,7 @@
             },
             "graduationStreams": {
                 "title": "Graduierungs-Streams",
-                "description": "Wenn du jede Kohorte abschließt, analysiert ein Sensei eines deiner Spiele im Stream."
+                "description": "Wenn du eine Kohorte abschließt, analysiert ein Sensei eines deiner Spiele im Stream."
             },
             "testsAndTactics": {
                 "title": "Innovative Tests und Taktiken",
@@ -1047,7 +1047,7 @@
                 "rating": "1619 Lichess"
             },
             "pepperchess": {
-                "quote": "The Dojo ist das Beste gewesen, das meinem Schach je passiert ist. Ich saß bei chess.com in den mittleren 700ern fest und machte wenig Fortschritte. Doch in kurzer Zeit gelang es mir, die 1000er-Grenze zu durchbrechen. All das wäre ohne The Dojos Programm nicht möglich gewesen.",
+                "quote": "Das Dojo ist das Beste gewesen, das meinem Schach je passiert ist. Ich saß bei chess.com in den mittleren 700ern fest und machte wenig Fortschritte. Doch in kurzer Zeit gelang es mir, die 1000er-Grenze zu durchbrechen. All das wäre ohne Das Dojo nicht möglich gewesen.",
                 "name": "PepperChess",
                 "rating": "1011 Chess.com Schnell"
             },
@@ -1076,7 +1076,7 @@
         "faq": {
             "title": "Häufig gestellte Fragen",
             "foundationTitle": "Was ist die Grundlage des Programms?",
-            "foundationContent": "Das Dojo Training Program basiert auf drei einfachen Ideen:<ol><li>Wir brauchen eine Struktur, um uns zu führen und uns verantwortlich zu halten</li><li>Wir brauchen einen Coach über uns (plus), jemanden unter uns zu unterrichten (minus), und eine Kohorte zum Sparring (equal)</li><li>Die wesentlichste Form der Schachverbesserung ist die Analyse unserer eigenen Spiele</li></ol>",
+            "foundationContent": "Das Dojo-Trainingsprogramm beruht auf drei Prinzipien:<ol><li>Du brauchst eine feste Trainingsstruktur, die dich in der Pflicht hält.</li><li>Die Analyse deiner eigenen Partien ist der beste Weg, besser zu werden.</li><li>Um sich in irgendeiner Sache zu verbessern, braucht es das Prinzip Plus-Minus-Gleich: jemanden über dir (etwa einen Trainer), dem du ein gewisses Maß an Autorität zugestehst (+); jemanden, dem du dich in klarer Sprache verständlich machen musst (−); und eine Gruppe, mit der du auf Augenhöhe konkurrierst und Ideen austauschst (=).</li></ol>",
             "howWorksTitle": "Wie funktioniert das Programm?",
             "howWorksContent": "Wir geben dir einen Trainingsplan (Liste von Aufgaben) und eine Kohorte (auf Discord), um deine Reise zu unterstützen. Die wichtigste Aufgabe ist es, lange Spiele zu spielen und sie dann zu analysieren. Die Arbeit läuft vollständig im eigenen Tempo, und du solltest auf keinen Fall versuchen, sie zu überstürzen. Ja, du kannst die erforderliche Lektüre schnell überfliegen und ein Kästchen abhaken. Aber du wirst viel mehr Erfolg haben, wenn du dir Zeit nimmst, allein und mit deiner Kohorte, um das Material wirklich zu studieren.",
             "communicateTitle": "Wie kann ich mich mit anderen Dojo-Mitgliedern austauschen?",
@@ -1315,8 +1315,8 @@
             "label": "Ansicht",
             "searchUsers": "Nutzer suchen",
             "statistics": "Statistiken",
-            "fullDojo": "Voller Dojo",
-            "followers": "Anhänger"
+            "fullDojo": "Gesamter Dojo",
+            "followers": "Follower"
         },
         "search": {
             "searchQuery": "Suchanfrage",
@@ -1365,7 +1365,7 @@
     },
     "newsfeed": {
         "title": "Feed",
-        "followers": "Anhänger",
+        "followers": "Follower",
         "myCohort": "Meine Kohorte",
         "graduations": "Graduierungen",
         "viewAll": "Alle anzeigen",
@@ -2354,7 +2354,7 @@
                 "columnRound": "Runde",
                 "columnWhite": "Weiß",
                 "columnBlack": "Schwarz",
-                "columnResult": "Ready. Send the English strings to translate.",
+                "columnResult": "Ergebnis",
                 "withdrawnSuffix": "(Zurückgezogen)",
                 "stalledWarning": "⚠️ Turnier könnte stagniert sein - Keine Spiele in {days} Tagen eingereicht"
             },
@@ -3257,7 +3257,7 @@
             "depthLabel": "Tiefe",
             "linesLabel": "Linien",
             "threadsLabel": "Threads",
-            "memoryLabel": "Gedächtnis",
+            "memoryLabel": "Speicher",
             "memoryFormat": "{value} MB",
             "primaryEvalTypeLabel": "Primärer Bewertungstyp",
             "evalHiddenWarning": "Bewertungsanzeige ist ausgeblendet",
