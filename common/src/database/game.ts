@@ -214,11 +214,7 @@ export const UpdateGameSchema = z
         CreateGameSchema.options[7].omit({ directory: true }).extend(updateGame.shape),
         CreateGameSchema.options[8].omit({ directory: true }).extend(updateGame.shape),
         CreateGameSchema.options[9].omit({ directory: true }).extend(updateGame.shape),
-        z
-            .object({
-                type: z.undefined(),
-            })
-            .extend(updateGame.shape),
+        z.object({ type: z.undefined().optional() }).extend(updateGame.shape),
     ])
     .refine((val) => val.type || val.orientation || val.unlisted !== undefined, {
         message: 'At least one of type, orientation or unlisted is required',
