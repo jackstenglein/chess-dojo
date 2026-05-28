@@ -2,7 +2,7 @@
 
 import { useApi } from '@/api/Api';
 import { useRequirement } from '@/api/cache/requirements';
-import { useAuth } from '@/auth/Auth';
+import { AuthStatus, useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { User } from '@/database/user';
@@ -33,7 +33,21 @@ export const TimerContext = createContext<Timer>(null as unknown as Timer);
  * between different components.
  */
 export function TimerContextProvider({ children }: { children: ReactNode }) {
-    const { user, updateUser } = useAuth();
+    const { user, status } = useAuth();
+    if (!user || status === AuthStatus.Loading) {
+        return children;
+    }
+    return <UserTimerContextProvider user={user}>{children}</UserTimerContextProvider>;
+}
+
+/**
+ * Renders a provider for the timer context to allow syncing timer details
+ * between different components. Requires a defined User object, to avoid an issue
+ * where the state would be initialized before the user loaded and the timer was
+ * reset (see https://github.com/jackstenglein/chess-dojo/issues/2181).
+ */
+function UserTimerContextProvider({ user, children }: { user: User; children: ReactNode }) {
+    const { updateUser } = useAuth();
     const api = useApi();
     const [timerSeconds, setTimerSeconds] = useState(() => getTimerSeconds(user));
     const [showTask, setShowTask] = useState(false);
@@ -136,7 +150,7 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
  * @param user The user to get the work timer for.
  * @returns The number of seconds on the user's work timer.
  */
-function getTimerSeconds(user: User | undefined): number {
+function getTimerSeconds(user: Pick<User, 'timerSeconds' | 'timerStartedAt'> | undefined): number {
     let timerSeconds = user?.timerSeconds ?? 0;
     if (user?.timerStartedAt) {
         const now = Date.now();
