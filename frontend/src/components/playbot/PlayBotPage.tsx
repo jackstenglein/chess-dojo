@@ -12,7 +12,6 @@ import { MAIA_RATINGS, MaiaRating } from './maiaengine';
 import { PlayBotAfterPgn } from './PlayBotAfterPgn';
 import { PlayBotControls } from './PlayBotControls';
 import { PlayBotSetup, PlayBotStartOpts, TimeControl } from './PlayBotSetup';
-import { useMaiaEngine } from './useMaiaEngine';
 import { useMaiaGame } from './useMaiaGame';
 
 type PageView = 'setup' | 'playing';
@@ -29,7 +28,7 @@ function parseQueryOpts(searchParams: URLSearchParams): PlayBotStartOpts | null 
     const inc = parseFloat(incStr ?? '0') || 0;
 
     const timeControl: TimeControl = {
-        initialMs: mins === 0 && inc === 0 ? null : mins * 60 * 1000,
+        initialMs: mins * 60 * 1000,
         incrementMs: inc * 1000,
     };
 
@@ -52,7 +51,7 @@ interface PlayBotAutoStartProps {
     setBoardFen: (f: string) => void;
     setBoardOrientation: (o: 'white' | 'black') => void;
     setInitKey: React.Dispatch<React.SetStateAction<number>>;
-    autoStartedRef: React.MutableRefObject<boolean>;
+    autoStartedRef: React.RefObject<boolean>;
 }
 
 function PlayBotAutoStart({
@@ -79,14 +78,22 @@ function PlayBotAutoStart({
         maiaGame.startGame(opts);
         setView('playing');
         setInitKey((k) => k + 1);
-    }, [searchParams, maiaGame]);
+    }, [
+        searchParams,
+        maiaGame,
+        autoStartedRef,
+        setActiveRating,
+        setBoardFen,
+        setBoardOrientation,
+        setView,
+        setInitKey,
+    ]);
 
     return null;
 }
 
 export function PlayBotPage() {
-    const engine = useMaiaEngine();
-    const maiaGame = useMaiaGame(engine);
+    const maiaGame = useMaiaGame();
 
     const [view, setView] = useState<PageView>('setup');
     const [activeRating, setActiveRating] = useState<MaiaRating>(1500);
@@ -170,9 +177,6 @@ export function PlayBotPage() {
                     autoStartedRef={autoStartedRef}
                 />
             </Suspense>
-            <Box
-                sx={{ px: { xs: 1, sm: 3 }, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
-            />
 
             <PgnBoard
                 ref={pgnBoardRef}

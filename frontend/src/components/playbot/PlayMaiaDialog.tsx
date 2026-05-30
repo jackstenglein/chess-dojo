@@ -55,7 +55,6 @@ export function PlayMaiaDialog({
             color: playerColor,
             rating: String(maiaRating),
         });
-        onClose();
         router.push(`/play-bot?${params.toString()}`);
     };
 

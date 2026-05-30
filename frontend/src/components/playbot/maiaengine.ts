@@ -46,7 +46,7 @@ export interface MaiaEvalResult {
 
 /**
  * Call the ChessAgine NN service for Maia move generation.
- * Uses maia2 engine (Maia3 server-side) at the given rating.
+ * Uses Maia3 server-side at the given rating.
  */
 export async function callMaiaApi(fen: string, rating: MaiaRating): Promise<MaiaEvalResult> {
     const result = await chessAgineNNService.analyzeMaia(fen, rating);

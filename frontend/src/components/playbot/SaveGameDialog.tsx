@@ -26,7 +26,6 @@ import { FEN } from '@jackstenglein/chess';
 import { MY_GAMES_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { GameImportTypes } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { SaveOutlined } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -111,7 +110,7 @@ export function SaveMaiaGameDialog({
     const router = useRouter();
     const request = useRequest<string>();
 
-    const playerName = user?.displayName || user?.username || 'You';
+    const playerName = user?.displayName || 'You';
     const botName = `Maia ${maiaRating}`;
 
     const whiteName = playerColor === 'white' ? playerName : botName;
@@ -121,33 +120,28 @@ export function SaveMaiaGameDialog({
         owner: user?.username || '',
         id: MY_GAMES_DIRECTORY_ID,
     });
-    const [addToFolder, setAddToFolder] = useState(true);
-    const [selectedBtn, setSelectedBtn] = useState<'save' | 'publish' | ''>('');
+    const [addToFolder, setAddToFolder] = useState(false);
 
-    const pgn = buildPgn({
-        whiteName,
-        blackName,
-        result,
-        startFen,
-        moves,
-        playerColor,
-        maiaRating,
-    });
-
-    const handleSave = async (publish: boolean) => {
-        setSelectedBtn(publish ? 'publish' : 'save');
+    const handleSave = async () => {
         request.onStart();
         try {
+            const pgn = buildPgn({
+                whiteName,
+                blackName,
+                result,
+                startFen,
+                moves,
+                playerColor,
+                maiaRating,
+            });
             const resp = await api.createGame({
                 type: GameImportTypes.manual,
                 pgnText: pgn,
                 orientation: playerColor,
-                publish,
+                publish: false,
                 directory: addToFolder ? directory : undefined,
             });
             trackEvent(EventType.SubmitGame, { count: 1, method: GameImportTypes.manual });
-            request.onSuccess();
-            onClose();
 
             if (isGame(resp.data)) {
                 const cohort = resp.data.cohort.replaceAll('+', '%2B');
@@ -156,8 +150,6 @@ export function SaveMaiaGameDialog({
             }
         } catch (err) {
             request.onFailure(err);
-        } finally {
-            setSelectedBtn('');
         }
     };
 
@@ -241,24 +233,12 @@ export function SaveMaiaGameDialog({
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} color='inherit' disabled={request.isLoading()}>
+                <Button onClick={onClose} disabled={request.isLoading()}>
                     Cancel
                 </Button>
-                <LoadingButton
-                    onClick={() => handleSave(false)}
-                    loading={request.isLoading() && selectedBtn === 'save'}
-                    disabled={request.isLoading() && selectedBtn !== 'save'}
-                >
+                <Button onClick={handleSave} loading={request.isLoading()}>
                     Save
-                </LoadingButton>
-                <LoadingButton
-                    variant='contained'
-                    onClick={() => handleSave(true)}
-                    loading={request.isLoading() && selectedBtn === 'publish'}
-                    disabled={request.isLoading() && selectedBtn !== 'publish'}
-                >
-                    Save & Publish
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

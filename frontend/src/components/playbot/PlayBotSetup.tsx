@@ -112,7 +112,7 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
         if (selectedTime === 'custom') {
             const mins = Math.max(0, parseFloat(customMins) || 0);
             const inc = Math.max(0, parseFloat(customInc) || 0);
-            if (mins === 0 && inc === 0) return { initialMs: null, incrementMs: 0 };
+            if (mins <= 0) return { initialMs: null, incrementMs: 0 };
             return { initialMs: mins * 60 * 1000, incrementMs: inc * 1000 };
         }
         const preset = TIME_PRESETS.find((p) => p.label === selectedTime);
@@ -154,7 +154,6 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
     };
 
     const customMinsNum = parseFloat(customMins) || 0;
-    const customIncNum = parseFloat(customInc) || 0;
     const customValid = selectedTime !== 'custom' || customMinsNum >= 0;
 
     return (
@@ -197,7 +196,7 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
             {/* Time control */}
             <Stack spacing={1}>
                 <Stack direction='row' alignItems='center' spacing={0.5}>
-                    <Timer sx={{ fontSize: 14 }} color='action' />
+                    <Timer sx={{ fontSize: 14, color: 'text.secondary' }} />
                     <Typography variant='subtitle2' fontWeight='bold' color='text.secondary'>
                         TIME CONTROL
                     </Typography>
@@ -256,16 +255,20 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
 
                 {/* Custom inputs */}
                 <Collapse in={selectedTime === 'custom'}>
-                    <Stack direction='row' spacing={1} mt={0.5}>
+                    <Stack direction='row' spacing={1} mt={1.5}>
                         <TextField
                             size='small'
                             label='Minutes'
                             type='number'
                             value={customMins}
                             onChange={(e) => setCustomMins(e.target.value)}
-                            inputProps={{ min: 0, max: 180, step: 1 }}
-                            InputProps={{
-                                endAdornment: <InputAdornment position='end'>min</InputAdornment>,
+                            slotProps={{
+                                htmlInput: { min: 0, step: 1 },
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position='end'>min</InputAdornment>
+                                    ),
+                                },
                             }}
                             sx={{ flex: 1 }}
                         />
@@ -275,21 +278,25 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                             type='number'
                             value={customInc}
                             onChange={(e) => setCustomInc(e.target.value)}
-                            inputProps={{ min: 0, max: 60, step: 1 }}
-                            InputProps={{
-                                endAdornment: <InputAdornment position='end'>sec</InputAdornment>,
+                            slotProps={{
+                                htmlInput: { min: 0, max: 60, step: 1 },
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position='end'>sec</InputAdornment>
+                                    ),
+                                },
                             }}
                             sx={{ flex: 1 }}
                         />
                     </Stack>
-                    {selectedTime === 'custom' && customMinsNum === 0 && customIncNum === 0 && (
+                    {selectedTime === 'custom' && customMinsNum <= 0 && (
                         <Typography
                             variant='caption'
                             color='text.secondary'
                             mt={0.5}
                             display='block'
                         >
-                            Both 0 → Unlimited
+                            0 min → Unlimited
                         </Typography>
                     )}
                 </Collapse>
@@ -401,7 +408,11 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                             helperText={
                                 fenError || 'Leave blank to start from the initial position'
                             }
-                            inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.75rem' } }}
+                            slotProps={{
+                                htmlInput: {
+                                    style: { fontFamily: 'monospace', fontSize: '0.75rem' },
+                                },
+                            }}
                         />
                         {fenInput.trim() && !fenError && (
                             <Alert severity='success' sx={{ py: 0 }}>

@@ -5,9 +5,8 @@ import { logger } from '@/logging/logger';
 import { Chess, FEN } from '@jackstenglein/chess';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TimeControl } from './PlayBotSetup';
-import { MaiaRating } from './maiaengine';
+import { callMaiaApi, MaiaRating } from './maiaengine';
 import { getOpeningBookMove } from './openingBook';
-import { UseMaiaEngineResult } from './useMaiaEngine';
 
 export type PlayerColor = 'white' | 'black';
 
@@ -80,9 +79,9 @@ function botDelay(): number {
     return 450 + Math.random() * 800;
 }
 
-const UNLIMITED_TC: TimeControl = { initialMs: null, incrementMs: 0 };
+const UNLIMITED_TC: TimeControl = { initialMs: 0, incrementMs: 0 };
 
-export function useMaiaGame(engine: UseMaiaEngineResult): UseMaiaGameResult {
+export function useMaiaGame(): UseMaiaGameResult {
     const chessRef = useRef<Chess | null>(null);
     const boardRef = useRef<BoardApi | null>(null);
 
@@ -240,7 +239,7 @@ export function useMaiaGame(engine: UseMaiaEngineResult): UseMaiaGameResult {
                 bestMove = bookMove.uci;
                 // Keep showing last Maia eval — no update from book
             } else {
-                const evalResult = await engine.evaluate(fen, rating, rating);
+                const evalResult = await callMaiaApi(fen, rating);
                 if (cancelBotRef.current) return;
                 const isBlack = fen.split(' ')[1] === 'b';
                 setMaiaWinProb(isBlack ? 1 - evalResult.value : evalResult.value);
@@ -284,7 +283,7 @@ export function useMaiaGame(engine: UseMaiaEngineResult): UseMaiaGameResult {
         } finally {
             if (!cancelBotRef.current) setBotThinking(false);
         }
-    }, [engine, refresh, switchClock, stopClock]);
+    }, [refresh, switchClock, stopClock]);
 
     useEffect(() => {
         if (!gameActive) return;

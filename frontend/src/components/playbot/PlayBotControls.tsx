@@ -235,29 +235,28 @@ export function PlayBotControls({ game, maiaRating, onNewGame }: PlayBotControls
                     </Button>
                 )}
                 {gameOver && moves.length > 0 && (
-                    <Button
-                        variant='outlined'
-                        startIcon={<SaveOutlined />}
-                        onClick={() => setSaveOpen(true)}
-                        fullWidth
-                        size='small'
-                    >
-                        Save Game
-                    </Button>
+                    <>
+                        <Button
+                            variant='outlined'
+                            startIcon={<SaveOutlined />}
+                            onClick={() => setSaveOpen(true)}
+                            fullWidth
+                            size='small'
+                        >
+                            Save Game
+                        </Button>
+                        <SaveMaiaGameDialog
+                            open={saveOpen}
+                            onClose={() => setSaveOpen(false)}
+                            result={result}
+                            moves={moves}
+                            playerColor={playerColor}
+                            maiaRating={maiaRating}
+                            startFen={startFen}
+                        />
+                    </>
                 )}
             </Stack>
-
-            {result !== null && moves.length > 0 && (
-                <SaveMaiaGameDialog
-                    open={saveOpen}
-                    onClose={() => setSaveOpen(false)}
-                    result={result}
-                    moves={moves}
-                    playerColor={playerColor}
-                    maiaRating={maiaRating}
-                    startFen={startFen}
-                />
-            )}
         </Stack>
     );
 }

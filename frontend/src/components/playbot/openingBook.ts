@@ -71,7 +71,6 @@ interface PosiraResponse {
  * @param moves the list of candidate moves from Posira, each with a play_rate indicating how often it's played at the given rating level
  * @returns the selected move or null if no valid moves are available
  */
-
 function weightedRandomMove(moves: PosiraMove[]): PosiraMove | null {
     if (moves.length === 0) return null;
 
@@ -111,17 +110,12 @@ export async function getOpeningBookMove(
 
     const ratings = MAIA_TO_POSIRA_RATINGS[maiaRating];
 
-    const params = new URLSearchParams({
-        fen,
-        ratings,
-        top_n: '12',
-    });
-
     try {
-        const res = await axiosService.get<PosiraResponse>(`${POSIRA_BASE}?${params}`);
+        const res = await axiosService.get<PosiraResponse>(POSIRA_BASE, {
+            params: { fen, ratings, top_n: '12' },
+            functionName: 'getPosiraExplorer',
+        });
         const data = res.data;
-        if (!data.moves || data.moves.length === 0) return null;
-
         const chosen = weightedRandomMove(data.moves);
         if (!chosen) return null;
 
