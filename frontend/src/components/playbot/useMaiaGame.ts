@@ -6,7 +6,7 @@ import { Chess, FEN } from '@jackstenglein/chess';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TimeControl } from './PlayBotSetup';
 import { callMaiaApi, MaiaRating } from './maiaengine';
-import { getOpeningBookMove } from './openingBook';
+import { getOpeningBookMove, OPENING_PLY_LIMIT } from './openingBook';
 
 export type PlayerColor = 'white' | 'black';
 
@@ -75,7 +75,16 @@ function detectTermination(chess: Chess): { result: GameResult; reason: GameOver
     return { result: 'draw', reason: null };
 }
 
-function botDelay(): number {
+/**
+ * Returns a random delay for the bot to make its move. If the ply
+ * count is past the opening, the bot will think longer.
+ * @param plyCount The current ply count of the game.
+ * @returns The delay in milliseconds for the bot to play.
+ */
+function botDelay(plyCount: number): number {
+    if (plyCount >= OPENING_PLY_LIMIT) {
+        return 1000 + Math.random() * 8000;
+    }
     return 450 + Math.random() * 800;
 }
 
@@ -126,7 +135,7 @@ export function useMaiaGame(): UseMaiaGameResult {
         gameActive &&
         result === null &&
         !!chess &&
-        (chess.turn() === 'w') === (playerColor === 'white');
+        (chess.turn(chess.lastMove()) === 'w') === (playerColor === 'white');
 
     const startClockInterval = useCallback(() => {
         if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
@@ -154,12 +163,9 @@ export function useMaiaGame(): UseMaiaGameResult {
                     // Timeout — flag the losing side
                     if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
                     const winner: GameResult = side === 'white' ? 'black' : 'white';
-                    // Use setTimeout to avoid setState-in-render
-                    setTimeout(() => {
-                        setResult(winner);
-                        setReason('timeout');
-                        setClock((c) => ({ ...c, running: null }));
-                    }, 0);
+                    setResult(winner);
+                    setReason('timeout');
+                    setClock((c) => ({ ...c, running: null }));
                     return {
                         ...prev,
                         [side === 'white' ? 'whiteMs' : 'blackMs']: 0,
@@ -229,31 +235,27 @@ export function useMaiaGame(): UseMaiaGameResult {
             const plyCount = chess.plyCount();
 
             // Opening book (Posira API) for the first OPENING_PLY_LIMIT half-moves.
-            // Falls back to Maia ONNX silently if no book move is found.
+            // Falls back to Maia silently if no book move is found.
             let bestMove: string | null = null;
 
             const bookMove = await getOpeningBookMove(fen, rating, plyCount);
-            if (cancelBotRef.current) return;
-
             if (bookMove) {
                 bestMove = bookMove.uci;
-                // Keep showing last Maia eval — no update from book
-            } else {
+            } else if (!cancelBotRef.current) {
                 const evalResult = await callMaiaApi(fen, rating);
-                if (cancelBotRef.current) return;
                 const isBlack = fen.split(' ')[1] === 'b';
                 setMaiaWinProb(isBlack ? 1 - evalResult.value : evalResult.value);
                 bestMove = evalResult.bestMove || null;
             }
 
-            await new Promise<void>((res) => setTimeout(res, botDelay()));
+            await new Promise<void>((res) => setTimeout(res, botDelay(plyCount)));
             if (cancelBotRef.current) return;
 
             if (bestMove) {
                 const elapsed = Date.now() - moveStartRef.current;
                 moveStartRef.current = Date.now();
 
-                const move = chess.move(bestMove);
+                const move = chess.move(bestMove, { previousMove: chess.lastMove() });
                 if (move) {
                     reconcile(chess, board);
                     setMoves((prev) => [
@@ -291,8 +293,7 @@ export function useMaiaGame(): UseMaiaGameResult {
         if (playerToMove) return;
         if (botThinking) return;
         void makeBotMove();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tick, gameActive, result, playerToMove, botThinking]);
+    }, [tick, gameActive, result, playerToMove, botThinking, makeBotMove]);
 
     // ------------------------------------------------------------------
     // Board callbacks

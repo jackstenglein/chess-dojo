@@ -114,8 +114,8 @@ export function PlayBotPage() {
     const onMove = useCallback(
         (board: BoardApi, chess: Chess, primitive: PrimitiveMove) => {
             if (view !== 'playing') return;
-            if (!maiaGame.playerToMove) return;
-            if (maiaGame.result !== null) return;
+            if (maiaGame.result === null && !maiaGame.playerToMove) return;
+            if (maiaGame.result === null && chess.currentMove() !== chess.lastMove()) return;
 
             const uci = primitive.orig + primitive.dest + (primitive.promotion ?? '');
             const moved = chess.move(uci);
