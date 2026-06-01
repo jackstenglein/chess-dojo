@@ -1,6 +1,7 @@
 import { RatingSystem } from '@/database/user';
 import { renderWithIntl } from '@/i18n/intl.test';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { useTranslations } from 'next-intl';
 import { createTranslator } from 'use-intl/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import messages from '~/messages/en.json';
@@ -65,9 +66,24 @@ describe('RatingsEditor visibility helpers', () => {
     });
 
     it('disambiguates repeated custom rating labels', () => {
-        expect(getRatingSystemLabel(RatingSystem.Custom, t)).toBe('Custom');
-        expect(getRatingSystemLabel(RatingSystem.Custom2, t)).toBe('Custom (2)');
-        expect(getRatingSystemLabel(RatingSystem.Custom3, t)).toBe('Custom (3)');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom2,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom (2)');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom3,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom (3)');
     });
 });
 
