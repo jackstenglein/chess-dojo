@@ -3,14 +3,29 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
+import { Link } from '@/components/navigation/Link';
 import { Course } from '@/database/course';
 import { getCohortRange } from '@/database/user';
+import { mockWorkshops } from '@/database/workshop';
 import LoadingPage from '@/loading/LoadingPage';
-import { Container, Grid, Stack, Typography } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import {
+    Button,
+    Card,
+    CardActionArea,
+    CardActions,
+    CardContent,
+    Chip,
+    Container,
+    Divider,
+    Grid,
+    Stack,
+    Typography,
+} from '@mui/material';
 import { useEffect } from 'react';
 import { getCheckoutSessionId } from '../localStorage';
 import { CourseFilterEditor, useCourseFilters } from './CourseFilters';
-import CourseListItem from './CourseListItem';
+import CourseListItem, { getCategoryColor } from './CourseListItem';
 
 const ListCoursesPage = () => {
     const courseFilters = useCourseFilters();
@@ -78,6 +93,12 @@ const ListCoursesPage = () => {
                         md: 10,
                     }}
                 >
+                    <Grid size={{ xs: 12 }} sx={{ mb: 1 }}>
+                        <Typography variant='h4' fontWeight='bold'>
+                            Courses
+                        </Typography>
+                    </Grid>
+
                     {courses.map((course) => (
                         <Grid
                             key={course.id}
@@ -106,9 +127,87 @@ const ListCoursesPage = () => {
                             <LoadingPage />
                         </Stack>
                     )}
+
                     {noItems && !request.isLoading() && request.isSent() && (
-                        <Typography>No courses found</Typography>
+                        <Stack width={1} sx={{ mt: 2, mb: 4 }}>
+                            <Typography color='text.secondary'>
+                                No courses found matching your filters.
+                            </Typography>
+                        </Stack>
                     )}
+
+                    <Grid size={{ xs: 12 }} sx={{ mt: 6, mb: 2 }}>
+                        <Divider sx={{ mb: 4 }} />
+                        <Typography variant='h4' fontWeight='bold' mb={1}>
+                            Workshops
+                        </Typography>
+                    </Grid>
+
+                    {mockWorkshops.map((workShop) => (
+                        <Grid key={workShop.id} size={{ xs: 12, md: 6, lg: 4 }}>
+                            <Card sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
+                                <CardActionArea
+                                    sx={{ flexGrow: 1 }}
+                                    component={Link}
+                                    href={`/workshops/${workShop.id}`}
+                                >
+                                    <CardContent>
+                                        <Typography variant='h5'>{workShop.name}</Typography>
+                                        <Typography variant='body2'>
+                                            By{' '}
+                                            <Typography
+                                                component='span'
+                                                variant='body2'
+                                                color='primary'
+                                            >
+                                                {workShop.teacher}
+                                            </Typography>
+                                        </Typography>
+
+                                        <Stack
+                                            direction='row'
+                                            spacing={1}
+                                            alignItems='baseline'
+                                            mb={1}
+                                            mt={1}
+                                        >
+                                            <Typography variant='h6'>${workShop.price}</Typography>
+                                        </Stack>
+
+                                        <Stack direction='row' mb={2} spacing={1}>
+                                            <Chip
+                                                size='small'
+                                                label={workShop.category}
+                                                sx={{
+                                                    backgroundColor: getCategoryColor(
+                                                        workShop.category,
+                                                    ),
+                                                    color: 'white',
+                                                }}
+                                            />
+                                            <Chip size='small' label={workShop.cohortRange} />
+                                        </Stack>
+
+                                        <Typography variant='body2' color='text.secondary' mt={2}>
+                                            {workShop.description}
+                                        </Typography>
+                                    </CardContent>
+                                </CardActionArea>
+                                <CardActions sx={{ p: 2, pt: 0 }}>
+                                    <Button
+                                        size='medium'
+                                        color='success'
+                                        fullWidth
+                                        startIcon={<ShoppingCartIcon />}
+                                        component={Link}
+                                        href={`/workshops/${workShop.id}`}
+                                    >
+                                        Buy
+                                    </Button>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))}
                 </Grid>
             </Grid>
         </Container>

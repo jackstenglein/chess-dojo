@@ -219,7 +219,7 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
                 },
                 {
                     id: 'courses',
-                    name: 'Courses',
+                    name: 'Courses & Workshops',
                     icon: <ImportContacts />,
                     href: '/courses',
                 },
@@ -335,7 +335,7 @@ function allStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
             children: [
                 {
                     id: 'courses',
-                    name: 'Courses',
+                    name: 'Courses & Workshops',
                     icon: <ImportContacts />,
                     href: '/courses',
                 },

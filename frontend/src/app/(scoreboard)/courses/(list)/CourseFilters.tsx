@@ -110,7 +110,10 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                                         onChange={(event) =>
                                             onChangeCategories(category, event.target.checked)
                                         }
-                                        color={getCategoryColor(category)}
+                                        sx={{
+                                            color: getCategoryColor(category),
+                                            '&.Mui-checked': { color: getCategoryColor(category) },
+                                        }}
                                     />
                                 }
                                 label={displayCourseType(category)}

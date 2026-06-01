@@ -2,10 +2,12 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { Link } from '@/components/navigation/Link';
 import { Course, CoursePurchaseOption } from '@/database/course';
+import { RequirementCategory } from '@/database/requirement';
 import { getCohortRange } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
+import { CategoryColors } from '@/style/ThemeProvider';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { LoadingButton } from '@mui/lab';
 import {
     Card,
@@ -106,21 +108,21 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     </Typography>
 
                     {isPurchased ? (
-                        <Stack direction='row' alignItems='center' mb={1} spacing={0.5}>
+                        <Stack direction='row' alignItems='center' mt={1} mb={1} spacing={0.5}>
                             <CheckCircleOutlineIcon color='success' fontSize='small' />
                             <Typography variant='subtitle1' color='text.secondary'>
                                 Purchased
                             </Typography>
                         </Stack>
                     ) : course.includedWithSubscription && !isFreeTier ? (
-                        <Stack direction='row' alignItems='center' mb={1} spacing={0.5}>
+                        <Stack direction='row' alignItems='center' mt={1} mb={1} spacing={0.5}>
                             <CheckCircleOutlineIcon color='success' fontSize='small' />
                             <Typography variant='subtitle1' color='text.secondary'>
                                 Included with subscription
                             </Typography>
                         </Stack>
                     ) : purchaseOption ? (
-                        <Stack direction='row' spacing={1} alignItems='baseline' mb={1}>
+                        <Stack direction='row' spacing={1} alignItems='baseline' mt={1} mb={1}>
                             <Typography
                                 variant='h6'
                                 sx={{
@@ -142,30 +144,47 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                             )}
                         </Stack>
                     ) : (
-                        <Typography variant='subtitle1' color='text.secondary'>
+                        <Typography variant='subtitle1' color='text.secondary' mt={1} mb={1}>
                             Subscription Required
                         </Typography>
                     )}
 
                     <Stack direction='row' mb={2} spacing={1}>
-                        <Chip size='small' label={category} color={getCategoryColor(category)} />
+                        <Chip
+                            size='small'
+                            label={category}
+                            sx={{
+                                backgroundColor: getCategoryColor(category),
+                                color: 'white',
+                            }}
+                        />
 
                         <Chip size='small' label={course.cohortRange} />
 
                         {course.color !== 'None' && <Chip size='small' label={course.color} />}
                     </Stack>
 
-                    <Typography variant='body2'>{course.description}</Typography>
+                    <Typography variant='body2' color='text.secondary' mt={2}>
+                        {course.description}
+                    </Typography>
                 </CardContent>
             </CardActionArea>
             {!isAccessible && purchaseOption && (
-                <CardActions>
+                <CardActions sx={{ p: 2, pt: 0 }}>
                     <LoadingButton
                         size='medium'
                         loading={request.isLoading()}
-                        onClick={preview ? undefined : onBuy}
+                        onClick={
+                            preview
+                                ? undefined
+                                : (e) => {
+                                      e.preventDefault();
+                                      onBuy();
+                                  }
+                        }
                         color='success'
-                        startIcon={<RocketLaunchIcon />}
+                        fullWidth
+                        startIcon={<ShoppingCartIcon />}
                     >
                         Buy
                     </LoadingButton>
@@ -183,16 +202,19 @@ export function displayPrice(price: number): string {
     return price.toFixed(2);
 }
 
-export function getCategoryColor(category: string) {
+export function getCategoryColor(category: string): string {
     switch (category.toLowerCase()) {
         case 'opening':
-            return 'opening';
-
+        case 'openings':
+            return CategoryColors[RequirementCategory.Opening];
+        case 'middlegame':
+        case 'middlegames':
+            return CategoryColors[RequirementCategory.Middlegames];
         case 'endgame':
-            return 'endgame';
+        case 'endgames':
+            return CategoryColors[RequirementCategory.Endgame];
+        default:
+            return 'text.secondary';
     }
-
-    return 'secondary';
 }
-
 export default CourseListItem;
