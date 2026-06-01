@@ -199,6 +199,40 @@ const AuthenticatedHelp = () => {
         ],
     };
 
+    const newCohortsSection = {
+        title: t('newCohorts.title'),
+        items: [
+            {
+                title: t('newCohorts.changeTitle'),
+                content: t('newCohorts.changeContent'),
+            },
+            {
+                title: t('newCohorts.whyTitle'),
+                content: t('newCohorts.whyContent'),
+            },
+            {
+                title: t('newCohorts.worseTitle'),
+                content: t('newCohorts.worseContent'),
+            },
+            {
+                title: t('newCohorts.upCohortTitle'),
+                content: t('newCohorts.upCohortContent'),
+            },
+            {
+                title: t('newCohorts.graduateTitle'),
+                content: t('newCohorts.graduateContent'),
+            },
+            {
+                title: t('newCohorts.materialTitle'),
+                content: t('newCohorts.materialContent'),
+            },
+            {
+                title: t('newCohorts.philosophyTitle'),
+                content: t('newCohorts.philosophyContent'),
+            },
+        ],
+    };
+
     const helpSections = [
         faq,
         liveClassesFaq,
@@ -207,6 +241,7 @@ const AuthenticatedHelp = () => {
         schedulingSection,
         gameDatabaseSection,
         notificationsSection,
+        newCohortsSection,
     ];
 
     return (

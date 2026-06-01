@@ -52,7 +52,11 @@ axiosService.interceptors.response.use(
         const endTime = new Date().getTime();
         const startTime = err.config?.startTime ?? 0;
         err.latencyMillis = endTime - startTime;
-        logger.error?.(`${err.config?.functionName ?? err.config?.url} error:`, err);
+        logger.error?.(
+            `${err.config?.functionName ?? err.config?.url} error:`,
+            err,
+            JSON.stringify(err, null, 2),
+        );
         trackEvent(EventType.ApiRequest, {
             result: 'failure',
             statusCode: err.status,

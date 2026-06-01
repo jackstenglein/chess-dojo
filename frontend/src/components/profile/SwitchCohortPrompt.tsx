@@ -1,18 +1,33 @@
 import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
+import { Link } from '@/components/navigation/Link';
 import {
     getPartialUserHideCohortPrompt,
+    getSuggestedCohorts,
     isCohortPromptHidden,
     shouldPromptDemotion,
 } from '@/database/user';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Alert, Button, Snackbar, Stack } from '@mui/material';
+import {
+    Alert,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Snackbar,
+    Stack,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { Link } from '../navigation/Link';
+
+const ONE_WEEK_MS = 1000 * 60 * 60 * 24 * 7;
+const CURRENT_COHORT_VERSION = '2026';
 
 /**
- * Renders a prompt telling the current user to demote themselves,
+ * Renders a prompt telling the current user to demote themselves or switch cohorts,
  * if necessary. Prompts to graduate are handled separately and
  * displayed as tasks in the daily training plan view.
  */
@@ -23,6 +38,16 @@ export function SwitchCohortPrompt() {
 
     const [open, setOpen] = useState(false);
     const [forceClose, setForceClose] = useState(false);
+
+    const [oldSuggestedCohort, newCohort] = getSuggestedCohorts(user);
+    const currentCohort = user?.dojoCohort;
+    const request = useRequest();
+
+    const showSwitchCohorts =
+        oldSuggestedCohort !== newCohort &&
+        user &&
+        currentCohort !== newCohort &&
+        user.cohortVersion !== CURRENT_COHORT_VERSION;
 
     useEffect(() => {
         if (forceClose) {
@@ -35,6 +60,11 @@ export function SwitchCohortPrompt() {
             return;
         }
 
+        if (showSwitchCohorts) {
+            setOpen(true);
+            return;
+        }
+
         const promptDemotion = shouldPromptDemotion(user);
         if (promptDemotion) {
             setOpen(true);
@@ -42,10 +72,10 @@ export function SwitchCohortPrompt() {
         }
 
         setOpen(false);
-    }, [user, forceClose]);
+    }, [user, forceClose, showSwitchCohorts]);
 
-    const handleHideCohortPrompt = () => {
-        const partialUser = getPartialUserHideCohortPrompt(user);
+    const handleHideCohortPrompt = (offsetMillis?: number) => {
+        const partialUser = getPartialUserHideCohortPrompt(user, offsetMillis);
         void api.updateUser(partialUser);
         handleClose();
     };
@@ -55,37 +85,93 @@ export function SwitchCohortPrompt() {
         setForceClose(true);
     };
 
-    return (
-        <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            open={open}
-            onClose={handleClose}
-            autoHideDuration={7000}
-        >
-            <Alert
-                variant='filled'
-                severity='error'
-                action={
-                    <Stack direction='row'>
-                        <Button color='inherit' size='small' onClick={handleHideCohortPrompt}>
-                            {t('hideForMonth')}
-                        </Button>
-                        <Button
-                            color='inherit'
-                            size='small'
-                            href='/profile/edit'
-                            sx={{ ml: 2, px: 3 }}
-                            endIcon={<NavigateNextIcon />}
-                            component={Link}
-                        >
-                            {t('settings')}
-                        </Button>
-                    </Stack>
-                }
-                sx={{ width: 1 }}
+    const handleSwitchCohorts = () => {
+        request.onStart();
+        api.updateUser({ dojoCohort: newCohort, cohortVersion: CURRENT_COHORT_VERSION })
+            .then(() => {
+                request.onSuccess();
+                handleClose();
+            })
+            .catch((err) => {
+                request.onFailure(err);
+            });
+    };
+
+    if (showSwitchCohorts) {
+        return (
+            <Dialog open={open} onClose={request.isLoading() ? undefined : handleClose}>
+                <DialogTitle>New Cohorts Released</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        The Dojo has recalculated the cohort ranges for all rating systems. As a
+                        result, we strongly suggest changing your cohort from{' '}
+                        <strong>{currentCohort}</strong> to <strong>{newCohort}</strong>. This will
+                        place you with sparring partners more similar in strength and give you
+                        training material better suited to your level.
+                        <br />
+                        You can find more information in the FAQs on our{' '}
+                        <Link href='/help' target='_blank'>
+                            help page
+                        </Link>
+                        .
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button loading={request.isLoading()} onClick={handleSwitchCohorts}>
+                        Switch Cohorts
+                    </Button>
+                    <Button
+                        disabled={request.isLoading()}
+                        onClick={() => handleHideCohortPrompt(ONE_WEEK_MS)}
+                    >
+                        Hide for 1 week
+                    </Button>
+                </DialogActions>
+
+                <RequestSnackbar request={request} />
+            </Dialog>
+        );
+    }
+
+    if (newCohort && open) {
+        return (
+            <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                open={open}
+                onClose={handleClose}
+                autoHideDuration={7000}
             >
-                {t('ratingBelowMinimum')}
-            </Alert>
-        </Snackbar>
-    );
+                <Alert
+                    variant='filled'
+                    severity='error'
+                    action={
+                        <Stack direction='row'>
+                            <Button
+                                color='inherit'
+                                size='small'
+                                onClick={() => handleHideCohortPrompt()}
+                            >
+                                {t('hideForMonth')}
+                            </Button>
+                            <Button
+                                color='inherit'
+                                size='small'
+                                onClick={handleSwitchCohorts}
+                                loading={request.isLoading()}
+                                sx={{ ml: 2, px: 3 }}
+                                endIcon={<NavigateNextIcon />}
+                            >
+                                {t('switchCohorts')}
+                            </Button>
+                        </Stack>
+                    }
+                    sx={{ width: 1 }}
+                >
+                    {t('ratingBelowMinimum', { newCohort })}
+                </Alert>
+            </Snackbar>
+        );
+    }
+
+    return null;
 }

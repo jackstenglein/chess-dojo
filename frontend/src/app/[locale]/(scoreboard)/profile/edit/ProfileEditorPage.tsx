@@ -27,19 +27,24 @@ import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SaveIcon from '@mui/icons-material/Save';
 import TimelineIcon from '@mui/icons-material/Timeline';
-import { LoadingButton } from '@mui/lab';
 import {
     Alert,
     Button,
     Card,
     CardContent,
     Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
     Grid,
     Stack,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import { useNavigationGuard } from 'next-navigation-guard';
+import React, { useEffect, useState } from 'react';
 
 export const MAX_PROFILE_PICTURE_SIZE_MB = 9;
 
@@ -105,8 +110,14 @@ function getUpdate(
     const update: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(formFields)) {
-        if (user[key as keyof User] !== value) {
-            update[key as keyof User] = value;
+        const userValue = user[key as keyof User];
+
+        if (typeof value === 'object' && value !== null) {
+            if (JSON.stringify(userValue) !== JSON.stringify(value)) {
+                update[key] = value;
+            }
+        } else if (userValue !== value) {
+            update[key] = value;
         }
     }
 
@@ -114,13 +125,12 @@ function getUpdate(
         update.profilePictureData = profilePictureData;
     }
 
-    if (Object.entries(update).length === 0) {
+    if (Object.keys(update).length === 0) {
         return undefined;
     }
 
-    return update;
+    return update as Partial<UserUpdate>;
 }
-
 export function encodeFileToBase64(file: File): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -144,59 +154,161 @@ export function ProfileEditorPage({ user }: { user: User }) {
     const t = useTranslations('profile.editor');
     const tRating = useTranslations('enums.ratingSystem');
 
-    const [displayName, setDisplayName] = useState(user.displayName);
+    const [displayName, setDisplayName] = useState(user.displayName || '');
     const [dojoCohort, setDojoCohort] = useState(
         user.dojoCohort !== 'NO_COHORT' ? user.dojoCohort : '',
     );
-    const [bio, setBio] = useState(user.bio);
+    const [bio, setBio] = useState(user.bio || '');
     const [coachBio, setCoachBio] = useState(user.coachBio || '');
     const [timezone, setTimezone] = useState(user.timezoneOverride || DefaultTimezone);
     const [language, setLanguage] = useState(user.language || DEFAULT_LOCALE);
 
     const [ratingSystem, setRatingSystem] = useState(user.ratingSystem);
     const [ratingEditors, setRatingEditors] = useState(getRatingEditors(user.ratings));
-    const [enableZenMode, setEnableZenMode] = useState(user.enableZenMode);
+    const [enableZenMode, setEnableZenMode] = useState(user.enableZenMode || false);
 
-    const [notificationSettings, setNotificationSettings] = useState(user.notificationSettings);
+    const [notificationSettings, setNotificationSettings] = useState(
+        user.notificationSettings || {},
+    );
 
     const [profilePictureUrl, setProfilePictureUrl] = useState<string>();
     const [profilePictureData, setProfilePictureData] = useState<string>();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [bypassGuard, setBypassGuard] = useState(false);
     const request = useRequest<string>();
 
-    const update = getUpdate(
+    const personalUpdate = getUpdate(
         user,
         {
             displayName: displayName.trim(),
-            dojoCohort,
-            bio,
-            coachBio,
-            timezoneOverride: timezone,
-            language,
-            ratingSystem,
-            ratings: getRatingsFromEditors(ratingEditors),
-            enableZenMode,
-            notificationSettings,
+            bio: bio === '' && user.bio === undefined ? undefined : bio,
+            coachBio: coachBio === '' && user.coachBio === undefined ? undefined : coachBio,
+            timezoneOverride:
+                timezone === DefaultTimezone && !user.timezoneOverride
+                    ? user.timezoneOverride
+                    : timezone,
         },
         profilePictureData,
     );
-    const changesMade = update !== undefined;
 
-    const onSave = () => {
-        if (update === undefined) {
-            return;
-        }
+    const personalChangesMade = Boolean(personalUpdate);
+
+    const ratingsUpdate = getUpdate(
+        user,
+        {
+            dojoCohort: dojoCohort === '' ? 'NO_COHORT' : dojoCohort,
+            ratingSystem,
+            ratings:
+                JSON.stringify(ratingEditors) === JSON.stringify(getRatingEditors(user.ratings))
+                    ? user.ratings
+                    : getRatingsFromEditors(ratingEditors),
+            enableZenMode:
+                !enableZenMode && user.enableZenMode === undefined ? undefined : enableZenMode,
+        },
+        undefined,
+    );
+
+    const ratingsChangesMade = Boolean(ratingsUpdate);
+
+    const notificationsUpdate = getUpdate(
+        user,
+        {
+            notificationSettings:
+                JSON.stringify(notificationSettings) ===
+                JSON.stringify(user.notificationSettings || {})
+                    ? user.notificationSettings
+                    : notificationSettings,
+        },
+        undefined,
+    );
+
+    const notificationsChangesMade = Boolean(notificationsUpdate);
+
+    const hasUnsavedChanges =
+        !bypassGuard && (personalChangesMade || ratingsChangesMade || notificationsChangesMade);
+
+    const navGuard = useNavigationGuard({
+        enabled: hasUnsavedChanges,
+    });
+
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [hasUnsavedChanges]);
+
+    const saveSection = (updatePayload: Partial<UserUpdate>) => {
+        request.onStart();
+        api.updateUser(updatePayload)
+            .then(() => {
+                request.onSuccess(t('profileUpdated'));
+                trackEvent(EventType.EditProfile, {
+                    fields: Object.keys(updatePayload),
+                });
+                setUserProperties({ ...user, ...updatePayload });
+
+                if (updatePayload.profilePictureData !== undefined) {
+                    setImageBypass(Date.now());
+                }
+                if (updatePayload.language) {
+                    setLocaleCookie(updatePayload.language);
+                    // Hard reload on language change so the server re-renders
+                    // the tree with the new locale's messages bundle. Soft
+                    // navigation leaves some client components holding on to
+                    // the previous locale's messages (the language changes
+                    // only after a second switch), so force a full fetch.
+                    window.location.href =
+                        updatePayload.language === DEFAULT_LOCALE
+                            ? '/profile'
+                            : `/${updatePayload.language}/profile`;
+                } else {
+                    router.push('/profile');
+                }
+
+                setBypassGuard(true);
+                router.push('/profile');
+            })
+            .catch((err) => {
+                request.onFailure(err);
+            });
+    };
+
+    const onSavePersonal = () => {
+        if (!personalChangesMade) return;
         const newErrors: Record<string, string> = {};
-        if (!displayName.trim()) {
-            newErrors.displayName = t('fieldRequired');
+        if (!displayName.trim()) newErrors.displayName = t('fieldRequired');
+
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
+
+        if (personalUpdate) {
+            saveSection(personalUpdate);
         }
-        if (dojoCohort === '') {
-            newErrors.dojoCohort = t('fieldRequired');
-        }
-        if ((ratingSystem as string) === '') {
-            newErrors.ratingSystem = t('fieldRequired');
-        }
+    };
+
+    const onCancelPersonal = () => {
+        setDisplayName(user.displayName || '');
+        setBio(user.bio || '');
+        setCoachBio(user.coachBio || '');
+        setTimezone(user.timezoneOverride || DefaultTimezone);
+        setProfilePictureUrl(undefined);
+        setProfilePictureData(undefined);
+        setErrors({});
+    };
+
+    const onSaveRatings = () => {
+        if (!ratingsChangesMade) return;
+        const newErrors: Record<string, string> = {};
+
+        if (dojoCohort === '') newErrors.dojoCohort = t('fieldRequired');
+        if ((ratingSystem as string) === '') newErrors.ratingSystem = t('fieldRequired');
 
         if (!isCustom(ratingSystem) && !ratingEditors[ratingSystem].username.trim()) {
             newErrors[`${ratingSystem}Username`] = t('ratingSystemRequired', {
@@ -228,42 +340,34 @@ export function ProfileEditorPage({ user }: { user: User }) {
         }
 
         setErrors(newErrors);
-        if (Object.entries(newErrors).length > 0) {
-            logger.debug?.('New Errors: ', newErrors);
+        if (Object.keys(newErrors).length > 0) {
             return;
         }
 
-        request.onStart();
+        if (ratingsUpdate) {
+            saveSection(ratingsUpdate);
+        }
+    };
 
-        api.updateUser(update)
-            .then(() => {
-                request.onSuccess(t('profileUpdated'));
-                trackEvent(EventType.EditProfile, {
-                    fields: Object.keys(update),
-                });
-                setUserProperties({ ...user, ...update });
+    const onCancelRatings = () => {
+        setDojoCohort(user.dojoCohort !== 'NO_COHORT' ? user.dojoCohort : '');
+        setRatingSystem(user.ratingSystem);
+        setRatingEditors(getRatingEditors(user.ratings));
+        setEnableZenMode(user.enableZenMode || false);
+        setErrors({});
+    };
 
-                if (update.profilePictureData !== undefined) {
-                    setImageBypass(Date.now());
-                }
-                if (update.language) {
-                    setLocaleCookie(update.language);
-                    // Hard reload on language change so the server re-renders
-                    // the tree with the new locale's messages bundle. Soft
-                    // navigation leaves some client components holding on to
-                    // the previous locale's messages (the language changes
-                    // only after a second switch), so force a full fetch.
-                    window.location.href =
-                        update.language === DEFAULT_LOCALE
-                            ? '/profile'
-                            : `/${update.language}/profile`;
-                } else {
-                    router.push('/profile');
-                }
-            })
-            .catch((err) => {
-                request.onFailure(err);
-            });
+    const onSaveNotifications = () => {
+        if (!notificationsChangesMade) return;
+        setErrors({});
+        if (notificationsUpdate) {
+            saveSection(notificationsUpdate);
+        }
+    };
+
+    const onCancelNotifications = () => {
+        setNotificationSettings(user.notificationSettings || {});
+        setErrors({});
     };
 
     const scrollToId = (id: string) => (e: React.MouseEvent) => {
@@ -286,10 +390,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                         borderRightWidth: 1,
                         borderColor: 'divider',
                     }}
-                    size={{
-                        xs: 0,
-                        sm: 'auto',
-                    }}
+                    size={{ xs: 0, sm: 'auto' }}
                 >
                     <Card
                         variant='outlined'
@@ -345,14 +446,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                     </Card>
                 </Grid>
 
-                <Grid
-                    size={{
-                        xs: 12,
-                        sm: 'grow',
-                        md: 'grow',
-                        lg: 'grow',
-                    }}
-                >
+                <Grid size={{ xs: 12, sm: 'grow', md: 'grow', lg: 'grow' }}>
                     {user.dojoCohort !== 'NO_COHORT' &&
                         user.dojoCohort !== '' &&
                         !dojoCohorts.includes(user.dojoCohort) && (
@@ -362,40 +456,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                         )}
 
                     <Stack spacing={5}>
-                        <Stack
-                            direction='row'
-                            alignItems='center'
-                            justifyContent='space-between'
-                            flexWrap='wrap'
-                            rowGap={2}
-                        >
-                            <Typography variant='h4' mr={2}>
-                                {t('title')}
-                            </Typography>
-
-                            <Stack direction='row' spacing={2}>
-                                <LoadingButton
-                                    variant='contained'
-                                    onClick={onSave}
-                                    loading={request.status === RequestStatus.Loading}
-                                    disabled={!changesMade}
-                                    startIcon={<SaveIcon />}
-                                >
-                                    {t('save')}
-                                </LoadingButton>
-
-                                <Button
-                                    component={Link}
-                                    variant='contained'
-                                    color='error'
-                                    disableElevation
-                                    href='/profile'
-                                    startIcon={<NotInterestedIcon />}
-                                >
-                                    {t('cancel')}
-                                </Button>
-                            </Stack>
-                        </Stack>
+                        <Typography variant='h4'>{t('title')}</Typography>
 
                         {Object.values(errors).length > 0 && (
                             <Alert severity='error' sx={{ mb: 3 }} variant='filled'>
@@ -403,46 +464,134 @@ export function ProfileEditorPage({ user }: { user: User }) {
                             </Alert>
                         )}
 
-                        <PersonalInfoEditor
-                            user={user}
-                            displayName={displayName}
-                            setDisplayName={setDisplayName}
-                            bio={bio}
-                            setBio={setBio}
-                            coachBio={coachBio}
-                            setCoachBio={setCoachBio}
-                            timezone={timezone}
-                            setTimezone={setTimezone}
-                            language={language}
-                            setLanguage={setLanguage}
-                            profilePictureUrl={profilePictureUrl}
-                            setProfilePictureUrl={setProfilePictureUrl}
-                            setProfilePictureData={setProfilePictureData}
-                            errors={errors}
-                            request={request}
-                        />
+                        <Stack spacing={2}>
+                            <PersonalInfoEditor
+                                user={user}
+                                displayName={displayName}
+                                setDisplayName={setDisplayName}
+                                bio={bio}
+                                setBio={setBio}
+                                coachBio={coachBio}
+                                setCoachBio={setCoachBio}
+                                timezone={timezone}
+                                setTimezone={setTimezone}
+                                language={language}
+                                setLanguage={setLanguage}
+                                profilePictureUrl={profilePictureUrl}
+                                setProfilePictureUrl={setProfilePictureUrl}
+                                setProfilePictureData={setProfilePictureData}
+                                errors={errors}
+                                request={request}
+                            />
+                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                                <Button
+                                    variant='contained'
+                                    onClick={onSavePersonal}
+                                    disabled={!personalChangesMade}
+                                    loading={request.status === RequestStatus.Loading}
+                                    startIcon={<SaveIcon />}
+                                >
+                                    {t('save')}
+                                </Button>
 
-                        <RatingsEditor
-                            dojoCohort={dojoCohort}
-                            setDojoCohort={setDojoCohort}
-                            ratingSystem={ratingSystem}
-                            setRatingSystem={setRatingSystem}
-                            ratingEditors={ratingEditors}
-                            setRatingEditors={setRatingEditors}
-                            enableZenMode={enableZenMode}
-                            setEnableZenMode={setEnableZenMode}
-                            errors={errors}
-                        />
+                                <Button
+                                    variant='contained'
+                                    color='error'
+                                    disableElevation
+                                    onClick={onCancelPersonal}
+                                    disabled={!personalChangesMade}
+                                    startIcon={<NotInterestedIcon />}
+                                >
+                                    {t('cancel')}
+                                </Button>
+                            </Stack>
+                        </Stack>
 
-                        <NotificationSettingsEditor
-                            notificationSettings={notificationSettings}
-                            setNotificationSettings={setNotificationSettings}
-                        />
+                        <Stack spacing={2}>
+                            <RatingsEditor
+                                dojoCohort={dojoCohort}
+                                setDojoCohort={setDojoCohort}
+                                ratingSystem={ratingSystem}
+                                setRatingSystem={setRatingSystem}
+                                ratingEditors={ratingEditors}
+                                setRatingEditors={setRatingEditors}
+                                enableZenMode={enableZenMode}
+                                setEnableZenMode={setEnableZenMode}
+                                errors={errors}
+                            />
+                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                                <Button
+                                    variant='contained'
+                                    onClick={onSaveRatings}
+                                    disabled={!ratingsChangesMade}
+                                    loading={request.status === RequestStatus.Loading}
+                                    startIcon={<SaveIcon />}
+                                >
+                                    Save
+                                </Button>
+
+                                <Button
+                                    variant='contained'
+                                    color='error'
+                                    disableElevation
+                                    onClick={onCancelRatings}
+                                    disabled={!ratingsChangesMade}
+                                    startIcon={<NotInterestedIcon />}
+                                >
+                                    Cancel
+                                </Button>
+                            </Stack>
+                        </Stack>
+
+                        <Stack spacing={2}>
+                            <NotificationSettingsEditor
+                                notificationSettings={notificationSettings}
+                                setNotificationSettings={setNotificationSettings}
+                            />
+                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                                <Button
+                                    variant='contained'
+                                    onClick={onSaveNotifications}
+                                    disabled={!notificationsChangesMade}
+                                    loading={request.status === RequestStatus.Loading}
+                                    startIcon={<SaveIcon />}
+                                >
+                                    Save
+                                </Button>
+
+                                <Button
+                                    variant='contained'
+                                    color='error'
+                                    disableElevation
+                                    onClick={onCancelNotifications}
+                                    disabled={!notificationsChangesMade}
+                                    startIcon={<NotInterestedIcon />}
+                                >
+                                    Cancel
+                                </Button>
+                            </Stack>
+                        </Stack>
 
                         <SubscriptionManager user={user} />
                     </Stack>
                 </Grid>
             </Grid>
+
+            <Dialog open={navGuard.active} onClose={navGuard.reject}>
+                <DialogTitle>Unsaved Changes</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        You have unsaved changes in your settings. If you leave now, your changes
+                        will be lost. Are you sure you want to leave?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={navGuard.reject}>Stay on Page</Button>
+                    <Button color='error' onClick={navGuard.accept}>
+                        Leave Without Saving
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }

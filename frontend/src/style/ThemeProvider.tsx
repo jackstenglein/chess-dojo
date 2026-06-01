@@ -64,6 +64,7 @@ declare module '@mui/material/styles' {
         meet: Palette['primary'];
         explorerTotal: Palette['primary'];
         trainingPlanTaskComplete: Palette['primary'];
+        apple: Palette['primary'];
 
         // Calendar colors
         tomato: Palette['primary'];
@@ -94,6 +95,7 @@ declare module '@mui/material/styles' {
             headerBg: string;
             pinnedBg: string;
         };
+        apple?: Palette['primary'];
 
         // Calendar colors
         tomato: Palette['primary'];
@@ -144,6 +146,7 @@ declare module '@mui/material' {
         book: true;
         meet: true;
         darkBlue: true;
+        apple: true;
     }
 
     interface IconButtonPropsColorOverrides {
@@ -300,6 +303,12 @@ const defaultPalette = {
         },
         name: 'graphite',
     }),
+    apple: defaultTheme.palette.augmentColor({
+        color: {
+            main: '#ffffff',
+        },
+        name: 'apple',
+    }),
     ...Object.values(RequirementCategory).reduce<Record<string, PaletteColor>>((acc, category) => {
         acc[themeRequirementCategory(category)] = defaultTheme.palette.augmentColor({
             color: {
@@ -391,6 +400,12 @@ const theme = createTheme({
                         main: '#616161',
                     },
                     name: 'graphite',
+                }),
+                apple: defaultTheme.palette.augmentColor({
+                    color: {
+                        main: '#000000',
+                    },
+                    name: 'apple',
                 }),
             },
         },

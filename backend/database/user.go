@@ -355,6 +355,9 @@ type User struct {
 	// The user's best-ever square color drill rating (0-1500).
 	SquareColorRating float32 `dynamodbav:"squareColorRating,omitempty" json:"squareColorRating,omitempty"`
 
+	// The user's best-ever mate-in-one drill block rating (0-2500).
+	MateInOneRating float32 `dynamodbav:"mateInOneRating,omitempty" json:"mateInOneRating,omitempty"`
+
 	// The id of the user's game review cohort, if they are a member of the Game & Profile Review tier.
 	GameReviewCohortId string `dynamodbav:"gameReviewCohortId,omitempty" json:"gameReviewCohortId,omitempty"`
 
@@ -370,6 +373,9 @@ type User struct {
 	// Tracks which milestone notifications have been sent for this user,
 	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
 	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
@@ -399,7 +405,7 @@ type UserExamSummary struct {
 }
 
 type PaymentInfo struct {
-	// The Stripe customer id
+	// The Stripe customer id, or WIX, or OVERRIDE for admin-granted complimentary access
 	CustomerId string `dynamodbav:"customerId" json:"customerId"`
 
 	// The Stripe subscription id for the training program
@@ -407,6 +413,33 @@ type PaymentInfo struct {
 
 	// The date the subscription was last updated
 	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
+
+	// When admin OVERRIDE access expires (RFC3339). Empty means no expiry until revoked.
+	ExpiresAt string `dynamodbav:"expiresAt,omitempty" json:"expiresAt,omitempty"`
+
+	// The date the OVERRIDE access was granted, in ISO 8601.
+	OverrideGrantedAt string `dynamodbav:"overrideGrantedAt,omitempty" json:"overrideGrantedAt,omitempty"`
+
+	// The username of the user who granted the OVERRIDE access.
+	OverrideGrantedBy string `dynamodbav:"overrideGrantedBy,omitempty" json:"overrideGrantedBy,omitempty"`
+
+	// The date the OVERRIDE access was last updated, in ISO 8601.
+	OverrideUpdatedAt string `dynamodbav:"overrideUpdatedAt,omitempty" json:"overrideUpdatedAt,omitempty"`
+
+	// The username of the user who last updated the OVERRIDE access.
+	OverrideUpdatedBy string `dynamodbav:"overrideUpdatedBy,omitempty" json:"overrideUpdatedBy,omitempty"`
+
+	// The date the OVERRIDE access was revoked, in ISO 8601.
+	OverrideRevokedAt string `dynamodbav:"overrideRevokedAt,omitempty" json:"overrideRevokedAt,omitempty"`
+
+	// The username of the user who revoked the OVERRIDE access.
+	OverrideRevokedBy string `dynamodbav:"overrideRevokedBy,omitempty" json:"overrideRevokedBy,omitempty"`
+
+	// Stripe billing preserved while customerId is OVERRIDE (restored when override ends).
+	PreservedCustomerId         string `dynamodbav:"preservedCustomerId,omitempty" json:"preservedCustomerId,omitempty"`
+	PreservedSubscriptionId     string `dynamodbav:"preservedSubscriptionId,omitempty" json:"-"`
+	PreservedSubscriptionStatus string `dynamodbav:"preservedSubscriptionStatus,omitempty" json:"preservedSubscriptionStatus,omitempty"`
+	PreservedSubscriptionTier   string `dynamodbav:"preservedSubscriptionTier,omitempty" json:"preservedSubscriptionTier,omitempty"`
 }
 
 type WorkGoalSettings struct {
@@ -833,6 +866,9 @@ type UserUpdate struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion *string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem

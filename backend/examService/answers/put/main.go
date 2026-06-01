@@ -56,9 +56,6 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	if request.Attempt.Cohort == "" {
 		return api.Failure(errors.New(400, "Invalid request: attempt.cohort is required", "")), nil
 	}
-	if request.Attempt.Rating == 0 {
-		return api.Failure(errors.New(400, "Invalid request: attempt.rating is required", "")), nil
-	}
 
 	request.Attempt.CreatedAt = time.Now().Format(time.RFC3339)
 

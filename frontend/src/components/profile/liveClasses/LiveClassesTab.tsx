@@ -25,7 +25,7 @@ export function LiveClassesTab({ user }: { user: User }) {
             {getSubscriptionTier(user) === SubscriptionTier.GameReview && (
                 <GameReviewSection user={user} />
             )}
-            <LectureSection />
+            <WorkshopsSection />
         </Stack>
     );
 }
@@ -146,7 +146,7 @@ function GameReviewSection({ user }: { user: User }) {
     );
 }
 
-function LectureSection() {
+function WorkshopsSection() {
     const t = useTranslations('profile.liveClassesTab');
     const { user } = useAuth();
     const { events } = useEvents();

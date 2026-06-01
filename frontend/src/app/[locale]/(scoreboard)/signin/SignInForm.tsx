@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
+import { AppleButton } from './AppleButton';
 
 export const SignInForm = () => {
     const auth = useAuth();
@@ -54,8 +55,8 @@ export const SignInForm = () => {
             });
     };
 
-    const onGoogleSignIn = () => {
-        auth.socialSignin('Google', redirectUri ? decodeURIComponent(redirectUri) : '');
+    const onSocialSignIn = (provider: 'Google' | 'Apple') => {
+        auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent) => {
@@ -159,14 +160,18 @@ export const SignInForm = () => {
                     </Button>
                 </Stack>
 
-                <GoogleButton
-                    onClick={onGoogleSignIn}
-                    style={{
-                        transform: 'scale(1.1)',
-                        transformOrigin: 'center',
-                        margin: '20px',
-                    }}
-                />
+                <Stack>
+                    <GoogleButton
+                        onClick={() => onSocialSignIn('Google')}
+                        style={{
+                            transform: 'scale(1.1)',
+                            transformOrigin: 'center',
+                            margin: '20px 0',
+                        }}
+                    />
+
+                    <AppleButton onClick={() => onSocialSignIn('Apple')} />
+                </Stack>
             </Stack>
         </Stack>
     );

@@ -5,7 +5,19 @@
 import { DiscordIcon } from '@/components/profile/info/DiscordChip';
 import { UserNotificationSettings } from '@/database/user';
 import { Email, Notifications, Web } from '@mui/icons-material';
-import { Checkbox, Divider, FormControlLabel, Stack, Typography } from '@mui/material';
+import {
+    Checkbox,
+    Divider,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 function getSettingValue(
@@ -48,77 +60,63 @@ function setSettingValue(
     return result;
 }
 
-interface NotificationSettingsSection {
+interface NotificationRow {
     labelKey: string;
-    settings: { labelKey: string; path: string }[];
-    icon: React.ReactNode;
+    sitePath?: string;
+    emailPath?: string;
+    discordPath?: string;
 }
 
-const sections: NotificationSettingsSection[] = [
+const notificationRows: NotificationRow[] = [
     {
-        labelKey: 'site',
-        icon: <Web />,
-        settings: [
-            { labelKey: 'siteGameComment', path: 'siteNotificationSettings.disableGameComment' },
-            {
-                labelKey: 'siteGameCommentReplies',
-                path: 'siteNotificationSettings.disableGameCommentReplies',
-            },
-            { labelKey: 'siteNewFollower', path: 'siteNotificationSettings.disableNewFollower' },
-            {
-                labelKey: 'siteNewsfeedComment',
-                path: 'siteNotificationSettings.disableNewsfeedComment',
-            },
-            {
-                labelKey: 'siteNewsfeedReaction',
-                path: 'siteNotificationSettings.disableNewsfeedReaction',
-            },
-            {
-                labelKey: 'siteCalendarInvite',
-                path: 'siteNotificationSettings.disableCalendarInvite',
-            },
-        ],
+        labelKey: 'gameComment',
+        sitePath: 'siteNotificationSettings.disableGameComment',
     },
     {
-        labelKey: 'email',
-        icon: <Email />,
-        settings: [
-            {
-                labelKey: 'emailInactiveWarning',
-                path: 'emailNotificationSettings.disableInactiveWarning',
-            },
-            { labelKey: 'emailNewsletter', path: 'emailNotificationSettings.disableNewsletter' },
-            {
-                labelKey: 'emailRoundRobin',
-                path: 'emailNotificationSettings.disableRoundRobinStart',
-            },
-            {
-                labelKey: 'emailGettingStarted',
-                path: 'emailNotificationSettings.disableSubscriptionCreated',
-            },
-        ],
+        labelKey: 'gameCommentReplies',
+        sitePath: 'siteNotificationSettings.disableGameCommentReplies',
     },
     {
-        labelKey: 'discord',
-        icon: <DiscordIcon />,
-        settings: [
-            {
-                labelKey: 'discordMeetingBooked',
-                path: 'discordNotificationSettings.disableMeetingBooking',
-            },
-            {
-                labelKey: 'discordMeetingCancelled',
-                path: 'discordNotificationSettings.disableMeetingCancellation',
-            },
-            {
-                labelKey: 'discordCalendarInvite',
-                path: 'discordNotificationSettings.disableCalendarInvite',
-            },
-            {
-                labelKey: 'discordRoundRobin',
-                path: 'discordNotificationSettings.disableRoundRobinStart',
-            },
-        ],
+        labelKey: 'newFollower',
+        sitePath: 'siteNotificationSettings.disableNewFollower',
+    },
+    {
+        labelKey: 'newsfeedComment',
+        sitePath: 'siteNotificationSettings.disableNewsfeedComment',
+    },
+    {
+        labelKey: 'newsfeedReaction',
+        sitePath: 'siteNotificationSettings.disableNewsfeedReaction',
+    },
+    {
+        labelKey: 'calendarInvite',
+        sitePath: 'siteNotificationSettings.disableCalendarInvite',
+        discordPath: 'discordNotificationSettings.disableCalendarInvite',
+    },
+    {
+        labelKey: 'meetingBooked',
+        discordPath: 'discordNotificationSettings.disableMeetingBooking',
+    },
+    {
+        labelKey: 'meetingCancelled',
+        discordPath: 'discordNotificationSettings.disableMeetingCancellation',
+    },
+    {
+        labelKey: 'roundRobin',
+        emailPath: 'emailNotificationSettings.disableRoundRobinStart',
+        discordPath: 'discordNotificationSettings.disableRoundRobinStart',
+    },
+    {
+        labelKey: 'inactiveWarning',
+        emailPath: 'emailNotificationSettings.disableInactiveWarning',
+    },
+    {
+        labelKey: 'newsletter',
+        emailPath: 'emailNotificationSettings.disableNewsletter',
+    },
+    {
+        labelKey: 'gettingStarted',
+        emailPath: 'emailNotificationSettings.disableSubscriptionCreated',
     },
 ];
 
@@ -132,6 +130,26 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
     setNotificationSettings,
 }) => {
     const t = useTranslations('profile.notifications');
+    const renderCheckbox = (path?: string) => {
+        if (!path) {
+            return (
+                <Typography variant='body2' color='text.secondary' sx={{ userSelect: 'none' }}>
+                    —
+                </Typography>
+            );
+        }
+
+        return (
+            <Checkbox
+                checked={!getSettingValue(notificationSettings, path)}
+                onChange={(e) =>
+                    setNotificationSettings(
+                        setSettingValue(notificationSettings, path, !e.target.checked),
+                    )
+                }
+            />
+        );
+    };
 
     return (
         <Stack spacing={2}>
@@ -148,43 +166,66 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                 <Divider />
             </Stack>
 
-            {sections.map((s) => (
-                <Stack key={s.labelKey} spacing={0.5}>
-                    <Stack direction='row' spacing={1} alignItems='center'>
-                        {s.icon}
-                        <Typography
-                            id={`notifications-${s.labelKey}`}
-                            variant='h6'
-                            sx={{
-                                scrollMarginTop: '88px',
-                            }}
-                        >
-                            {t(s.labelKey)}
-                        </Typography>
-                    </Stack>
-
-                    {s.settings.map((setting) => (
-                        <FormControlLabel
-                            key={setting.path}
-                            control={
-                                <Checkbox
-                                    checked={!getSettingValue(notificationSettings, setting.path)}
-                                    onChange={(e) =>
-                                        setNotificationSettings(
-                                            setSettingValue(
-                                                notificationSettings,
-                                                setting.path,
-                                                !e.target.checked,
-                                            ),
-                                        )
-                                    }
-                                />
-                            }
-                            label={t(setting.labelKey)}
-                        />
-                    ))}
-                </Stack>
-            ))}
+            <TableContainer component={Paper} elevation={0} variant='outlined'>
+                <Table aria-label='notification preferences table'>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                <Typography fontWeight='bold'>{t('heading')}</Typography>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <Web fontSize='small' />
+                                    <Typography fontWeight='bold'>{t('site')}</Typography>
+                                </Stack>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <Email fontSize='small' />
+                                    <Typography fontWeight='bold'>{t('email')}</Typography>
+                                </Stack>
+                            </TableCell>
+                            <TableCell align='center'>
+                                <Stack
+                                    direction='row'
+                                    alignItems='center'
+                                    justifyContent='center'
+                                    spacing={1}
+                                >
+                                    <DiscordIcon />
+                                    <Typography fontWeight='bold'>{t('discord')}</Typography>
+                                </Stack>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {notificationRows.map((row) => (
+                            <TableRow key={row.labelKey} hover>
+                                <TableCell component='th' scope='row'>
+                                    {t(row.labelKey)}
+                                </TableCell>
+                                <TableCell align='center'>{renderCheckbox(row.sitePath)}</TableCell>
+                                <TableCell align='center'>
+                                    {renderCheckbox(row.emailPath)}
+                                </TableCell>
+                                <TableCell align='center'>
+                                    {renderCheckbox(row.discordPath)}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Stack>
     );
 };

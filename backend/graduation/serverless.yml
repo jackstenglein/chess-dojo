@@ -88,7 +88,11 @@ functions:
               - ''
               - - ${param:GraduationsTableArn}
                 - '/index/DateIndex'
-  
+          - Fn::Join:
+              - ''
+              - - ${param:GamesTableArn}
+                - '/index/OwnerIdx'
+
   announce:
     handler: announce/main.go
     timeout: 30

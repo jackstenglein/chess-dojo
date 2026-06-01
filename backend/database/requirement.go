@@ -152,6 +152,11 @@ type Position struct {
 
 	// The expected result of the position
 	Result string `dynamodbav:"result" json:"result"`
+
+	// An optional URL of a video (e.g. YouTube) associated specifically
+	// with this position. When present, clients may offer to play the
+	// video from the position card (e.g. on the sparring page).
+	VideoUrl string `dynamodbav:"videoUrl,omitempty" json:"videoUrl,omitempty"`
 }
 
 type Requirement struct {

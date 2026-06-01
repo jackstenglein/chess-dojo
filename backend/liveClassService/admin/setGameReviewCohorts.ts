@@ -86,7 +86,7 @@ async function handleRequest(request: SetGameReviewCohortsRequest) {
             cohort.members[key] = {
                 username: member.username,
                 displayName: member.displayName,
-                queueDate: member.queueDate,
+                queueDate: member.queueDate ?? new Date().toISOString(),
                 paused: member.paused,
             };
         }
@@ -446,7 +446,7 @@ async function setClub(cohort: GameReviewCohort) {
         (acc, item) => {
             acc[item.username] = {
                 username: item.username,
-                joinedAt: item.queueDate,
+                joinedAt: item.queueDate ?? new Date().toISOString(),
             };
             return acc;
         },

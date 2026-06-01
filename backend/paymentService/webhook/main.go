@@ -170,9 +170,19 @@ func handleSubscriptionPurchase(checkoutSession *stripe.CheckoutSession) api.Res
 	if err := database.SendSubscriptionCreatedEvent(user.Username); err != nil {
 		log.Errorf("Failed to send subscription created notification: %v", err)
 	}
+	if tier == database.SubscriptionTier_GameReview {
+		sendGameReviewSignupNotification(user.Username)
+	}
 
 	analytics.PurchaseEvent(user, checkoutSession)
 	return api.Success(nil)
+}
+
+// Sends a notification of a Game Review subscription signup. If it fails, the error is logged.
+func sendGameReviewSignupNotification(username string) {
+	if err := database.SendGameReviewSignupEvent(username); err != nil {
+		log.Errorf("Failed to send game review signup notification: %v", err)
+	}
 }
 
 // Handles a successful coaching lesson purchase by setting the event participant's
@@ -354,6 +364,9 @@ func handleSubscriptionUpdated(event *stripe.Event) api.Response {
 	}
 	if err := discord.SetCohortRole(user); err != nil {
 		log.Errorf("Failed to set Discord roles: %v", err)
+	}
+	if tier == database.SubscriptionTier_GameReview {
+		sendGameReviewSignupNotification(user.Username)
 	}
 
 	return api.Success(nil)

@@ -26,9 +26,9 @@ export default function DojoDigestVol27() {
                 </Typography>
                 <Typography mt={4}>
                     <strong> Live Class Tiers</strong> — You can now join one of two new live class
-                    tiers: The Group Classes tier is $75/month and includes large, lecture-style
+                    tiers: The Group Classes tier is $75/month and includes large, workshop-style
                     classes like Endgame Fundamentals and Calculation. The Game and Profile Review
-                    tier is $200/month and includes the lecture classes plus smaller, seminar-style
+                    tier is $200/month and includes the workshop classes plus smaller, seminar-style
                     sessions where a sensei reviews your games. Classes begin January 1st, but use
                     code <strong>BLACKFRIDAY</strong> before December 2nd to get 25% off your first
                     month. Join the new tiers{' '}

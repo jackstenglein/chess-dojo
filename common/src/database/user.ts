@@ -124,6 +124,9 @@ export interface User {
     /** The user's best-ever square color drill rating (0-1500). */
     squareColorRating?: number;
 
+    /** The user's best-ever mate-in-one drill block rating (0-2500). */
+    mateInOneRating?: number;
+
     /** The user's firebase cloud messaging tokens. */
     firebaseTokens?: string[];
 
@@ -141,6 +144,9 @@ export interface User {
 
     /** Tracks which milestone notifications have been sent for this user. Ex: '85_2000-2100' */
     sentMilestoneNotifications?: string[];
+
+    /** Tracks which cohort version the user is currently on. Unset means 2024. */
+    cohortVersion?: string;
 }
 
 /**
@@ -241,11 +247,34 @@ export interface PuzzleThemeOverview {
     lastPlayed: string;
 }
 
+/** Sentinel stored in paymentInfo.customerId for admin-granted complimentary access. */
+export const PAYMENT_CUSTOMER_ID_OVERRIDE = 'OVERRIDE';
+
 export interface PaymentInfo {
-    /** The stripe customer id or a special value for non-stripe subscriptions. */
+    /** The stripe customer id or a special value (e.g. WIX, OVERRIDE) for non-stripe subscriptions. */
     customerId: string;
     /** The stripe subscription id or a special value for non-stripe subscriptions. */
     subscriptionId: string;
+    /** The date the payment info was last updated, in ISO 8601. */
+    updatedAt?: string;
+    /** When OVERRIDE access ends (RFC3339). Omitted = no expiry until revoked. */
+    expiresAt?: string;
+    /** The date the OVERRIDE access was granted, in ISO 8601. */
+    overrideGrantedAt?: string;
+    /** The username of the user who granted the OVERRIDE access. */
+    overrideGrantedBy?: string;
+    /** The date the OVERRIDE access was last updated, in ISO 8601. */
+    overrideUpdatedAt?: string;
+    /** The username of the user who last updated the OVERRIDE access. */
+    overrideUpdatedBy?: string;
+    /** The date the OVERRIDE access was revoked, in ISO 8601. */
+    overrideRevokedAt?: string;
+    /** The username of the user who revoked the OVERRIDE access. */
+    overrideRevokedBy?: string;
+    /** Stripe customer id preserved while OVERRIDE is active (restored when override ends). */
+    preservedCustomerId?: string;
+    preservedSubscriptionStatus?: string;
+    preservedSubscriptionTier?: string;
 }
 
 export interface CoachInfo {

@@ -98,7 +98,13 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
     }
 
     const onClickMove = (params: GridRowParams<ChessDbMove>) => {
-        chess?.move(params.id as string);
+        const move = chess?.move(params.id as string);
+
+        if (move) {
+            move.commentDiag = move.commentDiag || {};
+            move.commentDiag.dojoEngine = 'CloudDB';
+        }
+
         reconcile();
     };
 

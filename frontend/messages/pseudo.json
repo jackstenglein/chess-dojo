@@ -66,6 +66,7 @@
             "heading": "[T] Ratings",
             "cohort": "[T] ChessDojo Cohort",
             "preferredSystem": "[T] Preferred Rating System",
+            "addRatingSystem": "[T] Add Rating System",
             "startRating": "[T] Start Rating",
             "currentRating": "[T] Current Rating",
             "startRatingHelper": "[T] Your rating when you first joined the Dojo",
@@ -96,20 +97,18 @@
             "site": "[T] Site",
             "email": "[T] Email",
             "discord": "[T] Discord",
-            "siteGameComment": "[T] Notify me when a comment is added to my game",
-            "siteGameCommentReplies": "[T] Notify me when a reply is added to a game comment thread I participated in",
-            "siteNewFollower": "[T] Notify me when I have a new follower",
-            "siteNewsfeedComment": "[T] Notify me when a comment is added to my newsfeed activity",
-            "siteNewsfeedReaction": "[T] Notify me when a reaction is added to my newsfeed activity",
-            "siteCalendarInvite": "[T] Notify me when I am invited to an event on the calendar",
-            "emailInactiveWarning": "[T] Notify me via email when I am about to be marked inactive",
-            "emailNewsletter": "[T] Subscribe to the monthly Dojo Digest",
-            "emailRoundRobin": "[T] Notify me when my round robin tournament starts",
-            "emailGettingStarted": "[T] Send me an email with getting started tips when I subscribe to the Dojo",
-            "discordMeetingBooked": "[T] Notify me via a Discord DM when my meeting is booked",
-            "discordMeetingCancelled": "[T] Notify me via a Discord DM when my meeting is cancelled",
-            "discordCalendarInvite": "[T] Notify me via a Discord DM when I am invited to an event on the calendar",
-            "discordRoundRobin": "[T] Notify me when my round robin tournament starts"
+            "gameComment": "[T] Game Comment (New)",
+            "gameCommentReplies": "[T] Game Comment (Reply)",
+            "newFollower": "[T] New Follower",
+            "newsfeedComment": "[T] Newsfeed Comment",
+            "newsfeedReaction": "[T] Newsfeed Reaction",
+            "calendarInvite": "[T] Calendar Invite",
+            "inactiveWarning": "[T] Account Inactivity Warning",
+            "newsletter": "[T] Dojo Digest (Newsletter)",
+            "roundRobin": "[T] Round Robin Tournament Start",
+            "gettingStarted": "[T] Getting Started Tips",
+            "meetingBooked": "[T] Meeting Booked",
+            "meetingCancelled": "[T] Meeting Cancelled"
         },
         "subscription": {
             "heading": "[T] Subscription/Billing",
@@ -640,8 +639,8 @@
         },
         "switchCohort": {
             "hideForMonth": "[T] Hide for 1 month",
-            "settings": "[T] Settings",
-            "ratingBelowMinimum": "[T] Your rating has been less than your cohort's minimum rating for 90 days. We recommend moving down a cohort in your settings."
+            "switchCohorts": "[T] Switch Cohorts",
+            "ratingBelowMinimum": "[T] Your rating has been less than your cohort's minimum rating for 90 days. We recommend moving down to the {newCohort} cohort."
         },
         "profilePage": {
             "tabsAriaLabel": "[T] profile tabs",
@@ -1204,6 +1203,23 @@
             "aggregatedContent": "[T] Notifications of the same type will be aggregated. For example, if you subscribe to a position, then notifications for that position will be aggregated together.",
             "frequencyTitle": "[T] How often are notifications sent out?",
             "frequencyContent": "[T] Notifications are sent as soon as the action that generates them is performed. For position subscriptions on master games, master games are added weekly on Fridays around midnight UTC."
+        },
+        "newCohorts": {
+            "title": "[T] New Cohorts",
+            "changeTitle": "[T] Why did my cohort change?",
+            "changeContent": "[T] A new Dojo rating scale went into effect on on 5/23/2026. The scale was last adjusted on 9/15/2024.",
+            "whyTitle": "[T] Why are the ratings being changed at all?",
+            "whyContent": "[T] The different rating systems compiled by the Dojo are all distinct and periodically shift relative to each other. The Dojo regularly recalculates our statistics to ensure that the rating systems are accurately normalized relative to each other. This change in the rating system will better reflect users' skill across all the rating systems.",
+            "worseTitle": "[T] I went down a cohort. Does this mean I'm a worse player?",
+            "worseContent": "[T] No. You still have the same skill level you had before. All that's different is that the Dojo material of this cohort is more appropriate for your level. And you're more likely to face better sparring partners within your cohort!",
+            "upCohortTitle": "[T] I went up a cohort. Do I still change my cohort if I feel like I didn't deserve it?",
+            "upCohortContent": "[T] Yes. Please join the appropriate cohort. Your cohort is now more accurately reflective of your rating in line with other members who have a different preferred rating system.",
+            "graduateTitle": "[T] If I graduate, will I still get my games reviewed on stream?",
+            "graduateContent": "[T] This is not a graduation or demotion, simply an adjustment of the rating system itself. Please change your cohort through your ChessDojo profile, not by graduating. Future graduations after you switch cohorts will still be reviewed on stream.",
+            "materialTitle": "[T] I'm now in a cohort I already graduated from in the old system. Do I go through material I've already finished?",
+            "materialContent": "[T] Yes and no. Yes, you are welcome to repeat any material you've already done, such as books or sparring positions. But no, you are not starting from scratch. All of your previous progress has been saved, and you can focus on the other material you have not yet completed.",
+            "philosophyTitle": "[T] Does this new rating scale change the ChessDojo philosophy?",
+            "philosophyContent": "[T] Not at all. The core tenets remain the same. Playing and analyzing classical games, sparring with members of your cohort, and the +/-/= system. The only difference is that now you can find more appropriate Dojo members to learn from/teach/spar with."
         },
         "unauthenticated": {
             "accountTitle": "[T] Account",

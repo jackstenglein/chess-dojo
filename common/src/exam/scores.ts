@@ -254,3 +254,14 @@ export function getRegression(exam: Exam): SimpleLinearRegression | null {
     }
     return new SimpleLinearRegression(x, y);
 }
+
+/**
+ * Predicts an exam rating from a regression and clamps the result to the
+ * minimum allowed rating.
+ * @param regression The exam score-to-rating regression.
+ * @param score The user's score on the exam.
+ * @returns The predicted exam rating, never below 0.
+ */
+export function predictExamRating(regression: SimpleLinearRegression, score: number): number {
+    return Math.max(0, regression.predict(score));
+}

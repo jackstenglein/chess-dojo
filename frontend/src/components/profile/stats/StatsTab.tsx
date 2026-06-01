@@ -12,6 +12,7 @@ import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { DrillRatingsCard } from './DrillRatingsCard';
 import RatingCard from './RatingCard';
 import TacticsScoreCard from './TacticsScoreCard';
 
@@ -139,6 +140,8 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                     />
                 );
             })}
+
+            <DrillRatingsCard mateInOneRating={user.mateInOneRating} />
 
             <TacticsScoreCard user={user} />
         </Stack>

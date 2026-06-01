@@ -41,6 +41,9 @@ import { useChess } from '../PgnBoard';
 
 export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?: boolean): string {
     if (highlightEngineLines && move.commentDiag?.dojoEngine) {
+        if (move.commentDiag.dojoEngine === 'CloudDB') {
+            return 'primary.main';
+        }
         return 'error.main';
     }
     for (const nag of move.nags || []) {

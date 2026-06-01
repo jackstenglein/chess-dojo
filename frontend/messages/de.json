@@ -43,6 +43,7 @@
             "heading": "Bewertungen",
             "cohort": "ChessDojo Kohorte",
             "preferredSystem": "Bevorzugtes Bewertungssystem",
+            "addRatingSystem": "Bewertungssystem hinzufügen",
             "startRating": "Startbewertung",
             "currentRating": "Aktuelle Bewertung",
             "startRatingHelper": "Deine Bewertung, als du dem Dojo beigetreten bist",
@@ -73,20 +74,18 @@
             "site": "Website",
             "email": "E-Mail",
             "discord": "Discord",
-            "siteGameComment": "Benachrichtige mich, wenn ein Kommentar zu meinem Spiel hinzugefügt wird",
-            "siteGameCommentReplies": "Benachrichtige mich, wenn eine Antwort in einem Spielkommentar-Thread hinzugefügt wird, an dem ich beteiligt bin",
-            "siteNewFollower": "Benachrichtige mich, wenn ich einen neuen Follower habe",
-            "siteNewsfeedComment": "Benachrichtige mich, wenn meine Newsfeed-Aktivität kommentiert wird",
-            "siteNewsfeedReaction": "Benachrichtige mich, wenn eine Reaktion zu meiner Newsfeed-Aktivität hinzugefügt wird",
-            "siteCalendarInvite": "Benachrichtige mich, wenn ich zu einem Event im Kalender eingeladen bin",
-            "emailInactiveWarning": "Mich per E-Mail benachrichtigen, wenn ich kurz davor bin, als inaktiv markiert zu werden",
-            "emailNewsletter": "Abonniere den monatlichen Dojo Digest",
-            "emailRoundRobin": "Benachrichtige mich, wenn mein Round-Robin-Turnier startet",
-            "emailGettingStarted": "Schreib mir eine E-Mail mit Einstiegstipps, wenn ich Dojo abonniere",
-            "discordMeetingBooked": "Benachrichtige mich über Discord-DM, wenn mein Termin gebucht ist",
-            "discordMeetingCancelled": "Benachrichtige mich über Discord-DM, wenn mein Termin abgesagt wird",
-            "discordCalendarInvite": "Benachrichtige mich per Discord-DM, wenn ich zu einem Event im Kalender eingeladen bin",
-            "discordRoundRobin": "Benachrichtige mich, wenn mein Round-Robin-Turnier beginnt"
+            "gameComment": "Spielkommentar (Neu)",
+            "gameCommentReplies": "Spielkommentar (Antwort)",
+            "newFollower": "Neuer Follower",
+            "newsfeedComment": "Newsfeed-Kommentar",
+            "newsfeedReaction": "Newsfeed-Reaktion",
+            "calendarInvite": "Kalendereinladung",
+            "inactiveWarning": "Warnung vor Inaktivität des Kontos",
+            "newsletter": "Dojo Digest (Newsletter)",
+            "roundRobin": "Start des Round-Robin-Turniers",
+            "gettingStarted": "Tipps für den Einstieg",
+            "meetingBooked": "Besprechung gebucht",
+            "meetingCancelled": "Besprechung abgesagt"
         },
         "subscription": {
             "heading": "Abonnement/Abrechnung",
@@ -617,8 +616,8 @@
         },
         "switchCohort": {
             "hideForMonth": "Für 1 Monat ausblenden",
-            "settings": "Einstellungen",
-            "ratingBelowMinimum": "Deine Bewertung ist seit 90 Tagen unter der Mindestbewertung deiner Kohorte. Wir empfehlen dir, in deinen Einstellungen zu einer niedrigeren Kohorte zu wechseln."
+            "switchCohorts": "Kohorten wechseln",
+            "ratingBelowMinimum": "Ihre Bewertung lag 90 Tage lang unter der Mindestbewertung Ihrer Kohorte. Wir empfehlen Ihnen, in die Kohorte {newCohort} zu wechseln."
         },
         "profilePage": {
             "tabsAriaLabel": "Profil-Reiter",
@@ -1181,6 +1180,23 @@
             "aggregatedContent": "Benachrichtigungen des gleichen Typs werden zusammengefasst. Zum Beispiel, wenn du eine Position abonnierst, werden Benachrichtigungen für diese Position zusammengefasst.",
             "frequencyTitle": "Wie oft werden Benachrichtigungen versendet?",
             "frequencyContent": "Benachrichtigungen werden versendet, sobald die Aktion ausgeführt wird, die sie auslöst. Für Positionsabos zu Meisterspielen werden Meisterspiele wöchentlich freitags um ca. Mitternacht UTC hinzugefügt."
+        },
+        "newCohorts": {
+            "title": "Neue Kohorten",
+            "changeTitle": "Warum hat sich meine Kohorte geändert?",
+            "changeContent": "Eine neue Dojo-Bewertungsskala trat am 23. Mai 2026 in Kraft. Die Skala wurde zuletzt am 15. September 2024 angepasst.",
+            "whyTitle": "Warum werden die Bewertungen überhaupt geändert?",
+            "whyContent": "Die verschiedenen Bewertungssysteme, die vom Dojo zusammengestellt werden, sind allesamt eigenständig und verschieben sich periodisch zueinander. Das Dojo berechnet seine Statistiken regelmäßig neu, um sicherzustellen, dass die Bewertungssysteme präzise zueinander normalisiert sind. Diese Änderung am Bewertungssystem wird das Können der Nutzer über alle Bewertungssysteme hinweg besser widerspiegeln.",
+            "worseTitle": "Ich bin eine Kohorte abgestiegen. Bedeutet das, dass ich ein schlechterer Spieler bin?",
+            "worseContent": "Nein. Du verfügst nach wie vor über dasselbe Fähigkeitsniveau wie zuvor. Der einzige Unterschied besteht darin, dass die Dojo-Materialien dieser Kohorte besser auf dein Niveau abgestimmt sind. Zudem ist es wahrscheinlicher, dass du innerhalb deiner Kohorte auf stärkere Sparringspartner triffst!",
+            "upCohortTitle": "Ich bin in eine höhere Kohorte aufgestiegen. Soll ich meine Kohorte trotzdem wechseln, wenn ich das Gefühl habe, es nicht verdient zu haben?",
+            "upCohortContent": "Ja. Bitte treten Sie der entsprechenden Kohorte bei. Ihre Kohorte spiegelt nun Ihre Wertung genauer wider – im Einklang mit anderen Mitgliedern, die ein anderes bevorzugtes Wertungssystem nutzen.",
+            "graduateTitle": "Wenn ich meinen Abschluss mache – werden meine Spiele dann immer noch im Stream rezensiert?",
+            "graduateContent": "Hierbei handelt es sich weder um eine Hochstufung noch um eine Abstufung, sondern lediglich um eine Anpassung des Bewertungssystems an sich. Bitte ändern Sie Ihre Kohorte über Ihr ChessDojo-Profil – und nicht durch eine „Graduierung“. Zukünftige Hochstufungen werden auch nach dem Wechsel Ihrer Kohorte weiterhin im Stream begutachtet.",
+            "materialTitle": "Ich befinde mich nun in einer Kohorte, aus der ich im alten System bereits meinen Abschluss gemacht habe. Muss ich Lernmaterialien durcharbeiten, die ich bereits abgeschlossen habe?",
+            "materialContent": "Ja und nein. Ja, Sie können gerne alle Inhalte wiederholen, die Sie bereits bearbeitet haben – wie etwa Bücher oder Sparring-Positionen. Aber nein, Sie fangen nicht wieder ganz von vorne an. Alle Ihre bisherigen Fortschritte wurden gespeichert, sodass Sie sich auf die übrigen Inhalte konzentrieren können, die Sie noch nicht abgeschlossen haben.",
+            "philosophyTitle": "Ändert diese neue Bewertungsskala die ChessDojo-Philosophie?",
+            "philosophyContent": "Überhaupt nicht. Die Grundprinzipien bleiben unverändert: das Spielen und Analysieren klassischer Partien, das Sparring mit Mitgliedern der eigenen Kohorte sowie das +/-/=-System. Der einzige Unterschied besteht darin, dass du nun passendere Dojo-Mitglieder findest, von denen du lernen, die du unterrichten oder mit denen du Sparring betreiben kannst."
         },
         "unauthenticated": {
             "accountTitle": "Konto",

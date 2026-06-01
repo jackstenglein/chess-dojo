@@ -53,6 +53,7 @@ test.describe('Training Plan', () => {
                     followingCount: 0,
                     totalDojoScore: 50,
                     weekStart: 0,
+                    cohortVersion: '2026',
                 }),
             });
         });
@@ -176,6 +177,7 @@ test.describe('Training Plan', () => {
                         '7893c680-2327-426e-8df6-f4d23f7b8baa',
                     ],
                     weekStart: 0,
+                    cohortVersion: '2026',
                 }),
             });
         });
@@ -275,6 +277,7 @@ test.describe('Training Plan', () => {
                         '225f93fd-2ea9-4488-bbb9-9807981283f8',
                     ],
                     weekStart: 0,
+                    cohortVersion: '2026',
                 }),
             });
         });
@@ -349,6 +352,7 @@ test.describe('Training Plan', () => {
                     totalDojoScore: 2,
                     pinnedTasks: ['8d90bed6-999a-45bd-a734-1529df933680'],
                     weekStart: 0,
+                    cohortVersion: '2026',
                 }),
             });
         });
@@ -568,6 +572,7 @@ test.describe('Training Plan', () => {
                             '225f93fd-2ea9-4488-bbb9-9807981283f8',
                         ],
                         weekStart: 0,
+                        cohortVersion: '2026',
                     }),
                 });
             });

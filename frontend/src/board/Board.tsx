@@ -9,13 +9,15 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import './board.css';
-import { getBoardSx, getPieceSx } from './boardThemes';
+import { getBoardSx, getCoordinateSx, getPieceSx } from './boardThemes';
 import { compareNags, getNagGlyph } from './pgn/Nag';
 import { useChess } from './pgn/PgnBoard';
 import ResizeHandle from './pgn/ResizeHandle';
 import {
     BoardStyle,
     BoardStyleKey,
+    CoordinateSize,
+    CoordinateSizeKey,
     CoordinateStyle,
     CoordinateStyleKey,
     PieceStyle,
@@ -266,6 +268,10 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         CoordinateStyleKey,
         CoordinateStyle.RankFileOnly,
     );
+    const [coordinateSize] = useLocalStorage<CoordinateSize>(
+        CoordinateSizeKey,
+        CoordinateSize.Standard,
+    );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
 
@@ -421,9 +427,10 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     }, [board, chess, showGlyphs]);
 
     const pieceSx = getPieceSx(pieceStyle);
+    const coordinateSx = getCoordinateSx(coordinateSize);
 
     return (
-        <Box width={1} height={1} sx={{ ...pieceSx, ...getBoardSx(boardStyle) }}>
+        <Box width={1} height={1} sx={{ ...pieceSx, ...getBoardSx(boardStyle), ...coordinateSx }}>
             <div
                 data-testid='chessground-board'
                 ref={boardRef}

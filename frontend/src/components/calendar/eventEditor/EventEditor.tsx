@@ -110,7 +110,12 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
     };
 
     return (
-        <Dialog data-testid='event-editor' fullScreen open={true} TransitionComponent={Transition}>
+        <Dialog
+            data-testid='event-editor'
+            fullScreen
+            open={true}
+            slots={{ transition: Transition }}
+        >
             <RequestSnackbar request={request} />
 
             <AppBar sx={{ position: 'relative' }}>

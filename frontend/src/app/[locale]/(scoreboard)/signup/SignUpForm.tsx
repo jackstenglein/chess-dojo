@@ -8,11 +8,11 @@ import { useRouter } from '@/hooks/useRouter';
 import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
-import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
+import { AppleButton } from '../signin/AppleButton';
 import { VerifyEmailForm } from './VerifyEmailForm';
 
 enum SignUpStep {
@@ -71,8 +71,8 @@ export const SignUpForm = () => {
             });
     };
 
-    const onGoogleSignIn = () => {
-        auth.socialSignin('Google', redirectUri ? decodeURIComponent(redirectUri) : '');
+    const onSocialSignIn = (provider: 'Google' | 'Apple') => {
+        auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -164,7 +164,7 @@ export const SignUpForm = () => {
                         },
                     }}
                 />
-                <LoadingButton
+                <Button
                     data-testid='submit-button'
                     variant='contained'
                     fullWidth
@@ -180,16 +180,24 @@ export const SignUpForm = () => {
                     loading={request.isLoading()}
                 >
                     {t('signup.createAccount')}
-                </LoadingButton>
+                </Button>
 
-                <GoogleButton
-                    onClick={onGoogleSignIn}
-                    label={t('signup.signUpWithGoogle')}
-                    style={{
-                        transform: 'scale(1.1)',
-                        transformOrigin: 'center',
-                    }}
-                />
+                <Stack>
+                    <GoogleButton
+                        onClick={() => onSocialSignIn('Google')}
+                        label={t('signup.signUpWithGoogle')}
+                        style={{
+                            transform: 'scale(1.1)',
+                            transformOrigin: 'center',
+                            margin: '20px 0',
+                        }}
+                    />
+
+                    <AppleButton onClick={() => onSocialSignIn('Apple')}>
+                        Sign up with Apple
+                    </AppleButton>
+                </Stack>
+
                 <Typography variant='body2' component='div' gutterBottom>
                     {t('signup.alreadyHaveAccount')}{' '}
                     <Link href='/signin' data-testid='signin-button'>
