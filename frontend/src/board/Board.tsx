@@ -26,6 +26,8 @@ import {
     ShowLegalMovesKey,
 } from './pgn/boardTools/underboard/settings/ViewerSettings';
 import { ResizableData } from './pgn/resize';
+import { useBoardSound } from './sounds/useBoardSound';
+import { PieceSounds } from './pgn/boardTools/underboard/settings/ViewerSettings';
 
 export { Chess };
 export type { BoardApi };
@@ -273,6 +275,8 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         CoordinateSize.Standard,
     );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
+    const [pieceSoundsEnabled] = useLocalStorage<boolean>(PieceSounds.key, PieceSounds.default);
+    const { playSound } = useBoardSound(pieceSoundsEnabled);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
 
     const onStartPromotion = useCallback(
@@ -286,7 +290,14 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         (piece: string) => {
             if (board && chess && promotion) {
                 const func = onMove ? onMove : defaultOnMove(showGlyphs);
-                func(board, chess, {
+        const wrappedFunc: onMoveFunc = (b, c, m) => {
+            func(b, c, m);
+            const lastMove = c.currentMove();
+            if (lastMove) {
+                playSound(lastMove, c.isCheck());
+            }
+        };
+                wrappedFunc(board, chess, {
                     orig: promotion.orig,
                     dest: promotion.dest,
                     promotion: piece,
@@ -331,7 +342,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                onMove ? onMove : defaultOnMove(showGlyphs),
+                                (b, c, m) => { const fn = onMove ? onMove : defaultOnMove(showGlyphs); fn(b,c,m); const lm = c.currentMove(); if(lm){ playSound(lm, c.isCheck()); } },
                             );
                         },
                     },
@@ -390,7 +401,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                onMove ? onMove : defaultOnMove(showGlyphs),
+                                (b, c, m) => { const fn = onMove ? onMove : defaultOnMove(showGlyphs); fn(b,c,m); const lm = c.currentMove(); if(lm){ playSound(lm, c.isCheck()); } },
                             ),
                     },
                 },

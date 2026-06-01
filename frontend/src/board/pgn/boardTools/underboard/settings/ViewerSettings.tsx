@@ -44,6 +44,12 @@ export const ShowSuggestedVariations = {
 } as const;
 
 /** Whether to scroll on the board to go to the next move. */
+/** Whether to play sounds for piece moves on the board. */
+export const PieceSounds = {
+    key: 'pieceSounds',
+    default: true,
+} as const;
+
 export const ScrollToMove = {
     key: 'scrollToMove',
     default: false,
@@ -112,6 +118,7 @@ export enum ViewerSetting {
     PersistEngineLines,
     DisplaySuggestedVariations,
     ScrollOnBoardToMove,
+    PieceSounds,
     CorrectSolitaireMoveSound,
     IncorrectSolitaireMoveSound,
 }
@@ -172,6 +179,11 @@ const ViewerSettings = ({
         ScrollToMove.key,
         ScrollToMove.default,
     );
+    const [pieceSounds, setPieceSounds] = useLocalStorage<boolean>(
+        PieceSounds.key,
+        PieceSounds.default,
+    );
+
     const [correctSound, setCorrectSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
     const [incorrectSound, setIncorrectSound] = useLocalStorage(INCORRECT_SOUND_KEY, true);
 
@@ -402,6 +414,18 @@ const ViewerSettings = ({
                     <Typography variant='h6' mt={1}>
                         Sounds
                     </Typography>
+                )}
+
+                {(!enabledSettings || enabledSettings[ViewerSetting.PieceSounds]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={pieceSounds}
+                                onChange={(e) => setPieceSounds(e.target.checked)}
+                            />
+                        }
+                        label='Play sounds for piece moves (move, capture, check)'
+                    />
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (
