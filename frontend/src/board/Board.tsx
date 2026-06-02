@@ -125,7 +125,7 @@ export function toAutoShapes(chess?: Chess, showGlyphs?: boolean): DrawShape[] {
     ];
 }
 
-export function reconcile(chess?: Chess, board?: BoardApi | null, showGlyphs?: boolean) {
+export function reconcile(chess?: Chess, board?: BoardApi | null, showGlyphs?: boolean, playSound?: (move: Move, isCheck: boolean) => void) {
     if (!chess || !board) {
         return;
     }
@@ -145,25 +145,30 @@ export function reconcile(chess?: Chess, board?: BoardApi | null, showGlyphs?: b
             eraseOnClick: false,
         },
     });
+    if (currentMove && playSound) {
+        playSound(currentMove, chess.isCheck());
+    }
 }
 
 export function useReconcile() {
     const { chess, board } = useChess();
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
+    const [pieceSoundsEnabled] = useLocalStorage<boolean>(PieceSounds.key, PieceSounds.default);
+    const { playSound } = useBoardSound(pieceSoundsEnabled);
 
     return useCallback(() => {
-        reconcile(chess, board, showGlyphs);
-    }, [chess, board, showGlyphs]);
+        reconcile(chess, board, showGlyphs, playSound);
+    }, [chess, board, showGlyphs, playSound]);
 }
 
-export function defaultOnMove(showGlyphs: boolean): onMoveFunc {
+export function defaultOnMove(showGlyphs: boolean, playSound?: (move: Move, isCheck: boolean) => void): onMoveFunc {
     return (board: BoardApi, chess: Chess, move: PrimitiveMove) => {
         chess.move({
             from: move.orig,
             to: move.dest,
             promotion: move.promotion,
         });
-        reconcile(chess, board, showGlyphs);
+        reconcile(chess, board, showGlyphs, playSound);
     };
 }
 
@@ -275,8 +280,6 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         CoordinateSize.Standard,
     );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
-    const [pieceSoundsEnabled] = useLocalStorage<boolean>(PieceSounds.key, PieceSounds.default);
-    const { playSound } = useBoardSound(pieceSoundsEnabled);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
 
     const onStartPromotion = useCallback(
@@ -289,15 +292,8 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     const onFinishPromotion = useCallback(
         (piece: string) => {
             if (board && chess && promotion) {
-                const func = onMove ? onMove : defaultOnMove(showGlyphs);
-        const wrappedFunc: onMoveFunc = (b, c, m) => {
-            func(b, c, m);
-            const lastMove = c.currentMove();
-            if (lastMove) {
-                playSound(lastMove, c.isCheck());
-            }
-        };
-                wrappedFunc(board, chess, {
+                const func = onMove ? onMove : defaultOnMove(showGlyphs, playSound);
+                func(board, chess, {
                     orig: promotion.orig,
                     dest: promotion.dest,
                     promotion: piece,
@@ -310,8 +306,8 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
 
     const onCancelPromotion = useCallback(() => {
         setPromotion(null);
-        reconcile(chess, board, showGlyphs);
-    }, [board, chess, showGlyphs]);
+        reconcile(chess, board, showGlyphs, playSound);
+    }, [board, chess, showGlyphs, playSound]);
 
     useEffect(() => {
         if (boardRef.current && !board) {
@@ -342,7 +338,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                (b, c, m) => { const fn = onMove ? onMove : defaultOnMove(showGlyphs); fn(b,c,m); const lm = c.currentMove(); if(lm){ playSound(lm, c.isCheck()); } },
+                                onMove ? onMove : defaultOnMove(showGlyphs, playSound),
                             );
                         },
                     },
@@ -401,7 +397,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                (b, c, m) => { const fn = onMove ? onMove : defaultOnMove(showGlyphs); fn(b,c,m); const lm = c.currentMove(); if(lm){ playSound(lm, c.isCheck()); } },
+                                onMove ? onMove : defaultOnMove(showGlyphs, playSound),
                             ),
                     },
                 },
