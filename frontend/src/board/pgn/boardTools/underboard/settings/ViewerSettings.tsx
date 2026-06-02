@@ -43,6 +43,12 @@ export const ShowSuggestedVariations = {
     default: true,
 } as const;
 
+/** Whether to automatically save variations as comments on other users games. */
+export const AutoSaveVariations = {
+    key: 'autoSaveVariations',
+    default: false,
+} as const;
+
 /** Whether to scroll on the board to go to the next move. */
 export const ScrollToMove = {
     key: 'scrollToMove',
@@ -167,6 +173,10 @@ const ViewerSettings = ({
     const [showSuggestedVariations, setShowSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
         ShowSuggestedVariations.default,
+    );
+    const [autoSaveVariations, setAutoSaveVariations] = useLocalStorage<boolean>(
+        AutoSaveVariations.key,
+        AutoSaveVariations.default,
     );
     const [scrollToMove, setScrollToMove] = useLocalStorage<boolean>(
         ScrollToMove.key,
@@ -353,6 +363,19 @@ const ViewerSettings = ({
                             />
                         }
                         label="Display other users' suggested variations in PGN text"
+                    />
+                )}
+
+                {(!enabledSettings ||
+                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={autoSaveVariations}
+                                onChange={(e) => setAutoSaveVariations(e.target.checked)}
+                            />
+                        }
+                        label='Automatically save my suggested variations as comments'
                     />
                 )}
 
