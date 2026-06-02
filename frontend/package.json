@@ -125,7 +125,7 @@
         "command-line-usage": "^7.0.3",
         "dotenv": "^17.4.2",
         "eslint": "^9.39.2",
-        "eslint-config-next": "^16.1.6",
+        "eslint-config-next": "^16.2.7",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^7.0.1",
         "globals": "^17.6.0",
