@@ -43,13 +43,13 @@ export const ShowSuggestedVariations = {
     default: true,
 } as const;
 
-/** Whether to scroll on the board to go to the next move. */
 /** Whether to play sounds for piece moves on the board. */
 export const PieceSounds = {
     key: 'pieceSounds',
     default: true,
 } as const;
 
+/** Whether to scroll on the board to go to the next move. */
 export const ScrollToMove = {
     key: 'scrollToMove',
     default: false,
