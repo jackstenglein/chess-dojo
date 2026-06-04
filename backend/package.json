@@ -29,7 +29,7 @@
         "@aws-sdk/s3-request-presigner": "^3.1040.0",
         "@aws-sdk/util-dynamodb": "^3.996.2",
         "@googleapis/drive": "^20.1.0",
-        "@jackstenglein/chess": "^2.2.20",
+        "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
         "@savi2w/chess-tcn": "^1.0.0",
         "adm-zip": "^0.5.17",
