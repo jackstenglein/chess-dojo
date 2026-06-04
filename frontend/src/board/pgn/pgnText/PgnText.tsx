@@ -9,6 +9,7 @@ import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../PgnBoard';
 import ResizeHandle from '../ResizeHandle';
+import { SaveAllVariationsButton } from '../boardTools/underboard/comments/SaveAllVariationsButton';
 import { HideEngine } from '../boardTools/underboard/settings/ViewerSettings';
 import { ResizableData } from '../resize';
 import GameComment from './GameComment';
@@ -41,6 +42,7 @@ const PgnText = () => {
         <Stack spacing={1} maxHeight={1}>
             {game && game.unlisted === true && isOwner && <UnpublishedGameBanner dismissable />}
             {unsaved && <UnsavedGameBanner dismissable />}
+            <SaveAllVariationsButton />
 
             <Card
                 data-testid='pgn-text'

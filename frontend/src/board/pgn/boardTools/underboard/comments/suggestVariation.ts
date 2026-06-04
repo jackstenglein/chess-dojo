@@ -42,6 +42,67 @@ export function isVariationInComment(commentId: string, move: Move | null | unde
     return Boolean(move?.commentDiag?.dojoComment?.endsWith(commentId));
 }
 
+function isUserSuggestedVariation(
+    username: string | undefined,
+    move: Move | null | undefined,
+): boolean {
+    return Boolean(username && move?.commentDiag?.dojoComment?.startsWith(`${username},`));
+}
+
+function getSuggestedVariationRoot(user: User, move: Move): Move {
+    let root = move;
+    while (
+        root.previous &&
+        (isUnsavedVariation(root.previous) ||
+            isUserSuggestedVariation(user.username, root.previous))
+    ) {
+        root = root.previous;
+    }
+    return root;
+}
+
+/**
+ * Returns the unique root moves that need to be saved to persist the current user's
+ * unsaved suggested variations.
+ */
+export function getUnsavedSuggestedVariationRoots(
+    user: User | undefined,
+    chess: Chess | undefined,
+): Move[] {
+    if (!user || !chess) {
+        return [];
+    }
+
+    const roots: Move[] = [];
+    const seen = new Set<Move>();
+    const firstMove = chess.history()[0];
+    const stack = firstMove ? [firstMove] : [];
+
+    while (stack.length > 0) {
+        const move = stack.pop();
+        if (!move) {
+            continue;
+        }
+
+        if (isUnsavedVariation(move) && isUserSuggestedVariation(user.username, move)) {
+            const root = getSuggestedVariationRoot(user, move);
+            if (!seen.has(root)) {
+                roots.push(root);
+                seen.add(root);
+            }
+        }
+
+        if (move.next) {
+            stack.push(move.next);
+        }
+        for (let i = move.variations.length - 1; i >= 0; i--) {
+            stack.push(move.variations[i][0]);
+        }
+    }
+
+    return roots;
+}
+
 /**
  * Marks the dojoComment on all moves descended from the root as saved.
  * @param chess The chess instance containing the moves.
@@ -90,14 +151,7 @@ export async function saveSuggestedVariation(
         return;
     }
 
-    let root = move;
-    while (
-        root.previous &&
-        (isUnsavedVariation(root.previous) ||
-            root.previous.commentDiag?.dojoComment?.startsWith(user.username))
-    ) {
-        root = root.previous;
-    }
+    const root = getSuggestedVariationRoot(user, move);
 
     const suggestion = chess.renderFrom(root, {
         skipHeader: true,
@@ -154,4 +208,38 @@ export async function saveSuggestedVariation(
 
     markSuggestedVariationSaved(chess, root, comment.id);
     return { game: response.data };
+}
+
+export interface SaveAllSuggestedVariationsResult {
+    game?: Game;
+    savedCount: number;
+}
+
+/**
+ * Saves every unsaved suggested variation for the current user. Saves are performed
+ * sequentially so each request receives the latest returned game state.
+ */
+export async function saveAllSuggestedVariations(
+    user: User | undefined,
+    game: Game | undefined,
+    api: GameApiContextType,
+    chess: Chess | undefined,
+): Promise<SaveAllSuggestedVariationsResult> {
+    if (!user || !game || !chess) {
+        return { savedCount: 0 };
+    }
+
+    const roots = getUnsavedSuggestedVariationRoots(user, chess);
+    let latestGame = game;
+    let savedCount = 0;
+
+    for (const root of roots) {
+        const response = await saveSuggestedVariation(user, latestGame, api, chess, root);
+        if (response?.game) {
+            latestGame = response.game;
+            savedCount++;
+        }
+    }
+
+    return { game: latestGame, savedCount };
 }

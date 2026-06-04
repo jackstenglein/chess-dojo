@@ -16,6 +16,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import Comment from './Comment';
 import CommentEditor, { CommentEditorProps } from './CommentEditor';
+import { SaveAllVariationsButton } from './SaveAllVariationsButton';
 import { isSuggestedVariation } from './suggestVariation';
 
 const CommentViewKey = 'COMMENT_VIEW';
@@ -88,30 +89,34 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
         <CardContent sx={{ height: 1, p: 0 }}>
             <Stack height={1}>
                 <Stack flexGrow={1} sx={{ overflowY: 'auto', p: 2 }}>
-                    <Stack direction='row' spacing={1}>
-                        <TextField
-                            label='Show Comments From'
-                            select
-                            value={view}
-                            onChange={(e) => setView(e.target.value as View)}
-                            fullWidth
-                            size='small'
-                        >
-                            <MenuItem value={View.FullGame}>Entire Game</MenuItem>
-                            <MenuItem value={View.CurrentMove}>Current Position Only</MenuItem>
-                        </TextField>
+                    <Stack spacing={2}>
+                        <SaveAllVariationsButton />
 
-                        <TextField
-                            label='Sort By'
-                            select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as SortBy)}
-                            fullWidth
-                            size='small'
-                        >
-                            <MenuItem value={SortBy.Newest}>Newest First</MenuItem>
-                            <MenuItem value={SortBy.Oldest}>Oldest First</MenuItem>
-                        </TextField>
+                        <Stack direction='row' spacing={1}>
+                            <TextField
+                                label='Show Comments From'
+                                select
+                                value={view}
+                                onChange={(e) => setView(e.target.value as View)}
+                                fullWidth
+                                size='small'
+                            >
+                                <MenuItem value={View.FullGame}>Entire Game</MenuItem>
+                                <MenuItem value={View.CurrentMove}>Current Position Only</MenuItem>
+                            </TextField>
+
+                            <TextField
+                                label='Sort By'
+                                select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                                fullWidth
+                                size='small'
+                            >
+                                <MenuItem value={SortBy.Newest}>Newest First</MenuItem>
+                                <MenuItem value={SortBy.Oldest}>Oldest First</MenuItem>
+                            </TextField>
+                        </Stack>
                     </Stack>
 
                     <Stack spacing={4} mt={3} flexGrow={1}>
