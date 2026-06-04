@@ -17,7 +17,7 @@ export function SaveAllVariationsButton() {
     const { chess } = useChess();
     const { game, onUpdateGame } = useGame();
     const request = useRequest();
-    const [renderVersion, setRenderVersion] = useState(0);
+    const [_, setRenderVersion] = useState(0);
     const [autoSaveVariations] = useLocalStorage(
         AutoSaveVariations.key,
         AutoSaveVariations.default,
