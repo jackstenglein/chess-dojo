@@ -6,7 +6,9 @@ import useGame from '@/context/useGame';
 import { EventType } from '@jackstenglein/chess';
 import Chat from '@mui/icons-material/Chat';
 import { Alert, Button, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
+import { AutoSaveVariations } from '../settings/ViewerSettings';
 import { getUnsavedSuggestedVariationRoots, saveAllSuggestedVariations } from './suggestVariation';
 
 export function SaveAllVariationsButton() {
@@ -16,9 +18,13 @@ export function SaveAllVariationsButton() {
     const { game, onUpdateGame } = useGame();
     const request = useRequest();
     const [renderVersion, setRenderVersion] = useState(0);
+    const [autoSaveVariations] = useLocalStorage(
+        AutoSaveVariations.key,
+        AutoSaveVariations.default,
+    );
 
     useEffect(() => {
-        if (!chess) {
+        if (!chess || autoSaveVariations) {
             return;
         }
 
@@ -35,12 +41,9 @@ export function SaveAllVariationsButton() {
 
         chess.addObserver(observer);
         return () => chess.removeObserver(observer);
-    }, [chess]);
+    }, [chess, autoSaveVariations]);
 
-    const unsavedRoots = useMemo(
-        () => getUnsavedSuggestedVariationRoots(user, chess),
-        [user, chess, renderVersion],
-    );
+    const unsavedRoots = getUnsavedSuggestedVariationRoots(user, chess);
 
     if (!user || !game || !onUpdateGame || !chess || unsavedRoots.length === 0) {
         return null;
