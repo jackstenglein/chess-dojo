@@ -121,7 +121,7 @@
         "@types/react-resizable": "^3.0.8",
         "@types/uuid": "^10.0.0",
         "@vitejs/plugin-react": "^5.1.2",
-        "command-line-args": "^6.0.1",
+        "command-line-args": "^6.0.2",
         "command-line-usage": "^7.0.4",
         "dotenv": "^17.4.2",
         "eslint": "^9.39.2",
