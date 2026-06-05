@@ -4,7 +4,6 @@ import { useAuth } from '@/auth/Auth';
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import useGame from '@/context/useGame';
 import { PositionComment } from '@/database/game';
-import { LoadingButton } from '@mui/lab';
 import { Button, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
 
@@ -91,7 +90,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                 >
                     cancel
                 </Button>
-                <LoadingButton
+                <Button
                     disabled={value.trim().length === 0}
                     loading={request.isLoading()}
                     size='small'
@@ -99,7 +98,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                     onClick={onReply}
                 >
                     reply
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

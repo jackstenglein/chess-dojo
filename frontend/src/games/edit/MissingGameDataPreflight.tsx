@@ -3,7 +3,6 @@ import {
     GameOrientation,
     GameOrientations,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -253,9 +252,9 @@ export const MissingGameDataPreflight = ({
                 <Button data-testid='cancel-preflight' onClick={onClose} disabled={loading}>
                     {skippable ? 'Skip for now' : 'Cancel'}
                 </Button>
-                <LoadingButton data-testid='submit-preflight' onClick={submit} loading={loading}>
+                <Button data-testid='submit-preflight' onClick={submit} loading={loading}>
                     Submit
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

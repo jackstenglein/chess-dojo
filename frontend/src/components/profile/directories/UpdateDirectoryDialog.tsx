@@ -11,7 +11,6 @@ import {
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Help } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -117,14 +116,14 @@ export const UpdateDirectoryDialog = ({
                 <Button disabled={request.isLoading()} onClick={onCancel}>
                     Cancel
                 </Button>
-                <LoadingButton
+                <Button
                     disabled={disabled}
                     loading={request.isLoading()}
                     onClick={() => onSave(name, visibility, disabled, request)}
                     data-testid='update-directory-save-button'
                 >
                     {saveLabel}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

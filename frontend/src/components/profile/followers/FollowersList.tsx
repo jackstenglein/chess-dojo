@@ -6,8 +6,7 @@ import { Link } from '@/components/navigation/Link';
 import { FollowerEntry } from '@/database/follower';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
-import { LoadingButton } from '@mui/lab';
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 
 export const FollowersList = ({
@@ -122,13 +121,9 @@ const FollowerListItem: React.FC<FollowerListItemProps> = ({ entry, isFollowing,
             </Stack>
 
             {onUnfollow && (
-                <LoadingButton
-                    variant='contained'
-                    loading={unfollowRequest.isLoading()}
-                    onClick={onClick}
-                >
+                <Button variant='contained' loading={unfollowRequest.isLoading()} onClick={onClick}>
                     Unfollow
-                </LoadingButton>
+                </Button>
             )}
         </Stack>
     );

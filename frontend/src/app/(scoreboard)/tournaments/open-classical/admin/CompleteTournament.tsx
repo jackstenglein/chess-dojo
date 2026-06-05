@@ -1,7 +1,6 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenClassical } from '@/database/tournament';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -78,14 +77,14 @@ const CompleteTournament: React.FC<CompleteTournamentProps> = ({ openClassical, 
                     <Button onClick={() => setOpen(false)} disabled={request.isLoading()}>
                         Cancel
                     </Button>
-                    <LoadingButton
+                    <Button
                         loading={request.isLoading()}
                         color='error'
                         onClick={onComplete}
                         disabled={date === null}
                     >
                         Complete Tournament
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
 
                 <RequestSnackbar request={request} />

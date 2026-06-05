@@ -9,7 +9,6 @@ import Icon from '@/style/Icon';
 import { Biotech, Close as CloseIcon, SmartDisplay, SmartToy } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -171,7 +170,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                 </Tooltip>
 
                 <Tooltip title='Copy a URL and send to another player to play on Lichess'>
-                    <LoadingButton
+                    <Button
                         data-testid='position-challenge-url'
                         startIcon={
                             copied === 'lichess' ? (
@@ -184,7 +183,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                         onClick={generateLichessUrl}
                     >
                         Challenge URL
-                    </LoadingButton>
+                    </Button>
                 </Tooltip>
 
                 <Tooltip title='Play against computer on Chess.com'>

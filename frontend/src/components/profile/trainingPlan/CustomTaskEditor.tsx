@@ -12,7 +12,6 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, dojoCohorts } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -321,13 +320,13 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                     Cancel
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     onClick={onCreate}
                     data-testid='custom-task-submit-button'
                 >
                     {task ? 'Update' : 'Create'}
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

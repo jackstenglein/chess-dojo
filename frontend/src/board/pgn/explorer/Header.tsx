@@ -7,7 +7,6 @@ import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import HelpIcon from '@mui/icons-material/Help';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -370,23 +369,23 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                 </Button>
 
                 {follower && (
-                    <LoadingButton
+                    <Button
                         loading={deleteRequest.isLoading()}
                         disabled={request.isLoading()}
                         color='error'
                         onClick={onDelete}
                     >
                         Unsubscribe
-                    </LoadingButton>
+                    </Button>
                 )}
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     disabled={deleteRequest.isLoading()}
                     onClick={onSubscribe}
                 >
                     {follower ? 'Update' : 'Subscribe'}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

@@ -8,8 +8,7 @@ import { useRouter } from '@/hooks/useRouter';
 import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
-import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { AppleButton } from '../signin/AppleButton';
@@ -163,7 +162,7 @@ export const SignUpForm = () => {
                         },
                     }}
                 />
-                <LoadingButton
+                <Button
                     data-testid='submit-button'
                     variant='contained'
                     fullWidth
@@ -179,7 +178,7 @@ export const SignUpForm = () => {
                     loading={request.isLoading()}
                 >
                     Create Account
-                </LoadingButton>
+                </Button>
 
                 <Stack>
                     <GoogleButton
