@@ -49,7 +49,7 @@ function isUserSuggestedVariation(
     return Boolean(username && move?.commentDiag?.dojoComment?.startsWith(`${username},`));
 }
 
-function getSuggestedVariationRoot(user: User, move: Move): Move {
+export function getSuggestedVariationRoot(user: User, move: Move): Move {
     let root = move;
     while (
         root.previous &&
