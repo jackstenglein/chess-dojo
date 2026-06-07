@@ -34,7 +34,7 @@ jobs:
       
       - name: Lint Common
         working-directory: common
-        run: npm run common
+        run: npm run lint
 
       - name: Build frontend
         working-directory: frontend
