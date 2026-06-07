@@ -26,7 +26,7 @@ jobs:
       
       - name: Format Check Backend
         working-directory: backend
-        run: npm run format:check
+        run: npm ci && npm run format:check
 
       - name: Lint Frontend
         working-directory: frontend

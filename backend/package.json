@@ -9,6 +9,7 @@
         "@types/uuid": "^10.0.0",
         "csv-parser": "^3.2.1",
         "esbuild": "^0.28.0",
+        "prettier": "^3.8.3",
         "prettier-plugin-organize-imports": "^4.3.0",
         "serverless": "^3.39.0",
         "serverless-esbuild": "^1.57.2",
