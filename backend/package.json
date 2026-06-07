@@ -55,6 +55,8 @@
         "deploy:simple": "serverless deploy --stage simple",
         "deploy:simple:notifyService": "serverless notifyService deploy --stage simple",
         "deploy:simple:directoryService": "serverless directoryService deploy --stage simple",
-        "test": "vitest run"
+        "test": "vitest run",
+        "format": "prettier **/*.ts --write",
+        "format:check": "prettier **/*.ts --check"
     }
 }

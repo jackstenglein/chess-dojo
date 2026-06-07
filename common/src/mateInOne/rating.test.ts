@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PUZZLES_PER_BLOCK, computeMateInOneRating } from '../rating';
+import { PUZZLES_PER_BLOCK, computeMateInOneRating } from './rating';
 
 const min = (m: number) => m * 60;
 

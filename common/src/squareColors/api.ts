@@ -27,7 +27,7 @@ export const submitSquareColorSessionSchema = z.object({
     /** The individual questions and answers. */
     questions: z.array(squareColorQuestionSchema),
     /** Optional client-generated timestamp to allow updating the same session record. */
-    createdAt: z.string().datetime().optional(),
+    createdAt: z.iso.datetime().optional(),
     /** Optional client-computed rating for this session (0-1500). */
     rating: z.number().min(0).max(1500).optional(),
     /** Whether this is the final submission for the session (triggers rating persistence). */

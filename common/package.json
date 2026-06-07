@@ -5,7 +5,9 @@
     "main": "index.ts",
     "scripts": {
         "test": "vitest run",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "format": "prettier src --write",
+        "format:check": "prettier src --check"
     },
     "author": "jackstenglein",
     "license": "MIT",
@@ -20,7 +22,7 @@
         "@eslint/js": "^9.39.2",
         "@types/uuid": "^11.0.0",
         "eslint": "^9.39.2",
-        "jiti": "^2.6.1",
+        "jiti": "^2.7.0",
         "prettier": "^3.8.3",
         "prettier-plugin-organize-imports": "^4.3.0",
         "typescript-eslint": "^8.59.3",

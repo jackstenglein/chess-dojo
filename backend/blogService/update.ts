@@ -1,9 +1,6 @@
 'use strict';
 
-import {
-    ConditionalCheckFailedException,
-    UpdateItemCommand,
-} from '@aws-sdk/client-dynamodb';
+import { ConditionalCheckFailedException, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     Blog,
