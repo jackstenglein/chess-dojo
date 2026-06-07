@@ -24,15 +24,31 @@ import PricingPage from '../prices/PricingPage';
 import { useOnSubscribe } from '../prices/useOnSubscribe';
 import gameReviewImage from './game_review.webp';
 
-const SAMPLE_LIVE_CLASS: LiveClass = {
-    name: 'Free Sample — Calculation 1000+',
-    type: SubscriptionTier.Lecture,
-    cohortRange: '1000+',
-    tags: ['Tactics'],
-    description: `A weekly class focusing on various techniques and skills within calculation. Students will be given weekly homework to work on before the next class, and encouraged to form study groups to solve the material together. One week's class is provided as a free sample.`,
-    imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
-    recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
-};
+const SAMPLE_CLASSES: LiveClass[] = [
+    {
+        name: 'Calculation 1000+',
+        type: SubscriptionTier.Lecture,
+        cohortRange: '1000+',
+        description: `IM Kostya Kavutskiy's weekly class focusing on various techniques and skills within calculation.`,
+        imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
+        recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
+    },
+    {
+        name: 'Starting Out in the Najdorf',
+        type: SubscriptionTier.GameReview,
+        cohortRange: '1000-1500',
+        description: `GM Jesse Kraai reviews a Dojo member's first game in the Najdorf.`,
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/team_steinitz-1.webp',
+        recordings: [
+            {
+                date: '2026-04-22',
+                url: 'https://www.youtube.com/embed/p98XXb2d8i4?autoplay=1',
+                s3Key: '',
+            },
+        ],
+    },
+];
 
 export default function LiveClassesPage() {
     const { user } = useAuth();
@@ -67,10 +83,6 @@ export default function LiveClassesPage() {
             ?.filter((c) => c.type === SubscriptionTier.Lecture)
             .sort(compareLiveClasses) ?? [];
 
-    if (!isLiveClassUser) {
-        lectureClasses.unshift(SAMPLE_LIVE_CLASS);
-    }
-
     return (
         <Container sx={{ py: 5 }}>
             <Typography variant='h3' fontWeight='bold' mx='auto' textAlign='center'>
@@ -82,6 +94,21 @@ export default function LiveClassesPage() {
                     tiers={[SubscriptionTier.Lecture, SubscriptionTier.GameReview]}
                     hideInterval
                 />
+            )}
+
+            {!isLiveClassUser && (
+                <>
+                    <Typography variant='h5' mt={4} fontWeight='bold'>
+                        Free Samples
+                    </Typography>
+
+                    <LiveClassesList
+                        classes={SAMPLE_CLASSES}
+                        onTagClick={() => null}
+                        selectedTags={[]}
+                        variant='grid'
+                    />
+                </>
             )}
 
             <Typography variant='h5' mt={4} fontWeight='bold'>

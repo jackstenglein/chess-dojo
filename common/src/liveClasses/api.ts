@@ -36,12 +36,17 @@ export interface LiveClass {
     /** The cover image URL of the class. */
     imageUrl?: string;
     /** The recordings of the class. */
-    recordings: {
-        /** The date of the recording. */
-        date: string;
-        /** The S3 key of the recording. */
-        s3Key: string;
-    }[];
+    recordings: LiveClassRecording[];
+}
+
+/** A single recording for a livve class. */
+export interface LiveClassRecording {
+    /** The date of the recording. */
+    date: string;
+    /** The S3 key of the recording. */
+    s3Key: string;
+    /** The url of the recording, if it is not saved in S3. */
+    url?: string;
 }
 
 /** A cohort of users in the Game & Profile Review tier. */
