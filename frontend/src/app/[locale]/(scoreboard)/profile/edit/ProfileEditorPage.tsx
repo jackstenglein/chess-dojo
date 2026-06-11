@@ -129,7 +129,7 @@ function getUpdate(
         return undefined;
     }
 
-    return update as Partial<UserUpdate>;
+    return update;
 }
 export function encodeFileToBase64(file: File): Promise<string> {
     return new Promise<string>((resolve, reject) => {
@@ -188,6 +188,7 @@ export function ProfileEditorPage({ user }: { user: User }) {
                 timezone === DefaultTimezone && !user.timezoneOverride
                     ? user.timezoneOverride
                     : timezone,
+            language: language === DEFAULT_LOCALE && !user.language ? user.language : language,
         },
         profilePictureData,
     );
