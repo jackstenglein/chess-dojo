@@ -265,14 +265,14 @@ export const DirectorySchema = z.object({
     updatedAt: z.iso.datetime(),
 
     /** A map from username to the user's access role in the directory. */
-    access: z.record(z.string(), z.nativeEnum(DirectoryAccessRole)).optional(),
+    access: z.record(z.string(), z.enum(DirectoryAccessRole)).optional(),
 });
 
 /** A directory owned by a user. */
-export type Directory = z.TypeOf<typeof DirectorySchema>;
+export type Directory = z.output<typeof DirectorySchema>;
 
 /** A single item in a directory. */
-export type DirectoryItem = z.TypeOf<typeof DirectoryItemSchema>;
+export type DirectoryItem = z.output<typeof DirectoryItemSchema>;
 
 /** A subdirectory in another directory. */
 export type DirectoryItemSubdirectory = z.infer<(typeof DirectoryItemSchema.options)[0]>;

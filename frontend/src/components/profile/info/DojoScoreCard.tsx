@@ -229,7 +229,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
 
                     {timeManagementRating && timeManagementRating.currentRating > 0 && (
                         <Grid size={12}>
-                            <Tooltip title='Calculated using the games in your My Games folder'>
+                            <Tooltip title='Time Management Rating is calculated from the classical games in your My Games folder (and subfolders).'>
                                 <Stack direction='row' alignItems='center' gap={0.5}>
                                     <AccessTimeIcon
                                         sx={{ fontSize: 15, color: 'text.secondary' }}

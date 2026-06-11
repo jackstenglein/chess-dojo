@@ -67,7 +67,8 @@ async function updateGame(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
     if (
         result.old.timeManagementRatingWhite !== result.new.timeManagementRatingWhite ||
         result.old.timeManagementRatingBlack !== result.new.timeManagementRatingBlack ||
-        result.old.orientation !== result.new.orientation
+        result.old.orientation !== result.new.orientation ||
+        result.old.directories !== result.new.directories
     ) {
         await rebuildUserTimeManagementRating(result.new.owner);
     }

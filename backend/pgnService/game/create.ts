@@ -31,7 +31,7 @@ import { UpdateItemBuilder } from '../../directoryService/database';
 import { getChesscomAnalysis, getChesscomGame } from './chesscom';
 import { dynamo, gamesTable, timelineTable, usersTable } from './database';
 import { getLichessChapter, getLichessGame, getLichessStudy } from './lichess';
-import { rateGameTimeManagement } from './timeManagement';
+import { rateGameTimeManagement, rebuildUserTimeManagementRating } from './timeManagement';
 import { Game, GameImportHeaders, isMissingData, isValidDate, isValidResult } from './types';
 
 export { dynamo, gamesTable, timelineTable } from './database';
@@ -96,10 +96,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         const updated = await batchPutGames(games);
 
-        await updateUserTimeManagementRating(user, games);
-
         if (request.directory) {
             await addGamesToDirectory(request.directory.owner, request.directory.id, games);
+            await rebuildUserTimeManagementRating(user.username);
         }
 
         if (request.publish) {

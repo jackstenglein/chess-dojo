@@ -14,6 +14,7 @@ import {
 } from '../../directoryService/api';
 import { dynamo } from '../../directoryService/database';
 import { gamesTable } from './create';
+import { rebuildUserTimeManagementRating } from './timeManagement';
 
 /**
  * Handles batch deleting up to 100 games. The caller must be the owner
@@ -27,6 +28,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const userInfo = requireUserInfo(event);
         const request = parseBody(event, DeleteGamesSchema);
         const deleted = await deleteGames({ username: userInfo.username, request });
+        await rebuildUserTimeManagementRating(userInfo.username);
         return success(deleted);
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);

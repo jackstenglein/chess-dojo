@@ -1,6 +1,11 @@
-import { BatchGetItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { BatchGetItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
+import {
+    Directory,
+    DirectoryItemTypes,
+    MY_GAMES_DIRECTORY_ID,
+} from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Game, GameKey } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import {
@@ -11,7 +16,7 @@ import {
     newTimeManagementRating,
     TimeManagementRating,
 } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
-import { UpdateItemBuilder } from '../../directoryService/database';
+import { GetItemBuilder, UpdateItemBuilder } from '../../directoryService/database';
 import { directoriesTable, dynamo, gamesTable, usersTable } from './database';
 
 export interface TimeManagementRatings {
@@ -92,26 +97,47 @@ export async function rebuildUserTimeManagementRating(owner: string): Promise<vo
 }
 
 /**
- * Returns the game keys (cohort + id) from a user's mygames directory.
+ * Returns the game keys (cohort + id) from a user's My Games directory and
+ * any subdirectories. Duplicate game keys are removed.
  * @param owner The username to get the game keys for.
  */
 async function getGameKeys(owner: string): Promise<GameKey[]> {
-    const dirResult = await dynamo.send(
-        new GetItemCommand({
-            TableName: directoriesTable,
-            Key: marshall({ owner, id: 'mygames' }),
-            ProjectionExpression: 'itemIds',
-        }),
-    );
+    const queue = [MY_GAMES_DIRECTORY_ID];
+    const keys = new Set<string>();
 
-    // itemIds may be stored as SS (String Set) or L (List of Strings)
-    const rawIds = dirResult.Item?.itemIds;
-    const itemIds: string[] = rawIds?.SS ?? rawIds?.L?.map((item) => item.S!).filter(Boolean) ?? [];
+    while (queue.length) {
+        const id = queue.pop();
+        console.debug(`getGameKeys: fetching directory ${owner}/${id}`);
+        if (!id) {
+            break;
+        }
+        const directory = await new GetItemBuilder<Directory>()
+            .key('owner', owner)
+            .key('id', id)
+            .table(directoriesTable)
+            .send();
+        if (!directory) {
+            continue;
+        }
 
-    return itemIds
-        .map((id) => id.split('/'))
-        .filter((parts) => parts.length === 2)
-        .map(([cohort, id]) => ({ cohort, id }));
+        for (const item of Object.values(directory.items)) {
+            if (item.type === DirectoryItemTypes.DIRECTORY) {
+                queue.push(item.id);
+            } else {
+                keys.add(item.id);
+            }
+        }
+    }
+
+    const gameKeys: GameKey[] = [];
+    for (const key of keys.values()) {
+        console.debug(`getGameKeys: checking gameKey ${key}`);
+        const parts = key.split('/');
+        if (parts.length === 2) {
+            gameKeys.push({ cohort: parts[0], id: parts[1] });
+        }
+    }
+    return gameKeys;
 }
 
 type PartialGame = Pick<
@@ -130,22 +156,26 @@ async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeMana
     const games: PartialGame[] = [];
 
     for (let i = 0; i < gameKeys.length; i += 100) {
-        const result = await dynamo.send(
-            new BatchGetItemCommand({
-                RequestItems: {
-                    [gamesTable]: {
-                        Keys: gameKeys.slice(i, i + 100).map((k) => marshall(k)),
-                        ProjectionExpression:
-                            '#date, createdAt, orientation, timeManagementRatingWhite, timeManagementRatingBlack',
-                        ExpressionAttributeNames: { '#date': 'date' },
-                    },
-                },
-            }),
-        );
+        let keys = gameKeys.slice(i, i + 100).map((k) => marshall(k));
 
-        for (const item of result.Responses?.[gamesTable] ?? []) {
-            const game = unmarshall(item) as PartialGame;
-            games.push(game);
+        while (keys.length > 0) {
+            const result = await dynamo.send(
+                new BatchGetItemCommand({
+                    RequestItems: {
+                        [gamesTable]: {
+                            Keys: keys,
+                            ProjectionExpression:
+                                '#date, createdAt, orientation, timeManagementRatingWhite, timeManagementRatingBlack',
+                            ExpressionAttributeNames: { '#date': 'date' },
+                        },
+                    },
+                }),
+            );
+            for (const item of result.Responses?.[gamesTable] ?? []) {
+                const game = unmarshall(item) as PartialGame;
+                games.push(game);
+            }
+            keys = result.UnprocessedKeys?.[gamesTable]?.Keys ?? [];
         }
     }
 
