@@ -12,54 +12,45 @@
  * Safe to re-run — only removes references to games that no longer exist.
  */
 
-import {
-    AttributeValue,
-    BatchGetItemCommand,
-    ScanCommand,
-} from '@aws-sdk/client-dynamodb';
+import { AttributeValue, BatchGetItemCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import {
-    DirectoryItem,
+    Directory,
     DirectoryItemTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { directoryTable, dynamo, gameTable } from './database';
 import { removeDirectoryItems } from './removeItems';
-
-/** Delay between scan pages to reduce DynamoDB pressure. */
-const SCAN_DELAY_MS = 200;
-
-/** Pause execution for the given number of milliseconds. */
-function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 /**
  * Checks which games from a batch actually exist in the games table.
  * @param keys Array of { cohort, id } pairs (max 100 per call).
  * @returns Set of "cohort/id" strings that exist.
  */
-async function checkGamesExist(
-    keys: { cohort: string; id: string }[],
-): Promise<Set<string>> {
+async function checkGamesExist(keys: { cohort: string; id: string }[]): Promise<Set<string>> {
     const existing = new Set<string>();
     if (keys.length === 0) return existing;
 
     for (let i = 0; i < keys.length; i += 100) {
-        const batch = keys.slice(i, i + 100);
-        const output = await dynamo.send(
-            new BatchGetItemCommand({
-                RequestItems: {
-                    [gameTable]: {
-                        Keys: batch.map((k) => marshall({ cohort: k.cohort, id: k.id })),
-                        ProjectionExpression: 'cohort, id',
-                    },
-                },
-            }),
-        );
+        let batch = keys.slice(i, i + 100).map((k) => marshall(k));
 
-        for (const item of output.Responses?.[gameTable] ?? []) {
-            const game = unmarshall(item) as { cohort: string; id: string };
-            existing.add(`${game.cohort}/${game.id}`);
+        while (batch.length > 0) {
+            const output = await dynamo.send(
+                new BatchGetItemCommand({
+                    RequestItems: {
+                        [gameTable]: {
+                            Keys: batch,
+                            ProjectionExpression: 'cohort, id',
+                        },
+                    },
+                }),
+            );
+
+            for (const item of output.Responses?.[gameTable] ?? []) {
+                const game = unmarshall(item) as { cohort: string; id: string };
+                existing.add(`${game.cohort}/${game.id}`);
+            }
+
+            batch = output.UnprocessedKeys?.[gameTable]?.Keys ?? [];
         }
     }
 
@@ -84,12 +75,7 @@ async function main() {
         );
 
         for (const rawDir of scanOutput.Items ?? []) {
-            const dir = unmarshall(rawDir) as {
-                owner: string;
-                id: string;
-                items?: Record<string, DirectoryItem>;
-            };
-
+            const dir = unmarshall(rawDir) as Directory;
             if (!dir.items) continue;
 
             // Collect game items from this directory
@@ -107,22 +93,17 @@ async function main() {
                 }
             }
 
-            if (gameItems.length === 0) continue;
-
             // Check which games still exist
             const existingGames = await checkGamesExist(
                 gameItems.map((g) => ({ cohort: g.cohort, id: g.id })),
             );
 
             // Find phantoms — directory references to games that no longer exist
-            const phantoms = gameItems.filter(
-                (g) => !existingGames.has(`${g.cohort}/${g.id}`),
-            );
-
+            const phantoms = gameItems.filter((g) => !existingGames.has(`${g.cohort}/${g.id}`));
             if (phantoms.length === 0) continue;
 
             console.log(
-                `  Directory ${dir.owner}/${dir.id}: removing ${phantoms.length} phantom(s): ${phantoms.map((p) => p.key).join(', ')}`,
+                `  Directory ${dir.owner}/${dir.id}: removing ${phantoms.length} phantom(s):${'\n'}    ${phantoms.map((p) => p.key).join('\n    ')}`,
             );
 
             try {
@@ -135,19 +116,13 @@ async function main() {
                 );
                 phantomsRemoved += phantoms.length;
             } catch (err) {
-                console.error(
-                    `  Failed to clean directory ${dir.owner}/${dir.id}:`,
-                    err,
-                );
+                console.error(`  Failed to clean directory ${dir.owner}/${dir.id}:`, err);
             }
 
             scannedDirectories++;
         }
 
         startKey = scanOutput.LastEvaluatedKey;
-        if (startKey) {
-            await sleep(SCAN_DELAY_MS);
-        }
     } while (startKey);
 
     console.log(
