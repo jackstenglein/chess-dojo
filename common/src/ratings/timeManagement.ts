@@ -32,24 +32,22 @@ function expectedScore(playerRating: number, opponentRating: number): number {
  * @param gameRating The time management rating from the new game.
  * @returns The updated rating, rounded to the nearest integer.
  */
-export function updateTimeManagementRating(
-    currentRating: number,
-    gameRating: number,
-): number {
+function calculateRating(currentRating: number, gameRating: number): number {
     const expected = expectedScore(currentRating, gameRating);
     return Math.round(currentRating + K_FACTOR * (DRAW_SCORE - expected));
 }
 
 /**
- * Incrementally updates the time management aggregate with a new game rating.
+ * Incrementally updates the time management aggregate with a new game rating
+ * and returns the new rating. The current rating is left unchanged.
  * - If fewer than MIN_GAMES_FOR_ELO games: uses a running average.
  * - If MIN_GAMES_FOR_ELO or more games: applies a USCF Elo draw adjustment.
  *
  * @param current The current aggregate, or undefined if this is the user's first game.
  * @param gameRating The time management rating from the new game.
- * @returns The updated aggregate.
+ * @returns The new aggregate rating.
  */
-export function applyGameRatingToTimeManagementRating(
+export function newTimeManagementRating(
     current: TimeManagementRating | undefined,
     gameRating: number,
 ): TimeManagementRating {
@@ -69,7 +67,7 @@ export function applyGameRatingToTimeManagementRating(
 
     // Elo draw adjustment
     return {
-        currentRating: updateTimeManagementRating(current.currentRating, gameRating),
+        currentRating: calculateRating(current.currentRating, gameRating),
         numGames: newCount,
     };
 }

@@ -1,20 +1,18 @@
-import {
-    BatchGetItemCommand,
-    GetItemCommand,
-    UpdateItemCommand,
-} from '@aws-sdk/client-dynamodb';
+import { BatchGetItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
+import { Game, GameKey } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import {
     calculateTimeRating,
     ClockDatum,
 } from '@jackstenglein/chess-dojo-common/src/ratings/clockRating';
 import {
+    newTimeManagementRating,
     TimeManagementRating,
-    applyGameRatingToTimeManagementRating,
 } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
-import { dynamo, directoriesTable, gamesTable, usersTable } from './database';
+import { UpdateItemBuilder } from '../../directoryService/database';
+import { directoriesTable, dynamo, gamesTable, usersTable } from './database';
 
 export interface TimeManagementRatings {
     white?: number;
@@ -79,10 +77,25 @@ export function rateGameTimeManagement(chess: Chess): TimeManagementRatings {
  * aggregate model is not reversible.
  * @param owner The username of the game owner.
  */
+export async function rebuildUserTimeManagementRating(owner: string): Promise<void> {
+    try {
+        const gameKeys = await getGameKeys(owner);
+        if (gameKeys.length === 0) {
+            return;
+        }
+
+        const rating = await rateAllGamesTimeManagement(gameKeys);
+        await saveUserTimeManagementRating(owner, rating);
+    } catch (err) {
+        console.error('Failed to rebuild user time management rating: ', err);
+    }
+}
+
 /**
  * Returns the game keys (cohort + id) from a user's mygames directory.
+ * @param owner The username to get the game keys for.
  */
-async function getGameKeys(owner: string): Promise<{ cohort: string; id: string }[]> {
+async function getGameKeys(owner: string): Promise<GameKey[]> {
     const dirResult = await dynamo.send(
         new GetItemCommand({
             TableName: directoriesTable,
@@ -93,8 +106,7 @@ async function getGameKeys(owner: string): Promise<{ cohort: string; id: string 
 
     // itemIds may be stored as SS (String Set) or L (List of Strings)
     const rawIds = dirResult.Item?.itemIds;
-    const itemIds: string[] =
-        rawIds?.SS ?? rawIds?.L?.map((item) => item.S!).filter(Boolean) ?? [];
+    const itemIds: string[] = rawIds?.SS ?? rawIds?.L?.map((item) => item.S!).filter(Boolean) ?? [];
 
     return itemIds
         .map((id) => id.split('/'))
@@ -102,97 +114,69 @@ async function getGameKeys(owner: string): Promise<{ cohort: string; id: string 
         .map(([cohort, id]) => ({ cohort, id }));
 }
 
+type PartialGame = Pick<
+    Game,
+    'date' | 'createdAt' | 'orientation' | 'timeManagementRatingWhite' | 'timeManagementRatingBlack'
+>;
+
 /**
- * Batch-gets TM ratings for the given games and computes the aggregate.
+ * Gets time management ratings for the given games and computes the aggregate. The time
+ * management ratings for individual games are taken from the cached values on the game objects,
+ * rather than being recalculated on the fly here.
+ * @param gameKeys The games to get the time management ratings for.
+ * @returns The aggregate time management rating.
  */
-async function rateAllGamesTimeManagement(
-    gameKeys: { cohort: string; id: string }[],
-): Promise<TimeManagementRating | undefined> {
-    let aggregate: TimeManagementRating | undefined;
+async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeManagementRating> {
+    const games: PartialGame[] = [];
 
     for (let i = 0; i < gameKeys.length; i += 100) {
         const result = await dynamo.send(
             new BatchGetItemCommand({
                 RequestItems: {
                     [gamesTable]: {
-                        Keys: gameKeys
-                            .slice(i, i + 100)
-                            .map((k) => marshall({ cohort: k.cohort, id: k.id })),
+                        Keys: gameKeys.slice(i, i + 100).map((k) => marshall(k)),
                         ProjectionExpression:
-                            'orientation, timeManagementRatingWhite, timeManagementRatingBlack',
+                            '#date, createdAt, orientation, timeManagementRatingWhite, timeManagementRatingBlack',
+                        ExpressionAttributeNames: { '#date': 'date' },
                     },
                 },
             }),
         );
 
         for (const item of result.Responses?.[gamesTable] ?? []) {
-            const game = unmarshall(item) as {
-                orientation?: string;
-                timeManagementRatingWhite?: number;
-                timeManagementRatingBlack?: number;
-            };
-            const ownerRating =
-                game.orientation === 'black'
-                    ? game.timeManagementRatingBlack
-                    : game.timeManagementRatingWhite;
+            const game = unmarshall(item) as PartialGame;
+            games.push(game);
+        }
+    }
 
-            if (ownerRating !== undefined && ownerRating >= 0) {
-                aggregate = applyGameRatingToTimeManagementRating(aggregate, ownerRating);
-            }
+    games.sort((lhs, rhs) => (lhs.date || lhs.createdAt).localeCompare(rhs.date || rhs.createdAt));
+    let aggregate: TimeManagementRating = { currentRating: 0, numGames: 0 };
+    for (const game of games) {
+        const ownerRating =
+            game.orientation === 'black'
+                ? game.timeManagementRatingBlack
+                : game.timeManagementRatingWhite;
+
+        if (ownerRating !== undefined && ownerRating >= 0) {
+            aggregate = newTimeManagementRating(aggregate, ownerRating);
         }
     }
 
     return aggregate;
 }
 
-export async function rebuildUserTimeManagementRating(owner: string): Promise<void> {
-    try {
-        const gameKeys = await getGameKeys(owner);
-        if (gameKeys.length === 0) {
-            return;
-        }
-
-        const rating = await rateAllGamesTimeManagement(gameKeys);
-        if (rating) {
-            await saveUserTimeManagementRating(owner, rating);
-        } else {
-            await removeUserTimeManagementRating(owner);
-        }
-    } catch (err) {
-        console.error('Failed to rebuild user time management rating: ', err);
-    }
-}
-
+/**
+ * Updates the given user to set their time management rating in the database.
+ * @param username The user to set the time management rating for.
+ * @param aggregate The aggregate time management rating to save on the user.
+ */
 async function saveUserTimeManagementRating(
-    owner: string,
+    username: string,
     aggregate: TimeManagementRating,
 ): Promise<void> {
-    await dynamo.send(
-        new UpdateItemCommand({
-            Key: { username: { S: owner } },
-            TableName: usersTable,
-            UpdateExpression: 'SET #tmr = :tmRating',
-            ExpressionAttributeNames: { '#tmr': 'timeManagementRating' },
-            ExpressionAttributeValues: marshall(
-                {
-                    ':tmRating': {
-                        currentRating: aggregate.currentRating,
-                        numGames: aggregate.numGames,
-                    },
-                },
-                { removeUndefinedValues: true },
-            ),
-        }),
-    );
-}
-
-async function removeUserTimeManagementRating(owner: string): Promise<void> {
-    await dynamo.send(
-        new UpdateItemCommand({
-            Key: { username: { S: owner } },
-            TableName: usersTable,
-            UpdateExpression: 'REMOVE #tmr',
-            ExpressionAttributeNames: { '#tmr': 'timeManagementRating' },
-        }),
-    );
+    await new UpdateItemBuilder()
+        .key('username', username)
+        .set('timeManagementRating', aggregate)
+        .table(usersTable)
+        .send();
 }

@@ -6,11 +6,15 @@ export interface ClockDatum {
     seconds: number;
 }
 
+/** The move number that clock data begins calculating from. */
 export const MIN_MOVE = 5;
+/** The move number that clock data calculates up to. */
 export const MAX_MOVE = 50;
+/** The minimum initial time in seconds that the clock must start with to have a clock rating. */
+export const MIN_TIME_CONTROL = 30 * 60; // 30 minutes
+
 const PERFECT_TIME_AT_MAX_MOVE = 120; // Expected to have 2 minutes at move 50
 const MAX_RATING = 3000; // The rating given if the player has zero area
-export const MIN_TIME_CONTROL = 30 * 60; // 30 minutes
 
 /**
  * Returns the number of seconds the perfect line would have on the clock for the given
@@ -26,9 +30,7 @@ export function getPerfectLineSeconds(timeControls: TimeControl[], move: number)
         );
     }
     if (move > MAX_MOVE) {
-        throw new Error(
-            `Provided move ${move} must be less than or equal to max move ${MAX_MOVE}`,
-        );
+        throw new Error(`Provided move ${move} must be less than or equal to max move ${MAX_MOVE}`);
     }
 
     const initialTime = timeControls[0].seconds ?? 0;
@@ -44,7 +46,7 @@ export function getPerfectLineSeconds(timeControls: TimeControl[], move: number)
 
 /**
  * Calculates the approximate area between the player's clock graph and the perfect
- * clock graph. This function approximates the value integral[a, b] |f(x) - g(x)| dx. The
+ * clock graph. This function approximates the value ∫[a, b] |f(x) - g(x)| dx. The
  * approximation is calculated using the trapezoidal method, where each trapezoid has
  * a height of 1.
  * @param dataset The player's clock at each move.

@@ -34,7 +34,7 @@ export interface User {
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
 
-    /** The user's time management rating aggregate. */
+    /** The user's aggregate time management rating. */
     timeManagementRating?: TimeManagementRating;
 
     progress: Record<string, RequirementProgress>;

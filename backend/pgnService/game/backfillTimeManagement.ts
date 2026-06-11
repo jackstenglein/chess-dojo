@@ -1,7 +1,7 @@
 /**
  * Backfill script for time management ratings.
  *
- * Scans all games in the database, calculates per-game TM ratings for games
+ * Scans all user games in the database, calculates per-game TM ratings for games
  * with clock annotations, writes them to the game records, and rebuilds
  * user-level aggregates.
  *
@@ -12,15 +12,11 @@
  * Idempotent: skips games that already have timeManagementRatingWhite set.
  * User aggregates are rebuilt from scratch on every run.
  */
-
-import {
-    AttributeValue,
-    DynamoDBClient,
-    ScanCommand,
-    UpdateItemCommand,
-} from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { AttributeValue, DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
+import { UpdateItemBuilder } from '../../directoryService/database';
+import { dojoCohorts } from '../explorer/types';
 import { rateGameTimeManagement, rebuildUserTimeManagementRating } from './timeManagement';
 
 const dynamo = new DynamoDBClient({ region: 'us-east-1' });
@@ -53,62 +49,80 @@ async function main() {
     let gamesFailed = 0;
     const owners = new Set<string>();
 
-    let startKey: Record<string, AttributeValue> | undefined = undefined;
-
     try {
-        do {
-            console.log(
-                `\nScan page | processed: ${gamesProcessed} | updated: ${gamesUpdated} | skipped: ${gamesSkipped}`,
-            );
+        for (const cohort of dojoCohorts) {
+            let startKey: Record<string, AttributeValue> | undefined = undefined;
+            do {
+                console.log(
+                    `\nCohort ${cohort} page | processed: ${gamesProcessed} | updated: ${gamesUpdated} | skipped: ${gamesSkipped}`,
+                );
 
-            const scanOutput = await dynamo.send(
-                new ScanCommand({
-                    ExclusiveStartKey: startKey,
-                    TableName: gamesTable,
-                }),
-            );
+                const output = await dynamo.send(
+                    new QueryCommand({
+                        KeyConditionExpression: '#cohort = :cohort',
+                        FilterExpression:
+                            'attribute_not_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementRatingBlack)',
+                        ExpressionAttributeNames: {
+                            '#cohort': 'cohort',
+                            '#id': 'id',
+                            '#owner': 'owner',
+                        },
+                        ExpressionAttributeValues: { ':cohort': { S: cohort } },
+                        ProjectionExpression: '#cohort, #id, #owner, orientation, pgn',
+                        ExclusiveStartKey: startKey,
+                        TableName: gamesTable,
+                    }),
+                );
 
-            const items = scanOutput.Items ?? [];
-            console.log(`  Received ${items.length} items`);
+                const items = output.Items ?? [];
+                console.log(`  Received ${items.length} items`);
 
-            for (const item of items) {
-                gamesProcessed++;
-                const game = unmarshall(item) as GameRecord;
+                for (const item of items) {
+                    gamesProcessed++;
+                    const game = unmarshall(item) as GameRecord;
 
-                if (game.owner) {
-                    owners.add(game.owner);
-                }
+                    if (game.owner) {
+                        owners.add(game.owner);
+                    }
 
-                // Skip games that already have TM ratings (idempotent)
-                if (game.timeManagementRatingWhite !== undefined) {
-                    gamesSkipped++;
-                    continue;
-                }
-
-                if (!game.pgn) {
-                    continue;
-                }
-
-                try {
-                    const chess = new Chess({ pgn: game.pgn });
-                    const tmRatings = rateGameTimeManagement(chess);
-
-                    if (tmRatings.white === undefined && tmRatings.black === undefined) {
+                    // Skip games that already have TM ratings (idempotent)
+                    if (
+                        game.timeManagementRatingWhite !== undefined ||
+                        game.timeManagementRatingBlack !== undefined
+                    ) {
+                        gamesSkipped++;
                         continue;
                     }
 
-                    await updateGameRatings(game, tmRatings.white, tmRatings.black);
-                    gamesUpdated++;
-                } catch (err) {
-                    gamesFailed++;
-                    if (gamesFailed <= 10) {
-                        console.error(`  Failed to process game ${game.cohort}/${game.id}:`, err);
+                    if (!game.pgn) {
+                        continue;
+                    }
+
+                    try {
+                        const chess = new Chess({ pgn: game.pgn });
+                        const tmRatings = rateGameTimeManagement(chess);
+
+                        if (tmRatings.white === undefined && tmRatings.black === undefined) {
+                            gamesSkipped++;
+                            continue;
+                        }
+
+                        await updateGameRatings(game, tmRatings.white, tmRatings.black);
+                        gamesUpdated++;
+                    } catch (err) {
+                        gamesFailed++;
+                        if (gamesFailed <= 10) {
+                            console.error(
+                                `  Failed to process game ${game.cohort}/${game.id}:`,
+                                err,
+                            );
+                        }
                     }
                 }
-            }
 
-            startKey = scanOutput.LastEvaluatedKey;
-        } while (startKey);
+                startKey = output.LastEvaluatedKey;
+            } while (startKey);
+        }
     } catch (err) {
         console.error('Fatal error during scan:', err);
         process.exit(1);
@@ -117,7 +131,7 @@ async function main() {
     console.log('\n--- Game scan complete ---');
     console.log(`  Processed: ${gamesProcessed}`);
     console.log(`  Updated: ${gamesUpdated}`);
-    console.log(`  Skipped (already had ratings): ${gamesSkipped}`);
+    console.log(`  Skipped (no ratings): ${gamesSkipped}`);
     console.log(`  Failed: ${gamesFailed}`);
 
     // Phase 2: Rebuild user TM ratings from mygames directories
@@ -147,33 +161,13 @@ async function main() {
  * Writes per-game TM ratings to the game record.
  */
 async function updateGameRatings(game: GameRecord, white?: number, black?: number): Promise<void> {
-    const names: Record<string, string> = {};
-    const values: Record<string, unknown> = {};
-    const setClauses: string[] = [];
-
-    if (white !== undefined) {
-        names['#tmw'] = 'timeManagementRatingWhite';
-        values[':tmw'] = white;
-        setClauses.push('#tmw = :tmw');
-    }
-    if (black !== undefined) {
-        names['#tmb'] = 'timeManagementRatingBlack';
-        values[':tmb'] = black;
-        setClauses.push('#tmb = :tmb');
-    }
-
-    if (setClauses.length === 0) return;
-
-    await dynamo.send(
-        new UpdateItemCommand({
-            Key: marshall({ cohort: game.cohort, id: game.id }),
-            TableName: gamesTable,
-            UpdateExpression: `SET ${setClauses.join(', ')}`,
-            ExpressionAttributeNames: names,
-            ExpressionAttributeValues: marshall(values),
-        }),
-    );
+    await new UpdateItemBuilder()
+        .key('cohort', game.cohort)
+        .key('id', game.id)
+        .set('timeManagementRatingWhite', white)
+        .set('timeManagementRatingBlack', black)
+        .table(gamesTable)
+        .send();
 }
-
 
 main();
