@@ -6,8 +6,7 @@ import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { Lock } from '@mui/icons-material';
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -141,7 +140,7 @@ export const VerifyEmailForm = ({
                     }}
                 />
 
-                <LoadingButton
+                <Button
                     variant='contained'
                     loading={submitRequest.isLoading()}
                     fullWidth
@@ -157,9 +156,9 @@ export const VerifyEmailForm = ({
                     data-testid='verify-button'
                 >
                     Verify Email
-                </LoadingButton>
+                </Button>
 
-                <LoadingButton
+                <Button
                     variant='text'
                     sx={{
                         textTransform: 'none',
@@ -173,7 +172,7 @@ export const VerifyEmailForm = ({
                     data-testid='resend-button'
                 >
                     Send New Code
-                </LoadingButton>
+                </Button>
             </Stack>
         </Stack>
     );

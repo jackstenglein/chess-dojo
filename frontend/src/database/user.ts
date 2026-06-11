@@ -29,6 +29,7 @@ import {
     getNormalizedRating,
     getRatingBoundary,
     isCustom,
+    oldRatingBoundaries,
     ratingBoundaries,
 } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { AuthTokens } from 'aws-amplify/auth';
@@ -284,6 +285,37 @@ export function normalizedRatingToCohort(rating: number): string | undefined {
     return undefined;
 }
 
+/**
+ * Returns an array of [old suggested cohort, current suggested cohort] where
+ * old suggested cohort uses the old rating boundaries and current suggested
+ * cohort uses the current rating boundaries. These cohorts can be used to determine
+ * if the user should be prompted to switch cohorts without graduating or demoting.
+ * @param user The user to get the cohorts for.
+ * @returns A list of two strings, or undefined if the cohorts cannot be determined.
+ */
+export function getSuggestedCohorts(user?: User): [string | undefined, string | undefined] {
+    if (!user?.dojoCohort || !user.ratingSystem) {
+        return [undefined, undefined];
+    }
+
+    const currentRating = getCurrentRating(user);
+    const newNormalizedRating = getNormalizedRating(currentRating, user.ratingSystem);
+    const oldNormalizedRating = getNormalizedRating(
+        currentRating,
+        user.ratingSystem,
+        oldRatingBoundaries,
+    );
+
+    const newCohort = normalizedRatingToCohort(newNormalizedRating);
+    const oldCohort = normalizedRatingToCohort(oldNormalizedRating);
+    return [oldCohort, newCohort];
+}
+
+/**
+ * Returns whether the user should be prompted to graudate.
+ * @param user The user to potentially prompt for graduation.
+ * @returns True if the user should be prompted to graduate.
+ */
 export function shouldPromptGraduation(user?: User): boolean {
     if (!user?.dojoCohort || !user.ratingSystem) {
         return false;
@@ -376,12 +408,14 @@ export function isCohortPromptHidden(user?: User): boolean {
 }
 
 /**
- * Creates a partial user object where hideCohortPrompt is one month (30 days) after todays date.
+ * Creates a partial user object where hideCohortPrompt is set to some offset after todays date.
  * @param user In order to update the hideCohortPromptUntil field, all the fields in the
  * UserNotificationSettings and SiteNotificationSettings needs to be provided.
+ * @param offsetMillis The offset in milliseconds from today until the prompt should be shown again.
+ * If not specified, defaults to 30 days.
  * @returns A partial User object
  */
-export function getPartialUserHideCohortPrompt(user?: User): Partial<User> {
+export function getPartialUserHideCohortPrompt(user?: User, offsetMillis?: number): Partial<User> {
     const siteNotificationSettings = user?.notificationSettings?.siteNotificationSettings ?? {
         disableGameComment: false,
         disableGameCommentReplies: false,
@@ -390,14 +424,14 @@ export function getPartialUserHideCohortPrompt(user?: User): Partial<User> {
         disableNewsfeedReaction: false,
         disableCalendarInvite: false,
     };
-    const oneMonthForward = new Date();
-    oneMonthForward.setTime(new Date().getTime() + ONE_MONTH);
+    const until = new Date();
+    until.setTime(new Date().getTime() + (offsetMillis || ONE_MONTH));
     return {
         notificationSettings: {
             ...user?.notificationSettings,
             siteNotificationSettings: {
                 ...siteNotificationSettings,
-                hideCohortPromptUntil: oneMonthForward.toISOString(),
+                hideCohortPromptUntil: until.toISOString(),
             },
         },
     };

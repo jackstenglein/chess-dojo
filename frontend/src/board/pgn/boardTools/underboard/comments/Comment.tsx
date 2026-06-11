@@ -12,7 +12,6 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Move } from '@jackstenglein/chess';
 import { Edit, ExpandMore } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Collapse,
@@ -145,6 +144,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                                         lines={[suggestedVariation]}
                                         handleScroll={() => null}
                                         forceShowSuggestedVariations
+                                        showInlinePositionComments={false}
                                         slotProps={{
                                             moveButton: { hideSuggestedVariationOwner: true },
                                         }}
@@ -274,7 +274,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                 >
                                     cancel
                                 </Button>
-                                <LoadingButton
+                                <Button
                                     disabled={editValue.trim().length === 0}
                                     loading={request.isLoading()}
                                     size='small'
@@ -282,7 +282,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                     onClick={onSave}
                                 >
                                     save
-                                </LoadingButton>
+                                </Button>
                             </Stack>
                         </Stack>
                     )
@@ -329,13 +329,13 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                         >
                             Cancel
                         </Button>
-                        <LoadingButton
+                        <Button
                             loading={deleteRequest.isLoading()}
                             color='error'
                             onClick={onDelete}
                         >
                             Delete
-                        </LoadingButton>
+                        </Button>
                     </DialogActions>
                 </DialogContent>
             </Dialog>

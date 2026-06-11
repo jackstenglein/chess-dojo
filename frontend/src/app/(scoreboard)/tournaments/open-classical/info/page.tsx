@@ -139,12 +139,12 @@ export default function InfoPage() {
                         case of a dispute, please contact the TD on Discord.
                     </InfoEntryAccordion>
 
-                    <InfoEntryAccordion icon='liga' title='Winners & Prizes'>
+                    <InfoEntryAccordion icon='liga' title='Winners'>
                         <Typography>
                             To view the standings for any round, you can navigate to the{' '}
-                            <Link href='/tournaments/open-classical'>Tournament Page</Link>. At the
-                            end of the 7 rounds, winners will be announced. The winners of each
-                            tournament will qualify for a year-end tournament in January 2026.
+                            <Link href='/tournaments/open-classical'>Tournament Page</Link>. The
+                            winners of each tournament will qualify for the next year's Champions'
+                            Round Robin.
                         </Typography>
                     </InfoEntryAccordion>
                 </Stack>

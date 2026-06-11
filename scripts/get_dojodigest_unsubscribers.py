@@ -16,6 +16,7 @@ def handle_users(writer, users):
 def main():
     with open('unsubscribers.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
+        writer.writerow(['time', 'email', 'reason'])
         try:
             res = table.scan()
             lastKey = res.get('LastEvaluatedKey', None)

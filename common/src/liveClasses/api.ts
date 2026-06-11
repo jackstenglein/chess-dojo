@@ -75,7 +75,7 @@ const gameReviewCohortMemberSchema = z.object({
     /** The display name of the member. */
     displayName: z.string(),
     /** The date the member joined the queue. */
-    queueDate: z.string(),
+    queueDate: z.string().nullish(),
     /** Whether the user's queue position is paused. */
     paused: z.boolean().optional(),
     /** The member's dojo cohort. Output only, enriched by the backend. */

@@ -24,11 +24,11 @@ export function useNextSearchParams(defaultInit?: Record<string, string>) {
     const pathname = usePathname();
 
     const updateSearchParams = useCallback(
-        (params: Record<string, string>, options?: NavigateOptions) => {
+        (params: Record<string, string>, _options?: NavigateOptions) => {
             const newParams = mergeSearchParams(searchParams, params, true);
-            router.push(`${pathname}?${newParams.toString()}`, options);
+            window.history.pushState(null, '', `${pathname}?${newParams.toString()}`);
         },
-        [searchParams, router, pathname],
+        [searchParams, pathname],
     );
 
     const setSearchParams = useCallback(

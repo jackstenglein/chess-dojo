@@ -7,8 +7,8 @@ export const liveClassesFaq = {
             title: 'What types of live classes are offered?',
             content: (
                 <>
-                    There are two types of classes: larger lectures and smaller, more personal Game
-                    and Profile Review classes. The lectures cover a variety of different
+                    There are two types of classes: larger workshops and smaller, more personal Game
+                    and Profile Review classes. The workshops cover a variety of different
                     specialized topics (for example endgame fundamentals, calculation or the
                     Najdorf) and rotate monthly. In the Game and Profile Review classes, the sensei
                     focuses on a single player each week, analyzing their training habits and (at
@@ -33,8 +33,8 @@ export const liveClassesFaq = {
             content: (
                 <>
                     We will add further classes and different time slots as we get more students.
-                    This applies to both the lectures and the Game and Profile Review classes. The
-                    topics of the lectures will also rotate monthly.
+                    This applies to both the workshops and the Game and Profile Review classes. The
+                    topics of the workshops will also rotate monthly.
                 </>
             ),
         },
@@ -42,9 +42,9 @@ export const liveClassesFaq = {
             title: 'How much do the classes cost?',
             content: (
                 <>
-                    The lectures are available on the $75/month subscription tier. The Game and
+                    The workshops are available on the $75/month subscription tier. The Game and
                     Profile Review classes are available on the $200/month subscription tier. The
-                    $200/month subscription tier also provides access to the lecture classes. Both
+                    $200/month subscription tier also provides access to the workshop classes. Both
                     subscription tiers provide full access to the rest of the ChessDojo training
                     plan and website.
                 </>
@@ -58,9 +58,9 @@ export const liveClassesFaq = {
                     0-600, 600-1000, 1000-1400, 1400-1800, 1800+ (these ratings all use the{' '}
                     <Link href='/learn/ratings'>ChessDojo rating scale</Link>). For the Game and
                     Profile Review classes, you can only join the class for your specific cohort.
-                    The lectures are roughly split among the same rating ranges but may cover
+                    The workshops are roughly split among the same rating ranges but may cover
                     broader or more targeted ranges for a given class. Each class will specify its
-                    recommended rating range. Any subscriber can join the lecture classes, even if
+                    recommended rating range. Any subscriber can join the workshop classes, even if
                     they are outside the recommended rating range. However, the class material will
                     be designed for the recommended rating range.
                 </>
@@ -70,7 +70,7 @@ export const liveClassesFaq = {
             title: 'How many students can join each class?',
             content: (
                 <>
-                    The lecture classes have no limit on the amount of students that can join each
+                    The workshop classes have no limit on the amount of students that can join each
                     class. The Game and Profile Review classes will be limited to approximately 10
                     students. As more students join a given cohort range, they will be split into
                     additional sections. For example, there might be two sections of the 600-1000
@@ -94,7 +94,7 @@ export const liveClassesFaq = {
             title: 'Do I have to additionally register for specific classes after subscribing?',
             content: (
                 <>
-                    No, all subscribers can join any of the lecture classes using the Google Meet
+                    No, all subscribers can join any of the workshop classes using the Google Meet
                     links in the calendar. Game and Profile Review subscribers will automatically
                     have access to their specific cohort's section of the class through the Google
                     Meet link in the calendar as well.
@@ -115,8 +115,8 @@ export const liveClassesFaq = {
             content: (
                 <>
                     Subscribers will get access to a private section of Discord channels. There will
-                    be a channel for each lecture class, as well as channels specifically for each
-                    Game and Profile Review cohort. Subscribers will have access to all lecture
+                    be a channel for each workshop class, as well as channels specifically for each
+                    Game and Profile Review cohort. Subscribers will have access to all workshop
                     channels, but only the members in a specific Game and Profile Review cohort will
                     have access to the corresponding Discord channel.
                 </>

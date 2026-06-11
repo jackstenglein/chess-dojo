@@ -228,7 +228,7 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                 pgn: selectedProblem === i ? pgnApi.current?.getPgn() || '' : pgn,
             })),
             cohort: user.dojoCohort,
-            rating: getNormalizedRating(getCurrentRating(user), user.ratingSystem),
+            rating: getNormalizedRating(getCurrentRating(user), user.ratingSystem) || 0,
             timeUsedSeconds: Math.round(countdown.elapsedTime),
             createdAt: '',
             inProgress,
@@ -321,7 +321,7 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                 pgn,
             })),
             cohort: user.dojoCohort,
-            rating: getNormalizedRating(getCurrentRating(user), user.ratingSystem),
+            rating: getNormalizedRating(getCurrentRating(user), user.ratingSystem) || 0,
             timeUsedSeconds: Math.round(countdown.elapsedTime),
             createdAt: new Date().toISOString(),
         };

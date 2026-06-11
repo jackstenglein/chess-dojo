@@ -211,7 +211,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                                         fontSize: '24px',
                                                     }}
                                                 />{' '}
-                                                Group Lecture
+                                                Group Workshop
                                             </Stack>
                                         </MenuItem>,
                                         <MenuItem

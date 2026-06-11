@@ -130,6 +130,57 @@ func TestUpdateUser(t *testing.T) {
 				DojoCohort: "2400+",
 			},
 		},
+		{
+			name:     "BioWithAsSuch",
+			username: testUsername,
+			update: &database.UserUpdate{
+				Bio: aws.String("As such, I enjoy chess."),
+			},
+			wantCode: 200,
+			wantUser: &database.User{
+				Username:     testUsername,
+				Email:        testEmail,
+				Name:         testName,
+				DisplayName:  "testDisplayName",
+				Bio:          "As such, I enjoy chess.",
+				RatingSystem: database.Fide,
+				DojoCohort:   "2400+",
+			},
+		},
+		{
+			name:     "BioWithAsSold",
+			username: testUsername,
+			update: &database.UserUpdate{
+				Bio: aws.String("Sold as sold."),
+			},
+			wantCode: 200,
+			wantUser: &database.User{
+				Username:     testUsername,
+				Email:        testEmail,
+				Name:         testName,
+				DisplayName:  "testDisplayName",
+				Bio:          "Sold as sold.",
+				RatingSystem: database.Fide,
+				DojoCohort:   "2400+",
+			},
+		},
+		{
+			name:     "BioWithCommonAssSubstrings",
+			username: testUsername,
+			update: &database.UserUpdate{
+				Bio: aws.String("I enjoy classroom assessment and passage analysis."),
+			},
+			wantCode: 200,
+			wantUser: &database.User{
+				Username:     testUsername,
+				Email:        testEmail,
+				Name:         testName,
+				DisplayName:  "testDisplayName",
+				Bio:          "I enjoy classroom assessment and passage analysis.",
+				RatingSystem: database.Fide,
+				DojoCohort:   "2400+",
+			},
+		},
 	}
 
 	for _, tc := range table {

@@ -202,6 +202,7 @@ import {
     listFollowing,
     listUserTimeline,
     listUsersByCohort,
+    resetUserProgress,
     searchUsers,
     updateUser,
     updateUserProgress,
@@ -264,6 +265,8 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             searchUsers,
             updateUser: (update: Partial<User>, autopickCohort?: boolean) =>
                 updateUser(idToken, update, auth.updateUser, autopickCohort),
+            resetUserProgress: (confirm: string) =>
+                resetUserProgress(idToken, confirm, auth.updateUser),
             updateUserProgress: (request: UpdateUserProgressRequest) =>
                 updateUserProgress(idToken, request, auth.updateUser),
             updateUserTimeline: (request: UpdateUserTimelineRequest) =>

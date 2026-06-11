@@ -7,7 +7,7 @@ import { MoveButtonSlotProps } from '@/board/pgn/pgnText/MoveButton';
 import Avatar from '@/profile/Avatar';
 import { StockfishIcon } from '@/style/ChessIcons';
 import { Move } from '@jackstenglein/chess';
-import { Warning } from '@mui/icons-material';
+import { Cloud, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 
 export const GameMoveButtonExtras = ({
@@ -56,7 +56,18 @@ export const GameMoveButtonExtras = ({
         }
     }
 
-    if (move.commentDiag?.dojoEngine && !move.previous?.commentDiag?.dojoEngine) {
+    const engine = move.commentDiag?.dojoEngine;
+    const prevEngine = move.previous?.commentDiag?.dojoEngine;
+
+    if (engine && engine !== prevEngine) {
+        if (engine === 'CloudDB') {
+            return (
+                <Tooltip title='This line was found with the Cloud Database.'>
+                    <Cloud fontSize='small' sx={{ ml: 0.5 }} color='inherit' />
+                </Tooltip>
+            );
+        }
+
         return (
             <Tooltip title='This line was found with the engine.'>
                 <StockfishIcon fontSize='small' sx={{ ml: 0.5 }} color='error' />

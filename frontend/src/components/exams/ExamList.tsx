@@ -9,7 +9,7 @@ import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { Exam, ExamType } from '@jackstenglein/chess-dojo-common/src/database/exam';
-import { getRegression } from '@jackstenglein/chess-dojo-common/src/exam/scores';
+import { getRegression, predictExamRating } from '@jackstenglein/chess-dojo-common/src/exam/scores';
 import { Check, Close, ExpandLess, ExpandMore, Help, Lock } from '@mui/icons-material';
 import {
     Alert,
@@ -55,12 +55,12 @@ function getExamInfo(e: Exam, username?: string, timezoneOverride?: string): Exa
     let userRating: number | undefined = undefined;
     if (regression) {
         const sum = Object.values(e.answers)
-            .map((a) => regression.predict(a.score))
+            .map((a) => predictExamRating(regression, a.score))
             .reduce((sum, rating) => sum + rating, 0);
         averageRating = Math.round((10 * sum) / Object.values(e.answers).length) / 10;
 
         if (answer) {
-            userRating = Math.round(10 * regression.predict(answer.score)) / 10;
+            userRating = Math.round(10 * predictExamRating(regression, answer.score)) / 10;
         }
     }
 

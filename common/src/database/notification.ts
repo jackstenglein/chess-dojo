@@ -9,6 +9,8 @@ const NotificationEventTypeSchema = z.enum([
     'GAME_REVIEW_COMPLETE',
     /** A game is submitted for sensei review */
     'GAME_REVIEW_SUBMITTED',
+    /** A user has signed up for Game & Profile Review */
+    'GAME_REVIEW_SIGNUP',
     /** A user gets a new follower */
     'NEW_FOLLOWER',
     /** A comment is left on a timeline entry */
@@ -88,6 +90,17 @@ const GameReviewSubmittedEventSchema = z.object({
 
 /** The type of a notification event when a game is submitted for sensei review. */
 export type GameReviewSubmittedEvent = z.infer<typeof GameReviewSubmittedEventSchema>;
+
+/** The type of a notification event when a user signs up for Game & Profile Review. */
+const GameReviewSignupEventSchema = z.object({
+    /** The type of the event. */
+    type: z.literal(NotificationEventTypes.GAME_REVIEW_SIGNUP),
+    /** The username of the user that signed up. */
+    username: z.string(),
+});
+
+/** The type of a notification event when a user signs up for Game & Profile Review. */
+export type GameReviewSignupEvent = z.infer<typeof GameReviewSignupEventSchema>;
 
 /** The type of a notification event when a user gets a new follower. */
 const NewFollowerEventSchema = z.object({
@@ -240,6 +253,7 @@ export const NotificationEventSchema = z.discriminatedUnion('type', [
     GameCommentEventSchema,
     GameReviewEventSchema,
     GameReviewSubmittedEventSchema,
+    GameReviewSignupEventSchema,
     TimelineCommentEventSchema,
     TimelineReactionEventSchema,
     ClubJoinRequesetEventSchema,

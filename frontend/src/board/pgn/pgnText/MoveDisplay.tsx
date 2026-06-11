@@ -1,8 +1,13 @@
 import { useAuth } from '@/auth/Auth';
+import useGame from '@/context/useGame';
 import { Event, EventType, Move } from '@jackstenglein/chess';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { ShowSuggestedVariations } from '../boardTools/underboard/settings/ViewerSettings';
+import { getInlineCommentsForMove } from '../boardTools/underboard/comments/positionComments';
+import {
+    ShowInlineCommentsInPgn,
+    ShowSuggestedVariations,
+} from '../boardTools/underboard/settings/ViewerSettings';
 import { useChess } from '../PgnBoard';
 import { Ellipsis } from './Ellipsis';
 import Interrupt, { hasInterrupt } from './Interrupt';
@@ -18,14 +23,36 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
     const { user } = useAuth();
     const username = user?.username;
     const { chess } = useChess();
+    const { game } = useGame();
     const [, setForceRender] = useState(0);
     const [, setHasComment] = useState(move.commentAfter && move.commentAfter !== '');
     const [showSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
         ShowSuggestedVariations.default,
     );
+    const [showInlineCommentsInPgn] = useLocalStorage<boolean>(
+        ShowInlineCommentsInPgn.key,
+        ShowInlineCommentsInPgn.default,
+    );
+    const hasMoveInterrupt = useCallback(
+        (target: Move | null | undefined) => {
+            if (!target) {
+                return false;
+            }
+            const inlineComments = showInlineCommentsInPgn
+                ? getInlineCommentsForMove(game, chess, target)
+                : [];
+            return hasInterrupt(
+                target,
+                showSuggestedVariations,
+                username,
+                inlineComments.length > 0,
+            );
+        },
+        [chess, game, showInlineCommentsInPgn, showSuggestedVariations, username],
+    );
     const [needReminder, setNeedReminder] = useState(
-        move.previous === null || hasInterrupt(move.previous, showSuggestedVariations, username),
+        move.previous === null || hasMoveInterrupt(move.previous),
     );
 
     useEffect(() => {
@@ -62,9 +89,7 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
                     }
 
                     if (event.type === EventType.UpdateComment && move === event.move?.next) {
-                        setNeedReminder(
-                            hasInterrupt(event.move, showSuggestedVariations, username),
-                        );
+                        setNeedReminder(hasMoveInterrupt(event.move));
                     }
                     if (
                         event.type === EventType.NewVariation &&
@@ -74,9 +99,7 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
                         setNeedReminder(true);
                     }
                     if (event.type === EventType.DeleteMove && move === event.mainlineMove?.next) {
-                        setNeedReminder(
-                            hasInterrupt(event.mainlineMove, showSuggestedVariations, username),
-                        );
+                        setNeedReminder(hasMoveInterrupt(event.mainlineMove));
                     }
                 },
             };
@@ -84,14 +107,11 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
             chess.addObserver(observer);
             return () => chess.removeObserver(observer);
         }
-    }, [chess, move, setForceRender, setNeedReminder, showSuggestedVariations, username]);
+    }, [chess, move, setForceRender, setNeedReminder, hasMoveInterrupt]);
 
     useEffect(() => {
-        setNeedReminder(
-            move.previous === null ||
-                hasInterrupt(move.previous, showSuggestedVariations, username),
-        );
-    }, [setNeedReminder, move, showSuggestedVariations, username]);
+        setNeedReminder(move.previous === null || hasMoveInterrupt(move.previous));
+    }, [setNeedReminder, move, hasMoveInterrupt]);
 
     return (
         <>

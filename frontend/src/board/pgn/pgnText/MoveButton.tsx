@@ -29,6 +29,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { formatTime } from '../boardTools/underboard/clock/ClockUsage';
 import {
     isUnsavedVariation,
+    isVariationSuggestor,
     saveSuggestedVariation,
 } from '../boardTools/underboard/comments/suggestVariation';
 import { DeletePrompt, useDeletePrompt } from '../boardTools/underboard/DeletePrompt';
@@ -40,6 +41,9 @@ import { useChess } from '../PgnBoard';
 
 export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?: boolean): string {
     if (highlightEngineLines && move.commentDiag?.dojoEngine) {
+        if (move.commentDiag.dojoEngine === 'CloudDB') {
+            return 'primary.main';
+        }
         return 'error.main';
     }
     for (const nag of move.nags || []) {
@@ -200,6 +204,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     const { user } = useAuth();
     const api = useApi();
     const saveVariationRequest = useRequest();
+    const canDeleteMove = config?.allowMoveDeletion || isVariationSuggestor(user?.username, move);
 
     if (!chess) {
         return null;
@@ -253,7 +258,6 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
         <>
             <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={onClose}>
                 <RequestSnackbar request={saveVariationRequest} />
-
                 <MenuList>
                     {config?.allowMoveDeletion && [
                         <MenuItem key='mainline' disabled={isInMainline} onClick={onMakeMainline}>
@@ -280,7 +284,9 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             </ListItemIcon>
                             <ListItemText>Move variation up</ListItemText>
                         </MenuItem>,
+                    ]}
 
+                    {canDeleteMove && [
                         <MenuItem key='delete-from-here' onClick={() => onDelete(move, 'after')}>
                             <ListItemIcon>
                                 <Backspace sx={{ transform: 'rotateY(180deg)' }} />
@@ -298,7 +304,9 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             </ListItemIcon>
                             <ListItemText>Delete before here</ListItemText>
                         </MenuItem>,
+                    ]}
 
+                    {config?.allowMoveDeletion && [
                         <MenuItem key='toggle-engine' onClick={onToggleEngineLine}>
                             <ListItemIcon>
                                 <StockfishIcon />

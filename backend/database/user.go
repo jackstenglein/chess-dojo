@@ -355,6 +355,9 @@ type User struct {
 	// The user's best-ever square color drill rating (0-1500).
 	SquareColorRating float32 `dynamodbav:"squareColorRating,omitempty" json:"squareColorRating,omitempty"`
 
+	// The user's best-ever mate-in-one drill block rating (0-2500).
+	MateInOneRating float32 `dynamodbav:"mateInOneRating,omitempty" json:"mateInOneRating,omitempty"`
+
 	// The id of the user's game review cohort, if they are a member of the Game & Profile Review tier.
 	GameReviewCohortId string `dynamodbav:"gameReviewCohortId,omitempty" json:"gameReviewCohortId,omitempty"`
 
@@ -370,6 +373,9 @@ type User struct {
 	// Tracks which milestone notifications have been sent for this user,
 	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
 	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 
 	// The user's aggregate time management rating, computed from games in their mygames folder
 	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
@@ -410,7 +416,7 @@ type UserExamSummary struct {
 }
 
 type PaymentInfo struct {
-	// The Stripe customer id
+	// The Stripe customer id, or WIX, or OVERRIDE for admin-granted complimentary access
 	CustomerId string `dynamodbav:"customerId" json:"customerId"`
 
 	// The Stripe subscription id for the training program
@@ -418,6 +424,33 @@ type PaymentInfo struct {
 
 	// The date the subscription was last updated
 	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
+
+	// When admin OVERRIDE access expires (RFC3339). Empty means no expiry until revoked.
+	ExpiresAt string `dynamodbav:"expiresAt,omitempty" json:"expiresAt,omitempty"`
+
+	// The date the OVERRIDE access was granted, in ISO 8601.
+	OverrideGrantedAt string `dynamodbav:"overrideGrantedAt,omitempty" json:"overrideGrantedAt,omitempty"`
+
+	// The username of the user who granted the OVERRIDE access.
+	OverrideGrantedBy string `dynamodbav:"overrideGrantedBy,omitempty" json:"overrideGrantedBy,omitempty"`
+
+	// The date the OVERRIDE access was last updated, in ISO 8601.
+	OverrideUpdatedAt string `dynamodbav:"overrideUpdatedAt,omitempty" json:"overrideUpdatedAt,omitempty"`
+
+	// The username of the user who last updated the OVERRIDE access.
+	OverrideUpdatedBy string `dynamodbav:"overrideUpdatedBy,omitempty" json:"overrideUpdatedBy,omitempty"`
+
+	// The date the OVERRIDE access was revoked, in ISO 8601.
+	OverrideRevokedAt string `dynamodbav:"overrideRevokedAt,omitempty" json:"overrideRevokedAt,omitempty"`
+
+	// The username of the user who revoked the OVERRIDE access.
+	OverrideRevokedBy string `dynamodbav:"overrideRevokedBy,omitempty" json:"overrideRevokedBy,omitempty"`
+
+	// Stripe billing preserved while customerId is OVERRIDE (restored when override ends).
+	PreservedCustomerId         string `dynamodbav:"preservedCustomerId,omitempty" json:"preservedCustomerId,omitempty"`
+	PreservedSubscriptionId     string `dynamodbav:"preservedSubscriptionId,omitempty" json:"-"`
+	PreservedSubscriptionStatus string `dynamodbav:"preservedSubscriptionStatus,omitempty" json:"preservedSubscriptionStatus,omitempty"`
+	PreservedSubscriptionTier   string `dynamodbav:"preservedSubscriptionTier,omitempty" json:"preservedSubscriptionTier,omitempty"`
 }
 
 type WorkGoalSettings struct {
@@ -781,6 +814,9 @@ type UserUpdate struct {
 	// Non-Dojo tasks are not included.
 	MinutesSpent *map[string]int `dynamodbav:"minutesSpent,omitempty" json:"minutesSpent,omitempty"`
 
+	// The user's total dojo score, across all cohorts. Cannot be manually set by the user.
+	TotalDojoScore *float32 `dynamodbav:"totalDojoScore,omitempty" json:"-"`
+
 	// The user's profile picture as a base64 encoded string. This data gets saved to S3, not Dynamo.
 	ProfilePictureData *string `dynamodbav:"-" json:"profilePictureData,omitempty"`
 
@@ -844,6 +880,9 @@ type UserUpdate struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion *string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem
@@ -1135,6 +1174,33 @@ func (repo *dynamoRepository) createDefaultDirectories(user *User) error {
 
 // UpdateUser applies the specified update to the user with the provided username.
 func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*User, error) {
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")),
+	)
+}
+
+// UpdateUserIfNotGameReview applies the specified update only if the user is not currently
+// an active Game & Profile Review subscriber.
+func (repo *dynamoRepository) UpdateUserIfNotGameReview(username string, update *UserUpdate) (*User, error) {
+	notSubscribed := expression.AttributeNotExists(expression.Name("subscriptionStatus")).
+		Or(expression.Name("subscriptionStatus").NotEqual(expression.Value(SubscriptionStatus_Subscribed)))
+	notGameReviewTier := expression.AttributeNotExists(expression.Name("subscriptionTier")).
+		Or(expression.Name("subscriptionTier").NotEqual(expression.Value(SubscriptionTier_GameReview)))
+
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")).And(notSubscribed.Or(notGameReviewTier)),
+	)
+}
+
+func (repo *dynamoRepository) updateUser(
+	username string,
+	update *UserUpdate,
+	condition expression.ConditionBuilder,
+) (*User, error) {
 	if username == "STATISTICS" {
 		return nil, errors.New(403, "Invalid request: cannot update username `STATISTICS`", "")
 	}
@@ -1154,7 +1220,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		builder = builder.Set(expression.Name(k), expression.Value(v))
 	}
 
-	expr, err := expression.NewBuilder().WithUpdate(builder).Build()
+	expr, err := expression.NewBuilder().WithUpdate(builder).WithCondition(condition).Build()
 	if err != nil {
 		return nil, errors.Wrap(500, "Temporary server error", "DynamoDB expression building error", err)
 	}
@@ -1168,7 +1234,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
-		ConditionExpression:       aws.String("attribute_exists(username)"),
+		ConditionExpression:       expr.Condition(),
 		TableName:                 aws.String(userTable),
 		ReturnValues:              aws.String("ALL_NEW"),
 	}

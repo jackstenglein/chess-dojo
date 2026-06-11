@@ -1,6 +1,6 @@
 import { ExamCard } from '@/components/exams/ExamCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
-import { Visibility } from '@mui/icons-material';
+import { EmojiEvents, Visibility } from '@mui/icons-material';
 import { Container, Grid } from '@mui/material';
 
 /**
@@ -37,6 +37,13 @@ export default function ExamLandingPage() {
                     description='All Ratings'
                     href='/puzzles/square-colors'
                     icon={Visibility}
+                />
+
+                <ExamCard
+                    name='Mate in One Visualization Drill'
+                    description='All Ratings'
+                    href='/puzzles/mate-in-one'
+                    icon={EmojiEvents}
                 />
             </Grid>
         </Container>

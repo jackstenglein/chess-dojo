@@ -50,6 +50,7 @@ var testUserAfterGraduation = &database.User{
 	// StartChesscomRating:   500,
 	// CurrentChesscomRating: 2300,
 	DojoCohort:          "2400+",
+	CohortVersion:       "2026",
 	LastGraduatedAt:     "Unknown",
 	NumberOfGraduations: 3,
 	PreviousCohort:      "2300-2400",

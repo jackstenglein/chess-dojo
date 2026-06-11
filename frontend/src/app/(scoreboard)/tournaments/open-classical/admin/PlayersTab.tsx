@@ -9,7 +9,6 @@ import {
 } from '@/database/tournament';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { Block, PersonRemove, SaveAlt } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -132,13 +131,13 @@ function CustomToolbar({ region, ratingRange }: { region: string; ratingRange: s
 
     return (
         <GridToolbarContainer>
-            <LoadingButton
+            <Button
                 startIcon={<SaveAlt />}
                 loading={downloadRequest.isLoading()}
                 onClick={onDownloadRegistrations}
             >
                 Download Registrations
-            </LoadingButton>
+            </Button>
         </GridToolbarContainer>
     );
 }
@@ -298,9 +297,9 @@ const PlayersTab: React.FC<PlayersTabProps> = ({ openClassical, onUpdate }) => {
                     >
                         Cancel
                     </Button>
-                    <LoadingButton loading={updateRequest.isLoading()} onClick={onConfirmUpdate}>
+                    <Button loading={updateRequest.isLoading()} onClick={onConfirmUpdate}>
                         {updateType === 'ban' ? 'Ban' : 'Withdraw'} Player
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
             <RequestSnackbar request={updateRequest} showSuccess />

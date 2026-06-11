@@ -85,13 +85,13 @@ export default function LiveClassesPage() {
             )}
 
             <Typography variant='h5' mt={4} fontWeight='bold'>
-                Lecture Tier
+                Workshops Tier
             </Typography>
             <Typography variant='h6' mt={2}>
-                The Lecture Tier provides access to larger lecture-style classes on various topics
-                like endgames, calculation, and openings. For $75/month, you get access to all
-                lecture classes and recordings, as well as full access to the rest of the ChessDojo
-                website.{' '}
+                The Workshops Tier provides access to larger workshop-style classes on various
+                topics like endgames, calculation, and openings. For $75/month, you get access to
+                all workshop classes and recordings, as well as full access to the rest of the
+                ChessDojo website.{' '}
                 {!isLiveClassUser &&
                     `Not sure if these classes are for you? Watch a free sample of Kostya's calculation course below.`}
             </Typography>
@@ -109,7 +109,7 @@ export default function LiveClassesPage() {
                 color='subscribe'
                 loading={request.isLoading() && tier === SubscriptionTier.Lecture}
             >
-                {isLectureUser ? 'Already Subscribed' : 'Join Lecture Tier'}
+                {isLectureUser ? 'Already Subscribed' : 'Join Workshops Tier'}
             </Button>
 
             <Box mt={4}>
@@ -138,8 +138,8 @@ export default function LiveClassesPage() {
                         each week. The highlighted player rotates each week. For $200/month, you get
                         placed with a team of similarly rated players and access to weekly peer
                         review and sensei review sessions with your team. You also get access to all
-                        lecture classes, as well as recordings from all lecture classes and the peer
-                        review and sensei review sessions of all game review teams.
+                        workshop classes, as well as recordings from all workshop classes and the
+                        peer review and sensei review sessions of all game review teams.
                     </Typography>
                     <Button
                         href={isGameReviewUser ? '/profile?view=classes' : undefined}

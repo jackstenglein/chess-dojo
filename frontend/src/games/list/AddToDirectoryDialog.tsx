@@ -8,7 +8,6 @@ import { MoveListItem } from '@/components/profile/directories/MoveDialog';
 import { GameInfo } from '@/database/game';
 import LoadingPage from '@/loading/LoadingPage';
 import { HOME_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -156,13 +155,13 @@ export const AddToDirectoryDialog = ({
                         }
                     >
                         <div>
-                            <LoadingButton
+                            <Button
                                 disabled={alreadyExists}
                                 loading={request.isLoading()}
                                 onClick={onAdd}
                             >
                                 Add
-                            </LoadingButton>
+                            </Button>
                         </div>
                     </Tooltip>
                 </DialogActions>

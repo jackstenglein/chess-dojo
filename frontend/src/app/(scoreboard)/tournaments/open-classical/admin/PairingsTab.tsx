@@ -3,7 +3,6 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { getRatingRanges, OpenClassical, OpenClassicalPairing } from '@/database/tournament';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { Edit } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -259,9 +258,9 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
                     >
                         Cancel
                     </Button>
-                    <LoadingButton loading={updateRequest.isLoading()} onClick={onConfirmUpdate}>
+                    <Button loading={updateRequest.isLoading()} onClick={onConfirmUpdate}>
                         Update
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
 
                 <RequestSnackbar request={updateRequest} />

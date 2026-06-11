@@ -5,7 +5,6 @@ import {
     RoundRobin,
     RoundRobinStatuses,
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -74,9 +73,9 @@ export function WithdrawModal({
                     <Button disabled={request.isLoading()} onClick={onClose}>
                         Cancel
                     </Button>
-                    <LoadingButton loading={request.isLoading()} onClick={handleSubmit}>
+                    <Button loading={request.isLoading()} onClick={handleSubmit}>
                         Withdraw
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
 

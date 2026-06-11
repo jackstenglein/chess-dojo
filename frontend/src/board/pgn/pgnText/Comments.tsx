@@ -1,15 +1,19 @@
+import { PositionComment } from '@/database/game';
 import { CommentType, Event, EventType, Move } from '@jackstenglein/chess';
+import { Divider } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useChess } from '../PgnBoard';
+import InlinePositionComments from './InlinePositionComments';
 import Markdown from './Markdown';
 
-interface CommentProps {
+interface CommentsProps {
     move: Move;
     type?: CommentType;
     inline?: boolean;
+    inlineComments: PositionComment[];
 }
 
-const Comment: React.FC<CommentProps> = ({ move, type, inline }) => {
+export function Comments({ move, type, inline, inlineComments }: CommentsProps) {
     const { chess } = useChess();
     const [, setForceRender] = useState(0);
 
@@ -31,11 +35,15 @@ const Comment: React.FC<CommentProps> = ({ move, type, inline }) => {
 
     const text = type === CommentType.Before ? move.commentMove : move.commentAfter;
 
-    if (!text) {
+    if (!text && inlineComments.length === 0) {
         return null;
     }
 
-    return <Markdown text={text} inline={inline} move={move} />;
-};
-
-export default Comment;
+    return (
+        <>
+            {text && <Markdown text={text} inline={inline} move={move} />}
+            {text && inlineComments.length > 0 && !inline && <Divider />}
+            <InlinePositionComments comments={inlineComments} inline={inline} />
+        </>
+    );
+}

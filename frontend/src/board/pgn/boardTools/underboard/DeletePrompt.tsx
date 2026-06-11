@@ -1,9 +1,21 @@
+import { useApi } from '@/api/Api';
+import { GameApiContextType } from '@/api/gameApi';
+import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
 import { useReconcile } from '@/board/Board';
+import useGame from '@/context/useGame';
+import { Game } from '@/database/game';
+import { User } from '@/database/user';
 import { Chess, Move } from '@jackstenglein/chess';
 import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
+import {
+    getSuggestedVariationRoot,
+    isSuggestedVariation,
+    saveSuggestedVariation,
+} from './comments/suggestVariation';
 import { WarnBeforeDelete } from './settings/EditorSettings';
 
 export interface DeleteAction {
@@ -106,6 +118,45 @@ function getDeleteBeforeStats(
     return { moves, comments };
 }
 
+function handleBackendSync(
+    user: User,
+    game: Game,
+    api: GameApiContextType,
+    chess: Chess,
+    rootToSync: Move,
+    rootSurvived: boolean,
+    onUpdateGame?: (game: Game) => void,
+    onFailure?: (err: unknown) => void,
+) {
+    if (rootSurvived) {
+        saveSuggestedVariation(user, game, api, chess, rootToSync)
+            .then((res) => {
+                if (res?.game) onUpdateGame?.(res.game);
+            })
+            .catch((err: unknown) => onFailure?.(err));
+    } else {
+        const dojoComment = rootToSync.commentDiag?.dojoComment;
+        if (dojoComment) {
+            const lastComma = dojoComment.lastIndexOf(',');
+            if (lastComma === -1) return;
+
+            const commentId = dojoComment.substring(lastComma + 1);
+            if (commentId && commentId !== 'unsaved') {
+                api.deleteComment({
+                    cohort: game.cohort,
+                    gameId: game.id,
+                    id: commentId,
+                    fen: chess.normalizedFen(rootToSync.previous),
+                    parentIds: '',
+                })
+                    .then((res) => {
+                        if (res?.data) onUpdateGame?.(res.data);
+                    })
+                    .catch((err: unknown) => onFailure?.(err));
+            }
+        }
+    }
+}
 export interface DeletePromptProps {
     /** The delete to be performed. */
     deleteAction: DeleteAction;
@@ -122,36 +173,80 @@ export interface DeletePromptProps {
 export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
+    const { user } = useAuth();
+    const { game, onUpdateGame } = useGame();
+    const api = useApi();
+    const syncRequest = useRequest();
 
     const onDelete = () => {
+        if (!chess) {
+            return;
+        }
+
+        let rootToSync: Move | null = null;
+        let shouldSyncBackend = false;
+        let rootSurvived = false;
+
+        if (user && game && isSuggestedVariation(deleteAction.move)) {
+            rootToSync = getSuggestedVariationRoot(user, deleteAction.move);
+            shouldSyncBackend = true;
+            if (deleteAction.type === 'before') {
+                rootSurvived = false;
+            } else {
+                rootSurvived = rootToSync !== deleteAction.move;
+            }
+        }
+
         if (deleteAction.type === 'before') {
-            chess?.deleteBefore(deleteAction.move);
+            chess.deleteBefore(deleteAction.move);
         } else {
-            chess?.delete(deleteAction.move);
+            chess.delete(deleteAction.move);
         }
         reconcile();
+
+        if (shouldSyncBackend && rootToSync && game && user) {
+            handleBackendSync(
+                user,
+                game,
+                api,
+                chess,
+                rootToSync,
+                rootSurvived,
+                onUpdateGame,
+                syncRequest.onFailure,
+            );
+        }
+
         onClose();
     };
 
     return (
-        <Dialog open onClose={onClose}>
-            <DialogTitle>
-                Delete {deleteAction.moves} move
-                {deleteAction.moves > 1 ? 's' : ''}
-                {deleteAction.comments
-                    ? ` and ${deleteAction.comments} comment${deleteAction.comments > 1 ? 's' : ''}`
-                    : ''}
-                ?
-            </DialogTitle>
-            <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={onDelete}>Delete</Button>
-            </DialogActions>
-        </Dialog>
+        <>
+            <Dialog open onClose={onClose}>
+                <DialogTitle>
+                    Delete {deleteAction.moves} move
+                    {deleteAction.moves > 1 ? 's' : ''}
+                    {deleteAction.comments
+                        ? ` and ${deleteAction.comments} comment${deleteAction.comments > 1 ? 's' : ''}`
+                        : ''}
+                    ?
+                </DialogTitle>
+                <DialogActions>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={onDelete}>Delete</Button>
+                </DialogActions>
+            </Dialog>
+            <RequestSnackbar request={syncRequest} />
+        </>
     );
 }
 
 export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => void) {
+    const { user } = useAuth();
+    const { game, onUpdateGame } = useGame();
+    const api = useApi();
+    const syncRequest = useRequest();
+
     const [warnBeforeDelete] = useLocalStorage<number>(
         WarnBeforeDelete.key,
         WarnBeforeDelete.default,
@@ -165,6 +260,20 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
         }
 
         const deleteStats = getDeleteStats(chess, move, type);
+        let rootToSync: Move | null = null;
+        let shouldSyncBackend = false;
+        let rootSurvived = false;
+
+        if (user && game && isSuggestedVariation(move)) {
+            rootToSync = getSuggestedVariationRoot(user, move);
+            shouldSyncBackend = true;
+            if (type === 'before') {
+                rootSurvived = false;
+            } else {
+                rootSurvived = rootToSync !== move;
+            }
+        }
+
         if (deleteStats.moves < warnBeforeDelete) {
             if (type === 'before') {
                 chess.deleteBefore(move);
@@ -172,6 +281,20 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
                 chess.delete(move);
             }
             reconcile();
+
+            if (shouldSyncBackend && rootToSync && game && user) {
+                handleBackendSync(
+                    user,
+                    game,
+                    api,
+                    chess,
+                    rootToSync,
+                    rootSurvived,
+                    onUpdateGame,
+                    syncRequest.onFailure,
+                );
+            }
+
             onCloseParent?.();
         } else {
             setDeleteAction({ ...deleteStats, move, type });

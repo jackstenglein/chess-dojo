@@ -356,7 +356,6 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
 
             <Grid size={{ xs: 12, sm: 6 }} mt={4}>
                 <PieChart
-                    id='score-chart'
                     title={`Score Breakdown${scoreChartCategory && `: ${scoreChartCategory}`}`}
                     data={scoreChartData}
                     renderTotal={(score) => (
@@ -379,7 +378,6 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
 
             <Grid size={{ xs: 12, sm: 6 }} mt={4}>
                 <PieChart
-                    id='time-chart'
                     title={`Time Breakdown${timeChartCategory && `: ${timeChartCategory}`}`}
                     data={timeChartData}
                     renderTotal={(time) => (

@@ -24,6 +24,10 @@ const nextConfig = {
     headers() {
         const headers = [
             {
+                source: '/play-bot/:path*',
+                headers: ENGINE_HEADERS,
+            },
+            {
                 source: '/:path*',
                 headers: ENGINE_HEADERS,
             },
@@ -83,6 +87,7 @@ const pagesWithVideos = [
     '/scoreboard/:path*',
     '/learn/guides',
     '/learn/live-classes',
+    '/learn/sparring',
     '/live-classes',
 
     // Blog
