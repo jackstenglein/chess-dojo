@@ -495,12 +495,10 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
         const { rating: whiteClockRating, area: whiteClockArea } = calculateTimeRating(
             timeControls ?? [{}],
             whiteClockDisplay,
-            'white',
         ) ?? { rating: -1, area: 0 };
         const { rating: blackClockRating, area: blackClockArea } = calculateTimeRating(
             timeControls ?? [{}],
             blackClockDisplay,
-            'black',
         ) ?? { rating: -1, area: 0 };
 
         return {

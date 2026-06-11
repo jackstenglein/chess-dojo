@@ -1,7 +1,6 @@
 import { GameKey } from '@/database/game';
 import { useRouter } from '@/hooks/useRouter';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -153,7 +152,7 @@ export function DeleteGamesDialog({
                 <Button disabled={request.isLoading()} onClick={handleClose}>
                     Cancel
                 </Button>
-                <LoadingButton
+                <Button
                     data-testid='delete-game-confirm-button'
                     color='error'
                     loading={request.isLoading()}
@@ -161,7 +160,7 @@ export function DeleteGamesDialog({
                     onClick={onDelete}
                 >
                     Delete
-                </LoadingButton>
+                </Button>
             </DialogActions>
             <RequestSnackbar request={request} />
         </Dialog>

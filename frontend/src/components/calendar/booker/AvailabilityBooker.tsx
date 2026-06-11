@@ -15,7 +15,6 @@ import { useRouter } from '@/hooks/useRouter';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon from '@/style/Icon';
-import { LoadingButton } from '@mui/lab';
 import {
     AppBar,
     Button,
@@ -180,7 +179,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                     >
                         Cancel
                     </Button>
-                    <LoadingButton
+                    <Button
                         data-testid='book-button'
                         color='success'
                         loading={request.status === RequestStatus.Loading}
@@ -188,7 +187,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                         startIcon={<Icon name='join' />}
                     >
                         {isGroup ? 'Join' : 'Book'}
-                    </LoadingButton>
+                    </Button>
                 </Toolbar>
             </AppBar>
             <DialogContent>

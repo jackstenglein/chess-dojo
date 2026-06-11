@@ -14,7 +14,6 @@ import {
     GameOrientations,
     UpdateGameRequest,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     FormControl,
@@ -279,14 +278,14 @@ const SaveGameButton = ({
     return (
         <>
             <RequestSnackbar request={request} showSuccess />
-            <LoadingButton
+            <Button
                 variant='contained'
                 disabled={!dirty}
                 loading={loading}
                 onClick={() => (needsPreflight ? onShowPreflight() : onSave())}
             >
                 {isPublishing ? 'Publish' : 'Save Changes'}
-            </LoadingButton>
+            </Button>
             <MissingGameDataPreflight
                 open={showPreflight}
                 onClose={onClosePreflight}

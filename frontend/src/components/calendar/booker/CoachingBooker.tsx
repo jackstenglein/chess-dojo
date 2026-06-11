@@ -8,7 +8,6 @@ import { Link } from '@/components/navigation/Link';
 import { Event } from '@/database/event';
 import { TimeFormat, dojoCohorts } from '@/database/user';
 import Icon from '@/style/Icon';
-import { LoadingButton } from '@mui/lab';
 import { AppBar, Button, Dialog, DialogContent, Stack, Toolbar, Typography } from '@mui/material';
 import Field from '../eventViewer/Field';
 import OwnerField from '../eventViewer/OwnerField';
@@ -81,7 +80,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                     >
                         Cancel
                     </Button>
-                    <LoadingButton
+                    <Button
                         data-testid='book-button'
                         color='success'
                         disabled={isParticipant}
@@ -90,7 +89,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         startIcon={<Icon name='join' />}
                     >
                         Book
-                    </LoadingButton>
+                    </Button>
                 </Toolbar>
             </AppBar>
             <DialogContent>

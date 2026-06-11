@@ -2,7 +2,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenClassical, OpenClassicalPlayer } from '@/database/tournament';
 import { Check } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -100,9 +99,9 @@ const BannedPlayersTab: React.FC<BannedPlayersTabProps> = ({ openClassical, onUp
                     >
                         Cancel
                     </Button>
-                    <LoadingButton loading={unbanRequest.isLoading()} onClick={onConfirmUnban}>
+                    <Button loading={unbanRequest.isLoading()} onClick={onConfirmUnban}>
                         Unban Player
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
 

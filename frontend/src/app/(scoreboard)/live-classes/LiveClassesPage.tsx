@@ -24,15 +24,31 @@ import PricingPage from '../prices/PricingPage';
 import { useOnSubscribe } from '../prices/useOnSubscribe';
 import gameReviewImage from './game_review.webp';
 
-const SAMPLE_LIVE_CLASS: LiveClass = {
-    name: 'Free Sample — Calculation 1000+',
-    type: SubscriptionTier.Lecture,
-    cohortRange: '1000+',
-    tags: ['Tactics'],
-    description: `A weekly class focusing on various techniques and skills within calculation. Students will be given weekly homework to work on before the next class, and encouraged to form study groups to solve the material together. One week's class is provided as a free sample.`,
-    imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
-    recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
-};
+const SAMPLE_CLASSES: LiveClass[] = [
+    {
+        name: 'Calculation 1000+',
+        type: SubscriptionTier.Lecture,
+        cohortRange: '1000+',
+        description: `IM Kostya Kavutskiy's weekly class focusing on various techniques and skills within calculation.`,
+        imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
+        recordings: [{ date: '2026-03-15', s3Key: SAMPLE_LIVE_CLASS_S3_KEY }],
+    },
+    {
+        name: 'Starting Out in the Najdorf',
+        type: SubscriptionTier.GameReview,
+        cohortRange: '1000-1500',
+        description: `GM Jesse Kraai reviews a Dojo member's first game in the Najdorf.`,
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/team_steinitz-1.webp',
+        recordings: [
+            {
+                date: '2026-04-22',
+                url: 'https://www.youtube.com/embed/p98XXb2d8i4?autoplay=1',
+                s3Key: '',
+            },
+        ],
+    },
+];
 
 export default function LiveClassesPage() {
     const { user } = useAuth();
@@ -67,10 +83,6 @@ export default function LiveClassesPage() {
             ?.filter((c) => c.type === SubscriptionTier.Lecture)
             .sort(compareLiveClasses) ?? [];
 
-    if (!isLiveClassUser) {
-        lectureClasses.unshift(SAMPLE_LIVE_CLASS);
-    }
-
     return (
         <Container sx={{ py: 5 }}>
             <Typography variant='h3' fontWeight='bold' mx='auto' textAlign='center'>
@@ -84,14 +96,29 @@ export default function LiveClassesPage() {
                 />
             )}
 
+            {!isLiveClassUser && (
+                <>
+                    <Typography variant='h5' mt={4} fontWeight='bold'>
+                        Free Samples
+                    </Typography>
+
+                    <LiveClassesList
+                        classes={SAMPLE_CLASSES}
+                        onTagClick={() => null}
+                        selectedTags={[]}
+                        variant='grid'
+                    />
+                </>
+            )}
+
             <Typography variant='h5' mt={4} fontWeight='bold'>
-                Lecture Tier
+                Workshops Tier
             </Typography>
             <Typography variant='h6' mt={2}>
-                The Lecture Tier provides access to larger lecture-style classes on various topics
-                like endgames, calculation, and openings. For $75/month, you get access to all
-                lecture classes and recordings, as well as full access to the rest of the ChessDojo
-                website.{' '}
+                The Workshops Tier provides access to larger workshop-style classes on various
+                topics like endgames, calculation, and openings. For $75/month, you get access to
+                all workshop classes and recordings, as well as full access to the rest of the
+                ChessDojo website.{' '}
                 {!isLiveClassUser &&
                     `Not sure if these classes are for you? Watch a free sample of Kostya's calculation course below.`}
             </Typography>
@@ -109,7 +136,7 @@ export default function LiveClassesPage() {
                 color='subscribe'
                 loading={request.isLoading() && tier === SubscriptionTier.Lecture}
             >
-                {isLectureUser ? 'Already Subscribed' : 'Join Lecture Tier'}
+                {isLectureUser ? 'Already Subscribed' : 'Join Workshops Tier'}
             </Button>
 
             <Box mt={4}>
@@ -138,8 +165,8 @@ export default function LiveClassesPage() {
                         each week. The highlighted player rotates each week. For $200/month, you get
                         placed with a team of similarly rated players and access to weekly peer
                         review and sensei review sessions with your team. You also get access to all
-                        lecture classes, as well as recordings from all lecture classes and the peer
-                        review and sensei review sessions of all game review teams.
+                        workshop classes, as well as recordings from all workshop classes and the
+                        peer review and sensei review sessions of all game review teams.
                     </Typography>
                     <Button
                         href={isGameReviewUser ? '/profile?view=classes' : undefined}

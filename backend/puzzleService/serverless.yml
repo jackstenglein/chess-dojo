@@ -84,6 +84,40 @@ functions:
           - dynamodb:UpdateItem
         Resource: ${param:UsersTableArn}
 
+  getMateInOnePuzzle:
+    handler: mateInOne/get.getNextPuzzleHandler
+    timeout: 15
+    events:
+      - httpApi:
+          path: /puzzle/mate-in-one/next
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    environment:
+      MONGODB_URI: ${file(../config-${sls:stage}.yml):mongoUri}
+    # This function has read access to the MongoDB puzzle database, configured
+    # by adding the function's role ARN as a database user in Mongo Cloud Atlas.
+
+  submitMateInOneSession:
+    handler: mateInOne/submit.submitSessionHandler
+    events:
+      - httpApi:
+          path: /puzzle/mate-in-one/session
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt MateInOneResultsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']
@@ -116,6 +150,28 @@ resources:
       DeletionPolicy: Retain
       Properties:
         TableName: ${sls:stage}-square-color-results
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
+
+    MateInOneResultsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-mate-in-one-results
         BillingMode: PAY_PER_REQUEST
         PointInTimeRecoverySpecification:
           PointInTimeRecoveryEnabled: !If

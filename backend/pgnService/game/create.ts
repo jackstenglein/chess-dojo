@@ -1,11 +1,6 @@
 'use strict';
 
-import {
-    BatchWriteItemCommand,
-    DynamoDBClient,
-    GetItemCommand,
-    PutItemCommand,
-} from '@aws-sdk/client-dynamodb';
+import { BatchWriteItemCommand, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
 import {
@@ -22,6 +17,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { User } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
+import { newTimeManagementRating } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import {
     APIGatewayProxyEventV2,
     APIGatewayProxyHandlerV2,
@@ -31,14 +27,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { checkAccess } from '../../directoryService/access';
 import { addDirectoryItems } from '../../directoryService/addItems';
 import { ApiError, errToApiGatewayProxyResultV2, parseBody } from '../../directoryService/api';
+import { UpdateItemBuilder } from '../../directoryService/database';
 import { getChesscomAnalysis, getChesscomGame } from './chesscom';
+import { dynamo, gamesTable, timelineTable, usersTable } from './database';
 import { getLichessChapter, getLichessGame, getLichessStudy } from './lichess';
+import { rateGameTimeManagement, rebuildUserTimeManagementRating } from './timeManagement';
 import { Game, GameImportHeaders, isMissingData, isValidDate, isValidResult } from './types';
 
-export const dynamo = new DynamoDBClient({ region: 'us-east-1' });
-const usersTable = process.env.stage + '-users';
-export const gamesTable = process.env.stage + '-games';
-export const timelineTable = process.env.stage + '-timeline';
+export { dynamo, gamesTable, timelineTable } from './database';
 const MAX_GAMES_PER_IMPORT = 100;
 
 export function success(value: any): APIGatewayProxyResultV2 {
@@ -102,6 +98,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         if (request.directory) {
             await addGamesToDirectory(request.directory.owner, request.directory.id, games);
+            await rebuildUserTimeManagementRating(user.username);
         }
 
         if (request.publish) {
@@ -312,6 +309,7 @@ export function getGame(
 
         const now = new Date();
         const uploadDate = now.toISOString().slice(0, '2024-01-01'.length);
+        const tmRatings = rateGameTimeManagement(chess);
 
         const game: Game = {
             cohort: user?.dojoCohort || '',
@@ -331,6 +329,8 @@ export function getGame(
             positionComments: {},
             unlisted: !publish,
             directories: directory ? [directory] : undefined,
+            timeManagementRatingWhite: tmRatings.white,
+            timeManagementRatingBlack: tmRatings.black,
         };
 
         if (publish) {
@@ -481,5 +481,49 @@ export async function createTimelineEntry(game: Game) {
         );
     } catch (err) {
         console.error('Failed to create timeline entry: ', err);
+    }
+}
+
+/**
+ * Updates the user's time management rating based on newly created games.
+ * - Provisional (<= 10 games): running average
+ * - Established (> 10 games): Elo draw adjustment (K=32)
+ * @param user The user who created the games.
+ * @param games The newly created games.
+ */
+async function updateUserTimeManagementRating(user: User, games: Game[]): Promise<void> {
+    const newRatings: number[] = [];
+    games.sort((lhs, rhs) => (lhs.date || lhs.createdAt).localeCompare(rhs.date || rhs.createdAt));
+
+    for (const game of games) {
+        const ownerRating =
+            game.orientation === 'black'
+                ? game.timeManagementRatingBlack
+                : game.timeManagementRatingWhite;
+
+        if (ownerRating !== undefined) {
+            newRatings.push(ownerRating);
+        }
+    }
+
+    if (newRatings.length === 0) {
+        return;
+    }
+
+    try {
+        let rating = user.timeManagementRating;
+        for (const gameRating of newRatings) {
+            rating = newTimeManagementRating(rating, gameRating);
+        }
+
+        if (rating) {
+            await new UpdateItemBuilder()
+                .key('username', user.username)
+                .set('timeManagementRating', rating)
+                .table(usersTable)
+                .send();
+        }
+    } catch (err) {
+        console.error('Failed to update user time management rating: ', err);
     }
 }

@@ -130,7 +130,7 @@ export function getDisplaySessionString(type: CalendarSessionType | null | undef
         case CalendarSessionType.Meetings:
             return 'Meetings';
         case CalendarSessionType.Lectures:
-            return 'Lectures';
+            return 'Workshops';
         case CalendarSessionType.GameReviews:
             return 'Game & Profile Reviews';
     }
@@ -161,7 +161,7 @@ export function getDisplayString(type: AvailabilityType | null | undefined): str
         case AvailabilityType.BookStudy:
             return 'Book Study';
         case AvailabilityType.Lesson:
-            return 'Lesson/Lecture';
+            return 'Lesson/Workshop';
     }
 }
 

@@ -1,4 +1,4 @@
-import { Step } from 'react-joyride-react19-compat';
+import { Step } from 'react-joyride';
 import Tutorial from './Tutorial';
 import { TutorialName } from './tutorialNames';
 
@@ -9,7 +9,7 @@ const steps: Step[] = [
         title: 'Games Database',
         content:
             'Welcome to the Dojo Game Database! Here you can find annotated games submitted by other members of the Dojo.',
-        disableBeacon: true,
+        skipBeacon: true,
     },
     {
         target: '#import-game-button',

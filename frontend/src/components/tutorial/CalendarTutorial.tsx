@@ -1,4 +1,4 @@
-import { Step } from 'react-joyride-react19-compat';
+import { Step } from 'react-joyride';
 import Tutorial from './Tutorial';
 import { TutorialName } from './tutorialNames';
 
@@ -8,7 +8,7 @@ const steps: Step[] = [
         placement: 'center',
         title: 'Calendar',
         content: "Welcome to the calendar! Let's take a quick tour to learn how to use it.",
-        disableBeacon: true,
+        skipBeacon: true,
     },
     {
         target: '[data-testid=timezone-selector]',

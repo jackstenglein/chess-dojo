@@ -1,7 +1,4 @@
-import {
-    GetSecretValueCommand,
-    SecretsManagerClient,
-} from '@aws-sdk/client-secrets-manager';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 /**
  * Fetches the secret with the provided name from AWS Secret Manager.
@@ -13,7 +10,7 @@ export async function getSecret(secretName: string) {
     const response = await client.send(
         new GetSecretValueCommand({
             SecretId: secretName,
-        })
+        }),
     );
     return response.SecretString;
 }

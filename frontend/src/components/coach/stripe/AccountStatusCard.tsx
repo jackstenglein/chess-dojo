@@ -2,9 +2,9 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { StripeAccount } from '@/database/payment';
 import { Cancel, CheckCircle, HourglassEmpty } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Alert,
+    Button,
     Card,
     CardContent,
     CardHeader,
@@ -78,14 +78,14 @@ const AccountStatusCard: React.FC<AccountStatusCardProps> = ({ account }) => {
                 title='Account Status'
                 action={
                     anyDisabled ? (
-                        <LoadingButton
+                        <Button
                             sx={{ mr: 1 }}
                             variant='contained'
                             loading={request.isLoading()}
                             onClick={onSetupAccount}
                         >
                             Update Stripe
-                        </LoadingButton>
+                        </Button>
                     ) : undefined
                 }
             />

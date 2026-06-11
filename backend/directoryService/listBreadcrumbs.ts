@@ -7,12 +7,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { NIL as uuidNil } from 'uuid';
-import {
-    errToApiGatewayProxyResultV2,
-    parseEvent,
-    requireUserInfo,
-    success,
-} from './api';
+import { errToApiGatewayProxyResultV2, parseEvent, requireUserInfo, success } from './api';
 import { directoryTable, dynamo } from './database';
 
 /**
@@ -58,10 +53,7 @@ async function fetchBreadcrumbs({
     shared?: boolean;
     viewer: string;
 }) {
-    const results: Record<
-        string,
-        { owner: string; id: string; name: string; parent: string }
-    > = {};
+    const results: Record<string, { owner: string; id: string; name: string; parent: string }> = {};
 
     while (id && id !== uuidNil) {
         const getItemOutput = await dynamo.send(

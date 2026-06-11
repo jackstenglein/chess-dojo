@@ -3,7 +3,6 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenClassicalPutPairingsRequest } from '@/api/tournamentApi';
 import { useAuth } from '@/auth/Auth';
 import { getRatingRanges, OpenClassical } from '@/database/tournament';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -111,9 +110,9 @@ const Editor: React.FC<EditorProps> = ({ openClassical, onSuccess }) => {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleClose}>Cancel</Button>
-                        <LoadingButton loading={request.isLoading()} onClick={onSave}>
+                        <Button loading={request.isLoading()} onClick={onSave}>
                             Close Registrations
-                        </LoadingButton>
+                        </Button>
                     </DialogActions>
 
                     <RequestSnackbar request={request} />
@@ -194,9 +193,9 @@ const Editor: React.FC<EditorProps> = ({ openClassical, onSuccess }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <LoadingButton loading={request.isLoading()} onClick={onSave}>
+                    <Button loading={request.isLoading()} onClick={onSave}>
                         Save
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
 
                 <RequestSnackbar request={request} />

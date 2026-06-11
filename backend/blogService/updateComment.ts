@@ -14,7 +14,15 @@ import {
     requireUserInfo,
     success,
 } from '../directoryService/api';
-import { and, attributeExists, blogTable, dynamo, equal, getUser, UpdateItemBuilder } from './database';
+import {
+    and,
+    attributeExists,
+    blogTable,
+    dynamo,
+    equal,
+    getUser,
+    UpdateItemBuilder,
+} from './database';
 import { getBlog } from './get';
 
 /**
@@ -38,9 +46,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             });
         }
 
-        const commentIndex = (blog.comments ?? []).findIndex(
-            (c) => c.id === request.commentId,
-        );
+        const commentIndex = (blog.comments ?? []).findIndex((c) => c.id === request.commentId);
         if (commentIndex < 0) {
             throw new ApiError({
                 statusCode: 404,

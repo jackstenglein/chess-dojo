@@ -1,7 +1,6 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenClassical } from '@/database/tournament';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -71,9 +70,9 @@ const EmailPairingsButton: React.FC<EmailPairingsButtonProps> = ({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <LoadingButton loading={request.isLoading()} onClick={onSendEmails}>
+                    <Button loading={request.isLoading()} onClick={onSendEmails}>
                         Send Emails
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
 
                 <RequestSnackbar request={request} />

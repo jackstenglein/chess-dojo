@@ -9,6 +9,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/discord"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/user/access"
 )
 
@@ -30,6 +31,17 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	user, err := repository.GetUser(info.Username)
 	if err != nil {
 		return api.Failure(err), nil
+	}
+
+	preStatus := user.SubscriptionStatus
+	user, err = database.ExpirePaymentOverrideIfNeeded(repository, info.Username, user)
+	if err != nil {
+		return api.Failure(err), nil
+	}
+	if preStatus != user.SubscriptionStatus {
+		if err := discord.SetCohortRole(user); err != nil {
+			log.Error("Failed SetCohortRole after payment override expiry: ", err)
+		}
 	}
 
 	var isForbidden bool
@@ -78,6 +90,17 @@ func handlerV2(event api.Request) api.Response {
 	user, err := repository.GetUser(info.Username)
 	if err != nil {
 		return api.Failure(err)
+	}
+
+	preStatus := user.SubscriptionStatus
+	user, err = database.ExpirePaymentOverrideIfNeeded(repository, info.Username, user)
+	if err != nil {
+		return api.Failure(err)
+	}
+	if preStatus != user.SubscriptionStatus {
+		if err := discord.SetCohortRole(user); err != nil {
+			log.Error("Failed SetCohortRole after payment override expiry: ", err)
+		}
 	}
 
 	subscriptionStatus := user.GetSubscriptionStatus()

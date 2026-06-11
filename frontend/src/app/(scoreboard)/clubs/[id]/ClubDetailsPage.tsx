@@ -15,7 +15,7 @@ import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import { ClubAvatar } from '@/profile/Avatar';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
-import { LoadingButton, TabContext, TabPanel } from '@mui/lab';
+import { TabContext, TabPanel } from '@mui/lab';
 import {
     Box,
     Button,
@@ -182,7 +182,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                                 Join Request Pending
                                             </Button>
                                         ) : (
-                                            <LoadingButton
+                                            <Button
                                                 variant='contained'
                                                 onClick={onJoinClub}
                                                 loading={joinRequest.isLoading()}
@@ -190,7 +190,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                                 {club.approvalRequired
                                                     ? 'Request to Join Club'
                                                     : 'Join Club'}
-                                            </LoadingButton>
+                                            </Button>
                                         )}
                                     </Stack>
 

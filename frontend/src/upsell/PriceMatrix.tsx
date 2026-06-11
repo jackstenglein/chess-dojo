@@ -244,7 +244,7 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Lecture) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Lectures'
+                        name='Workshops'
                         price={{
                             value: priceData[SubscriptionTier.Lecture][interval],
                             symbol: priceData.symbol,
@@ -257,7 +257,7 @@ function PriceMatrix({
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Weekly live lectures on specialized topics',
+                                description: 'Weekly live workshops on specialized topics',
                                 status: SellingPointStatus.Included,
                             },
                             {
@@ -269,7 +269,7 @@ function PriceMatrix({
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Access to recordings of all lectures',
+                                description: 'Access to recordings of all workshops',
                                 status: SellingPointStatus.Included,
                             },
                         ]}
@@ -283,7 +283,7 @@ function PriceMatrix({
                                     currency,
                                     value: priceData[SubscriptionTier.Lecture][interval],
                                 }),
-                            children: 'Join Lectures',
+                            children: 'Join Workshops',
                         }}
                         beforeButton={
                             <Typography>
@@ -328,7 +328,7 @@ function PriceMatrix({
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Access to recordings of all lectures and classes',
+                                description: 'Access to recordings of all workshops and classes',
                                 status: SellingPointStatus.Included,
                             },
                         ]}

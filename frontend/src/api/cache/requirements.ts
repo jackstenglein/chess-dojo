@@ -1,3 +1,4 @@
+import { TimelineSpecialRequirementId } from '@/database/timeline';
 import { useEffect, useMemo } from 'react';
 import { Requirement, ScoreboardDisplay, compareRequirements } from '../../database/requirement';
 import { ALL_COHORTS, dojoCohorts } from '../../database/user';
@@ -81,7 +82,12 @@ export function useRequirement(id?: string): UseRequirementResponse {
     }, [cache.requirements, id]);
 
     useEffect(() => {
-        if (requirement === undefined && id && !request.isSent()) {
+        if (
+            requirement === undefined &&
+            id &&
+            !Object.keys(TimelineSpecialRequirementId).includes(id) &&
+            !request.isSent()
+        ) {
             request.onStart();
             api.getRequirement(id)
                 .then((response) => {

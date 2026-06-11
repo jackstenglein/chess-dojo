@@ -58,8 +58,8 @@ export function GameReviewCohortQueue({
         }
     };
 
-    const reviewQueue = Object.values(gameReviewCohort.members).sort((lhs, rhs) =>
-        lhs.queueDate.localeCompare(rhs.queueDate),
+    const reviewQueue = Object.values(gameReviewCohort.members).sort(
+        (lhs, rhs) => lhs.queueDate?.localeCompare(rhs.queueDate ?? '') ?? -1,
     );
     let index = 1;
 
@@ -80,7 +80,7 @@ export function GameReviewCohortQueue({
                 </TableHead>
                 <TableBody>
                     {reviewQueue.map((member) => {
-                        const queueDate = new Date(member.queueDate);
+                        const queueDate = new Date(member.queueDate ?? '');
                         const peerReviewDate = datesByUser[member.username]
                             ? new Date(datesByUser[member.username].peerReview)
                             : undefined;

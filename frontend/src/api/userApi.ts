@@ -73,6 +73,13 @@ export interface UserApiContextType {
     updateUser: (update: Partial<User>, autopickCohort?: boolean) => Promise<AxiosResponse<User>>;
 
     /**
+     * resetUserProgress clears the current user's training plan progress.
+     * @param confirm The required confirmation text.
+     * @returns An AxiosResponse containing the updated user in the data field.
+     */
+    resetUserProgress: (confirm: string) => Promise<AxiosResponse<User>>;
+
+    /**
      * updateUserProgress updates the current user's progress on the provided requirement.
      * @param request The request to update the progress.
      * @returns An AxiosResponse containing the updated user and timeline entry in the data field.
@@ -190,6 +197,66 @@ export function getUserPublic(username: string) {
     });
 }
 
+/** The billing path hint for an admin-only user. */
+export type AdminBillingPathHint = 'override' | 'stripe' | 'wix' | 'none';
+
+/** The response from an admin getting a user. */
+export interface AdminUserResponse {
+    /** The user. */
+    user: User;
+    /** The admin hints. */
+    adminHints: {
+        /** The billing path hint. */
+        billingPath: AdminBillingPathHint;
+    };
+}
+
+/** The request to put a complimentary (OVERRIDE) subscription for an admin-only user. */
+export interface PutAdminComplimentaryRequest {
+    /** The subscription tier to set. */
+    subscriptionTier: string;
+    /** RFC3339 or empty for no expiry */
+    expiresAt?: string;
+}
+
+/**
+ * Admin-only: returns the target user (same shape as GET /user) plus billing hints.
+ * @param username The username of the user to get.
+ * @returns An AxiosResponse containing the admin user response.
+ */
+export function getAdminUser(username: string) {
+    return axiosService.get<AdminUserResponse>(`/admin/user/${encodeURIComponent(username)}`, {
+        functionName: 'getAdminUser',
+    });
+}
+
+/**
+ * Admin-only: grants or updates complimentary (OVERRIDE) subscription for the user.
+ * @param username The username of the user to put the complimentary subscription for.
+ * @param request The request to put the complimentary subscription.
+ * @returns An AxiosResponse containing the updated user.
+ */
+export function putAdminComplimentary(username: string, request: PutAdminComplimentaryRequest) {
+    return axiosService.put<User>(
+        `/admin/user/${encodeURIComponent(username)}/complimentary`,
+        request,
+        {
+            functionName: 'putAdminComplimentary',
+        },
+    );
+}
+
+/**
+ * Admin-only: removes active complimentary (OVERRIDE) subscription for the user.
+ * @param username The username of the user to delete the complimentary subscription for.
+ * @returns An AxiosResponse containing the updated user.
+ */
+export function deleteAdminComplimentary(username: string) {
+    return axiosService.delete<User>(`/admin/user/${encodeURIComponent(username)}/complimentary`, {
+        functionName: 'deleteAdminComplimentary',
+    });
+}
+
 /**
  * Gets a list of user summaries for the given usernames. Max of 100 usernames at a time.
  * @param usernames The usernames to get.
@@ -299,6 +366,32 @@ export async function updateUser(
         },
         functionName: 'updateUser',
     });
+    callback(result.data);
+    return result;
+}
+
+/**
+ * resetUserProgress clears the current user's training plan progress.
+ * @param idToken The id token of the current signed-in user.
+ * @param confirm The required confirmation text.
+ * @param callback A callback function to invoke with the updated user after the reset succeeds.
+ * @returns An AxiosResponse containing the updated user in the data field.
+ */
+export async function resetUserProgress(
+    idToken: string,
+    confirm: string,
+    callback: (update: Partial<User>) => void,
+) {
+    const result = await axiosService.post<User>(
+        '/user/progress/reset',
+        { confirm },
+        {
+            headers: {
+                Authorization: 'Bearer ' + idToken,
+            },
+            functionName: 'resetUserProgress',
+        },
+    );
     callback(result.data);
     return result;
 }

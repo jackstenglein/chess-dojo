@@ -2,6 +2,12 @@
 @import '../../node_modules/chessground/assets/chessground.brown.css';
 @import '../../node_modules/chessground/assets/chessground.cburnett.css';
 
+.cg-wrap coords {
+    font-size: var(--coordinate-font-size, 9px);
+    font-weight: var(--coordinate-font-weight, 600);
+    opacity: var(--coordinate-opacity, 0.8);
+}
+
 .cg-wrap coords.ranks {
     right: 0 !important;
     top: 1px !important;
@@ -20,7 +26,7 @@
 .cg-wrap coords.squares:nth-child(2n) coord:nth-child(2n + 1),
 .cg-wrap coords.squares:nth-child(2n + 1) coord:nth-child(2n) {
     color: var(--light-square-coord-color) !important;
-    font-weight: 600;
+    font-weight: var(--coordinate-font-weight, 600);
 }
 
 .cg-wrap coords.ranks coord:nth-child(2n),
@@ -30,7 +36,7 @@
 .cg-wrap coords.squares:nth-child(2n) coord:nth-child(2n),
 .cg-wrap coords.squares:nth-child(2n + 1) coord:nth-child(2n + 1) {
     color: var(--dark-square-coord-color) !important;
-    font-weight: 600;
+    font-weight: var(--coordinate-font-weight, 600);
 }
 
 .cg-wrap coords.files {

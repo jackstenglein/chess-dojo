@@ -42,6 +42,9 @@ export interface Position {
 
     /** The expected result of the position. */
     result: string;
+
+    /** An optional URL of a video associated specifically with this position. */
+    videoUrl?: string;
 }
 
 /**

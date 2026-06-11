@@ -24,7 +24,7 @@ export function LiveClassesTab({ user }: { user: User }) {
             {getSubscriptionTier(user) === SubscriptionTier.GameReview && (
                 <GameReviewSection user={user} />
             )}
-            <LectureSection />
+            <WorkshopsSection />
         </Stack>
     );
 }
@@ -150,7 +150,7 @@ function GameReviewSection({ user }: { user: User }) {
     );
 }
 
-function LectureSection() {
+function WorkshopsSection() {
     const { user } = useAuth();
     const { events } = useEvents();
     const now = new Date();
@@ -175,14 +175,14 @@ function LectureSection() {
 
     return (
         <Stack>
-            <Typography variant='h5'>Lectures</Typography>
+            <Typography variant='h5'>Workshops</Typography>
             <Divider />
 
             <Typography variant='h6' mt={2}>
                 Classes
             </Typography>
             <Typography color='textSecondary'>
-                You can join any of the lecture classes, although material will be designed for the
+                You can join any of the workshop classes, although material will be designed for the
                 rating range listed in each class description.
             </Typography>
 

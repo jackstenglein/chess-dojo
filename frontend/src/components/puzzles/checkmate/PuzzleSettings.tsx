@@ -29,6 +29,7 @@ const viewerSettings = {
     [ViewerSetting.BoardStyle]: true,
     [ViewerSetting.PieceStyle]: true,
     [ViewerSetting.CoordinateStyle]: true,
+    [ViewerSetting.CoordinateSize]: true,
     [ViewerSetting.StartEndButtonBehavior]: true,
     [ViewerSetting.VariationBehavior]: true,
     [ViewerSetting.ShowLegalMoves]: true,

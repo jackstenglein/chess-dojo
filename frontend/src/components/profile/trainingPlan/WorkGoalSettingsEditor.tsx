@@ -3,7 +3,6 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { WeekDays } from '@/components/calendar/filters/CalendarFilters';
 import { WorkGoalHistory, WorkGoalSettings } from '@/database/user';
 import { Settings } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -188,9 +187,9 @@ export function WorkGoalSettingsEditor({
                     <Button disabled={request.isLoading()} onClick={onClose}>
                         Cancel
                     </Button>
-                    <LoadingButton loading={request.isLoading()} onClick={onSave}>
+                    <Button loading={request.isLoading()} onClick={onSave}>
                         Save
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

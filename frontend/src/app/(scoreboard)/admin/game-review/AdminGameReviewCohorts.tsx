@@ -19,7 +19,7 @@ import {
     GameReviewCohort,
     GameReviewCohortMember,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
-import { Add } from '@mui/icons-material';
+import { Add, Star } from '@mui/icons-material';
 import {
     Button,
     Card,
@@ -27,10 +27,13 @@ import {
     CardHeader,
     Container,
     Divider,
+    FormControlLabel,
     Menu,
     MenuItem,
     Stack,
+    Switch,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers-pro';
@@ -60,6 +63,7 @@ export function AdminGameReviewCohorts() {
     }>();
     const [errors, setErrors] = useState<Record<number, Record<string, string>>>();
     const saveRequest = useRequest();
+    const [showGRUsers, setShowGRUsers] = useState(true);
 
     useEffect(() => {
         if (!request.isSent()) {
@@ -257,7 +261,21 @@ export function AdminGameReviewCohorts() {
         }
     };
 
-    const groupedLectureUsers = groupLectureUsersByCohort(lectureUsers);
+    const allLectureUsers = [...lectureUsers];
+
+    if (showGRUsers) {
+        editor.forEach((cohort) => {
+            Object.values(cohort.members).forEach((member) => {
+                allLectureUsers.push({
+                    username: member.username,
+                    displayName: member.displayName,
+                    dojoCohort: member.dojoCohort,
+                    isGRMember: true,
+                } as LectureTierUser & { isGRMember?: boolean });
+            });
+        });
+    }
+    const groupedLectureUsers = groupLectureUsersByCohort(allLectureUsers);
 
     return (
         <Container sx={{ py: 5 }}>
@@ -496,10 +514,23 @@ export function AdminGameReviewCohorts() {
                 </Stack>
 
                 <Card variant='outlined' data-testid='lecture-tier-card'>
-                    <CardHeader title={`Lecture Tier Users (${lectureUsers.length})`} />
+                    <CardHeader
+                        title={`Workshops Tier Users (${allLectureUsers.length})`}
+                        action={
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={showGRUsers}
+                                        onChange={(e) => setShowGRUsers(e.target.checked)}
+                                    />
+                                }
+                                label='Show Game & Review Users'
+                            />
+                        }
+                    />
                     <CardContent>
                         {lectureUsers.length === 0 ? (
-                            <Typography>No lecture tier users</Typography>
+                            <Typography>No workshops tier users</Typography>
                         ) : (
                             <Stack spacing={2}>
                                 {[...groupedLectureUsers.entries()].map(
@@ -509,26 +540,41 @@ export function AdminGameReviewCohorts() {
                                             <Typography variant='subtitle2' color='text.secondary'>
                                                 {cohort}
                                             </Typography>
-                                            {users.map((u) => (
-                                                <Stack
-                                                    key={u.username}
-                                                    direction='row'
-                                                    alignItems='center'
-                                                >
-                                                    <Avatar
-                                                        username={u.username}
-                                                        displayName={u.displayName}
-                                                        size={30}
-                                                    />
-                                                    <Link
-                                                        href={`/profile/${u.username}`}
-                                                        target='_blank'
-                                                        ml={1}
+                                            {users.map(
+                                                (u: LectureTierUser & { isGRMember?: boolean }) => (
+                                                    <Stack
+                                                        key={u.username}
+                                                        direction='row'
+                                                        alignItems='center'
+                                                        sx={{ opacity: u.isGRMember ? 0.7 : 1 }}
                                                     >
-                                                        {u.displayName}
-                                                    </Link>
-                                                </Stack>
-                                            ))}
+                                                        <Avatar
+                                                            username={u.username}
+                                                            displayName={u.displayName}
+                                                            size={30}
+                                                        />
+                                                        <Link
+                                                            href={`/profile/${u.username}`}
+                                                            target='_blank'
+                                                            ml={1}
+                                                        >
+                                                            {u.displayName}
+                                                        </Link>
+                                                        {u.isGRMember && (
+                                                            <Tooltip
+                                                                title='Game & Review User'
+                                                                placement='top'
+                                                                arrow
+                                                            >
+                                                                <Star
+                                                                    color='primary'
+                                                                    sx={{ ml: 1, fontSize: 20 }}
+                                                                />
+                                                            </Tooltip>
+                                                        )}
+                                                    </Stack>
+                                                ),
+                                            )}
                                         </Stack>
                                     ),
                                 )}

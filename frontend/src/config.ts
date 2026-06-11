@@ -21,6 +21,10 @@ export const EnvSchema = z.object({
             responseType: z.literal('code'),
         }),
     }),
+    database: z.object({
+        region: z.literal('us-east-1'),
+        usersTable: z.string(),
+    }),
     api: z.object({
         baseUrl: z.string(),
     }),
@@ -59,7 +63,7 @@ export const EnvSchema = z.object({
         oauthRedirectUrl: z.string(),
         guildId: z.string(),
     }),
-    logLevel: z.nativeEnum(LogLevel),
+    logLevel: z.enum(LogLevel),
 });
 
 export type Config = z.infer<typeof EnvSchema>;
@@ -77,6 +81,10 @@ export function getConfig(): Config {
                 redirectSignOut: process.env.NEXT_PUBLIC_AUTH_OAUTH_REDIRECT_SIGN_OUT,
                 responseType: process.env.NEXT_PUBLIC_AUTH_OAUTH_RESPONSE_TYPE,
             },
+        },
+        database: {
+            region: process.env.NEXT_PUBLIC_DATABASE_REGION,
+            usersTable: process.env.NEXT_PUBLIC_DATABASE_USERS_TABLE,
         },
         api: {
             baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
