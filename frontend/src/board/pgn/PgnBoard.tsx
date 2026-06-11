@@ -1,6 +1,9 @@
+import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
 import useGame from '@/context/useGame';
 import LoadingPage from '@/loading/LoadingPage';
-import { Chess, Move, Observer } from '@jackstenglein/chess';
+import { Chess, Event, EventType, Move, Observer } from '@jackstenglein/chess';
 import { Box } from '@mui/material';
 import { Color } from 'chessground/types';
 import React, {
@@ -16,8 +19,11 @@ import React, {
     useState,
     type JSX,
 } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi, onMoveFunc } from '../Board';
 import ResizableContainer from './ResizableContainer';
+import { saveSuggestedVariation } from './boardTools/underboard/comments/suggestVariation';
+import { AutoSaveVariations } from './boardTools/underboard/settings/ViewerSettings';
 import { UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { ButtonProps as MoveButtonProps } from './pgnText/MoveButton';
 import { CONTAINER_ID } from './resize';
@@ -117,7 +123,15 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
         },
         ref,
     ) => {
-        const { game } = useGame();
+        const { game, onUpdateGame } = useGame();
+        const { user } = useAuth();
+        const api = useApi();
+        const [autoSaveVariations] = useLocalStorage<boolean>(
+            AutoSaveVariations.key,
+            AutoSaveVariations.default,
+        );
+
+        const autoSaveRequest = useRequest();
         const [board, setBoard] = useState<BoardApi>();
         const [boardRef, setBoardRef] = useState<RefObject<HTMLDivElement | null>>();
 
@@ -207,6 +221,31 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             chess.disableNullMoves = disableNullMoves;
         }, [chess, disableNullMoves]);
 
+        useEffect(() => {
+            if (!chess || !autoSaveVariations || !user || !game || game.owner === user.username) {
+                return;
+            }
+
+            const observer = {
+                types: [EventType.NewVariation],
+                handler: (event: Event) => {
+                    if (event.type === EventType.NewVariation && event.move) {
+                        saveSuggestedVariation(user, game, api, chess, event.move)
+                            .then((response) => {
+                                if (response?.game) {
+                                    onUpdateGame?.(response.game);
+                                }
+                            })
+                            .catch((err) => {
+                                autoSaveRequest.onFailure(err);
+                            });
+                    }
+                },
+            };
+
+            chess.addObserver(observer);
+            return () => chess.removeObserver(observer);
+        }, [chess, autoSaveVariations, user, game, api, onUpdateGame]);
         useImperativeHandle(ref, (): PgnBoardApi => {
             return {
                 getPgn() {
@@ -242,6 +281,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
 
                 {(pgn || fen) && (
                     <ChessContext.Provider value={chessContext}>
+                        <RequestSnackbar request={autoSaveRequest} />
                         <ResizableContainer
                             {...{
                                 underboardTabs,

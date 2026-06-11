@@ -11,7 +11,6 @@ import { logger } from '@/logging/logger';
 import Icon from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { LinkOutlined } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import { Alert, Button, Stack, Typography } from '@mui/material';
 import Field from './Field';
 import OwnerField from './OwnerField';
@@ -131,7 +130,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                 </Button>
             ) : (
                 <Stack spacing={2} pb={1}>
-                    <LoadingButton
+                    <Button
                         data-testid='book-button'
                         variant='contained'
                         loading={request.isLoading()}
@@ -140,7 +139,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                         startIcon={<Icon name='join' />}
                     >
                         Book
-                    </LoadingButton>
+                    </Button>
                     <Typography variant='caption' color='text.secondary' textAlign='center'>
                         Upon booking, you will have 30 minutes to complete payment before losing
                         your spot. Cancelations must be made more than 24 hours in advance to

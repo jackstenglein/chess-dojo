@@ -11,7 +11,6 @@ import { LocationOn } from '@mui/icons-material';
 import EmailIcon from '@mui/icons-material/Email';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -279,14 +278,14 @@ const RegistrationPage = () => {
                     <FormHelperText>{errors.byeRequests}</FormHelperText>
                 </FormControl>
 
-                <LoadingButton
+                <Button
                     variant='contained'
                     loading={request.isLoading()}
                     onClick={validateAndProceed}
                     color='success'
                 >
                     Register
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <Dialog

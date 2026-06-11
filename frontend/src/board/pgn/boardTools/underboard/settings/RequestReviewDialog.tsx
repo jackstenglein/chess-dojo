@@ -7,7 +7,6 @@ import { Link } from '@/components/navigation/Link';
 import { ONE_WEEK_IN_MS } from '@/components/time/time';
 import { Game, GameReviewType, displayGameReviewType } from '@/database/game';
 import Avatar from '@/profile/Avatar';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -221,9 +220,9 @@ const SubmitDialogContent: React.FC<{
                 <Button disabled={request.isLoading()} onClick={onClose}>
                     Cancel
                 </Button>
-                <LoadingButton loading={request.isLoading()} onClick={onPurchase}>
+                <Button loading={request.isLoading()} onClick={onPurchase}>
                     Purchase Review
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

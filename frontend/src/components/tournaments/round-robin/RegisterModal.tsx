@@ -4,7 +4,6 @@ import { useFreeTier } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import { User } from '@/database/user';
 import { RoundRobin } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -230,13 +229,13 @@ export function RegisterModal({
                     <Button disabled={request.isLoading()} onClick={onClose}>
                         Cancel
                     </Button>
-                    <LoadingButton
+                    <Button
                         loading={request.isLoading()}
                         onClick={handleSubmit}
                         disabled={!user.discordId}
                     >
                         Register
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
 
                 <RequestSnackbar request={request} showSuccess />

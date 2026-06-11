@@ -17,11 +17,11 @@ import {
     success,
 } from '../directoryService/api';
 import {
-    UpdateItemBuilder,
     attributeNotExists,
     dynamo,
     lessThan,
     or,
+    UpdateItemBuilder,
 } from '../directoryService/database';
 
 const squareColorResultsTable = `${process.env.stage}-square-color-results`;
@@ -50,12 +50,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const response: SubmitSquareColorSessionResponse = {};
 
         if (request.totalQuestions >= MIN_QUESTIONS_FOR_RATING) {
-            const accuracy =
-                (request.correctCount / request.totalQuestions) * 100;
-            const rating = computeSquareColorRating(
-                accuracy,
-                request.avgResponseTimeMs,
-            );
+            const accuracy = (request.correctCount / request.totalQuestions) * 100;
+            const rating = computeSquareColorRating(accuracy, request.avgResponseTimeMs);
             result.rating = rating;
             response.rating = rating;
         }
@@ -84,7 +80,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 if (!(err instanceof ConditionalCheckFailedException)) {
                     throw err;
                 }
-
             }
         }
 

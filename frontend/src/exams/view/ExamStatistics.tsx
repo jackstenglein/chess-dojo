@@ -2,7 +2,11 @@ import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
 import { useLightMode } from '@/style/useLightMode';
 import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import { Exam } from '@jackstenglein/chess-dojo-common/src/database/exam';
-import { getExamMaxScore, getRegression } from '@jackstenglein/chess-dojo-common/src/exam/scores';
+import {
+    getExamMaxScore,
+    getRegression,
+    predictExamRating,
+} from '@jackstenglein/chess-dojo-common/src/exam/scores';
 import { Speed } from '@mui/icons-material';
 import { CardContent, Stack, Typography } from '@mui/material';
 import {
@@ -111,7 +115,9 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                 id: 'best-fit',
                 type: 'line',
                 label: '',
-                data: Array.from(Array(totalScore + 1)).map((_, i) => regression.predict(i)),
+                data: Array.from(Array(totalScore + 1)).map((_, i) =>
+                    predictExamRating(regression, i),
+                ),
                 color: isLight ? '#000' : '#fff',
             },
             {
@@ -121,7 +127,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                 color: isLight ? '#000' : '#fff',
                 data: Array.from(Array(totalScore + 1)).map((_, i) => ({
                     x: i,
-                    y: Math.round(regression.predict(i)),
+                    y: Math.round(predictExamRating(regression, i)),
                     id: i,
                 })),
                 markerSize: 0,

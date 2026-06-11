@@ -10,7 +10,6 @@ import {
 import { useState } from 'react';
 
 import { Close } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import { EventType, trackEvent } from '../analytics/events';
 import { useApi } from '../api/Api';
 import { RequestSnackbar, useRequest } from '../api/Request';
@@ -80,9 +79,9 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
                     <DialogContentText>{dialogContent}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <LoadingButton onClick={onCancel} loading={cancelRequest.isLoading()}>
+                    <Button onClick={onCancel} loading={cancelRequest.isLoading()}>
                         Cancel Meeting
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

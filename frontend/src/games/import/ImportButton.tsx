@@ -1,4 +1,4 @@
-import { LoadingButton } from '@mui/lab';
+import { Button } from '@mui/material';
 
 export interface ImportButtonProps {
     onClick: () => void;
@@ -6,7 +6,7 @@ export interface ImportButtonProps {
 }
 
 export const ImportButton = ({ onClick, loading }: ImportButtonProps) => (
-    <LoadingButton data-testid='import-button' name='import' loading={loading} onClick={onClick}>
+    <Button data-testid='import-button' name='import' loading={loading} onClick={onClick}>
         Import
-    </LoadingButton>
+    </Button>
 );

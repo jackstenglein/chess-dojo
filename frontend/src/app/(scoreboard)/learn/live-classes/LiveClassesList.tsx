@@ -8,6 +8,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import {
     LiveClass,
+    LiveClassRecording,
     SAMPLE_LIVE_CLASS_S3_KEY,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { ExpandMore, Person, PlayArrow, ShowChart, Troubleshoot } from '@mui/icons-material';
@@ -92,8 +93,15 @@ export function LiveClassesList({
         }
     };
 
-    const onPlay = async (s3Key: string, tier: SubscriptionTier) => {
-        const url = await getPresignedLink(s3Key, tier);
+    const onPlay = async (recording: LiveClassRecording, tier: SubscriptionTier) => {
+        // Allow playing free samples, which might be on YouTube and therefore have
+        // public URLs.
+        if (recording.url) {
+            setPlayingUrl(recording.url);
+            return;
+        }
+
+        const url = await getPresignedLink(recording.s3Key, tier);
         if (!url) {
             return;
         }
@@ -122,14 +130,45 @@ export function LiveClassesList({
                 <Dialog
                     open
                     onClose={() => setPlayingUrl(undefined)}
-                    sx={{ maxHeight: '100%', maxWidth: '100%' }}
+                    maxWidth={false}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                maxWidth: 'calc(min(100vw - 32px, (100vh - 64px) * 560 / 315))',
+                                width: '100%',
+                            },
+                        },
+                    }}
                 >
-                    <video
-                        autoPlay
-                        controls
-                        src={playingUrl}
-                        style={{ maxWidth: '100%', maxHeight: '100%', margin: 'auto' }}
-                    />
+                    {playingUrl.includes('youtube.com') ? (
+                        <iframe
+                            src={playingUrl}
+                            title='YouTube video player'
+                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                            referrerPolicy='strict-origin-when-cross-origin'
+                            allowFullScreen
+                            style={{
+                                maxHeight: '100%',
+                                aspectRatio: '560 / 315',
+                                margin: 'auto',
+                                width: '100%',
+                                maxWidth: 'calc(min(100vw - 32px, (100vh - 64px) * 560 / 315))',
+                            }}
+                        ></iframe>
+                    ) : (
+                        <video
+                            autoPlay
+                            controls
+                            src={playingUrl}
+                            style={{
+                                maxHeight: '100%',
+                                aspectRatio: '560 / 315',
+                                margin: 'auto',
+                                width: '100%',
+                                maxWidth: 'calc(min(100vw - 32px, (100vh - 64px) * 560 / 315))',
+                            }}
+                        />
+                    )}
                 </Dialog>
             )}
 
@@ -173,12 +212,13 @@ function LiveClassCard({
     variant = 'grid',
 }: {
     c: LiveClass;
-    onPlay: (s3Key: string, tier: SubscriptionTier) => void;
+    onPlay: (recording: LiveClassRecording, tier: SubscriptionTier) => void;
     onTagClick: (tag: string) => void;
     selectedTags: string[];
     variant?: 'grid' | 'list';
 }) {
     const isList = variant === 'list';
+    const singleRecording = c.recordings.length === 1 ? c.recordings[0] : undefined;
     return (
         <Card
             variant='outlined'
@@ -204,6 +244,7 @@ function LiveClassCard({
                     component='img'
                     image={c.imageUrl}
                     alt={`${c.name} cover`}
+                    onClick={singleRecording ? () => onPlay(singleRecording, c.type) : undefined}
                     sx={{
                         objectFit: 'cover',
                         ...(isList
@@ -213,11 +254,13 @@ function LiveClassCard({
                                   minWidth: { sm: 200 },
                                   pl: { sm: 2 },
                                   borderRadius: { sm: 1 },
+                                  cursor: singleRecording ? 'pointer' : undefined,
                               }
                             : {
                                   width: '100%',
                                   aspectRatio: 16 / 9,
                                   flexShrink: 0,
+                                  cursor: singleRecording ? 'pointer' : undefined,
                               }),
                     }}
                 />
@@ -326,54 +369,66 @@ function LiveClassCard({
                     {c.description}
                 </Typography>
 
-                <Accordion
-                    disableGutters
-                    elevation={0}
-                    sx={{
-                        bgcolor: 'transparent',
-                        '&:before': { display: 'none' },
-                        mt: 2,
-                    }}
-                >
-                    <AccordionSummary
-                        expandIcon={<ExpandMore sx={{ color: 'primary.main' }} />}
+                {singleRecording ? (
+                    <Button
+                        variant='contained'
+                        startIcon={<PlayArrow />}
+                        onClick={() => onPlay(singleRecording, c.type)}
+                        sx={{ alignSelf: 'start', mt: 2 }}
+                    >
+                        Play
+                    </Button>
+                ) : (
+                    <Accordion
+                        disableGutters
+                        elevation={0}
                         sx={{
-                            minHeight: 48,
-                            flexDirection: 'row-reverse',
-                            '& .MuiAccordionSummary-content': { my: 1 },
-                            '& .MuiAccordionSummary-expandIconWrapper': { mr: 1, ml: 0 },
+                            bgcolor: 'transparent',
+                            '&:before': { display: 'none' },
+                            mt: 2,
                         }}
                     >
-                        <Typography variant='subtitle2' color='primary.main'>
-                            {c.recordings.length} recording{c.recordings.length !== 1 ? 's' : ''}
-                        </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ py: 0 }}>
-                        <Stack spacing={1}>
-                            {c.recordings.map((r) => (
-                                <Stack
-                                    key={r.s3Key}
-                                    direction='row'
-                                    alignItems='center'
-                                    justifyContent='space-between'
-                                    flexWrap='wrap'
-                                    gap={1}
-                                >
-                                    <Typography variant='body2'>
-                                        {formatRecordingDate(r.date)}
-                                    </Typography>
-                                    <Button
-                                        size='small'
-                                        startIcon={<PlayArrow />}
-                                        onClick={() => onPlay(r.s3Key, c.type)}
+                        <AccordionSummary
+                            expandIcon={<ExpandMore sx={{ color: 'primary.main' }} />}
+                            sx={{
+                                minHeight: 48,
+                                flexDirection: 'row-reverse',
+                                '& .MuiAccordionSummary-content': { my: 1 },
+                                '& .MuiAccordionSummary-expandIconWrapper': { mr: 1, ml: 0 },
+                            }}
+                        >
+                            <Typography variant='subtitle2' color='primary.main'>
+                                {c.recordings.length} recording
+                                {c.recordings.length !== 1 ? 's' : ''}
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ py: 0 }}>
+                            <Stack spacing={1}>
+                                {c.recordings.map((r) => (
+                                    <Stack
+                                        key={r.s3Key}
+                                        direction='row'
+                                        alignItems='center'
+                                        justifyContent='space-between'
+                                        flexWrap='wrap'
+                                        gap={1}
                                     >
-                                        Play
-                                    </Button>
-                                </Stack>
-                            ))}
-                        </Stack>
-                    </AccordionDetails>
-                </Accordion>
+                                        <Typography variant='body2'>
+                                            {formatRecordingDate(r.date)}
+                                        </Typography>
+                                        <Button
+                                            size='small'
+                                            startIcon={<PlayArrow />}
+                                            onClick={() => onPlay(r, c.type)}
+                                        >
+                                            Play
+                                        </Button>
+                                    </Stack>
+                                ))}
+                            </Stack>
+                        </AccordionDetails>
+                    </Accordion>
+                )}
             </CardContent>
         </Card>
     );

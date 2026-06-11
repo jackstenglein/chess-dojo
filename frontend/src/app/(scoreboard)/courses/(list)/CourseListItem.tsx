@@ -8,8 +8,8 @@ import { useRouter } from '@/hooks/useRouter';
 import { CategoryColors } from '@/style/ThemeProvider';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { LoadingButton } from '@mui/lab';
 import {
+    Button,
     Card,
     CardActionArea,
     CardActions,
@@ -171,7 +171,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
             </CardActionArea>
             {!isAccessible && purchaseOption && (
                 <CardActions sx={{ p: 2, pt: 0 }}>
-                    <LoadingButton
+                    <Button
                         size='medium'
                         loading={request.isLoading()}
                         onClick={
@@ -187,7 +187,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         startIcon={<ShoppingCartIcon />}
                     >
                         Buy
-                    </LoadingButton>
+                    </Button>
                     <RequestSnackbar request={request} />
                 </CardActions>
             )}

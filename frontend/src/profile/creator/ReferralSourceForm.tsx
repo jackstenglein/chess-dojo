@@ -1,4 +1,3 @@
-import { LoadingButton } from '@mui/lab';
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -109,14 +108,14 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
                     Back
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
                     sx={{ alignSelf: 'end' }}
                 >
                     Next
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

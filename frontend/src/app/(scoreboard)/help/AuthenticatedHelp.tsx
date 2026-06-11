@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/auth/Auth';
 import SupportTicket from '@/components/help/SupportTicket';
 import { Link } from '@/components/navigation/Link';
 import { getConfig } from '@/config';
@@ -420,6 +421,7 @@ const helpSections = [
 
 const AuthenticatedHelp = () => {
     const { searchParams } = useNextSearchParams();
+    const { user } = useAuth();
 
     const id = searchParams.get('id');
     useEffect(() => {
@@ -520,7 +522,7 @@ const AuthenticatedHelp = () => {
                                 <li>
                                     <Button
                                         component={Link}
-                                        href='/scoreboard?tutorial=true'
+                                        href={`/scoreboard/${user?.dojoCohort}?tutorial=true`}
                                         sx={{ textTransform: 'none' }}
                                     >
                                         Launch Scoreboard Page Tutorial

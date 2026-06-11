@@ -1,4 +1,4 @@
-import { Step } from 'react-joyride-react19-compat';
+import { Step } from 'react-joyride';
 import Tutorial from './Tutorial';
 import { TutorialName } from './tutorialNames';
 
@@ -8,7 +8,7 @@ const steps: Step[] = [
         title: 'Welcome to the Scoreboard',
         content:
             'By default, the scoreboard opens to your cohort, but you can use this select box to switch between cohorts.',
-        disableBeacon: true,
+        skipBeacon: true,
     },
     {
         target: '.MuiDataGrid-columnHeaderTitleContainer',

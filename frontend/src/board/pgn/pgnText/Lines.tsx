@@ -1,15 +1,20 @@
 import { useAuth } from '@/auth/Auth';
+import useGame from '@/context/useGame';
 import { CommentType, Event, EventType, Move } from '@jackstenglein/chess';
 import { Box, Collapse, Divider, Stack, Tooltip, Typography } from '@mui/material';
 import { Fragment, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { getInlineCommentsForMove } from '../boardTools/underboard/comments/positionComments';
 import {
     isSuggestedVariation,
     isVariationSuggestor,
 } from '../boardTools/underboard/comments/suggestVariation';
-import { ShowSuggestedVariations } from '../boardTools/underboard/settings/ViewerSettings';
+import {
+    ShowInlineCommentsInPgn,
+    ShowSuggestedVariations,
+} from '../boardTools/underboard/settings/ViewerSettings';
 import { useChess } from '../PgnBoard';
-import Comment from './Comment';
+import { Comments } from './Comments';
 import MoveButton, { MoveButtonSlotProps } from './MoveButton';
 
 const borderWidth = 1.5; // px
@@ -21,6 +26,7 @@ interface LineProps {
     handleScroll: (child: HTMLElement | null) => void;
     onExpand: () => void;
     forceShowSuggestedVariations?: boolean;
+    showInlinePositionComments?: boolean;
     slotProps?: {
         moveButton?: MoveButtonSlotProps;
     };
@@ -32,14 +38,20 @@ export const Line: React.FC<LineProps> = ({
     handleScroll,
     onExpand,
     forceShowSuggestedVariations,
+    showInlinePositionComments = true,
     slotProps,
 }) => {
     const { user } = useAuth();
     const { chess } = useChess();
+    const { game } = useGame();
     const [, setForceRender] = useState(0);
     const [showSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
         ShowSuggestedVariations.default,
+    );
+    const [showInlineCommentsInPgn] = useLocalStorage<boolean>(
+        ShowInlineCommentsInPgn.key,
+        ShowInlineCommentsInPgn.default,
     );
 
     useEffect(() => {
@@ -80,6 +92,7 @@ export const Line: React.FC<LineProps> = ({
                     handleScroll={handleScroll}
                     expandParent={onExpand}
                     forceShowSuggestedVariations={forceShowSuggestedVariations}
+                    showInlinePositionComments={showInlinePositionComments}
                     slotProps={slotProps}
                 />,
             );
@@ -88,7 +101,7 @@ export const Line: React.FC<LineProps> = ({
 
         result.push(
             <Fragment key={`fragment-${i}`}>
-                <Comment move={move} type={CommentType.Before} inline />
+                <Comments move={move} type={CommentType.Before} inline inlineComments={[]} />
                 <MoveButton
                     inline
                     forceShowPly={i === 0}
@@ -96,7 +109,15 @@ export const Line: React.FC<LineProps> = ({
                     handleScroll={handleScroll}
                     slotProps={slotProps?.moveButton}
                 />
-                <Comment move={move} inline />
+                <Comments
+                    move={move}
+                    inline
+                    inlineComments={
+                        showInlinePositionComments && showInlineCommentsInPgn
+                            ? getInlineCommentsForMove(game, chess, move)
+                            : []
+                    }
+                />
             </Fragment>,
         );
     }
@@ -127,6 +148,7 @@ interface LinesProps {
     handleScroll: (child: HTMLElement | null) => void;
     expandParent?: () => void;
     forceShowSuggestedVariations?: boolean;
+    showInlinePositionComments?: boolean;
     slotProps?: {
         moveButton?: MoveButtonSlotProps;
     };
@@ -138,6 +160,7 @@ const Lines: React.FC<LinesProps> = ({
     handleScroll,
     expandParent,
     forceShowSuggestedVariations,
+    showInlinePositionComments = true,
     slotProps,
 }) => {
     const { chess } = useChess();
@@ -276,6 +299,7 @@ const Lines: React.FC<LinesProps> = ({
                             expandParent?.();
                         }}
                         forceShowSuggestedVariations={forceShowSuggestedVariations}
+                        showInlinePositionComments={showInlinePositionComments}
                         slotProps={slotProps}
                     />
                 ))}

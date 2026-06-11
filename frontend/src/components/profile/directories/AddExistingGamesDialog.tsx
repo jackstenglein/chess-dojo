@@ -7,7 +7,6 @@ import { GameInfo } from '@/database/game';
 import { usePagination } from '@/hooks/usePagination';
 import { logger } from '@/logging/logger';
 import { Directory } from '@jackstenglein/chess-dojo-common/src/database/directory';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -141,7 +140,7 @@ export const AddExistingGamesDialog = ({
                     Cancel
                 </Button>
 
-                <LoadingButton
+                <Button
                     disabled={selectedRows.ids.size === 0}
                     loading={addRequest.isLoading()}
                     onClick={onAdd}
@@ -149,7 +148,7 @@ export const AddExistingGamesDialog = ({
                     {selectedRows.ids.size
                         ? `Add ${selectedRows.ids.size} Game${selectedRows.ids.size > 1 ? 's' : ''}`
                         : 'Add Games'}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={pagination.request} />

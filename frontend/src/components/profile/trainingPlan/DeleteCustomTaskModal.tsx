@@ -3,7 +3,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { CustomTask } from '@/database/requirement';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -72,9 +71,9 @@ const DeleteCustomTaskModal: React.FC<DeleteCustomTaskModalProps> = ({
                     Cancel
                 </Button>
 
-                <LoadingButton color='error' loading={request.isLoading()} onClick={handleDelete}>
+                <Button color='error' loading={request.isLoading()} onClick={handleDelete}>
                     Delete Task
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

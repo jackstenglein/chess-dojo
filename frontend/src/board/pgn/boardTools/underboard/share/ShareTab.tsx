@@ -22,7 +22,6 @@ import {
     OpenInNew,
     PictureAsPdf,
 } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     CardContent,
@@ -524,14 +523,14 @@ export function ShareTab() {
                         Download PGN
                     </Button>
 
-                    <LoadingButton
+                    <Button
                         variant='contained'
                         startIcon={<PictureAsPdf />}
                         onClick={onDownloadPdf}
                         loading={pdfRequest.isLoading()}
                     >
                         Download PDF
-                    </LoadingButton>
+                    </Button>
 
                     <CopyButton
                         name='line'
@@ -544,25 +543,25 @@ export function ShareTab() {
 
                     {user && (
                         <>
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 startIcon={<Merge />}
                                 onClick={() => setShowMergeDialog(true)}
                             >
                                 Merge Current Line
-                            </LoadingButton>
+                            </Button>
                             <MergeLineDialog
                                 open={showMergeDialog}
                                 onClose={() => setShowMergeDialog(false)}
                             />
 
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 loading={cloneRequest.isLoading()}
                                 onClick={onCloneGame}
                             >
                                 Clone Game
-                            </LoadingButton>
+                            </Button>
                         </>
                     )}
                 </Stack>

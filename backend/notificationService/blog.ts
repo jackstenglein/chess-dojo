@@ -1,7 +1,7 @@
 'use strict';
 
-import { EmbedBuilder } from 'discord.js';
 import { BlogPublishedEvent } from '@jackstenglein/chess-dojo-common/src/database/notification';
+import { EmbedBuilder } from 'discord.js';
 import { sendChannelEmbed } from './discord';
 
 const blogChannelId = process.env.discordBlogChannelId ?? '';

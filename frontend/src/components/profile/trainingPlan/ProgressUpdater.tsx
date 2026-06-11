@@ -13,7 +13,6 @@ import {
     isRequirement,
 } from '@/database/requirement';
 import { TimeFormat } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Alert,
     Button,
@@ -274,13 +273,13 @@ export const ProgressUpdater = ({
                         </Button>
                     </>
                 )}
-                <LoadingButton
+                <Button
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
                     Update
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

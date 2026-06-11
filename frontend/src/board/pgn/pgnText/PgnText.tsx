@@ -9,10 +9,12 @@ import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../PgnBoard';
 import ResizeHandle from '../ResizeHandle';
+import { SaveAllVariationsButton } from '../boardTools/underboard/comments/SaveAllVariationsButton';
 import { HideEngine } from '../boardTools/underboard/settings/ViewerSettings';
 import { ResizableData } from '../resize';
 import GameComment from './GameComment';
 import Result from './Result';
+import StartingPositionComments from './StartingPositionComments';
 import Variation from './Variation';
 import EngineSection from './engine/EngineSection';
 
@@ -41,6 +43,7 @@ const PgnText = () => {
         <Stack spacing={1} maxHeight={1}>
             {game && game.unlisted === true && isOwner && <UnpublishedGameBanner dismissable />}
             {unsaved && <UnsavedGameBanner dismissable />}
+            <SaveAllVariationsButton />
 
             <Card
                 data-testid='pgn-text'
@@ -53,6 +56,7 @@ const PgnText = () => {
                     sx={{ overflowY: 'scroll', overflowX: 'clip', flexGrow: 1, width: 1 }}
                 >
                     <GameComment />
+                    <StartingPositionComments />
                     <Variation handleScroll={handleScroll} />
                     {!slotProps?.pgnText?.hideResult && !solitaire?.enabled && <Result />}
 

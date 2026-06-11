@@ -1,4 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
+import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -32,6 +33,9 @@ export interface User {
     ratingSystem: RatingSystem;
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
+
+    /** The user's aggregate time management rating. */
+    timeManagementRating?: TimeManagementRating;
 
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
@@ -271,6 +275,10 @@ export interface PaymentInfo {
     overrideRevokedAt?: string;
     /** The username of the user who revoked the OVERRIDE access. */
     overrideRevokedBy?: string;
+    /** Stripe customer id preserved while OVERRIDE is active (restored when override ends). */
+    preservedCustomerId?: string;
+    preservedSubscriptionStatus?: string;
+    preservedSubscriptionTier?: string;
 }
 
 export interface CoachInfo {

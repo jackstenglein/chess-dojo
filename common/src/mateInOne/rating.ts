@@ -37,19 +37,125 @@ interface BandRow {
  * All other scores have a single linear band.
  */
 const BAND_TABLE: Record<number, BandRow[]> = {
-    1: [{ score: 1, slowMin: 40, fastMin: 10, slowRating: 300, fastRating: 600, floor: 300, cap: 600 }],
-    2: [{ score: 2, slowMin: 40, fastMin: 10, slowRating: 600, fastRating: 900, floor: 600, cap: 900 }],
-    3: [{ score: 3, slowMin: 40, fastMin: 10, slowRating: 900, fastRating: 1200, floor: 900, cap: 1200 }],
-    4: [{ score: 4, slowMin: 40, fastMin: 10, slowRating: 1200, fastRating: 1500, floor: 1200, cap: 1500 }],
-    5: [{ score: 5, slowMin: 40, fastMin: 10, slowRating: 1500, fastRating: 1800, floor: 1500, cap: 1800 }],
-    6: [
-        { score: 6, slowMin: 40, fastMin: 15, slowRating: 1800, fastRating: 1900, floor: 1800, cap: 1900 },
-        { score: 6, slowMin: 15, fastMin: 5, slowRating: 2000, fastRating: 2099, floor: 2000, cap: 2099 },
+    1: [
+        {
+            score: 1,
+            slowMin: 40,
+            fastMin: 10,
+            slowRating: 300,
+            fastRating: 600,
+            floor: 300,
+            cap: 600,
+        },
     ],
-    7: [{ score: 7, slowMin: 15, fastMin: 5, slowRating: 2100, fastRating: 2199, floor: 2000, cap: 2199 }],
-    8: [{ score: 8, slowMin: 15, fastMin: 5, slowRating: 2200, fastRating: 2299, floor: 2100, cap: 2299 }],
-    9: [{ score: 9, slowMin: 15, fastMin: 5, slowRating: 2300, fastRating: 2399, floor: 2200, cap: 2399 }],
-    10: [{ score: 10, slowMin: 15, fastMin: 10, slowRating: 2400, fastRating: 2500, floor: 2300, cap: 2500 }],
+    2: [
+        {
+            score: 2,
+            slowMin: 40,
+            fastMin: 10,
+            slowRating: 600,
+            fastRating: 900,
+            floor: 600,
+            cap: 900,
+        },
+    ],
+    3: [
+        {
+            score: 3,
+            slowMin: 40,
+            fastMin: 10,
+            slowRating: 900,
+            fastRating: 1200,
+            floor: 900,
+            cap: 1200,
+        },
+    ],
+    4: [
+        {
+            score: 4,
+            slowMin: 40,
+            fastMin: 10,
+            slowRating: 1200,
+            fastRating: 1500,
+            floor: 1200,
+            cap: 1500,
+        },
+    ],
+    5: [
+        {
+            score: 5,
+            slowMin: 40,
+            fastMin: 10,
+            slowRating: 1500,
+            fastRating: 1800,
+            floor: 1500,
+            cap: 1800,
+        },
+    ],
+    6: [
+        {
+            score: 6,
+            slowMin: 40,
+            fastMin: 15,
+            slowRating: 1800,
+            fastRating: 1900,
+            floor: 1800,
+            cap: 1900,
+        },
+        {
+            score: 6,
+            slowMin: 15,
+            fastMin: 5,
+            slowRating: 2000,
+            fastRating: 2099,
+            floor: 2000,
+            cap: 2099,
+        },
+    ],
+    7: [
+        {
+            score: 7,
+            slowMin: 15,
+            fastMin: 5,
+            slowRating: 2100,
+            fastRating: 2199,
+            floor: 2000,
+            cap: 2199,
+        },
+    ],
+    8: [
+        {
+            score: 8,
+            slowMin: 15,
+            fastMin: 5,
+            slowRating: 2200,
+            fastRating: 2299,
+            floor: 2100,
+            cap: 2299,
+        },
+    ],
+    9: [
+        {
+            score: 9,
+            slowMin: 15,
+            fastMin: 5,
+            slowRating: 2300,
+            fastRating: 2399,
+            floor: 2200,
+            cap: 2399,
+        },
+    ],
+    10: [
+        {
+            score: 10,
+            slowMin: 15,
+            fastMin: 10,
+            slowRating: 2400,
+            fastRating: 2500,
+            floor: 2300,
+            cap: 2500,
+        },
+    ],
 };
 
 /**

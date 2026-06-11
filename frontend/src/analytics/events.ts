@@ -24,6 +24,7 @@ export enum EventType {
     DownloadGradBox = 'download_grad_box',
     UpdateProgress = 'update_progress',
     UpdateTimeline = 'update_timeline',
+    ResetProgress = 'reset_progress',
     CreateNondojoTask = 'create_nondojo_task',
     EditNondojoTask = 'edit_nondojo_task',
     DeleteNondojoTask = 'delete_nondojo_task',

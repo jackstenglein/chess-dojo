@@ -1,7 +1,8 @@
 import { PositionComment } from '@/database/game';
 import { Stack } from '@mui/material';
 import Comment from './Comment';
-import { SortBy, usePositionCommentSort } from './Comments';
+import { usePositionCommentSort } from './Comments';
+import { SortBy } from './positionComments';
 
 interface RepliesProps {
     comment: PositionComment;

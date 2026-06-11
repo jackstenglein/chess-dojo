@@ -204,6 +204,21 @@ functions:
           - dynamodb:BatchWriteItem
         Resource: ${param:TimelineTableArn}
 
+  resetProgress:
+    handler: progress/reset/main.go
+    events:
+      - httpApi:
+          path: /user/progress/reset
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
   get:
     handler: get/main.go
     events:

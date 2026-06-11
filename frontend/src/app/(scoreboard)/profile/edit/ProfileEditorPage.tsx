@@ -9,6 +9,7 @@ import { Link } from '@/components/navigation/Link';
 import NotificationSettingsEditor from '@/components/profile/edit/NotificationSettingsEditor';
 import { PersonalInfoEditor } from '@/components/profile/edit/PersonalInfoEditor';
 import { RatingEditor, RatingsEditor } from '@/components/profile/edit/RatingsEditor';
+import { ResetProgressButton } from '@/components/profile/edit/ResetProgressButton';
 import SubscriptionManager from '@/components/profile/edit/SubscriptionManager';
 import {
     Rating,
@@ -26,6 +27,7 @@ import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SaveIcon from '@mui/icons-material/Save';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import WarningIcon from '@mui/icons-material/Warning';
 import {
     Alert,
     Button,
@@ -37,6 +39,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Divider,
     Grid,
     Stack,
     Typography,
@@ -410,6 +413,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                     />{' '}
                                     Subscription/Billing
                                 </Link>
+                                <Link href='#danger' onClick={scrollToId('danger')}>
+                                    <WarningIcon
+                                        fontSize='small'
+                                        sx={{ verticalAlign: 'middle', marginRight: '0.2em' }}
+                                    />{' '}
+                                    Danger Zone
+                                </Link>
                             </Stack>
                         </CardContent>
                     </Card>
@@ -542,6 +552,28 @@ export function ProfileEditorPage({ user }: { user: User }) {
                         </Stack>
 
                         <SubscriptionManager user={user} />
+
+                        <Stack spacing={2}>
+                            <Stack
+                                id='danger'
+                                sx={{
+                                    scrollMarginTop: 'calc(var(--navbar-height) + 8px)',
+                                }}
+                            >
+                                <Typography variant='h5'>
+                                    <WarningIcon
+                                        style={{
+                                            verticalAlign: 'middle',
+                                            marginRight: '0.1em',
+                                        }}
+                                    />{' '}
+                                    Danger Zone
+                                </Typography>
+                                <Divider />
+                            </Stack>
+
+                            <ResetProgressButton />
+                        </Stack>
                     </Stack>
                 </Grid>
             </Grid>

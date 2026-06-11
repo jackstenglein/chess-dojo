@@ -1,8 +1,7 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenInNew } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
-import { Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
 
 const ConnectStripeAccount = () => {
     const api = useApi();
@@ -34,14 +33,14 @@ const ConnectStripeAccount = () => {
                             account. Click the button below to be redirected to Stripe.
                         </Typography>
 
-                        <LoadingButton
+                        <Button
                             variant='contained'
                             loading={request.isLoading()}
                             onClick={onSetup}
                             endIcon={<OpenInNew />}
                         >
                             Setup Stripe
-                        </LoadingButton>
+                        </Button>
                     </Stack>
                 </CardContent>
             </Card>

@@ -24,6 +24,10 @@ const nextConfig = {
     headers() {
         const headers = [
             {
+                source: '/play-bot/:path*',
+                headers: ENGINE_HEADERS,
+            },
+            {
                 source: '/:path*',
                 headers: ENGINE_HEADERS,
             },

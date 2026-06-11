@@ -7,7 +7,6 @@ import {
     DirectoryItem,
     DirectoryItemTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -155,7 +154,7 @@ export const DeleteDialog = ({
                 <Button disabled={request.isLoading()} onClick={onCancel}>
                     Cancel
                 </Button>
-                <LoadingButton
+                <Button
                     data-testid='delete-directory-button'
                     color='error'
                     disabled={disableDelete}
@@ -163,7 +162,7 @@ export const DeleteDialog = ({
                     onClick={onDelete}
                 >
                     {type === DeleteDialogType.Delete || requiresConfirmation ? 'Delete' : 'Remove'}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

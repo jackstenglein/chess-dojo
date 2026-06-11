@@ -17,7 +17,6 @@ import { ALL_COHORTS, compareCohorts, dojoCohorts, TimeFormat, User } from '@/da
 import LoadingPage from '@/loading/LoadingPage';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -668,13 +667,13 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                         </Button>
                     </>
                 )}
-                <LoadingButton
+                <Button
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
                     Save
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />
