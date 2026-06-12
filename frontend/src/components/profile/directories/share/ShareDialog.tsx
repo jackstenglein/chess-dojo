@@ -9,7 +9,6 @@ import {
     DirectoryAccessRole,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Check, Link } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Autocomplete,
     Box,
@@ -169,13 +168,9 @@ export const ShareDialog = ({
                 </Box>
 
                 <Button onClick={onClose}>{t('cancel')}</Button>
-                <LoadingButton
-                    loading={request.isLoading()}
-                    disabled={!changesMade}
-                    onClick={onSave}
-                >
+                <Button loading={request.isLoading()} disabled={!changesMade} onClick={onSave}>
                     {t('save')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

@@ -11,7 +11,6 @@ import { logger } from '@/logging/logger';
 import Icon from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { LinkOutlined } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import { Alert, Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import Field from './Field';
@@ -132,7 +131,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                 </Button>
             ) : (
                 <Stack spacing={2} pb={1}>
-                    <LoadingButton
+                    <Button
                         data-testid='book-button'
                         variant='contained'
                         loading={request.isLoading()}
@@ -141,7 +140,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                         startIcon={<Icon name='join' />}
                     >
                         {t('book')}
-                    </LoadingButton>
+                    </Button>
                     <Typography variant='caption' color='text.secondary' textAlign='center'>
                         {t('bookingPolicy')}
                     </Typography>

@@ -29,7 +29,7 @@ export const submitMateInOneSessionSchema = z.object({
     /** The individual puzzle attempts. */
     attempts: z.array(mateInOneAttemptSchema),
     /** Optional client-generated timestamp to allow updating the same session record. */
-    createdAt: z.string().datetime().optional(),
+    createdAt: z.iso.datetime().optional(),
 });
 
 /** A request to submit a mate-in-one drill session. */

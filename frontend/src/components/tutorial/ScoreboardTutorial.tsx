@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { Step } from 'react-joyride-react19-compat';
+import { Step } from 'react-joyride';
 import Tutorial from './Tutorial';
 import { TutorialName } from './tutorialNames';
 

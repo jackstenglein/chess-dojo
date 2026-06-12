@@ -1,7 +1,6 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { ClubDetails } from '@/database/club';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -63,9 +62,9 @@ export const LeaveClubDialog: React.FC<LeaveClubDialogProps> = ({
                 <Button disabled={request.isLoading()} onClick={onClose}>
                     {t('cancel')}
                 </Button>
-                <LoadingButton loading={request.isLoading()} onClick={onLeave}>
+                <Button loading={request.isLoading()} onClick={onLeave}>
                     {t('submit')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

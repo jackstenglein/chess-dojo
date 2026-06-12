@@ -10,8 +10,7 @@ import UserInfo from '@/components/profile/info/UserInfo';
 import { FollowerEntry } from '@/database/follower';
 import { User, compareCohorts } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
-import { LoadingButton } from '@mui/lab';
-import { Card, CardActionArea, CardContent, Stack } from '@mui/material';
+import { Button, Card, CardActionArea, CardContent, Stack } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 
@@ -109,14 +108,14 @@ const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
                             <UserInfo user={coach} />
 
                             {currentUser && currentUser.username !== coach.username && (
-                                <LoadingButton
+                                <Button
                                     data-testid='follow-button'
                                     variant='contained'
                                     onClick={onFollow}
                                     loading={followRequest.isLoading()}
                                 >
                                     {followRequest.data ? t('unfollow') : t('follow')}
-                                </LoadingButton>
+                                </Button>
                             )}
                         </Stack>
 

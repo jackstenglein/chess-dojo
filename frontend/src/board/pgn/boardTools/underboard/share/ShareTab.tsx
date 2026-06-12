@@ -22,7 +22,6 @@ import {
     OpenInNew,
     PictureAsPdf,
 } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     CardContent,
@@ -535,14 +534,19 @@ export function ShareTab() {
                         {t('downloadPgn')}
                     </Button>
 
-                    <LoadingButton
+                    <Button
                         variant='contained'
                         startIcon={<PictureAsPdf />}
                         onClick={onDownloadPdf}
                         loading={pdfRequest.isLoading()}
                     >
+<<<<<<< HEAD
                         {t('downloadPdf')}
-                    </LoadingButton>
+                    </Button>
+=======
+                        Download PDF
+                    </Button>
+>>>>>>> dev
 
                     <CopyButton
                         name='line'
@@ -555,25 +559,35 @@ export function ShareTab() {
 
                     {user && (
                         <>
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 startIcon={<Merge />}
                                 onClick={() => setShowMergeDialog(true)}
                             >
+<<<<<<< HEAD
                                 {t('mergeCurrentLine')}
-                            </LoadingButton>
+                            </Button>
+=======
+                                Merge Current Line
+                            </Button>
+>>>>>>> dev
                             <MergeLineDialog
                                 open={showMergeDialog}
                                 onClose={() => setShowMergeDialog(false)}
                             />
 
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 loading={cloneRequest.isLoading()}
                                 onClick={onCloneGame}
                             >
+<<<<<<< HEAD
                                 {t('cloneGame')}
-                            </LoadingButton>
+                            </Button>
+=======
+                                Clone Game
+                            </Button>
+>>>>>>> dev
                         </>
                     )}
                 </Stack>

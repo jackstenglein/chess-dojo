@@ -11,7 +11,6 @@ import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon from '@/style/Icon';
 import { Folder } from '@mui/icons-material';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { LoadingButton } from '@mui/lab';
 import {
     AccordionProps,
     AccordionSummaryProps,
@@ -146,7 +145,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
                 </Grid>
             </Grid>
 
-            <LoadingButton
+            <Button
                 data-testid='cohort-search-button'
                 variant='outlined'
                 loading={isLoading}
@@ -154,7 +153,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
                 startIcon={<Icon name='search' color='primary' />}
             >
                 {t('search')}
-            </LoadingButton>
+            </Button>
         </Stack>
     );
 };
@@ -201,7 +200,7 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
                 </Grid>
             </Grid>
 
-            <LoadingButton
+            <Button
                 data-testid='owner-search-button'
                 variant='outlined'
                 loading={isLoading}
@@ -209,7 +208,7 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
                 startIcon={<Icon name='search' color='primary' />}
             >
                 {t('search')}
-            </LoadingButton>
+            </Button>
         </Stack>
     );
 };
@@ -302,7 +301,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
                 </Grid>
             </Grid>
 
-            <LoadingButton
+            <Button
                 data-testid='player-search-button'
                 variant='outlined'
                 loading={isLoading}
@@ -311,7 +310,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
                 startIcon={<Icon name='search' color='primary' />}
             >
                 {t('search')}
-            </LoadingButton>
+            </Button>
             {isFreeTier && (
                 <Typography
                     variant='caption'
@@ -399,7 +398,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
                 </Grid>
             </Grid>
 
-            <LoadingButton
+            <Button
                 data-testid='opening-search-button'
                 variant='outlined'
                 loading={isLoading}
@@ -407,7 +406,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
                 startIcon={<Icon name='search' color='primary' />}
             >
                 {t('search')}
-            </LoadingButton>
+            </Button>
         </Stack>
     );
 };
@@ -454,7 +453,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                 />
             </FormControl>
 
-            <LoadingButton
+            <Button
                 data-testid='fen-search-button'
                 variant='outlined'
                 loading={isLoading}
@@ -463,7 +462,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                 startIcon={<Icon name='search' color='primary' />}
             >
                 {t('search')}
-            </LoadingButton>
+            </Button>
 
             {isFreeTier ? (
                 <Typography
@@ -474,7 +473,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                     {t('freeTierPosition')}
                 </Typography>
             ) : (
-                <LoadingButton
+                <Button
                     href={`/games/analysis?fen=${fen}`}
                     component={Link}
                     disabled={isLoading}
@@ -482,7 +481,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                     startIcon={<Icon name='explore' color='primary' />}
                 >
                     {t('positionExplorer')}
-                </LoadingButton>
+                </Button>
             )}
         </Stack>
     );

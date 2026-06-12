@@ -7,7 +7,6 @@ import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle } from '@mui/icons-material';
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
-import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -161,7 +160,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 }}
             />
 
-            <LoadingButton
+            <Button
                 data-testid='submit-button'
                 variant='contained'
                 onClick={onSubmit}
@@ -177,7 +176,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 loading={loading}
             >
                 {t('forgotPassword.sendEmail')}
-            </LoadingButton>
+            </Button>
 
             <Button
                 data-testid='cancel-button'
@@ -304,7 +303,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 onKeyDown={onKeyDown}
             />
 
-            <LoadingButton
+            <Button
                 variant='contained'
                 onClick={onConfirm}
                 fullWidth
@@ -319,7 +318,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 data-testid='submit-button'
             >
                 {t('forgotPassword.resetPassword')}
-            </LoadingButton>
+            </Button>
 
             <Button variant='text' sx={{ textTransform: 'none' }} component={Link} href='/signin'>
                 {t('forgotPassword.cancel')}

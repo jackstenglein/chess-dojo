@@ -2,7 +2,6 @@ import { EventType, setUserProperties, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { User } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -70,9 +69,9 @@ export function GraduationDialog({ open, onClose, user }: GraduationDialogProps)
                     <Button onClick={onClose} disabled={request.isLoading()}>
                         {tCommon('cancel')}
                     </Button>
-                    <LoadingButton loading={request.isLoading()} onClick={onGraduate}>
+                    <Button loading={request.isLoading()} onClick={onGraduate}>
                         {t('graduate')}
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

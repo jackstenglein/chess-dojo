@@ -2,7 +2,6 @@
 
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
-import { LoadingButton } from '@mui/lab';
 import { Grid, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -140,14 +139,14 @@ const SupportTicket = () => {
                 </Grid>
 
                 <Grid display='flex' justifyContent='center' size={12}>
-                    <LoadingButton
+                    <Button
                         data-testid='support-ticket-submit'
                         variant='contained'
                         loading={request.isLoading()}
                         onClick={onSubmit}
                     >
                         {t('submit')}
-                    </LoadingButton>
+                    </Button>
                 </Grid>
             </Grid>
             <RequestSnackbar request={request} />

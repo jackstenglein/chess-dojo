@@ -2,7 +2,6 @@ import { Request } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString } from '@/components/calendar/displayDate';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { LoadingButton } from '@mui/lab';
 import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -27,13 +26,9 @@ function LoadMoreButton<T>({
     if (hasMore || Object.values(startKey || {}).length > 0) {
         return (
             <Stack alignItems='center' spacing={1}>
-                <LoadingButton
-                    variant='contained'
-                    loading={request.isLoading()}
-                    onClick={onLoadMore}
-                >
+                <Button variant='contained' loading={request.isLoading()} onClick={onLoadMore}>
                     {t('loadMore')}
-                </LoadingButton>
+                </Button>
             </Stack>
         );
     }

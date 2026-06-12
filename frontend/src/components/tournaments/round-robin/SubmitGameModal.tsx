@@ -2,7 +2,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { User } from '@/database/user';
 import { RoundRobin } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -91,9 +90,9 @@ export function SubmitGameModal({
                     <Button disabled={request.isLoading()} onClick={handleClose}>
                         {t('cancel')}
                     </Button>
-                    <LoadingButton loading={request.isLoading()} onClick={handleSubmit}>
+                    <Button loading={request.isLoading()} onClick={handleSubmit}>
                         {t('submit')}
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
 

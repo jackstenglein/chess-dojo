@@ -17,7 +17,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import Comment from './Comment';
 import CommentEditor, { CommentEditorProps } from './CommentEditor';
+import { getCommentsForFen, SortBy } from './positionComments';
+import { SaveAllVariationsButton } from './SaveAllVariationsButton';
 import { isSuggestedVariation } from './suggestVariation';
+
+export { SortBy } from './positionComments';
 
 const CommentViewKey = 'COMMENT_VIEW';
 const CommentSortByKey = 'COMMENT_SORT_BY';
@@ -25,11 +29,6 @@ const CommentSortByKey = 'COMMENT_SORT_BY';
 enum View {
     FullGame = 'FULL_GAME',
     CurrentMove = 'CURRENT_MOVE',
-}
-
-export enum SortBy {
-    Newest = 'NEWEST',
-    Oldest = 'OLDEST',
 }
 
 interface PositionCommentSortContextType {
@@ -90,6 +89,7 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
         <CardContent sx={{ height: 1, p: 0 }}>
             <Stack height={1}>
                 <Stack flexGrow={1} sx={{ overflowY: 'auto', p: 2 }}>
+<<<<<<< HEAD
                     <Stack direction='row' spacing={1}>
                         <TextField
                             label={t('showCommentsLabel')}
@@ -114,6 +114,36 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                             <MenuItem value={SortBy.Newest}>{t('newestFirst')}</MenuItem>
                             <MenuItem value={SortBy.Oldest}>{t('oldestFirst')}</MenuItem>
                         </TextField>
+=======
+                    <Stack spacing={2}>
+                        <SaveAllVariationsButton />
+
+                        <Stack direction='row' spacing={1}>
+                            <TextField
+                                label='Show Comments From'
+                                select
+                                value={view}
+                                onChange={(e) => setView(e.target.value as View)}
+                                fullWidth
+                                size='small'
+                            >
+                                <MenuItem value={View.FullGame}>Entire Game</MenuItem>
+                                <MenuItem value={View.CurrentMove}>Current Position Only</MenuItem>
+                            </TextField>
+
+                            <TextField
+                                label='Sort By'
+                                select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                                fullWidth
+                                size='small'
+                            >
+                                <MenuItem value={SortBy.Newest}>Newest First</MenuItem>
+                                <MenuItem value={SortBy.Oldest}>Oldest First</MenuItem>
+                            </TextField>
+                        </Stack>
+>>>>>>> dev
                     </Stack>
 
                     <Stack spacing={4} mt={3} flexGrow={1}>
@@ -190,31 +220,6 @@ function getFenSections(game: Game, chess: Chess, view: View, sort: SortBy) {
     }
 
     return fenSections;
-}
-
-function getCommentsForFen(
-    game: Game,
-    fen: string,
-    move: Move | null,
-    sort: SortBy,
-): PositionComment[] {
-    const fenComments = game.positionComments[fen] || {};
-    const selectedComments: PositionComment[] = [];
-
-    for (const comment of Object.values(fenComments)) {
-        if (comment.ply === (move?.ply || 0) && comment.san === move?.san) {
-            selectedComments.push(comment);
-        }
-    }
-
-    selectedComments.sort((lhs, rhs) => {
-        if (sort === SortBy.Newest) {
-            return rhs.createdAt.localeCompare(lhs.createdAt);
-        }
-        return lhs.createdAt.localeCompare(rhs.createdAt);
-    });
-
-    return selectedComments;
 }
 
 interface CommentSectionProps {

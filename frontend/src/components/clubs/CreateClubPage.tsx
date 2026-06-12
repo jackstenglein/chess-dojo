@@ -13,7 +13,6 @@ import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
 import { ClubAvatar } from '@/profile/Avatar';
 import { Delete, Upload } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -304,14 +303,14 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                     />
                 </Stack>
 
-                <LoadingButton
+                <Button
                     variant='contained'
                     onClick={onSave}
                     loading={saveRequest.isLoading()}
                     sx={{ alignSelf: 'center' }}
                 >
                     {id ? t('saveButton') : t('createButton')}
-                </LoadingButton>
+                </Button>
             </Stack>
         </Container>
     );

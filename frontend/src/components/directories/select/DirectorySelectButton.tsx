@@ -6,7 +6,6 @@ import {
     isManagedDirectory,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { FolderOutlined } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import { Button, ButtonProps } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -113,14 +112,14 @@ export function DirectorySelectButton<T>({
                                 <Button onClick={request?.isLoading() ? undefined : onCancel}>
                                     {t('cancel')}
                                 </Button>
-                                <LoadingButton
+                                <Button
                                     loading={request?.isLoading()}
                                     onClick={onConfirm}
                                     disabled={isManagedDirectory(directoryInfo.id)}
                                     {...slotProps?.dialog?.confirmButton}
                                 >
                                     {slotProps?.dialog?.confirmButton?.children || t('addButton')}
-                                </LoadingButton>
+                                </Button>
                             </>
                         ),
                     },

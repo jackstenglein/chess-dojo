@@ -20,7 +20,6 @@ import CancelMeetingButton from '@/meeting/CancelMeetingButton';
 import MeetingMessages from '@/meeting/MeetingMessages';
 import { GameReviewCohort } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { Warning } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Alert,
     Button,
@@ -223,14 +222,14 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                         severity='warning'
                         variant='filled'
                         action={
-                            <LoadingButton
+                            <Button
                                 color='inherit'
                                 size='small'
                                 loading={checkoutRequest.isLoading()}
                                 onClick={onCompletePayment}
                             >
                                 {t('completePayment')}
-                            </LoadingButton>
+                            </Button>
                         }
                     >
                         {t('paymentWarning')}

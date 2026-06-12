@@ -9,7 +9,6 @@ import { usePagination } from '@/hooks/usePagination';
 import { usePgnExportOptions } from '@/hooks/usePgnExportOptions';
 import { Move } from '@jackstenglein/chess';
 import { PgnMergeType, PgnMergeTypes } from '@jackstenglein/chess-dojo-common/src/pgn/merge';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -323,13 +322,18 @@ export function MergeLineDialog({
                     <Button onClick={handleClose} disabled={request.isLoading()}>
                         {t('mergeCancelButton')}
                     </Button>
-                    <LoadingButton
+                    <Button
                         loading={request.isLoading()}
                         disabled={selectedRows.ids.size === 0}
                         onClick={onMergeLine}
                     >
+<<<<<<< HEAD
                         {t('mergeLineButton')}
-                    </LoadingButton>
+                    </Button>
+=======
+                        Merge Line into Game
+                    </Button>
+>>>>>>> dev
                 </DialogActions>
             </Dialog>
         </>

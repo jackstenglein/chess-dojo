@@ -2,7 +2,6 @@ import { useApi } from '@/api/Api';
 import { isMissingData } from '@/api/gameApi';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GameInfo, GameKey } from '@/database/game';
-import { LoadingButton } from '@mui/lab';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -62,9 +61,9 @@ export function ChangeVisibilityDialog({
                 <Button disabled={request.isLoading()} onClick={onCancel}>
                     {t('cancel')}
                 </Button>
-                <LoadingButton loading={request.isLoading()} onClick={onSave}>
+                <Button loading={request.isLoading()} onClick={onSave}>
                     {t(unlisted ? 'unlistGames' : 'publishGames')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

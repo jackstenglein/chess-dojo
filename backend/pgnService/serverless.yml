@@ -184,12 +184,14 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:UpdateItem
         Resource:
           - ${param:UsersTableArn}
       - Effect: Allow
         Action:
           - dynamodb:PutItem
           - dynamodb:BatchWriteItem
+          - dynamodb:BatchGetItem
         Resource:
           - ${param:GamesTableArn}
       - Effect: Allow
@@ -217,6 +219,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
+          - dynamodb:BatchGetItem
         Resource:
           - ${param:GamesTableArn}
       - Effect: Allow
@@ -227,9 +230,15 @@ functions:
           - ${param:TimelineTableArn}
       - Effect: Allow
         Action:
+          - dynamodb:GetItem
           - dynamodb:PartiQLUpdate
         Resource:
           - ${param:DirectoriesTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - ${param:UsersTableArn}
 
   deleteGames:
     handler: game/delete.handler
@@ -244,7 +253,19 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
+          - dynamodb:PartiQLUpdate
+          - dynamodb:BatchGetItem
         Resource: ${param:GamesTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:DirectoriesTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - ${param:UsersTableArn}
 
   recalculateExamScores:
     handler: exam/recalculateScores.handler

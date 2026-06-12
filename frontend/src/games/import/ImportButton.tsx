@@ -1,4 +1,3 @@
-import { LoadingButton } from '@mui/lab';
 import { useTranslations } from 'next-intl';
 
 export interface ImportButtonProps {
@@ -9,13 +8,8 @@ export interface ImportButtonProps {
 export const ImportButton = ({ onClick, loading }: ImportButtonProps) => {
     const t = useTranslations('games.import.importButton');
     return (
-        <LoadingButton
-            data-testid='import-button'
-            name='import'
-            loading={loading}
-            onClick={onClick}
-        >
+        <Button data-testid='import-button' name='import' loading={loading} onClick={onClick}>
             {t('label')}
-        </LoadingButton>
+        </Button>
     );
 };

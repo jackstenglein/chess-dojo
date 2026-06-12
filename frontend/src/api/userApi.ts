@@ -73,6 +73,13 @@ export interface UserApiContextType {
     updateUser: (update: Partial<User>, autopickCohort?: boolean) => Promise<AxiosResponse<User>>;
 
     /**
+     * resetUserProgress clears the current user's training plan progress.
+     * @param confirm The required confirmation text.
+     * @returns An AxiosResponse containing the updated user in the data field.
+     */
+    resetUserProgress: (confirm: string) => Promise<AxiosResponse<User>>;
+
+    /**
      * updateUserProgress updates the current user's progress on the provided requirement.
      * @param request The request to update the progress.
      * @returns An AxiosResponse containing the updated user and timeline entry in the data field.
@@ -359,6 +366,32 @@ export async function updateUser(
         },
         functionName: 'updateUser',
     });
+    callback(result.data);
+    return result;
+}
+
+/**
+ * resetUserProgress clears the current user's training plan progress.
+ * @param idToken The id token of the current signed-in user.
+ * @param confirm The required confirmation text.
+ * @param callback A callback function to invoke with the updated user after the reset succeeds.
+ * @returns An AxiosResponse containing the updated user in the data field.
+ */
+export async function resetUserProgress(
+    idToken: string,
+    confirm: string,
+    callback: (update: Partial<User>) => void,
+) {
+    const result = await axiosService.post<User>(
+        '/user/progress/reset',
+        { confirm },
+        {
+            headers: {
+                Authorization: 'Bearer ' + idToken,
+            },
+            functionName: 'resetUserProgress',
+        },
+    );
     callback(result.data);
     return result;
 }

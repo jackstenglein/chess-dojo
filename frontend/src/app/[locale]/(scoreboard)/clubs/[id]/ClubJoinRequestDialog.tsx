@@ -1,7 +1,6 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { ClubDetails } from '@/database/club';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -70,9 +69,9 @@ export const ClubJoinRequestDialog: React.FC<ClubJoinRequestDialogProps> = ({
                 <Button disabled={request.isLoading()} onClick={onClose}>
                     {t('cancel')}
                 </Button>
-                <LoadingButton loading={request.isLoading()} onClick={onJoin}>
+                <Button loading={request.isLoading()} onClick={onJoin}>
                     {t('submit')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

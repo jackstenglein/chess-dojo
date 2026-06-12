@@ -4,7 +4,6 @@ import { unsubscribeFromDojoDigest } from '@/api/emailApi';
 import { RequestSnackbar, RequestStatus, useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import LoadingPage from '@/loading/LoadingPage';
-import { LoadingButton } from '@mui/lab';
 import { Container, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -59,13 +58,9 @@ const UnsubscribePage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
-                <LoadingButton
-                    variant='contained'
-                    loading={request.isLoading()}
-                    onClick={onUnsubscribe}
-                >
+                <Button variant='contained' loading={request.isLoading()} onClick={onUnsubscribe}>
                     {t('unsubscribeButton')}
-                </LoadingButton>
+                </Button>
             </Stack>
         </Container>
     );

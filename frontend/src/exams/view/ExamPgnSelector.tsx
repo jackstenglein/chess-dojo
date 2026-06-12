@@ -1,5 +1,4 @@
 import { Check, Warning } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     CardContent,
@@ -96,9 +95,9 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
             <Stack spacing={3} direction='row' alignItems='center' justifyContent='center'>
                 <CountdownTimer {...countdown} />
                 {onPause && (
-                    <LoadingButton variant='contained' onClick={onPause} loading={pauseLoading}>
+                    <Button variant='contained' onClick={onPause} loading={pauseLoading}>
                         {pauseLoading ? t('saving') : t('pause')}
-                    </LoadingButton>
+                    </Button>
                 )}
             </Stack>
 

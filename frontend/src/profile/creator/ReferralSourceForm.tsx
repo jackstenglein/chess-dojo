@@ -1,6 +1,5 @@
 import { useRouter } from '@/i18n/navigation';
 import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
-import { LoadingButton } from '@mui/lab';
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -126,14 +125,14 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
                     {t('back')}
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
                     sx={{ alignSelf: 'end' }}
                 >
                     {t('next')}
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

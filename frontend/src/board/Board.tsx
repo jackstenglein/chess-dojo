@@ -20,12 +20,14 @@ import {
     CoordinateSizeKey,
     CoordinateStyle,
     CoordinateStyleKey,
+    PieceSounds,
     PieceStyle,
     PieceStyleKey,
     ShowGlyphsKey,
     ShowLegalMovesKey,
 } from './pgn/boardTools/underboard/settings/ViewerSettings';
 import { ResizableData } from './pgn/resize';
+import { useBoardSound } from './sounds/useBoardSound';
 
 export { Chess };
 export type { BoardApi };
@@ -123,7 +125,12 @@ export function toAutoShapes(chess?: Chess, showGlyphs?: boolean): DrawShape[] {
     ];
 }
 
-export function reconcile(chess?: Chess, board?: BoardApi | null, showGlyphs?: boolean) {
+export function reconcile(
+    chess?: Chess,
+    board?: BoardApi | null,
+    showGlyphs?: boolean,
+    playSound?: (move: Move, isCheck: boolean) => void,
+) {
     if (!chess || !board) {
         return;
     }
@@ -143,25 +150,33 @@ export function reconcile(chess?: Chess, board?: BoardApi | null, showGlyphs?: b
             eraseOnClick: false,
         },
     });
+    if (currentMove && playSound) {
+        playSound(currentMove, chess.isCheck());
+    }
 }
 
 export function useReconcile() {
     const { chess, board } = useChess();
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
+    const [pieceSoundsEnabled] = useLocalStorage<boolean>(PieceSounds.key, PieceSounds.default);
+    const { playSound } = useBoardSound(pieceSoundsEnabled);
 
     return useCallback(() => {
-        reconcile(chess, board, showGlyphs);
-    }, [chess, board, showGlyphs]);
+        reconcile(chess, board, showGlyphs, playSound);
+    }, [chess, board, showGlyphs, playSound]);
 }
 
-export function defaultOnMove(showGlyphs: boolean): onMoveFunc {
+export function defaultOnMove(
+    showGlyphs: boolean,
+    playSound?: (move: Move, isCheck: boolean) => void,
+): onMoveFunc {
     return (board: BoardApi, chess: Chess, move: PrimitiveMove) => {
         chess.move({
             from: move.orig,
             to: move.dest,
             promotion: move.promotion,
         });
-        reconcile(chess, board, showGlyphs);
+        reconcile(chess, board, showGlyphs, playSound);
     };
 }
 
@@ -274,6 +289,8 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
+    const [pieceSoundsEnabled] = useLocalStorage<boolean>(PieceSounds.key, PieceSounds.default);
+    const { playSound } = useBoardSound(pieceSoundsEnabled);
 
     const onStartPromotion = useCallback(
         (move: PrePromotionMove) => {
@@ -285,7 +302,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     const onFinishPromotion = useCallback(
         (piece: string) => {
             if (board && chess && promotion) {
-                const func = onMove ? onMove : defaultOnMove(showGlyphs);
+                const func = onMove ? onMove : defaultOnMove(showGlyphs, playSound);
                 func(board, chess, {
                     orig: promotion.orig,
                     dest: promotion.dest,
@@ -294,13 +311,13 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             }
             setPromotion(null);
         },
-        [board, chess, promotion, onMove, setPromotion, showGlyphs],
+        [board, chess, promotion, onMove, setPromotion, showGlyphs, playSound],
     );
 
     const onCancelPromotion = useCallback(() => {
         setPromotion(null);
-        reconcile(chess, board, showGlyphs);
-    }, [board, chess, showGlyphs]);
+        reconcile(chess, board, showGlyphs, playSound);
+    }, [board, chess, showGlyphs, playSound]);
 
     useEffect(() => {
         if (boardRef.current && !board) {
@@ -331,7 +348,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                onMove ? onMove : defaultOnMove(showGlyphs),
+                                onMove ? onMove : defaultOnMove(showGlyphs, playSound),
                             );
                         },
                     },
@@ -367,6 +384,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         onStartPromotion,
         pieceStyle,
         showGlyphs,
+        playSound,
     ]);
 
     const fen = config?.fen;
@@ -390,7 +408,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                                 orig,
                                 dest,
                                 onStartPromotion,
-                                onMove ? onMove : defaultOnMove(showGlyphs),
+                                onMove ? onMove : defaultOnMove(showGlyphs, playSound),
                             ),
                     },
                 },
@@ -398,7 +416,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                     pieceStyle === PieceStyle.ThreeD || pieceStyle === PieceStyle.ThreeDRedBlue,
             });
         }
-    }, [chess, board, onMove, onStartPromotion, pieceStyle, showGlyphs]);
+    }, [chess, board, onMove, onStartPromotion, pieceStyle, showGlyphs, playSound]);
 
     useEffect(() => {
         board?.set({

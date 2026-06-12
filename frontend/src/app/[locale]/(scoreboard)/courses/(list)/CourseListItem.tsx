@@ -7,8 +7,8 @@ import { useRouter } from '@/hooks/useRouter';
 import { useTranslatedCourse } from '@/translation/useTranslatedCourse';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import { LoadingButton } from '@mui/lab';
 import {
+    Button,
     Card,
     CardActionArea,
     CardActions,
@@ -164,7 +164,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
             </CardActionArea>
             {!isAccessible && purchaseOption && (
                 <CardActions>
-                    <LoadingButton
+                    <Button
                         size='medium'
                         loading={request.isLoading()}
                         onClick={preview ? undefined : onBuy}
@@ -172,7 +172,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         startIcon={<RocketLaunchIcon />}
                     >
                         {t('buy')}
-                    </LoadingButton>
+                    </Button>
                     <RequestSnackbar request={request} />
                 </CardActions>
             )}

@@ -376,6 +376,17 @@ type User struct {
 
 	// Tracks which cohort version the user is currently on. Unset means 2024.
 	CohortVersion string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
+
+	// The user's aggregate time management rating, computed from games in their mygames folder
+	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+}
+
+// TimeManagementRating holds the user's aggregate time management rating.
+type TimeManagementRating struct {
+	// The current aggregate rating
+	CurrentRating int `dynamodbav:"currentRating" json:"currentRating"`
+	// The number of games included in the aggregate
+	NumGames int `dynamodbav:"numGames" json:"numGames"`
 }
 
 type PuzzleThemeOverview struct {
@@ -803,6 +814,9 @@ type UserUpdate struct {
 	// Non-Dojo tasks are not included.
 	MinutesSpent *map[string]int `dynamodbav:"minutesSpent,omitempty" json:"minutesSpent,omitempty"`
 
+	// The user's total dojo score, across all cohorts. Cannot be manually set by the user.
+	TotalDojoScore *float32 `dynamodbav:"totalDojoScore,omitempty" json:"-"`
+
 	// The user's profile picture as a base64 encoded string. This data gets saved to S3, not Dynamo.
 	ProfilePictureData *string `dynamodbav:"-" json:"profilePictureData,omitempty"`
 
@@ -1160,6 +1174,33 @@ func (repo *dynamoRepository) createDefaultDirectories(user *User) error {
 
 // UpdateUser applies the specified update to the user with the provided username.
 func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*User, error) {
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")),
+	)
+}
+
+// UpdateUserIfNotGameReview applies the specified update only if the user is not currently
+// an active Game & Profile Review subscriber.
+func (repo *dynamoRepository) UpdateUserIfNotGameReview(username string, update *UserUpdate) (*User, error) {
+	notSubscribed := expression.AttributeNotExists(expression.Name("subscriptionStatus")).
+		Or(expression.Name("subscriptionStatus").NotEqual(expression.Value(SubscriptionStatus_Subscribed)))
+	notGameReviewTier := expression.AttributeNotExists(expression.Name("subscriptionTier")).
+		Or(expression.Name("subscriptionTier").NotEqual(expression.Value(SubscriptionTier_GameReview)))
+
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")).And(notSubscribed.Or(notGameReviewTier)),
+	)
+}
+
+func (repo *dynamoRepository) updateUser(
+	username string,
+	update *UserUpdate,
+	condition expression.ConditionBuilder,
+) (*User, error) {
 	if username == "STATISTICS" {
 		return nil, errors.New(403, "Invalid request: cannot update username `STATISTICS`", "")
 	}
@@ -1179,7 +1220,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		builder = builder.Set(expression.Name(k), expression.Value(v))
 	}
 
-	expr, err := expression.NewBuilder().WithUpdate(builder).Build()
+	expr, err := expression.NewBuilder().WithUpdate(builder).WithCondition(condition).Build()
 	if err != nil {
 		return nil, errors.Wrap(500, "Temporary server error", "DynamoDB expression building error", err)
 	}
@@ -1193,7 +1234,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
-		ConditionExpression:       aws.String("attribute_exists(username)"),
+		ConditionExpression:       expr.Condition(),
 		TableName:                 aws.String(userTable),
 		ReturnValues:              aws.String("ALL_NEW"),
 	}

@@ -2,7 +2,7 @@ import CloseButton from '@/components/ui/CloseButton';
 import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { Box, Button, Card, CardActions, CardContent, CardHeader, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { TooltipRenderProps } from 'react-joyride-react19-compat';
+import { TooltipRenderProps } from 'react-joyride';
 
 const TutorialTooltip: React.FC<TooltipRenderProps> = ({
     index,

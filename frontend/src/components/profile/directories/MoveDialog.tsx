@@ -12,7 +12,6 @@ import {
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { ChevronRight, Folder } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -164,13 +163,9 @@ export const MoveDialog = ({
                 <Button disabled={moveRequest.isLoading()} onClick={onCancel}>
                     {t('cancel')}
                 </Button>
-                <LoadingButton
-                    loading={moveRequest.isLoading()}
-                    disabled={disabled}
-                    onClick={onMove}
-                >
+                <Button loading={moveRequest.isLoading()} disabled={disabled} onClick={onMove}>
                     {t('move')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={moveRequest} />

@@ -1,7 +1,12 @@
 import { renderWithIntl } from '@/i18n/intl.test';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import ViewerSettings, { CoordinateSize, CoordinateSizeKey, ViewerSetting } from './ViewerSettings';
+import ViewerSettings, {
+    CoordinateSize,
+    CoordinateSizeKey,
+    ShowInlineCommentsInPgn,
+    ViewerSetting,
+} from './ViewerSettings';
 
 vi.mock('./KeyboardShortcuts', () => ({
     default: () => null,
@@ -45,5 +50,41 @@ describe('ViewerSettings coordinate size', () => {
         );
 
         expect(screen.getByRole('combobox', { name: 'Coordinate Size' })).toBeInTheDocument();
+    });
+});
+
+describe('ViewerSettings inline comments in PGN', () => {
+    it('shows inline comments in PGN by default', () => {
+        render(<ViewerSettings />);
+
+        expect(
+            screen.getByRole('checkbox', { name: 'Display comments in PGN text' }),
+        ).toBeChecked();
+    });
+
+    it('persists the inline comments in PGN selection', () => {
+        render(<ViewerSettings />);
+
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Display comments in PGN text' }));
+
+        expect(localStorage.getItem(ShowInlineCommentsInPgn.key)).toBe(JSON.stringify(false));
+    });
+
+    it('can hide the inline comments in PGN setting with enabledSettings', () => {
+        render(<ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />);
+
+        expect(
+            screen.queryByRole('checkbox', { name: 'Display comments in PGN text' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('can show the inline comments in PGN setting with enabledSettings', () => {
+        render(
+            <ViewerSettings enabledSettings={{ [ViewerSetting.DisplayInlineComments]: true }} />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: 'Display comments in PGN text' }),
+        ).toBeInTheDocument();
     });
 });

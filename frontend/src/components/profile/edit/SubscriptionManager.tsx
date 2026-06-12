@@ -9,7 +9,6 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { OpenInNew } from '@mui/icons-material';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import { LoadingButton } from '@mui/lab';
 import { Button, Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -69,14 +68,19 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
                     </Typography>
 
                     {!isWix(paymentInfo) ? (
-                        <LoadingButton
+                        <Button
                             loading={request.isLoading()}
                             onClick={onManageSubscription}
                             variant='contained'
                             endIcon={<OpenInNew />}
                         >
+<<<<<<< HEAD
                             {t('manageSubscription')}
-                        </LoadingButton>
+                        </Button>
+=======
+                            Manage Subscription
+                        </Button>
+>>>>>>> dev
                     ) : (
                         <Button
                             variant='contained'

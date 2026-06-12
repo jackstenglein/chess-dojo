@@ -1,4 +1,3 @@
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -144,14 +143,14 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                     {tExtra('back')}
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
                     sx={{ alignSelf: 'end' }}
                 >
                     {tExtra('next')}
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

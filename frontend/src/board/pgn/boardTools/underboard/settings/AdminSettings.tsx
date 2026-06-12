@@ -6,8 +6,7 @@ import { Link } from '@/components/navigation/Link';
 import { ONE_WEEK_IN_MS } from '@/components/time/time';
 import { displayGameReviewType, Game } from '@/database/game';
 import Avatar from '@/profile/Avatar';
-import { LoadingButton } from '@mui/lab';
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 interface AdminSettingsProps {
@@ -121,9 +120,9 @@ const GameReviewDetails: React.FC<AdminSettingsProps> = ({ game, onSaveGame }) =
                     </Typography>
                 </Stack>
             )}
-            <LoadingButton loading={request.isLoading()} variant='contained' onClick={onClick}>
+            <Button loading={request.isLoading()} variant='contained' onClick={onClick}>
                 {t('markReviewedButton')}
-            </LoadingButton>
+            </Button>
             <RequestSnackbar request={request} />
         </Stack>
     );

@@ -18,7 +18,6 @@ import LoadingPage from '@/loading/LoadingPage';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -704,13 +703,13 @@ const ProgressHistory = ({
                         </Button>
                     </>
                 )}
-                <LoadingButton
+                <Button
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
                     {tCommon('save')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

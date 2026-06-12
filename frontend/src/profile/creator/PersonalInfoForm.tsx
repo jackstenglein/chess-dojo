@@ -1,6 +1,5 @@
 import { DefaultTimezone, TimezoneSelector } from '@/components/calendar/filters/TimezoneSelector';
-import { LoadingButton } from '@mui/lab';
-import { Stack, TextField } from '@mui/material';
+import { Button, Stack, TextField } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useApi } from '../../api/Api';
@@ -60,7 +59,7 @@ const PersonalInfoForm: React.FC<ProfileCreatorFormProps> = ({ user, onNextStep 
                 onChange={setTimezone}
             />
 
-            <LoadingButton
+            <Button
                 disabled={!canSave}
                 loading={request.isLoading()}
                 variant='contained'
@@ -68,7 +67,7 @@ const PersonalInfoForm: React.FC<ProfileCreatorFormProps> = ({ user, onNextStep 
                 sx={{ alignSelf: 'end' }}
             >
                 {t('next')}
-            </LoadingButton>
+            </Button>
 
             <RequestSnackbar request={request} />
         </Stack>

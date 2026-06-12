@@ -2,8 +2,7 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { StripeAccount } from '@/database/payment';
 import { OpenInNew } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
-import { Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 const DashboardCard = ({ account }: { account?: StripeAccount }) => {
@@ -36,14 +35,14 @@ const DashboardCard = ({ account }: { account?: StripeAccount }) => {
                 <Stack spacing={2} alignItems='start'>
                     <Typography>{t('body')}</Typography>
 
-                    <LoadingButton
+                    <Button
                         variant='contained'
                         loading={request.isLoading()}
                         onClick={onDashboard}
                         endIcon={<OpenInNew />}
                     >
                         {t('button')}
-                    </LoadingButton>
+                    </Button>
                 </Stack>
             </CardContent>
         </Card>

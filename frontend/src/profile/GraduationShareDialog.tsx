@@ -3,7 +3,6 @@ import GraduationCard from '@/components/graduations/GraduationCard';
 import { Graduation } from '@/database/graduation';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -121,9 +120,9 @@ export default function GraduationShareDialog({
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>{t('close')}</Button>
-                <LoadingButton loading={!imageData} onClick={onDownload}>
+                <Button loading={!imageData} onClick={onDownload}>
                     {t('download')}
-                </LoadingButton>
+                </Button>
             </DialogActions>
         </Dialog>
     );

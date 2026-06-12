@@ -11,7 +11,6 @@ import {
     isCustom,
     isRatingInRange,
 } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -270,7 +269,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                     {tPreferred('back')}
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
@@ -278,7 +277,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                     sx={{ alignSelf: 'end' }}
                 >
                     {tPreferred('next')}
-                </LoadingButton>
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

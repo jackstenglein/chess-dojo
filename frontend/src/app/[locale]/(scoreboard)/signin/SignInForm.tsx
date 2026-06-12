@@ -8,7 +8,6 @@ import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
 import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Lock } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -123,7 +122,7 @@ export const SignInForm = () => {
                         },
                     }}
                 />
-                <LoadingButton
+                <Button
                     data-testid='signin-button'
                     variant='contained'
                     fullWidth
@@ -137,7 +136,7 @@ export const SignInForm = () => {
                     loading={request.isLoading()}
                 >
                     {t('signin.signIn')}
-                </LoadingButton>
+                </Button>
 
                 <Stack direction='row' justifyContent='space-between' sx={{ width: 1, mt: -2 }}>
                     <Button

@@ -9,7 +9,6 @@ import {
     CreateGameRequest,
     GameOrientations,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -151,14 +150,14 @@ export default function SaveGameDialog({
                 </Button>
 
                 {type === SaveGameDialogType.Save && (
-                    <LoadingButton
+                    <Button
                         data-testid='save-dialogue-button'
                         onClick={() => submit(false)}
                         loading={loading && selectedButton === 'save'}
                         disabled={loading && selectedButton !== 'save'}
                     >
                         {t('save')}
-                    </LoadingButton>
+                    </Button>
                 )}
 
                 {type === SaveGameDialogType.Save && isFreeTier ? (
@@ -168,14 +167,14 @@ export default function SaveGameDialog({
                         </span>
                     </Tooltip>
                 ) : (
-                    <LoadingButton
+                    <Button
                         data-testid='publish-dialogue-button'
                         onClick={() => submit(true)}
                         loading={loading && selectedButton === 'publish'}
                         disabled={loading && selectedButton !== 'publish'}
                     >
                         {type === SaveGameDialogType.Save ? t('saveAndPublish') : t('publish')}
-                    </LoadingButton>
+                    </Button>
                 )}
             </DialogActions>
         </Dialog>

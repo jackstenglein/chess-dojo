@@ -44,6 +44,24 @@ export const ShowSuggestedVariations = {
     default: true,
 } as const;
 
+/** Whether to show position comments in the PGN text. */
+export const ShowInlineCommentsInPgn = {
+    key: 'showInlineCommentsInPgn',
+    default: true,
+} as const;
+
+/** Whether to automatically save variations as comments on other users games. */
+export const AutoSaveVariations = {
+    key: 'autoSaveVariations',
+    default: false,
+} as const;
+
+/** Whether to play sounds for piece moves on the board. */
+export const PieceSounds = {
+    key: 'pieceSounds',
+    default: true,
+} as const;
+
 /** Whether to scroll on the board to go to the next move. */
 export const ScrollToMove = {
     key: 'scrollToMove',
@@ -112,7 +130,9 @@ export enum ViewerSetting {
     HighlightEngineLines,
     PersistEngineLines,
     DisplaySuggestedVariations,
+    DisplayInlineComments,
     ScrollOnBoardToMove,
+    PieceSounds,
     CorrectSolitaireMoveSound,
     IncorrectSolitaireMoveSound,
 }
@@ -170,10 +190,23 @@ const ViewerSettings = ({
         ShowSuggestedVariations.key,
         ShowSuggestedVariations.default,
     );
+    const [showInlineCommentsInPgn, setShowInlineCommentsInPgn] = useLocalStorage<boolean>(
+        ShowInlineCommentsInPgn.key,
+        ShowInlineCommentsInPgn.default,
+    );
+    const [autoSaveVariations, setAutoSaveVariations] = useLocalStorage<boolean>(
+        AutoSaveVariations.key,
+        AutoSaveVariations.default,
+    );
     const [scrollToMove, setScrollToMove] = useLocalStorage<boolean>(
         ScrollToMove.key,
         ScrollToMove.default,
     );
+    const [pieceSounds, setPieceSounds] = useLocalStorage<boolean>(
+        PieceSounds.key,
+        PieceSounds.default,
+    );
+
     const [correctSound, setCorrectSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
     const [incorrectSound, setIncorrectSound] = useLocalStorage(INCORRECT_SOUND_KEY, true);
 
@@ -376,6 +409,31 @@ const ViewerSettings = ({
                     />
                 )}
 
+                {(!enabledSettings || enabledSettings[ViewerSetting.DisplayInlineComments]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showInlineCommentsInPgn}
+                                onChange={(e) => setShowInlineCommentsInPgn(e.target.checked)}
+                            />
+                        }
+                        label='Display comments in PGN text'
+                    />
+                )}
+
+                {(!enabledSettings ||
+                    enabledSettings[ViewerSetting.DisplaySuggestedVariations]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={autoSaveVariations}
+                                onChange={(e) => setAutoSaveVariations(e.target.checked)}
+                            />
+                        }
+                        label='Automatically save my suggested variations as comments'
+                    />
+                )}
+
                 {!enabledSettings && (
                     <Typography variant='h6' mt={1}>
                         {t('engineSectionHeader')}
@@ -422,6 +480,18 @@ const ViewerSettings = ({
                     <Typography variant='h6' mt={1}>
                         {t('soundsSectionHeader')}
                     </Typography>
+                )}
+
+                {(!enabledSettings || enabledSettings[ViewerSetting.PieceSounds]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={pieceSounds}
+                                onChange={(e) => setPieceSounds(e.target.checked)}
+                            />
+                        }
+                        label='Play sounds for piece moves (move, capture, check)'
+                    />
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (

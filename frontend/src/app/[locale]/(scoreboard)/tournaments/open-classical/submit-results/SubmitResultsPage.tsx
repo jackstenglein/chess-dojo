@@ -7,8 +7,8 @@ import { useRouter } from '@/hooks/useRouter';
 import { PawnIcon } from '@/style/ChessIcons';
 import { LocationOn, Person, TrendingUp } from '@mui/icons-material';
 import AddLinkIcon from '@mui/icons-material/AddLink';
-import { LoadingButton } from '@mui/lab';
 import {
+    Button,
     Checkbox,
     Container,
     FormControlLabel,
@@ -302,7 +302,7 @@ const SubmitResultsPage = () => {
                     onChange={(e) => setNotes(e.target.value)}
                 />
 
-                <LoadingButton
+                <Button
                     data-testid='submit-button'
                     variant='contained'
                     loading={request.isLoading()}
@@ -311,7 +311,7 @@ const SubmitResultsPage = () => {
                     sx={{ alignSelf: 'center' }}
                 >
                     {t('submit')}
-                </LoadingButton>
+                </Button>
             </Stack>
         </Container>
     );

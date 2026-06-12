@@ -64,6 +64,12 @@ export interface Game {
 
     /** A set of directories containing this game, in the form `owner/id`. */
     directories?: string[];
+
+    /** The time management rating for white in this game. */
+    timeManagementRatingWhite?: number;
+
+    /** The time management rating for black in this game. */
+    timeManagementRatingBlack?: number;
 }
 
 export interface GameUpdate {
@@ -96,6 +102,12 @@ export interface GameUpdate {
 
     /** The ID of the timeline entry associated with this game's publishing. */
     timelineId?: string;
+
+    /** The time management rating for white in this game. */
+    timeManagementRatingWhite?: number;
+
+    /** The time management rating for black in this game. */
+    timeManagementRatingBlack?: number;
 }
 
 export interface GameImportHeaders {

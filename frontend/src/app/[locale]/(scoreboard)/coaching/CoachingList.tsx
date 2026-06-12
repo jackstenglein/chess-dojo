@@ -11,7 +11,6 @@ import { Event, EventStatus, EventType } from '@/database/event';
 import { User, dojoCohorts, isFree } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
-import { LoadingButton } from '@mui/lab';
 import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -134,14 +133,14 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
                             {t('viewDetails')}
                         </Button>
                     ) : (
-                        <LoadingButton
+                        <Button
                             data-testid='book-button'
                             variant='contained'
                             loading={request.isLoading()}
                             onClick={onBook}
                         >
                             {t('book')}
-                        </LoadingButton>
+                        </Button>
                     )
                 }
             />
