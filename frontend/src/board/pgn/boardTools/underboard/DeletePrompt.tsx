@@ -174,14 +174,11 @@ export interface DeletePromptProps {
 export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
-<<<<<<< HEAD
     const t = useTranslations('analysisBoard.underboard');
-=======
     const { user } = useAuth();
     const { game, onUpdateGame } = useGame();
     const api = useApi();
     const syncRequest = useRequest();
->>>>>>> dev
 
     const onDelete = () => {
         if (!chess) {
@@ -226,39 +223,22 @@ export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
     };
 
     return (
-<<<<<<< HEAD
-        <Dialog open onClose={onClose}>
-            <DialogTitle>
-                {t('deleteMovesTitle', { count: deleteAction.moves })}
-                {deleteAction.comments
-                    ? ` ${t('deleteCommentsAppend', { count: deleteAction.comments })}`
-                    : ''}
-                ?
-            </DialogTitle>
-            <DialogActions>
-                <Button onClick={onClose}>{t('cancel')}</Button>
-                <Button onClick={onDelete}>{t('delete')}</Button>
-            </DialogActions>
-        </Dialog>
-=======
         <>
             <Dialog open onClose={onClose}>
                 <DialogTitle>
-                    Delete {deleteAction.moves} move
-                    {deleteAction.moves > 1 ? 's' : ''}
+                    {t('deleteMovesTitle', { count: deleteAction.moves })}
                     {deleteAction.comments
-                        ? ` and ${deleteAction.comments} comment${deleteAction.comments > 1 ? 's' : ''}`
+                        ? ` ${t('deleteCommentsAppend', { count: deleteAction.comments })}`
                         : ''}
                     ?
                 </DialogTitle>
                 <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button onClick={onDelete}>Delete</Button>
+                    <Button onClick={onClose}>{t('cancel')}</Button>
+                    <Button onClick={onDelete}>{t('delete')}</Button>
                 </DialogActions>
             </Dialog>
             <RequestSnackbar request={syncRequest} />
         </>
->>>>>>> dev
     );
 }
 

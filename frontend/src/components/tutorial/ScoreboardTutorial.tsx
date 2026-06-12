@@ -11,7 +11,7 @@ const ScoreboardTutorial = () => {
             target: '#scoreboard-cohort-select',
             title: t('welcomeTitle'),
             content: t('welcomeContent'),
-            disableBeacon: true,
+            skipBeacon: true,
         },
         {
             target: '.MuiDataGrid-columnHeaderTitleContainer',

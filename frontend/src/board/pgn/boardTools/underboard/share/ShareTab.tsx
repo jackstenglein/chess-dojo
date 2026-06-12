@@ -540,13 +540,8 @@ export function ShareTab() {
                         onClick={onDownloadPdf}
                         loading={pdfRequest.isLoading()}
                     >
-<<<<<<< HEAD
                         {t('downloadPdf')}
                     </Button>
-=======
-                        Download PDF
-                    </Button>
->>>>>>> dev
 
                     <CopyButton
                         name='line'
@@ -564,13 +559,8 @@ export function ShareTab() {
                                 startIcon={<Merge />}
                                 onClick={() => setShowMergeDialog(true)}
                             >
-<<<<<<< HEAD
                                 {t('mergeCurrentLine')}
                             </Button>
-=======
-                                Merge Current Line
-                            </Button>
->>>>>>> dev
                             <MergeLineDialog
                                 open={showMergeDialog}
                                 onClose={() => setShowMergeDialog(false)}
@@ -581,13 +571,8 @@ export function ShareTab() {
                                 loading={cloneRequest.isLoading()}
                                 onClick={onCloneGame}
                             >
-<<<<<<< HEAD
                                 {t('cloneGame')}
                             </Button>
-=======
-                                Clone Game
-                            </Button>
->>>>>>> dev
                         </>
                     )}
                 </Stack>

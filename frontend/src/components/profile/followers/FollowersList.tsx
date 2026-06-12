@@ -6,7 +6,7 @@ import { Link } from '@/components/navigation/Link';
 import { FollowerEntry } from '@/database/follower';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 

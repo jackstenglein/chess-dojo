@@ -285,13 +285,8 @@ const SaveGameButton = ({
                 loading={loading}
                 onClick={() => (needsPreflight ? onShowPreflight() : onSave())}
             >
-<<<<<<< HEAD
                 {isPublishing ? t('publishButton') : t('saveChangesButton')}
             </Button>
-=======
-                {isPublishing ? 'Publish' : 'Save Changes'}
-            </Button>
->>>>>>> dev
             <MissingGameDataPreflight
                 open={showPreflight}
                 onClose={onClosePreflight}

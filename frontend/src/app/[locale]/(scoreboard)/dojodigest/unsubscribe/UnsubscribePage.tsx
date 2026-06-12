@@ -4,7 +4,7 @@ import { unsubscribeFromDojoDigest } from '@/api/emailApi';
 import { RequestSnackbar, RequestStatus, useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import LoadingPage from '@/loading/LoadingPage';
-import { Container, Stack, TextField, Typography } from '@mui/material';
+import { Button, Container, Stack, TextField, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 

@@ -12,7 +12,7 @@ const ListGamesTutorial = () => {
             placement: 'center',
             title: t('welcomeTitle'),
             content: t('welcomeContent'),
-            disableBeacon: true,
+            skipBeacon: true,
         },
         {
             target: '#import-game-button',

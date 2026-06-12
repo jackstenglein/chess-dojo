@@ -74,13 +74,8 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
                             variant='contained'
                             endIcon={<OpenInNew />}
                         >
-<<<<<<< HEAD
                             {t('manageSubscription')}
                         </Button>
-=======
-                            Manage Subscription
-                        </Button>
->>>>>>> dev
                     ) : (
                         <Button
                             variant='contained'

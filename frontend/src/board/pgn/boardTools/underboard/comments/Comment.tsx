@@ -334,13 +334,8 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                             color='error'
                             onClick={onDelete}
                         >
-<<<<<<< HEAD
                             {t('delete')}
                         </Button>
-=======
-                            Delete
-                        </Button>
->>>>>>> dev
                     </DialogActions>
                 </DialogContent>
             </Dialog>

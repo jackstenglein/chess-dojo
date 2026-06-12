@@ -380,13 +380,8 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                         color='error'
                         onClick={onDelete}
                     >
-<<<<<<< HEAD
                         {t('unsubscribeButton')}
                     </Button>
-=======
-                        Unsubscribe
-                    </Button>
->>>>>>> dev
                 )}
 
                 <Button
@@ -394,13 +389,8 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                     disabled={deleteRequest.isLoading()}
                     onClick={onSubscribe}
                 >
-<<<<<<< HEAD
                     {follower ? t('updateButton') : t('subscribeButton')}
                 </Button>
-=======
-                    {follower ? 'Update' : 'Subscribe'}
-                </Button>
->>>>>>> dev
             </DialogActions>
 
             <RequestSnackbar request={request} />

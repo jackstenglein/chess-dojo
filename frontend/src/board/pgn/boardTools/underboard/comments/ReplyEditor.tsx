@@ -102,13 +102,8 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                     sx={{ textTransform: 'none' }}
                     onClick={onReply}
                 >
-<<<<<<< HEAD
                     {t('replyPostButton')}
                 </Button>
-=======
-                    reply
-                </Button>
->>>>>>> dev
             </Stack>
 
             <RequestSnackbar request={request} />

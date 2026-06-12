@@ -327,13 +327,8 @@ export function MergeLineDialog({
                         disabled={selectedRows.ids.size === 0}
                         onClick={onMergeLine}
                     >
-<<<<<<< HEAD
                         {t('mergeLineButton')}
                     </Button>
-=======
-                        Merge Line into Game
-                    </Button>
->>>>>>> dev
                 </DialogActions>
             </Dialog>
         </>

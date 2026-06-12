@@ -55,7 +55,7 @@ describe('ViewerSettings coordinate size', () => {
 
 describe('ViewerSettings inline comments in PGN', () => {
     it('shows inline comments in PGN by default', () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         expect(
             screen.getByRole('checkbox', { name: 'Display comments in PGN text' }),
@@ -63,7 +63,7 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('persists the inline comments in PGN selection', () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         fireEvent.click(screen.getByRole('checkbox', { name: 'Display comments in PGN text' }));
 
@@ -71,7 +71,9 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('can hide the inline comments in PGN setting with enabledSettings', () => {
-        render(<ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />);
+        renderWithIntl(
+            <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />,
+        );
 
         expect(
             screen.queryByRole('checkbox', { name: 'Display comments in PGN text' }),
@@ -79,7 +81,7 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('can show the inline comments in PGN setting with enabledSettings', () => {
-        render(
+        renderWithIntl(
             <ViewerSettings enabledSettings={{ [ViewerSetting.DisplayInlineComments]: true }} />,
         );
 

@@ -234,15 +234,9 @@ const SubmitDialogContent: React.FC<{
                 <Button disabled={request.isLoading()} onClick={onClose}>
                     {t('settingsCancelButton')}
                 </Button>
-<<<<<<< HEAD
                 <Button loading={request.isLoading()} onClick={onPurchase}>
                     {t('purchaseReviewButton')}
                 </Button>
-=======
-                <Button loading={request.isLoading()} onClick={onPurchase}>
-                    Purchase Review
-                </Button>
->>>>>>> dev
             </DialogActions>
 
             <RequestSnackbar request={request} />

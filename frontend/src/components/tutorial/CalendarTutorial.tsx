@@ -12,7 +12,7 @@ const CalendarTutorial = () => {
             placement: 'center',
             title: t('welcomeTitle'),
             content: t('welcomeContent'),
-            disableBeacon: true,
+            skipBeacon: true,
         },
         {
             target: '[data-testid=timezone-selector]',

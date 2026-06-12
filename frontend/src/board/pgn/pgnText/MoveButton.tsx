@@ -203,11 +203,8 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     const { user } = useAuth();
     const api = useApi();
     const saveVariationRequest = useRequest();
-<<<<<<< HEAD
     const t = useTranslations('analysisBoard.pgnText');
-=======
     const canDeleteMove = config?.allowMoveDeletion || isVariationSuggestor(user?.username, move);
->>>>>>> dev
 
     if (!chess) {
         return null;

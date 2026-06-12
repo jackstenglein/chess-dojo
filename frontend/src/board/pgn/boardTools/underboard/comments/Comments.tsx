@@ -89,32 +89,6 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
         <CardContent sx={{ height: 1, p: 0 }}>
             <Stack height={1}>
                 <Stack flexGrow={1} sx={{ overflowY: 'auto', p: 2 }}>
-<<<<<<< HEAD
-                    <Stack direction='row' spacing={1}>
-                        <TextField
-                            label={t('showCommentsLabel')}
-                            select
-                            value={view}
-                            onChange={(e) => setView(e.target.value as View)}
-                            fullWidth
-                            size='small'
-                        >
-                            <MenuItem value={View.FullGame}>{t('entireGame')}</MenuItem>
-                            <MenuItem value={View.CurrentMove}>{t('currentPositionOnly')}</MenuItem>
-                        </TextField>
-
-                        <TextField
-                            label={t('sortByLabel')}
-                            select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as SortBy)}
-                            fullWidth
-                            size='small'
-                        >
-                            <MenuItem value={SortBy.Newest}>{t('newestFirst')}</MenuItem>
-                            <MenuItem value={SortBy.Oldest}>{t('oldestFirst')}</MenuItem>
-                        </TextField>
-=======
                     <Stack spacing={2}>
                         <SaveAllVariationsButton />
 
@@ -127,8 +101,10 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                                 fullWidth
                                 size='small'
                             >
-                                <MenuItem value={View.FullGame}>Entire Game</MenuItem>
-                                <MenuItem value={View.CurrentMove}>Current Position Only</MenuItem>
+                                <MenuItem value={View.FullGame}>{t('entireGame')}</MenuItem>
+                                <MenuItem value={View.CurrentMove}>
+                                    {t('currentPositionOnly')}
+                                </MenuItem>
                             </TextField>
 
                             <TextField
@@ -139,11 +115,10 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                                 fullWidth
                                 size='small'
                             >
-                                <MenuItem value={SortBy.Newest}>Newest First</MenuItem>
-                                <MenuItem value={SortBy.Oldest}>Oldest First</MenuItem>
+                                <MenuItem value={SortBy.Newest}>{t('newestFirst')}</MenuItem>
+                                <MenuItem value={SortBy.Oldest}>{t('oldestFirst')}</MenuItem>
                             </TextField>
                         </Stack>
->>>>>>> dev
                     </Stack>
 
                     <Stack spacing={4} mt={3} flexGrow={1}>
