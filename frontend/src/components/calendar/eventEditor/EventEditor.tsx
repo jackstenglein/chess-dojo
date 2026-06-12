@@ -167,7 +167,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                 <Select
                                     value={editor.type}
                                     onChange={(e) =>
-                                        editor.setType(e.target.value as EditableEventType)
+                                        editor.setType(e.target.value)
                                     }
                                     sx={{ flexGrow: 1 }}
                                 >

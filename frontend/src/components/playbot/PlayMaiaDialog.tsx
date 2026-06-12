@@ -111,7 +111,7 @@ export function PlayMaiaDialog({
                         <Select
                             size='small'
                             value={maiaRating}
-                            onChange={(e) => setMaiaRating(e.target.value as MaiaRating)}
+                            onChange={(e) => setMaiaRating(e.target.value)}
                             fullWidth
                         >
                             {MAIA_RATINGS.map((r) => (

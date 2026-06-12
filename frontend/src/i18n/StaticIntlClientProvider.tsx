@@ -11,9 +11,9 @@ import { DEFAULT_LOCALE } from './locales';
 import { stripMeta } from './stripMeta';
 
 export const MESSAGES_BY_LOCALE: Record<string, AbstractIntlMessages> = {
-    en: stripMeta(enMessages as AbstractIntlMessages),
-    pseudo: stripMeta(pseudoMessages as AbstractIntlMessages),
-    de: stripMeta(deMessages as AbstractIntlMessages),
+    en: stripMeta(enMessages),
+    pseudo: stripMeta(pseudoMessages),
+    de: stripMeta(deMessages),
 };
 
 export function StaticIntlClientProvider({

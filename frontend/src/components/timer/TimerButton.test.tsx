@@ -13,10 +13,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TimerButton } from './TimerButton';
 import { Timer, TimerContext } from './TimerContext';
 
-const authState = vi.hoisted(() => ({
-    user: { username: 'testuser', dojoCohort: '1000-1100' } as
-        | { username: string; dojoCohort: string }
-        | undefined,
+const authState: { user?: { username: string; dojoCohort: string } } = vi.hoisted(() => ({
+    user: { username: 'testuser', dojoCohort: '1000-1100' },
 }));
 
 vi.mock('@/auth/Auth', () => ({

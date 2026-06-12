@@ -167,7 +167,7 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                 <FormControl size='small' fullWidth>
                     <Select
                         value={maiaRating}
-                        onChange={(e) => setMaiaRating(e.target.value as MaiaRating)}
+                        onChange={(e) => setMaiaRating(e.target.value)}
                     >
                         {MAIA_RATINGS.map((r) => (
                             <MenuItem key={r} value={r}>

@@ -241,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (err) {
                     logger.error?.('Failed to sign in: ', err);
                     setStatus(AuthStatus.Unauthenticated);
-                    reject(err as Error);
+                    reject(err);
                 }
             })();
         });

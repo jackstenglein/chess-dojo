@@ -69,7 +69,7 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                 <FormControl sx={{ mb: 2 }}>
                     <Select
                         value={badgeCategory}
-                        onChange={(e) => setBadgeCategory(e.target.value as BadgeCategory)}
+                        onChange={(e) => setBadgeCategory(e.target.value)}
                     >
                         {Object.entries(BadgeCategory).map(([key, value]) => (
                             <MenuItem key={key} value={value}>

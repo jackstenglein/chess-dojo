@@ -34,7 +34,7 @@ function editors(
     return Object.values(RatingSystem).reduce<Record<string, RatingEditor>>((result, system) => {
         result[system] = editor(overrides[system]);
         return result;
-    }, {}) as Record<RatingSystem, RatingEditor>;
+    }, {});
 }
 
 describe('RatingsEditor visibility helpers', () => {

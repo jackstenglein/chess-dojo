@@ -52,7 +52,7 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                 ...(ratingsMap[targetSystem] as object),
                 currentRating: 0,
             };
-            await api.updateUser({ ratings: ratingsMap } as Partial<User>);
+            await api.updateUser({ ratings: ratingsMap });
 
             setCooldowns((prev) => ({ ...prev, [targetSystem]: REFRESH_COOLDOWN_SECONDS }));
             const intervalId = setInterval(() => {

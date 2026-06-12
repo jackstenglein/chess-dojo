@@ -41,7 +41,7 @@ const PgnText = () => {
 
     return (
         <Stack spacing={1} maxHeight={1}>
-            {game && game.unlisted === true && isOwner && <UnpublishedGameBanner dismissable />}
+            {game?.unlisted === true && isOwner && <UnpublishedGameBanner dismissable />}
             {unsaved && <UnsavedGameBanner dismissable />}
             <SaveAllVariationsButton />
 

@@ -60,7 +60,7 @@ class PgnErrorBoundary extends Component<
                     <Typography variant='h5'>{t('invalidPgn')}</Typography>
                     <Typography variant='body1'>{t('invalidPgnDescription')}</Typography>
 
-                    {this.props.game && this.props.game.owner === this.props.username && (
+                    {this.props.game?.owner === this.props.username && (
                         <Stack direction='row' spacing={2}>
                             <Button variant='contained' href={window.location.href + '/edit'}>
                                 {t('resubmitPgn')}

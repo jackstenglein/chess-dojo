@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShowInlineCommentsInPgn } from '../boardTools/underboard/settings/ViewerSettings';
 import Interrupt from './Interrupt';
 
-const mockChessContext = vi.hoisted(() => ({ chess: undefined as unknown }));
+const mockChessContext: { chess?: Chess } = vi.hoisted(() => ({ chess: undefined }));
 
 vi.mock('@/auth/Auth', () => ({
     useAuth: () => ({ user: { username: 'viewer' } }),

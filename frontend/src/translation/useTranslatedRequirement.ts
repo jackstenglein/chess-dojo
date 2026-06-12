@@ -46,6 +46,6 @@ export function useTranslatedRequirement<T extends Requirement | CustomTask>(
                           return t ? { ...p, title: t } : p;
                       })
                     : req.positions,
-        } as T;
+        };
     }, [req, translation, locale]);
 }

@@ -397,7 +397,7 @@ export function Heatmap({
                             <Block
                                 key={activity.date}
                                 block={block}
-                                activity={activity as Activity}
+                                activity={activity}
                                 field={field}
                                 baseColor={theme[0]}
                                 clamp={clamp}
@@ -659,7 +659,7 @@ function Block({
         color = calculateColor([baseColor, MONOCHROME_COLOR], level);
     } else {
         for (const category of Object.values(RequirementCategory)) {
-            const count = activity.categoryCounts?.[category as RequirementCategory];
+            const count = activity.categoryCounts?.[category];
             if (!count) {
                 continue;
             }
@@ -667,7 +667,7 @@ function Block({
             const currentCount = count[field].custom + count[field].trainingPlan;
             totalCount += currentCount;
             if (maxCount === undefined || currentCount > maxCount) {
-                maxCategory = category as RequirementCategory;
+                maxCategory = category;
                 maxCount = currentCount;
             }
         }
