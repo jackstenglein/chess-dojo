@@ -166,9 +166,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                             <Stack direction='row' gap={2} flexWrap='wrap' alignItems='center'>
                                 <Select
                                     value={editor.type}
-                                    onChange={(e) =>
-                                        editor.setType(e.target.value)
-                                    }
+                                    onChange={(e) => editor.setType(e.target.value)}
                                     sx={{ flexGrow: 1 }}
                                 >
                                     <MenuItem value={EventType.Availability}>
