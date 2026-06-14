@@ -59,6 +59,13 @@ export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?
     return 'text.primary';
 }
 
+function getFontWeight(chess: Chess | undefined, move: Move, inline?: boolean): string {
+    if (inline && chess?.isInMainline(move)) {
+        return 'bold';
+    }
+    return 'inherit';
+}
+
 export interface MoveButtonSlotProps {
     hideSuggestedVariationOwner?: boolean;
 }
@@ -77,6 +84,7 @@ export interface ButtonProps {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+    const { chess } = useChess();
     const { isCurrentMove, inline, move, onClickMove, onRightClick, text, time } = props;
     const { slots } = useChess();
     const t = useTranslations('analysisBoard.pgnText');
@@ -127,7 +135,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
             disableElevation
             sx={{
                 textTransform: 'none',
-                fontWeight: isCurrentMove ? 'bold' : 'inherit',
+                fontWeight: isCurrentMove ? 'bold' : getFontWeight(chess, move, inline),
                 color: isCurrentMove ? undefined : getTextColor(move, inline, highlightEngineLines),
                 backgroundColor: isCurrentMove ? 'primary' : undefined,
                 paddingRight: inline ? undefined : 2,

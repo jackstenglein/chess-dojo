@@ -157,7 +157,7 @@ interface LinesProps {
 
 const Lines: React.FC<LinesProps> = ({
     lines,
-    depth,
+    depth = 0,
     handleScroll,
     expandParent,
     forceShowSuggestedVariations,
@@ -182,7 +182,6 @@ const Lines: React.FC<LinesProps> = ({
         return false;
     }, [chess, lines]);
 
-    depth = depth ?? 0;
     const [expanded, setExpanded] = useState(forceExpansion || depth < 3 || depth % 2 === 0);
     const expandRef = useRef<HTMLHRElement>(null);
 
