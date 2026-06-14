@@ -1,7 +1,7 @@
 import { useAuth } from '@/auth/Auth';
 import useGame from '@/context/useGame';
 import { Move } from '@jackstenglein/chess';
-import { Divider, Grid, Paper } from '@mui/material';
+import { Box, Divider, Grid, Paper } from '@mui/material';
 import { useLocalStorage } from 'usehooks-ts';
 import { getInlineCommentsForMove } from '../boardTools/underboard/comments/positionComments';
 import {
@@ -39,9 +39,10 @@ export function hasInterrupt(
 interface InterruptProps {
     move: Move;
     handleScroll: (child: HTMLElement | null) => void;
+    forceInline?: boolean;
 }
 
-const Interrupt: React.FC<InterruptProps> = ({ move, handleScroll }) => {
+const Interrupt: React.FC<InterruptProps> = ({ move, handleScroll, forceInline }) => {
     const { user } = useAuth();
     const { chess } = useChess();
     const { game } = useGame();
@@ -59,6 +60,15 @@ const Interrupt: React.FC<InterruptProps> = ({ move, handleScroll }) => {
 
     if (!hasInterrupt(move, showSuggestedVariations, user?.username, inlineComments.length > 0)) {
         return null;
+    }
+
+    if (forceInline) {
+        return (
+            <Box component='span'>
+                <Comments inline={forceInline} move={move} inlineComments={inlineComments} />
+                <Lines lines={move.variations} handleScroll={handleScroll} />
+            </Box>
+        );
     }
 
     return (

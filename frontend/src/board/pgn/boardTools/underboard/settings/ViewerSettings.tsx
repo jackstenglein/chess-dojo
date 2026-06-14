@@ -38,6 +38,11 @@ export const HideEngine = {
     Default: false,
 } as const;
 
+export const InlineNotationSetting = {
+    key: 'pgn-editor/inline-notation',
+    default: false,
+} as const;
+
 /** Whether to show suggested variations in the PGN text. */
 export const ShowSuggestedVariations = {
     key: 'showSuggestedVariations',
@@ -135,6 +140,7 @@ export enum ViewerSetting {
     PieceSounds,
     CorrectSolitaireMoveSound,
     IncorrectSolitaireMoveSound,
+    InlineNotation,
 }
 
 const ViewerSettings = ({
@@ -205,6 +211,10 @@ const ViewerSettings = ({
     const [pieceSounds, setPieceSounds] = useLocalStorage<boolean>(
         PieceSounds.key,
         PieceSounds.default,
+    );
+    const [inlineNotation, setInlineNotation] = useLocalStorage<boolean>(
+        InlineNotationSetting.key,
+        InlineNotationSetting.default,
     );
 
     const [correctSound, setCorrectSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
@@ -382,6 +392,17 @@ const ViewerSettings = ({
                     <Typography variant='h6' mt={1}>
                         {t('pgnTextSectionHeader')}
                     </Typography>
+                )}
+                {(!enabledSettings || enabledSettings[ViewerSetting.InlineNotation]) && (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={inlineNotation}
+                                onChange={(e) => setInlineNotation(e.target.checked)}
+                            />
+                        }
+                        label='Enable Inline PGN notation'
+                    />
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.ShowElapsedTimeNextToMove]) && (
