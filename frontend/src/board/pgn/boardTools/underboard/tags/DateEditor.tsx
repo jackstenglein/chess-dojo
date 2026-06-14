@@ -1,4 +1,4 @@
-import { parsePgnDate, toLocalPgnDate } from '@/api/gameApi';
+import { parsePgnDate, toPgnDate } from '@/api/gameApi';
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import { PgnDate } from '@jackstenglein/chess';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pro';
@@ -14,7 +14,7 @@ export function EditDateCell(props: GridRenderEditCellParams<TagRow, PgnDate | s
         void apiRef.current.setEditCellValue({
             id,
             field,
-            value: toLocalPgnDate(newValue),
+            value: toPgnDate(newValue),
         });
     };
 
