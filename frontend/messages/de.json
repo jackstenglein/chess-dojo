@@ -2127,9 +2127,7 @@
             "openClassicalName": "Offene Klassik",
             "openClassicalDescription": "Klassisches Turnier mit sieben Runden, zwei Abteilungen und ein Spiel pro Woche.",
             "dojoligaName": "DojoLiga",
-            "dojoligaDescription": "Wöchentliche Blitz-, Schnell- und Klassische Arenen. Kein Dojo-Konto erforderlich.",
-            "championsCircuit": "Meister-Zirkel",
-            "championsDescription": "Die Gewinner des Round-Robin- und Open-Classical-Turniers erhalten jeweils eine kostenlose einjährige Mitgliedschaft bei der Dojo sowie Zugang zu unserem Jahresendturnier der Champions. Mehrfachgewinner erhalten nur einen Preis. Spieler, die wegen Fair-Play-Verstößen gesperrt werden, verlieren ihr Abonnement ohne Vorwarnung."
+            "dojoligaDescription": "Wöchentliche Blitz-, Schnell- und Klassische Arenen. Kein Dojo-Konto erforderlich."
         },
         "liga": {
             "tabs": {
@@ -2282,8 +2280,8 @@
                 "disputesAction2": "Wenn du dein Spiel einreichst, hast du die Möglichkeit, deinen Gegner zu melden - dies benachrichtigt den TD, dass dein Gegner zur Entfernung aus diesem und zukünftigen Turnieren in Betracht gezogen werden sollte",
                 "disputesAction3": "Sende dem TD eine Direct Message auf Discord mit Screenshots deiner Versuche, deinen Gegner zu erreichen",
                 "disputesFootnote": "Eine abgestimmte Anstrengung besteht darin, entweder zuerst Kontakt aufzunehmen oder innerhalb von 48 Stunden auf einen anfänglichen Kontakt zu antworten; und mindestens 3 verschiedene Zeiten an mindestens 2 verschiedenen Tagen anzubieten, an denen du diese Woche spielen kannst. Wenn beide Spieler eine abgestimmte Anstrengung unternehmen, um eine Partie zu planen, und dennoch keinen Spieltermin finden, kann die Partie als Remis eingereicht werden (1/2-1/2). Bei Streitigkeiten wende dich bitte an den TD auf Discord.",
-                "winnersTitle": "Gewinner & Preise",
-                "winnersBody": "Um die Stände für beliebige Runden anzusehen, kannst du zur <tournamentLink>Turnierseite</tournamentLink> navigieren. Am Ende der 7 Runden werden die Gewinner bekannt gegeben. Die Gewinner jedes Turniers qualifizieren sich für ein Jahresendturnier im Januar 2026."
+                "winnersTitle": "Gewinner",
+                "winnersBody": "Um die Rangliste für eine beliebige Runde einzusehen, können Sie die <tournamentLink>Turnierseite</tournamentLink> aufrufen. Die Sieger der jeweiligen Gruppen erhalten eine Einladung zur Teilnahme an einem Champions-Round-Robin-Turnier. Vorjahressieger werden jeweils im Januar per E-Mail zur Teilnahme eingeladen."
             },
             "previous": {
                 "heading": "Dojo Open Klassische Geschichte",
@@ -2396,7 +2394,7 @@
                 "overviewSchedule": "Spiele in deinem eigenen Tempo planen, mit 11 Wochen zum Absolvieren aller 9 Spiele",
                 "overviewRated": "Spiele bewertete Partien mit klassischer Zeitkontrolle für deine Kohorte, wie vom Trainingsprogramm empfohlen. Falls beide Spieler zustimmen, kannst du eine längere Zeitkontrolle spielen.",
                 "championsHeader": "ChessDojo Meister Zirkuit",
-                "championsBody": "Die ersten 20 Round-Robin-Gewinner (ab 20. März 2025) erhalten eine kostenlose einjährige Mitgliedschaft zum Dojo-Trainingsplan sowie eine Einladung zum Champions-Turnier im Januar 2026. Spieler, die mehrere Round-Robins gewinnen, erhalten nur einen Preis. Nach den ersten 20 Gewinnern erhalten zusätzliche Gewinner eine Einladung zum Champions-Turnier.",
+                "championsBody": "Die Sieger der jeweiligen Round-Robin-Turniere erhalten eine Einladung zur Teilnahme an einem Champions-Round-Robin. Die Vorjahressieger werden jeweils im Januar per E-Mail zur Teilnahme eingeladen.",
                 "feeHeader": "Eintrittsgebühr",
                 "feeAmount": "Die Anmeldegebühr beträgt 2 $ pro Turnier. Die Gebühr entfällt für Abonnenten des Trainingsprogramms.",
                 "feeCharged": "Du wirst abgerechnet, wenn das Turnier beginnt. Wenn du dich vor Turnierbeginn von der Warteliste abmeldest, wirst du nicht abgerechnet.",

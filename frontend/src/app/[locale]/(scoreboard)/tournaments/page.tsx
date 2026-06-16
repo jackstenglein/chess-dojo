@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 export const metadata: Metadata = {
     title: 'ChessDojo Tournaments',
-    description: `Win a free ChessDojo membership by participating in the ChessDojo Champions' Circuit!`,
+    description: `Play classical games against other ChessDojo members`,
 };
 
 /**
@@ -49,14 +49,6 @@ export default function Page() {
                     icon={MilitaryTech}
                 />
             </Grid>
-
-            <Typography variant='h5' textAlign='center' sx={{ mt: 10, mb: 2 }}>
-                {t('championsCircuit')}
-            </Typography>
-
-            <Typography textAlign='center' maxWidth='md'>
-                {t('championsDescription')}
-            </Typography>
         </Container>
     );
 }

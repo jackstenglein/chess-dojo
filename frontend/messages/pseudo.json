@@ -2150,9 +2150,7 @@
             "openClassicalName": "[T] Open Classical",
             "openClassicalDescription": "[T] Seven-round classical tournament with two sections and one game per week.",
             "dojoligaName": "[T] DojoLiga",
-            "dojoligaDescription": "[T] Weekly blitz, rapid, and classical arenas. No Dojo account required.",
-            "championsCircuit": "[T] Champions' Circuit",
-            "championsDescription": "[T] The winners of the round robin and open classical tournaments will each earn a free year membership to the Dojo, as well as entrance into our end of year tournament of champions. Repeat winners will earn only a single prize. Any players banned for fair play violations will have their subscriptions canceled without warning."
+            "dojoligaDescription": "[T] Weekly blitz, rapid, and classical arenas. No Dojo account required."
         },
         "liga": {
             "tabs": {
@@ -2305,8 +2303,8 @@
                 "disputesAction2": "[T] When submitting your game will be given the option to report your opponent - this alerts the TD that your opponent should be considered for removal from this and future tournaments",
                 "disputesAction3": "[T] DM the TD on Discord with screenshots of your attempts to reach out to your opponent",
                 "disputesFootnote": "[T] *A concerted effort consists of either reaching out first or responding to an initial contact within 48 hours; and offering at least 3 different times, on at least 2 separate days, that you are available to play that week. If both players make a concerted effort to schedule a game and are still unable to find a time to play, the game can be submitted as a draw (1/2-1/2). In case of a dispute, please contact the TD on Discord.",
-                "winnersTitle": "[T] Winners & Prizes",
-                "winnersBody": "[T] To view the standings for any round, you can navigate to the <tournamentLink>Tournament Page</tournamentLink>. At the end of the 7 rounds, winners will be announced. The winners of each tournament will qualify for a year-end tournament in January 2026."
+                "winnersTitle": "[T] Winners",
+                "winnersBody": "[T] To view the standings for any round, you can navigate to the <tournamentLink>Tournament Page</tournamentLink>. The winners of each section will receive an invitation to play in a Champions' Round Robin. Winners from the previous year will be invited to play via email each January."
             },
             "previous": {
                 "heading": "[T] Dojo Open Classical History",
@@ -2419,7 +2417,7 @@
                 "overviewSchedule": "[T] Schedule games at your own pace, with 11 weeks to complete all 9 games",
                 "overviewRated": "[T] Play rated, classical time control games for your cohort, as recommended by the training program. If both players agree, you can play a longer time control.",
                 "championsHeader": "[T] ChessDojo Champions Circuit",
-                "championsBody": "[T] The first 20 Round Robin winners (starting March 20, 2025) will receive a free year membership to the Dojo training plan as well as an invitation to the Champions' tournament in January 2026. Players who win multiple round robins will receive only one prize. After the first 20 winners, additional winners will receive an invitation to the Champions' tournament.",
+                "championsBody": "[T] The winners of each Round Robin tournament will receive an invitation to play in a Champions' Round Robin. Winners from the previous year will be invited to play via email each January.",
                 "feeHeader": "[T] Entrance Fee",
                 "feeAmount": "[T] The entrance fee is $2 per tournament. The fee is waived for subscribers to the training program.",
                 "feeCharged": "[T] You will be charged when the tournament begins. If you withdraw from the waitlist before the tournament begins, you will not be charged.",
