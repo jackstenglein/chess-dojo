@@ -16,7 +16,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MAIA_RATINGS, MaiaRating } from './maiaengine';
 import { RATING_DESCRIPTIONS } from './playbot';
 
@@ -42,6 +42,11 @@ export function PlayMaiaDialog({
 }: PlayMaiaDialogProps) {
     const router = useRouter();
     const [maiaRating, setMaiaRating] = useState<MaiaRating>(1500);
+    const [selectedColor, setSelectedColor] = useState<'white' | 'black'>(playerColor);
+
+    useEffect(() => {
+        setSelectedColor(playerColor);
+    }, [playerColor]);
 
     const mins = limitSeconds / 60;
     const inc = incrementSeconds;
@@ -52,7 +57,7 @@ export function PlayMaiaDialog({
             fen: fen.trim(),
             mins: String(mins),
             inc: String(inc),
-            color: playerColor,
+            color: selectedColor,
             rating: String(maiaRating),
         });
         router.push(`/play-bot?${params.toString()}`);
@@ -80,25 +85,45 @@ export function PlayMaiaDialog({
                             size='small'
                             label={isUnlimited ? 'Unlimited' : `${mins}+${inc}`}
                             variant='outlined'
+                            sx={{ height: 32 }}
                         />
-                        <Chip
+                        <Select
                             size='small'
-                            label={`Play as ${playerColor}`}
-                            variant='outlined'
-                            icon={
-                                <Box
-                                    sx={{
-                                        width: 10,
-                                        height: 10,
-                                        borderRadius: '50%',
-                                        ml: '6px !important',
-                                        bgcolor: playerColor === 'white' ? 'white' : 'grey.700',
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                    }}
-                                />
-                            }
-                        />
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            sx={{ height: 32 }}
+                        >
+                            <MenuItem value='white'>
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor: 'white',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    />
+                                    <span>Play as White</span>
+                                </Stack>
+                            </MenuItem>
+                            <MenuItem value='black'>
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor: 'grey.700',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    />
+                                    <span>Play as Black</span>
+                                </Stack>
+                            </MenuItem>
+                        </Select>
                     </Stack>
 
                     <Divider />
