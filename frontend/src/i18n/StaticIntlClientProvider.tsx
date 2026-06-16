@@ -5,6 +5,7 @@ import { AbstractIntlMessages, NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
 import deMessages from '../../messages/de.json';
 import enMessages from '../../messages/en.json';
+import esMessages from '../../messages/es.json';
 import pseudoMessages from '../../messages/pseudo.json';
 import { getMessageFallback, onIntlError } from './clientErrorHandlers';
 import { DEFAULT_LOCALE } from './locales';
@@ -14,6 +15,7 @@ export const MESSAGES_BY_LOCALE: Record<string, AbstractIntlMessages> = {
     en: stripMeta(enMessages),
     pseudo: stripMeta(pseudoMessages),
     de: stripMeta(deMessages),
+    es: stripMeta(esMessages),
 };
 
 export function StaticIntlClientProvider({
