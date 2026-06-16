@@ -2268,6 +2268,12 @@
                 "headerBlack": "Black",
                 "headerResult": "Result",
                 "headerGame": "Game",
+                "headerScreenshots": "Screenshots",
+                "viewScreenshotsTooltip": "View submitted screenshots",
+                "screenshotsDialogTitle": "Submitted Screenshots",
+                "screenshotNumber": "Screenshot {number}",
+                "screenshotAlt": "Submitted screenshot {number}",
+                "close": "Close",
                 "unverifiedResultTooltip": "This result has not been verified and may be changed later by the TD"
             },
             "info": {
@@ -2340,6 +2346,8 @@
                 "labelBlack": "Black",
                 "labelResult": "Result",
                 "labelNotes": "Notes",
+                "labelScreenshots": "Upload Screenshots",
+                "screenshotSelected": "Selected: {name}",
                 "regionA": "Region A (Americas)",
                 "regionB": "Region B (Eurasia/Africa/Oceania)",
                 "sectionOpen": "Open",
@@ -2354,9 +2362,12 @@
                 "whiteHelper": "Lichess username of the player with the white pieces",
                 "blackHelper": "Lichess username of the player with the black pieces",
                 "reportOpponent": "Report opponent for unresponsiveness or unwillingness to schedule?",
+                "screenshotsHelper": "Upload screenshot(s) of your conversation with your opponent as proof of the forfeit",
                 "submit": "Submit",
                 "errorRequired": "This field is required",
-                "errorFetchLichess": "Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting."
+                "errorFetchLichess": "Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting.",
+                "errorScreenshotTooLarge": "Screenshot must be less than 9 MB",
+                "errorScreenshotRead": "Unable to read the screenshot file"
             },
             "standings": {
                 "byeTooltip": "Player receieved a bye for 0.5 points",

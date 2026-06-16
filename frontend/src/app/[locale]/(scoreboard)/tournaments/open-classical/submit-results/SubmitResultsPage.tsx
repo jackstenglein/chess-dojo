@@ -3,10 +3,12 @@
 import { useApi } from '@/api/Api';
 import { axiosService } from '@/api/axiosService';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { encodeFileToBase64 } from '@/components/profile/edit/PersonalInfoEditor';
 import { useRouter } from '@/hooks/useRouter';
 import { PawnIcon } from '@/style/ChessIcons';
 import { LocationOn, Person, TrendingUp } from '@mui/icons-material';
 import AddLinkIcon from '@mui/icons-material/AddLink';
+import ImageIcon from '@mui/icons-material/Image';
 import {
     Button,
     Checkbox,
@@ -20,6 +22,8 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+
+const MAX_SCREENSHOT_SIZE_MB = 9;
 
 interface LichessGameResponse {
     players: {
@@ -51,6 +55,8 @@ const SubmitResultsPage = () => {
     const [result, setResult] = useState('');
     const [reportOpponent, setReportOpponent] = useState(false);
     const [notes, setNotes] = useState('');
+    const [screenshotsData, setScreenshotsData] = useState<string[]>([]);
+    const [screenshotNames, setScreenshotNames] = useState<string[]>([]);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const request = useRequest();
@@ -88,6 +94,34 @@ const SubmitResultsPage = () => {
             });
     };
 
+    const onChangeScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files?.length) {
+            return;
+        }
+
+        const fileList = Array.from(files);
+        const oversized = fileList.find((file) => file.size / 1024 / 1024 > MAX_SCREENSHOT_SIZE_MB);
+        if (oversized) {
+            request.onFailure({ message: t('errorScreenshotTooLarge') });
+            e.target.value = '';
+            return;
+        }
+
+        Promise.all(fileList.map((file) => encodeFileToBase64(file)))
+            .then((encoded) => {
+                setScreenshotsData(encoded);
+                setScreenshotNames(fileList.map((file) => file.name));
+                setErrors({ ...errors, screenshots: '' });
+            })
+            .catch(() => {
+                request.onFailure({ message: t('errorScreenshotRead') });
+                e.target.value = '';
+            });
+    };
+
+    const isForfeit = result === '0-1F' || result === '1-0F';
+
     const onSubmit = () => {
         const newErrors: Record<string, string> = {};
 
@@ -109,6 +143,9 @@ const SubmitResultsPage = () => {
         if (result.trim() === '') {
             newErrors.result = t('errorRequired');
         }
+        if (isForfeit && screenshotsData.length === 0) {
+            newErrors.screenshots = t('errorRequired');
+        }
 
         setErrors(newErrors);
         if (Object.entries(newErrors).length > 0) {
@@ -125,6 +162,7 @@ const SubmitResultsPage = () => {
             result: result.trim(),
             reportOpponent,
             notes: notes.trim(),
+            screenshotsData: screenshotsData.length > 0 ? screenshotsData : undefined,
         })
             .then((resp) => {
                 request.onSuccess();
@@ -301,6 +339,41 @@ const SubmitResultsPage = () => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                 />
+
+                {isForfeit && (
+                    <Stack spacing={1}>
+                        <Typography color='text.secondary'>{t('screenshotsHelper')}</Typography>
+                        <Button
+                            component='label'
+                            variant='outlined'
+                            startIcon={<ImageIcon color='dojoOrange' />}
+                            sx={{ alignSelf: 'flex-start' }}
+                        >
+                            {t('labelScreenshots')}
+                            <input
+                                hidden
+                                type='file'
+                                accept='image/*'
+                                multiple
+                                onChange={onChangeScreenshot}
+                            />
+                        </Button>
+                        {screenshotNames.length > 0 && (
+                            <Stack spacing={0.5}>
+                                {screenshotNames.map((name) => (
+                                    <Typography key={name} variant='body2' color='text.secondary'>
+                                        {t('screenshotSelected', { name })}
+                                    </Typography>
+                                ))}
+                            </Stack>
+                        )}
+                        {errors.screenshots && (
+                            <Typography variant='body2' color='error'>
+                                {errors.screenshots}
+                            </Typography>
+                        )}
+                    </Stack>
+                )}
 
                 <Button
                     data-testid='submit-button'

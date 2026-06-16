@@ -2245,6 +2245,12 @@
                 "headerBlack": "Schwarz",
                 "headerResult": "Ergebnis",
                 "headerGame": "Spiel",
+                "headerScreenshots": "Screenshots",
+                "viewScreenshotsTooltip": "Eingereichte Screenshots anzeigen",
+                "screenshotsDialogTitle": "Eingereichte Screenshots",
+                "screenshotNumber": "Screenshot {number}",
+                "screenshotAlt": "Eingereichter Screenshot {number}",
+                "close": "Schließen",
                 "unverifiedResultTooltip": "Dieses Ergebnis wurde nicht überprüft und kann später vom Turnierleiter geändert werden"
             },
             "info": {
@@ -2317,6 +2323,8 @@
                 "labelBlack": "Schwarz",
                 "labelResult": "Ergebnis",
                 "labelNotes": "Notizen",
+                "labelScreenshots": "Screenshots hochladen",
+                "screenshotSelected": "Ausgewählt: {name}",
                 "regionA": "Region A (Amerika)",
                 "regionB": "Region B (Eurasien/Afrika/Ozeanien)",
                 "sectionOpen": "Öffnen",
@@ -2331,9 +2339,12 @@
                 "whiteHelper": "Lichess-Benutzername des Spielers mit den weißen Figuren",
                 "blackHelper": "Lichess-Benutzername des Spielers mit den schwarzen Figuren",
                 "reportOpponent": "Gegner wegen Nichtreagieren oder Widerwilligkeit zu planen melden?",
+                "screenshotsHelper": "Screenshot(s) von der Konversation mit deinem Gegner als Beweis für die Aufgabe hochladen",
                 "submit": "Absenden",
                 "errorRequired": "Dieses Feld ist erforderlich",
-                "errorFetchLichess": "Kann Ergebnisse von Lichess nicht abrufen. Bitte stelle sicher, dass dies die richtige URL ist, bevor du absendest."
+                "errorFetchLichess": "Kann Ergebnisse von Lichess nicht abrufen. Bitte stelle sicher, dass dies die richtige URL ist, bevor du absendest.",
+                "errorScreenshotTooLarge": "Screenshot muss kleiner als 9 MB sein",
+                "errorScreenshotRead": "Screenshot-Datei konnte nicht gelesen werden"
             },
             "standings": {
                 "byeTooltip": "Spieler erhielt ein Freilos für 0.5 Punkte",

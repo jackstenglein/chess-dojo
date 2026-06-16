@@ -1,26 +1,35 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { getConfig } from '@/config';
 import { getRatingRanges, OpenClassical, OpenClassicalPairing } from '@/database/tournament';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
-import { Edit } from '@mui/icons-material';
+import { Edit, Image as ImageIcon } from '@mui/icons-material';
 import {
+    Badge,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogContentText,
     DialogTitle,
+    IconButton,
     MenuItem,
     Stack,
     TextField,
     Tooltip,
 } from '@mui/material';
-import { DataGridPro, GridActionsCellItem } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridActionsCellItem, GridRenderCellParams } from '@mui/x-data-grid-pro';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { getPairingTableColumns, PairingsTableProps } from '../PairingsTable';
 import Editor from './Editor';
 import EmailPairingsButton from './EmailPairingsButton';
+
+const picturesBucket = getConfig().media.picturesBucket;
+
+function getScreenshotUrl(key: string): string {
+    return `${picturesBucket}${key}`;
+}
 
 interface PairingsTabProps {
     openClassical: OpenClassical;
@@ -129,6 +138,7 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
     const t = useTranslations('tournaments.openClassical.pairings');
     const [updatePairing, setUpdatePairing] = useState<OpenClassicalPairing>();
     const [updateResult, setUpdateResult] = useState('');
+    const [viewingScreenshots, setViewingScreenshots] = useState<string[]>();
     const api = useApi();
     const updateRequest = useRequest();
 
@@ -146,6 +156,37 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
                 headerName: 'Notes',
                 headerAlign: 'center' as const,
                 flex: 1,
+            },
+            {
+                field: 'screenshots',
+                headerName: t('headerScreenshots'),
+                width: 100,
+                align: 'center' as const,
+                headerAlign: 'center' as const,
+                valueGetter: (_value: unknown, row: OpenClassicalPairing) =>
+                    row.screenshots?.length ?? 0,
+                renderCell: (params: GridRenderCellParams<OpenClassicalPairing>) => {
+                    const screenshots = params.row.screenshots ?? [];
+                    if (screenshots.length === 0) {
+                        return null;
+                    }
+
+                    return (
+                        <Stack height={1} alignItems='center' justifyContent='center'>
+                            <Tooltip title={t('viewScreenshotsTooltip')}>
+                                <IconButton
+                                    size='small'
+                                    aria-label={t('viewScreenshotsTooltip')}
+                                    onClick={() => setViewingScreenshots(screenshots)}
+                                >
+                                    <Badge badgeContent={screenshots.length} color='primary'>
+                                        <ImageIcon fontSize='small' />
+                                    </Badge>
+                                </IconButton>
+                            </Tooltip>
+                        </Stack>
+                    );
+                },
             },
             {
                 field: 'actions',
@@ -265,6 +306,45 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
                 </DialogActions>
 
                 <RequestSnackbar request={updateRequest} />
+            </Dialog>
+
+            <Dialog
+                open={Boolean(viewingScreenshots?.length)}
+                onClose={() => setViewingScreenshots(undefined)}
+                maxWidth='md'
+                fullWidth
+            >
+                <DialogTitle>{t('screenshotsDialogTitle')}</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2}>
+                        {viewingScreenshots?.map((key, index) => (
+                            <Stack key={key} spacing={1}>
+                                <DialogContentText>
+                                    {t('screenshotNumber', { number: index + 1 })}
+                                </DialogContentText>
+                                <a
+                                    href={getScreenshotUrl(key)}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                >
+                                    <img
+                                        src={getScreenshotUrl(key)}
+                                        alt={t('screenshotAlt', { number: index + 1 })}
+                                        style={{
+                                            width: '100%',
+                                            height: 'auto',
+                                            borderRadius: '8px',
+                                        }}
+                                        crossOrigin='anonymous'
+                                    />
+                                </a>
+                            </Stack>
+                        ))}
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setViewingScreenshots(undefined)}>{t('close')}</Button>
+                </DialogActions>
             </Dialog>
         </>
     );

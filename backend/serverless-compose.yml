@@ -91,6 +91,7 @@ services:
       TournamentsTableArn: ${chess-dojo-scheduler.TournamentsTableArn}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       SecretsBucket: ${chess-dojo-scheduler.SecretsBucket}
+      PicturesBucket: ${chess-dojo-scheduler.PicturesBucket}
       AlertNotificationsTopic: ${chess-dojo-scheduler.AlertNotificationsTopic}
 
   events:

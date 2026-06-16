@@ -2268,6 +2268,12 @@
                 "headerBlack": "[T] Black",
                 "headerResult": "[T] Result",
                 "headerGame": "[T] Game",
+                "headerScreenshots": "[T] Screenshots",
+                "viewScreenshotsTooltip": "[T] View submitted screenshots",
+                "screenshotsDialogTitle": "[T] Submitted Screenshots",
+                "screenshotNumber": "[T] Screenshot {number}",
+                "screenshotAlt": "[T] Submitted screenshot {number}",
+                "close": "[T] Close",
                 "unverifiedResultTooltip": "[T] This result has not been verified and may be changed later by the TD"
             },
             "info": {
@@ -2340,6 +2346,8 @@
                 "labelBlack": "[T] Black",
                 "labelResult": "[T] Result",
                 "labelNotes": "[T] Notes",
+                "labelScreenshots": "[T] Upload Screenshots",
+                "screenshotSelected": "[T] Selected: {name}",
                 "regionA": "[T] Region A (Americas)",
                 "regionB": "[T] Region B (Eurasia/Africa/Oceania)",
                 "sectionOpen": "[T] Open",
@@ -2354,9 +2362,12 @@
                 "whiteHelper": "[T] Lichess username of the player with the white pieces",
                 "blackHelper": "[T] Lichess username of the player with the black pieces",
                 "reportOpponent": "[T] Report opponent for unresponsiveness or unwillingness to schedule?",
+                "screenshotsHelper": "[T] Upload screenshot(s) of your conversation with your opponent as proof of the forfeit",
                 "submit": "[T] Submit",
                 "errorRequired": "[T] This field is required",
-                "errorFetchLichess": "[T] Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting."
+                "errorFetchLichess": "[T] Unable to fetch results from Lichess. Please ensure this is the correct URL before submitting.",
+                "errorScreenshotTooLarge": "[T] Screenshot must be less than 9 MB",
+                "errorScreenshotRead": "[T] Unable to read the screenshot file"
             },
             "standings": {
                 "byeTooltip": "[T] Player receieved a bye for 0.5 points",

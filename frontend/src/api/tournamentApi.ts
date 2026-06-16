@@ -159,6 +159,7 @@ export interface OpenClassicalSubmitResultsRequest {
     result: string;
     reportOpponent: boolean;
     notes: string;
+    screenshotsData?: string[];
 }
 
 export interface OpenClassicalPutPairingsRequest {
