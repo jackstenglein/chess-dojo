@@ -14,6 +14,10 @@ describe('routing config', () => {
         expect(routing.locales).toContain('de');
     });
 
+    it('includes pt in locales', () => {
+        expect(routing.locales).toContain('pt');
+    });
+
     it('defaults to en', () => {
         expect(routing.defaultLocale).toBe('en');
     });
