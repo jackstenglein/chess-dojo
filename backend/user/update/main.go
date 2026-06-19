@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	goaway "github.com/TwiN/go-away"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
@@ -18,7 +19,6 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/user/ratings"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
-	goaway "github.com/TwiN/go-away"
 )
 
 var repository = database.DynamoDB
@@ -192,7 +192,7 @@ func saveReferralSource(ctx context.Context, user *database.User, update *databa
 	update.ReferralSource = &source
 
 	if *update.ReferralSource == "" {
-		return errors.New(400, "Invalid request: referralSource cannot be empty", "")
+		return nil
 	}
 
 	// Do not return any further errors as not being able to write to the spreadsheet shouldn't block users

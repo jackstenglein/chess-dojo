@@ -99,20 +99,46 @@ export function getUsernameType(rs: RatingSystem): string {
     }
 }
 
-function getUpdate(rs: RatingSystem, username: string, hideUsername: boolean): Partial<User> {
-    const result: Partial<User> = {
-        ratingSystem: rs,
-        ratings: {
-            [rs]: {
-                username,
-                hideUsername,
-                startRating: 0,
-                currentRating: 0,
-            },
+type ExtraRatingSystem = {
+    ratingSystem: RatingSystem | '';
+    username: string;
+    hideUsername: boolean;
+};
+
+function getUpdate(
+    user: User,
+    rs: RatingSystem,
+    username: string,
+    hideUsername: boolean,
+    extraRatingSystems: ExtraRatingSystem[],
+): Partial<User> {
+    const ratings: Partial<User['ratings']> = {
+        ...user.ratings,
+        [rs]: {
+            username: username.trim(),
+            hideUsername,
+            startRating: 0,
+            currentRating: 0,
         },
     };
 
-    return result;
+    extraRatingSystems.forEach((extra) => {
+        if (extra.ratingSystem == '' || extra.username.trim() === '') {
+            return;
+        }
+
+        ratings[extra.ratingSystem] = {
+            username: extra.username.trim(),
+            hideUsername: extra.hideUsername,
+            startRating: 0,
+            currentRating: 0,
+        };
+    });
+
+    return {
+        ratingSystem: rs,
+        ratings,
+    };
 }
 
 const { Custom, Custom2, Custom3, ...RatingSystems } = RatingSystem;
@@ -128,12 +154,64 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     const [ratingSystem, setRatingSystem] = useState(user.ratingSystem);
     const [username, setUsername] = useState(getRatingUsername(user, ratingSystem) || '');
     const [hideUsername, setHideUsername] = useState(hideRatingUsername(user, ratingSystem));
+    const [extraRatingSystems, setExtraRatingSystems] = useState<ExtraRatingSystem[]>([]);
 
-    const canSave = (ratingSystem as string) !== '' && username !== '';
+    const getAvailableRatingSystems = (index: number) => {
+        const selectedByOtherRows = extraRatingSystems
+            .filter((_, i) => i !== index)
+            .map((extra) => extra.ratingSystem)
+            .filter((rs): rs is RatingSystem => rs !== '');
+
+        return Object.values(RatingSystems).filter((rs) => {
+            return rs !== ratingSystem && !selectedByOtherRows.includes(rs);
+        });
+    };
+
+    const setPreferredRatingSystem = (rs: RatingSystem) => {
+        setRatingSystem(rs);
+        setUsername(getRatingUsername(user, rs) || '');
+        setHideUsername(hideRatingUsername(user, rs));
+
+        setExtraRatingSystems((extras) => extras.filter((extra) => extra.ratingSystem !== rs));
+    };
+
+    const addExtraRatingSystem = () => {
+        setExtraRatingSystems((extras) => [
+            ...extras,
+            {
+                ratingSystem: '',
+                username: '',
+                hideUsername: false,
+            },
+        ]);
+    };
+
+    const updateExtraRatingSystem = (index: number, update: Partial<ExtraRatingSystem>) => {
+        setExtraRatingSystems((extras) =>
+            extras.map((extra, i) => (i === index ? { ...extra, ...update } : extra)),
+        );
+    };
+
+    const removeExtraRatingSystem = (index: number) => {
+        setExtraRatingSystems((extras) => extras.filter((_, i) => i !== index));
+    };
+
+    const canAddExtraRatingSystem =
+        !extraRatingSystems.some((extra) => extra.ratingSystem === '') &&
+        Object.values(RatingSystems).some(
+            (rs) =>
+                rs !== ratingSystem &&
+                !extraRatingSystems.some((extra) => extra.ratingSystem === rs),
+        );
+
+    const canSave = (ratingSystem as string) !== '' && username.trim() !== '';
 
     const onSave = () => {
         request.onStart();
-        api.updateUser(getUpdate(ratingSystem, username, hideUsername), true)
+        api.updateUser(
+            getUpdate(user, ratingSystem, username, hideUsername, extraRatingSystems),
+            true,
+        )
             .then(onNextStep)
             .catch((err) => {
                 request.onFailure(err);
@@ -154,7 +232,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                 select
                 label='Preferred Rating System'
                 value={ratingSystem}
-                onChange={(event) => setRatingSystem(event.target.value as RatingSystem)}
+                onChange={(event) => setPreferredRatingSystem(event.target.value as RatingSystem)}
                 helperText='Choose the rating system you play most often'
             >
                 {Object.values(RatingSystems).map((option) => (
@@ -185,6 +263,96 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                     />
                 </Stack>
             )}
+
+            <Stack spacing={3}>
+                <Typography>
+                    Add any additional rating systems you would like to track. These are optional
+                    and will not affect your cohort.
+                </Typography>
+
+                {extraRatingSystems.map((extra, index) => (
+                    <Stack key={index} spacing={2}>
+                        <TextField
+                            select
+                            label='Additional Rating System'
+                            value={extra.ratingSystem}
+                            onChange={(event) => {
+                                const rs = event.target.value as RatingSystem;
+
+                                if (
+                                    rs === ratingSystem ||
+                                    extraRatingSystems.some(
+                                        (extra, i) => i !== index && extra.ratingSystem === rs,
+                                    )
+                                ) {
+                                    return;
+                                }
+
+                                updateExtraRatingSystem(index, {
+                                    ratingSystem: rs,
+                                    username: getRatingUsername(user, rs) || '',
+                                    hideUsername: hideRatingUsername(user, rs),
+                                });
+                            }}
+                        >
+                            {getAvailableRatingSystems(index).map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {formatRatingSystem(option)}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+
+                        {extra.ratingSystem !== '' && (
+                            <>
+                                <TextField
+                                    label={getUsernameLabel(extra.ratingSystem)}
+                                    value={extra.username}
+                                    onChange={(event) =>
+                                        updateExtraRatingSystem(index, {
+                                            username: event.target.value,
+                                        })
+                                    }
+                                    helperText={getHelperText(extra.ratingSystem)}
+                                />
+
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={extra.hideUsername}
+                                            onChange={(event) =>
+                                                updateExtraRatingSystem(index, {
+                                                    hideUsername: event.target.checked,
+                                                })
+                                            }
+                                        />
+                                    }
+                                    label={`Hide my ${getUsernameType(
+                                        extra.ratingSystem,
+                                    )} from other dojo members`}
+                                />
+                            </>
+                        )}
+
+                        <Button
+                            variant='outlined'
+                            color='error'
+                            onClick={() => removeExtraRatingSystem(index)}
+                            sx={{ alignSelf: 'start' }}
+                        >
+                            Remove
+                        </Button>
+                    </Stack>
+                ))}
+
+                <Button
+                    variant='outlined'
+                    onClick={addExtraRatingSystem}
+                    disabled={!canAddExtraRatingSystem}
+                    sx={{ alignSelf: 'start' }}
+                >
+                    Add Rating System
+                </Button>
+            </Stack>
 
             <Stack direction='row' justifyContent='space-between'>
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>

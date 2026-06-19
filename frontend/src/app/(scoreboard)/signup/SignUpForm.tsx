@@ -7,7 +7,7 @@ import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { useRouter } from '@/hooks/useRouter';
 import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
-import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
+import { Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
@@ -28,7 +28,6 @@ export const SignUpForm = () => {
 
     const [step, setStep] = useState(SignUpStep.SignUp);
     const [username, setUsername] = useState('');
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,9 +40,6 @@ export const SignUpForm = () => {
 
     const onSignup = () => {
         const errors: Record<string, string> = {};
-        if (name.trim().length === 0) {
-            errors.name = 'Name is required';
-        }
         if (email.trim().length === 0) {
             errors.email = 'Email is required';
         }
@@ -57,10 +53,9 @@ export const SignUpForm = () => {
         }
 
         request.onStart();
-        auth.signup(name.trim(), email.trim(), password)
+        auth.signup(email.trim(), password)
             .then((result) => {
                 setUsername(result.username);
-                setName(name.trim());
                 setEmail(email.trim());
                 setStep(SignUpStep.Verify);
             })
@@ -102,26 +97,6 @@ export const SignUpForm = () => {
             </Typography>
 
             <Stack width={{ xs: 1, sm: 0.85 }} rowGap={3} alignItems='center'>
-                <TextField
-                    fullWidth
-                    id='name'
-                    label='Name'
-                    variant='outlined'
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    error={!!errors.name}
-                    helperText={errors.name}
-                    onKeyDown={onKeyDown}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position='start'>
-                                    <AccountCircle color='dojoOrange' />
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
-                />
                 <TextField
                     fullWidth
                     id='email'

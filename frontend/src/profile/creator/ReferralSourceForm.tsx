@@ -42,9 +42,6 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
     const onSave = () => {
         const newErrors: Record<string, string> = {};
-        if (referralSource.trim() === '') {
-            newErrors.referralSource = 'This field is required';
-        }
         if (!defaultSources.includes(referralSource.trim()) && otherSource.trim() === '') {
             newErrors.otherSource = 'This field is required';
         }
@@ -77,7 +74,6 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
             <TextField
                 select
-                required
                 label='Referral Source'
                 value={referralSource}
                 onChange={(e) => setReferralSource(e.target.value)}
