@@ -1,3 +1,4 @@
+import { Leaderboard as DojoLigaLeaderboard } from '@jackstenglein/chess-dojo-common/src/dojoLiga/dojoLiga';
 import { AxiosResponse } from 'axios';
 import {
     Leaderboard,
@@ -224,6 +225,17 @@ export function getLeaderboard(
             date,
         },
         functionName: 'getLeaderboard',
+    });
+}
+
+/**
+ * Fetches the DojoLiga leaderboard for the given month.
+ * @param month The month to fetch, in YYYY-MM format.
+ * @returns An AxiosResponse containing the DojoLiga leaderboard.
+ */
+export function getDojoLigaLeaderboard(month: string) {
+    return axiosService.get<DojoLigaLeaderboard>(`/public/tournaments/liga/${month}`, {
+        functionName: 'getDojoLigaLeaderboard',
     });
 }
 

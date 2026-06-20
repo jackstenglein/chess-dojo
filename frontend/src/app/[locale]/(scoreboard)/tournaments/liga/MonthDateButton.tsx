@@ -6,9 +6,9 @@ import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { MouseEvent, useState } from 'react';
 
-export const MIN_YEAR = 2023;
-export const MIN_MONTH = 7;
-export const MIN_DATE = '2023-07-11';
+export const MIN_YEAR = 2026;
+export const MIN_MONTH = 5;
+export const MIN_DATE = '2026-05-01';
 
 interface LocaleArrowProps extends Omit<IconButtonProps, 'type'> {
     type: 'prev' | 'next';

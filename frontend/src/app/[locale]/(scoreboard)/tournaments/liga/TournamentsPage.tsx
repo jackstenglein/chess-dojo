@@ -5,12 +5,11 @@ import Icon from '@/style/Icon';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Tab } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import CalendarTab from './CalendarTab';
 import InfoTab from './InfoTab';
 import LeaderboardTab from './LeaderboardTab';
 
 export default function TournamentsPage() {
-    const { searchParams, setSearchParams } = useNextSearchParams({ type: 'calendar' });
+    const { searchParams, setSearchParams } = useNextSearchParams({ type: 'leaderboard' });
     const t = useTranslations('tournaments.liga.tabs');
 
     return (
@@ -21,13 +20,13 @@ export default function TournamentsPage() {
                     onChange={(_, tab: string) => setSearchParams({ type: tab })}
                     variant='scrollable'
                 >
-                    <Tab
+                    {/* <Tab
                         label={t('calendar')}
                         value='calendar'
                         icon={<Icon name='ligaCalendar' color='primary' />}
                         iconPosition='start'
                         sx={{ minHeight: '48px' }}
-                    />
+                    /> */}
                     <Tab
                         label={t('leaderboard')}
                         value='leaderboard'
@@ -45,9 +44,9 @@ export default function TournamentsPage() {
                 </TabList>
             </Box>
 
-            <TabPanel value='calendar' sx={{ px: 0 }}>
+            {/* <TabPanel value='calendar' sx={{ px: 0 }}>
                 <CalendarTab />
-            </TabPanel>
+            </TabPanel> */}
 
             <TabPanel value='leaderboard' sx={{ px: 0 }}>
                 <LeaderboardTab />

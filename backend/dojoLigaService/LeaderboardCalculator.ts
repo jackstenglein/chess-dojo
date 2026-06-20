@@ -1,3 +1,8 @@
+import {
+    Leaderboard,
+    Player,
+    Tournament,
+} from '@jackstenglein/chess-dojo-common/src/dojoLiga/dojoLiga';
 import axios from 'axios';
 
 /** The Lichess team id for Chess Dojo tournaments. */
@@ -49,48 +54,6 @@ interface LichessArena {
         /** The time increment in seconds. */
         increment: number;
     };
-}
-
-interface Leaderboard {
-    /** The month of the leaderboard. */
-    month: string;
-    /** The tournaments in the leaderboard, mapped by lichess id. */
-    tournaments: Record<string, Tournament>;
-    /** The players in the leaderboard, mapped by lichess username. */
-    players: Record<string, Player>;
-}
-
-interface Tournament {
-    /** The lichess id of the tournament. */
-    id: string;
-    /** The name of the tournament. */
-    name: string;
-    /** The date of the tournament. */
-    date: string;
-    /** Whether the tournament is a DojoLiga tournament. */
-    dojoLiga: boolean;
-    /** The point multiplier for the tournament. */
-    multiplier: number;
-}
-
-interface Player {
-    /** The lichess username of the player. */
-    lichess: string;
-    /** The player's total score. */
-    score: number;
-    /** The player's score from DojoLiga events. */
-    dojoLigaScore: number;
-    /** The tournaments the player participated in. */
-    tournaments: PlayerTournament[];
-}
-
-interface PlayerTournament {
-    /** The id of the tournament. */
-    id: string;
-    /** The 1-based index of the player. Player 1 won the tournament. */
-    rank: number;
-    /** The points the player received for the tournament. */
-    points: number;
 }
 
 /** The base number of points a player receives for participating in a Swiss. */
@@ -159,7 +122,8 @@ export class LeaderboardCalculator {
         await this.scoreSwisses();
         await this.scoreArenas();
         return {
-            month,
+            type: 'DOJO_LIGA',
+            startsAt: month,
             tournaments: this.tournaments,
             players: this.players,
         };

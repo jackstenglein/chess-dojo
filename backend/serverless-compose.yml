@@ -223,6 +223,12 @@ services:
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
 
+  dojoLigaService:
+    path: dojoLigaService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      TournamentsTableArn: ${chess-dojo-scheduler.TournamentsTableArn}
+
   puzzleService:
     path: puzzleService
     params:

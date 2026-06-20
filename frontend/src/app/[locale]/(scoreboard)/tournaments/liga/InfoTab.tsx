@@ -1,4 +1,5 @@
 import { getConfig } from '@/config';
+import { CalendarMonth } from '@mui/icons-material';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupIcon from '@mui/icons-material/Group';
@@ -16,13 +17,7 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Paper,
     Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -147,45 +142,72 @@ const InfoTab = () => {
 
             <Divider />
 
+            <Stack direction='row' gap={2} flexWrap='wrap'>
+                <Stack spacing={2}>
+                    <Typography variant='h6' color='text.secondary'>
+                        <CalendarMonth sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
+                        {t('eventsHeader')}
+                    </Typography>
+
+                    <List>
+                        <ListItem>
+                            <ListItemIcon>
+                                <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
+                            </ListItemIcon>
+                            <ListItemText primary={t('mondayEvents')} />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemIcon>
+                                <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
+                            </ListItemIcon>
+                            <ListItemText primary={t('wednesdayEvents')} />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemIcon>
+                                <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
+                            </ListItemIcon>
+                            <ListItemText primary={t('saturdayEvents')} />
+                        </ListItem>
+                    </List>
+                </Stack>
+                <img
+                    src='https://chess-dojo-images.s3.us-east-1.amazonaws.com/blog/260504_DojoLiga/dojoligaschedule.png'
+                    crossOrigin='anonymous'
+                    style={{ borderRadius: '8px', maxWidth: 'min(500px, 100%)' }}
+                />
+            </Stack>
+
+            <Divider />
+
             <Typography variant='h6' color='text.secondary'>
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('leaderboardHeader')}
             </Typography>
 
-            <Typography>{t('leaderboardIntro')}</Typography>
+            <Typography>{t('weeklyEvents')}</Typography>
 
-            <List>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('leaderboardArena')} />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('leaderboardSwiss')} />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('leaderboardGrandPrix')} />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('leaderboardMiddlegame')} />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('leaderboardEndgame')} />
-                </ListItem>
-            </List>
+            <ul>
+                <li>{t('weeklySwissPoints.first')}</li>
+                <li>{t('weeklySwissPoints.second')}</li>
+                <li>{t('weeklySwissPoints.third')}</li>
+                <li>{t('weeklySwissPoints.fourth')}</li>
+                <li>{t('weeklySwissPoints.fifth')}</li>
+                <li>{t('weeklySwissPoints.sixthToTenth')}</li>
+                <li>{t('weeklySwissPoints.allOthers')}</li>
+            </ul>
+
+            <Typography>{t('lichessTeamEvents')}</Typography>
+
+            <ul>
+                <li>{t('lichessTeamPoints.first')}</li>
+                <li>{t('lichessTeamPoints.second')}</li>
+                <li>{t('lichessTeamPoints.third')}</li>
+                <li>{t('lichessTeamPoints.fourth')}</li>
+                <li>{t('lichessTeamPoints.fifth')}</li>
+                <li>{t('lichessTeamPoints.allOthers')}</li>
+            </ul>
+
+            <Divider />
 
             <Typography variant='h6' color='text.secondary'>
                 <NotInterestedIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
@@ -207,61 +229,7 @@ const InfoTab = () => {
                     </ListItemIcon>
                     <ListItemText primary={t('antiCheatAdmit')} />
                 </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <RadioButtonCheckedIcon sx={{ color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('antiCheatTracked')} />
-                </ListItem>
             </List>
-
-            <Divider />
-
-            <Typography variant='h6' color='text.secondary'>
-                <SiDiscord style={{ verticalAlign: 'middle', marginRight: 9, color: '#5865f2' }} />
-                {t('discordHeader')}
-            </Typography>
-
-            <Typography>{t('discordIntro')}</Typography>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>/verify</TableCell>
-                            <TableCell>{t('cmdVerify')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/verifychesscom</TableCell>
-                            <TableCell>{t('cmdVerifyChesscom')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/profile</TableCell>
-                            <TableCell>{t('cmdProfile')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/update</TableCell>
-                            <TableCell>{t('cmdUpdate')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/score</TableCell>
-                            <TableCell>{t('cmdScore')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/rank</TableCell>
-                            <TableCell>{t('cmdRank')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/top10</TableCell>
-                            <TableCell>{t('cmdTop10')}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>/help</TableCell>
-                            <TableCell>{t('cmdHelp')}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
         </Stack>
     );
 };

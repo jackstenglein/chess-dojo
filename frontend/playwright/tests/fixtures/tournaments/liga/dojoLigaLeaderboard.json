@@ -1,0 +1,37 @@
+{
+    "type": "DOJO_LIGA",
+    "startsAt": "2024-06",
+    "tournaments": {},
+    "players": {
+        "agedwhitecheddar": {
+            "lichess": "agedwhitecheddar",
+            "score": 87,
+            "dojoLigaScore": 87,
+            "tournaments": []
+        },
+        "thorbiddles": {
+            "lichess": "thorbiddles",
+            "score": 83,
+            "dojoLigaScore": 83,
+            "tournaments": []
+        },
+        "peshka2": {
+            "lichess": "peshka2",
+            "score": 78,
+            "dojoLigaScore": 78,
+            "tournaments": []
+        },
+        "liyv": {
+            "lichess": "liyv",
+            "score": 62,
+            "dojoLigaScore": 62,
+            "tournaments": []
+        },
+        "hellokostya": {
+            "lichess": "hellokostya",
+            "score": 56,
+            "dojoLigaScore": 56,
+            "tournaments": []
+        }
+    }
+}
