@@ -4093,5 +4093,11 @@
         "unsubscribeSuccess": "[T] {email} has been unsubscribed. Please allow 24 hours for this change to take effect.",
         "emailLabel": "[T] Email",
         "unsubscribeButton": "[T] Unsubscribe"
+    },
+    "PlayMaia": {
+        "title": "[PlayMaia.title]",
+        "playAsWhite": "[PlayMaia.playAsWhite]",
+        "playAsBlack": "[PlayMaia.playAsBlack]",
+        "randomColor": "[PlayMaia.randomColor]"
     }
 }

@@ -4070,5 +4070,11 @@
         "unsubscribeSuccess": "{email} wurde abgemeldet. Bitte warte 24 Stunden, bis diese Änderung wirksam wird.",
         "emailLabel": "E-Mail",
         "unsubscribeButton": "Abmelden"
+    },
+    "PlayMaia": {
+        "title": "Gegen Dojo Sparring Bot spielen",
+        "playAsWhite": "Als Weiß spielen",
+        "playAsBlack": "Als Schwarz spielen",
+        "randomColor": "Zufällige Farbe"
     }
 }

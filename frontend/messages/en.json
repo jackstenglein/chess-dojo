@@ -4095,5 +4095,11 @@
         "unsubscribeSuccess": "{email} has been unsubscribed. Please allow 24 hours for this change to take effect.",
         "emailLabel": "Email",
         "unsubscribeButton": "Unsubscribe"
+    },
+    "PlayMaia": {
+        "title": "Play vs Dojo Sparring Bot",
+        "playAsWhite": "Play as White",
+        "playAsBlack": "Play as Black",
+        "randomColor": "Random Color"
     }
 }

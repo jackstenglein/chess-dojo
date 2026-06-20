@@ -16,6 +16,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { MAIA_RATINGS, MaiaRating } from './maiaengine';
 import { RATING_DESCRIPTIONS } from './playbot';
@@ -51,7 +52,7 @@ export function PlayMaiaDialog({
     const mins = limitSeconds / 60;
     const inc = incrementSeconds;
     const isUnlimited = limitSeconds === 0 && incrementSeconds === 0;
-
+    const t = useTranslations('PlayMaia');
     const handleStart = () => {
         const params = new URLSearchParams({
             fen: fen.trim(),
@@ -68,7 +69,7 @@ export function PlayMaiaDialog({
             <DialogTitle>
                 <Stack direction='row' alignItems='center' spacing={1}>
                     <SmartToy color='primary' />
-                    <span>Play vs Dojo Sparring Bot</span>
+                    <span>{t('title')}</span>
                 </Stack>
                 {positionTitle && (
                     <Typography variant='body2' color='text.secondary' mt={0.5}>
@@ -105,7 +106,7 @@ export function PlayMaiaDialog({
                                             borderColor: 'divider',
                                         }}
                                     />
-                                    <span>Play as White</span>
+                                    <span>{t('playAsWhite')}</span>
                                 </Stack>
                             </MenuItem>
                             <MenuItem value='black'>
@@ -120,7 +121,7 @@ export function PlayMaiaDialog({
                                             borderColor: 'divider',
                                         }}
                                     />
-                                    <span>Play as Black</span>
+                                    <span>{t('playAsBlack')}</span>
                                 </Stack>
                             </MenuItem>
                         </Select>
