@@ -336,3 +336,20 @@ function CustomGridToolbar() {
 function ListViewToolbar() {
     return null;
 }
+
+/**
+ * Returns a function which pushes a clicked game to the browser history. If the shift key
+ * was held during the click, then the game is opened in a new window instead.
+ * @param router The return value from the useRouter hook.
+ * @returns A function which can be passed to the GameTable's onClickRow prop.
+ */
+export function getOpenGame(router: { push: (url: string) => void }) {
+    return (params: GridRowParams<GameInfo>, event: React.MouseEvent) => {
+        const url = `/games/${encodeURIComponent(params.row.cohort)}/${encodeURIComponent(params.row.id)}`;
+        if (event.shiftKey) {
+            window.open(url, '_blank');
+        } else {
+            router.push(url);
+        }
+    };
+}

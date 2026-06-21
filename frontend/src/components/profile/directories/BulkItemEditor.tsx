@@ -18,6 +18,7 @@ import {
     DriveFileMoveOutlined,
     DriveFileRenameOutline,
     FolderOff,
+    OpenInNew,
     Visibility,
     VisibilityOff,
 } from '@mui/icons-material';
@@ -212,7 +213,20 @@ export function useDirectoryEditor({
         directory.items[itemIds[0]]?.type === DirectoryItemTypes.DIRECTORY;
     const isAdmin = compareRoles(DirectoryAccessRole.Admin, accessRole);
 
-    const actions = [{ title: t('downloadPGN'), onClick: onDownload, icon: <Download /> }];
+    const actions: UseDirectoryEditorResponse['actions'] = [];
+
+    if (
+        itemIds.length === 1 &&
+        directory.items[itemIds[0]]?.type !== DirectoryItemTypes.DIRECTORY
+    ) {
+        actions.push({
+            title: t('openInNew'),
+            onClick: () => window.open(`/games/${itemIds[0]}`, '_blank'),
+            icon: <OpenInNew />,
+        });
+    }
+
+    actions.push({ title: t('downloadPGN'), onClick: onDownload, icon: <Download /> });
 
     if (showEdit && isAdmin) {
         actions.push({

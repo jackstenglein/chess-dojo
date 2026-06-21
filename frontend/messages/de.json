@@ -484,6 +484,7 @@
             "addGamesCount": "{count, plural, =0 {Spiele hinzufügen} =1 {1 Spiel hinzufügen} other {{count} Spiele hinzufügen}}",
             "analyzeGame": "Spiel analysieren",
             "freeTierGamesRestriction": "Um unfaire Vorbereitung gegen Dojo-Mitglieder zu vermeiden, können kostenlose Benutzer keine Spiele eines bestimmten Spielers ansehen. Upgrade deinen Account, um die vollständige Dojo Database anzusehen.",
+            "openInNew": "In neuem Tab öffnen",
             "downloadPGN": "PGN herunterladen",
             "editNameVisibility": "Name/Sichtbarkeit bearbeiten",
             "publishGames": "{count, plural, =1 {Spiel veröffentlichen} other {Spiele veröffentlichen}}",
@@ -1778,6 +1779,7 @@
             "publishGames": "Spiele veröffentlichen"
         },
         "bulkEditor": {
+            "openInNew": "In neuem Tab öffnen",
             "addToFolder": "Zum Ordner hinzufügen",
             "publishGame": "Veröffentliche {count, plural, =1 {Spiel} other {Spiele}}",
             "unlistGame": "Delisten {count, plural, =1 {Spiel} other {Spiele}}",

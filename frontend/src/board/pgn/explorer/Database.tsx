@@ -73,7 +73,7 @@ const OpaqueTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 function defaultOnClickGame({ cohort, id }: GameInfo) {
-    const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll('?', '%3F')}`;
+    const url = `/games/${encodeURIComponent(cohort)}/${encodeURIComponent(id)}`;
     window.open(url, '_blank');
 }
 

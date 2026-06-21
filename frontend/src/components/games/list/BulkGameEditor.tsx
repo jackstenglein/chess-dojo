@@ -6,6 +6,7 @@ import {
     CreateNewFolder,
     Delete,
     Download,
+    OpenInNew,
     Visibility,
     VisibilityOff,
 } from '@mui/icons-material';
@@ -104,13 +105,25 @@ export function useBulkGameEditor({
     const unpublished = games.filter((g) => g.unlisted);
     const published = games.filter((g) => !g.unlisted);
 
-    const actions = [
-        {
-            title: t('addToFolder'),
-            onClick: () => setDirectoryPickerOpen(true),
-            icon: <CreateNewFolder />,
-        },
-    ];
+    const actions: UseBulkGameEditorResponse['actions'] = [];
+
+    if (games.length === 1) {
+        actions.push({
+            title: t('openInNew'),
+            onClick: () =>
+                window.open(
+                    `/games/${encodeURIComponent(games[0].cohort)}/${encodeURIComponent(games[0].id)}`,
+                    '_blank',
+                ),
+            icon: <OpenInNew />,
+        });
+    }
+
+    actions.push({
+        title: t('addToFolder'),
+        onClick: () => setDirectoryPickerOpen(true),
+        icon: <CreateNewFolder />,
+    });
 
     if (unpublished.length > 0 && !isFreeTier && allowEdits) {
         actions.push({

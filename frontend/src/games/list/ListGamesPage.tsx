@@ -3,11 +3,10 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
-import GameTable from '@/components/games/list/GameTable';
+import GameTable, { getOpenGame } from '@/components/games/list/GameTable';
 import { ListItemContextMenu } from '@/components/games/list/ListItemContextMenu';
 import { Link } from '@/components/navigation/Link';
 import ListGamesTutorial from '@/components/tutorial/ListGamesTutorial';
-import { GameInfo } from '@/database/game';
 import { RequirementCategory } from '@/database/requirement';
 import { useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
@@ -48,15 +47,6 @@ const ListGamesPage = () => {
 
     const pagination = usePagination(null, 0, 10);
     const { pageSize, setPageSize, request, data, onSearch } = pagination;
-
-    const onClick = ({ cohort, id }: GameInfo, event: React.MouseEvent) => {
-        const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll('?', '%3F')}`;
-        if (event.shiftKey) {
-            window.open(url, '_blank');
-        } else {
-            router.push(url);
-        }
-    };
 
     const onPaginationModelChange = (model: GridPaginationModel) => {
         if (model.pageSize !== pageSize) {
@@ -103,7 +93,7 @@ const ListGamesPage = () => {
                         namespace='games-list-page'
                         limitFreeTier
                         pagination={pagination}
-                        onRowClick={(params, event) => onClick(params.row, event)}
+                        onRowClick={getOpenGame(router)}
                         onPaginationModelChange={onPaginationModelChange}
                         contextMenu={contextMenu}
                         defaultVisibility={{

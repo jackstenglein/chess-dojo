@@ -507,6 +507,7 @@
             "addGamesCount": "{count, plural, =0 {Add Games} =1 {Add 1 Game} other {Add {count} Games}}",
             "analyzeGame": "Analyze a Game",
             "freeTierGamesRestriction": "To avoid unfair preparation against Dojo members, free-tier users cannot view games by a specific player. Upgrade your account to view the full Dojo Database.",
+            "openInNew": "Open in New Tab",
             "downloadPGN": "Download PGN",
             "editNameVisibility": "Edit Name/Visibility",
             "publishGames": "{count, plural, =1 {Publish Game} other {Publish Games}}",
@@ -1801,6 +1802,7 @@
             "publishGames": "Publish Games"
         },
         "bulkEditor": {
+            "openInNew": "Open in New Tab",
             "addToFolder": "Add to Folder",
             "publishGame": "Publish {count, plural, =1 {Game} other {Games}}",
             "unlistGame": "Unlist {count, plural, =1 {Game} other {Games}}",
