@@ -2,6 +2,7 @@ import CohortIcon from '@/scoreboard/CohortIcon';
 import { fontFamily } from '@/style/font';
 import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
 import { Grid, IconButton, Stack, Typography, useMediaQuery } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Children, ReactNode, useCallback, useEffect, useState } from 'react';
 import { BackgroundImageContainer } from './BackgroundImage';
@@ -9,9 +10,10 @@ import { anton, barlow, barlowCondensed } from './fonts';
 import { JoinDojoButton } from './JoinDojoButton';
 import quoteImage from './quote.webp';
 import backgroundImage from './testimonial-background.webp';
-import { TestimonialProps, testimonials } from './testimonials';
+import { testimonials } from './testimonials';
 
 export function TestimonialSection() {
+    const t = useTranslations('landing');
     const isSm = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
     return (
@@ -27,9 +29,14 @@ export function TestimonialSection() {
                     lineHeight='4.625rem'
                     fontSize='3.75rem'
                 >
-                    Our program has a proven
-                    <br />
-                    track record of success
+                    {t('testimonialSection.heading')
+                        .split('\n')
+                        .map((line, i) => (
+                            <span key={i}>
+                                {i > 0 && <br />}
+                                {line}
+                            </span>
+                        ))}
                 </Typography>
                 <Typography
                     sx={{ textTransform: 'uppercase' }}
@@ -40,22 +47,33 @@ export function TestimonialSection() {
                     letterSpacing='11%'
                     textAlign='center'
                 >
-                    Hear from our members
+                    {t('testimonialSection.subheading')}
                 </Typography>
             </Stack>
 
             <Stack direction='row' mt='3.125rem'>
                 {isSm ? (
                     <Carousel>
-                        {testimonials.map((t) => (
-                            <Testimonial key={t.name} {...t} />
+                        {testimonials.map((testimonial) => (
+                            <Testimonial
+                                key={testimonial.key}
+                                quote={t(`testimonials.${testimonial.key}.quote`)}
+                                name={t(`testimonials.${testimonial.key}.name`)}
+                                rating={t(`testimonials.${testimonial.key}.rating`)}
+                                cohort={testimonial.cohort}
+                            />
                         ))}
                     </Carousel>
                 ) : (
                     <Grid container spacing='2rem'>
-                        {testimonials.map((t) => (
-                            <Grid size={3} key={t.name} height={1}>
-                                <Testimonial {...t} />
+                        {testimonials.map((testimonial) => (
+                            <Grid size={3} key={testimonial.key} height={1}>
+                                <Testimonial
+                                    quote={t(`testimonials.${testimonial.key}.quote`)}
+                                    name={t(`testimonials.${testimonial.key}.name`)}
+                                    rating={t(`testimonials.${testimonial.key}.rating`)}
+                                    cohort={testimonial.cohort}
+                                />
                             </Grid>
                         ))}
                     </Grid>
@@ -69,7 +87,17 @@ export function TestimonialSection() {
     );
 }
 
-function Testimonial({ quote, name, rating, cohort }: TestimonialProps) {
+function Testimonial({
+    quote,
+    name,
+    rating,
+    cohort,
+}: {
+    quote: string;
+    name: string;
+    rating: string;
+    cohort: string;
+}) {
     return (
         <Stack
             sx={{

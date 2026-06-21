@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { Api as BoardApi } from 'chessground/api';
 import { Key, Piece } from 'chessground/types';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -47,6 +48,7 @@ const pieceMap: Record<string, Piece> = {
 };
 
 export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: string) => void }) {
+    const t = useTranslations('games.import.boardEditor');
     const [currentButton, setCurrentButton] = useState<string>('move');
     const [board, setBoard] = useState<BoardApi>();
     const [orientation, setOrientation] = useState<'white' | 'black'>('white');
@@ -213,19 +215,19 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                     onChange={(e) => onChangeColor(e.target.value)}
                     sx={{ ml: 0.5, width: 1 }}
                 >
-                    <MenuItem value='w'>White to play</MenuItem>
-                    <MenuItem value='b'>Black to play</MenuItem>
+                    <MenuItem value='w'>{t('whiteToPlay')}</MenuItem>
+                    <MenuItem value='b'>{t('blackToPlay')}</MenuItem>
                 </TextField>
 
                 <TextField
                     select
-                    label='En Passant'
+                    label={t('enPassantLabel')}
                     value={enPassantTarget}
                     onChange={(e) => onChangeEnPassant(e.target.value)}
                     size='small'
                     sx={{ mt: 2, ml: 0.5, width: 1 }}
                 >
-                    <MenuItem value='-'>None</MenuItem>
+                    <MenuItem value='-'>{t('enPassantNone')}</MenuItem>
                     {enPassantOptions.map((opt) => (
                         <MenuItem key={opt} value={opt}>
                             {opt}
@@ -234,7 +236,7 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                 </TextField>
 
                 <TextField
-                    label='Move Number'
+                    label={t('moveNumberLabel')}
                     value={moveNumber}
                     onChange={(e) => onChangeMoveNumber(e.target.value)}
                     size='small'
@@ -242,11 +244,11 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                 />
 
                 <Typography variant='subtitle2' color='textSecondary' mt={1.5} ml={0.5}>
-                    Castling
+                    {t('castlingLabel')}
                 </Typography>
                 <Stack direction='row' width={1} justifyContent='space-between' ml={0.5}>
                     <FormControl>
-                        <FormLabel>White</FormLabel>
+                        <FormLabel>{t('castlingWhite')}</FormLabel>
                         <FormGroup>
                             <CastlingEditor
                                 label='O-O'
@@ -264,7 +266,7 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                     </FormControl>
 
                     <FormControl>
-                        <FormLabel>Black</FormLabel>
+                        <FormLabel>{t('castlingBlack')}</FormLabel>
                         <FormGroup>
                             <CastlingEditor
                                 label='O-O'
@@ -283,13 +285,13 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                 </Stack>
 
                 <Button onClick={onStartingPosition} startIcon={<Replay />} sx={{ mt: 1.5 }}>
-                    Starting Position
+                    {t('startingPositionButton')}
                 </Button>
                 <Button onClick={onClearBoard} startIcon={<Delete />}>
-                    Clear Board
+                    {t('clearBoardButton')}
                 </Button>
                 <Button onClick={onFlipBoard} startIcon={<WifiProtectedSetup />}>
-                    Flip Board
+                    {t('flipBoardButton')}
                 </Button>
             </Stack>
         </Stack>
@@ -309,6 +311,7 @@ function PieceToggleButtonGroup({
     onChange: (value: string) => void;
     pieces: string[];
 }) {
+    const t = useTranslations('games.import.boardEditor');
     const [pieceStyle] = useLocalStorage<PieceStyle>(PieceStyleKey, PieceStyle.Standard);
     const pieceImages = getPieceSx(pieceStyle);
 
@@ -319,7 +322,10 @@ function PieceToggleButtonGroup({
             onChange={(_, value: string) => value && onChange(value)}
             sx={{ justifyContent: 'center' }}
         >
-            <Tooltip title={`Keyboard Shortcut: ${MOVE_KEYBOARD_SHORTCUT}`} disableInteractive>
+            <Tooltip
+                title={t('keyboardShortcutTooltip', { key: MOVE_KEYBOARD_SHORTCUT })}
+                disableInteractive
+            >
                 <ToggleButton
                     value='move'
                     sx={{ width: `${100 / TOGGLE_BUTTON_GROUP_LENGTH}%`, aspectRatio: 1 }}
@@ -329,7 +335,11 @@ function PieceToggleButtonGroup({
             </Tooltip>
 
             {pieces.map((p) => (
-                <Tooltip key={p} title={`Keyboard Shortcut: ${p}`} disableInteractive>
+                <Tooltip
+                    key={p}
+                    title={t('keyboardShortcutTooltip', { key: p })}
+                    disableInteractive
+                >
                     <ToggleButton
                         value={p}
                         sx={{
@@ -343,7 +353,10 @@ function PieceToggleButtonGroup({
                 </Tooltip>
             ))}
 
-            <Tooltip title={`Keyboard Shortcut: ${DELETE_KEYBOARD_SHORTCUT}`} disableInteractive>
+            <Tooltip
+                title={t('keyboardShortcutTooltip', { key: DELETE_KEYBOARD_SHORTCUT })}
+                disableInteractive
+            >
                 <ToggleButton
                     value='delete'
                     sx={{ width: `${100 / TOGGLE_BUTTON_GROUP_LENGTH}%`, aspectRatio: 1 }}

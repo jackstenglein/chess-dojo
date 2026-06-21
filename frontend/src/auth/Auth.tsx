@@ -28,7 +28,7 @@ import { getUser } from '../api/userApi';
 import {
     clearCheckoutSessionIds,
     getAllCheckoutSessionIds,
-} from '../app/(scoreboard)/courses/localStorage';
+} from '../app/[locale]/(scoreboard)/courses/localStorage';
 import { CognitoUser, isFree, parseUser, User } from '../database/user';
 
 const config = getConfig();
@@ -241,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (err) {
                     logger.error?.('Failed to sign in: ', err);
                     setStatus(AuthStatus.Unauthenticated);
-                    reject(err as Error);
+                    reject(err);
                 }
             })();
         });

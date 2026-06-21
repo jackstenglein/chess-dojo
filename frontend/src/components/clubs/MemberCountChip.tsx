@@ -1,16 +1,18 @@
 import { Groups } from '@mui/icons-material';
 import { Chip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface MemberCountChipProps {
     count: number;
 }
 
 export const MemberCountChip: React.FC<MemberCountChipProps> = ({ count }) => {
+    const t = useTranslations('clubs.chips');
     return (
         <Chip
             color='secondary'
             icon={<Groups sx={{ pl: '4px' }} />}
-            label={`${count} member${count !== 1 ? 's' : ''}`}
+            label={t('memberCount', { count })}
         />
     );
 };

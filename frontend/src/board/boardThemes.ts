@@ -1,10 +1,17 @@
 import { grey } from '@mui/material/colors';
 import { BoardStyle, PieceStyle } from './pgn/boardTools/underboard/settings/ViewerSettings';
+import { CoordinateSize } from './pgn/boardTools/underboard/settings/viewerSettingsConstants';
 
 interface BoardSx {
     '--board-background': string;
     '--light-square-coord-color': string;
     '--dark-square-coord-color': string;
+}
+
+interface CoordinateSx {
+    '--coordinate-font-size': string;
+    '--coordinate-font-weight': number;
+    '--coordinate-opacity': number;
 }
 
 interface PieceSx {
@@ -71,6 +78,28 @@ export function getBoardSx(style: BoardStyle): BoardSx {
                 '--board-background': `url('/static/board/backgrounds/wood.jpg')`,
                 '--dark-square-coord-color': '#d9a55a',
                 '--light-square-coord-color': '#88471d',
+            };
+    }
+}
+
+/**
+ * Returns CSS vars for coordinate readability.
+ * Standard preserves Chessground's defaults. Large improves readability without
+ * making every-square coordinates too crowded on smaller boards.
+ */
+export function getCoordinateSx(size: CoordinateSize): CoordinateSx {
+    switch (size) {
+        case CoordinateSize.Standard:
+            return {
+                '--coordinate-font-size': '9px',
+                '--coordinate-font-weight': 600,
+                '--coordinate-opacity': 0.8,
+            };
+        case CoordinateSize.Large:
+            return {
+                '--coordinate-font-size': '13px',
+                '--coordinate-font-weight': 800,
+                '--coordinate-opacity': 1,
             };
     }
 }

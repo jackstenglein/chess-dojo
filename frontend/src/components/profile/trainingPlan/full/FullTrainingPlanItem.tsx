@@ -14,6 +14,7 @@ import {
 } from '@/database/requirement';
 import { ALL_COHORTS, User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AddCircle, Lock, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
     Box,
@@ -26,6 +27,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useTimelineContext } from '../../activity/useTimeline';
 import { TaskTimerIconButton } from '../daily/TaskTimerIconButton';
@@ -45,12 +47,16 @@ interface FullTrainingPlanItemProps {
 export const FullTrainingPlanItem = ({
     user,
     progress,
-    requirement,
+    requirement: rawRequirement,
     cohort,
     isCurrentUser,
     togglePin,
     isPinned,
 }: FullTrainingPlanItemProps) => {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
+    const t = useTranslations('profile.trainingPlan.full');
+    const tCommon = useTranslations('profile.trainingPlan.common');
+    const tTime = useTranslations('common');
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const { entries } = useTimelineContext();
@@ -61,7 +67,7 @@ export const FullTrainingPlanItem = ({
 
     const totalCount = getTotalCount(cohort, requirement, true);
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
-    const time = formatTime(getTotalTime(cohort, progress));
+    const time = formatTime(getTotalTime(cohort, progress), tTime);
     const expired = isExpired(requirement, progress);
     const isMinimumTask = MINIMUM_TASKS.has(requirement.id);
     const minimumReached = isMinimumTask && currentCount >= totalCount;
@@ -72,9 +78,9 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Hidden:
         case ScoreboardDisplay.Checkbox:
             UpdateElement = (
-                <Tooltip title='Update Progress'>
+                <Tooltip title={tCommon('updateProgress')}>
                     <Checkbox
-                        aria-label={`Checkbox ${requirement.name}`}
+                        aria-label={t('checkboxAriaLabel', { name: requirement.name })}
                         checked={currentCount >= totalCount}
                         onClick={() => setTaskDialogView(TaskDialogView.Progress)}
                         disabled={!isCurrentUser}
@@ -89,7 +95,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Yearly:
             UpdateElement =
                 currentCount >= totalCount && !isMinimumTask ? (
-                    <Tooltip title='Update Progress'>
+                    <Tooltip title={tCommon('updateProgress')}>
                         <Checkbox
                             checked
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
@@ -97,9 +103,9 @@ export const FullTrainingPlanItem = ({
                         />
                     </Tooltip>
                 ) : !isCurrentUser ? null : (
-                    <Tooltip title='Update Progress'>
+                    <Tooltip title={tCommon('updateProgress')}>
                         <IconButton
-                            aria-label={`Update ${requirement.name}`}
+                            aria-label={t('updateAriaLabel', { name: requirement.name })}
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
                             data-testid='update-task-button'
                         >
@@ -111,7 +117,7 @@ export const FullTrainingPlanItem = ({
 
         case ScoreboardDisplay.NonDojo:
             UpdateElement = (
-                <Tooltip title='Update Progress'>
+                <Tooltip title={tCommon('updateProgress')}>
                     <IconButton
                         aria-label={`Update ${requirement.name}`}
                         onClick={() => setTaskDialogView(TaskDialogView.Progress)}
@@ -156,22 +162,22 @@ export const FullTrainingPlanItem = ({
                         rowGap='0.25rem'
                     >
                         {expired && (
-                            <Tooltip title="It's time for you to renew this task!">
+                            <Tooltip title={t('renewTooltip')}>
                                 <Chip
                                     variant='outlined'
                                     color='warning'
-                                    label='Renew'
+                                    label={t('renewLabel')}
                                     size='small'
                                     sx={{ alignSelf: 'start', mb: 0.5 }}
                                 />
                             </Tooltip>
                         )}
                         {minimumReached && (
-                            <Tooltip title="You've reached the minimum, keep going!">
+                            <Tooltip title={t('minimumReachedTooltip')}>
                                 <Chip
                                     variant='outlined'
                                     color='success'
-                                    label='Minimum Reached'
+                                    label={t('minimumReachedLabel')}
                                     size='small'
                                     sx={{ alignSelf: 'start', mb: 0.5 }}
                                 />
@@ -244,7 +250,7 @@ export const FullTrainingPlanItem = ({
                             {isCurrentUser && isPinnable(requirement) && (
                                 <Tooltip
                                     title={
-                                        isPinned ? 'Unpin from Daily Tasks' : 'Pin to Daily Tasks'
+                                        isPinned ? tCommon('unpinFromDaily') : tCommon('pinToDaily')
                                     }
                                 >
                                     <IconButton onClick={() => togglePin(requirement)}>

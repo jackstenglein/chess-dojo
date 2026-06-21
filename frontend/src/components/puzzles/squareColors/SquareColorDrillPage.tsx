@@ -21,6 +21,7 @@ import Target from '@mui/icons-material/GpsFixed';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Timer from '@mui/icons-material/Timer';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type DrillState = 'ready' | 'in_progress' | 'complete';
@@ -106,6 +107,7 @@ export function SquareColorDrillPage() {
 }
 
 function SquareColorDrill() {
+    const t = useTranslations('puzzles.squareColors');
     const { user, updateUser } = useAuth();
     const submitRequest = useRequest();
     const [drillState, setDrillState] = useState<DrillState>('ready');
@@ -247,13 +249,12 @@ function SquareColorDrill() {
     return (
         <Container maxWidth='sm' sx={{ py: 6, textAlign: 'center' }}>
             <Typography variant='subtitle1' color='text.secondary' sx={{ mb: 1 }}>
-                Question {questions.length + 1}
+                {t('questionLabel', { number: questions.length + 1 })}
             </Typography>
 
             {questionsRemaining > 0 && (
                 <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    Answer {questionsRemaining} more{' '}
-                    {questionsRemaining === 1 ? 'question' : 'questions'} to receive a rating
+                    {t('questionsRemaining', { count: questionsRemaining })}
                 </Typography>
             )}
 
@@ -304,7 +305,7 @@ function SquareColorDrill() {
                         },
                     }}
                 >
-                    White (W)
+                    {t('whiteButton')}
                 </Button>
                 <Button
                     variant='contained'
@@ -325,7 +326,7 @@ function SquareColorDrill() {
                         },
                     }}
                 >
-                    Black (B)
+                    {t('blackButton')}
                 </Button>
             </Stack>
 
@@ -336,7 +337,7 @@ function SquareColorDrill() {
                 disabled={feedback !== null}
                 sx={{ mt: 4 }}
             >
-                Stop
+                {t('stop')}
             </Button>
         </Container>
     );
@@ -350,28 +351,28 @@ function SquareColorDrill() {
  * @param personalBest - The user's best-ever square color drill rating, if any.
  */
 function ReadyScreen({ onStart, personalBest }: { onStart: () => void; personalBest?: number }) {
+    const t = useTranslations('puzzles.squareColors');
     const [armed, setArmed] = useState(false);
 
     return (
         <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 2 }}>
-                Square Color Drill
+                {t('title')}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
-                You'll see a square name (like "g7") and choose whether it's a white or black
-                square.
+                {t('intro')}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
-                {armed
-                    ? 'Ready? Hit GO! to start the timer.'
-                    : "Answer as quickly and accurately as possible. Stop whenever you're ready!"}
+                {armed ? t('readyArmed') : t('readyUnarmed')}
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ mb: 4 }}>
-                Keyboard shortcuts: <strong>W</strong> for White, <strong>B</strong> for Black
+                {t.rich('keyboardShortcuts', {
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                })}
             </Typography>
             {personalBest !== undefined && (
                 <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
-                    Your best rating: {personalBest}
+                    {t('bestRating', { personalBest })}
                 </Typography>
             )}
             <Button
@@ -380,7 +381,7 @@ function ReadyScreen({ onStart, personalBest }: { onStart: () => void; personalB
                 onClick={armed ? onStart : () => setArmed(true)}
                 sx={{ px: 6, py: 1.5 }}
             >
-                {armed ? 'GO!' : 'Start'}
+                {armed ? t('goButton') : t('startButton')}
             </Button>
         </Container>
     );
@@ -402,13 +403,14 @@ function CompleteScreen({
     onPlayAgain: () => void;
     personalBest?: number;
 }) {
+    const t = useTranslations('puzzles.squareColors');
     const accuracy = Math.round((summary.correctCount / summary.totalQuestions) * 100);
     const avgTime = (summary.avgResponseTimeMs / 1000).toFixed(1);
 
     return (
         <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 4 }}>
-                Session Complete!
+                {t('sessionComplete')}
             </Typography>
 
             <Stack spacing={2} sx={{ mb: 4 }}>
@@ -423,7 +425,7 @@ function CompleteScreen({
                         }}
                     >
                         <Typography variant='overline' sx={{ opacity: 0.85 }}>
-                            Your Rating
+                            {t('yourRating')}
                         </Typography>
                         <Typography variant='h3' sx={{ fontWeight: 'bold' }}>
                             {summary.rating}
@@ -431,7 +433,7 @@ function CompleteScreen({
                     </Box>
                 ) : (
                     <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                        Answer at least {MIN_QUESTIONS_FOR_RATING} questions to receive a rating
+                        {t('answerAtLeast', { count: MIN_QUESTIONS_FOR_RATING })}
                     </Typography>
                 )}
                 {summary.rating !== undefined &&
@@ -463,32 +465,32 @@ function CompleteScreen({
                 {summary.rating !== undefined &&
                     (personalBest === undefined || summary.rating > personalBest) && (
                         <Typography variant='h6' sx={{ fontWeight: 'bold', color: 'warning.main' }}>
-                            New Personal Best!
+                            {t('newPersonalBest')}
                         </Typography>
                     )}
                 {personalBest !== undefined && (
                     <Typography variant='body1' color='text.secondary'>
-                        Personal Best: {personalBest}
+                        {t('personalBest', { personalBest })}
                     </Typography>
                 )}
                 <StatRow
                     icon={<Target fontSize='small' />}
-                    label='Accuracy'
+                    label={t('accuracy')}
                     value={`${accuracy}% (${summary.correctCount}/${summary.totalQuestions})`}
                 />
                 <StatRow
                     icon={<Timer fontSize='small' />}
-                    label='Avg Response Time'
+                    label={t('avgResponseTime')}
                     value={`${avgTime}s`}
                 />
                 <StatRow
                     icon={<LocalFireDepartment fontSize='small' />}
-                    label='Best Streak'
+                    label={t('bestStreak')}
                     value={`${summary.bestStreak}`}
                 />
                 <StatRow
                     icon={<AccessTime fontSize='small' />}
-                    label='Total Time'
+                    label={t('totalTime')}
                     value={`${summary.totalTimeSeconds}s`}
                 />
             </Stack>
@@ -513,7 +515,7 @@ function CompleteScreen({
                             sx={{ flex: 1, textAlign: 'center' }}
                             color={q.userAnswer === q.correctAnswer ? 'success.main' : 'error.main'}
                         >
-                            {q.userAnswer === q.correctAnswer ? 'Correct' : 'Wrong'}
+                            {q.userAnswer === q.correctAnswer ? t('correct') : t('wrong')}
                         </Typography>
                         <Typography
                             color='text.secondary'
@@ -526,7 +528,7 @@ function CompleteScreen({
             </Stack>
 
             <Button variant='contained' size='large' onClick={onPlayAgain} sx={{ px: 6, py: 1.5 }}>
-                Play Again
+                {t('playAgain')}
             </Button>
         </Container>
     );

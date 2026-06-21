@@ -20,10 +20,12 @@ import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import UpsellPage from '@/upsell/UpsellPage';
 import { Badge, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import { GridPaginationModel } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import SearchFilters from './SearchFilters';
 
 const ListGamesPage = () => {
+    const t = useTranslations('games.list.listGamesPage');
     const isFreeTier = useFreeTier();
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [upsellAction, setUpsellAction] = useState('');
@@ -85,11 +87,7 @@ const ListGamesPage = () => {
             {isFreeTier && (
                 <>
                     <Stack alignItems='center' mb={5}>
-                        <UpsellAlert>
-                            To avoid unfair preparation against Dojo members, free-tier users have
-                            limited access to the Dojo Database. Upgrade your account to view the
-                            full Database.
-                        </UpsellAlert>
+                        <UpsellAlert>{t('freeTierAlert')}</UpsellAlert>
                     </Stack>
                     <UpsellDialog
                         open={upsellDialogOpen}
@@ -139,7 +137,7 @@ const ListGamesPage = () => {
                                 />
                             }
                         >
-                            Analyze a Game
+                            {t('analyzeGame')}
                         </Button>
 
                         <Divider />
@@ -158,7 +156,7 @@ const ListGamesPage = () => {
                                                 verticalAlign: 'middle',
                                             }}
                                         />
-                                        Sensei Game Review Queue
+                                        {t('senseiReviewQueue')}
                                     </Link>
                                 </Typography>
 
@@ -200,7 +198,7 @@ const ListGamesPage = () => {
                                             verticalAlign: 'middle',
                                         }}
                                     />
-                                    Download full database (updated daily)
+                                    {t('downloadDatabase')}
                                 </Link>
                             </Typography>
                         </Stack>

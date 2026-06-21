@@ -1,7 +1,9 @@
 import { Chess, Event, EventType } from '@jackstenglein/chess';
-import { Grid, Paper } from '@mui/material';
+import { Box, Grid, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../PgnBoard';
+import { InlineNotationSetting } from '../boardTools/underboard/settings/ViewerSettings';
 import MoveDisplay from './MoveDisplay';
 
 interface VariationProps {
@@ -11,6 +13,10 @@ interface VariationProps {
 const Variation: React.FC<VariationProps> = ({ handleScroll }) => {
     const { chess, solitaire } = useChess();
     const [, setForceRender] = useState(0);
+    const [inlineNotation] = useLocalStorage<boolean>(
+        InlineNotationSetting.key,
+        InlineNotationSetting.default,
+    );
 
     useEffect(() => {
         if (chess) {
@@ -48,11 +54,28 @@ const Variation: React.FC<VariationProps> = ({ handleScroll }) => {
 
     return (
         <Paper sx={{ boxShadow: 'none' }}>
-            <Grid container>
-                {moves?.map((move) => {
-                    return <MoveDisplay move={move} handleScroll={handleScroll} key={move.ply} />;
-                })}
-            </Grid>
+            {inlineNotation ? (
+                <Box sx={{ p: 1, lineHeight: 1.8 }}>
+                    {moves?.map((move) => {
+                        return (
+                            <MoveDisplay
+                                move={move}
+                                handleScroll={handleScroll}
+                                key={move.ply}
+                                forceInline={true}
+                            />
+                        );
+                    })}
+                </Box>
+            ) : (
+                <Grid container>
+                    {moves?.map((move) => {
+                        return (
+                            <MoveDisplay move={move} handleScroll={handleScroll} key={move.ply} />
+                        );
+                    })}
+                </Grid>
+            )}
         </Paper>
     );
 };

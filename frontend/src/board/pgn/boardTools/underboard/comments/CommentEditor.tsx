@@ -6,6 +6,7 @@ import useGame from '@/context/useGame';
 import { PositionComment } from '@/database/game';
 import { Send } from '@mui/icons-material';
 import { CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { isUnsavedVariation, saveSuggestedVariation } from './suggestVariation';
 
@@ -15,6 +16,7 @@ export interface CommentEditorProps {
 }
 
 const CommentEditor: React.FC<CommentEditorProps> = ({ focusEditor, setFocusEditor }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const { user } = useAuth();
     const api = useApi();
     const [comment, setComment] = useState('');
@@ -90,18 +92,17 @@ const CommentEditor: React.FC<CommentEditorProps> = ({ focusEditor, setFocusEdit
         void onSubmit();
     };
 
-    const move = chess?.currentMove();
+    const currentMove = chess?.currentMove();
+    const move = currentMove
+        ? `${currentMove.ply % 2 ? `${Math.floor(currentMove.ply / 2) + 1}.` : `${currentMove.ply / 2}...`} ${currentMove.san}`
+        : t('startingPosition');
 
     return (
         <Stack spacing={1} direction='row' alignItems='end' px={2}>
             <TextField
                 inputRef={textFieldRef}
                 id={BlockBoardKeyboardShortcuts}
-                placeholder={`Comment on ${
-                    move
-                        ? `${move.ply % 2 ? `${Math.floor(move.ply / 2) + 1}.` : `${move.ply / 2}...`} ${move.san}`
-                        : 'Starting Position'
-                }`}
+                placeholder={t('commentPlaceholder', { move })}
                 fullWidth
                 multiline
                 value={comment}
@@ -113,7 +114,7 @@ const CommentEditor: React.FC<CommentEditorProps> = ({ focusEditor, setFocusEdit
             {request.isLoading() ? (
                 <CircularProgress size={40} />
             ) : (
-                <Tooltip title='Post Comment. Tip: you can also use shift+enter while typing.'>
+                <Tooltip title={t('postCommentTooltip')}>
                     <div>
                         <IconButton
                             disabled={comment.trim().length === 0}

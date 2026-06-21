@@ -6,6 +6,7 @@ import { LocalizationProvider } from '@/components/mui/LocalizationProvider';
 import Navbar from '@/components/navigation/navbar/Navbar';
 import { TimerContextProvider } from '@/components/timer/TimerContext';
 import ThemeProvider from '@/style/ThemeProvider';
+import { TranslationProvider } from '@/translation/TranslationProvider';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -17,12 +18,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <RequireProfile />
 
                         <CacheProvider>
-                            <LocalizationProvider>
-                                <TimerContextProvider>
-                                    <Navbar />
-                                    {children}
-                                </TimerContextProvider>
-                            </LocalizationProvider>
+                            <TranslationProvider>
+                                <LocalizationProvider>
+                                    <TimerContextProvider>
+                                        <Navbar />
+                                        {children}
+                                    </TimerContextProvider>
+                                </LocalizationProvider>
+                            </TranslationProvider>
                         </CacheProvider>
                     </ApiProvider>
                 </AuthProvider>

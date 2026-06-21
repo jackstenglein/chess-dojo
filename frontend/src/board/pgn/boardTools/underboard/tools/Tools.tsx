@@ -19,6 +19,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -27,6 +28,7 @@ import { useLocalStorage } from 'usehooks-ts';
  * contains only the solitaire chess controls.
  */
 export function Tools() {
+    const t = useTranslations('analysisBoard.underboard.tools');
     const { chess, solitaire } = useChess();
     const [error, setError] = useState('');
     const [correctSound, setCorrectSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
@@ -34,11 +36,11 @@ export function Tools() {
 
     const onStartFromMove = () => {
         if (chess?.currentMove() === chess?.lastMove()) {
-            setError('Cannot start from the last move');
+            setError(t('cannotStartLastMoveError'));
             return;
         }
         if (!chess?.isInMainline()) {
-            setError('Cannot start from a variation');
+            setError(t('cannotStartVariationError'));
             return;
         }
         solitaire?.start(chess.currentMove());
@@ -53,28 +55,37 @@ export function Tools() {
             </Snackbar>
 
             <Stack>
-                <Typography variant='h6'>Solitaire Chess (Guess the Move)</Typography>
+                <Typography variant='h6'>{t('solitaireChessTitle')}</Typography>
                 <Divider />
-                <Typography mt={1}>
-                    Test your understanding (or memory) of this game by guessing the moves. Starting
-                    this mode will hide the PGN text until you correctly pick the next move.
-                </Typography>
+                <Typography mt={1}>{t('solitaireChessDescription')}</Typography>
 
                 <FormControl sx={{ mt: 2 }} disabled={solitaire?.enabled}>
-                    <FormLabel>Play As</FormLabel>
+                    <FormLabel>{t('playAsLabel')}</FormLabel>
                     <RadioGroup
                         row
                         value={solitaire?.playAs}
                         onChange={(e) => solitaire?.setPlayAs(e.target.value as PlayAs)}
                     >
-                        <FormControlLabel value='both' control={<Radio />} label='Both' />
-                        <FormControlLabel value='white' control={<Radio />} label='White' />
-                        <FormControlLabel value='black' control={<Radio />} label='Black' />
+                        <FormControlLabel
+                            value='both'
+                            control={<Radio />}
+                            label={t('bothOption')}
+                        />
+                        <FormControlLabel
+                            value='white'
+                            control={<Radio />}
+                            label={t('whiteOption')}
+                        />
+                        <FormControlLabel
+                            value='black'
+                            control={<Radio />}
+                            label={t('blackOption')}
+                        />
                     </RadioGroup>
                 </FormControl>
 
                 <FormControlLabel
-                    label='Add incorrect guesses to PGN'
+                    label={t('addWrongMovesCheckbox')}
                     control={
                         <Checkbox
                             checked={solitaire?.addWrongMoves}
@@ -91,7 +102,7 @@ export function Tools() {
                             onChange={(e) => setCorrectSound(e.target.checked)}
                         />
                     }
-                    label='Play sound on correct move'
+                    label={t('correctSoundCheckbox')}
                 />
 
                 <FormControlLabel
@@ -101,17 +112,19 @@ export function Tools() {
                             onChange={(e) => setIncorrectSound(e.target.checked)}
                         />
                     }
-                    label='Play sound on incorrect move'
+                    label={t('incorrectSoundCheckbox')}
                 />
 
                 {!solitaire?.enabled ? (
                     <Stack direction='row' gap={1} flexWrap='wrap' mt={2}>
-                        <Button onClick={() => solitaire?.start(null)}>Start from Beginning</Button>
-                        <Button onClick={onStartFromMove}>Start from Current Move</Button>
+                        <Button onClick={() => solitaire?.start(null)}>
+                            {t('startFromBeginningButton')}
+                        </Button>
+                        <Button onClick={onStartFromMove}>{t('startFromCurrentMoveButton')}</Button>
                     </Stack>
                 ) : (
                     <Button onClick={solitaire.stop} sx={{ mt: 2 }}>
-                        Exit Solitaire Mode
+                        {t('exitSolitaireModeButton')}
                     </Button>
                 )}
             </Stack>

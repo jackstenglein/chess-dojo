@@ -1,6 +1,7 @@
 import { fontFamily } from '@/style/font';
 import { ArrowForward, Close } from '@mui/icons-material';
 import { Box, Button, Grid, Link, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { BackgroundImageContainer } from './BackgroundImage';
 import { BulletPoint } from './BulletPoint';
@@ -10,6 +11,8 @@ import { JoinDojoButton } from './JoinDojoButton';
 import backgroundImage from './pricing-background.webp';
 
 export function Pricing() {
+    const t = useTranslations('landing');
+
     return (
         <BackgroundImageContainer
             src={backgroundImage}
@@ -25,7 +28,7 @@ export function Pricing() {
                     lineHeight='1.1875rem'
                     letterSpacing='11%'
                 >
-                    Start Getting Better at Chess Today
+                    {t('pricing.cta')}
                 </Typography>
 
                 <Typography
@@ -36,11 +39,10 @@ export function Pricing() {
                         textAlign: 'center',
                     }}
                 >
-                    We've done the hard work putting
-                    <br />
-                    together a comprehensive training plan.
-                    <br />
-                    <span style={{ fontWeight: '600' }}>You just need to follow it.</span>
+                    {t.rich('pricing.heading', {
+                        br: () => <br />,
+                        bold: (chunks) => <span style={{ fontWeight: '600' }}>{chunks}</span>,
+                    })}
                 </Typography>
             </Stack>
 
@@ -53,6 +55,7 @@ export function Pricing() {
 }
 
 function MembershipSection() {
+    const t = useTranslations('landing');
     const [timeframe, setTimeframe] = useState<'yearly' | 'monthly'>('yearly');
 
     return (
@@ -82,7 +85,7 @@ function MembershipSection() {
                             lineHeight: { xs: '2.5rem', md: '3.375rem' },
                         }}
                     >
-                        ChessDojo Membership
+                        {t('pricing.membershipTitle')}
                     </Typography>
                     <Typography
                         sx={{
@@ -92,7 +95,7 @@ function MembershipSection() {
                             color: 'rgba(255, 255, 255, 0.9)',
                         }}
                     >
-                        Select between monthly and annual pricing options
+                        {t('pricing.membershipSubtitle')}
                     </Typography>
                 </Stack>
 
@@ -107,7 +110,7 @@ function MembershipSection() {
                             letterSpacing: '0%',
                         }}
                     >
-                        $
+                        {t('pricing.currencySymbol')}
                         <Box
                             component='span'
                             sx={{ fontWeight: '300', fontSize: { xs: '3rem', md: '5.125rem' } }}
@@ -126,15 +129,18 @@ function MembershipSection() {
                             textAlign: 'right',
                         }}
                     >
-                        Each {timeframe === 'yearly' ? 'Year' : 'Month'}
+                        {t(timeframe === 'yearly' ? 'pricing.eachYear' : 'pricing.eachMonth')}
                     </Typography>
                 </Stack>
             </Stack>
 
             <Grid container sx={{ mt: '3.75rem' }} spacing='1.375rem'>
-                {membershipBulletPoints.map((bp) => (
-                    <Grid key={bp.title} size={{ xs: 6, md: 4 }}>
-                        <BulletPoint {...bp} icon={<ArrowForward color='dojoOrange' />} />
+                {membershipBulletPoints.map(({ key }) => (
+                    <Grid key={key} size={{ xs: 6, md: 4 }}>
+                        <BulletPoint
+                            title={t(`membership.${key}`)}
+                            icon={<ArrowForward color='dojoOrange' />}
+                        />
                     </Grid>
                 ))}
             </Grid>
@@ -162,7 +168,7 @@ function MembershipSection() {
                         color='dojoOrange'
                         onClick={() => setTimeframe('yearly')}
                     >
-                        Annual
+                        {t('pricing.annual')}
                     </Button>
 
                     <Button
@@ -178,7 +184,7 @@ function MembershipSection() {
                         color='dojoOrange'
                         onClick={() => setTimeframe('monthly')}
                     >
-                        Monthly
+                        {t('pricing.monthly')}
                     </Button>
                 </Stack>
             </Stack>
@@ -187,6 +193,8 @@ function MembershipSection() {
 }
 
 function FreeSection() {
+    const t = useTranslations('landing');
+
     return (
         <Stack
             width={{ xs: 1, md: 0.83 }}
@@ -212,7 +220,7 @@ function FreeSection() {
                         lineHeight: { xs: '2.5rem', md: '2rem' },
                     }}
                 >
-                    Free Membership
+                    {t('pricing.freeTitle')}
                 </Typography>
                 <Typography
                     sx={{
@@ -222,15 +230,15 @@ function FreeSection() {
                         color: 'rgba(255, 255, 255, 0.9)',
                     }}
                 >
-                    Access to basic training plans and a limited game database
+                    {t('pricing.freeSubtitle')}
                 </Typography>
             </Stack>
 
             <Grid container sx={{ mt: '1.875rem' }} spacing='1.375rem'>
                 {freeBulletPoints.map((bp) => (
-                    <Grid key={bp.title} size={{ xs: 6, md: 4 }}>
+                    <Grid key={bp.key} size={{ xs: 6, md: 4 }}>
                         <BulletPoint
-                            title={bp.title}
+                            title={bp.excluded ? t(`membership.${bp.key}`) : t(`free.${bp.key}`)}
                             icon={
                                 bp.excluded ? (
                                     <Close sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
@@ -278,7 +286,7 @@ function FreeSection() {
                 }}
                 color='darkBlue'
             >
-                Sign Up For Free
+                {t('pricing.signUpFree')}
             </Button>
         </Stack>
     );

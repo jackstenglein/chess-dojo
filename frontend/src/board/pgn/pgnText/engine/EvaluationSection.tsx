@@ -6,6 +6,7 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import { List, Paper, Popper, Tooltip } from '@mui/material';
 import { Chess } from 'chess.js';
 import { Key } from 'chessground/types';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ChessContext, useChess } from '../../PgnBoard';
@@ -115,12 +116,6 @@ export const EvaluationSection = ({
     );
 };
 
-const cloudIcon = (
-    <Tooltip title='Chess Cloud Database' disableInteractive>
-        <CloudIcon sx={{ fontSize: '0.75rem' }} />
-    </Tooltip>
-);
-
 function CloudEvalSection({
     pv,
     loading,
@@ -132,6 +127,7 @@ function CloudEvalSection({
     engineInfo: EngineInfo;
     enabled: boolean;
 }) {
+    const t = useTranslations('analysisBoard.engine');
     const { chess } = useChess();
     const currentFen = chess?.fen() ?? '';
 
@@ -153,6 +149,12 @@ function CloudEvalSection({
               multiPv: 1,
               resultPercentages: undefined,
           };
+
+    const cloudIcon = (
+        <Tooltip title={t('cloudDbTooltip')} disableInteractive>
+            <CloudIcon sx={{ fontSize: '0.75rem' }} />
+        </Tooltip>
+    );
 
     return (
         <LineEvaluation engineInfo={engineInfo} line={line} icon={cloudIcon} enabled={enabled} />

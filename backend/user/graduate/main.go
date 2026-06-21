@@ -155,12 +155,14 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		log.Debugf("Failed to create timeline entry: %v", err)
 	}
 
+	cohortVersion := "2026"
 	update := database.UserUpdate{
 		NumberOfGraduations: &numberOfGraduations,
 		LastGraduatedAt:     &createdAt,
 		DojoCohort:          &nextCohort,
 		PreviousCohort:      &user.DojoCohort,
 		GraduationCohorts:   &graduationCohorts,
+		CohortVersion:       &cohortVersion,
 	}
 	user, err = repository.UpdateUser(info.Username, &update)
 	if err != nil {

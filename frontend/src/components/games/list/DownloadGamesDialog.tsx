@@ -21,6 +21,7 @@ import {
     FormLabel,
     Stack,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 const MAX_RETRIES = 40;
@@ -34,6 +35,7 @@ export function DownloadGamesDialog({
     games: { cohort: string; id: string }[];
     onClose: () => void;
 }) {
+    const t = useTranslations('games.downloadDialog');
     const {
         skipComments,
         setSkipComments,
@@ -79,9 +81,9 @@ export function DownloadGamesDialog({
                     });
             }, delay);
         } else if (retries >= MAX_RETRIES) {
-            onFailure('Request timed out');
+            onFailure(t('requestTimedOut'));
         }
-    }, [api, onFailure, startRequest.data, onSuccess, retries, setRetries, delay, setDelay]);
+    }, [api, onFailure, startRequest.data, onSuccess, retries, setRetries, delay, setDelay, t]);
 
     const onDownload = async () => {
         try {
@@ -109,35 +111,30 @@ export function DownloadGamesDialog({
     if (startRequest.data) {
         return (
             <Dialog open onClose={checkRequest.data?.completedAt ? onClose : undefined} fullWidth>
-                <DialogTitle>Download PGN?</DialogTitle>
+                <DialogTitle>{t('title')}</DialogTitle>
                 {checkRequest.data?.downloadUrl ? (
                     <>
                         <DialogContent>
                             <DialogContentText>
-                                Export completed for {checkRequest.data.total} games. If your
-                                download did not start automatically, please click the download
-                                button below.
+                                {t('exportCompleted', { total: checkRequest.data.total })}
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
                             <Button href={checkRequest.data.downloadUrl} target='_blank'>
-                                Download
+                                {t('download')}
                             </Button>
-                            <Button onClick={onClose}>Close</Button>
+                            <Button onClick={onClose}>{t('close')}</Button>
                         </DialogActions>
                     </>
                 ) : checkRequest.data?.status !== exportDirectoryRunStatus.enum.FAILED ? (
                     <DialogContent>
-                        <DialogContentText sx={{ mb: 1 }}>
-                            Exporting PGN. For a large number of games, this may take a few
-                            minutes...
-                        </DialogContentText>
+                        <DialogContentText sx={{ mb: 1 }}>{t('exporting')}</DialogContentText>
                         {checkRequest.data?.total ? (
                             <ScoreboardProgress
                                 value={checkRequest.data.progress}
                                 max={checkRequest.data.total}
                                 min={0}
-                                suffix='games'
+                                suffix={t('games')}
                             />
                         ) : (
                             <Stack alignItems='center'>
@@ -148,16 +145,13 @@ export function DownloadGamesDialog({
                 ) : (
                     <>
                         <DialogContent>
-                            <DialogContentText>
-                                Failed to export games. Please reach out to the support team for
-                                help.
-                            </DialogContentText>
+                            <DialogContentText>{t('exportFailed')}</DialogContentText>
                         </DialogContent>
                         <DialogActions>
                             <Button href='/help' component={Link}>
-                                Help
+                                {t('help')}
                             </Button>
-                            <Button onClick={onClose}>Close</Button>
+                            <Button onClick={onClose}>{t('close')}</Button>
                         </DialogActions>
                     </>
                 )}
@@ -168,7 +162,7 @@ export function DownloadGamesDialog({
 
     return (
         <Dialog open onClose={startRequest.isLoading() ? undefined : onClose} fullWidth>
-            <DialogTitle>Download PGN?</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
             <DialogContent>
                 {Boolean(directories?.length) && (
                     <Stack sx={{ mb: 3 }}>
@@ -179,12 +173,12 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setRecursive(e.target.checked)}
                                 />
                             }
-                            label='Include games from nested subfolders'
+                            label={t('includeSubfolders')}
                         />
                     </Stack>
                 )}
 
-                <FormLabel>Options</FormLabel>
+                <FormLabel>{t('options')}</FormLabel>
                 <Stack direction='row' flexWrap='wrap' columnGap={1} mt={1}>
                     <FormGroup sx={{ flexGrow: 1, width: { xs: 1, sm: 'unset' } }}>
                         <FormControlLabel
@@ -194,7 +188,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipComments(!e.target.checked)}
                                 />
                             }
-                            label='Comments'
+                            label={t('comments')}
                         />
                         <FormControlLabel
                             control={
@@ -203,7 +197,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipNags(!e.target.checked)}
                                 />
                             }
-                            label='Glyphs (!, !?, etc)'
+                            label={t('glyphs')}
                         />
                         <FormControlLabel
                             control={
@@ -212,7 +206,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipDrawables(!e.target.checked)}
                                 />
                             }
-                            label='Arrows/Highlights'
+                            label={t('arrowsHighlights')}
                         />
                     </FormGroup>
 
@@ -224,7 +218,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipVariations(!e.target.checked)}
                                 />
                             }
-                            label='Variations'
+                            label={t('variations')}
                         />
                         <FormControlLabel
                             control={
@@ -233,7 +227,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipNullMoves(!e.target.checked)}
                                 />
                             }
-                            label='Null Moves'
+                            label={t('nullMoves')}
                         />
                     </FormGroup>
 
@@ -245,7 +239,7 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipHeader(!e.target.checked)}
                                 />
                             }
-                            label='Tags'
+                            label={t('tags')}
                         />
 
                         <FormControlLabel
@@ -255,17 +249,17 @@ export function DownloadGamesDialog({
                                     onChange={(e) => setSkipClocks(!e.target.checked)}
                                 />
                             }
-                            label='Clock Times'
+                            label={t('clockTimes')}
                         />
                     </FormGroup>
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button disabled={startRequest.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button loading={startRequest.isLoading()} onClick={onDownload}>
-                    Download
+                    {t('download')}
                 </Button>
             </DialogActions>
 

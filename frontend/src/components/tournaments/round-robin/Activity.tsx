@@ -16,6 +16,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { countTotalGames } from './Stats';
 
 export interface GameActivity {
@@ -110,6 +111,7 @@ export function getActivitySummary(
  * @param tournament The tournament to render the activities list for.
  */
 export function Activity({ tournament }: { tournament: RoundRobin }) {
+    const t = useTranslations('tournaments.roundRobin.activity');
     const now = new Date();
     const {
         activities,
@@ -125,7 +127,7 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
             <Stack alignItems='center' spacing={2} py={4}>
                 <CalendarMonth sx={{ fontSize: 60, color: 'text.secondary' }} />
                 <Typography textAlign='center' color='text.secondary'>
-                    No games submitted yet
+                    {t('noGamesSubmitted')}
                 </Typography>
             </Stack>
         );
@@ -136,27 +138,23 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <Card sx={{ flex: 1, p: 2 }}>
                     <Typography variant='body2' color='text.secondary'>
-                        Games Completed
+                        {t('gamesCompleted')}
                     </Typography>
                     <Typography variant='h4'>
                         {completedGames} / {totalPairings}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
-                        {completionRate}% complete
+                        {t('completePercent', { percent: completionRate })}
                     </Typography>
                 </Card>
 
                 {mostRecentDate && (
                     <Card sx={{ flex: 1, p: 2 }}>
                         <Typography variant='body2' color='text.secondary'>
-                            Last Game Submitted
+                            {t('lastGameSubmitted')}
                         </Typography>
                         <Typography variant='h4'>
-                            {daysSinceLastGame === 0
-                                ? 'Today'
-                                : daysSinceLastGame === 1
-                                  ? '1 day ago'
-                                  : `${daysSinceLastGame} days ago`}
+                            {t('lastGameTime', { days: daysSinceLastGame ?? 0 })}
                         </Typography>
                         <Typography variant='body2' color='text.secondary'>
                             {mostRecentDate.toLocaleDateString()}
@@ -170,19 +168,19 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography fontWeight='bold'>Date</Typography>
+                                <Typography fontWeight='bold'>{t('columnDate')}</Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>Round</Typography>
+                                <Typography fontWeight='bold'>{t('columnRound')}</Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography fontWeight='bold'>White</Typography>
+                                <Typography fontWeight='bold'>{t('columnWhite')}</Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography fontWeight='bold'>Black</Typography>
+                                <Typography fontWeight='bold'>{t('columnBlack')}</Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>Result</Typography>
+                                <Typography fontWeight='bold'>{t('columnResult')}</Typography>
                             </TableCell>
                         </TableRow>
                     </TableHead>
@@ -246,7 +244,7 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 color='text.secondary'
                                                 sx={{ ml: 1 }}
                                             >
-                                                (Withdrawn)
+                                                {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
                                     </TableCell>
@@ -261,7 +259,7 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 color='text.secondary'
                                                 sx={{ ml: 1 }}
                                             >
-                                                (Withdrawn)
+                                                {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
                                     </TableCell>
@@ -285,8 +283,7 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                     }}
                 >
                     <Typography variant='body2' fontWeight='bold'>
-                        ⚠️ Tournament may have stalled - No games submitted in {daysSinceLastGame}{' '}
-                        days
+                        {t('stalledWarning', { days: daysSinceLastGame ?? 0 })}
                     </Typography>
                 </Box>
             )}

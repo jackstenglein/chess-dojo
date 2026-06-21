@@ -4,6 +4,7 @@ import Avatar from '@/profile/Avatar';
 import SendIcon from '@mui/icons-material/Send';
 import { CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { AxiosResponse } from 'axios';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface CommentEditorProps<T, CreateFunctionProps> {
@@ -17,6 +18,7 @@ interface CommentEditorProps<T, CreateFunctionProps> {
 function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, CreateFunctionProps>) {
     const { createFunctionProps, createFunction, onSuccess, label, tooltip } = props;
 
+    const t = useTranslations('comments');
     const { user } = useAuth();
     const [comment, setComment] = useState('');
     const request = useRequest();
@@ -45,7 +47,7 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
 
             <Avatar user={user} size={40} />
             <TextField
-                label={label || 'Add a comment...'}
+                label={label || t('addComment')}
                 fullWidth
                 multiline
                 value={comment}
@@ -58,7 +60,7 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
                     <CircularProgress size={40} />
                 </div>
             ) : (
-                <Tooltip title={tooltip || 'Post Comment'}>
+                <Tooltip title={tooltip || t('postComment')}>
                     <div style={{ alignSelf: 'end' }}>
                         <IconButton
                             onClick={onSubmit}

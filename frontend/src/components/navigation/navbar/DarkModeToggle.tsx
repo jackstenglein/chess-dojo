@@ -2,12 +2,14 @@ import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
 import NightlightIcon from '@mui/icons-material/Nightlight';
 import { FormControlLabel, ListItemIcon, MenuItem, Switch, useColorScheme } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const DarkModeToggle = () => {
     const auth = useAuth();
     const user = auth.user;
     const { mode, setMode } = useColorScheme();
     const api = useApi();
+    const t = useTranslations('navbar');
 
     if (!user) {
         return null;
@@ -34,7 +36,7 @@ const DarkModeToggle = () => {
                             onChange={toggleColorMode}
                         />
                     }
-                    label='Dark Mode'
+                    label={t('darkMode')}
                     labelPlacement='start'
                     sx={{ ml: 0 }}
                 />

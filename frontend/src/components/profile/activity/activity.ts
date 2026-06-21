@@ -2,8 +2,6 @@ import {
     CustomTask,
     getCurrentCount,
     getCurrentScore,
-    getTotalCount,
-    getUnitScore,
     isRequirement,
     Requirement,
     RequirementCategory,
@@ -198,17 +196,7 @@ function getTimeframeScoreChartData(
             break;
         }
 
-        let score = 0;
-        if (requirement.totalScore) {
-            if (entry.newCount === getTotalCount(entry.cohort, requirement)) {
-                score = requirement.totalScore;
-            }
-        } else {
-            const unitScore = getUnitScore(entry.cohort, requirement);
-            score =
-                Math.max(entry.newCount - entry.previousCount - requirement.startCount, 0) *
-                unitScore;
-        }
+        const score = entry.dojoPoints;
 
         if (data[requirement.category]) {
             data[requirement.category].value += score;
@@ -268,17 +256,7 @@ function getCategoryScoreChartData(
             break;
         }
 
-        let score = 0;
-        if (requirement.totalScore) {
-            if (entry.newCount === getTotalCount(entry.cohort, requirement)) {
-                score = requirement.totalScore;
-            }
-        } else {
-            const unitScore = getUnitScore(entry.cohort, requirement);
-            score =
-                Math.max(entry.newCount - entry.previousCount - requirement.startCount, 0) *
-                unitScore;
-        }
+        const score = entry.dojoPoints;
         if (score === 0) {
             continue;
         }

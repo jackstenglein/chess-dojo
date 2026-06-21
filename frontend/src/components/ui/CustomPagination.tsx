@@ -5,6 +5,7 @@ import { TablePagination } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { PaginationPropsOverrides } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 
 interface CustomPaginationProps {
     page: number;
@@ -26,6 +27,7 @@ export const CustomPagination: React.FC<CustomPaginationProps & PaginationPropsO
     onNextPage,
     ...rest
 }) => {
+    const t = useTranslations('ui.pagination');
     const isFreeTier = useFreeTier();
 
     return (
@@ -47,15 +49,17 @@ export const CustomPagination: React.FC<CustomPaginationProps & PaginationPropsO
                 to: number;
                 count: number;
             }) => {
-                return `${from}–${to} of ${count}${hasMore ? '+' : ''}`;
+                return hasMore
+                    ? t('displayedRowsWithMore', { from, to, count })
+                    : t('displayedRowsExact', { from, to, count });
             }}
             slots={{
                 actions: {
                     previousButton: () => {
                         return (
                             <IconButton
-                                aria-label='Go to previous page'
-                                title='Go to previous page'
+                                aria-label={t('previousPageLabel')}
+                                title={t('previousPageLabel')}
                                 onClick={onPrevPage}
                                 disabled={page === 0}
                             >
@@ -65,17 +69,11 @@ export const CustomPagination: React.FC<CustomPaginationProps & PaginationPropsO
                     },
                     nextButton: () => {
                         return (
-                            <Tooltip
-                                title={
-                                    isFreeTier
-                                        ? 'Free-tier users can only access the first page of results'
-                                        : ''
-                                }
-                            >
+                            <Tooltip title={isFreeTier ? t('freeTierLimit') : ''}>
                                 <span>
                                     <IconButton
-                                        aria-label='Go to next page'
-                                        title='Go to next page'
+                                        aria-label={t('nextPageLabel')}
+                                        title={t('nextPageLabel')}
                                         onClick={onNextPage}
                                         disabled={
                                             isFreeTier ||

@@ -27,6 +27,7 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import { Theme, styled } from '@mui/material/styles';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import TimezoneFilter from './TimezoneFilter';
@@ -285,6 +286,8 @@ interface CalendarFiltersProps {
 
 export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => {
     const auth = useAuth();
+    const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const [expanded, setExpanded] = useState<string | boolean>(false);
     const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
@@ -308,12 +311,14 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
         };
 
     const onChangeType = (newTypes: string[]) => {
-        const addedTypes = newTypes.filter((t) => !filters.types.includes(t as AvailabilityType));
+        const addedTypes = newTypes.filter(
+            (type) => !filters.types.includes(type as AvailabilityType),
+        );
         let finalTypes = [];
         if (addedTypes.includes(AvailabilityType.AllTypes)) {
             finalTypes = [AvailabilityType.AllTypes];
         } else {
-            finalTypes = newTypes.filter((t) => t !== AvailabilityType.AllTypes);
+            finalTypes = newTypes.filter((type) => type !== AvailabilityType.AllTypes);
         }
 
         filters.setTypes(finalTypes as AvailabilityType[]);
@@ -377,7 +382,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                         my: 'calc(2 * var(--mui-spacing)) !important',
                     }}
                 >
-                    View {meetingCount} upcoming meeting{meetingCount !== 1 ? 's' : ''}
+                    {t('viewMeetings', { count: meetingCount })}
                 </Link>
             )}
 
@@ -391,7 +396,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                         forceExpansion={forceExpansion}
                     >
                         <Typography variant='h6' color='text.secondary'>
-                            Filters
+                            {t('filtersTitle')}
                         </Typography>
                     </AccordionSummary>
                 )}
@@ -405,7 +410,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                             sx={{ alignSelf: 'start' }}
                             startIcon={<Icon name='reset' />}
                         >
-                            Reset Filters
+                            {t('resetFilters')}
                         </Button>
 
                         <Stack data-testid='calendar-filters-selectors'>
@@ -419,17 +424,17 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                     }}
                                     fontSize='medium'
                                 />
-                                My Dojo Calendar
+                                {t('myDojoCalendar')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.sessions}
                                 setSelected={onChangeSessions}
-                                options={Object.values(CalendarSessionType).map((t) => ({
-                                    value: t,
-                                    label: getDisplaySessionString(t),
-                                    icon: <Icon name={t} color={getSessionTypeColor(t)} />,
+                                options={Object.values(CalendarSessionType).map((type) => ({
+                                    value: type,
+                                    label: getDisplaySessionString(type, labelT),
+                                    icon: <Icon name={type} color={getSessionTypeColor(type)} />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('none')}
                                 size='small'
                                 data-testid='my-dojo-calendar'
                             />
@@ -446,17 +451,17 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                     }}
                                     fontSize='medium'
                                 />
-                                DojoLiga Tournaments
+                                {t('dojoLigaTournaments')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.tournamentTimeControls}
                                 setSelected={onChangeTournamentTimeControls}
-                                options={Object.values(TimeControlType).map((t) => ({
-                                    value: t,
-                                    label: displayTimeControlType(t),
-                                    icon: <Icon name={t} color='liga' />,
+                                options={Object.values(TimeControlType).map((type) => ({
+                                    value: type,
+                                    label: displayTimeControlType(type, labelT),
+                                    icon: <Icon name={type} color='liga' />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('none')}
                                 size='small'
                                 data-testid='dojoliga-tournaments'
                             />
@@ -473,17 +478,17 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                     }}
                                     fontSize='medium'
                                 />
-                                Bookable Meetings
+                                {t('bookableMeetings')}
                             </Typography>
                             <MultipleSelectChip
                                 selected={filters.types}
                                 setSelected={onChangeType}
-                                options={Object.values(AvailabilityType).map((t) => ({
-                                    value: t,
-                                    label: getDisplayString(t),
-                                    icon: <Icon name={t} color='book' />,
+                                options={Object.values(AvailabilityType).map((type) => ({
+                                    value: type,
+                                    label: getDisplayString(type, labelT),
+                                    icon: <Icon name={type} color='book' />,
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('none')}
                                 size='small'
                             />
                         </Stack>
@@ -499,7 +504,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                     }}
                                     fontSize='medium'
                                 />
-                                Cohorts
+                                {t('cohorts')}
                             </Typography>
                             <MultipleSelectChip
                                 data-testid='cohort-selector'
@@ -507,7 +512,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                 setSelected={onChangeCohort}
                                 options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
                                     value: opt,
-                                    label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+                                    label: opt === ALL_COHORTS ? t('allCohorts') : opt,
                                     icon: (
                                         <CohortIcon
                                             cohort={opt}
@@ -518,7 +523,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                         />
                                     ),
                                 }))}
-                                displayEmpty='None'
+                                displayEmpty={t('none')}
                                 sx={{ mb: 3, width: 1 }}
                                 size='small'
                             />

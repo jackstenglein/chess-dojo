@@ -18,6 +18,7 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Bio from './Bio';
 import CoachChip from './CoachChip';
@@ -41,6 +42,7 @@ export function UserCard({
     user: User;
     setFollowerCount: (count: number) => void;
 }) {
+    const t = useTranslations('profile.info.userCard');
     const { user: viewer, updateUser } = useAuth();
     const isOwner = viewer?.username === user.username;
     const followRequest = useRequest<FollowerEntry>();
@@ -101,7 +103,7 @@ export function UserCard({
                     top: 'calc(0.5 * var(--mui-spacing))',
                 }}
             >
-                <Tooltip title='Copy Profile URL' onClick={onCopyUrl}>
+                <Tooltip title={t('copyProfileUrl')} onClick={onCopyUrl}>
                     <IconButton>
                         {copied === 'url' ? (
                             <Check sx={{ color: 'text.secondary' }} />
@@ -114,13 +116,13 @@ export function UserCard({
                 </Tooltip>
 
                 {isOwner ? (
-                    <Tooltip title='Edit Profile and Settings'>
+                    <Tooltip title={t('editProfileAndSettings')}>
                         <IconButton id='edit-profile-button' component={Link} href='/profile/edit'>
                             <Settings sx={{ color: 'text.secondary' }} />
                         </IconButton>
                     </Tooltip>
                 ) : (
-                    <Tooltip title={followRequest.data ? 'Unfollow' : 'Follow'}>
+                    <Tooltip title={followRequest.data ? t('unfollow') : t('follow')}>
                         <IconButton onClick={onFollow} loading={followRequest.isLoading()}>
                             {followRequest.isLoading() ? (
                                 <CircularProgress size={24} />
@@ -144,7 +146,7 @@ export function UserCard({
                     <Stack direction='row' alignItems='center' spacing={1}>
                         <CohortIcon
                             cohort={user.dojoCohort}
-                            tooltip={`Member of the ${user.dojoCohort} cohort`}
+                            tooltip={t('memberOfCohort', { cohort: user.dojoCohort })}
                         />
                         <Typography variant='h5' color='text.secondary'>
                             {user.dojoCohort}
@@ -168,13 +170,13 @@ export function UserCard({
                         <CreatedAtChip createdAt={user.createdAt} />
                         <CountChip
                             count={user.followerCount}
-                            label='Followers'
-                            singularLabel='Follower'
+                            label={t('followers')}
+                            singularLabel={t('follower')}
                             link={`/profile/${user.username}/followers`}
                         />
                         <CountChip
                             count={user.followingCount}
-                            label='Following'
+                            label={t('following')}
                             link={`/profile/${user.username}/following`}
                         />
                     </Stack>

@@ -14,6 +14,7 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { CSSProperties, useMemo, useState } from 'react';
 
 const ReactionTypes = [
@@ -147,6 +148,7 @@ interface ReactionListProps {
 }
 
 const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdit }) => {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
     const api = useApi();
     const request = useRequest();
@@ -197,14 +199,14 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
         <>
             <RequestSnackbar request={request} />
 
-            <Tooltip title='Add Reaction'>
+            <Tooltip title={t('addReaction')}>
                 <IconButton color='primary' onClick={handleClick}>
                     <AddReactionIcon />
                 </IconButton>
             </Tooltip>
 
             {Object.entries(reactionMap).map(([type, reactors]) => (
-                <Tooltip key={type} title={`Reacted by ${reactors.join(', ')}`}>
+                <Tooltip key={type} title={t('reactedBy', { names: reactors.join(', ') })}>
                     <Button
                         variant={isReactor(user, reactions, type) ? 'contained' : 'outlined'}
                         onClick={() => onReact(type)}

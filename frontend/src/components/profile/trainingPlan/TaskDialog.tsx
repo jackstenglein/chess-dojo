@@ -19,6 +19,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@mui/icons-material';
 import {
     Box,
@@ -33,6 +34,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import CustomTaskEditor from './CustomTaskEditor';
 import { TaskDescription } from './TaskDescription';
@@ -52,8 +54,9 @@ interface TaskDialogProps {
     cohort: string;
 }
 
-export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
+export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskDialogProps) {
     const [view, setView] = useState(initialView);
+    const task = useTranslatedRequirement(rawTask) ?? rawTask;
     return (
         <Dialog
             open={open}
@@ -61,9 +64,11 @@ export function TaskDialog({ open, initialView, ...props }: TaskDialogProps) {
             maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
             fullWidth
         >
-            {view === TaskDialogView.Details && <DetailsDialog {...props} setView={setView} />}
+            {view === TaskDialogView.Details && (
+                <DetailsDialog {...props} task={task} setView={setView} />
+            )}
             {(view === TaskDialogView.Progress || view === TaskDialogView.History) && (
-                <ProgressDialog {...props} view={view} setView={setView} />
+                <ProgressDialog {...props} task={task} view={view} setView={setView} />
             )}
         </Dialog>
     );
@@ -75,6 +80,7 @@ type ProgressDialogProps = Omit<TaskDialogProps, 'open' | 'initialView'> & {
 };
 
 function ProgressDialog({ onClose, task, progress, cohort, view, setView }: ProgressDialogProps) {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
     const { user } = useAuth();
 
     const cohortOptions = task.counts[ALL_COHORTS]
@@ -98,11 +104,11 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
 
     let dialogTitle = '';
     if (view === TaskDialogView.History) {
-        dialogTitle = `${requirementName} History`;
+        dialogTitle = t('historyTitle', { name: requirementName });
     } else if (isNonDojo) {
-        dialogTitle = `Add time to ${requirementName}?`;
+        dialogTitle = t('addTimeTitle', { name: requirementName });
     } else {
-        dialogTitle = `Update ${requirementName}?`;
+        dialogTitle = t('updateTitle', { name: requirementName });
     }
 
     return (
@@ -130,6 +136,9 @@ type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort'> &
 };
 
 function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
+    const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { user } = useAuth();
     const { entries: timeline } = useTimelineContext();
     const [showEditor, setShowEditor] = useState(false);
@@ -186,7 +195,10 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
             ) {
                 return {
                     isBlocked: true,
-                    reason: `This task is locked until you complete ${blocker.category} - ${blocker.name}.`,
+                    reason: t('taskLockedUntil', {
+                        category: blocker.category,
+                        name: blocker.name,
+                    }),
                 };
             }
         }
@@ -222,7 +234,9 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         <Stack>
                             <Typography variant='h4'>{requirementName}</Typography>
                             <Typography variant='h5' color='text.secondary'>
-                                {task.category}
+                                {tCategory.has(task.category)
+                                    ? tCategory(task.category)
+                                    : task.category}
                             </Typography>
                         </Stack>
                     </ModalTitle>
@@ -230,25 +244,25 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     <Stack direction='row' gap={2} alignItems='center'>
                         {blocker.isBlocked ? (
                             <Tooltip title={blocker.reason}>
-                                <Chip icon={<Lock />} label='Locked' color='error' />
+                                <Chip icon={<Lock />} label={t('locked')} color='error' />
                             </Tooltip>
                         ) : (
                             isCompleted && (
-                                <Chip icon={<Check />} label='Completed' color='success' />
+                                <Chip icon={<Check />} label={t('completed')} color='success' />
                             )
                         )}
 
                         {!isRequirement(task) && task.owner === user?.username && (
                             <>
                                 <Button variant='contained' onClick={() => setShowEditor(true)}>
-                                    Edit Task
+                                    {t('editTask')}
                                 </Button>
                                 <Button
                                     variant='contained'
                                     color='error'
                                     onClick={() => setShowDeleter(true)}
                                 >
-                                    Delete Task
+                                    {t('deleteTask')}
                                 </Button>
 
                                 <CustomTaskEditor
@@ -316,7 +330,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                                 setView(TaskDialogView.Progress);
                             }}
                         >
-                            Pause Timer ({formatTime(timerSeconds)})
+                            {t('pauseTimer', { time: formatTime(timerSeconds) })}
                         </Button>
                     ) : (
                         <Button
@@ -329,29 +343,35 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     )}
                 </Box>
 
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={() => setView(TaskDialogView.Progress)}>Update Progress</Button>
-                <Button onClick={() => setView(TaskDialogView.History)}>Show History</Button>
+                <Button onClick={onClose}>{tCommon('cancel')}</Button>
+                <Button onClick={() => setView(TaskDialogView.Progress)}>
+                    {tCommon('updateProgress')}
+                </Button>
+                <Button onClick={() => setView(TaskDialogView.History)}>
+                    {tCommon('showHistory')}
+                </Button>
             </DialogActions>
         </>
     );
 }
 
-function dojoPointDescription(requirement: Requirement, cohort: string) {
+function dojoPointDescription(
+    requirement: Requirement,
+    cohort: string,
+    t: ReturnType<typeof useTranslations<'profile.trainingPlan.taskDialog'>>,
+) {
     if (requirement.totalScore) {
-        return `This task awards ${requirement.totalScore} Dojo Point
-                ${requirement.totalScore !== 1 ? 's' : ''} upon completion.`;
+        return t('dojoPointsTotal', { score: requirement.totalScore });
     }
 
     const unitScore = Math.round(100 * getUnitScore(cohort, requirement)) / 100;
 
     if (unitScore === 0) {
-        return 'This task awards no Dojo Points.';
+        return t('dojoPointsNone');
     }
 
     if (getTotalCount(cohort, requirement) === 1) {
-        return `This task awards ${unitScore} Dojo Point${unitScore !== 1 ? 's' : ''} upon
-                completion.`;
+        return t('dojoPointsTotal', { score: unitScore });
     }
 
     let unit = 'unit';
@@ -364,17 +384,16 @@ function dojoPointDescription(requirement: Requirement, cohort: string) {
         }
     }
 
-    return `This task awards ${unitScore} Dojo Point${
-        unitScore !== 1 ? 's' : ''
-    } per ${unit} completed.`;
+    return t('dojoPointsPerUnit', { score: unitScore, unit });
 }
 
 function DojoPointChip({ requirement, cohort }: { requirement: Requirement; cohort: string }) {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
     if (!isRequirement(requirement)) {
         return null;
     }
 
-    const description = dojoPointDescription(requirement, cohort);
+    const description = dojoPointDescription(requirement, cohort, t);
     let unitScore = getUnitScore(cohort, requirement);
     if (requirement.scoreboardDisplay === ScoreboardDisplay.Minutes) {
         unitScore *= 60;
@@ -386,11 +405,7 @@ function DojoPointChip({ requirement, cohort }: { requirement: Requirement; coho
 
     return (
         <Tooltip title={description}>
-            <Chip
-                color='secondary'
-                icon={<Scoreboard />}
-                label={`${score} point${score !== 1 ? 's' : ''}`}
-            />
+            <Chip color='secondary' icon={<Scoreboard />} label={t('pointsLabel', { score })} />
         </Tooltip>
     );
 }
@@ -402,14 +417,15 @@ function ExpirationChip({
     requirement: Requirement;
     progress?: RequirementProgress;
 }) {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
     if (!isRequirement(requirement)) {
         return null;
     }
 
     if (requirement.scoreboardDisplay === ScoreboardDisplay.Yearly) {
         return (
-            <Tooltip title='Activity logged on this task expires after 1 year'>
-                <Chip color='secondary' icon={<AccessAlarm />} label='1 year' />
+            <Tooltip title={t('expirationYearly')}>
+                <Chip color='secondary' icon={<AccessAlarm />} label={t('oneYear')} />
             </Tooltip>
         );
     }
@@ -424,20 +440,30 @@ function ExpirationChip({
     }
 
     const value = expirationYears >= 1 ? expirationYears : Math.round(expirationYears * 12);
+    const isYears = expirationYears >= 1;
 
-    let chipLabel = `${value} ${expirationYears >= 1 ? 'year' : 'month'}${value !== 1 ? 's' : ''}`;
-    let title = `Progress on this task expires after ${value} ${
-        expirationYears >= 1 ? 'year' : 'month'
-    }${value !== 1 ? 's' : ''}`;
-
-    // Add exact expiration date if progress exists
+    let formattedDate: string | undefined;
     if (progress?.updatedAt) {
         const expirationDate = new Date(progress.updatedAt);
         expirationDate.setDate(expirationDate.getDate() + requirement.expirationDays);
-        const formattedDate = expirationDate.toLocaleDateString();
-        chipLabel += ` (expires ${formattedDate})`;
-        title += ` (on ${formattedDate})`;
+        formattedDate = expirationDate.toLocaleDateString();
     }
+
+    const title = formattedDate
+        ? isYears
+            ? t('expirationYearsWithDate', { value, date: formattedDate })
+            : t('expirationMonthsWithDate', { value, date: formattedDate })
+        : isYears
+          ? t('expirationYears', { value })
+          : t('expirationMonths', { value });
+
+    const chipLabel = formattedDate
+        ? isYears
+            ? t('expirationYearsLabelWithDate', { value, date: formattedDate })
+            : t('expirationMonthsLabelWithDate', { value, date: formattedDate })
+        : isYears
+          ? t('expirationYearsLabel', { value })
+          : t('expirationMonthsLabel', { value });
 
     return (
         <Tooltip title={title}>
@@ -447,21 +473,22 @@ function ExpirationChip({
 }
 
 const RepeatChip = ({ requirement }: { requirement: Requirement }) => {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
     let title = '';
     let label = '';
 
     if (requirement.scoreboardDisplay === ScoreboardDisplay.Yearly) {
-        title = 'Progress on this task carries over to other cohorts';
-        label = 'Progress Carries Over';
+        title = t('repeatYearly');
+        label = t('progressCarriesOver');
     } else if (requirement.numberOfCohorts === -1) {
-        title = 'Progress on this task resets across each cohort';
-        label = 'Progress Resets';
+        title = t('repeatResets');
+        label = t('progressResets');
     } else if (requirement.numberOfCohorts === 1 || requirement.numberOfCohorts === 0) {
-        title = 'Progress on this task carries over to other cohorts';
-        label = 'Progress Carries Over';
+        title = t('repeatCarriesOver');
+        label = t('progressCarriesOver');
     } else {
-        title = `This task must be completed in ${requirement.numberOfCohorts} cohorts`;
-        label = `${requirement.numberOfCohorts} Cohorts`;
+        title = t('repeatNCohorts', { count: requirement.numberOfCohorts });
+        label = t('nCohorts', { count: requirement.numberOfCohorts });
     }
 
     return (
@@ -472,6 +499,7 @@ const RepeatChip = ({ requirement }: { requirement: Requirement }) => {
 };
 
 const BlockerChips = ({ requirement }: { requirement: Requirement }) => {
+    const t = useTranslations('profile.trainingPlan.taskDialog');
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const requirementMap = useMemo(() => {
         return requirements.reduce<Record<string, Requirement>>((acc, r) => {
@@ -495,7 +523,10 @@ const BlockerChips = ({ requirement }: { requirement: Requirement }) => {
                 return (
                     <Tooltip
                         key={id}
-                        title={`You must complete ${blocker.category} - ${blocker.name} to update this task`}
+                        title={t('blockerTooltip', {
+                            category: blocker.category,
+                            name: blocker.name,
+                        })}
                     >
                         <Chip color='secondary' icon={<Lock />} label={blocker.name} />
                     </Tooltip>

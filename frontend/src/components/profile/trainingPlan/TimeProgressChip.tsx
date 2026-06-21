@@ -1,5 +1,6 @@
 import { formatTime } from '@/database/requirement';
 import { alpha, Box, BoxProps, Chip, ChipProps } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { RefObject } from 'react';
 
 interface TimeProgressChipProps {
@@ -27,6 +28,7 @@ interface TimeProgressChipProps {
  * @param value The current time completed for the chip.
  */
 export function TimeProgressChip({ goal, value, slotProps, ref, ...rest }: TimeProgressChipProps) {
+    const tCommon = useTranslations('common');
     const percentage = Math.min(100, goal > 0 ? (100 * value) / goal : 100);
     const color = percentage < 50 ? 'error' : percentage < 100 ? 'warning' : 'success';
 
@@ -49,7 +51,7 @@ export function TimeProgressChip({ goal, value, slotProps, ref, ...rest }: TimeP
             />
             <Chip
                 variant='outlined'
-                label={`${formatTime(value)} / ${formatTime(goal)}`}
+                label={`${formatTime(value, tCommon)} / ${formatTime(goal, tCommon)}`}
                 {...slotProps?.chip}
                 sx={{
                     borderColor: (theme) => alpha(theme.palette[color].main, 0.6),

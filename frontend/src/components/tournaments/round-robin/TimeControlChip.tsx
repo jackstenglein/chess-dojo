@@ -1,6 +1,7 @@
 import { dojoCohorts } from '@/database/user';
 import Icon from '@/style/Icon';
 import { Chip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 /**
  * Renders a chip displaying the minimum round robin time control
@@ -8,6 +9,7 @@ import { Chip } from '@mui/material';
  * @param cohort The cohort of the round robin tournament.
  */
 export function TimeControlChip({ cohort }: { cohort: string }) {
+    const t = useTranslations('tournaments.roundRobin.timeControl');
     const timeControl = getTimeControl(cohort);
     if (!timeControl) {
         return null;
@@ -15,7 +17,7 @@ export function TimeControlChip({ cohort }: { cohort: string }) {
 
     return (
         <Chip
-            label={`${timeControl} min time control`}
+            label={t('chip', { timeControl })}
             icon={<Icon name='Classical' />}
             color='secondary'
         />

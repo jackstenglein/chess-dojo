@@ -115,6 +115,7 @@ const mockUser = {
     totalDojoScore: 2,
     pinnedTasks: [],
     weekStart: 0,
+    cohortVersion: '2026',
 };
 
 const baseTimelineEntry = {

@@ -14,6 +14,7 @@ import {
     Theme,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface ClubGridProps<T> {
     clubs?: Club[];
@@ -21,11 +22,12 @@ interface ClubGridProps<T> {
 }
 
 export function ClubGrid<T>({ clubs, request }: ClubGridProps<T>) {
+    const t = useTranslations('clubs.grid');
     if (!clubs || clubs.length === 0) {
         return (
             <>
                 <RequestSnackbar request={request} />
-                <Typography>No clubs found</Typography>
+                <Typography>{t('noClubsFound')}</Typography>
             </>
         );
     }

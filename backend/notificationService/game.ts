@@ -12,7 +12,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/notification';
 import { ApiError } from '../directoryService/api';
 import { dynamo, UpdateItemBuilder } from '../directoryService/database';
-import { sendDirectMessage } from './discord';
+import { sendSenseiDirectMessages } from './sensei';
 import { getNotificationSettings } from './user';
 
 const gameTable = `${process.env.stage}-games`;
@@ -237,22 +237,9 @@ export async function handleGameReviewSubmitted(event: GameReviewSubmittedEvent)
         'cohort' | 'id' | 'headers' | 'owner' | 'review'
     >;
 
-    const senseiDiscordIds = (process.env.senseiDiscordIds || '').split(',').filter(Boolean);
     const message = gameReviewSubmittedMessage(game);
 
-    for (const discordId of senseiDiscordIds) {
-        try {
-            await sendDirectMessage(discordId, message);
-            console.log(
-                `Successfully sent Discord message to ${discordId} for ${NotificationEventTypes.GAME_REVIEW_SUBMITTED}`,
-            );
-        } catch (err) {
-            console.error(
-                `Failed to send ${NotificationEventTypes.GAME_REVIEW_SUBMITTED} Discord DM to ${discordId}:`,
-                err,
-            );
-        }
-    }
+    await sendSenseiDirectMessages(NotificationEventTypes.GAME_REVIEW_SUBMITTED, message);
 }
 
 /**

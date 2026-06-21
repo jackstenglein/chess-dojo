@@ -17,6 +17,7 @@ import {
     Stack,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import NotificationDescription from './NotificationDescription';
 
 interface NotificationListItemProps {
@@ -77,6 +78,7 @@ const NotificationItem: React.FC<NotificationListItemProps & DeletableNotificati
     onDelete,
     deleteRequest,
 }) => {
+    const t = useTranslations('notifications');
     const href = getLink(notification);
     return (
         <Stack spacing={1}>
@@ -90,12 +92,12 @@ const NotificationItem: React.FC<NotificationListItemProps & DeletableNotificati
                 <NotificationDescription notification={notification} menuItem />
 
                 <Stack direction='row' spacing={2}>
-                    <Button href={href}>View</Button>
+                    <Button href={href}>{t('view')}</Button>
 
                     {deleteRequest.isLoading() ? (
                         <CircularProgress />
                     ) : (
-                        <Tooltip title='Delete notification'>
+                        <Tooltip title={t('delete')}>
                             <IconButton onClick={onDelete}>
                                 <DeleteIcon />
                             </IconButton>
@@ -114,6 +116,7 @@ const NotificationMenuItem: React.FC<NotificationListItemProps & DeletableNotifi
     onDelete,
     deleteRequest,
 }) => {
+    const t = useTranslations('notifications');
     const href = getLink(notification);
     return (
         <Stack>
@@ -130,7 +133,7 @@ const NotificationMenuItem: React.FC<NotificationListItemProps & DeletableNotifi
                     {deleteRequest.isLoading() ? (
                         <CircularProgress />
                     ) : (
-                        <Tooltip title='Delete notification'>
+                        <Tooltip title={t('delete')}>
                             <IconButton onClick={onDelete}>
                                 <DeleteIcon />
                             </IconButton>

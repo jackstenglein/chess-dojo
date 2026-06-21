@@ -151,27 +151,6 @@ func getPriceId(request *PurchaseSubscriptionRequest) (string, error) {
 	return priceId, nil
 }
 
-var jan1, _ = time.Parse(time.RFC3339, "2026-01-01T00:00:00Z")
-var feb1, _ = time.Parse(time.RFC3339, "2026-02-01T00:00:00Z")
-
-// TODO: delete this after Jan 1, 2026
-func updateCheckoutSessionForPresale(request *PurchaseSubscriptionRequest, params *stripe.CheckoutSessionParams) {
-	priceId := presalePriceIds[request.Tier]
-	if priceId == "" {
-		return
-	}
-
-	if time.Now().After(jan1) {
-		return
-	}
-
-	params.LineItems = append(params.LineItems, &stripe.CheckoutSessionLineItemParams{
-		Price:    stripe.String(priceId),
-		Quantity: stripe.Int64(1),
-	})
-	params.SubscriptionData.TrialEnd = stripe.Int64(feb1.Unix())
-}
-
 func PurchaseSubscriptionUrl(user *database.User, request *PurchaseSubscriptionRequest, userAgent, ipAddress string) (string, error) {
 	if user == nil {
 		return "", errors.New(400, "Invalid request: user is not authenticated", "")
@@ -226,15 +205,12 @@ func PurchaseSubscriptionUrl(user *database.User, request *PurchaseSubscriptionR
 				"originalTier": string(request.Tier),
 			},
 		},
-		PaymentMethodCollection: stripe.String(string(stripe.CheckoutSessionPaymentMethodCollectionAlways)),
+		PaymentMethodCollection: stripe.String(string(stripe.CheckoutSessionPaymentMethodCollectionIfRequired)),
 	}
 
 	if customerId := user.PaymentInfo.GetCustomerId(); customerId != "" && customerId != "WIX" && customerId != "OVERRIDE" {
 		params.Customer = stripe.String(customerId)
 	}
-
-	// TODO: remove after Jan 1, 2026
-	updateCheckoutSessionForPresale(request, params)
 
 	checkoutSession, err := session.New(params)
 	if err != nil {

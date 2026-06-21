@@ -2,6 +2,7 @@ import { RequestSnackbar } from '@/api/Request';
 import { useUnsavedGame } from '@/hooks/useUnsavedGame';
 import { CloudOff } from '@mui/icons-material';
 import { Alert, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import SaveGameDialog, { SaveGameDialogType } from './SaveGameDialog';
 
 interface UnsavedGameBannerProps {
@@ -13,6 +14,7 @@ interface UnsavedGameBannerProps {
  * can be optionally dismissed and can open a dialog to save the game.
  */
 export function UnsavedGameBanner({ dismissable }: UnsavedGameBannerProps) {
+    const t = useTranslations('games.unsavedBanner');
     const {
         showDialog,
         setShowDialog,
@@ -33,14 +35,14 @@ export function UnsavedGameBanner({ dismissable }: UnsavedGameBannerProps) {
                     action={
                         <Box>
                             {dismissable && (
-                                <Button onClick={() => setShowBanner(false)}>Dismiss</Button>
+                                <Button onClick={() => setShowBanner(false)}>{t('dismiss')}</Button>
                             )}
-                            <Button onClick={() => setShowDialog(true)}>Save</Button>
+                            <Button onClick={() => setShowDialog(true)}>{t('save')}</Button>
                         </Box>
                     }
                 >
                     <Stack direction='row' alignItems='center'>
-                        <Typography>Analysis not saved</Typography>
+                        <Typography>{t('analysisNotSaved')}</Typography>
                     </Stack>
                 </Alert>
             )}
@@ -48,7 +50,7 @@ export function UnsavedGameBanner({ dismissable }: UnsavedGameBannerProps) {
                 <SaveGameDialog
                     type={SaveGameDialogType.Save}
                     open={showDialog}
-                    title='Save Analysis'
+                    title={t('saveAnalysis')}
                     loading={request.isLoading()}
                     onSubmit={onSubmit}
                     onClose={() => setShowDialog(false)}
@@ -66,12 +68,13 @@ export function UnsavedGameBanner({ dismissable }: UnsavedGameBannerProps) {
  * a dialog opens to save the game.
  */
 export function UnsavedGameIcon() {
+    const t = useTranslations('games.unsavedBanner');
     const { showDialog, setShowDialog, request, onSubmit, stagedGame, setStagedGame } =
         useUnsavedGame();
 
     return (
         <>
-            <Tooltip title='Analysis not saved'>
+            <Tooltip title={t('analysisNotSaved')}>
                 <IconButton onClick={() => setShowDialog(true)}>
                     <CloudOff color='error' />
                 </IconButton>
@@ -81,7 +84,7 @@ export function UnsavedGameIcon() {
                 <SaveGameDialog
                     type={SaveGameDialogType.Save}
                     open={showDialog}
-                    title='Save Analysis'
+                    title={t('saveAnalysis')}
                     loading={request.isLoading()}
                     onSubmit={onSubmit}
                     onClose={() => setShowDialog(false)}

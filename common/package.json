@@ -5,25 +5,27 @@
     "main": "index.ts",
     "scripts": {
         "test": "vitest run",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "format": "prettier src --write",
+        "format:check": "prettier src --check"
     },
     "author": "jackstenglein",
     "license": "MIT",
     "dependencies": {
-        "@jackstenglein/chess": "^2.2.19",
+        "@jackstenglein/chess": "^2.2.21",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
-        "uuid": "^13.0.0",
-        "zod": "^4.3.6"
+        "uuid": "^14.0.0",
+        "zod": "^4.4.3"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
-        "@types/uuid": "^10.0.0",
+        "@types/uuid": "^11.0.0",
         "eslint": "^9.39.2",
-        "jiti": "^2.6.1",
-        "prettier": "^3.8.1",
+        "jiti": "^2.7.0",
+        "prettier": "^3.8.3",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "typescript-eslint": "^8.54.0",
-        "vitest": "^4.1.0"
+        "typescript-eslint": "^8.59.3",
+        "vitest": "^4.1.8"
     }
 }

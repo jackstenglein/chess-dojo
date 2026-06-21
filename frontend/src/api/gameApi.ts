@@ -802,16 +802,10 @@ export function parsePgnDate(pgnDate?: string): DateTime<true> | null {
  * @param date the DateTime object
  * @returns a PGN tag value suitable to use for e.g. Date
  */
-export function toPgnDate(date?: DateTime | null): string | null {
-    let pgnDate = date?.toUTC().toISO();
-    if (!pgnDate) {
-        return null;
-    }
-
-    pgnDate = pgnDate.substring(0, pgnDate.indexOf('T'));
-    pgnDate = pgnDate.replaceAll('-', '.');
-
-    return pgnDate;
+export function toPgnDate(date: DateTime | null): string | null;
+export function toPgnDate(date: DateTime | undefined): string | undefined;
+export function toPgnDate(date: DateTime | null | undefined): string | null | undefined {
+    return date?.toISODate()?.replaceAll('-', '.') ?? (date === undefined ? undefined : null);
 }
 
 /**

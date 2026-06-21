@@ -2,75 +2,51 @@ import { useAuth } from '@/auth/Auth';
 import { RatingSystem, formatRatingSystem } from '@/database/user';
 import { YearReviewRatingData } from '@/database/yearReview';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
+import { ReactNode } from 'react';
 import { SectionProps } from '../section';
 import RatingCard from './RatingCard';
 
-function getDescription(system: RatingSystem, data: YearReviewRatingData): React.ReactNode {
-    const current = data.currentRating.value;
-
-    const preamble = `This year, your ${formatRatingSystem(system)} rating `;
-
-    let main;
-
-    if (data.ratingChange === 0) {
-        main = (
-            <>
-                remained the same, at{' '}
-                <Typography component='span' fontWeight='800'>
-                    {current}
-                </Typography>
-                . But next year will see some great growth!
-            </>
-        );
-    } else if (data.ratingChange > 0) {
-        main = (
-            <>
-                increased from{' '}
-                <Typography component='span' fontWeight='800'>
-                    {data.startRating}
-                </Typography>{' '}
-                to{' '}
-                <Typography component='span' fontWeight='800'>
-                    {data.currentRating.value}
-                </Typography>
-                . That's{' '}
-                <Typography component='span' fontWeight='800'>
-                    {data.ratingChange}
-                </Typography>{' '}
-                points! Keep up the great work next year!
-            </>
-        );
-    } else {
-        main = (
-            <>
-                decreased from{' '}
-                <Typography component='span' fontWeight='800'>
-                    {data.startRating}
-                </Typography>{' '}
-                to{' '}
-                <Typography component='span' fontWeight='800'>
-                    {data.currentRating.value}
-                </Typography>
-                . Don't worry - you'll come back stronger next year!
-            </>
-        );
-    }
-
-    return (
-        <>
-            {preamble}
-            {main}
-        </>
-    );
-}
-
 const RatingsSection = ({ review }: SectionProps) => {
+    const t = useTranslations('profile.yearReview.ratings');
+    const tRating = useTranslations('enums.ratingSystem');
     const viewer = useAuth().user;
     const dark = !viewer?.enableLightMode;
 
     const preferred = review.ratings
         ? Object.entries(review.ratings).find((data) => data[1].isPreferred)
         : undefined;
+
+    const bold = (chunks: ReactNode) => (
+        <Typography component='span' fontWeight='800'>
+            {chunks}
+        </Typography>
+    );
+
+    function getDescription(system: RatingSystem, data: YearReviewRatingData): React.ReactNode {
+        if (data.ratingChange === 0) {
+            return t.rich('descriptionSame', {
+                system: formatRatingSystem(system, tRating),
+                current: data.currentRating.value,
+                bold,
+            });
+        } else if (data.ratingChange > 0) {
+            return t.rich('descriptionUp', {
+                system: formatRatingSystem(system, tRating),
+                startRating: data.startRating,
+                currentRating: data.currentRating.value,
+                ratingChange: data.ratingChange,
+                bold,
+            });
+        } else {
+            return t.rich('descriptionDown', {
+                system: formatRatingSystem(system, tRating),
+                startRating: data.startRating,
+                currentRating: data.currentRating.value,
+                bold,
+            });
+        }
+    }
 
     return (
         <Stack alignItems='center'>
@@ -80,7 +56,7 @@ const RatingsSection = ({ review }: SectionProps) => {
                 fontSize='clamp(16px,3vw,32px)'
                 textAlign='center'
             >
-                Let's start with your results...
+                {t('intro')}
             </Typography>
 
             {preferred ? (
@@ -98,7 +74,7 @@ const RatingsSection = ({ review }: SectionProps) => {
                     />
 
                     <Typography my={5} fontSize='clamp(16px,18px,30px)' textAlign='center'>
-                        Now let's see how your other ratings did...
+                        {t('otherRatingsIntro')}
                     </Typography>
 
                     <Stack width={1} spacing={5}>
@@ -121,8 +97,7 @@ const RatingsSection = ({ review }: SectionProps) => {
                 </>
             ) : (
                 <Typography my={5} fontSize='clamp(16px,18px,30px)' textAlign='center'>
-                    Whoops, looks like you don't have any ratings yet. Add a rating system to your
-                    profile and play some more games next year!
+                    {t('noRatings')}
                 </Typography>
             )}
         </Stack>

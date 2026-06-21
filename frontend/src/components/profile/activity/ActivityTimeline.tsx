@@ -29,9 +29,12 @@ import {
     Typography,
 } from '@mui/material';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EditTimelinEntryDialog } from './EditTimelineEntryDialog';
 import { UseTimelineResponse } from './useTimeline';
+
+type T = ReturnType<typeof useTranslations<'profile.activity'>>;
 
 export function getTimeSpent(timelineItem: TimelineEntry): string {
     if (timelineItem.minutesSpent === 0) {
@@ -46,6 +49,8 @@ export function getTimeSpent(timelineItem: TimelineEntry): string {
 }
 
 const CreatedAtItem: React.FC<{ user: User }> = ({ user }) => {
+    const t = useTranslations('profile.activity');
+
     if (!user.createdAt) {
         return null;
     }
@@ -69,7 +74,7 @@ const CreatedAtItem: React.FC<{ user: User }> = ({ user }) => {
             <CardContent>
                 <Stack>
                     <NewsfeedItemHeader entry={entry as TimelineEntry} />
-                    <Typography>Joined the Dojo!</Typography>
+                    <Typography>{t('joinedTheDojoBang')}</Typography>
                 </Stack>
             </CardContent>
         </Card>
@@ -82,6 +87,7 @@ interface ActivityTimelineProps {
 }
 
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) => {
+    const t = useTranslations('profile.activity');
     const { request, entries, hasMore, onLoadMore, onEdit, onDeleteEntries } = timeline;
     const [editEntry, setEditEntry] = useState<TimelineEntry>();
     const [filters, setFilters] = useState<string[]>([AllCategoriesFilterName]);
@@ -92,7 +98,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
         return (
             <Stack mt={2}>
                 <Typography variant='h5' alignSelf='start'>
-                    Timeline
+                    {t('timeline')}
                 </Typography>
                 <LoadingPage />
             </Stack>
@@ -128,16 +134,16 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
     return (
         <Stack mt={2} spacing={2}>
             <Stack direction='row' alignItems='center' spacing={2}>
-                <Typography variant='h5'>Timeline</Typography>
+                <Typography variant='h5'>{t('timeline')}</Typography>
 
                 <ToggleButtonGroup size='small' value={view}>
-                    <Tooltip title='List'>
+                    <Tooltip title={t('list')}>
                         <ToggleButton value='list' onClick={() => setView('list')}>
                             <FormatListBulleted />
                         </ToggleButton>
                     </Tooltip>
 
-                    <Tooltip title='Calendar'>
+                    <Tooltip title={t('calendar')}>
                         <ToggleButton value='calendar' onClick={() => setView('calendar')}>
                             <CalendarMonth />
                         </ToggleButton>
@@ -149,12 +155,12 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
                 selected={filters}
                 setSelected={setFiltersWrapper}
                 options={FilterOptions}
-                label='Categories'
+                label={t('categories')}
                 error={filters.length === 0}
             />
 
             {entries.length === 0 ? (
-                <Typography>No events yet</Typography>
+                <Typography>{t('noEvents')}</Typography>
             ) : view === 'list' ? (
                 <ActivityTimelineList
                     user={user}
@@ -240,6 +246,7 @@ const ActivityTimelineCalendar = ({
     timeline: UseTimelineResponse;
     setEditEntry: (e: TimelineEntry) => void;
 }) => {
+    const t = useTranslations('profile.activity');
     const filters = useFilters();
     const { entries, hasMore, onLoadMore, onEdit } = timeline;
     const calendarRef = useRef<SchedulerRef>(null);
@@ -257,8 +264,8 @@ const ActivityTimelineCalendar = ({
         maxDate?.setDate(39);
         maxDate?.setHours(0, 0, 0, 0);
 
-        return getProcessedEvents(user, entries, minDate.toISOString(), maxDate?.toISOString());
-    }, [entries, user, calendarRef]);
+        return getProcessedEvents(user, entries, minDate.toISOString(), maxDate?.toISOString(), t);
+    }, [entries, user, calendarRef, t]);
 
     useEffect(() => {
         calendarRef.current?.scheduler.handleState(initialEvents, 'events');
@@ -286,6 +293,7 @@ const ActivityTimelineCalendar = ({
             entries,
             minDate.toISOString(),
             maxDate.toISOString(),
+            t,
         );
         calendarRef.current?.scheduler.handleState(events, 'events');
     };
@@ -357,13 +365,13 @@ const ActivityTimelineCalendar = ({
     );
 };
 
-function getName(entry: TimelineEntry): string {
+function getName(entry: TimelineEntry, t: T): string {
     if (entry.requirementId === TimelineSpecialRequirementId.GameSubmission) {
-        return 'Published Game';
+        return t('publishedGame');
     }
 
     if (entry.requirementId === TimelineSpecialRequirementId.Graduation) {
-        return `Graduation: ${entry.cohort}`;
+        return t('graduationCohort', { cohort: entry.cohort });
     }
 
     return entry.requirementName;
@@ -373,7 +381,8 @@ function getProcessedEvents(
     user: User,
     entries: TimelineEntry[],
     minDate: string,
-    maxDate?: string,
+    maxDate: string | undefined,
+    t: T,
 ): ProcessedEvent[] {
     const events: ProcessedEvent[] = [];
 
@@ -392,7 +401,7 @@ function getProcessedEvents(
 
         events.push({
             event_id: entry.id,
-            title: getName(entry),
+            title: getName(entry, t),
             start: date,
             end: date,
             allDay: true,
@@ -404,7 +413,7 @@ function getProcessedEvents(
     if (user.createdAt >= minDate) {
         events.push({
             event_id: 'createdAt',
-            title: 'Joined the Dojo',
+            title: t('joinedTheDojo'),
             start: new Date(user.createdAt),
             end: new Date(user.createdAt),
             allDay: true,

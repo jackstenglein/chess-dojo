@@ -3,16 +3,19 @@
 import { RequestSnackbar } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import useSaveGame from '@/hooks/useSaveGame';
+import { useRouter } from '@/i18n/navigation';
 import { logger } from '@/logging/logger';
 import { Chess } from '@jackstenglein/chess';
 import { MY_GAMES_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { CreateGameRequest } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { cleanupPgn, splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import { Container } from '@mui/material';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import ImportWizard from './ImportWizard';
 
 const ImportGamePage = () => {
+    const t = useTranslations('games.import.page');
     const searchParams = useSearchParams();
     const { setStagedGame, createGame, request } = useSaveGame();
     const router = useRouter();
@@ -43,7 +46,7 @@ const ImportGamePage = () => {
                 router.push('/games/analysis');
             } catch (err) {
                 logger.error?.('setStagedGame: ', err);
-                request.onFailure({ message: 'Invalid PGN' });
+                request.onFailure({ message: t('invalidPgn') });
             }
         } else {
             await createGame(req);

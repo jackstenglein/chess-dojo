@@ -7,8 +7,9 @@ import { MoveButtonSlotProps } from '@/board/pgn/pgnText/MoveButton';
 import Avatar from '@/profile/Avatar';
 import { StockfishIcon } from '@/style/ChessIcons';
 import { Move } from '@jackstenglein/chess';
-import { Warning } from '@mui/icons-material';
+import { Cloud, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export const GameMoveButtonExtras = ({
     move,
@@ -17,6 +18,8 @@ export const GameMoveButtonExtras = ({
     move: Move;
     slotProps?: MoveButtonSlotProps;
 }) => {
+    const t = useTranslations('games.moveExtras');
+
     if (isSuggestedVariation(move)) {
         const comment = move?.commentDiag?.dojoComment || '';
         const firstComma = comment.indexOf(',');
@@ -33,7 +36,7 @@ export const GameMoveButtonExtras = ({
 
         if (unsaved) {
             return (
-                <Tooltip title='This variation is not saved. Right click to save as a comment.'>
+                <Tooltip title={t('unsavedVariation')}>
                     <Warning fontSize='small' sx={{ ml: 0.5 }} color='error' />
                 </Tooltip>
             );
@@ -42,7 +45,7 @@ export const GameMoveButtonExtras = ({
         if (!slotProps?.hideSuggestedVariationOwner) {
             const displayName = comment.slice(firstComma + 1, lastComma);
             return (
-                <Tooltip title={`Variation suggested by ${displayName}`}>
+                <Tooltip title={t('suggestedBy', { displayName })}>
                     <span>
                         <Avatar
                             username={username}
@@ -56,9 +59,20 @@ export const GameMoveButtonExtras = ({
         }
     }
 
-    if (move.commentDiag?.dojoEngine && !move.previous?.commentDiag?.dojoEngine) {
+    const engine = move.commentDiag?.dojoEngine;
+    const prevEngine = move.previous?.commentDiag?.dojoEngine;
+
+    if (engine && engine !== prevEngine) {
+        if (engine === 'CloudDB') {
+            return (
+                <Tooltip title='This line was found with the Cloud Database.'>
+                    <Cloud fontSize='small' sx={{ ml: 0.5 }} color='inherit' />
+                </Tooltip>
+            );
+        }
+
         return (
-            <Tooltip title='This line was found with the engine.'>
+            <Tooltip title={t('engineLine')}>
                 <StockfishIcon fontSize='small' sx={{ ml: 0.5 }} color='error' />
             </Tooltip>
         );
