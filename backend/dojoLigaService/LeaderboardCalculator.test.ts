@@ -52,7 +52,8 @@ describe('LeaderboardCalculator', () => {
 
         const leaderboard = await new LeaderboardCalculator().calculate('2025-06');
 
-        expect(leaderboard.month).toBe('2025-06');
+        expect(leaderboard.type).toBe('DOJO_LIGA');
+        expect(leaderboard.startsAt).toBe('2025-06');
         expect(leaderboard.tournaments).toEqual({});
         expect(leaderboard.players).toEqual({});
     });
