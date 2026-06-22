@@ -21,7 +21,7 @@ import {
     getLichessChapter,
     getLichessGame,
     PgnImportResult,
-} from '@/app/(scoreboard)/games/analysis/server';
+} from '@/app/[locale]/(scoreboard)/games/analysis/server';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { RenderPlayers } from '@/components/games/list/GameListItem';
@@ -54,6 +54,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { ImportButton } from './ImportButton';
@@ -110,18 +111,6 @@ const DRAWS_FIRST_RANK: Record<string, number> = {
     [GameResult.Black]: 1,
     [GameResult.Incomplete]: 0,
 };
-
-const SORT_OPTIONS = [
-    { value: 'date-desc', label: 'Newest first' },
-    { value: 'date-asc', label: 'Oldest first' },
-    { value: 'timeControl-asc', label: 'Time control (shortest)' },
-    { value: 'timeControl-desc', label: 'Time control (longest)' },
-    { value: 'timeClass-asc', label: 'Time class (bullet → classical)' },
-    { value: 'timeClass-desc', label: 'Time class (classical → bullet)' },
-    { value: 'result-desc', label: 'White wins first' },
-    { value: 'result-asc', label: 'Black wins first' },
-    { value: 'draws-desc', label: 'Draws first' },
-] as const;
 
 interface FilterState {
     source: string;
@@ -225,7 +214,33 @@ function InlineFilters({
     timeControlOptions: string[];
     open: boolean;
 }) {
+    const t = useTranslations('games.import.onlineForm');
     const hasActiveFilters = Object.values(filters).some((v) => v !== '');
+
+    const timeClassLabels = useMemo<Record<string, string>>(
+        () => ({
+            [OnlineGameTimeClass.Bullet]: t('timeClassBullet'),
+            [OnlineGameTimeClass.Blitz]: t('timeClassBlitz'),
+            [OnlineGameTimeClass.Rapid]: t('timeClassRapid'),
+            [OnlineGameTimeClass.Classical]: t('timeClassClassical'),
+            [OnlineGameTimeClass.Daily]: t('timeClassDaily'),
+        }),
+        [t],
+    );
+
+    const resultReasonLabels = useMemo<Record<string, string>>(
+        () => ({
+            [OnlineGameResultReason.Resignation]: t('resultReasonResignation'),
+            [OnlineGameResultReason.Checkmate]: t('resultReasonCheckmate'),
+            [OnlineGameResultReason.Timeout]: t('resultReasonTimeout'),
+            [OnlineGameResultReason.Agreement]: t('resultReasonAgreement'),
+            [OnlineGameResultReason.Abandonment]: t('resultReasonAbandonment'),
+            [OnlineGameResultReason.InsufficientMaterial]: t('resultReasonInsufficientMaterial'),
+            [OnlineGameResultReason.Stalemate]: t('resultReasonStalemate'),
+            [OnlineGameResultReason.Repetition]: t('resultReasonRepetition'),
+        }),
+        [t],
+    );
 
     const updateFilter = (field: keyof FilterState, value: string) => {
         onFilterChange({ ...filters, [field]: value });
@@ -239,13 +254,17 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Source'
+                        label={t('filterSourceLabel')}
                         value={filters.source}
                         onChange={(e) => updateFilter('source', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
-                        <MenuItem value={GameImportTypes.lichessGame}>Lichess</MenuItem>
-                        <MenuItem value={GameImportTypes.chesscomGame}>Chess.com</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
+                        <MenuItem value={GameImportTypes.lichessGame}>
+                            {t('filterSourceLichess')}
+                        </MenuItem>
+                        <MenuItem value={GameImportTypes.chesscomGame}>
+                            {t('filterSourceChesscom')}
+                        </MenuItem>
                     </TextField>
                 </Grid>
 
@@ -254,15 +273,14 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Time Class'
+                        label={t('filterTimeClassLabel')}
                         value={filters.timeClass}
                         onChange={(e) => updateFilter('timeClass', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
                         {Object.values(OnlineGameTimeClass).map((tc) => (
                             <MenuItem key={tc} value={tc}>
-                                {tc[0].toUpperCase()}
-                                {tc.slice(1)}
+                                {timeClassLabels[tc]}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -273,14 +291,14 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Time Control'
+                        label={t('filterTimeControlLabel')}
                         value={filters.timeControl}
                         onChange={(e) => updateFilter('timeControl', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
                         {timeControlOptions.map((tc) => (
                             <MenuItem key={tc} value={tc}>
-                                {tc === 'daily' ? 'Daily' : tc}
+                                {tc === 'daily' ? t('filterTimeControlDaily') : tc}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -291,15 +309,15 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Result'
+                        label={t('filterResultLabel')}
                         value={filters.result}
                         onChange={(e) => updateFilter('result', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
-                        <MenuItem value='1-0'>White wins</MenuItem>
-                        <MenuItem value='1/2-1/2'>Draw</MenuItem>
-                        <MenuItem value='0-1'>Black wins</MenuItem>
-                        <MenuItem value='*'>Unknown</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
+                        <MenuItem value='1-0'>{t('filterResultWhiteWins')}</MenuItem>
+                        <MenuItem value='1/2-1/2'>{t('filterResultDraw')}</MenuItem>
+                        <MenuItem value='0-1'>{t('filterResultBlackWins')}</MenuItem>
+                        <MenuItem value='*'>{t('filterResultUnknown')}</MenuItem>
                     </TextField>
                 </Grid>
 
@@ -308,17 +326,16 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Result Reason'
+                        label={t('filterResultReasonLabel')}
                         value={filters.resultReason}
                         onChange={(e) => updateFilter('resultReason', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
                         {Object.values(OnlineGameResultReason).map(
                             (r) =>
                                 r !== OnlineGameResultReason.Unknown && (
                                     <MenuItem key={r} value={r}>
-                                        {r[0].toUpperCase()}
-                                        {r.slice(1)}
+                                        {resultReasonLabels[r]}
                                     </MenuItem>
                                 ),
                         )}
@@ -330,13 +347,13 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Rated'
+                        label={t('filterRatedLabel')}
                         value={filters.rated}
                         onChange={(e) => updateFilter('rated', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
-                        <MenuItem value='true'>Rated</MenuItem>
-                        <MenuItem value='false'>Casual</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
+                        <MenuItem value='true'>{t('filterRatedTrue')}</MenuItem>
+                        <MenuItem value='false'>{t('filterRatedFalse')}</MenuItem>
                     </TextField>
                 </Grid>
 
@@ -345,13 +362,13 @@ function InlineFilters({
                         select
                         fullWidth
                         size='small'
-                        label='Meets Cohort Time'
+                        label={t('filterCohortMatchLabel')}
                         value={filters.cohortMatch}
                         onChange={(e) => updateFilter('cohortMatch', e.target.value)}
                     >
-                        <MenuItem value=''>All</MenuItem>
-                        <MenuItem value='true'>Yes</MenuItem>
-                        <MenuItem value='false'>No</MenuItem>
+                        <MenuItem value=''>{t('filterOptionAll')}</MenuItem>
+                        <MenuItem value='true'>{t('filterCohortMatchYes')}</MenuItem>
+                        <MenuItem value='false'>{t('filterCohortMatchNo')}</MenuItem>
                     </TextField>
                 </Grid>
 
@@ -361,7 +378,7 @@ function InlineFilters({
                         onClick={() => onFilterChange(EMPTY_FILTERS)}
                         disabled={!hasActiveFilters}
                     >
-                        Clear filters
+                        {t('clearFilters')}
                     </Button>
                 </Grid>
             </Grid>
@@ -370,6 +387,7 @@ function InlineFilters({
 }
 
 function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineGame) => void }) {
+    const t = useTranslations('games.import.onlineForm');
     const { user } = useAuth();
     const createdAt = new Date(game.endTime);
     const dateStr = toDojoDateString(createdAt, user?.timezoneOverride);
@@ -414,7 +432,7 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
 
                     <Stack direction='row' alignItems='center' spacing={1}>
                         <Typography variant='caption' color='text.secondary'>
-                            {game.rated ? 'Rated' : 'Casual'}
+                            {game.rated ? t('gameCardRated') : t('gameCardCasual')}
                         </Typography>
                         {matchesCohort ? (
                             <Chip
@@ -441,7 +459,7 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
                 <Typography variant='body2'>
                     {game.result}{' '}
                     {game.resultReason !== OnlineGameResultReason.Unknown &&
-                        `by ${game.resultReason}`}
+                        t('byResultReason', { reason: game.resultReason })}
                 </Typography>
             </Stack>
         </ButtonBase>
@@ -449,6 +467,7 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
 }
 
 export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps) => {
+    const t = useTranslations('games.import.onlineForm');
     const { user } = useAuth();
     const [url, setUrl] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -469,6 +488,21 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
     const [searchText, setSearchText] = useState('');
     const [page, setPage] = useState(1);
     const hasActiveFilters = Object.values(filters).some((v) => v !== '');
+
+    const sortOptions = useMemo(
+        () => [
+            { value: 'date-desc', label: t('sortNewestFirst') },
+            { value: 'date-asc', label: t('sortOldestFirst') },
+            { value: 'timeControl-asc', label: t('sortTcShortest') },
+            { value: 'timeControl-desc', label: t('sortTcLongest') },
+            { value: 'timeClass-asc', label: t('sortTcClassBulletToClassical') },
+            { value: 'timeClass-desc', label: t('sortTcClassClassicalToBullet') },
+            { value: 'result-desc', label: t('sortWhiteWinsFirst') },
+            { value: 'result-asc', label: t('sortBlackWinsFirst') },
+            { value: 'draws-desc', label: t('sortDrawsFirst') },
+        ],
+        [t],
+    );
 
     const timeControlOptions = useMemo(() => {
         const unique = new Set(games.map(formatTimeControl));
@@ -511,12 +545,7 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
 
     const handleSubmit = () => {
         if (url.trim() === '') {
-            let err = 'URL is required';
-            if (games.length > 0) {
-                err += ' or select a game below';
-            }
-
-            setError(err);
+            setError(games.length > 0 ? t('errorUrlRequiredWithGames') : t('errorUrlRequired'));
             return;
         }
 
@@ -554,13 +583,13 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         }
                         onSubmit({ pgnText: pgnText ?? '', type: 'manual' });
                     })
-                    .catch(() => request.onFailure('Unexpected server error'));
+                    .catch(() => request.onFailure(t('errorUnexpectedServer')));
             }
 
             return;
         }
 
-        setError('The provided URL is unsupported. Please make sure it is correct.');
+        setError(t('errorUrlUnsupported'));
     };
 
     const onClickGame = (game: OnlineGame) => {
@@ -569,12 +598,12 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
 
     return (
         <>
-            <DialogTitle>Import Online Game</DialogTitle>
+            <DialogTitle>{t('dialogTitle')}</DialogTitle>
             <DialogContent sx={{ height: fetchGames ? '85vh' : undefined }}>
                 <Stack>
                     <TextField
                         data-testid='online-game-url'
-                        label='Lichess or Chess.com URL'
+                        label={t('urlLabel')}
                         placeholder='https://lichess.org/study/abcd1234/abcd1234'
                         value={url}
                         onChange={(e) => {
@@ -593,11 +622,11 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         paddingTop={1}
                     >
                         <Button disabled={isImporting} onClick={onClose}>
-                            Cancel
+                            {t('cancel')}
                         </Button>
                         <ImportButton loading={isImporting} onClick={handleSubmit} />
                     </Stack>
-                    <OrDivider header='Recent Games' />
+                    <OrDivider header={t('orDividerRecentGames')} />
 
                     {fetchGames && user?.dojoCohort && (
                         <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 2 }}>
@@ -607,15 +636,17 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                 size={28}
                             />
                             <Typography variant='caption' color='text.secondary'>
-                                Your cohort ({user.dojoCohort}) minimum time control is{' '}
-                                <strong>{getTimeControl(user.dojoCohort)}</strong>. Games that meet
-                                this requirement are marked with a{' '}
-                                <CheckCircleIcon
-                                    color='success'
-                                    sx={{ fontSize: 14, verticalAlign: 'middle' }}
-                                />{' '}
-                                but you can still import any game. Your last 50 Lichess games and
-                                Chess.com games from the last two months are shown below.
+                                {t.rich('cohortMinimumTimeControlHint', {
+                                    cohort: user.dojoCohort,
+                                    timeControl: getTimeControl(user.dojoCohort),
+                                    strong: (chunks) => <strong>{chunks}</strong>,
+                                    checkIcon: () => (
+                                        <CheckCircleIcon
+                                            color='success'
+                                            sx={{ fontSize: 14, verticalAlign: 'middle' }}
+                                        />
+                                    ),
+                                })}
                             </Typography>
                         </Stack>
                     )}
@@ -625,7 +656,7 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                             <TextField
                                 size='small'
                                 data-testid='online-game-search'
-                                placeholder='Search by player name'
+                                placeholder={t('searchPlaceholder')}
                                 value={searchText}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 fullWidth
@@ -650,20 +681,20 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                     color='primary'
                                 >
                                     {filtersOpen
-                                        ? 'Hide Filters'
+                                        ? t('filterButtonHide')
                                         : hasActiveFilters
-                                          ? 'Filters (active)'
-                                          : 'Filters'}
+                                          ? t('filterButtonActive')
+                                          : t('filterButtonIdle')}
                                 </Button>
                                 <TextField
                                     select
                                     size='small'
-                                    label='Sort'
+                                    label={t('sortLabel')}
                                     value={sortValue}
                                     onChange={(e) => handleSortChange(e.target.value)}
                                     sx={{ minWidth: 160 }}
                                 >
-                                    {SORT_OPTIONS.map((opt) => (
+                                    {sortOptions.map((opt) => (
                                         <MenuItem key={opt.value} value={opt.value}>
                                             {opt.label}
                                         </MenuItem>
@@ -692,8 +723,8 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         ) : processedGames.length === 0 ? (
                             <Typography variant='body2' color='text.secondary' sx={{ py: 2 }}>
                                 {hasActiveFilters || searchText.trim()
-                                    ? 'No games match the current filters.'
-                                    : 'No recent games found.'}
+                                    ? t('noGamesMatchFilters')
+                                    : t('noRecentGames')}
                             </Typography>
                         ) : (
                             <Stack>
@@ -715,8 +746,11 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         )
                     ) : (
                         <Typography variant='body2'>
-                            To list recent games, add your Chess.com or Lichess username to your{' '}
-                            <Link href='/profile/edit#ratings'>profile</Link>.
+                            {t.rich('addUsernameHint', {
+                                link: (chunks) => (
+                                    <Link href='/profile/edit#ratings'>{chunks}</Link>
+                                ),
+                            })}
                         </Typography>
                     )}
                 </Stack>

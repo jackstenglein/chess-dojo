@@ -17,6 +17,7 @@ import {
     useGridApiContext,
     useGridSelector,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 
 export const MastersCohort = 'masters';
 export const MastersOwnerDisplayName = 'Masters DB';
@@ -177,9 +178,10 @@ export function BlackIcon() {
 }
 
 export function RenderRatingHeader({ white }: { white: boolean }) {
+    const t = useTranslations('games.listItem');
     return (
         <Stack direction='row' columnGap='0.125rem'>
-            {white ? <WhiteIcon /> : <BlackIcon />} Rating
+            {white ? <WhiteIcon /> : <BlackIcon />} {t('rating')}
         </Stack>
     );
 }
@@ -233,6 +235,7 @@ export function RenderPlayers({
 }
 
 export function RenderCohort({ cohort }: { cohort: string }) {
+    const t = useTranslations('games.listItem');
     let display = cohort;
     if (cohort && cohort !== dojoCohorts[0] && cohort !== dojoCohorts.slice(-1)[0]) {
         display = cohort.replace('00', '');
@@ -242,7 +245,7 @@ export function RenderCohort({ cohort }: { cohort: string }) {
         <Stack sx={{ height: 1 }} alignItems='center' justifyContent='center'>
             <CohortIcon cohort={cohort} tooltip={cohort} size={28} />
             <Typography variant='caption' sx={{ fontSize: '0.6rem' }}>
-                {display === MastersCohort ? 'Masters DB' : display}
+                {display === MastersCohort ? t('mastersDb') : display}
             </Typography>
         </Stack>
     );
@@ -346,6 +349,7 @@ export function GameCell({
     showVisibility?: boolean;
 }) {
     const { user } = useAuth();
+    const t = useTranslations('games.listItem');
 
     let description = getTimeControl({ timeControl: headers?.TimeControl }) || '';
 
@@ -354,7 +358,7 @@ export function GameCell({
         if (description) {
             description += ' • ';
         }
-        description += `${moves} move${moves !== 1 ? 's' : ''}`;
+        description += t('moves', { count: moves });
     }
 
     if (date) {
@@ -408,7 +412,7 @@ export function GameCell({
                     <Stack direction='row' alignItems='center'>
                         <CohortIcon cohort={cohort} tooltip={cohort} size={16} />
                         <Typography variant='body2' color='text.secondary' sx={{ ml: 0.5 }}>
-                            {cohort === MastersCohort ? 'Masters DB' : cohort}
+                            {cohort === MastersCohort ? t('mastersDb') : cohort}
                         </Typography>
 
                         {cohort !== MastersCohort && ownerDisplayName && owner && (

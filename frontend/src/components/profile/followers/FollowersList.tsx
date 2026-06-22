@@ -6,8 +6,8 @@ import { Link } from '@/components/navigation/Link';
 import { FollowerEntry } from '@/database/follower';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
-import { LoadingButton } from '@mui/lab';
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 
 export const FollowersList = ({
@@ -17,6 +17,7 @@ export const FollowersList = ({
     username: string;
     type: 'following' | 'followers';
 }) => {
+    const t = useTranslations('profile.followers');
     const api = useApi();
     const isFollowing = type === 'following';
     const request = useRequest<ListFollowersResponse>();
@@ -46,7 +47,7 @@ export const FollowersList = ({
         return (
             <>
                 <RequestSnackbar request={request} />
-                <Typography>No users found</Typography>
+                <Typography>{t('noUsersFound')}</Typography>
             </>
         );
     }
@@ -86,6 +87,7 @@ interface FollowerListItemProps {
 }
 
 const FollowerListItem: React.FC<FollowerListItemProps> = ({ entry, isFollowing, onUnfollow }) => {
+    const t = useTranslations('profile.followers');
     const unfollowRequest = useRequest<FollowerEntry>();
     const api = useApi();
 
@@ -122,13 +124,9 @@ const FollowerListItem: React.FC<FollowerListItemProps> = ({ entry, isFollowing,
             </Stack>
 
             {onUnfollow && (
-                <LoadingButton
-                    variant='contained'
-                    loading={unfollowRequest.isLoading()}
-                    onClick={onClick}
-                >
-                    Unfollow
-                </LoadingButton>
+                <Button variant='contained' loading={unfollowRequest.isLoading()} onClick={onClick}>
+                    {t('unfollow')}
+                </Button>
             )}
         </Stack>
     );

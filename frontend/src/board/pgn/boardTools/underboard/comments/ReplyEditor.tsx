@@ -4,8 +4,8 @@ import { useAuth } from '@/auth/Auth';
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import useGame from '@/context/useGame';
 import { PositionComment } from '@/database/game';
-import { LoadingButton } from '@mui/lab';
 import { Button, Stack, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface ReplyEditorProps {
@@ -19,6 +19,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
     const api = useApi();
     const { user } = useAuth();
     const { game, onUpdateGame } = useGame();
+    const t = useTranslations('analysisBoard.underboard.comments');
 
     if (!game || !onUpdateGame || !user) {
         return null;
@@ -75,7 +76,10 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
             <TextField
                 id={BlockBoardKeyboardShortcuts}
                 size='small'
-                placeholder={`Reply to ${parent.owner.displayName} (${parent.owner.cohort})`}
+                placeholder={t('replyPlaceholder', {
+                    displayName: parent.owner.displayName,
+                    cohort: parent.owner.cohort,
+                })}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={onKeyDown}
@@ -89,17 +93,17 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                     onClick={onCancel}
                     disabled={request.isLoading()}
                 >
-                    cancel
+                    {t('replyCancelButton')}
                 </Button>
-                <LoadingButton
+                <Button
                     disabled={value.trim().length === 0}
                     loading={request.isLoading()}
                     size='small'
                     sx={{ textTransform: 'none' }}
                     onClick={onReply}
                 >
-                    reply
-                </LoadingButton>
+                    {t('replyPostButton')}
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

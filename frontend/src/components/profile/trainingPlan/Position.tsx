@@ -3,12 +3,12 @@ import { axiosService } from '@/api/axiosService';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import Board from '@/board/Board';
 import { getLigaIconBasedOnTimeControl } from '@/components/calendar/eventViewer/LigaTournamentViewer';
+import { PlayMaiaDialog } from '@/components/playbot/PlayMaiaDialog';
 import { Position as PositionModel } from '@/database/requirement';
 import Icon from '@/style/Icon';
-import { Biotech } from '@mui/icons-material';
+import { Biotech, Close as CloseIcon, SmartDisplay, SmartToy } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -16,6 +16,10 @@ import {
     CardActions,
     CardContent,
     CardHeader,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    IconButton,
     Menu,
     MenuItem,
     Stack,
@@ -23,6 +27,7 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { SiChessdotcom } from 'react-icons/si';
 
@@ -40,10 +45,13 @@ interface PositionProps {
 }
 
 const Position = ({ position, orientation }: PositionProps) => {
+    const t = useTranslations('profile.trainingPlan.position');
     const [copied, setCopied] = useState('');
     const lichessRequest = useRequest();
     const playComputerAnchor = useRef<HTMLButtonElement>(null);
     const [playComputerOpen, setPlayComputerOpen] = useState(false);
+    const [videoOpen, setVideoOpen] = useState(false);
+    const [playMaiaOpen, setPlayMaiaOpen] = useState(false);
 
     const onCopy = (name: string) => {
         setCopied(name);
@@ -117,8 +125,12 @@ const Position = ({ position, orientation }: PositionProps) => {
 
                         <Stack direction='row' justifyContent='space-between'>
                             <Typography variant='body1' color='text.secondary'>
-                                {turn[0].toLocaleUpperCase() + turn.slice(1)} to play
-                                {position.result && ` and ${position.result.toLocaleLowerCase()}`}
+                                {position.result
+                                    ? t('toPlayAndResult', {
+                                          color: turn,
+                                          result: position.result.toLocaleLowerCase(),
+                                      })
+                                    : t('toPlay', { color: turn })}
                             </Typography>
                         </Stack>
                     </Stack>
@@ -136,7 +148,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                 </Box>
             </CardContent>
             <CardActions disableSpacing sx={{ flexWrap: 'wrap', columnGap: 1 }}>
-                <Tooltip title='Copy position FEN to clipboard'>
+                <Tooltip title={t('copyFenTooltip')}>
                     <Button
                         data-testid='position-fen-copy'
                         startIcon={
@@ -148,23 +160,23 @@ const Position = ({ position, orientation }: PositionProps) => {
                         }
                         onClick={() => onCopyFen(position.fen.trim())}
                     >
-                        FEN
+                        {t('fenButton')}
                     </Button>
                 </Tooltip>
 
-                <Tooltip title='Open in analysis board'>
+                <Tooltip title={t('openAnalysisTooltip')}>
                     <Button
                         startIcon={<Biotech color='dojoOrange' />}
                         href={`/games/explorer?fen=${position.fen}`}
                         rel='noopener'
                         target='_blank'
                     >
-                        Analysis
+                        {t('analysisButton')}
                     </Button>
                 </Tooltip>
 
-                <Tooltip title='Copy a URL and send to another player to play on Lichess'>
-                    <LoadingButton
+                <Tooltip title={t('challengeUrlTooltip')}>
+                    <Button
                         data-testid='position-challenge-url'
                         startIcon={
                             copied === 'lichess' ? (
@@ -176,19 +188,39 @@ const Position = ({ position, orientation }: PositionProps) => {
                         loading={lichessRequest.isLoading()}
                         onClick={generateLichessUrl}
                     >
-                        Challenge URL
-                    </LoadingButton>
+                        {t('challengeUrlButton')}
+                    </Button>
                 </Tooltip>
 
-                <Tooltip title='Play against computer on Chess.com'>
+                <Tooltip title={t('playComputerTooltip')}>
                     <Button
                         ref={playComputerAnchor}
                         startIcon={<SiChessdotcom size={20} color='#81b64c' />}
                         onClick={() => setPlayComputerOpen(true)}
                     >
-                        Play Computer
+                        {t('playComputerButton')}
                     </Button>
                 </Tooltip>
+
+                <Tooltip title='Play this position against Maia, a neural network which is trained on human games'>
+                    <Button
+                        startIcon={<SmartToy color='primary' />}
+                        onClick={() => setPlayMaiaOpen(true)}
+                    >
+                        Play Bot
+                    </Button>
+                </Tooltip>
+                {position.videoUrl && (
+                    <Tooltip title='Watch the video for this position'>
+                        <Button
+                            data-testid='position-video'
+                            startIcon={<SmartDisplay sx={{ color: '#e00000' }} />}
+                            onClick={() => setVideoOpen(true)}
+                        >
+                            Video
+                        </Button>
+                    </Tooltip>
+                )}
 
                 <Menu
                     open={playComputerOpen}
@@ -203,7 +235,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                         target='_blank'
                         rel='noopener'
                     >
-                        Play as white
+                        {t('playAsWhite')}
                     </MenuItem>
                     <MenuItem
                         component='a'
@@ -211,10 +243,59 @@ const Position = ({ position, orientation }: PositionProps) => {
                         target='_blank'
                         rel='noopener'
                     >
-                        Play as black
+                        {t('playAsBlack')}
                     </MenuItem>
                 </Menu>
             </CardActions>
+
+            <PlayMaiaDialog
+                open={playMaiaOpen}
+                onClose={() => setPlayMaiaOpen(false)}
+                fen={position.fen.trim()}
+                limitSeconds={position.limitSeconds}
+                incrementSeconds={position.incrementSeconds}
+                positionTitle={position.title}
+                playerColor={turnColor(position.fen)}
+            />
+            {position.videoUrl && (
+                <Dialog
+                    open={videoOpen}
+                    onClose={() => setVideoOpen(false)}
+                    maxWidth='md'
+                    fullWidth
+                >
+                    <DialogTitle
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                        }}
+                    >
+                        <Typography variant='h6' component='span'>
+                            {position.title}
+                        </Typography>
+                        <IconButton
+                            aria-label='close'
+                            onClick={() => setVideoOpen(false)}
+                            size='small'
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ width: 1, aspectRatio: '1.77' }}>
+                            <iframe
+                                src={position.videoUrl}
+                                title={`${position.title} video`}
+                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share'
+                                allowFullScreen
+                                style={{ width: '100%', height: '100%', border: 0 }}
+                            />
+                        </Box>
+                    </DialogContent>
+                </Dialog>
+            )}
         </Card>
     );
 };

@@ -13,6 +13,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface RoundRobinCompletedGame extends RoundRobinPairing {
     white: string;
@@ -26,6 +27,7 @@ interface RoundRobinCompletedGame extends RoundRobinPairing {
  * @param tournament The tournament to render the games for.
  */
 export function Games({ tournament }: { tournament: RoundRobin }) {
+    const t = useTranslations('tournaments.roundRobin.games');
     const games: RoundRobinCompletedGame[] = [];
     for (let round = 0; round < tournament.pairings.length; round++) {
         for (const p of tournament.pairings[round]) {
@@ -36,7 +38,7 @@ export function Games({ tournament }: { tournament: RoundRobin }) {
     }
 
     if (games.length === 0) {
-        return <Typography textAlign='center'>No games submitted yet</Typography>;
+        return <Typography textAlign='center'>{t('empty')}</Typography>;
     }
 
     return (
@@ -45,16 +47,16 @@ export function Games({ tournament }: { tournament: RoundRobin }) {
                 <TableHead>
                     <TableRow>
                         <TableCell align='center'>
-                            <Typography sx={{ fontWeight: 'bold' }}>Round</Typography>
+                            <Typography sx={{ fontWeight: 'bold' }}>{t('columnRound')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography sx={{ fontWeight: 'bold' }}>White</Typography>
+                            <Typography sx={{ fontWeight: 'bold' }}>{t('columnWhite')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography sx={{ fontWeight: 'bold' }}>Black</Typography>
+                            <Typography sx={{ fontWeight: 'bold' }}>{t('columnBlack')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography sx={{ fontWeight: 'bold' }}>Result</Typography>
+                            <Typography sx={{ fontWeight: 'bold' }}>{t('columnResult')}</Typography>
                         </TableCell>
                     </TableRow>
                 </TableHead>
@@ -70,7 +72,7 @@ export function Games({ tournament }: { tournament: RoundRobin }) {
                                         {tournament.players[game.white].displayName}
                                     </Link>
                                     {tournament.players[game.white].status ===
-                                        RoundRobinPlayerStatuses.WITHDRAWN && ' (Withdrawn)'}
+                                        RoundRobinPlayerStatuses.WITHDRAWN && t('withdrawnSuffix')}
                                 </Typography>
                             </TableCell>
                             <TableCell align='center'>
@@ -79,7 +81,7 @@ export function Games({ tournament }: { tournament: RoundRobin }) {
                                         {tournament.players[game.black].displayName}
                                     </Link>
                                     {tournament.players[game.black].status ===
-                                        RoundRobinPlayerStatuses.WITHDRAWN && ' (Withdrawn)'}
+                                        RoundRobinPlayerStatuses.WITHDRAWN && t('withdrawnSuffix')}
                                 </Typography>
                             </TableCell>
                             <TableCell align='center'>

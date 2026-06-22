@@ -17,6 +17,7 @@ import {
     Typography,
 } from '@mui/material';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { useTranslations } from 'next-intl';
 import { useState, type JSX } from 'react';
 import BoardIcon from '../../style/BoardIcon';
 import KingRookIcon from '../../style/KingRookIcon';
@@ -30,6 +31,7 @@ interface ImportWizardProps {
 }
 
 export const ImportWizard = ({ onSubmit, loading }: ImportWizardProps) => {
+    const t = useTranslations('games.import.wizard');
     const [selected, setSelected] = useState<GameImportType>();
     const [dialog, setDialog] = useState<string>();
 
@@ -45,8 +47,8 @@ export const ImportWizard = ({ onSubmit, loading }: ImportWizardProps) => {
     return (
         <Grid container rowSpacing={2} columnSpacing={2}>
             <ImportSourceCard
-                name='Starting Position'
-                description='Annotate a blank game'
+                name={t('startingPositionName')}
+                description={t('startingPositionDescription')}
                 icon={KingRookIcon}
                 loading={selected === GameImportTypes.startingPosition && loading}
                 disabled={loading}
@@ -57,8 +59,8 @@ export const ImportWizard = ({ onSubmit, loading }: ImportWizardProps) => {
             />
 
             <ImportSourceCard
-                name='Online Game'
-                description='Import from Chess.com or Lichess'
+                name={t('onlineGameName')}
+                description={t('onlineGameDescription')}
                 icon={DesktopMacOutlined}
                 loading={dialog === 'online' && loading}
                 disabled={loading}
@@ -69,8 +71,8 @@ export const ImportWizard = ({ onSubmit, loading }: ImportWizardProps) => {
             />
 
             <ImportSourceCard
-                name='PGN'
-                description='Import from PGN file'
+                name={t('pgnName')}
+                description={t('pgnDescription')}
                 icon={UploadFile}
                 loading={dialog === 'pgn' && loading}
                 disabled={loading}
@@ -81,8 +83,8 @@ export const ImportWizard = ({ onSubmit, loading }: ImportWizardProps) => {
             />
 
             <ImportSourceCard
-                name='Custom Position'
-                description='Annotate from a custom position'
+                name={t('customPositionName')}
+                description={t('customPositionDescription')}
                 icon={BoardIcon}
                 loading={dialog === 'position' && loading}
                 disabled={loading}

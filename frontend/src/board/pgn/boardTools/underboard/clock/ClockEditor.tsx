@@ -4,6 +4,7 @@ import { clockToSeconds, timeControlForMove } from '@jackstenglein/chess-dojo-co
 import { Edit } from '@mui/icons-material';
 import { Grid, IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import ClockTextField from './ClockTextField';
@@ -41,6 +42,7 @@ const ClockEditor = ({
     setShowTimeControlEditor: (v: boolean) => void;
 }) => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.underboard.clock');
     const [clockFieldFormat, setClockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
         ClockFieldFormat.SingleField,
@@ -115,9 +117,9 @@ const ClockEditor = ({
         <Grid container columnSpacing={1} rowGap={3} alignItems='baseline' pb={2}>
             <Grid size={12}>
                 <Stack direction='row' alignItems='center' spacing={0.5}>
-                    <Typography variant='subtitle1'>Time Control</Typography>
+                    <Typography variant='subtitle1'>{t('timeControlLabel')}</Typography>
 
-                    <Tooltip title='Edit time control'>
+                    <Tooltip title={t('editTimeControlTooltip')}>
                         <IconButton
                             size='small'
                             sx={{ position: 'relative', top: '-2px' }}
@@ -133,24 +135,28 @@ const ClockEditor = ({
             </Grid>
             <Grid pb={1} size={12}>
                 <Typography component='p' variant='caption' textAlign='center'>
-                    Set remaining clock time after each move below.
+                    {t('clockInstructionsLabel')}
                     <br />
-                    Moves left blank will use the last-set clock time.
+                    {t('linesBlankLabel')}
                 </Typography>
             </Grid>
 
             <Grid pb={1} size={12}>
                 <TextField
                     select
-                    label='Clock Field Format'
+                    label={t('clockFormatLabel')}
                     value={clockFieldFormat}
                     onChange={(e) => setClockFieldFormat(e.target.value)}
                     fullWidth
                 >
-                    <MenuItem value={ClockFieldFormat.SingleField}>Single Field</MenuItem>
-                    <MenuItem value={ClockFieldFormat.ThreeField}>Three Fields</MenuItem>
+                    <MenuItem value={ClockFieldFormat.SingleField}>
+                        {t('singleFieldOption')}
+                    </MenuItem>
+                    <MenuItem value={ClockFieldFormat.ThreeField}>
+                        {t('threeFieldsOption')}
+                    </MenuItem>
                     <MenuItem value={ClockFieldFormat.SingleFieldInTotalMinutes}>
-                        Total Minutes
+                        {t('totalMinutesOption')}
                     </MenuItem>
                 </TextField>
             </Grid>

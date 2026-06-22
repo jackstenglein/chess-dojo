@@ -16,13 +16,25 @@ jobs:
         working-directory: frontend
         run: npm ci && npx next typegen
 
-      - name: Run linters for frontend
+      - name: Format Check Frontend
+        working-directory: frontend
+        run: npm run format:check
+
+      - name: Format Check Common
+        working-directory: common
+        run: npm run format:check
+      
+      - name: Format Check Backend
+        working-directory: backend
+        run: npm ci && npm run format:check
+
+      - name: Lint Frontend
         working-directory: frontend
         run: npm run lint
       
-      - name: Run format check for frontend
-        working-directory: frontend
-        run: npm run format:check
+      - name: Lint Common
+        working-directory: common
+        run: npm run lint
 
       - name: Build frontend
         working-directory: frontend

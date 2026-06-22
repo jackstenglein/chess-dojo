@@ -4,11 +4,13 @@ import { Link } from '@/components/navigation/Link';
 import {
     RatingSystem,
     User,
+    dojoCohorts,
     formatRatingSystem,
     getRatingUsername,
     hideRatingUsername,
+    isCustom,
+    isRatingInRange,
 } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Checkbox,
@@ -18,29 +20,33 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { ReactNode, useState } from 'react';
 import { ProfileCreatorFormProps } from './ProfileCreatorPage';
 
-export function getUsernameLabel(rs: RatingSystem): string {
+type RatingsT = ReturnType<typeof useTranslations<'profile.ratings'>>;
+type CreatorT = ReturnType<typeof useTranslations<'profile.creator'>>;
+
+export function getUsernameLabel(rs: RatingSystem, t: RatingsT): string {
     switch (rs) {
         case RatingSystem.Chesscom:
-            return 'Chess.com Username';
+            return t('chesscomUsername');
         case RatingSystem.Lichess:
-            return 'Lichess Username';
+            return t('lichessUsername');
         case RatingSystem.Fide:
-            return 'FIDE ID';
+            return t('fideId');
         case RatingSystem.Uscf:
-            return 'USCF ID';
+            return t('uscfId');
         case RatingSystem.Ecf:
-            return 'ECF Rating Code';
+            return t('ecfRatingCode');
         case RatingSystem.Cfc:
-            return 'CFC ID';
+            return t('cfcId');
         case RatingSystem.Dwz:
-            return 'DWZ ID';
+            return t('dwzId');
         case RatingSystem.Acf:
-            return 'ACF ID';
+            return t('acfId');
         case RatingSystem.Knsb:
-            return 'KNSB ID';
+            return t('knsbId');
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
@@ -48,7 +54,11 @@ export function getUsernameLabel(rs: RatingSystem): string {
     }
 }
 
-export function getHelperText(rs: RatingSystem): React.ReactNode | undefined {
+export function getHelperText(
+    rs: RatingSystem,
+    tRatings: RatingsT,
+    tCreator: CreatorT,
+): React.ReactNode | undefined {
     switch (rs) {
         case RatingSystem.Chesscom:
         case RatingSystem.Lichess:
@@ -63,35 +73,31 @@ export function getHelperText(rs: RatingSystem): React.ReactNode | undefined {
             return undefined;
 
         case RatingSystem.Dwz:
-            return (
-                <>
-                    Learn how to find your DWZ ID{' '}
-                    <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>here</Link>
-                </>
-            );
+            return tRatings.rich('dwzHelper', {
+                link: (chunks: ReactNode) => (
+                    <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>{chunks}</Link>
+                ),
+            });
 
         case RatingSystem.Ecf:
-            return 'Enter your ECF rating code, not your membership number';
+            return tCreator('ecfRatingCodeHelper');
     }
 }
 
-export function getUsernameType(rs: RatingSystem): string {
+export function getHideMyLabel(rs: RatingSystem, t: CreatorT): string {
     switch (rs) {
         case RatingSystem.Chesscom:
         case RatingSystem.Lichess:
-            return 'username';
-
+            return t('hideMyUsernameFromMembers');
         case RatingSystem.Fide:
         case RatingSystem.Uscf:
         case RatingSystem.Cfc:
         case RatingSystem.Dwz:
         case RatingSystem.Acf:
         case RatingSystem.Knsb:
-            return 'ID';
-
+            return t('hideMyIdFromMembers');
         case RatingSystem.Ecf:
-            return 'rating code';
-
+            return t('hideMyRatingCodeFromMembers');
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
@@ -99,32 +105,40 @@ export function getUsernameType(rs: RatingSystem): string {
     }
 }
 
-type ExtraRatingSystem = {
+interface ExtraRatingSystem {
     ratingSystem: RatingSystem | '';
     username: string;
     hideUsername: boolean;
-};
+}
 
-function getUpdate(
-    user: User,
-    rs: RatingSystem,
-    username: string,
-    hideUsername: boolean,
-    extraRatingSystems: ExtraRatingSystem[],
-): Partial<User> {
+function getUpdate({
+    rs,
+    username,
+    hideUsername,
+    extraRatingSystems,
+    customName,
+    customRating,
+}: {
+    rs: RatingSystem;
+    username: string;
+    hideUsername: boolean;
+    extraRatingSystems: ExtraRatingSystem[];
+    customName: string;
+    customRating: number;
+}): Partial<User> {
     const ratings: Partial<User['ratings']> = {
-        ...user.ratings,
         [rs]: {
             username: username.trim(),
             hideUsername,
-            startRating: 0,
-            currentRating: 0,
+            startRating: isCustom(rs) ? customRating : 0,
+            currentRating: isCustom(rs) ? customRating : 0,
+            name: isCustom(rs) ? customName.trim() : '',
         },
     };
 
-    extraRatingSystems.forEach((extra) => {
+    for (const extra of extraRatingSystems) {
         if (extra.ratingSystem == '' || extra.username.trim() === '') {
-            return;
+            continue;
         }
 
         ratings[extra.ratingSystem] = {
@@ -133,21 +147,46 @@ function getUpdate(
             startRating: 0,
             currentRating: 0,
         };
-    });
+    }
 
-    return {
+    const result: Partial<User> = {
         ratingSystem: rs,
         ratings,
     };
+    if (isCustom(rs)) {
+        result.dojoCohort = customRatingToCohort(customRating);
+    }
+    return result;
 }
 
-const { Custom, Custom2, Custom3, ...RatingSystems } = RatingSystem;
+function customRatingToCohort(rating: number): string {
+    return dojoCohorts.find((cohort) => isRatingInRange(rating, cohort)) ?? '2400+';
+}
+
+function parseRating(rating: string): number {
+    const trimmed = rating.trim();
+    if (trimmed === '') {
+        return -1;
+    }
+    const normalized = trimmed.replace(/^0+/, '') || '0';
+    const n = Math.floor(Number(normalized));
+    if (!Number.isFinite(n) || n < 0 || String(n) !== normalized) {
+        return -1;
+    }
+    return n;
+}
+
+const { Custom2, Custom3, ...RatingSystems } = RatingSystem;
 
 const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     user,
     onNextStep,
     onPrevStep,
 }) => {
+    const tRatings = useTranslations('profile.ratings');
+    const tCreator = useTranslations('profile.creator');
+    const tPreferred = useTranslations('profile.creator.preferred');
+    const tRating = useTranslations('enums.ratingSystem');
     const api = useApi();
     const request = useRequest();
 
@@ -155,6 +194,11 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     const [username, setUsername] = useState(getRatingUsername(user, ratingSystem) || '');
     const [hideUsername, setHideUsername] = useState(hideRatingUsername(user, ratingSystem));
     const [extraRatingSystems, setExtraRatingSystems] = useState<ExtraRatingSystem[]>([]);
+    const [customName, setCustomName] = useState(user.ratings[RatingSystem.Custom]?.name ?? '');
+    const [customRating, setCustomRating] = useState(() => {
+        const existing = user.ratings[RatingSystem.Custom]?.currentRating;
+        return existing ? String(existing) : '';
+    });
 
     const getAvailableRatingSystems = (index: number) => {
         const selectedByOtherRows = extraRatingSystems
@@ -204,52 +248,86 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                 !extraRatingSystems.some((extra) => extra.ratingSystem === rs),
         );
 
-    const canSave = (ratingSystem as string) !== '' && username.trim() !== '';
+    const isCustomSelected = isCustom(ratingSystem);
+    const parsedCustomRating = parseRating(customRating);
+    const customRatingError = customRating.trim() !== '' && parsedCustomRating < 0;
+
+    const canSave = isCustomSelected
+        ? parsedCustomRating >= 0
+        : (ratingSystem as string) !== '' && username.trim() !== '';
 
     const onSave = () => {
         request.onStart();
         api.updateUser(
-            getUpdate(user, ratingSystem, username, hideUsername, extraRatingSystems),
-            true,
+            getUpdate({
+                rs: ratingSystem,
+                username,
+                hideUsername,
+                extraRatingSystems,
+                customName,
+                customRating: parsedCustomRating,
+            }),
+            !isCustomSelected,
         )
             .then(onNextStep)
-            .catch((err) => {
-                request.onFailure(err);
-            });
+            .catch(request.onFailure);
     };
 
     return (
         <Stack spacing={4}>
-            <Typography>
-                Enter your preferred rating system, and we will place you in a cohort based on your
-                rating. You should choose the rating system that best reflects your strength (IE:
-                the one you play most often). You can always change your cohort later if the program
-                is too hard or too easy.
-            </Typography>
+            <Typography>{tPreferred('intro')}</Typography>
 
             <TextField
                 required
                 select
-                label='Preferred Rating System'
+                label={tPreferred('label')}
                 value={ratingSystem}
                 onChange={(event) => setPreferredRatingSystem(event.target.value as RatingSystem)}
-                helperText='Choose the rating system you play most often'
+                helperText={tPreferred('helper')}
             >
                 {Object.values(RatingSystems).map((option) => (
                     <MenuItem key={option} value={option}>
-                        {formatRatingSystem(option)}
+                        {formatRatingSystem(option, tRating)}
                     </MenuItem>
                 ))}
             </TextField>
 
-            {(ratingSystem as string) !== '' && (
+            {isCustomSelected && (
+                <Stack spacing={3}>
+                    <TextField
+                        label='Custom Rating Name'
+                        value={customName}
+                        onChange={(event) => setCustomName(event.target.value)}
+                        helperText='Optional name for your rating system (e.g. "School Tournament")'
+                    />
+
+                    <TextField
+                        required
+                        label='Current Rating'
+                        value={customRating}
+                        onChange={(event) => setCustomRating(event.target.value)}
+                        error={customRatingError}
+                        helperText={
+                            customRatingError
+                                ? 'Rating must be a non-negative integer'
+                                : parsedCustomRating >= 0
+                                  ? `You will be placed in the ${customRatingToCohort(
+                                        parsedCustomRating,
+                                    )} cohort`
+                                  : 'Your most up-to-date rating'
+                        }
+                    />
+                </Stack>
+            )}
+
+            {(ratingSystem as string) !== '' && !isCustomSelected && (
                 <Stack spacing={3}>
                     <TextField
                         required
-                        label={getUsernameLabel(ratingSystem)}
+                        label={getUsernameLabel(ratingSystem, tRatings)}
                         value={username}
                         onChange={(event) => setUsername(event.target.value)}
-                        helperText={getHelperText(ratingSystem)}
+                        helperText={getHelperText(ratingSystem, tRatings, tCreator)}
                     />
 
                     <FormControlLabel
@@ -259,7 +337,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                                 onChange={(event) => setHideUsername(event.target.checked)}
                             />
                         }
-                        label={`Hide my ${getUsernameType(ratingSystem)} from other dojo members`}
+                        label={getHideMyLabel(ratingSystem, tCreator)}
                     />
                 </Stack>
             )}
@@ -297,7 +375,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                         >
                             {getAvailableRatingSystems(index).map((option) => (
                                 <MenuItem key={option} value={option}>
-                                    {formatRatingSystem(option)}
+                                    {formatRatingSystem(option, tRating)}
                                 </MenuItem>
                             ))}
                         </TextField>
@@ -305,14 +383,18 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                         {extra.ratingSystem !== '' && (
                             <>
                                 <TextField
-                                    label={getUsernameLabel(extra.ratingSystem)}
+                                    label={getUsernameLabel(extra.ratingSystem, tRatings)}
                                     value={extra.username}
                                     onChange={(event) =>
                                         updateExtraRatingSystem(index, {
                                             username: event.target.value,
                                         })
                                     }
-                                    helperText={getHelperText(extra.ratingSystem)}
+                                    helperText={getHelperText(
+                                        extra.ratingSystem,
+                                        tRatings,
+                                        tCreator,
+                                    )}
                                 />
 
                                 <FormControlLabel
@@ -326,9 +408,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                                             }
                                         />
                                     }
-                                    label={`Hide my ${getUsernameType(
-                                        extra.ratingSystem,
-                                    )} from other dojo members`}
+                                    label={getHideMyLabel(extra.ratingSystem, tCreator)}
                                 />
                             </>
                         )}
@@ -356,18 +436,18 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
 
             <Stack direction='row' justifyContent='space-between'>
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
-                    Back
+                    {tPreferred('back')}
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
                     disabled={!canSave}
                     sx={{ alignSelf: 'end' }}
                 >
-                    Next
-                </LoadingButton>
+                    {tPreferred('next')}
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

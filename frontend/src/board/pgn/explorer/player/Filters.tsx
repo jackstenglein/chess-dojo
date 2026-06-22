@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { DateRangePicker, SingleInputDateRangeField } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
@@ -272,23 +273,37 @@ export function useGameFilters(sources: PlayerSource[]): [EditableGameFilters, G
 }
 
 export function Filters({ filters }: { filters: EditableGameFilters }) {
+    const t = useTranslations('analysisBoard.explorer.player');
+    const range = `${filters.plyCount[0] / 2}${filters.plyCount[1] === MAX_PLY_COUNT ? '+' : ` - ${filters.plyCount[1] / 2}`}`;
     return (
         <Stack spacing={2} mt={2}>
             <FormControl>
-                <FormLabel>Color</FormLabel>
+                <FormLabel>{t('colorLabel')}</FormLabel>
                 <RadioGroup
                     row
                     value={filters.color}
                     onChange={(e) => filters.setColor(e.target.value as Color)}
                 >
-                    <FormControlLabel control={<Radio />} label='White' value={Color.White} />
-                    <FormControlLabel control={<Radio />} label='Black' value={Color.Black} />
-                    <FormControlLabel control={<Radio />} label='Both' value={Color.Both} />
+                    <FormControlLabel
+                        control={<Radio />}
+                        label={t('whiteLabel')}
+                        value={Color.White}
+                    />
+                    <FormControlLabel
+                        control={<Radio />}
+                        label={t('blackLabel')}
+                        value={Color.Black}
+                    />
+                    <FormControlLabel
+                        control={<Radio />}
+                        label={t('bothLabel')}
+                        value={Color.Both}
+                    />
                 </RadioGroup>
             </FormControl>
 
             <FormControl>
-                <FormLabel>Result</FormLabel>
+                <FormLabel>{t('resultLabel')}</FormLabel>
                 <FormGroup row>
                     <FormControlLabel
                         control={
@@ -297,7 +312,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setWin(e.target.checked)}
                             />
                         }
-                        label='Win'
+                        label={t('winLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -306,7 +321,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setDraw(e.target.checked)}
                             />
                         }
-                        label='Draw'
+                        label={t('drawLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -315,13 +330,13 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setLoss(e.target.checked)}
                             />
                         }
-                        label='Loss'
+                        label={t('lossLabel')}
                     />
                 </FormGroup>
             </FormControl>
 
             <FormControl>
-                <FormLabel>Mode</FormLabel>
+                <FormLabel>{t('modeLabel')}</FormLabel>
                 <FormGroup row>
                     <FormControlLabel
                         control={
@@ -330,7 +345,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setRated(e.target.checked)}
                             />
                         }
-                        label='Rated'
+                        label={t('ratedLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -339,13 +354,13 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setCasual(e.target.checked)}
                             />
                         }
-                        label='Casual'
+                        label={t('casualLabel')}
                     />
                 </FormGroup>
             </FormControl>
 
             <FormControl>
-                <FormLabel>Time Control</FormLabel>
+                <FormLabel>{t('timeControlLabel')}</FormLabel>
                 <FormGroup row>
                     <FormControlLabel
                         control={
@@ -354,7 +369,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setBullet(e.target.checked)}
                             />
                         }
-                        label='Bullet'
+                        label={t('bulletLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -363,7 +378,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setBlitz(e.target.checked)}
                             />
                         }
-                        label='Blitz'
+                        label={t('blitzLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -372,7 +387,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setRapid(e.target.checked)}
                             />
                         }
-                        label='Rapid'
+                        label={t('rapidLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -381,7 +396,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setClassical(e.target.checked)}
                             />
                         }
-                        label='Classical'
+                        label={t('classicalLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -390,7 +405,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
                                 onChange={(e) => filters.setDaily(e.target.checked)}
                             />
                         }
-                        label='Daily'
+                        label={t('dailyLabel')}
                     />
                 </FormGroup>
             </FormControl>
@@ -398,20 +413,23 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
             <DateRangePicker
                 defaultValue={filters.dateRange}
                 onChange={filters.setDateRange}
-                localeText={{ start: 'Start', end: 'End' }}
+                localeText={{ start: t('dateRangeStart'), end: t('dateRangeEnd') }}
                 calendars={1}
                 slots={{ field: SingleInputDateRangeField }}
                 slotProps={{
                     textField: { size: 'small' },
                 }}
                 disableFuture
-                label='Date Range'
+                label={t('dateRangeLabel')}
                 minDate={DateTime.fromISO('2007-01-01')}
             />
 
             <FormControl sx={{ pt: 1, px: 1 }}>
                 <FormLabel>
-                    Opponent Rating ({filters.opponentRating[0]} - {filters.opponentRating[1]})
+                    {t('opponentRatingLabel', {
+                        min: filters.opponentRating[0],
+                        max: filters.opponentRating[1],
+                    })}
                 </FormLabel>
                 <Slider
                     value={filters.opponentRating}
@@ -425,11 +443,7 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
             </FormControl>
 
             <FormControl sx={{ pt: 1, px: 1 }}>
-                <FormLabel>
-                    Number of Moves (
-                    {`${filters.plyCount[0] / 2}${filters.plyCount[1] === MAX_PLY_COUNT ? '+' : ` - ${filters.plyCount[1] / 2}`}`}
-                    )
-                </FormLabel>
+                <FormLabel>{t('numberOfMovesLabel', { range })}</FormLabel>
                 <Slider
                     value={filters.plyCount}
                     onChange={(_, v) => filters.setPlyCount(v as [number, number])}
@@ -445,8 +459,8 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
             <FormControl sx={{ px: 1 }}>
                 <FormLabel>
                     {filters.downloadLimit === MAX_DOWNLOAD_LIMIT
-                        ? 'All Games'
-                        : `${filters.downloadLimit} Most Recent Games`}
+                        ? t('allGamesLabel')
+                        : t('recentGamesLabel', { count: filters.downloadLimit })}
                 </FormLabel>
                 <Slider
                     value={filters.downloadLimit}

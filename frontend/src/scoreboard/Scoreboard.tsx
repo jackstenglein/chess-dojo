@@ -14,6 +14,7 @@ import {
     GridRowId,
     GridRowModel,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useFreeTier } from '../auth/Auth';
@@ -37,6 +38,9 @@ import {
     getStartRating,
 } from './scoreboardData';
 
+type ScoreboardT = ReturnType<typeof useTranslations<'scoreboard'>>;
+type RatingT = ReturnType<typeof useTranslations<'enums.ratingSystem'>>;
+
 interface ColumnGroupChild {
     field: string;
 }
@@ -46,237 +50,260 @@ interface ColumnGroup {
     children: ColumnGroupChild[];
 }
 
-const userInfoColumnGroup = {
-    groupId: 'User Info',
-    children: [
-        { field: 'actions' },
-        { field: 'rank' },
-        { field: 'displayName' },
-        { field: 'dojoCohort' },
-        { field: 'previousCohort' },
-    ],
-};
+function getUserInfoColumnGroup(t: ScoreboardT) {
+    return {
+        groupId: t('groupUserInfo'),
+        children: [
+            { field: 'actions' },
+            { field: 'rank' },
+            { field: 'displayName' },
+            { field: 'dojoCohort' },
+            { field: 'previousCohort' },
+        ],
+    };
+}
 
-const rankColumn: GridColDef<ScoreboardRow> = {
-    field: 'rank',
-    headerName: 'Rank',
-    renderHeader: () => '',
-    valueGetter: (_value, row, _column, api) =>
-        api.current.getSortedRowIds().indexOf(row.username.replace('#pinned', '')) + 1,
-    sortable: false,
-    filterable: false,
-    align: 'center',
-    headerAlign: 'center',
-    width: 50,
-};
+function getRankColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
+    return {
+        field: 'rank',
+        headerName: t('rankColumn'),
+        renderHeader: () => '',
+        valueGetter: (_value, row, _column, api) =>
+            api.current.getSortedRowIds().indexOf(row.username.replace('#pinned', '')) + 1,
+        sortable: false,
+        filterable: false,
+        align: 'center',
+        headerAlign: 'center',
+        width: 50,
+    };
+}
 
-const displayNameColumn: GridColDef<ScoreboardRow> = {
-    field: 'displayName',
-    headerName: 'Name',
-    minWidth: 250,
-    renderCell: (params: GridRenderCellParams<ScoreboardRow, string>) => {
-        return (
-            <Stack direction='row' spacing={1} alignItems='center'>
-                <Avatar
-                    username={params.row.username.replace('#pinned', '')}
-                    displayName={params.value}
-                    size={32}
-                />
-                <Link href={`/profile/${params.row.username.replace('#pinned', '')}`}>
-                    {params.value}
-                </Link>
-            </Stack>
-        );
-    },
-};
+function getDisplayNameColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
+    return {
+        field: 'displayName',
+        headerName: t('nameColumn'),
+        minWidth: 250,
+        renderCell: (params: GridRenderCellParams<ScoreboardRow, string>) => {
+            return (
+                <Stack direction='row' spacing={1} alignItems='center'>
+                    <Avatar
+                        username={params.row.username.replace('#pinned', '')}
+                        displayName={params.value}
+                        size={32}
+                    />
+                    <Link href={`/profile/${params.row.username.replace('#pinned', '')}`}>
+                        {params.value}
+                    </Link>
+                </Stack>
+            );
+        },
+    };
+}
 
-const cohortColumn: GridColDef<ScoreboardRow> = {
-    field: 'dojoCohort',
-    headerName: 'Cohort',
-    align: 'center',
-    headerAlign: 'center',
-    valueGetter(_value, row) {
-        if (isGraduation(row)) {
-            return '';
-        }
-        return parseInt(row.dojoCohort);
-    },
-    renderCell(params) {
-        if (isGraduation(params.row)) {
-            return '';
-        }
-        return params.row.dojoCohort;
-    },
-};
-
-const graduatedColumn: GridColDef<ScoreboardRow> = {
-    field: 'previousCohort',
-    headerName: 'Graduated',
-    valueGetter: (_value, row) => {
-        if (row.graduationCohorts && row.graduationCohorts.length > 0) {
-            return row.graduationCohorts;
-        }
-        return row.previousCohort;
-    },
-    renderCell: (params: GridRenderCellParams<ScoreboardRow>) => {
-        let graduationCohorts = params.row.graduationCohorts;
-        if (graduationCohorts && graduationCohorts.length > 0) {
-            graduationCohorts = graduationCohorts
-                .sort(compareCohorts)
-                .filter((c, i) => graduationCohorts?.indexOf(c) === i);
-            if (graduationCohorts.length > 3) {
-                graduationCohorts = graduationCohorts.slice(graduationCohorts.length - 3);
+function getCohortColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
+    return {
+        field: 'dojoCohort',
+        headerName: t('cohortColumn'),
+        align: 'center',
+        headerAlign: 'center',
+        valueGetter(_value, row) {
+            if (isGraduation(row)) {
+                return '';
             }
+            return parseInt(row.dojoCohort);
+        },
+        renderCell(params) {
+            if (isGraduation(params.row)) {
+                return '';
+            }
+            return params.row.dojoCohort;
+        },
+    };
+}
 
-            return (
-                <Stack direction='row' alignItems='center' height={1}>
-                    {graduationCohorts.map((c) => (
-                        <CohortIcon key={c} cohort={c} size={32} />
-                    ))}
-                </Stack>
-            );
-        }
-        return <CohortIcon cohort={params.row.previousCohort} size={32} />;
-    },
-    width: 110,
-    align: 'center',
-    headerAlign: 'center',
-};
+function getGraduatedColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
+    return {
+        field: 'previousCohort',
+        headerName: t('graduatedColumn'),
+        valueGetter: (_value, row) => {
+            if (row.graduationCohorts && row.graduationCohorts.length > 0) {
+                return row.graduationCohorts;
+            }
+            return row.previousCohort;
+        },
+        renderCell: (params: GridRenderCellParams<ScoreboardRow>) => {
+            let graduationCohorts = params.row.graduationCohorts;
+            if (graduationCohorts && graduationCohorts.length > 0) {
+                graduationCohorts = graduationCohorts
+                    .sort(compareCohorts)
+                    .filter((c, i) => graduationCohorts?.indexOf(c) === i);
+                if (graduationCohorts.length > 3) {
+                    graduationCohorts = graduationCohorts.slice(graduationCohorts.length - 3);
+                }
 
-const summaryUserInfoColumns = [rankColumn, displayNameColumn, cohortColumn, graduatedColumn];
-const defaultUserInfoColumns = [rankColumn, displayNameColumn, graduatedColumn];
-
-const ratingsColumnGroup = {
-    groupId: 'Ratings',
-    children: [
-        { field: 'ratingSystem' },
-        { field: 'startRating' },
-        { field: 'currentRating' },
-        { field: 'ratingChange' },
-        { field: 'normalizedRating' },
-    ],
-};
-
-const ratingsColumns: GridColDef<ScoreboardRow>[] = [
-    {
-        field: 'ratingSystem',
-        headerName: 'Rating System',
-        minWidth: 175,
-        valueGetter: (_value, row) => getRatingSystem(row),
+                return (
+                    <Stack direction='row' alignItems='center' height={1}>
+                        {graduationCohorts.map((c) => (
+                            <CohortIcon key={c} cohort={c} size={32} />
+                        ))}
+                    </Stack>
+                );
+            }
+            return <CohortIcon cohort={params.row.previousCohort} size={32} />;
+        },
+        width: 110,
         align: 'center',
         headerAlign: 'center',
-    },
-    {
-        field: 'startRating',
-        headerName: 'Start Rating',
-        minWidth: 150,
-        valueGetter: (_value, row) => getStartRating(row),
-        align: 'center',
-        headerAlign: 'center',
-    },
-    {
-        field: 'currentRating',
-        headerName: 'Current Rating',
-        minWidth: 150,
-        valueGetter: (_value, row) => getCurrentRating(row),
-        align: 'center',
-        headerAlign: 'center',
-    },
-    {
-        field: 'ratingChange',
-        headerName: 'Rating Change',
-        minWidth: 150,
-        valueGetter: (_value, row) => getRatingChange(row),
-        align: 'center',
-        headerAlign: 'center',
-    },
-    {
-        field: 'normalizedRating',
-        headerName: 'Normalized Dojo Rating',
-        minWidth: 200,
-        valueGetter: (_value, row) => getNormalizedRatingRow(row),
-        renderCell: (params: GridRenderCellParams<ScoreboardRow, number>) =>
-            (params.value ?? -1) >= 0 ? (
-                params.value
-            ) : (
-                <Tooltip title='Custom ratings cannot be normalized'>
-                    <HelpIcon sx={{ ml: 1, color: 'text.secondary', height: 1 }} />
-                </Tooltip>
-            ),
-        align: 'center',
-        headerAlign: 'center',
-    },
-];
+    };
+}
 
-const defaultColumnGroups: GridColumnGroupingModel = [
-    userInfoColumnGroup,
-    ratingsColumnGroup,
-    {
-        groupId: 'Training Plan',
-        children: [{ field: 'cohortScore' }, { field: 'percentComplete' }],
-    },
-    {
-        groupId: 'Time Spent',
+function getSummaryUserInfoColumns(t: ScoreboardT) {
+    return [getRankColumn(t), getDisplayNameColumn(t), getCohortColumn(t), getGraduatedColumn(t)];
+}
+
+function getDefaultUserInfoColumns(t: ScoreboardT) {
+    return [getRankColumn(t), getDisplayNameColumn(t), getGraduatedColumn(t)];
+}
+
+function getRatingsColumnGroup(t: ScoreboardT) {
+    return {
+        groupId: t('groupRatings'),
         children: [
-            { field: 'totalTime' },
-            { field: 'last7DaysTime' },
-            { field: 'last30DaysTime' },
-            { field: 'last90DaysTime' },
-            { field: 'last365DaysTime' },
-            { field: 'nonDojoTime' },
+            { field: 'ratingSystem' },
+            { field: 'startRating' },
+            { field: 'currentRating' },
+            { field: 'ratingChange' },
+            { field: 'normalizedRating' },
         ],
-        renderHeaderGroup: (params) => {
-            return (
-                <Stack direction='row' alignItems='center'>
-                    {params.groupId}
-                    <Tooltip title='Data for time spent in last X days is updated every 24 hours and does not include non-dojo activities'>
-                        <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
-                    </Tooltip>
-                </Stack>
-            );
-        },
-    },
-];
+    };
+}
 
-const summaryColumnGroups: GridColumnGroupingModel = [
-    userInfoColumnGroup,
-    ratingsColumnGroup,
-    {
-        groupId: 'Training Plan',
-        children: [{ field: 'totalDojoScore' }],
-        renderHeaderGroup: (params) => {
-            return (
-                <Stack direction='row' alignItems='center'>
-                    {params.groupId}
-                    <Tooltip title='Data covers all cohorts and is updated every 24 hours'>
-                        <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
-                    </Tooltip>
-                </Stack>
-            );
+function getRatingsColumns(t: ScoreboardT, tRating: RatingT): GridColDef<ScoreboardRow>[] {
+    return [
+        {
+            field: 'ratingSystem',
+            headerName: t('ratingSystemColumn'),
+            minWidth: 175,
+            valueGetter: (_value, row) => getRatingSystem(row, t, tRating),
+            align: 'center',
+            headerAlign: 'center',
         },
-    },
-    {
-        groupId: 'Time Spent',
-        children: [
-            { field: 'totalTime' },
-            { field: 'last7DaysTime' },
-            { field: 'last30DaysTime' },
-            { field: 'last90DaysTime' },
-            { field: 'last365DaysTime' },
-            { field: 'nonDojoTime' },
-        ],
-        renderHeaderGroup: (params) => {
-            return (
-                <Stack direction='row' alignItems='center'>
-                    {params.groupId}
-                    <Tooltip title='Data covers all cohorts and is updated every 24 hours'>
-                        <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
-                    </Tooltip>
-                </Stack>
-            );
+        {
+            field: 'startRating',
+            headerName: t('startRatingColumn'),
+            minWidth: 150,
+            valueGetter: (_value, row) => getStartRating(row),
+            align: 'center',
+            headerAlign: 'center',
         },
-    },
-];
+        {
+            field: 'currentRating',
+            headerName: t('currentRatingColumn'),
+            minWidth: 150,
+            valueGetter: (_value, row) => getCurrentRating(row),
+            align: 'center',
+            headerAlign: 'center',
+        },
+        {
+            field: 'ratingChange',
+            headerName: t('ratingChangeColumn'),
+            minWidth: 150,
+            valueGetter: (_value, row) => getRatingChange(row),
+            align: 'center',
+            headerAlign: 'center',
+        },
+        {
+            field: 'normalizedRating',
+            headerName: t('normalizedRatingColumn'),
+            minWidth: 200,
+            valueGetter: (_value, row) => getNormalizedRatingRow(row),
+            renderCell: (params: GridRenderCellParams<ScoreboardRow, number>) =>
+                (params.value ?? -1) >= 0 ? (
+                    params.value
+                ) : (
+                    <Tooltip title={t('normalizedRatingTooltip')}>
+                        <HelpIcon sx={{ ml: 1, color: 'text.secondary', height: 1 }} />
+                    </Tooltip>
+                ),
+            align: 'center',
+            headerAlign: 'center',
+        },
+    ];
+}
+
+function getDefaultColumnGroups(t: ScoreboardT): GridColumnGroupingModel {
+    return [
+        getUserInfoColumnGroup(t),
+        getRatingsColumnGroup(t),
+        {
+            groupId: t('groupTrainingPlan'),
+            children: [{ field: 'cohortScore' }, { field: 'percentComplete' }],
+        },
+        {
+            groupId: t('groupTimeSpent'),
+            children: [
+                { field: 'totalTime' },
+                { field: 'last7DaysTime' },
+                { field: 'last30DaysTime' },
+                { field: 'last90DaysTime' },
+                { field: 'last365DaysTime' },
+                { field: 'nonDojoTime' },
+            ],
+            renderHeaderGroup: (params) => {
+                return (
+                    <Stack direction='row' alignItems='center'>
+                        {params.groupId}
+                        <Tooltip title={t('timeSpentTooltipDefault')}>
+                            <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
+                        </Tooltip>
+                    </Stack>
+                );
+            },
+        },
+    ];
+}
+
+function getSummaryColumnGroups(t: ScoreboardT): GridColumnGroupingModel {
+    return [
+        getUserInfoColumnGroup(t),
+        getRatingsColumnGroup(t),
+        {
+            groupId: t('groupTrainingPlan'),
+            children: [{ field: 'totalDojoScore' }],
+            renderHeaderGroup: (params) => {
+                return (
+                    <Stack direction='row' alignItems='center'>
+                        {params.groupId}
+                        <Tooltip title={t('timeSpentTooltipSummary')}>
+                            <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
+                        </Tooltip>
+                    </Stack>
+                );
+            },
+        },
+        {
+            groupId: t('groupTimeSpent'),
+            children: [
+                { field: 'totalTime' },
+                { field: 'last7DaysTime' },
+                { field: 'last30DaysTime' },
+                { field: 'last90DaysTime' },
+                { field: 'last365DaysTime' },
+                { field: 'nonDojoTime' },
+            ],
+            renderHeaderGroup: (params) => {
+                return (
+                    <Stack direction='row' alignItems='center'>
+                        {params.groupId}
+                        <Tooltip title={t('timeSpentTooltipSummary')}>
+                            <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
+                        </Tooltip>
+                    </Stack>
+                );
+            },
+        },
+    ];
+}
 
 /**
  * Returns the actions column for the scoreboard.
@@ -287,6 +314,7 @@ const summaryColumnGroups: GridColumnGroupingModel = [
 function getActionColumns(
     pinnedRowIds: GridRowId[],
     setPinnedRowIds: React.Dispatch<React.SetStateAction<GridRowId[]>>,
+    t: ScoreboardT,
 ): GridColDef<ScoreboardRow> {
     return {
         field: 'actions',
@@ -299,9 +327,9 @@ function getActionColumns(
                 return [
                     <GridActionsCellItem
                         key='unpin'
-                        label='Unpin Row'
+                        label={t('unpinRow')}
                         icon={
-                            <Tooltip title='Unpin Row'>
+                            <Tooltip title={t('unpinRow')}>
                                 <PushPinIcon color='info' />
                             </Tooltip>
                         }
@@ -317,11 +345,11 @@ function getActionColumns(
                 <GridActionsCellItem
                     key='pin'
                     icon={
-                        <Tooltip title='Pin Row'>
+                        <Tooltip title={t('pinRow')}>
                             <PushPinIcon sx={{ color: 'text.secondary' }} />
                         </Tooltip>
                     }
-                    label='Pin Row'
+                    label={t('pinRow')}
                     onClick={() => setPinnedRowIds((prevPinnedRowIds) => [...prevPinnedRowIds, id])}
                 />,
             ];
@@ -336,6 +364,7 @@ function getActionColumns(
  * @returns The columns for the Training Plan column group.
  */
 function getTrainingPlanColumns(
+    t: ScoreboardT,
     cohort?: string,
     requirements?: Requirement[],
 ): GridColDef<ScoreboardRow>[] {
@@ -343,14 +372,14 @@ function getTrainingPlanColumns(
         return [
             {
                 field: 'cohortScore',
-                headerName: 'Dojo Score',
+                headerName: t('dojoScoreColumn'),
                 minWidth: 125,
                 valueGetter: (_value, row) => getCohortScore(row, cohort, requirements),
                 align: 'center',
             },
             {
                 field: 'percentComplete',
-                headerName: 'Percent Complete',
+                headerName: t('percentCompleteColumn'),
                 minWidth: 175,
                 valueGetter: (_value, row) => getPercentComplete(row, cohort, requirements),
                 renderCell: (params: GridRenderCellParams<ScoreboardRow, number>) => (
@@ -370,7 +399,7 @@ function getTrainingPlanColumns(
     return [
         {
             field: 'totalDojoScore',
-            headerName: 'Dojo Score',
+            headerName: t('dojoScoreColumn'),
             minWidth: 150,
             align: 'center',
             valueFormatter: (value) => Math.round(value * 100) / 100,
@@ -383,64 +412,68 @@ function getTrainingPlanColumns(
  * @param allCohorts Whether all cohorts should be included for time spent.
  * @returns The columns for the Time Spent column group.
  */
-function getTimeSpentColumns(allCohorts?: boolean): GridColDef<ScoreboardRow>[] {
+function getTimeSpentColumns(
+    t: ScoreboardT,
+    tCommon: (key: string, values?: Record<string, string | number>) => string,
+    allCohorts?: boolean,
+): GridColDef<ScoreboardRow>[] {
     return [
         {
             field: 'totalTime',
-            headerName: allCohorts ? 'All Tasks' : 'Cohort Tasks',
+            headerName: allCohorts ? t('allTasksColumn') : t('cohortTasksColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_ALL_TIME' : 'ALL_TIME'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
         },
         {
             field: 'last7DaysTime',
-            headerName: 'Last 7 Days',
+            headerName: t('last7DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_7_DAYS' : 'LAST_7_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
         },
         {
             field: 'last30DaysTime',
-            headerName: 'Last 30 Days',
+            headerName: t('last30DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_30_DAYS' : 'LAST_30_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
         },
         {
             field: 'last90DaysTime',
-            headerName: 'Last 90 Days',
+            headerName: t('last90DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_90_DAYS' : 'LAST_90_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
         },
         {
             field: 'last365DaysTime',
-            headerName: 'Last 365 Days',
+            headerName: t('last365DaysColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_LAST_365_DAYS' : 'LAST_365_DAYS'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
         },
         {
             field: 'nonDojoTime',
-            headerName: 'Non-Dojo',
+            headerName: t('nonDojoColumn'),
             valueGetter: (_value, row) =>
                 getMinutesSpent(row, allCohorts ? 'ALL_COHORTS_NON_DOJO' : 'NON_DOJO'),
-            valueFormatter: (value) => formatTime(value),
+            valueFormatter: (value) => formatTime(value, tCommon),
             align: 'center',
             minWidth: 125,
             headerAlign: 'center',
@@ -469,22 +502,32 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     slots,
     slotProps,
 }) => {
+    const t = useTranslations('scoreboard');
+    const tCommon = useTranslations('common');
+    const tRating = useTranslations('enums.ratingSystem');
     const isSummary = cohort === undefined;
     const isFreeTier = useFreeTier();
 
     const [pinnedRowIds, setPinnedRowIds] = useState<GridRowId[]>(user ? [user.username] : []);
 
     const actionColumn = useMemo(
-        () => getActionColumns(pinnedRowIds, setPinnedRowIds),
-        [pinnedRowIds, setPinnedRowIds],
+        () => getActionColumns(pinnedRowIds, setPinnedRowIds, t),
+        [pinnedRowIds, setPinnedRowIds, t],
     );
 
     const trainingPlanColumns = useMemo(
-        () => getTrainingPlanColumns(cohort, requirements),
-        [cohort, requirements],
+        () => getTrainingPlanColumns(t, cohort, requirements),
+        [t, cohort, requirements],
     );
 
-    const timeSpentColumns = useMemo(() => getTimeSpentColumns(isSummary), [isSummary]);
+    const timeSpentColumns = useMemo(
+        () => getTimeSpentColumns(t, tCommon, isSummary),
+        [t, tCommon, isSummary],
+    );
+
+    const ratingsColumns = useMemo(() => getRatingsColumns(t, tRating), [t, tRating]);
+    const summaryUserInfoColumns = useMemo(() => getSummaryUserInfoColumns(t), [t]);
+    const defaultUserInfoColumns = useMemo(() => getDefaultUserInfoColumns(t), [t]);
 
     const requirementColumns: GridColDef<ScoreboardRow>[] = useMemo(() => {
         return (
@@ -524,13 +567,24 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 timeSpentColumns,
                 requirementColumns,
             ),
-        [actionColumn, isSummary, trainingPlanColumns, timeSpentColumns, requirementColumns],
+        [
+            actionColumn,
+            isSummary,
+            summaryUserInfoColumns,
+            defaultUserInfoColumns,
+            ratingsColumns,
+            trainingPlanColumns,
+            timeSpentColumns,
+            requirementColumns,
+        ],
     );
 
     const columnGroups = useMemo(
         () =>
-            (isSummary ? summaryColumnGroups : defaultColumnGroups).concat(requirementColumnGroups),
-        [isSummary, requirementColumnGroups],
+            (isSummary ? getSummaryColumnGroups(t) : getDefaultColumnGroups(t)).concat(
+                requirementColumnGroups,
+            ),
+        [t, isSummary, requirementColumnGroups],
     );
 
     const [rows, pinnedRows] = useMemo(() => {

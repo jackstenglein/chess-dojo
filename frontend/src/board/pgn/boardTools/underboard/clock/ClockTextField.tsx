@@ -4,6 +4,7 @@ import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { FormHelperText, Stack, TextField } from '@mui/material';
 import { TimeField } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
@@ -14,6 +15,11 @@ const d = new Date();
 d.setHours(0, 0, 0);
 
 const defaultDateTime = DateTime.fromJSDate(d);
+const hasClockError = (seconds: number, maxSeconds?: number): boolean => {
+    if (maxSeconds === undefined) return false;
+    const effectiveMax = seconds % 60 === 0 ? maxSeconds + 59 : maxSeconds;
+    return seconds > effectiveMax;
+};
 
 interface ClockTextFieldProps {
     move: Move;
@@ -27,6 +33,7 @@ interface ClockTextFieldProps {
 
 const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.underboard.clock');
     const [clockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
         ClockFieldFormat.SingleField,
@@ -44,12 +51,12 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
     if (clockFieldFormat === ClockFieldFormat.SingleFieldInTotalMinutes) {
         const seconds = clockToSeconds(move.commentDiag?.clk) || 0;
         const displayValue = seconds > 0 ? String(Math.floor(seconds / 60)) : '';
-
+        const error = hasClockError(seconds, maxSeconds);
         return (
             <TextField
                 id={BlockBoardKeyboardShortcuts}
-                label={label || 'Clock (total minutes)'}
-                placeholder='Total minutes'
+                label={label || t('clockTotalMinutesLabel')}
+                placeholder={t('totalMinutesPlaceholder')}
                 value={displayValue}
                 disabled={!move}
                 onChange={(event) => {
@@ -72,11 +79,9 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
                 slotProps={{
                     htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
                 }}
-                error={Boolean(maxSeconds && seconds > maxSeconds)}
+                error={error}
                 helperText={
-                    maxSeconds && seconds > maxSeconds
-                        ? 'Gained more time than possible according to time control'
-                        : undefined
+                    error ? 'Gained more time than possible according to time control' : undefined
                 }
             />
         );
@@ -84,20 +89,19 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
 
     if (clockFieldFormat === ClockFieldFormat.SingleField) {
         const seconds = clockToSeconds(move.commentDiag?.clk) ?? 0;
+        const error = hasClockError(seconds, maxSeconds);
         return (
             <TimeField
                 id={BlockBoardKeyboardShortcuts}
-                label={label || 'Clock (hh:mm:ss)'}
+                label={label || t('clockHhmmssLabel')}
                 format='HH:mm:ss'
                 value={convertSecondsToDateTime(seconds) || defaultDateTime}
                 onChange={(value) => onChangeClock(chess, move, value)}
                 fullWidth
                 className={BlockBoardKeyboardShortcuts}
-                error={Boolean(maxSeconds && seconds > maxSeconds)}
+                error={error}
                 helperText={
-                    maxSeconds && seconds > maxSeconds
-                        ? 'Gained more time than possible according to time control'
-                        : undefined
+                    error ? 'Gained more time than possible according to time control' : undefined
                 }
             />
         );
@@ -106,8 +110,7 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
     if (clockFieldFormat === ClockFieldFormat.ThreeField) {
         const timeSlots = getTimeSlotsFromMove(move);
         const seconds = timeSlots.hours * 3600 + timeSlots.minutes * 60 + timeSlots.seconds;
-
-        const error = maxSeconds !== undefined && seconds > maxSeconds;
+        const error = hasClockError(seconds, maxSeconds);
         const shouldAutoFocusMinutes = maxSeconds !== undefined && maxSeconds < 3600;
 
         const handleHoursFocus = () => {
@@ -149,7 +152,7 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
             <Stack>
                 <Stack direction='row' spacing={1}>
                     <TextField
-                        label='Hours'
+                        label={t('hoursLabel')}
                         id={BlockBoardKeyboardShortcuts}
                         value={timeSlots.hours}
                         disabled={!move}
@@ -170,7 +173,7 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
                         }}
                     />
                     <TextField
-                        label='Minutes'
+                        label={t('minutesLabel')}
                         id={BlockBoardKeyboardShortcuts}
                         value={timeSlots.minutes}
                         disabled={!move}
@@ -190,7 +193,7 @@ const ClockTextField = ({ move, label, maxSeconds }: ClockTextFieldProps) => {
                         }}
                     />
                     <TextField
-                        label='Seconds'
+                        label={t('secondsLabel')}
                         id={BlockBoardKeyboardShortcuts}
                         value={timeSlots.seconds}
                         disabled={!move}

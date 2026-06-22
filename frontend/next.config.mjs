@@ -1,3 +1,13 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
+
+// Keep in sync with SUPPORTED_LOCALES in src/i18n/locales.ts and the regexes
+// in src/proxy.ts. When a new locale lands, extend the alternation here or
+// legacy redirects and video-embed COEP headers will silently stop matching
+// the new locale's URLs.
+const LOCALE_PATTERN = ':locale(en|pseudo|de)';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     outputFileTracingRoot: import.meta.dirname,
@@ -24,6 +34,10 @@ const nextConfig = {
     headers() {
         const headers = [
             {
+                source: '/play-bot/:path*',
+                headers: ENGINE_HEADERS,
+            },
+            {
                 source: '/:path*',
                 headers: ENGINE_HEADERS,
             },
@@ -46,14 +60,25 @@ const nextConfig = {
         return headers;
     },
     redirects: () => [
+        // SEO: permanent redirect for default-locale prefix removal under
+        // localePrefix: 'as-needed'. next-intl's middleware emits a 307
+        // (temporary) for /en/foo -> /foo, which search engines do not
+        // honour for canonicalization. A Next-level 308 transfers authority
+        // and also cuts one middleware invocation per /en/... request.
+        { source: '/en', destination: '/', permanent: true },
+        { source: '/en/:path*', destination: '/:path*', permanent: true },
+
+        // Each legacy redirect needs a bare AND a prefixed variant.
+        { source: '/games/explorer', destination: '/games/analysis', permanent: true },
         {
-            source: '/games/explorer',
-            destination: '/games/analysis',
+            source: `/${LOCALE_PATTERN}/games/explorer`,
+            destination: '/:locale/games/analysis',
             permanent: true,
         },
+        { source: '/material/bots', destination: '/learn/guides', permanent: true },
         {
-            source: '/material/bots',
-            destination: '/learn/guides',
+            source: `/${LOCALE_PATTERN}/material/bots`,
+            destination: '/:locale/learn/guides',
             permanent: true,
         },
     ],
@@ -77,12 +102,13 @@ const VIDEO_EMBED_HEADERS = [
     },
 ];
 
-const pagesWithVideos = [
+const pagesWithVideosRaw = [
     '/',
     '/profile/:path*',
     '/scoreboard/:path*',
     '/learn/guides',
     '/learn/live-classes',
+    '/learn/sparring',
     '/live-classes',
 
     // Blog
@@ -137,4 +163,14 @@ const pagesWithVideos = [
     '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/2',
 ];
 
-export default nextConfig;
+// Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',
+// '/blog/...'). Emit BOTH bare and prefixed variants so COEP overrides land
+// for English visitors as well — otherwise bare URLs fall through to the
+// catch-all '/:path*' ENGINE_HEADERS rule (require-corp), breaking video
+// embeds and the stockfish engine.
+const pagesWithVideos = pagesWithVideosRaw.flatMap((p) => {
+    const prefixed = p === '/' ? `/${LOCALE_PATTERN}` : `/${LOCALE_PATTERN}${p}`;
+    return [p, prefixed];
+});
+
+export default withNextIntl(nextConfig);

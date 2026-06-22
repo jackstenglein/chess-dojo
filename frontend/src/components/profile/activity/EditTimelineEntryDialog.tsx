@@ -14,6 +14,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ProgressHistoryItem, useProgressHistoryEditor } from '../trainingPlan/ProgressHistory';
 
 export function EditTimelinEntryDialog({
@@ -25,13 +26,14 @@ export function EditTimelinEntryDialog({
     onClose: () => void;
     onDeleteEntry: (entry: TimelineEntry) => void;
 }) {
+    const t = useTranslations('profile.activity');
     const api = useApi();
     const { user } = useAuth();
     const deleteRequest = useRequest<string>();
     const isCustom = entry.isCustomRequirement;
 
     const customTask = isCustom
-        ? user?.customTasks?.find((t) => t.id === entry.requirementId)
+        ? user?.customTasks?.find((task) => task.id === entry.requirementId)
         : undefined;
 
     const { requirement: fetchedRequirement } = useRequirement(
@@ -75,7 +77,7 @@ export function EditTimelinEntryDialog({
                 deleted: [entry],
             });
             onDeleteEntry(entry);
-            deleteRequest.onSuccess('Rest day cleared');
+            deleteRequest.onSuccess(t('restDayCleared'));
             onClose();
         } catch (err) {
             deleteRequest.onFailure(err);
@@ -90,18 +92,16 @@ export function EditTimelinEntryDialog({
                 fullWidth
                 maxWidth='sm'
             >
-                <DialogTitle>Clear Rest Day?</DialogTitle>
+                <DialogTitle>{t('clearRestDayTitle')}</DialogTitle>
                 <DialogContent>
-                    <Typography sx={{ mt: 1 }}>
-                        This will remove the rest day from your activity timeline.
-                    </Typography>
+                    <Typography sx={{ mt: 1 }}>{t('removeRestDayDescription')}</Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={deleteRequest.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button loading={deleteRequest.isLoading()} onClick={onClearRestDay}>
-                        Clear Rest Day
+                        {t('clearRestDay')}
                     </Button>
                 </DialogActions>
 
@@ -123,10 +123,10 @@ export function EditTimelinEntryDialog({
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={onSubmit}>
-                        Save
+                        {t('save')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -135,7 +135,7 @@ export function EditTimelinEntryDialog({
 
     return (
         <Dialog open onClose={request.isLoading() ? undefined : onClose} fullWidth maxWidth='md'>
-            <DialogTitle>Update {entry.requirementName}?</DialogTitle>
+            <DialogTitle>{t('updateTitle', { name: entry.requirementName })}</DialogTitle>
             <DialogContent>
                 <Box sx={{ mt: 1 }}>
                     <ProgressHistoryItem
@@ -150,21 +150,25 @@ export function EditTimelinEntryDialog({
                 <Stack mt={2}>
                     {!isTimeOnly && (
                         <Typography color='text.secondary'>
-                            Total Count: {totalCount}. Current Cohort: {cohortCount}
+                            {t('totalCount', { totalCount, cohortCount })}
                         </Typography>
                     )}
                     <Typography color='text.secondary'>
-                        Total Time: {Math.floor(totalTime / 60)}h {totalTime % 60}m. Current Cohort:{' '}
-                        {Math.floor(cohortTime / 60)}h {Math.floor(cohortTime % 60)}m
+                        {t('totalTime', {
+                            totalHours: Math.floor(totalTime / 60),
+                            totalMinutes: totalTime % 60,
+                            cohortHours: Math.floor(cohortTime / 60),
+                            cohortMinutes: Math.floor(cohortTime % 60),
+                        })}
                     </Typography>
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button loading={request.isLoading()} onClick={onSubmit}>
-                    Save
+                    {t('save')}
                 </Button>
             </DialogActions>
 

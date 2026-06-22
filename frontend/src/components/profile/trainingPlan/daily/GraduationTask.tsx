@@ -15,11 +15,15 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { GraduationDialog } from '../GraduationDialog';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 
 export function GraduationTask() {
+    const t = useTranslations('profile.trainingPlan.graduationTask');
+    const tCommon = useTranslations('profile.trainingPlan.common');
+    const tRating = useTranslations('enums.ratingSystem');
     const { user, isCurrentUser, skippedTaskIds, toggleSkip } = use(TrainingPlanContext);
     const shouldGraduate = shouldPromptGraduation(user);
 
@@ -54,30 +58,33 @@ export function GraduationTask() {
                                 <CohortIcon cohort={user.dojoCohort} tooltip='' size={24} />
 
                                 <Typography variant='h6' fontWeight='bold'>
-                                    Graduate from {user.dojoCohort}
+                                    {t('title', { cohort: user.dojoCohort })}
                                 </Typography>
                             </Stack>
 
                             <Typography color='textSecondary' sx={{ mt: 1 }}>
-                                Congrats on reaching {getCurrentRating(user)}{' '}
-                                {formatRatingSystem(user.ratingSystem)}
-                                {isCustom(user.ratingSystem) &&
-                                    ratingSystemName &&
-                                    ` (${ratingSystemName})`}
-                                ! Use this task to move to the next cohort, add a badge to your
-                                profile, and get one of your annotated games reviewed on stream!
+                                {isCustom(user.ratingSystem) && ratingSystemName
+                                    ? t('descriptionWithName', {
+                                          rating: getCurrentRating(user),
+                                          system: formatRatingSystem(user.ratingSystem, tRating),
+                                          name: ratingSystemName,
+                                      })
+                                    : t('descriptionBase', {
+                                          rating: getCurrentRating(user),
+                                          system: formatRatingSystem(user.ratingSystem, tRating),
+                                      })}
                             </Typography>
                         </CardContent>
                     </CardActionArea>
                     <CardActions disableSpacing>
-                        <Tooltip title='View task details'>
+                        <Tooltip title={tCommon('viewTaskDetails')}>
                             <IconButton sx={{ color: 'text.secondary' }} onClick={onOpen}>
                                 <Help />
                             </IconButton>
                         </Tooltip>
 
                         {isCurrentUser && (
-                            <Tooltip title='Skip for the rest of the week'>
+                            <Tooltip title={tCommon('skipForWeek')}>
                                 <IconButton
                                     sx={{
                                         color: 'text.secondary',

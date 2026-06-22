@@ -37,6 +37,25 @@ vi.mock('@/components/navigation/Link', async () => {
 
 // --- Helpers ---
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const messages = require('../../../messages/en.json') as Record<string, unknown>;
+
+function renderWithIntl(ui: React.ReactElement) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NextIntlClientProvider } = require('next-intl') as {
+        NextIntlClientProvider: React.FC<{
+            locale: string;
+            messages: Record<string, unknown>;
+            children: React.ReactNode;
+        }>;
+    };
+    return render(
+        <NextIntlClientProvider locale='en' messages={messages}>
+            {ui}
+        </NextIntlClientProvider>,
+    );
+}
+
 function makeComment(overrides: Partial<Comment> = {}): Comment {
     return {
         id: 'c1',
@@ -78,7 +97,7 @@ describe('CommentList', () => {
     describe('Collapsible reply threads', () => {
         it('shows all replies when thread has fewer than 3', () => {
             const comments = makeThread('root', 2);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             expect(screen.getByText('Reply 1')).toBeInTheDocument();
             expect(screen.getByText('Reply 2')).toBeInTheDocument();
@@ -88,7 +107,7 @@ describe('CommentList', () => {
 
         it('collapses thread with 3 replies, showing only last 2', () => {
             const comments = makeThread('root', 3);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             expect(screen.queryByText('Reply 1')).not.toBeInTheDocument();
             expect(screen.getByText('Reply 2')).toBeInTheDocument();
@@ -98,7 +117,7 @@ describe('CommentList', () => {
 
         it('uses plural "replies" when more than 1 reply is hidden', () => {
             const comments = makeThread('root', 5);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             expect(screen.getByText('Show 3 more replies')).toBeInTheDocument();
             expect(screen.getByText('Reply 4')).toBeInTheDocument();
@@ -110,7 +129,7 @@ describe('CommentList', () => {
 
         it('expands all replies on click and shows Hide replies', () => {
             const comments = makeThread('root', 4);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             expect(screen.queryByText('Reply 1')).not.toBeInTheDocument();
             expect(screen.queryByText('Reply 2')).not.toBeInTheDocument();
@@ -126,7 +145,7 @@ describe('CommentList', () => {
 
         it('re-collapses to last 2 when clicking Hide replies', () => {
             const comments = makeThread('root', 4);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             fireEvent.click(screen.getByText('Show 2 more replies'));
             fireEvent.click(screen.getByText('Hide replies'));
@@ -140,7 +159,7 @@ describe('CommentList', () => {
 
         it('does not show collapse controls for thread with 0 replies', () => {
             const comments = makeThread('root', 0);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             expect(screen.getByText('Root root')).toBeInTheDocument();
             expect(screen.queryByText(/Show .* more/)).not.toBeInTheDocument();
@@ -152,7 +171,9 @@ describe('CommentList', () => {
         it('shows reply editor below root when clicking reply on root', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 1);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             const replyButtons = screen.getAllByLabelText('Reply');
             fireEvent.click(replyButtons[0]);
@@ -164,7 +185,9 @@ describe('CommentList', () => {
         it('shows reply editor below a reply when clicking reply on it', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 2);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             const replyButtons = screen.getAllByLabelText('Reply');
             // index: 0=root, 1=reply1, 2=reply2
@@ -176,7 +199,9 @@ describe('CommentList', () => {
         it('moves editor when clicking reply on a different comment', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 2);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             const replyButtons = screen.getAllByLabelText('Reply');
             fireEvent.click(replyButtons[0]);
@@ -190,7 +215,9 @@ describe('CommentList', () => {
         it('hides editor when clicking cancel', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 0);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             fireEvent.click(screen.getByLabelText('Reply'));
             expect(screen.getByText('Replying to User root')).toBeInTheDocument();
@@ -208,7 +235,9 @@ describe('CommentList', () => {
         it('shows root display name when replying to root', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 1);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             const replyButtons = screen.getAllByLabelText('Reply');
             fireEvent.click(replyButtons[0]);
@@ -219,7 +248,9 @@ describe('CommentList', () => {
         it('shows reply display name when replying to a reply', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 1);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             const replyButtons = screen.getAllByLabelText('Reply');
             fireEvent.click(replyButtons[1]);
@@ -231,7 +262,7 @@ describe('CommentList', () => {
 
         it('does not show reply editor when onSubmitReply is not provided', () => {
             const comments = makeThread('root', 1);
-            render(<CommentList comments={comments} threaded />);
+            renderWithIntl(<CommentList comments={comments} threaded />);
 
             // Reply buttons should not exist without onSubmitReply or onReply
             expect(screen.queryByLabelText('Reply')).not.toBeInTheDocument();
@@ -242,7 +273,9 @@ describe('CommentList', () => {
         it('reply editor appears for collapsed thread without expanding', () => {
             const onSubmitReply = vi.fn().mockResolvedValue(undefined);
             const comments = makeThread('root', 3);
-            render(<CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />);
+            renderWithIntl(
+                <CommentList comments={comments} threaded onSubmitReply={onSubmitReply} />,
+            );
 
             // Thread is collapsed — Reply 1 hidden, Reply 2 and 3 visible
             expect(screen.queryByText('Reply 1')).not.toBeInTheDocument();

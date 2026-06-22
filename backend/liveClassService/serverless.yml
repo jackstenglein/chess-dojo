@@ -169,6 +169,7 @@ functions:
 
   setGameReviewCohorts:
     handler: admin/setGameReviewCohorts.handler
+    timeout: 25
     events:
       - httpApi:
           path: /admin/game-review-cohorts

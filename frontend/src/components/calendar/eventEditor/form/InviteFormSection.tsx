@@ -17,6 +17,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
@@ -47,6 +48,7 @@ export function InviteFormSection({
     setInviteOnly,
     errors,
 }: InviteFormSectionProps) {
+    const t = useTranslations('calendar');
     const [options, setOptions] = useState<SearchParticipant[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
@@ -123,7 +125,7 @@ export function InviteFormSection({
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        placeholder='Invite users'
+                        placeholder={t('inviteUsers')}
                         error={!!errors.invited}
                         helperText={errors.invited}
                         slotProps={{
@@ -189,7 +191,7 @@ export function InviteFormSection({
                         </Fragment>
                     );
                 }}
-                noOptionsText='Search for users...'
+                noOptionsText={t('searchUsers')}
             />
             <FormControlLabel
                 control={
@@ -198,7 +200,7 @@ export function InviteFormSection({
                         onChange={(e) => setInviteOnly(e.target.checked)}
                     />
                 }
-                label='Only allow invited users to book this meeting'
+                label={t('inviteOnlyLabel')}
             />
         </Stack>
     );

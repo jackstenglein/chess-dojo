@@ -24,6 +24,7 @@ import (
 var repository = database.DynamoDB
 var mediaStore database.MediaStore = database.S3
 var stage = os.Getenv("stage")
+var profanityDetector = goaway.NewProfanityDetector().WithExactWord(true)
 
 const (
 	referralSheetId = "198Me8Qm7YVKEtlY0Y56PbePaJz-Quqr4cA6hhhdRkgc"
@@ -81,8 +82,9 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 	// Validates that the bio does not contain profanity
 	if update.Bio != nil {
-		if goaway.IsProfane(*update.Bio) {
-			return api.Failure(errors.New(400, "Invalid request: bio contains inappropriate language", "")), nil
+		if profanityDetector.IsProfane(*update.Bio) {
+			flagged := profanityDetector.ExtractProfanity(*update.Bio)
+			return api.Failure(errors.New(400, fmt.Sprintf("Invalid request: bio contains inappropriate language: %q", flagged), "")), nil
 		}
 	}
 	if err := saveReferralSource(ctx, user, update); err != nil {

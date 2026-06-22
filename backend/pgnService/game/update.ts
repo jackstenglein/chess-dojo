@@ -32,6 +32,7 @@ import {
     success,
     timelineTable,
 } from './create';
+import { rebuildUserTimeManagementRating } from './timeManagement';
 import { Game, GameUpdate, isMissingData } from './types';
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -60,6 +61,16 @@ async function updateGame(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         await createTimelineEntry(result.new);
     } else if (update.unlisted && request.timelineId) {
         await deleteTimelineEntry(result.new, request.timelineId);
+    }
+
+    // Rebuild user's aggregate time management rating if any relevant fields changed
+    if (
+        result.old.timeManagementRatingWhite !== result.new.timeManagementRatingWhite ||
+        result.old.timeManagementRatingBlack !== result.new.timeManagementRatingBlack ||
+        result.old.orientation !== result.new.orientation ||
+        result.old.directories !== result.new.directories
+    ) {
+        await rebuildUserTimeManagementRating(result.new.owner);
     }
 
     await updateDirectories(result.new, result.old);
@@ -102,6 +113,8 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
         update.date = game.date;
         update.pgn = game.pgn;
         update.headers = game.headers;
+        update.timeManagementRatingWhite = game.timeManagementRatingWhite ?? -1;
+        update.timeManagementRatingBlack = game.timeManagementRatingBlack ?? -1;
 
         const result = game.headers['Result'];
         const missingDataErr = isMissingData({ ...update, result });

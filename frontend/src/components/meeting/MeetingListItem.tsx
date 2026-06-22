@@ -11,26 +11,25 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
-
-function getTitle(event: Event): string {
-    if (event.coaching) {
-        return event.title;
-    }
-    if (event.maxParticipants > 1) {
-        return 'Group Meeting';
-    }
-    return getDisplayString(event.bookedType);
-}
 
 interface MeetingListItemProps {
     meeting: Event;
 }
 
 const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
+    const t = useTranslations('meeting');
     const { user } = useRequiredAuth();
+    const labelT = useTranslations('eventLabels');
 
     const start = new Date(meeting.bookedStartTime || meeting.startTime);
+
+    const title = meeting.coaching
+        ? meeting.title
+        : meeting.maxParticipants > 1
+          ? t('groupMeeting')
+          : getDisplayString(meeting.bookedType, labelT);
 
     let opponent = Object.values(meeting.participants)[0];
     if (opponent.username === user.username) {
@@ -46,7 +45,7 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
         <Card variant='outlined' sx={{ width: 1 }}>
             <CardActionArea href={`/meeting/${meeting.id}`}>
                 <CardHeader
-                    title={getTitle(meeting)}
+                    title={title}
                     subheader={`${toDojoDateString(
                         start,
                         user.timezoneOverride,
@@ -55,12 +54,14 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
                 />
                 <CardContent sx={{ pt: 0, mt: 1 }}>
                     {meeting.status === EventStatus.Canceled && (
-                        <Chip sx={{ mb: 1 }} color='error' label='Canceled' />
+                        <Chip sx={{ mb: 1 }} color='error' label={t('canceledChip')} />
                     )}
 
                     {meeting.maxParticipants > 1 ? (
                         <Typography variant='subtitle1' color='text.secondary'>
-                            {Object.values(meeting.participants).length + 1} participants
+                            {t('participantsCountFlat', {
+                                count: Object.values(meeting.participants).length + 1,
+                            })}
                         </Typography>
                     ) : (
                         <Stack direction='row' spacing={1} alignItems='center'>

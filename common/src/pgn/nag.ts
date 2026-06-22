@@ -239,6 +239,14 @@ export const nags: Record<Nag, NagDetails> = {
         label: '',
         description: 'Played too quickly',
     },
+    $1307: {
+        label: '',
+        description: 'Draw offer declined',
+    },
+    $1308: {
+        label: '',
+        description: 'Draw offer agreed',
+    },
 };
 
 /**

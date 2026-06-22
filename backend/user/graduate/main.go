@@ -15,7 +15,11 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/discord"
 )
 
-var repository database.GraduationCreator = database.DynamoDB
+var (
+	repository                 database.GraduationCreator = database.DynamoDB
+	setCohortRole                                         = discord.SetCohortRole
+	sendGraduationAnnouncement                            = discord.SendGraduationAnnouncement
+)
 
 type GraduationRequest struct {
 	Comments string `json:"comments"`
@@ -155,20 +159,26 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		log.Debugf("Failed to create timeline entry: %v", err)
 	}
 
+	cohortVersion := "2026"
 	update := database.UserUpdate{
 		NumberOfGraduations: &numberOfGraduations,
 		LastGraduatedAt:     &createdAt,
 		DojoCohort:          &nextCohort,
 		PreviousCohort:      &user.DojoCohort,
 		GraduationCohorts:   &graduationCohorts,
+		CohortVersion:       &cohortVersion,
 	}
 	user, err = repository.UpdateUser(info.Username, &update)
 	if err != nil {
 		return api.Failure(err), nil
 	}
 
-	if err := discord.SetCohortRole(user); err != nil {
+	if err := setCohortRole(user); err != nil {
 		log.Errorf("Failed to update Discord role: %v", err)
+	}
+
+	if err := sendGraduationAnnouncement(&graduation, user); err != nil {
+		log.Errorf("Failed to send graduation announcement: %v", err)
 	}
 
 	return api.Success(&GraduationResponse{Graduation: &graduation, UserUpdate: user}), nil

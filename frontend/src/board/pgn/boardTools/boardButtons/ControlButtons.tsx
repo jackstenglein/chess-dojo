@@ -7,6 +7,7 @@ import {
     LastPage,
 } from '@mui/icons-material';
 import { IconButton, Stack, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import { useReconcile } from '../../../Board';
 import { useChess } from '../../PgnBoard';
@@ -16,6 +17,7 @@ import {
 } from '../underboard/settings/ViewerSettings';
 
 const ControlButtons = () => {
+    const t = useTranslations('analysisBoard.boardButtons');
     const [goToEndBehavior] = useLocalStorage(
         GoToEndButtonBehaviorKey,
         GoToEndButtonBehavior.SingleClick,
@@ -65,9 +67,9 @@ const ControlButtons = () => {
     return (
         <Stack direction='row' gap={{ xs: 1.5, sm: 0 }} flexWrap='wrap'>
             {goToEndBehavior !== GoToEndButtonBehavior.Hidden && (
-                <Tooltip title='First Move'>
+                <Tooltip title={t('firstMove')}>
                     <IconButton
-                        aria-label='first move'
+                        aria-label={t('firstMoveAria')}
                         onClick={
                             goToEndBehavior === GoToEndButtonBehavior.SingleClick
                                 ? onFirstMove
@@ -84,22 +86,22 @@ const ControlButtons = () => {
                 </Tooltip>
             )}
 
-            <Tooltip title='Previous Move'>
-                <IconButton aria-label='previous move' onClick={onPreviousMove}>
+            <Tooltip title={t('previousMove')}>
+                <IconButton aria-label={t('previousMoveAria')} onClick={onPreviousMove}>
                     <ChevronLeft sx={{ color: 'text.secondary' }} />
                 </IconButton>
             </Tooltip>
 
-            <Tooltip title='Next Move'>
-                <IconButton aria-label='next move' onClick={onNextMove}>
+            <Tooltip title={t('nextMove')}>
+                <IconButton aria-label={t('nextMoveAria')} onClick={onNextMove}>
                     <ChevronRight sx={{ color: 'text.secondary' }} />
                 </IconButton>
             </Tooltip>
 
             {goToEndBehavior !== GoToEndButtonBehavior.Hidden && (
-                <Tooltip title='Last Move'>
+                <Tooltip title={t('lastMove')}>
                     <IconButton
-                        aria-label='last move'
+                        aria-label={t('lastMoveAria')}
                         onClick={
                             goToEndBehavior === GoToEndButtonBehavior.SingleClick
                                 ? onLastMove
@@ -117,8 +119,8 @@ const ControlButtons = () => {
             )}
 
             {toggleOrientation && (
-                <Tooltip title='Flip Board'>
-                    <IconButton aria-label='flip board' onClick={toggleOrientation}>
+                <Tooltip title={t('flipBoard')}>
+                    <IconButton aria-label={t('flipBoardAria')} onClick={toggleOrientation}>
                         <Flip sx={{ color: 'text.secondary' }} />
                     </IconButton>
                 </Tooltip>

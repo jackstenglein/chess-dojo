@@ -24,6 +24,7 @@ import {
     TabProps,
     Tabs,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { GiCrossedSwords } from 'react-icons/gi';
 import { Activity } from './Activity';
@@ -49,6 +50,7 @@ export function Tournament({
     const [showSubmitGame, setShowSubmitGame] = useState(false);
     const [showWithdraw, setShowWithdraw] = useState(false);
     const { user } = useAuth();
+    const t = useTranslations('tournaments.roundRobin.tournament');
 
     return (
         <Card>
@@ -65,7 +67,7 @@ export function Tournament({
                                     color='success'
                                     onClick={() => setShowSubmitGame(true)}
                                 >
-                                    Submit Game
+                                    {t('submitGame')}
                                 </Button>
 
                                 <Button
@@ -73,7 +75,7 @@ export function Tournament({
                                     color='error'
                                     onClick={() => setShowWithdraw(true)}
                                 >
-                                    Withdraw
+                                    {t('withdraw')}
                                 </Button>
                             </Stack>
 
@@ -83,7 +85,7 @@ export function Tournament({
                                     target='_blank'
                                     rel='noopener'
                                 >
-                                    Schedule games with other players in Discord
+                                    {t('scheduleDiscord')}
                                 </Link>
                             )}
                         </Stack>
@@ -93,19 +95,19 @@ export function Tournament({
                     <Tabs
                         variant='scrollable'
                         value={tab}
-                        onChange={(_, t: string) => setTab(t)}
+                        onChange={(_, newTab: string) => setTab(newTab)}
                         sx={{ borderBottom: 1, borderColor: 'divider' }}
                     >
-                        <Tab label='Players' value='players' icon={<PeopleAlt />} />
-                        <Tab label='Crosstable' value='crosstable' icon={<TableChart />} />
+                        <Tab label={t('tabPlayers')} value='players' icon={<PeopleAlt />} />
+                        <Tab label={t('tabCrosstable')} value='crosstable' icon={<TableChart />} />
                         <Tab
-                            label='Pairings'
+                            label={t('tabPairings')}
                             value='pairings'
                             icon={<GiCrossedSwords size={24} />}
                         />
-                        <Tab label='Games' value='games' icon={<PawnIcon />} />
-                        <Tab label='Activity' value='activity' icon={<CalendarMonth />} />
-                        <Tab label='Stats' value='stats' icon={<TimelineIcon />} />
+                        <Tab label={t('tabGames')} value='games' icon={<PawnIcon />} />
+                        <Tab label={t('tabActivity')} value='activity' icon={<CalendarMonth />} />
+                        <Tab label={t('tabStats')} value='stats' icon={<TimelineIcon />} />
                     </Tabs>
 
                     <TabPanel value='players' sx={{ px: 0 }}>

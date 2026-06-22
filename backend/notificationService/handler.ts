@@ -12,12 +12,12 @@ import { User } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { SQSEvent, SQSHandler } from 'aws-lambda';
 import { ApiError } from '../directoryService/api';
 import { dynamo, UpdateItemBuilder } from '../directoryService/database';
+import { handleBlogPublished } from './blog';
 import { handleClubJoinRequest, handleClubJoinRequestApproved } from './club';
 import { handleCalendarInvite, handleEventBooked } from './events';
 import { handleGameComment, handleGameReview, handleGameReviewSubmitted } from './game';
-import { handleBlogPublished } from './blog';
 import { handleRoundRobinStart } from './roundRobin';
-import { handleSubscriptionCreated } from './subscription';
+import { handleGameReviewSignup, handleSubscriptionCreated } from './subscription';
 import { handleTimelineComment, handleTimelineReaction } from './timeline';
 
 const userTable = process.env.stage + '-users';
@@ -65,6 +65,8 @@ function handleEvent(event: NotificationEvent) {
             return handleCalendarInvite(event);
         case NotificationEventTypes.ROUND_ROBIN_START:
             return handleRoundRobinStart(event);
+        case NotificationEventTypes.GAME_REVIEW_SIGNUP:
+            return handleGameReviewSignup(event);
         case NotificationEventTypes.SUBSCRIPTION_CREATED:
             return handleSubscriptionCreated(event);
         case NotificationEventTypes.BLOG_PUBLISHED:

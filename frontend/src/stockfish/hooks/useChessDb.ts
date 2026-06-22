@@ -9,9 +9,11 @@ import { ChessDBService } from '@/api/chessdbService';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { EventType } from '@jackstenglein/chess';
 import { validateFen } from 'chess.js';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; enablePv: boolean }) {
+    const t = useTranslations('analysisBoard.engine');
     const { chess } = useChess();
     const [data, setData] = useState<ChessDbMove[]>([]);
     const [loading, setLoading] = useState(false);
@@ -30,12 +32,12 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 setQueueing(true);
                 await chessDbService.queueAnalysis(fenString);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to queue analysis');
+                setError(err instanceof Error ? err.message : t('failedToQueueAnalysis'));
             } finally {
                 setQueueing(false);
             }
         },
-        [chessDbService],
+        [chessDbService, t],
     );
 
     const fetchPv = useCallback(
@@ -79,7 +81,7 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 return;
             }
             if (!validateFen(fenString)) {
-                setError('Invalid FEN provided');
+                setError(t('invalidFen'));
                 setData([]);
                 return;
             }
@@ -107,12 +109,12 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 }
             } catch (err) {
                 setData([]);
-                setError(err instanceof Error ? err.message : 'Failed to fetch data');
+                setError(err instanceof Error ? err.message : t('failedToFetchData'));
             } finally {
                 setLoading(false);
             }
         },
-        [queueAnalysis, chessDbService],
+        [queueAnalysis, chessDbService, t],
     );
 
     useEffect(() => {

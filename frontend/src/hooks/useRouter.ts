@@ -1,5 +1,17 @@
-import { useRouter as useNextRouter, usePathname } from 'next/navigation';
+import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
+import { useRouter as useNextRouter, usePathname } from '@/i18n/navigation';
+import { useLocale } from 'next-intl';
 
+const LOCALE_PREFIX_REGEX = new RegExp(`^/(${LOCALE_CODES.join('|')})(?=/|$)`);
+
+function isAbsoluteUrl(href: string): boolean {
+    return /^[a-z]+:/i.test(href) || href.startsWith('//');
+}
+
+// Regexes match the locale-stripped pathname returned by next-intl's
+// usePathname(). Do NOT prefix with /${locale} — next.config.mjs handles
+// COEP-header source matching separately via its own flatMap that emits
+// both bare and prefixed variants.
 export const pagesWithVideos = [
     /^\/$/,
     /\/profile.*/,
@@ -35,13 +47,27 @@ export const pagesWithVideos = [
 /**
  * A hook that allows you to programmatically change routes inside client components.
  * If the route includes a video (and therefore needs headers to be reloaded), a
- * hard reload is used instead of client-side routing.
+ * hard reload is used instead of client-side routing. Must be invoked inside
+ * NextIntlClientProvider (guaranteed by app/[locale]/layout.tsx).
  */
 export function useRouter() {
     const router = useNextRouter();
     const pathname = usePathname();
+    const locale = useLocale();
 
-    const push = (href: string) => {
+    const push = (href: string, options?: { scroll?: boolean; locale?: string }) => {
+        // Absolute URLs (Stripe checkout, OAuth callbacks, etc.) skip both
+        // locale-prefixing and video-boundary logic.
+        if (isAbsoluteUrl(href)) {
+            window.location.href = href;
+            return;
+        }
+
+        // Strip any stale locale prefix so soft-push doesn't double-prefix and
+        // the video regex matches against the canonical unprefixed form.
+        const normalized = href.replace(LOCALE_PREFIX_REGEX, '') || '/';
+        const targetLocale = options?.locale ?? locale;
+
         let currentHasVideo = false;
         let newHasVideo = false;
 
@@ -49,15 +75,17 @@ export function useRouter() {
             if (!currentHasVideo && pathname.match(page)) {
                 currentHasVideo = true;
             }
-            if (!newHasVideo && href.match(page)) {
+            if (!newHasVideo && normalized.match(page)) {
                 newHasVideo = true;
             }
         }
 
         if (currentHasVideo === newHasVideo) {
-            router.push(href);
+            router.push(normalized, options);
+        } else if (targetLocale === DEFAULT_LOCALE) {
+            window.location.href = normalized;
         } else {
-            window.location.href = href;
+            window.location.href = `/${targetLocale}${normalized}`;
         }
     };
 

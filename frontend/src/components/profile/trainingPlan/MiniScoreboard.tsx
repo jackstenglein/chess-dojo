@@ -18,6 +18,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 /**
@@ -61,6 +62,7 @@ const formatTime = (minutes: number): string => {
 };
 
 export function MiniScoreboard({ cohort }: { cohort: string }) {
+    const t = useTranslations('profile.trainingPlan.miniScoreboard');
     const api = useApi();
     const request = useRequest<ScoreboardRow[]>();
     const [metric, setMetric] = useState<'score' | 'time'>('score');
@@ -118,13 +120,13 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
     } else if (request.data === undefined && request.isSent()) {
         content = (
             <Typography variant='body2' color='error' align='center' py={2}>
-                Failed to load leaderboard data.
+                {t('loadError')}
             </Typography>
         );
     } else if (topPlayers.length === 0) {
         content = (
             <Typography variant='body2' color='text.secondary' align='center' py={2}>
-                No users currently in this cohort.
+                {t('empty')}
             </Typography>
         );
     } else {
@@ -138,7 +140,7 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                     data-testid='mini-scoreboard-headers'
                 >
                     <Typography variant='caption' color='text.secondary' fontWeight='bold'>
-                        Name
+                        {t('name')}
                     </Typography>
                 </Stack>
 
@@ -202,7 +204,7 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
     return (
         <Stack spacing={2} width={1} mt={4}>
             <Typography variant='h5' fontWeight='bold'>
-                Mini Scoreboard
+                {t('heading')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1 }}>
                 <CardContent>
@@ -220,15 +222,15 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                         </Stack>
                         <TextField
                             select
-                            label='Type'
+                            label={t('type')}
                             value={metric}
                             onChange={(e) => setMetric(e.target.value as 'score' | 'time')}
                             size='small'
                             sx={{ minWidth: 140 }}
                             data-testid='scoreboard-metric-select'
                         >
-                            <MenuItem value='score'>Dojo Score</MenuItem>
-                            <MenuItem value='time'>Training Time</MenuItem>
+                            <MenuItem value='score'>{t('dojoScore')}</MenuItem>
+                            <MenuItem value='time'>{t('trainingTime')}</MenuItem>
                         </TextField>
                     </Stack>
                     {content}
@@ -241,7 +243,7 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                         fullWidth
                         variant='text'
                     >
-                        View Full Scoreboard
+                        {t('viewFullScoreboard')}
                     </Button>
                 </CardContent>
             </Card>

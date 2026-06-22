@@ -19,7 +19,10 @@ import {
     Typography,
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+
+type StatsT = (key: string, values?: Record<string, string | number>) => string;
 
 /**
  * Renders the stats for the given Round Robin tournament.
@@ -28,18 +31,22 @@ import { useState } from 'react';
 export function Stats({ tournament }: { tournament: RoundRobin }) {
     const [viewMode, setViewMode] = useState<'count' | 'percentage'>('count');
     const [displayMode, setDisplayMode] = useState<'graph' | 'list'>('graph');
+    const t = useTranslations('tournaments.roundRobin.stats');
 
     return (
         <Stack spacing={3}>
             <Stack>
                 <Typography variant='subtitle1'>
-                    Time Elapsed: {calculateElapsedTime(tournament.startDate)}
+                    {t('timeElapsed', { value: calculateElapsedTime(t, tournament.startDate) })}
                 </Typography>
                 <Typography variant='subtitle1'>
-                    Time Remaining: {calculateRemainingTime(tournament.endDate)}
+                    {t('timeRemaining', { value: calculateRemainingTime(t, tournament.endDate) })}
                 </Typography>
                 <Typography variant='subtitle1'>
-                    Games Completed: {countCompletedGames(tournament)}/{countTotalGames(tournament)}
+                    {t('gamesCompleted', {
+                        completed: countCompletedGames(tournament),
+                        total: countTotalGames(tournament),
+                    })}
                 </Typography>
             </Stack>
 
@@ -51,10 +58,10 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
                         newViewMode && setViewMode(newViewMode)
                     }
                     size='small'
-                    aria-label='view mode toggle'
+                    aria-label={t('viewModeAriaLabel')}
                 >
-                    <ToggleButton value='count'>Count</ToggleButton>
-                    <ToggleButton value='percentage'>Percentage</ToggleButton>
+                    <ToggleButton value='count'>{t('viewCount')}</ToggleButton>
+                    <ToggleButton value='percentage'>{t('viewPercentage')}</ToggleButton>
                 </ToggleButtonGroup>
 
                 <ToggleButtonGroup
@@ -64,10 +71,10 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
                     onChange={(_e, newDisplayMode: 'graph' | 'list' | null) =>
                         newDisplayMode && setDisplayMode(newDisplayMode)
                     }
-                    aria-label='display mode toggle'
+                    aria-label={t('displayModeAriaLabel')}
                 >
-                    <ToggleButton value='graph'>Graph</ToggleButton>
-                    <ToggleButton value='list'>List</ToggleButton>
+                    <ToggleButton value='graph'>{t('displayGraph')}</ToggleButton>
+                    <ToggleButton value='list'>{t('displayList')}</ToggleButton>
                 </ToggleButtonGroup>
             </Stack>
 
@@ -84,49 +91,52 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
 
 /**
  * Returns a string representation of the time elapsed since the given date.
+ * @param t Translation function.
  * @param start The date to start from.
  */
-function calculateElapsedTime(start: string) {
+function calculateElapsedTime(t: StatsT, start: string) {
     const elapsed = new Date().getTime() - new Date(start).getTime();
-    return formatTime(elapsed);
+    return formatTime(t, elapsed);
 }
 
 /**
  * Returns a string representation of the time remaining until the given date.
+ * @param t Translation function.
  * @param end The date to end at.
  */
-function calculateRemainingTime(end: string) {
-    return formatTime(new Date(end).getTime() - new Date().getTime());
+function calculateRemainingTime(t: StatsT, end: string) {
+    return formatTime(t, new Date(end).getTime() - new Date().getTime());
 }
 
 /**
  * Returns a string representation of the given number of milliseconds.
  * If the value is greater than an hour, only hours and days are included in the output.
+ * @param t Translation function.
  * @param milliseconds The number of milliseconds to convert.
  * @returns A string representation of milliseconds.
  */
-function formatTime(milliseconds: number): string {
+function formatTime(t: StatsT, milliseconds: number): string {
     let value = '';
 
     if (milliseconds > 8.64e7) {
         const days = Math.floor(milliseconds / 8.64e7);
         milliseconds = milliseconds % 8.64e7;
-        value += `${days} day${days !== 1 ? 's' : ''}, `;
+        value += t('daysUnit', { days }) + ', ';
     }
 
     if (milliseconds > 3.6e6) {
         const hours = Math.floor(milliseconds / 3.6e6);
         milliseconds = milliseconds % 3.6e6;
-        value += `${hours} hour${hours !== 1 ? 's' : ''}`;
+        value += t('hoursUnit', { hours });
     }
 
     if (value.length === 0 && milliseconds > 60000) {
         const minutes = Math.floor(milliseconds / 60000);
-        value += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        value += t('minutesUnit', { minutes });
     }
 
     if (value.length === 0) {
-        return 'less than a minute';
+        return t('lessThanMinute');
     }
 
     return value.replace(/, $/, '');
@@ -203,6 +213,7 @@ function GraphView({
     tournament: RoundRobin;
     viewMode: 'count' | 'percentage';
 }) {
+    const t = useTranslations('tournaments.roundRobin.stats');
     const playerStats = calculatePlayerStatsList(tournament);
     const playerNames = playerStats.map((stat) => stat.player);
 
@@ -237,11 +248,17 @@ function GraphView({
             <BarChart
                 xAxis={[{ data: playerNames, scaleType: 'band' }]}
                 series={[
-                    { data: wins, label: viewMode === 'count' ? 'Wins' : 'Win %' },
-                    { data: draws, label: viewMode === 'count' ? 'Draws' : 'Draw %' },
+                    {
+                        data: wins,
+                        label: viewMode === 'count' ? t('seriesWins') : t('seriesWinsPct'),
+                    },
+                    {
+                        data: draws,
+                        label: viewMode === 'count' ? t('seriesDraws') : t('seriesDrawsPct'),
+                    },
                     {
                         data: losses,
-                        label: viewMode === 'count' ? 'Losses' : 'Loss %',
+                        label: viewMode === 'count' ? t('seriesLosses') : t('seriesLossesPct'),
                     },
                 ]}
                 height={400}
@@ -262,6 +279,7 @@ function ListView({
     tournament: RoundRobin;
     viewMode: 'count' | 'percentage';
 }) {
+    const t = useTranslations('tournaments.roundRobin.stats');
     const playerStats = calculatePlayerStatsList(tournament);
 
     return (
@@ -270,26 +288,26 @@ function ListView({
                 <TableHead>
                     <TableRow>
                         <TableCell>
-                            <Typography fontWeight='bold'>Player</Typography>
+                            <Typography fontWeight='bold'>{t('columnPlayer')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
                             <Typography fontWeight='bold'>
-                                {viewMode === 'count' ? 'Total Score' : 'Total %'}
+                                {viewMode === 'count' ? t('columnTotalScore') : t('columnTotalPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
                             <Typography fontWeight='bold'>
-                                {viewMode === 'count' ? 'Wins' : 'Win %'}
+                                {viewMode === 'count' ? t('columnWins') : t('columnWinsPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
                             <Typography fontWeight='bold'>
-                                {viewMode === 'count' ? 'Draws' : 'Draw %'}
+                                {viewMode === 'count' ? t('columnDraws') : t('columnDrawsPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
                             <Typography fontWeight='bold'>
-                                {viewMode === 'count' ? 'Losses' : 'Loss %'}
+                                {viewMode === 'count' ? t('columnLosses') : t('columnLossesPct')}
                             </Typography>
                         </TableCell>
                     </TableRow>

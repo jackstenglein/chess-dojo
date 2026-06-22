@@ -1,10 +1,11 @@
 import { ChessContext } from '@/board/pgn/PgnBoard';
+import { renderWithIntl } from '@/i18n/intl.test';
 import { Chess, Move } from '@jackstenglein/chess';
 import { secondsToClock } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterLuxon } from '@mui/x-date-pickers-pro/AdapterLuxon';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ClockFieldFormat, ClockFieldFormatKey } from '../settings/EditorSettings';
 import ClockTextField from './ClockTextField';
@@ -61,7 +62,7 @@ function makeMove(overrides: Partial<Move> = {}): Move {
 }
 
 function renderWithChess(ui: React.ReactElement, chess: Chess | undefined) {
-    return render(
+    return renderWithIntl(
         <ChessContext.Provider value={{ chess }}>
             <TestProviders>{ui}</TestProviders>
         </ChessContext.Provider>,

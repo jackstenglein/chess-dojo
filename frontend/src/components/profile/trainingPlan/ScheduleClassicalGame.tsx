@@ -5,7 +5,6 @@ import { Link } from '@/components/navigation/Link';
 import { RequirementCategory } from '@/database/requirement';
 import { dojoCohorts, GameScheduleEntry } from '@/database/user';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { AddCircle, Check, Delete, Help, NotInterested } from '@mui/icons-material';
 import {
     Box,
@@ -30,6 +29,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import {
     CLASSICAL_GAMES_TASK_ID,
@@ -41,6 +41,9 @@ import { TimeProgressChip } from './TimeProgressChip';
 import { TrainingPlanContext } from './TrainingPlanTab';
 
 export function ScheduleClassicalGameDaily() {
+    const t = useTranslations('profile.trainingPlan.scheduleGame');
+    const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { user, isCurrentUser, toggleSkip } = use(TrainingPlanContext);
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
@@ -66,13 +69,13 @@ export function ScheduleClassicalGameDaily() {
                         <Stack spacing={1} alignItems='start'>
                             <Chip
                                 variant='outlined'
-                                label={displayRequirementCategory(RequirementCategory.Games)}
+                                label={tCategory(RequirementCategory.Games)}
                                 color={themeRequirementCategory(RequirementCategory.Games)}
                                 size='small'
                             />
 
                             <Typography variant='h6' fontWeight='bold'>
-                                Schedule Your Next Classical Game
+                                {t('title')}
                             </Typography>
                         </Stack>
 
@@ -88,17 +91,12 @@ export function ScheduleClassicalGameDaily() {
                                 textOverflow: 'ellipsis',
                             }}
                         >
-                            <Typography>
-                                It is essential to play longer games to build your intuition and
-                                calculation skills. You will also need something substantive to
-                                review afterwards. In general, blitz/rapid games are far less useful
-                                for maximizing long-term improvement.
-                            </Typography>
+                            <Typography>{t('cardDescription')}</Typography>
                         </Box>
                     </CardContent>
                 </CardActionArea>
                 <CardActions disableSpacing>
-                    <Tooltip title='View task details'>
+                    <Tooltip title={tCommon('viewTaskDetails')}>
                         <IconButton
                             sx={{ color: 'text.secondary' }}
                             onClick={() => setTaskDialogView(TaskDialogView.Details)}
@@ -109,7 +107,7 @@ export function ScheduleClassicalGameDaily() {
 
                     {isCurrentUser && (
                         <>
-                            <Tooltip title='Skip for the rest of the week'>
+                            <Tooltip title={tCommon('skipForWeek')}>
                                 <IconButton
                                     onClick={() =>
                                         toggleSkip(
@@ -128,13 +126,13 @@ export function ScheduleClassicalGameDaily() {
                         </>
                     )}
 
-                    <Tooltip title={isCurrentUser ? 'Schedule Game' : ''}>
+                    <Tooltip title={isCurrentUser ? t('scheduleGameTooltip') : ''}>
                         <TimeProgressChip
                             value={upcomingGames.length}
                             goal={1}
                             slotProps={{
                                 chip: {
-                                    label: `${upcomingGames.length} game${upcomingGames.length !== 1 ? 's' : ''}`,
+                                    label: t('gamesLabel', { count: upcomingGames.length }),
                                     icon:
                                         upcomingGames.length > 0 ? (
                                             <Check fontSize='inherit' color='success' />
@@ -162,6 +160,7 @@ export function ScheduleClassicalGameDaily() {
 }
 
 export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
+    const t = useTranslations('profile.trainingPlan.scheduleGame');
     const { user } = useAuth();
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
@@ -203,12 +202,12 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                             mt: 1,
                         }}
                     >
-                        Schedule Your Next Classical Game
+                        {t('title')}
                     </Typography>
                 </Grid>
                 <Grid size={{ xs: 2, sm: 'auto' }}>
                     <Stack direction='row' alignItems='center' justifyContent='end'>
-                        <Tooltip title='Update'>
+                        <Tooltip title={t('updateTooltip')}>
                             <Checkbox
                                 checked={upcomingGames.length > 0}
                                 onClick={() => setTaskDialogView(TaskDialogView.Progress)}
@@ -241,6 +240,8 @@ function ScheduleClassicalGameDialog({
     onClose,
     initialView,
 }: ScheduleClassicalGameDialogProps) {
+    const t = useTranslations('profile.trainingPlan.scheduleGame');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     const [view, setView] = useState(initialView);
     const [entries, setEntries] = useState<ScheduleFormEntry[]>(
@@ -260,18 +261,18 @@ function ScheduleClassicalGameDialog({
             parsed.push({ date: entry.date?.toUTC().toISO() ?? '', count });
 
             if (entry.date === null) {
-                errors[i] = { date: 'This field is required' };
+                errors[i] = { date: t('dateRequired') };
             }
 
             if (!entry.count) {
-                errors[i] = { ...errors[i], count: 'This field is required' };
+                errors[i] = { ...errors[i], count: t('countRequired') };
             } else if (!/^[0-9]+$/.test(entry.count)) {
                 errors[i] = {
                     ...errors[i],
-                    count: 'Only numeric characters are accepted',
+                    count: t('countNumeric'),
                 };
             } else if (count < 1) {
-                errors[i] = { ...errors[i], count: 'At least one game is required' };
+                errors[i] = { ...errors[i], count: t('countMinOne') };
             }
         });
 
@@ -300,7 +301,7 @@ function ScheduleClassicalGameDialog({
             maxWidth='md'
             fullWidth
         >
-            <DialogTitle>Schedule Your Next Classical Game</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
 
             <DialogContent>
                 {view === TaskDialogView.Details && <ScheduleClassicalGameDialogDetails />}
@@ -315,11 +316,11 @@ function ScheduleClassicalGameDialog({
 
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
                 {view === TaskDialogView.Details ? (
                     <Button onClick={() => setView(TaskDialogView.Progress)}>
-                        Update Schedule
+                        {t('updateSchedule')}
                     </Button>
                 ) : (
                     <>
@@ -327,10 +328,10 @@ function ScheduleClassicalGameDialog({
                             disabled={request.isLoading()}
                             onClick={() => setView(TaskDialogView.Details)}
                         >
-                            Task Details
+                            {tCommon('taskDetails')}
                         </Button>
                         <Button loading={request.isLoading()} onClick={onSave}>
-                            Save
+                            {tCommon('save')}
                         </Button>
                     </>
                 )}
@@ -340,6 +341,7 @@ function ScheduleClassicalGameDialog({
 }
 
 function ScheduleClassicalGameDialogDetails() {
+    const t = useTranslations('profile.trainingPlan.scheduleGame');
     const { user } = useAuth();
 
     let minTimeControl = '30+0';
@@ -358,37 +360,39 @@ function ScheduleClassicalGameDialogDetails() {
 
     return (
         <Stack>
-            <Typography>
-                It is essential to play longer games to build your intuition and calculation skills.
-                You will also need something substantive to review afterwards. In general,
-                blitz/rapid games are far less useful for maximizing long-term improvement.
-            </Typography>
+            <Typography>{t('detailsParagraph1')}</Typography>
 
             <Typography mt={3}>
-                For the {user?.dojoCohort} cohort,{' '}
-                <strong>we recommend a minimum time control of {minTimeControl}</strong>. You can
-                also play an alternate time control as long as the base time + increment is greater
-                than or equal to what we've suggested. E.g. for 60+30 (which adds up to 90), 45+45
-                would also be acceptable, as well as 75+15, 85+5, etc. as long as you have a minimum
-                starting time of 30 minutes (you cannot play 1+90).
+                {t.rich('detailsParagraph2', {
+                    cohort: user?.dojoCohort ?? '',
+                    minTimeControl,
+                    strong: (chunks: React.ReactNode) => <strong>{chunks}</strong>,
+                })}
             </Typography>
 
             <Typography component='div' sx={{ mt: 3 }}>
-                We recommend playing OTB at local tournaments or clubs. The Dojo also offers
-                multiple options for playing classical games online:
+                {t('detailsParagraph3')}
                 <ul>
                     <li>
-                        <Link href='/tournaments/round-robin'>Round Robin</Link> — 9-round
-                        tournament, with up to 3 months to schedule and play all your games.
-                        Registration is always open.
+                        {t.rich('roundRobinItem', {
+                            roundRobinLink: (chunks: React.ReactNode) => (
+                                <Link href='/tournaments/round-robin'>{chunks}</Link>
+                            ),
+                        })}
                     </li>
                     <li>
-                        <Link href='/tournaments/open-classical'>Open Classical</Link> — 7-round
-                        tournament, with one game per week. Registration opens every 7 weeks.
+                        {t.rich('openClassicalItem', {
+                            openClassicalLink: (chunks: React.ReactNode) => (
+                                <Link href='/tournaments/open-classical'>{chunks}</Link>
+                            ),
+                        })}
                     </li>
                     <li>
-                        <Link href='/calendar'>Calendar</Link> — Schedule one-off games with other
-                        Dojo members.
+                        {t.rich('calendarItem', {
+                            calendarLink: (chunks: React.ReactNode) => (
+                                <Link href='/calendar'>{chunks}</Link>
+                            ),
+                        })}
                     </li>
                 </ul>
             </Typography>
@@ -410,6 +414,8 @@ function ScheduleClassicalGameDialogProgress({
     setEntries: (value: ScheduleFormEntry[]) => void;
     errors: Record<number, { date?: string; count?: string }>;
 }) {
+    const t = useTranslations('profile.trainingPlan.scheduleGame');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const onChangeDate = (i: number, date: DateTime | null) => {
         setEntries([...entries.slice(0, i), { ...entries[i], date }, ...entries.slice(i + 1)]);
     };
@@ -431,7 +437,7 @@ function ScheduleClassicalGameDialogProgress({
             {entries.map((entry, i) => (
                 <Stack key={i} direction='row' columnGap={2} width={1} alignItems='baseline'>
                     <DatePicker
-                        label='Date'
+                        label={tCommon('date')}
                         disablePast
                         value={entry.date}
                         onChange={(date) => onChangeDate(i, date)}
@@ -444,14 +450,14 @@ function ScheduleClassicalGameDialogProgress({
                         }}
                     />
                     <TextField
-                        label='Number of Games'
+                        label={t('numberOfGames')}
                         value={entry.count}
                         onChange={(event) => onChangeCount(i, event.target.value)}
                         fullWidth
                         error={!!errors[i]?.count}
                         helperText={errors[i]?.count}
                     />
-                    <Tooltip title='Delete'>
+                    <Tooltip title={t('deleteEntry')}>
                         <IconButton onClick={() => onRemove(i)}>
                             <Delete />
                         </IconButton>
@@ -460,7 +466,7 @@ function ScheduleClassicalGameDialogProgress({
             ))}
 
             <Button startIcon={<AddCircle />} onClick={onAddDate}>
-                Add Date
+                {t('addDate')}
             </Button>
         </Stack>
     );

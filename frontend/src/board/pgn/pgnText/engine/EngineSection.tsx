@@ -14,6 +14,7 @@ import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
 import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { EvaluationSection } from './EvaluationSection';
@@ -21,6 +22,7 @@ import { formatLineEval } from './LineEval';
 import Settings from './Settings';
 
 export default function EngineSection() {
+    const t = useTranslations('analysisBoard.engine');
     const [engineName] = useLocalStorage(ENGINE_NAME.Key, ENGINE_NAME.Default);
     let engineInfo = engines.find((e) => e.name === engineName);
     if (!engineInfo) {
@@ -79,7 +81,7 @@ export default function EngineSection() {
         >
             <Stack sx={{ p: 1, containerType: 'inline-size' }}>
                 <Stack direction='row' alignItems='center'>
-                    <Tooltip title='Toggle Engine' disableInteractive>
+                    <Tooltip title={t('toggleEngineTooltip')} disableInteractive>
                         <Switch
                             checked={enabled}
                             onChange={(e) => {
@@ -102,10 +104,7 @@ export default function EngineSection() {
                                       })
                                     : formatLineEval(engineLines[0])}
                             </Typography>
-                            <Tooltip
-                                title="The engine's expected Win / Draw / Loss percentages"
-                                disableInteractive
-                            >
+                            <Tooltip title={t('wdlTooltip')} disableInteractive>
                                 <Typography variant='caption' sx={{ whiteSpace: 'nowrap' }}>
                                     {resultPercentages?.win ?? '?'} /{' '}
                                     {resultPercentages?.draw ?? '?'} /{' '}
@@ -126,7 +125,10 @@ export default function EngineSection() {
                                 {engineInfo.shortName}
                             </Typography>
 
-                            <Tooltip title={engineInfo.techDescription} disableInteractive>
+                            <Tooltip
+                                title={t(`engineTechDescription_${engineInfo.name}`)}
+                                disableInteractive
+                            >
                                 <Typography
                                     color='dojoOrange'
                                     variant='caption'
@@ -149,11 +151,11 @@ export default function EngineSection() {
                         {(function engineDescription() {
                             if (!enabled) {
                                 return (
-                                    <Typography variant='caption'>{engineInfo.location}</Typography>
+                                    <Typography variant='caption'>{t('engineLocation')}</Typography>
                                 );
                             }
                             if (isGameOver) {
-                                return <Typography variant='caption'>Game Over</Typography>;
+                                return <Typography variant='caption'>{t('gameOver')}</Typography>;
                             }
 
                             return (
@@ -165,10 +167,14 @@ export default function EngineSection() {
                                         }}
                                     >
                                         <Tooltip
-                                            title={`Local engine evaluation depth: ${engineLines[0].depth}`}
+                                            title={t('localDepthTooltip', {
+                                                depth: engineLines[0].depth,
+                                            })}
                                         >
                                             <Typography variant='caption'>
-                                                Depth {engineLines[0].depth}
+                                                {t('depthDisplay', {
+                                                    depth: engineLines[0].depth,
+                                                })}
                                             </Typography>
                                         </Tooltip>
                                         <Typography
@@ -180,12 +186,12 @@ export default function EngineSection() {
                                         >
                                             {' • '}
                                         </Typography>
-                                        <NodesPerSecond nps={engineLines[0].nps} />
+                                        <NodesPerSecond nps={engineLines[0].nps} t={t} />
                                     </Box>
 
                                     {showCloudDepth && (
                                         <Tooltip
-                                            title={`Cloud DB evaluation depth: ${chessDbDepth}`}
+                                            title={t('cloudDepthTooltip', { depth: chessDbDepth })}
                                             disableInteractive
                                         >
                                             <Stack direction='row' alignItems='center' spacing={1}>
@@ -202,7 +208,7 @@ export default function EngineSection() {
                                                     variant='caption'
                                                     sx={{ color: 'text.secondary' }}
                                                 >
-                                                    Depth {chessDbDepth}
+                                                    {t('depthDisplay', { depth: chessDbDepth })}
                                                 </Typography>
                                             </Stack>
                                         </Tooltip>
@@ -232,7 +238,13 @@ export default function EngineSection() {
     );
 }
 
-function NodesPerSecond({ nps }: { nps?: number }) {
+function NodesPerSecond({
+    nps,
+    t,
+}: {
+    nps?: number;
+    t: ReturnType<typeof useTranslations<'analysisBoard.engine'>>;
+}) {
     if (!nps) return null;
 
     let text = '';
@@ -243,7 +255,7 @@ function NodesPerSecond({ nps }: { nps?: number }) {
     }
 
     return (
-        <Tooltip title='Nodes (positions searched) per second' disableInteractive>
+        <Tooltip title={t('npsTooltip')} disableInteractive>
             <Typography variant='caption'>{text}</Typography>
         </Tooltip>
     );

@@ -5,6 +5,7 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Warning } from '@mui/icons-material';
 import { Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface ParticipantsListProps {
     event: Event;
@@ -19,6 +20,7 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
     showPaymentWarning,
     hideOwner,
 }) => {
+    const t = useTranslations('calendar');
     const user = useAuth().user;
 
     return (
@@ -53,8 +55,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
                                 <Tooltip
                                     title={
                                         user.username === event.owner
-                                            ? 'This user has not paid and will lose their booking in <30 min'
-                                            : 'You have not completed payment and will lose your booking soon'
+                                            ? t('participantPaymentWarningOther')
+                                            : t('participantPaymentWarningSelf')
                                     }
                                 >
                                     <Warning color='warning' />

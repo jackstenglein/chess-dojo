@@ -49,6 +49,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ReactNode, RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown, useLocalStorage } from 'usehooks-ts';
 import { PuzzleSessionChart } from '../chart/PuzzleSessionChart';
@@ -199,6 +200,7 @@ async function updateProgress({
 }
 
 function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
+    const t = useTranslations('puzzles.checkmate');
     const { updateUser } = useAuth();
     const api = useApi();
     const requestTracker = useRequest<NextPuzzleResponse>();
@@ -409,7 +411,7 @@ function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
                 underboardTabs={[
                     {
                         name: 'puzzles',
-                        tooltip: 'Puzzle Details',
+                        tooltip: t('tooltipPuzzleDetails'),
                         icon: <Extension />,
                         element: (
                             <CheckmatePuzzleUnderboard
@@ -426,7 +428,7 @@ function AuthCheckmatePuzzlePage({ user, id }: { user: User; id?: string }) {
                     },
                     {
                         name: 'puzzleSettings',
-                        tooltip: 'Settings',
+                        tooltip: t('tooltipSettings'),
                         icon: <Settings />,
                         element: <PuzzleSettings onChangeOptions={requestTracker.reset} />,
                     },
@@ -488,6 +490,7 @@ function CheckmatePuzzleUnderboard({
     /** The user's current session. */
     session: PuzzleSession;
 }) {
+    const t = useTranslations('puzzles.checkmate');
     const { solitaire } = useChess();
     const [rated] = useLocalStorage(RATED_KEY, true);
     const [showTimer] = useLocalStorage(SHOW_TIMER_KEY, true);
@@ -521,14 +524,15 @@ function CheckmatePuzzleUnderboard({
 
                     <Stack>
                         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-                            {orientation[0].toUpperCase()}
-                            {orientation.slice(1)} to move
+                            {orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
                         </Typography>
                         <Typography variant='subtitle1' color='text.secondary' fontWeight='bold'>
-                            Mate in{' '}
-                            {puzzle?.themes
-                                .find((t) => t.startsWith('mateIn'))
-                                ?.replaceAll('mateIn', '')}
+                            {t('mateIn', {
+                                count:
+                                    puzzle?.themes
+                                        .find((theme) => theme.startsWith('mateIn'))
+                                        ?.replaceAll('mateIn', '') ?? '',
+                            })}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -548,7 +552,7 @@ function CheckmatePuzzleUnderboard({
                             <Typography variant='h4' fontWeight='bold'>
                                 {rated
                                     ? `${Math.round(displayedRating)}${ratingDeviation >= PROVISIONAL_PUZZLE_RATING_DEVIATION ? '?' : ''}`
-                                    : 'Unrated'}
+                                    : t('unrated')}
                             </Typography>
                             {showRating && rated && (solitaire?.complete || ratingChange !== 0) && (
                                 <Typography
@@ -585,7 +589,7 @@ function CheckmatePuzzleUnderboard({
                     <Stack direction='row' alignItems='center' mt={1} gap={0.5}>
                         <LocalFireDepartment color='dojoOrange' sx={{ fontSize: 30 }} />
                         <Typography variant='h6' color='dojoOrange' fontWeight='bold'>
-                            {streak} in a row!
+                            {t('streakRow', { streak })}
                         </Typography>
                     </Stack>
                 )}
@@ -596,32 +600,32 @@ function CheckmatePuzzleUnderboard({
 
                 {solitaire?.complete && puzzle && (
                     <Stack mt={2}>
-                        <PuzzleDetailRow label='Puzzle ID' value={puzzle.id} />
+                        <PuzzleDetailRow label={t('puzzleId')} value={puzzle.id} />
                         {showRating && (
                             <>
                                 <PuzzleDetailRow
-                                    label='Puzzle Rating'
+                                    label={t('puzzleRating')}
                                     value={Math.round(puzzle.rating)}
                                 />
                                 <PuzzleDetailRow
-                                    label='Puzzle Rating Deviation'
+                                    label={t('puzzleRatingDeviation')}
                                     value={Math.round(puzzle.ratingDeviation)}
                                 />
                                 <PuzzleDetailRow
-                                    label='Your Rating Deviation'
+                                    label={t('yourRatingDeviation')}
                                     value={Math.round(ratingDeviation)}
                                 />
                             </>
                         )}
-                        <PuzzleDetailRow label='Total Attempts' value={puzzle.plays + 1} />
+                        <PuzzleDetailRow label={t('totalAttempts')} value={puzzle.plays + 1} />
                         <PuzzleDetailRow
-                            label='Successful Attempts'
+                            label={t('successfulAttempts')}
                             value={`${successfulPlays} (${Math.round((1000 * successfulPlays) / (puzzle.plays + 1)) / 10}%)`}
                         />
-                        <PuzzleDetailRow label='Target Time' value='01:00' />
-                        <PuzzleDetailRow label='Used Time' value={formatTime(seconds)} />
+                        <PuzzleDetailRow label={t('targetTime')} value='01:00' />
+                        <PuzzleDetailRow label={t('usedTime')} value={formatTime(seconds)} />
                         <Typography variant='body2' mt={0.5} alignSelf='end'>
-                            <Link href='/puzzles/history'>View Puzzle History</Link>
+                            <Link href='/puzzles/history'>{t('viewPuzzleHistory')}</Link>
                         </Typography>
                     </Stack>
                 )}
@@ -656,6 +660,7 @@ function AfterPgnText({
     result?: 'win' | 'loss';
     onNextPuzzle: () => void;
 }) {
+    const t = useTranslations('puzzles.checkmate');
     const { solitaire, keydownMap } = useChess();
     const [keyBindings] = useLocalStorage(ShortcutBindings.key, ShortcutBindings.default);
     const keyBinding =
@@ -689,11 +694,13 @@ function AfterPgnText({
                     <Tooltip
                         title={
                             keyBinding.key || keyBinding.modifier
-                                ? `Shortcut: ${keyBinding.modifier}${keyBinding.modifier ? '+' : ''}${keyBinding.key}`
+                                ? t('shortcut', {
+                                      keys: `${keyBinding.modifier}${keyBinding.modifier ? '+' : ''}${keyBinding.key}`,
+                                  })
                                 : ''
                         }
                     >
-                        <Button onClick={onNextPuzzle}>Next Puzzle</Button>
+                        <Button onClick={onNextPuzzle}>{t('nextPuzzle')}</Button>
                     </Tooltip>
                 </Box>
             </Stack>

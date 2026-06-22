@@ -51,6 +51,8 @@ export default defineConfig([
             'react-hooks/refs': 'warn',
             'react-hooks/set-state-in-effect': 'warn',
             'react-hooks/preserve-manual-memoization': 'off',
+            'react-hooks/immutability': 'warn',
+            'react-hooks/purity': 'warn',
         },
         settings: {
             react: {
@@ -90,6 +92,10 @@ export default defineConfig([
             '@typescript-eslint/no-base-to-string': [
                 'error',
                 { ignoredTypeNames: ['Error', 'RegExp', 'URL', 'URLSearchParams', 'ArrayBuffer'] },
+            ],
+            '@typescript-eslint/prefer-promise-reject-errors': [
+                'error',
+                { allowThrowingUnknown: true },
             ],
         },
     },

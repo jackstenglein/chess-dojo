@@ -2,6 +2,7 @@
 
 import { logger } from '@/logging/logger';
 import { Button, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { Component, ErrorInfo } from 'react';
 import { EventType, trackEvent } from '../../analytics/events';
 import { useAuth } from '../../auth/Auth';
@@ -15,6 +16,7 @@ interface PgnErrorBoundaryProps {
 
 interface PgnErrorBoundaryNavigatorProps extends PgnErrorBoundaryProps {
     username: string;
+    t: ReturnType<typeof useTranslations<'games.view.pgnErrorBoundary'>>;
 }
 
 interface ErrorBoundaryState {
@@ -51,22 +53,17 @@ class PgnErrorBoundary extends Component<
             return this.props.children;
         }
 
+        const { t } = this.props;
         return (
             <Container maxWidth='md' sx={{ pt: 6, pb: 4, gridArea: 'pgn' }}>
                 <Stack spacing={4}>
-                    <Typography variant='h5'>Invalid PGN</Typography>
-                    <Typography variant='body1'>
-                        Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see
-                        the error message below). This most likely happened due to a malformed PGN.
-                        If you manually produced your PGN, it is likely incorrect. If you believe
-                        your PGN is correct or are otherwise unable to correct it, please send a
-                        Discord DM to @JackStenglein with the link to this page.
-                    </Typography>
+                    <Typography variant='h5'>{t('invalidPgn')}</Typography>
+                    <Typography variant='body1'>{t('invalidPgnDescription')}</Typography>
 
-                    {this.props.game && this.props.game.owner === this.props.username && (
+                    {this.props.game?.owner === this.props.username && (
                         <Stack direction='row' spacing={2}>
                             <Button variant='contained' href={window.location.href + '/edit'}>
-                                Resubmit PGN
+                                {t('resubmitPgn')}
                             </Button>
 
                             <DeleteGameButton
@@ -82,13 +79,13 @@ class PgnErrorBoundary extends Component<
                     )}
 
                     <Typography variant='body1' color='error' whiteSpace='pre-line'>
-                        {this.state.error ? this.state.error.toString() : 'Null error'}
-                        {this.state.info ? this.state.info.componentStack : 'No component stack'}
+                        {this.state.error ? this.state.error.toString() : t('nullError')}
+                        {this.state.info ? this.state.info.componentStack : t('noComponentStack')}
                     </Typography>
 
                     <Typography variant='body1' whiteSpace='pre-line'>
-                        {`Raw PGN:
-                        
+                        {`${t('rawPgnLabel')}
+
                         ${this.props.pgn}`}
                     </Typography>
                 </Stack>
@@ -100,9 +97,10 @@ class PgnErrorBoundary extends Component<
 const PgnErrorBoundaryNavigator: React.FC<React.PropsWithChildren<PgnErrorBoundaryProps>> = (
     props,
 ) => {
+    const t = useTranslations('games.view.pgnErrorBoundary');
     const username = useAuth().user?.username || '';
 
-    return <PgnErrorBoundary username={username} {...props} />;
+    return <PgnErrorBoundary username={username} t={t} {...props} />;
 };
 
 export default PgnErrorBoundaryNavigator;

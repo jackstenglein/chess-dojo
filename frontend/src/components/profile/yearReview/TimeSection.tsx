@@ -2,31 +2,39 @@ import { useAuth } from '@/auth/Auth';
 import { formatTime } from '@/database/requirement';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { Box, Card, CardContent, CardHeader, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { AxisOptions, Chart } from 'react-charts';
 import { Datum, getCategoryData, getMonthData, getTaskData, primaryAxis } from './DojoPointSection';
 import Percentiles from './Percentiles';
 import { SectionProps } from './section';
 
-const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        position: 'bottom',
-        getValue: (datum) => datum.secondary,
-        formatters: {
-            scale: formatTime,
+function getSecondaryAxes(
+    tCommon: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum>[] {
+    return [
+        {
+            position: 'bottom',
+            getValue: (datum) => datum.secondary,
+            formatters: {
+                scale: (value: number) => formatTime(value, tCommon),
+            },
         },
-    },
-];
+    ];
+}
 
 const TimeSection = ({ review }: SectionProps) => {
+    const t = useTranslations('profile.yearReview.time');
+    const tCommon = useTranslations('common');
+    const secondaryAxes = useMemo(() => getSecondaryAxes(tCommon), [tCommon]);
     const viewer = useAuth().user;
     const dark = !viewer?.enableLightMode;
 
     const data = review.total.minutesSpent;
 
-    const categoryData = useMemo(() => getCategoryData('Time Spent', data, true), [data]);
-    const monthData = useMemo(() => getMonthData('Time Spent', data), [data]);
-    const taskData = useMemo(() => getTaskData('Time Spent', data), [data]);
+    const categoryData = useMemo(() => getCategoryData(t('title'), data, true), [data, t]);
+    const monthData = useMemo(() => getMonthData(t('title'), data), [data, t]);
+    const taskData = useMemo(() => getTaskData(t('title'), data), [data, t]);
 
     return (
         <Stack width={1} alignItems='center'>
@@ -36,10 +44,10 @@ const TimeSection = ({ review }: SectionProps) => {
                 fontSize='clamp(16px,3vw,32px)'
                 textAlign='center'
             >
-                Now let's see how long it took to earn all those Dojo points!
+                {t('intro')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
-                <CardHeader title='Time Spent' />
+                <CardHeader title={t('title')} />
                 <CardContent>
                     <Grid container alignItems='center' rowSpacing={2}>
                         <Grid
@@ -52,7 +60,7 @@ const TimeSection = ({ review }: SectionProps) => {
                         >
                             <Stack alignItems='center'>
                                 <Typography variant='caption' color='text.secondary'>
-                                    Total Time
+                                    {t('totalTime')}
                                 </Typography>
 
                                 <Typography
@@ -62,13 +70,13 @@ const TimeSection = ({ review }: SectionProps) => {
                                         fontWeight: 'bold',
                                     }}
                                 >
-                                    {formatTime(data.total.value)}
+                                    {formatTime(data.total.value, tCommon)}
                                 </Typography>
                             </Stack>
                         </Grid>
 
                         <Percentiles
-                            description='total time spent'
+                            description={t('totalTimeDescription')}
                             cohort={review.currentCohort}
                             percentile={data.total.percentile}
                             cohortPercentile={data.total.cohortPercentile}
@@ -77,7 +85,7 @@ const TimeSection = ({ review }: SectionProps) => {
 
                     <Stack mt={4} spacing={4}>
                         <Stack alignItems='start' spacing={0.5}>
-                            <Typography>Time by Category</Typography>
+                            <Typography>{t('byCategory')}</Typography>
                             <Box width={1} height={300} mt={2}>
                                 <Chart
                                     options={{
@@ -94,7 +102,7 @@ const TimeSection = ({ review }: SectionProps) => {
                         </Stack>
 
                         <Stack alignItems='start' spacing={0.5}>
-                            <Typography>Time by Month</Typography>
+                            <Typography>{t('byMonth')}</Typography>
                             <Box width={1} height={400} mt={2}>
                                 <Chart
                                     options={{
@@ -109,7 +117,7 @@ const TimeSection = ({ review }: SectionProps) => {
 
                         {taskData && (
                             <Stack alignItems='start' spacing={0.5}>
-                                <Typography>Top 10 Tasks</Typography>
+                                <Typography>{t('top10Tasks')}</Typography>
                                 <Box width={1} height={400} mt={2}>
                                     <Chart
                                         options={{

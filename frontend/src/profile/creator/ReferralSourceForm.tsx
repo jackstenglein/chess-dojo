@@ -1,12 +1,16 @@
-import { LoadingButton } from '@mui/lab';
+import { useRouter } from '@/i18n/navigation';
+import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { EventType, trackEvent } from '../../analytics/events';
 import { useApi } from '../../api/Api';
 import { RequestSnackbar, useRequest } from '../../api/Request';
 import { ProfileCreatorFormProps } from './ProfileCreatorPage';
 
+// Wire values stored in user.referralSource on the backend. Display labels are
+// translated separately via referralOptionLabels at render time.
 const defaultSources = [
     'Twitch',
     'YouTube',
@@ -18,32 +22,36 @@ const defaultSources = [
     'Friend/Word of Mouth',
 ];
 
-function getReferralSource(source: string): string {
-    if (!source) {
-        return source;
-    }
-    if (defaultSources.includes(source)) {
-        return source;
-    }
-    return 'Other';
-}
+const OTHER = 'Other';
 
 const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevStep }) => {
+    const t = useTranslations('profile.creator.referral');
     const api = useApi();
     const request = useRequest();
     const redirectUri = useSearchParams().get('redirectUri');
     const router = useRouter();
 
-    const [referralSource, setReferralSource] = useState(getReferralSource(user.referralSource));
+    const [referralSource, setReferralSource] = useState('');
     const [otherSource, setOtherSource] = useState(
         defaultSources.includes(user.referralSource) ? '' : user.referralSource,
     );
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    const referralOptionLabels: Record<string, string> = {
+        Twitch: t('options.twitch'),
+        YouTube: t('options.youtube'),
+        Discord: t('options.discord'),
+        Twitter: t('options.twitter'),
+        Reddit: t('options.reddit'),
+        Facebook: t('options.facebook'),
+        Google: t('options.google'),
+        'Friend/Word of Mouth': t('options.friendWordOfMouth'),
+    };
+
     const onSave = () => {
         const newErrors: Record<string, string> = {};
-        if (!defaultSources.includes(referralSource.trim()) && otherSource.trim() === '') {
-            newErrors.otherSource = 'This field is required';
+        if (referralSource === OTHER && otherSource.trim() === '') {
+            newErrors.otherSource = t('fieldRequired');
         }
         setErrors(newErrors);
 
@@ -51,7 +59,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
             return;
         }
 
-        const source = referralSource === 'Other' ? otherSource.trim() : referralSource.trim();
+        const source = referralSource === OTHER ? otherSource.trim() : referralSource.trim();
         request.onStart();
         api.updateUser({
             referralSource: source,
@@ -59,7 +67,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
         })
             .then(() => {
                 if (redirectUri) {
-                    router.push(decodeURIComponent(redirectUri));
+                    router.push(sanitizeRedirectUri(redirectUri));
                 }
                 trackEvent(EventType.CreateProfile);
             })
@@ -70,11 +78,11 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
     return (
         <Stack spacing={4}>
-            <Typography>How did you hear about the training program?</Typography>
+            <Typography>{t('question')}</Typography>
 
             <TextField
                 select
-                label='Referral Source'
+                label={t('label')}
                 value={referralSource}
                 onChange={(e) => setReferralSource(e.target.value)}
                 error={!!errors.referralSource}
@@ -82,17 +90,17 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
             >
                 {defaultSources.map((s) => (
                     <MenuItem key={s} value={s}>
-                        {s}
+                        {referralOptionLabels[s] ?? s}
                     </MenuItem>
                 ))}
 
-                <MenuItem value='Other'>Other</MenuItem>
+                <MenuItem value={OTHER}>{t('otherLabel')}</MenuItem>
             </TextField>
 
-            {referralSource === 'Other' && (
+            {referralSource === OTHER && (
                 <TextField
                     required
-                    label='Other (Please Specify)'
+                    label={t('otherSpecify')}
                     value={otherSource}
                     onChange={(e) => setOtherSource(e.target.value)}
                     error={!!errors.otherSource}
@@ -102,17 +110,17 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
             <Stack direction='row' justifyContent='space-between'>
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
-                    Back
+                    {t('back')}
                 </Button>
 
-                <LoadingButton
+                <Button
                     loading={request.isLoading()}
                     variant='contained'
                     onClick={onSave}
                     sx={{ alignSelf: 'end' }}
                 >
-                    Next
-                </LoadingButton>
+                    {t('next')}
+                </Button>
             </Stack>
 
             <RequestSnackbar request={request} />

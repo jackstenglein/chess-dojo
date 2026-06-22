@@ -53,7 +53,7 @@ test.describe('List Games Page', () => {
 
         await waitForNavigation(
             page,
-            '/games?type=player&player=JackStenglein&color=either&startDate=&endDate=',
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=player&player=JackStenglein&color=either&startDate=&endDate=$/,
         );
     });
 
@@ -67,7 +67,10 @@ test.describe('List Games Page', () => {
         await searchForm.getByTestId('opening-eco').locator('input').fill('B01');
         await searchForm.getByTestId('opening-search-button').click();
 
-        await waitForNavigation(page, '/games?type=opening&eco=B01&startDate=&endDate=');
+        await waitForNavigation(
+            page,
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=opening&eco=B01&startDate=&endDate=$/,
+        );
     });
 
     test('allows searching current user uploads', async ({ page }) => {
@@ -78,7 +81,10 @@ test.describe('List Games Page', () => {
         await expect(searchForm.getByTestId('owner-search-button')).toBeVisible();
         await searchForm.getByTestId('owner-search-button').click();
 
-        await waitForNavigation(page, '/games?type=owner&startDate=&endDate=');
+        await waitForNavigation(
+            page,
+            /\/(?:(?:en|pseudo|de)\/)?games\?type=owner&startDate=&endDate=$/,
+        );
     });
 
     test('links to game page on row click', async ({ page }) => {

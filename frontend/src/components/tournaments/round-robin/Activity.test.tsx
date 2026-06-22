@@ -3,9 +3,28 @@ import {
     RoundRobinPlayerStatuses,
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Activity, getActivitySummary } from './Activity';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const messages = require('../../../../messages/en.json') as Record<string, unknown>;
+
+function renderWithIntl(ui: React.ReactElement) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NextIntlClientProvider } = require('next-intl') as {
+        NextIntlClientProvider: React.FC<{
+            locale: string;
+            messages: Record<string, unknown>;
+            children: React.ReactNode;
+        }>;
+    };
+    return render(
+        <NextIntlClientProvider locale='en' messages={messages}>
+            {ui}
+        </NextIntlClientProvider>,
+    );
+}
 
 vi.mock('@/components/navigation/Link', async () => {
     const { forwardRef } = await import('react');
@@ -80,7 +99,7 @@ describe('Activity', () => {
             pairings: [[{ white: 'alice', black: 'bob' }]],
         });
 
-        render(<Activity tournament={tournament} />);
+        renderWithIntl(<Activity tournament={tournament} />);
 
         expect(screen.getByText('No games submitted yet')).toBeInTheDocument();
     });
@@ -155,7 +174,7 @@ describe('Activity', () => {
             ],
         });
 
-        render(<Activity tournament={tournament} />);
+        renderWithIntl(<Activity tournament={tournament} />);
 
         expect(screen.getByText('Alice')).toBeInTheDocument();
         expect(screen.getByText('Bob')).toBeInTheDocument();
@@ -181,7 +200,7 @@ describe('Activity', () => {
             ],
         });
 
-        render(<Activity tournament={tournament} />);
+        renderWithIntl(<Activity tournament={tournament} />);
 
         expect(
             screen.queryByText(/Tournament may have stalled - No games submitted in/),

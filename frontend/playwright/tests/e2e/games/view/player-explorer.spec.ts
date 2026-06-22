@@ -64,6 +64,12 @@ async function openPlayerTab(page: import('@playwright/test').Page) {
     await expect(page.getByRole('tab', { name: 'Repertoire Spy', selected: true })).toBeVisible();
 }
 
+/** Navigate to the analysis board and open the Player explorer tab. */
+async function openAnalysisPlayerTab(page: import('@playwright/test').Page) {
+    await page.goto('/games/analysis?explorer=player');
+    await expect(page.getByRole('tab', { name: 'Repertoire Spy', selected: true })).toBeVisible();
+}
+
 test.describe('Player Opening Explorer', () => {
     test.beforeEach(async ({ page }) => {
         // Clear localStorage to reset filter state
@@ -90,6 +96,26 @@ test.describe('Player Opening Explorer', () => {
         await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
             timeout: 10000,
         });
+    });
+
+    test('starts Repertoire Spy play mode after loading a player tree', async ({ page }) => {
+        await mockChesscomRoutes(page);
+        await openAnalysisPlayerTab(page);
+
+        await page.getByPlaceholder('Chess.com Username').fill('testuser');
+        await page.getByRole('button', { name: 'Load Games' }).click();
+
+        const playerTree = page.getByTestId('explorer-tab-player');
+        await expect(playerTree).toBeVisible({ timeout: 15000 });
+        await expect(playerTree.getByRole('gridcell', { name: /e4/ })).toBeVisible({
+            timeout: 10000,
+        });
+
+        await expect(page.getByRole('button', { name: 'Start Sparring' })).toBeVisible();
+        await page.getByRole('button', { name: 'Start Sparring' }).click();
+        await expect(page.getByRole('button', { name: 'Stop Sparring' })).toBeVisible();
+        await page.getByRole('button', { name: 'Stop Sparring' }).click();
+        await expect(page.getByRole('button', { name: 'Start Sparring' })).toBeVisible();
     });
 
     test('loads Lichess games and displays opening tree', async ({ page }) => {

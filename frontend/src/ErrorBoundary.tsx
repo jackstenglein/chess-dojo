@@ -1,6 +1,7 @@
 // Based off of https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary
 
 import { Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { EventType, trackEvent } from './analytics/events';
 import { logger } from './logging/logger';
@@ -10,6 +11,23 @@ interface ErrorBoundaryState {
     error?: Error;
     info?: ErrorInfo;
 }
+
+const ErrorDisplay = ({ error, info }: { error?: Error; info?: ErrorInfo }) => {
+    const t = useTranslations('errors');
+    return (
+        <Container maxWidth='md' sx={{ pt: 6, pb: 4 }}>
+            <Stack spacing={4}>
+                <Typography variant='h5'>{t('unknownError')}</Typography>
+                <Typography variant='h6'>{t('errorDescription')}</Typography>
+
+                <Typography variant='body1' color='error' whiteSpace='pre-line'>
+                    {error ? error.toString() : t('nullError')}
+                    {info ? info.componentStack : t('noComponentStack')}
+                </Typography>
+            </Stack>
+        </Container>
+    );
+};
 
 class ErrorBoundary extends Component<React.PropsWithChildren, ErrorBoundaryState> {
     constructor(props: { children: ReactNode }) {
@@ -35,24 +53,7 @@ class ErrorBoundary extends Component<React.PropsWithChildren, ErrorBoundaryStat
             return this.props.children;
         }
 
-        return (
-            <Container maxWidth='md' sx={{ pt: 6, pb: 4 }}>
-                <Stack spacing={4}>
-                    <Typography variant='h5'>Unknown Error</Typography>
-                    <Typography variant='h6'>
-                        Congratulations! You have broken the site in a new and interesting way. To
-                        report this error, please send a Discord message to @jackstenglein with a
-                        description of what you were doing when the site broke and a copy of the
-                        error message below. Then refresh the page to continue using the site.
-                    </Typography>
-
-                    <Typography variant='body1' color='error' whiteSpace='pre-line'>
-                        {this.state.error ? this.state.error.toString() : 'Null error'}
-                        {this.state.info ? this.state.info.componentStack : 'No component stack'}
-                    </Typography>
-                </Stack>
-            </Container>
-        );
+        return <ErrorDisplay error={this.state.error} info={this.state.info} />;
     }
 }
 
