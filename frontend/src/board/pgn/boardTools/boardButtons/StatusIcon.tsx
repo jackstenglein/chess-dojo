@@ -5,6 +5,7 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { useReconcile } from '@/board/Board';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import useGame from '@/context/useGame';
 import { Game } from '@/database/game';
 import { EventType as ChessEventType, Event } from '@jackstenglein/chess';
 import { GameImportTypes } from '@jackstenglein/chess-dojo-common/src/database/game';
@@ -53,6 +54,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
+    const { setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
 
     const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
@@ -124,6 +126,11 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             return () => chess.removeObserver(observer);
         }
     }, [chess, game, initialPgn, setInitialPgn, debouncedOnSave, setHasChanges]);
+
+    useEffect(() => {
+        setHasUnsavedGameChanges?.(hasChanges);
+        return () => setHasUnsavedGameChanges?.(false);
+    }, [hasChanges, setHasUnsavedGameChanges]);
 
     const onRestore = () => {
         setAnchorEl(null);

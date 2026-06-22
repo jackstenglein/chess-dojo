@@ -1842,6 +1842,13 @@
             "saveAnalysis": "Save Analysis",
             "analysisNotSaved": "Analysis not saved"
         },
+        "unsavedNavigationGuard": {
+            "title": "Unsaved Changes?",
+            "gameWarning": "This game has unsaved changes. Navigating away may permanently delete them.",
+            "suggestedVariationWarning": "You have unsaved suggested variations. Navigating away will permanently delete them.",
+            "cancel": "Cancel",
+            "leave": "Leave"
+        },
         "moveExtras": {
             "unsavedVariation": "This variation is not saved. Right click to save as a comment.",
             "suggestedBy": "Variation suggested by {displayName}",

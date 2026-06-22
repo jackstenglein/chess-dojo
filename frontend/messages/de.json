@@ -1819,6 +1819,13 @@
             "saveAnalysis": "Analyse speichern",
             "analysisNotSaved": "Analyse nicht gespeichert"
         },
+        "unsavedNavigationGuard": {
+            "title": "Nicht gespeicherte Änderungen?",
+            "gameWarning": "Diese Partie hat nicht gespeicherte Änderungen. Wenn du fortnavigierst, können sie dauerhaft gelöscht werden.",
+            "suggestedVariationWarning": "Du hast nicht gespeicherte vorgeschlagene Varianten. Wenn du fortnavigierst, werden sie dauerhaft gelöscht.",
+            "cancel": "Abbrechen",
+            "leave": "Verlassen"
+        },
         "moveExtras": {
             "unsavedVariation": "Diese Variante ist nicht gespeichert. Rechtsklick zum Speichern als Kommentar.",
             "suggestedBy": "Variation vorgeschlagen von {displayName}",
