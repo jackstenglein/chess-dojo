@@ -2,6 +2,7 @@ export const SUPPORTED_LOCALES = [
     { code: 'en', label: 'English' },
     { code: 'pseudo', label: '[T] Pseudo' },
     { code: 'de', label: 'Deutsch' },
+    { code: 'fr', label: 'Français' },
 ] as const;
 
 export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code'];
