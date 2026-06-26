@@ -3,29 +3,14 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
-import { Link } from '@/components/navigation/Link';
-import { Course } from '@/database/course';
+import { Course, CourseType } from '@/database/course';
 import { getCohortRange } from '@/database/user';
-import { mockWorkshops } from '@/database/workshop';
 import LoadingPage from '@/loading/LoadingPage';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import {
-    Button,
-    Card,
-    CardActionArea,
-    CardActions,
-    CardContent,
-    Chip,
-    Container,
-    Divider,
-    Grid,
-    Stack,
-    Typography,
-} from '@mui/material';
+import { Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { getCheckoutSessionId } from '../localStorage';
 import { CourseFilterEditor, useCourseFilters } from './CourseFilters';
-import CourseListItem, { getCategoryColor } from './CourseListItem';
+import CourseListItem from './CourseListItem';
 
 const ListCoursesPage = () => {
     const courseFilters = useCourseFilters();
@@ -70,12 +55,62 @@ const ListCoursesPage = () => {
             return true;
         }) ?? [];
 
+    const workshops = request.data?.filter((course) => course.type === CourseType.Workshop) ?? [];
+
     const noItems = !courses.length;
 
     return (
         <Container maxWidth='xl' sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
             <Grid container spacing={3}>
+                {workshops.length > 0 && (
+                    <Grid
+                        container
+                        spacing={2}
+                        size={{
+                            xs: 12,
+                        }}
+                        pb={5}
+                    >
+                        <Grid size={{ xs: 12 }} sx={{ mt: 6, mb: 2 }}>
+                            <Typography variant='h4' fontWeight='bold' mb={1}>
+                                Workshops
+                            </Typography>
+                            <Typography variant='h6'>
+                                These courses contain recordings from our live workshop classes, as
+                                well as other supplementary materials from the classes. These
+                                recordings are unscripted and contain questions and comments from
+                                other students.
+                            </Typography>
+                        </Grid>
+
+                        {workshops.map((workshop) => (
+                            <Grid
+                                key={workshop.id}
+                                size={{
+                                    xs: 12,
+                                    md: 6,
+                                    lg: 4,
+                                }}
+                            >
+                                <CourseListItem
+                                    course={workshop}
+                                    isFreeTier={isFreeTier}
+                                    isPurchased={
+                                        user?.purchasedCourses
+                                            ? user.purchasedCourses[workshop.id]
+                                            : getCheckoutSessionId(workshop.id) !== ''
+                                    }
+                                />
+                            </Grid>
+                        ))}
+
+                        <Grid size={12}>
+                            <Divider sx={{ mt: 4 }} />
+                        </Grid>
+                    </Grid>
+                )}
+
                 <Grid
                     size={{
                         xs: 12,
@@ -135,79 +170,6 @@ const ListCoursesPage = () => {
                             </Typography>
                         </Stack>
                     )}
-
-                    <Grid size={{ xs: 12 }} sx={{ mt: 6, mb: 2 }}>
-                        <Divider sx={{ mb: 4 }} />
-                        <Typography variant='h4' fontWeight='bold' mb={1}>
-                            Workshops
-                        </Typography>
-                    </Grid>
-
-                    {mockWorkshops.map((workShop) => (
-                        <Grid key={workShop.id} size={{ xs: 12, md: 6, lg: 4 }}>
-                            <Card sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
-                                <CardActionArea
-                                    sx={{ flexGrow: 1 }}
-                                    component={Link}
-                                    href={`/workshops/${workShop.id}`}
-                                >
-                                    <CardContent>
-                                        <Typography variant='h5'>{workShop.name}</Typography>
-                                        <Typography variant='body2'>
-                                            By{' '}
-                                            <Typography
-                                                component='span'
-                                                variant='body2'
-                                                color='primary'
-                                            >
-                                                {workShop.teacher}
-                                            </Typography>
-                                        </Typography>
-
-                                        <Stack
-                                            direction='row'
-                                            spacing={1}
-                                            alignItems='baseline'
-                                            mb={1}
-                                            mt={1}
-                                        >
-                                            <Typography variant='h6'>${workShop.price}</Typography>
-                                        </Stack>
-
-                                        <Stack direction='row' mb={2} spacing={1}>
-                                            <Chip
-                                                size='small'
-                                                label={workShop.category}
-                                                sx={{
-                                                    backgroundColor: getCategoryColor(
-                                                        workShop.category,
-                                                    ),
-                                                    color: 'white',
-                                                }}
-                                            />
-                                            <Chip size='small' label={workShop.cohortRange} />
-                                        </Stack>
-
-                                        <Typography variant='body2' color='text.secondary' mt={2}>
-                                            {workShop.description}
-                                        </Typography>
-                                    </CardContent>
-                                </CardActionArea>
-                                <CardActions sx={{ p: 2, pt: 0 }}>
-                                    <Button
-                                        size='medium'
-                                        color='success'
-                                        fullWidth
-                                        startIcon={<ShoppingCartIcon />}
-                                        component={Link}
-                                        href={`/workshops/${workShop.id}`}
-                                    >
-                                        Buy
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
                 </Grid>
             </Grid>
         </Container>

@@ -3,6 +3,7 @@ import { Position } from './requirement';
 export enum CourseType {
     Opening = 'OPENING',
     Endgame = 'ENDGAME',
+    Workshop = 'WORKSHOP',
 }
 
 /**
@@ -70,6 +71,9 @@ export interface Course {
      * The list of chapters included in the course.
      */
     chapters?: Chapter[];
+
+    /** The thumbnail image of the course. */
+    imageUrl?: string;
 }
 
 /** A way to purchase a course. */

@@ -19,9 +19,11 @@ import {
 import { useState } from 'react';
 import { getCategoryColor } from './CourseListItem';
 
+const { Workshop, ...courseTypes } = CourseType;
+
 export interface CourseFilters {
     /** A map from the category name to whether the category is included. */
-    categories: Record<CourseType, boolean>;
+    categories: Partial<Record<CourseType, boolean>>;
 
     /** A function that sets the new categories. */
     setCategories: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
@@ -46,7 +48,7 @@ export interface CourseFilters {
 }
 
 export function useCourseFilters(): CourseFilters {
-    const [categories, setCategories] = useState<Record<CourseType, boolean>>({
+    const [categories, setCategories] = useState<Partial<Record<CourseType, boolean>>>({
         [CourseType.Opening]: true,
         [CourseType.Endgame]: true,
     });
@@ -101,7 +103,7 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                 </AccordionSummary>
                 <AccordionDetails>
                     <Stack>
-                        {Object.values(CourseType).map((category) => (
+                        {Object.values(courseTypes).map((category) => (
                             <FormControlLabel
                                 key={category}
                                 control={
