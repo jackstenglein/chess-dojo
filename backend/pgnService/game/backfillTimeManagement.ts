@@ -9,7 +9,7 @@
  *   stage=dev npx tsx pgnService/game/backfillTimeManagement.ts
  *   stage=prod npx tsx pgnService/game/backfillTimeManagement.ts
  *
- * Idempotent: skips games that already have timeManagementRatingWhite set.
+ * Idempotent: skips games that already have time management rating and area fields.
  * User aggregates are rebuilt from scratch on every run.
  */
 import { AttributeValue, DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
@@ -35,6 +35,8 @@ interface GameRecord {
     pgn?: string;
     timeManagementRatingWhite?: number;
     timeManagementRatingBlack?: number;
+    timeManagementAreaWhite?: number;
+    timeManagementAreaBlack?: number;
 }
 
 async function main() {
@@ -61,14 +63,15 @@ async function main() {
                     new QueryCommand({
                         KeyConditionExpression: '#cohort = :cohort',
                         FilterExpression:
-                            'attribute_not_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementRatingBlack)',
+                            '(attribute_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementAreaWhite)) or (attribute_exists(timeManagementRatingBlack) and attribute_not_exists(timeManagementAreaBlack)) or (attribute_not_exists(timeManagementRatingWhite) and attribute_not_exists(timeManagementRatingBlack))',
                         ExpressionAttributeNames: {
                             '#cohort': 'cohort',
                             '#id': 'id',
                             '#owner': 'owner',
                         },
                         ExpressionAttributeValues: { ':cohort': { S: cohort } },
-                        ProjectionExpression: '#cohort, #id, #owner, orientation, pgn',
+                        ProjectionExpression:
+                            '#cohort, #id, #owner, orientation, pgn, timeManagementRatingWhite, timeManagementRatingBlack, timeManagementAreaWhite, timeManagementAreaBlack',
                         ExclusiveStartKey: startKey,
                         TableName: gamesTable,
                     }),
@@ -85,10 +88,12 @@ async function main() {
                         owners.add(game.owner);
                     }
 
-                    // Skip games that already have TM ratings (idempotent)
+                    // Skip games that already have TM ratings and areas (idempotent)
                     if (
-                        game.timeManagementRatingWhite !== undefined ||
-                        game.timeManagementRatingBlack !== undefined
+                        game.timeManagementRatingWhite !== undefined &&
+                        game.timeManagementRatingBlack !== undefined &&
+                        game.timeManagementAreaWhite !== undefined &&
+                        game.timeManagementAreaBlack !== undefined
                     ) {
                         gamesSkipped++;
                         continue;
@@ -160,12 +165,18 @@ async function main() {
 /**
  * Writes per-game TM ratings to the game record.
  */
-async function updateGameRatings(game: GameRecord, white?: number, black?: number): Promise<void> {
+async function updateGameRatings(
+    game: GameRecord,
+    white?: { rating: number; area: number },
+    black?: { rating: number; area: number },
+): Promise<void> {
     await new UpdateItemBuilder()
         .key('cohort', game.cohort)
         .key('id', game.id)
-        .set('timeManagementRatingWhite', white)
-        .set('timeManagementRatingBlack', black)
+        .set('timeManagementRatingWhite', white?.rating)
+        .set('timeManagementRatingBlack', black?.rating)
+        .set('timeManagementAreaWhite', white?.area)
+        .set('timeManagementAreaBlack', black?.area)
         .table(gamesTable)
         .send();
 }

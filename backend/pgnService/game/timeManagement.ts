@@ -19,9 +19,14 @@ import {
 import { GetItemBuilder, UpdateItemBuilder } from '../../directoryService/database';
 import { directoriesTable, dynamo, gamesTable, usersTable } from './database';
 
+interface TimeManagementGameRating {
+    rating: number;
+    area: number;
+}
+
 export interface TimeManagementRatings {
-    white?: number;
-    black?: number;
+    white?: TimeManagementGameRating;
+    black?: TimeManagementGameRating;
 }
 
 /**
@@ -69,8 +74,8 @@ export function rateGameTimeManagement(chess: Chess): TimeManagementRatings {
     const blackResult = calculateTimeRating(timeControls, blackClock);
 
     return {
-        white: whiteResult?.rating,
-        black: blackResult?.rating,
+        white: whiteResult,
+        black: blackResult,
     };
 }
 
@@ -142,7 +147,13 @@ async function getGameKeys(owner: string): Promise<GameKey[]> {
 
 type PartialGame = Pick<
     Game,
-    'date' | 'createdAt' | 'orientation' | 'timeManagementRatingWhite' | 'timeManagementRatingBlack'
+    | 'date'
+    | 'createdAt'
+    | 'orientation'
+    | 'timeManagementRatingWhite'
+    | 'timeManagementRatingBlack'
+    | 'timeManagementAreaWhite'
+    | 'timeManagementAreaBlack'
 >;
 
 /**
@@ -165,7 +176,7 @@ async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeMana
                         [gamesTable]: {
                             Keys: keys,
                             ProjectionExpression:
-                                '#date, createdAt, orientation, timeManagementRatingWhite, timeManagementRatingBlack',
+                                '#date, createdAt, orientation, timeManagementRatingWhite, timeManagementRatingBlack, timeManagementAreaWhite, timeManagementAreaBlack',
                             ExpressionAttributeNames: { '#date': 'date' },
                         },
                     },
@@ -186,9 +197,13 @@ async function rateAllGamesTimeManagement(gameKeys: GameKey[]): Promise<TimeMana
             game.orientation === 'black'
                 ? game.timeManagementRatingBlack
                 : game.timeManagementRatingWhite;
+        const ownerArea =
+            game.orientation === 'black'
+                ? game.timeManagementAreaBlack
+                : game.timeManagementAreaWhite;
 
         if (ownerRating !== undefined && ownerRating >= 0) {
-            aggregate = newTimeManagementRating(aggregate, ownerRating);
+            aggregate = newTimeManagementRating(aggregate, ownerRating, ownerArea ?? 0);
         }
     }
 

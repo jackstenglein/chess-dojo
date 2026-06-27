@@ -67,6 +67,8 @@ async function updateGame(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
     if (
         result.old.timeManagementRatingWhite !== result.new.timeManagementRatingWhite ||
         result.old.timeManagementRatingBlack !== result.new.timeManagementRatingBlack ||
+        result.old.timeManagementAreaWhite !== result.new.timeManagementAreaWhite ||
+        result.old.timeManagementAreaBlack !== result.new.timeManagementAreaBlack ||
         result.old.orientation !== result.new.orientation ||
         result.old.directories !== result.new.directories
     ) {
@@ -115,6 +117,8 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
         update.headers = game.headers;
         update.timeManagementRatingWhite = game.timeManagementRatingWhite ?? -1;
         update.timeManagementRatingBlack = game.timeManagementRatingBlack ?? -1;
+        update.timeManagementAreaWhite = game.timeManagementAreaWhite ?? 0;
+        update.timeManagementAreaBlack = game.timeManagementAreaBlack ?? 0;
 
         const result = game.headers['Result'];
         const missingDataErr = isMissingData({ ...update, result });

@@ -38,8 +38,10 @@ test('returns exact ratings for Fang vs Kraai (US Masters 2025)', () => {
     const chess = new Chess({ pgn: classicalPgnWithClocks });
     const ratings = rateGameTimeManagement(chess);
 
-    assert.equal(ratings.white, 2478);
-    assert.equal(ratings.black, 2456);
+    assert.equal(ratings.white?.rating, 2478);
+    assert.equal(ratings.black?.rating, 2456);
+    assert.isNumber(ratings.white?.area);
+    assert.isNumber(ratings.black?.area);
 });
 
 test('returns undefined for blitz game (time control < 30 min)', () => {
@@ -84,6 +86,8 @@ test('getGame populates exact TM rating fields for classical game with clocks', 
 
     assert.equal(game.timeManagementRatingWhite, 2478);
     assert.equal(game.timeManagementRatingBlack, 2456);
+    assert.isNumber(game.timeManagementAreaWhite);
+    assert.isNumber(game.timeManagementAreaBlack);
 });
 
 test('getGame does not populate TM rating fields for blitz game', async () => {

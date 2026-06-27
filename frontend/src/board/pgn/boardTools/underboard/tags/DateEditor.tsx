@@ -10,7 +10,7 @@ export function EditDateCell(props: GridRenderEditCellParams<TagRow, PgnDate | s
     const { id, value, field } = props;
     const apiRef = useGridApiContext();
 
-    const handleChange = (newValue: DateTime<true> | null) => {
+    const handleChange = (newValue: DateTime | null) => {
         void apiRef.current.setEditCellValue({
             id,
             field,

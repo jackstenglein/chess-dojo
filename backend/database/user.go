@@ -387,6 +387,8 @@ type TimeManagementRating struct {
 	CurrentRating int `dynamodbav:"currentRating" json:"currentRating"`
 	// The number of games included in the aggregate
 	NumGames int `dynamodbav:"numGames" json:"numGames"`
+	// The average signed clock area. Positive means too fast, negative means too slow.
+	Area float64 `dynamodbav:"area,omitempty" json:"area,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
