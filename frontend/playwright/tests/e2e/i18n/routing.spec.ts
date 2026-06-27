@@ -80,11 +80,11 @@ test.describe('localePrefix: as-needed - authenticated', () => {
         await expect(page).toHaveURL(/\/profile/);
     });
 
-    test('unknown route under a valid locale returns 404', async ({ page }) => {
-        // /fr/profile is not a registered locale; next-intl renders the
+    test('route under an invalid locale returns 404', async ({ page }) => {
+        // /zz/profile is not a registered locale; next-intl renders the
         // [locale]/not-found page. An unauthenticated user would be bounced
         // by the proxy, so this test must run authenticated.
-        const response = await page.goto('/fr/profile');
+        const response = await page.goto('/zz/profile');
         expect(response?.status()).toBe(404);
     });
 });
