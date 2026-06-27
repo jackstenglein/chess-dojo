@@ -19,8 +19,7 @@ export interface PgnImportError {
 }
 
 export type PgnImportResult<T> =
-    | { data: T; error?: undefined }
-    | { data?: undefined; error: PgnImportError };
+    { data: T; error?: undefined } | { data?: undefined; error: PgnImportError };
 
 interface GetChesscomByIdResponse {
     game?: {

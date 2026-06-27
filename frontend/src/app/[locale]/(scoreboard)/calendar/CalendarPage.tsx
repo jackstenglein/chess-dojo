@@ -30,7 +30,12 @@ import type { EventRendererProps, SchedulerRef } from '@jackstenglein/react-sche
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Container, Grid, Snackbar, Stack, Typography } from '@mui/material';
-import { de as dateFnsDe, enUS as dateFnsEnUS, es as dateFnsEs, ptBR as dateFnsPtBR } from 'date-fns/locale';
+import {
+    de as dateFnsDe,
+    enUS as dateFnsEnUS,
+    es as dateFnsEs,
+    ptBR as dateFnsPtBR,
+} from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RRule } from 'rrule';
