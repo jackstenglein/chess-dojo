@@ -17,6 +17,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 export interface RatingEditor {
@@ -51,51 +52,15 @@ interface RatingsEditorProps {
 const CUSTOM_RATING_SYSTEMS = [RatingSystem.Custom, RatingSystem.Custom2, RatingSystem.Custom3];
 
 const RATING_SYSTEM_FORMS = [
-    {
-        system: RatingSystem.Chesscom,
-        label: 'Chess.com Username',
-        hideLabel: 'Hide Username',
-    },
-    {
-        system: RatingSystem.Lichess,
-        label: 'Lichess Username',
-        hideLabel: 'Hide Username',
-    },
-    {
-        system: RatingSystem.Fide,
-        label: 'FIDE ID',
-        hideLabel: 'Hide ID',
-    },
-    {
-        system: RatingSystem.Uscf,
-        label: 'USCF ID',
-        hideLabel: 'Hide ID',
-    },
-    {
-        system: RatingSystem.Ecf,
-        label: 'ECF Rating Code',
-        hideLabel: 'Hide Rating Code',
-    },
-    {
-        system: RatingSystem.Cfc,
-        label: 'CFC ID',
-        hideLabel: 'Hide ID',
-    },
-    {
-        system: RatingSystem.Dwz,
-        label: 'DWZ ID',
-        hideLabel: 'Hide ID',
-    },
-    {
-        system: RatingSystem.Acf,
-        label: 'ACF ID',
-        hideLabel: 'Hide ID',
-    },
-    {
-        system: RatingSystem.Knsb,
-        label: 'KNSB ID',
-        hideLabel: 'Hide ID',
-    },
+    { system: RatingSystem.Chesscom, labelKey: 'chesscomUsername', hideLabelKey: 'hideUsername' },
+    { system: RatingSystem.Lichess, labelKey: 'lichessUsername', hideLabelKey: 'hideUsername' },
+    { system: RatingSystem.Fide, labelKey: 'fideId', hideLabelKey: 'hideId' },
+    { system: RatingSystem.Uscf, labelKey: 'uscfId', hideLabelKey: 'hideId' },
+    { system: RatingSystem.Ecf, labelKey: 'ecfRatingCode', hideLabelKey: 'hideRatingCode' },
+    { system: RatingSystem.Cfc, labelKey: 'cfcId', hideLabelKey: 'hideId' },
+    { system: RatingSystem.Dwz, labelKey: 'dwzId', hideLabelKey: 'hideId' },
+    { system: RatingSystem.Acf, labelKey: 'acfId', hideLabelKey: 'hideId' },
+    { system: RatingSystem.Knsb, labelKey: 'knsbId', hideLabelKey: 'hideId' },
 ];
 
 const RATING_SYSTEM_FORMS_BY_SYSTEM = new Map(
@@ -126,14 +91,17 @@ export function hasEnteredRatingSystemData(system: RatingSystem, editor: RatingE
     );
 }
 
-export function getRatingSystemLabel(system: RatingSystem): string {
+export function getRatingSystemLabel(
+    system: RatingSystem,
+    tRating: ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+): string {
     if (system === RatingSystem.Custom2) {
-        return `${formatRatingSystem(system)} (2)`;
+        return `${formatRatingSystem(system, tRating)} (2)`;
     }
     if (system === RatingSystem.Custom3) {
-        return `${formatRatingSystem(system)} (3)`;
+        return `${formatRatingSystem(system, tRating)} (3)`;
     }
-    return formatRatingSystem(system);
+    return formatRatingSystem(system, tRating);
 }
 
 function orderRatingSystems(systems: RatingSystem[], preferred: RatingSystem): RatingSystem[] {
@@ -170,6 +138,9 @@ export function RatingsEditor({
     setEnableZenMode,
     errors,
 }: RatingsEditorProps) {
+    const t = useTranslations('profile.ratings');
+    const tRating = useTranslations('enums.ratingSystem');
+
     const [visibleRatingSystems, setVisibleRatingSystems] = useState<RatingSystem[]>(() =>
         getInitialVisibleRatingSystems(ratingEditors, ratingSystem),
     );
@@ -264,7 +235,7 @@ export function RatingsEditor({
                             marginRight: '0.1em',
                         }}
                     />{' '}
-                    Ratings
+                    {t('heading')}
                 </Typography>
                 <Divider />
             </Stack>
@@ -272,7 +243,7 @@ export function RatingsEditor({
             <TextField
                 required
                 select
-                label='ChessDojo Cohort'
+                label={t('cohort')}
                 value={dojoCohort}
                 onChange={(event) => setDojoCohort(event.target.value)}
                 error={!!errors.dojoCohort}
@@ -288,7 +259,7 @@ export function RatingsEditor({
             <TextField
                 required
                 select
-                label='Preferred Rating System'
+                label={t('preferredSystem')}
                 value={ratingSystem}
                 onChange={(event) => setRatingSystem(event.target.value as RatingSystem)}
                 error={!!errors.ratingSystem}
@@ -296,7 +267,7 @@ export function RatingsEditor({
             >
                 {preferredRatingSystems.map((option) => (
                     <MenuItem key={option} value={option}>
-                        {getRatingSystemLabel(option)}
+                        {getRatingSystemLabel(option, tRating)}
                     </MenuItem>
                 ))}
             </TextField>
@@ -308,7 +279,7 @@ export function RatingsEditor({
                         startIcon={<AddIcon />}
                         onClick={(event) => setAddMenuAnchorEl(event.currentTarget)}
                     >
-                        Add Rating System
+                        {t('addRatingSystem')}
                     </Button>
                     <Menu
                         anchorEl={addMenuAnchorEl}
@@ -320,7 +291,7 @@ export function RatingsEditor({
                                 <ListItemIcon>
                                     <RatingSystemIcon system={system} size='small' />
                                 </ListItemIcon>
-                                <ListItemText primary={getRatingSystemLabel(system)} />
+                                <ListItemText primary={getRatingSystemLabel(system, tRating)} />
                             </MenuItem>
                         ))}
                     </Menu>
@@ -342,21 +313,24 @@ export function RatingsEditor({
                             <Grid size='grow'>
                                 <TextField
                                     required={ratingSystem === rs}
-                                    label={form.label}
+                                    label={t(form.labelKey)}
                                     value={ratingEditors[rs].username}
                                     onChange={(event) => setUsername(rs, event.target.value)}
                                     error={!!usernameError}
                                     helperText={
-                                        usernameError || form.label === 'DWZ ID' ? (
-                                            <>
-                                                Learn how to find your DWZ ID{' '}
-                                                <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>
-                                                    here
-                                                </Link>
-                                            </>
-                                        ) : (
-                                            "Leave blank if you don't have an account"
-                                        )
+                                        usernameError
+                                            ? usernameError
+                                            : rs === RatingSystem.Dwz && (
+                                                  <span>
+                                                      {t.rich('dwzHelper', {
+                                                          link: (chunks) => (
+                                                              <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>
+                                                                  {chunks}
+                                                              </Link>
+                                                          ),
+                                                      })}
+                                                  </span>
+                                              )
                                     }
                                     sx={{ width: 1 }}
                                 />
@@ -364,14 +338,11 @@ export function RatingsEditor({
 
                             <Grid size='grow'>
                                 <TextField
-                                    label='Start Rating'
+                                    label={t('startRating')}
                                     value={ratingEditors[rs].startRating}
                                     onChange={(event) => setStartRating(rs, event.target.value)}
                                     error={!!startRatingError}
-                                    helperText={
-                                        startRatingError ||
-                                        'Your rating when you first joined the Dojo'
-                                    }
+                                    helperText={startRatingError || t('startRatingHelper')}
                                     sx={{ width: 1 }}
                                 />
                             </Grid>
@@ -386,7 +357,7 @@ export function RatingsEditor({
                                             }
                                         />
                                     }
-                                    label={form.hideLabel}
+                                    label={t(form.hideLabelKey)}
                                 />
                             </Grid>
                         </Grid>
@@ -399,24 +370,24 @@ export function RatingsEditor({
                     <Grid key={rs} container columnGap={2} alignItems='start'>
                         <Grid size='grow'>
                             <TextField
-                                label={`Custom ${idx + 1} Rating Name`}
+                                label={t('customRatingName', { number: idx + 1 })}
                                 value={ratingEditors[rs].name}
                                 onChange={(event) => setRatingName(rs, event.target.value)}
                                 sx={{ width: 1 }}
                                 error={!!errors[`${rs}Name`]}
-                                helperText={errors[`${rs}Name`] || 'Manually track your rating'}
+                                helperText={errors[`${rs}Name`] || t('customRatingHelper')}
                             />
                         </Grid>
 
                         <Grid size='grow'>
                             <TextField
                                 required={ratingSystem === rs}
-                                label='Current Rating'
+                                label={t('currentRating')}
                                 value={ratingEditors[rs].currentRating}
                                 onChange={(event) => setCurrentRating(rs, event.target.value)}
                                 error={!!errors[`${rs}CurrentRating`]}
                                 helperText={
-                                    errors[`${rs}CurrentRating`] || 'Your most up to date rating'
+                                    errors[`${rs}CurrentRating`] || t('currentRatingHelper')
                                 }
                                 sx={{ width: 1 }}
                             />
@@ -425,14 +396,11 @@ export function RatingsEditor({
                         <Grid size='grow'>
                             <TextField
                                 required={ratingSystem === rs}
-                                label='Start Rating'
+                                label={t('startRating')}
                                 value={ratingEditors[rs].startRating}
                                 onChange={(event) => setStartRating(rs, event.target.value)}
                                 error={!!errors[`${rs}StartRating`]}
-                                helperText={
-                                    errors[`${rs}StartRating`] ||
-                                    'Your rating when you first joined the Dojo'
-                                }
+                                helperText={errors[`${rs}StartRating`] || t('startRatingHelper')}
                                 sx={{ width: 1 }}
                             />
                         </Grid>
@@ -441,7 +409,7 @@ export function RatingsEditor({
             })}
 
             <FormControlLabel
-                label='Enable Zen Mode (hide ratings when viewing your own profile)'
+                label={t('zenMode')}
                 control={
                     <Checkbox
                         checked={enableZenMode}

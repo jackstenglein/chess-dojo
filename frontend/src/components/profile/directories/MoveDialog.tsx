@@ -25,6 +25,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 import { useDirectory } from './DirectoryCache';
@@ -38,6 +39,7 @@ export const MoveDialog = ({
     items: DirectoryItem[];
     onCancel: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const { user } = useRequiredAuth();
     const moveRequest = useRequest();
     const [newDirectoryOwner, setNewDirectoryOwner] = useState(user.username);
@@ -104,12 +106,12 @@ export const MoveDialog = ({
 
     return (
         <Dialog open={true} onClose={moveRequest.isLoading() ? undefined : onCancel} fullWidth>
-            <DialogTitle>{getDialogTitle(items)}</DialogTitle>
+            <DialogTitle>{getDialogTitle(items, t)}</DialogTitle>
             <DialogContent data-testid='move-directory-form'>
                 {newDirectory ? (
                     <Stack>
                         <Stack alignItems='center' direction='row' spacing={1.5}>
-                            <Typography color='text.secondary'>From:</Typography>
+                            <Typography color='text.secondary'>{t('from')}</Typography>
                             <DirectoryBreadcrumbs
                                 owner={parent.owner}
                                 id={parent.id}
@@ -120,7 +122,7 @@ export const MoveDialog = ({
                         </Stack>
 
                         <Stack alignItems='center' direction='row' spacing={1.5} mb={1}>
-                            <Typography color='text.secondary'>To:</Typography>
+                            <Typography color='text.secondary'>{t('to')}</Typography>
                             <DirectoryBreadcrumbs
                                 owner={newDirectoryOwner}
                                 id={newDirectoryId}
@@ -149,7 +151,7 @@ export const MoveDialog = ({
                         </List>
                         {Object.values(newDirectory.items).length === 0 && (
                             <Typography textAlign='center' width={1}>
-                                This folder is empty
+                                {t('folderEmpty')}
                             </Typography>
                         )}
                     </Stack>
@@ -159,10 +161,10 @@ export const MoveDialog = ({
             </DialogContent>
             <DialogActions>
                 <Button disabled={moveRequest.isLoading()} onClick={onCancel}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button loading={moveRequest.isLoading()} disabled={disabled} onClick={onMove}>
-                    Move
+                    {t('move')}
                 </Button>
             </DialogActions>
 
@@ -208,13 +210,16 @@ export function MoveListItem({
     );
 }
 
-function getDialogTitle(items: DirectoryItem[]) {
+function getDialogTitle(
+    items: DirectoryItem[],
+    t: ReturnType<typeof useTranslations<'profile.directories'>>,
+) {
     if (items.length === 1) {
         const item = items[0];
         if (item.type === DirectoryItemTypes.DIRECTORY) {
-            return `Move ${item.metadata.name}?`;
+            return t('moveDirectoryTitle', { name: item.metadata.name });
         }
-        return `Move game?`;
+        return t('moveGameTitle');
     }
 
     let directoryCount = 0;
@@ -228,17 +233,11 @@ function getDialogTitle(items: DirectoryItem[]) {
         }
     }
 
-    let title = 'Move ';
+    if (directoryCount > 0 && gameCount > 0) {
+        return t('moveFoldersAndGamesTitle', { dirCount: directoryCount, gameCount });
+    }
     if (directoryCount > 0) {
-        title += `${directoryCount} folder${directoryCount > 1 ? 's' : ''}`;
-        if (gameCount > 0) {
-            title += ' and ';
-        }
+        return t('moveFoldersTitle', { count: directoryCount });
     }
-    if (gameCount > 0) {
-        title += `${gameCount} game${gameCount > 1 ? 's' : ''}`;
-    }
-
-    title += '?';
-    return title;
+    return t('moveGamesTitle', { count: gameCount });
 }

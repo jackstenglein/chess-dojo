@@ -14,6 +14,7 @@ import {
     Stack,
 } from '@mui/material';
 import { domToPng } from 'modern-screenshot';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 interface GraduationShareDialogProps {
@@ -27,6 +28,7 @@ export default function GraduationShareDialog({
     onClose,
     graduation,
 }: GraduationShareDialogProps) {
+    const t = useTranslations('profile.graduationShare');
     const { newCohort } = graduation;
     const [reportRef, setReportRef] = useState<HTMLDivElement>();
     const [imageData, setImageData] = useState<string>();
@@ -87,13 +89,10 @@ export default function GraduationShareDialog({
 
     return (
         <Dialog maxWidth='md' open={open} onClose={handleClose} fullWidth>
-            <DialogTitle>Share your progress!</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
             <DialogContent>
                 <Stack spacing={2}>
-                    <DialogContentText>
-                        Show off your hard work and welcome the world to the Dojo! Download this
-                        image and share on social media.
-                    </DialogContentText>
+                    <DialogContentText>{t('description')}</DialogContentText>
                     <Stack
                         display='grid'
                         gridTemplateRows='auto 1fr'
@@ -108,7 +107,7 @@ export default function GraduationShareDialog({
                                     maxWidth: '100%',
                                     borderRadius: '8px',
                                 }}
-                                alt='dojo graduation badge'
+                                alt={t('imageAlt')}
                                 src={imageData}
                             />
                         ) : (
@@ -120,9 +119,9 @@ export default function GraduationShareDialog({
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
+                <Button onClick={handleClose}>{t('close')}</Button>
                 <Button loading={!imageData} onClick={onDownload}>
-                    Download
+                    {t('download')}
                 </Button>
             </DialogActions>
         </Dialog>

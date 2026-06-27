@@ -8,12 +8,14 @@ import NewsfeedItem, { isRestDayEntry } from '@/components/newsfeed/NewsfeedItem
 import { TimelineEntry } from '@/database/timeline';
 import { Feed, OpenInNew } from '@mui/icons-material';
 import { Button, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 const MAX_ITEMS = 3;
 const MAX_COMMENTS = 2;
 
 export function NewsfeedCard() {
+    const t = useTranslations('profile.info.newsfeedCard');
     const { user } = useAuth();
     const api = useApi();
     const request = useRequest<ListNewsfeedResponse>();
@@ -51,7 +53,7 @@ export function NewsfeedCard() {
                     <Stack direction='row' justifyContent='space-between' alignItems='center'>
                         <Stack direction='row' spacing={1} alignItems='center'>
                             <Feed fontSize='small' color='primary' />
-                            <Typography variant='h6'>Newsfeed</Typography>
+                            <Typography variant='h6'>{t('newsfeed')}</Typography>
                         </Stack>
                         <Button
                             href='/newsfeed'
@@ -59,7 +61,7 @@ export function NewsfeedCard() {
                             endIcon={<OpenInNew fontSize='small' />}
                             data-testid='newsfeed-view-all'
                         >
-                            View All
+                            {t('viewAll')}
                         </Button>
                     </Stack>
 
@@ -81,7 +83,7 @@ export function NewsfeedCard() {
 
                     {!request.isLoading() && entries.length === 0 && (
                         <Typography variant='body2' color='text.secondary' textAlign='center'>
-                            No recent activity from your follows or cohort.
+                            {t('noActivity')}
                         </Typography>
                     )}
                 </Stack>

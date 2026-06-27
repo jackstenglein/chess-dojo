@@ -30,6 +30,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
 
 interface FormError {
@@ -77,6 +78,7 @@ export default function SaveGameDialog({
     onClose,
     onSubmit,
 }: SaveGameDialogProps) {
+    const t = useTranslations('games.saveDialog');
     const isFreeTier = useFreeTier();
     const { chess, orientation: initialOrientation } = useChess();
     const initialTags = chess?.pgn.header.tags;
@@ -102,19 +104,19 @@ export default function SaveGameDialog({
 
         if (publish) {
             if (stripTagValue(form.white) === '') {
-                newErrors.white = 'This field is required';
+                newErrors.white = t('fieldRequired');
             }
             if (stripTagValue(form.black) === '') {
-                newErrors.black = 'This field is required';
+                newErrors.black = t('fieldRequired');
             }
             if (!isGameResult(form.result)) {
-                newErrors.result = 'This field is required';
+                newErrors.result = t('fieldRequired');
             }
             if (!form.date?.isValid) {
-                newErrors.date = 'This field is required';
+                newErrors.date = t('fieldRequired');
             }
         } else if (form.date && !form.date.isValid) {
-            newErrors.date = 'Invalid date';
+            newErrors.date = t('invalidDate');
         }
 
         setErrors(newErrors);
@@ -144,7 +146,7 @@ export default function SaveGameDialog({
             </SaveGameDialogBody>
             <DialogActions>
                 <Button data-testid='cancel-preflight' onClick={onClose} disabled={loading}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
 
                 {type === SaveGameDialogType.Save && (
@@ -154,14 +156,14 @@ export default function SaveGameDialog({
                         loading={loading && selectedButton === 'save'}
                         disabled={loading && selectedButton !== 'save'}
                     >
-                        Save
+                        {t('save')}
                     </Button>
                 )}
 
                 {type === SaveGameDialogType.Save && isFreeTier ? (
-                    <Tooltip title='Free users are not able to publish games. Upgrade to publish your game.'>
+                    <Tooltip title={t('freeUserTooltip')}>
                         <span>
-                            <Button disabled>Save & Publish</Button>
+                            <Button disabled>{t('saveAndPublish')}</Button>
                         </span>
                     </Tooltip>
                 ) : (
@@ -171,7 +173,7 @@ export default function SaveGameDialog({
                         loading={loading && selectedButton === 'publish'}
                         disabled={loading && selectedButton !== 'publish'}
                     >
-                        {type === SaveGameDialogType.Save ? 'Save & Publish' : 'Publish'}
+                        {type === SaveGameDialogType.Save ? t('saveAndPublish') : t('publish')}
                     </Button>
                 )}
             </DialogActions>
@@ -200,6 +202,7 @@ function SaveGameDialogBody({
     addToFolder: boolean;
     setAddToFolder: (v: boolean) => void;
 }) {
+    const t = useTranslations('games.saveDialog');
     const { user } = useAuth();
 
     const onChangeDirectory = (directory: { owner: string; id: string }) => {
@@ -214,14 +217,7 @@ function SaveGameDialogBody({
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    {children ? (
-                        children
-                    ) : (
-                        <>
-                            Review these fields before proceeding. You can update them later in the
-                            game settings section of the editor.
-                        </>
-                    )}
+                    {children ? children : <>{t('reviewFields')}</>}
                 </DialogContentText>
 
                 <Stack spacing={3} mt={3}>
@@ -236,7 +232,7 @@ function SaveGameDialogBody({
                             <TextField
                                 fullWidth
                                 data-testid='white'
-                                label="White's name"
+                                label={t('whiteName')}
                                 value={form.white}
                                 onChange={(e) => onChangeField('white', e.target.value)}
                                 error={!!errors.white}
@@ -254,7 +250,7 @@ function SaveGameDialogBody({
                             <TextField
                                 fullWidth
                                 data-testid='black'
-                                label="Black's name"
+                                label={t('blackName')}
                                 value={form.black}
                                 onChange={(e) => onChangeField('black', e.target.value)}
                                 error={!!errors.black}
@@ -272,17 +268,17 @@ function SaveGameDialogBody({
                             <TextField
                                 select
                                 data-testid='result'
-                                label='Result'
+                                label={t('result')}
                                 value={form.result}
                                 onChange={(e) => onChangeField('result', e.target.value)}
                                 error={!!errors.result}
                                 helperText={errors.result}
                                 fullWidth
                             >
-                                <MenuItem value={GameResult.White}>White Won</MenuItem>
-                                <MenuItem value={GameResult.Draw}>Draw</MenuItem>
-                                <MenuItem value={GameResult.Black}>Black Won</MenuItem>
-                                <MenuItem value={GameResult.Incomplete}>Analysis</MenuItem>
+                                <MenuItem value={GameResult.White}>{t('whiteWon')}</MenuItem>
+                                <MenuItem value={GameResult.Draw}>{t('draw')}</MenuItem>
+                                <MenuItem value={GameResult.Black}>{t('blackWon')}</MenuItem>
+                                <MenuItem value={GameResult.Incomplete}>{t('analysis')}</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -294,7 +290,7 @@ function SaveGameDialogBody({
                             }}
                         >
                             <DatePicker
-                                label='Date'
+                                label={t('date')}
                                 disableFuture
                                 value={form.date}
                                 onChange={(newValue) => {
@@ -313,7 +309,7 @@ function SaveGameDialogBody({
 
                         <Grid size={12}>
                             <FormControl>
-                                <FormLabel>Default Orientation</FormLabel>
+                                <FormLabel>{t('defaultOrientation')}</FormLabel>
                                 <RadioGroup
                                     row
                                     value={form.orientation}
@@ -322,12 +318,12 @@ function SaveGameDialogBody({
                                     <FormControlLabel
                                         value='white'
                                         control={<Radio />}
-                                        label='White'
+                                        label={t('white')}
                                     />
                                     <FormControlLabel
                                         value='black'
                                         control={<Radio />}
-                                        label='Black'
+                                        label={t('black')}
                                     />
                                 </RadioGroup>
                             </FormControl>
@@ -342,7 +338,7 @@ function SaveGameDialogBody({
                                             onChange={(e) => setAddToFolder(e.target.checked)}
                                         />
                                     }
-                                    label='Add to Folder'
+                                    label={t('addToFolder')}
                                 />
                                 <DirectoryCacheProvider>
                                     <DirectorySelectButton
@@ -360,7 +356,7 @@ function SaveGameDialogBody({
                                             },
                                             dialog: {
                                                 confirmButton: {
-                                                    children: 'Select',
+                                                    children: t('select'),
                                                 },
                                             },
                                         }}

@@ -13,6 +13,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { JSX, useSyncExternalStore } from 'react';
 import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
@@ -125,6 +126,7 @@ function PriceMatrix({
     currentTier,
     tiers: initialTiers,
 }: PriceMatrixProps) {
+    const t = useTranslations('upsell.priceMatrix');
     const currency = useSyncExternalStore(
         () => () => null,
         () => getCurrency(navigator.languages[0]),
@@ -143,7 +145,7 @@ function PriceMatrix({
             {onFreeTier && tiers.includes(SubscriptionTier.Free) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Free Tier'
+                        name={t('freeTierName')}
                         price={{
                             value: 0,
                             symbol: priceData.symbol,
@@ -152,30 +154,30 @@ function PriceMatrix({
                         }}
                         sellingPoints={[
                             {
-                                description: 'Limited training plans, 0-2500',
+                                description: t('freeLimitedTrainingPlans'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Limited game database',
+                                description: t('freeLimitedGameDatabase'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Limited puzzles',
+                                description: t('freeLimitedPuzzles'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Opening courses',
+                                description: t('freeOpeningCourses'),
                                 status: SellingPointStatus.Excluded,
                             },
                             {
-                                description: 'Community forum access',
+                                description: t('freeCommunityForum'),
                                 status: SellingPointStatus.Excluded,
                             },
                         ]}
                         buttonProps={{
                             disabled: request?.isLoading(),
                             onClick: onFreeTier,
-                            children: 'Continue for Free',
+                            children: t('continueForFree'),
                             variant: 'outlined',
                             color: 'primary',
                         }}
@@ -187,7 +189,7 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Basic) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Core'
+                        name={t('coreTierName')}
                         price={{
                             fullValue:
                                 interval === 'year'
@@ -195,32 +197,35 @@ function PriceMatrix({
                                     : undefined,
                             value: priceData[SubscriptionTier.Basic][interval],
                             symbol: priceData.symbol,
-                            interval: `month${interval === 'year' ? '*' : ''}`,
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
                             subtitle: ' ',
                         }}
                         sellingPoints={[
                             {
-                                description: 'All training plans, 0-2500',
+                                description: t('coreAllTrainingPlans'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Rating dashboard & progress tracking',
+                                description: t('coreRatingDashboard'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Full game database',
+                                description: t('coreFullGameDatabase'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Unlimited puzzles',
+                                description: t('coreUnlimitedPuzzles'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'All opening courses',
+                                description: t('coreAllOpeningCourses'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Community forum access',
+                                description: t('coreCommunityForum'),
                                 status: SellingPointStatus.Included,
                             },
                         ]}
@@ -234,7 +239,7 @@ function PriceMatrix({
                                     currency,
                                     value: priceData[SubscriptionTier.Basic][interval],
                                 }),
-                            children: 'Start Training',
+                            children: t('startTraining'),
                         }}
                         isCurrentTier={currentTier === SubscriptionTier.Basic}
                     />
@@ -244,32 +249,37 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Lecture) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Workshops'
+                        name={t('lecturesTierName')}
                         price={{
                             value: priceData[SubscriptionTier.Lecture][interval],
                             symbol: priceData.symbol,
-                            interval: `month`,
-                            subtitle: `(~ ${priceData.symbol}${Math.round(priceData[SubscriptionTier.Lecture][interval] / 15)} / class)`,
+                            interval: t('intervalMonth'),
+                            subtitle: t('perClassSubtitle', {
+                                currency: priceData.symbol,
+                                amount: Math.round(
+                                    priceData[SubscriptionTier.Lecture][interval] / 15,
+                                ),
+                            }),
                         }}
                         sellingPoints={[
                             {
-                                description: 'Everything from ChessDojo Core',
+                                description: t('lecturesEverythingFromCore'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Weekly live workshops on specialized topics',
+                                description: t('lecturesWeeklyLive'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Q&A sessions with Dojo coaches',
+                                description: t('lecturesQandA'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Structured homework assignments',
+                                description: t('lecturesHomework'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Access to recordings of all workshops',
+                                description: t('lecturesRecordings'),
                                 status: SellingPointStatus.Included,
                             },
                         ]}
@@ -283,20 +293,25 @@ function PriceMatrix({
                                     currency,
                                     value: priceData[SubscriptionTier.Lecture][interval],
                                 }),
-                            children: 'Join Workshops',
+                            children: t('joinLectures'),
                         }}
                         beforeButton={
                             <Typography>
-                                <Link target='_blank' href='/help?id=live-classes'>
-                                    FAQ
-                                </Link>
-                                {' / '}
-                                <Link
-                                    target='_blank'
-                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures])}&types=[]&tournaments=[]`}
-                                >
-                                    Class Calendar
-                                </Link>
+                                {t.rich('faqClassCalendar', {
+                                    faqLink: (chunks) => (
+                                        <Link target='_blank' href='/help?id=live-classes'>
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                    calendarLink: (chunks) => (
+                                        <Link
+                                            target='_blank'
+                                            href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures])}&types=[]&tournaments=[]`}
+                                        >
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                })}
                             </Typography>
                         }
                         isCurrentTier={currentTier === SubscriptionTier.Lecture}
@@ -307,28 +322,33 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.GameReview) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Game & Profile Review'
+                        name={t('gameReviewTierName')}
                         price={{
                             value: priceData[SubscriptionTier.GameReview][interval],
                             symbol: priceData.symbol,
-                            interval: 'month',
-                            subtitle: `(~ ${priceData.symbol}${Math.round(priceData[SubscriptionTier.GameReview][interval] / 20)} / class)`,
+                            interval: t('intervalMonth'),
+                            subtitle: t('perClassSubtitle', {
+                                currency: priceData.symbol,
+                                amount: Math.round(
+                                    priceData[SubscriptionTier.GameReview][interval] / 20,
+                                ),
+                            }),
                         }}
                         sellingPoints={[
                             {
-                                description: 'Everything from previous tiers',
+                                description: t('gameReviewEverythingFromPrevious'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Personalized game review classes',
+                                description: t('gameReviewPersonalizedReview'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Direct feedback from a sensei',
+                                description: t('gameReviewDirectFeedback'),
                                 status: SellingPointStatus.Included,
                             },
                             {
-                                description: 'Access to recordings of all workshops and classes',
+                                description: t('gameReviewRecordings'),
                                 status: SellingPointStatus.Included,
                             },
                         ]}
@@ -344,20 +364,25 @@ function PriceMatrix({
                                     currency,
                                     value: priceData[SubscriptionTier.Lecture][interval],
                                 }),
-                            children: 'Get Sensei Feedback',
+                            children: t('getSenseiFeedback'),
                         }}
                         beforeButton={
                             <Typography>
-                                <Link target='_blank' href='/help?id=live-classes'>
-                                    FAQ
-                                </Link>
-                                {' / '}
-                                <Link
-                                    target='_blank'
-                                    href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
-                                >
-                                    Class Calendar
-                                </Link>
+                                {t.rich('faqClassCalendar', {
+                                    faqLink: (chunks) => (
+                                        <Link target='_blank' href='/help?id=live-classes'>
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                    calendarLink: (chunks) => (
+                                        <Link
+                                            target='_blank'
+                                            href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
+                                        >
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                })}
                             </Typography>
                         }
                         isCurrentTier={currentTier === SubscriptionTier.GameReview}
@@ -391,6 +416,7 @@ function PriceCard({
     beforeButton?: JSX.Element;
     isCurrentTier: boolean;
 }) {
+    const t = useTranslations('upsell.priceMatrix');
     return (
         <Card variant='outlined' sx={{ height: 1 }}>
             <CardContent sx={{ height: 1 }}>
@@ -451,7 +477,7 @@ function PriceCard({
 
                     {isCurrentTier ? (
                         <Button variant='contained' fullWidth disabled>
-                            Already Subscribed
+                            {t('alreadySubscribed')}
                         </Button>
                     ) : (
                         <Button variant='contained' fullWidth color='subscribe' {...buttonProps} />

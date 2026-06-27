@@ -3,6 +3,7 @@ import { useAuth } from '@/auth/Auth';
 import { toDojoDateString } from '@/components/calendar/displayDate';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface LoadMoreButtonProps<T> {
     request: Request<T>;
@@ -19,13 +20,14 @@ function LoadMoreButton<T>({
     startKey,
     onLoadMore,
 }: LoadMoreButtonProps<T>) {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
 
     if (hasMore || Object.values(startKey || {}).length > 0) {
         return (
             <Stack alignItems='center' spacing={1}>
                 <Button variant='contained' loading={request.isLoading()} onClick={onLoadMore}>
-                    Load More
+                    {t('loadMore')}
                 </Button>
             </Stack>
         );
@@ -39,15 +41,16 @@ function LoadMoreButton<T>({
 
                 <Stack alignItems='center'>
                     <Typography fontWeight='bold' textAlign='center'>
-                        You're all caught up
+                        {t('allCaughtUp')}
                     </Typography>
                     <Typography color='text.secondary' textAlign='center'>
-                        You've seen all new posts since{' '}
-                        {toDojoDateString(date, user?.timezoneOverride)}
+                        {t('seenAllSince', {
+                            date: toDojoDateString(date, user?.timezoneOverride),
+                        })}
                     </Typography>
 
                     <Button onClick={onLoadMore} sx={{ textTransform: 'none' }}>
-                        View older posts
+                        {t('viewOlderPosts')}
                     </Button>
                 </Stack>
             </Stack>
@@ -60,10 +63,10 @@ function LoadMoreButton<T>({
 
             <Stack alignItems='center'>
                 <Typography fontWeight='bold' textAlign='center'>
-                    No More Posts
+                    {t('noMorePosts')}
                 </Typography>
                 <Typography color='text.secondary' textAlign='center'>
-                    You've seen all posts in your newsfeed
+                    {t('seenAllPosts')}
                 </Typography>
             </Stack>
         </Stack>

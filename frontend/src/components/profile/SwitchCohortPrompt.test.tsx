@@ -1,7 +1,8 @@
 import type React from 'react';
 
 import { RatingSystem, User } from '@/database/user';
-import { cleanup, render, screen } from '@testing-library/react';
+import { renderWithIntl } from '@/i18n/intl.test';
+import { cleanup, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SwitchCohortPrompt } from './SwitchCohortPrompt';
 
@@ -82,7 +83,7 @@ describe('SwitchCohortPrompt', () => {
     it('shows the stored current cohort as the source cohort in the 2026 switch prompt', async () => {
         mocks.user = makeUser();
 
-        render(<SwitchCohortPrompt />);
+        renderWithIntl(<SwitchCohortPrompt />);
 
         expect(await screen.findByText('New Cohorts Released')).toBeInTheDocument();
         expect(screen.getByText('1300-1400')).toBeInTheDocument();

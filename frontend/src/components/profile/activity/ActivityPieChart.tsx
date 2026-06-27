@@ -6,11 +6,14 @@ import { ALL_COHORTS, compareCohorts, User } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon, { type IconName } from '@/style/Icon';
 import { Box, Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { displayTimeframe, getScoreChartData, getTimeChartData, Timeframe } from './activity';
+import { getScoreChartData, getTimeChartData, Timeframe } from './activity';
 import PieChart, { PieChartData } from './PieChart';
 import { UseTimelineResponse } from './useTimeline';
+
+type T = ReturnType<typeof useTranslations<'profile.activity'>>;
 
 /**
  * Maps activity pie chart category labels to icon names for tooltip display.
@@ -36,10 +39,10 @@ const getCategoryIconName = (name: string): IconName | undefined => {
  * @param value The time to display in minutes.
  * @returns The time as a display string.
  */
-function getTimeDisplay(value: number) {
+function getTimeDisplay(value: number, t: T) {
     const hours = Math.floor(value / 60);
     const minutes = value % 60;
-    return `${hours}h ${minutes}m`;
+    return t('timeDisplay', { hours, minutes });
 }
 
 const LAST_SELECTED_COHORTS_KEY = 'lastSelectedCohorts';
@@ -50,6 +53,7 @@ interface ActivityPieChartProps {
 }
 
 const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) => {
+    const t = useTranslations('profile.activity');
     const [timeframe, setTimeframe] = useState(Timeframe.AllTime);
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const { user: viewer } = useAuth();
@@ -77,7 +81,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
         }
         return cohortOptions.map((opt) => ({
             value: opt,
-            label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+            label: opt === ALL_COHORTS ? t('allCohorts') : opt,
             icon: (
                 <CohortIcon
                     cohort={opt}
@@ -88,7 +92,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                 />
             ),
         }));
-    }, [user.progress, user.dojoCohort]);
+    }, [user.progress, user.dojoCohort, t]);
 
     const [cohorts, setCohorts] = useState(
         viewer?.username === user.username &&
@@ -141,7 +145,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                         <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
                         <Box>{entry.name}</Box>
                     </Box>
-                    <Box sx={{ fontWeight: 700 }}>{getTimeDisplay(entry.value)}</Box>
+                    <Box sx={{ fontWeight: 700 }}>{getTimeDisplay(entry.value, t)}</Box>
                 </Box>
             );
         }
@@ -174,7 +178,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     </Box>
 
                     <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
-                        {getTimeDisplay(entry.value)}
+                        {getTimeDisplay(entry.value, t)}
                     </Box>
                 </Box>
 
@@ -183,13 +187,13 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                         <Box component='span' sx={{ fontWeight: 700 }}>
                             {item.name}
                         </Box>{' '}
-                        - {getTimeDisplay(item.value)}
+                        - {getTimeDisplay(item.value, t)}
                     </Box>
                 ))}
 
                 {!!breakdown.length && (
                     <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
-                        Click for more details
+                        {t('clickForMore')}
                     </Box>
                 )}
             </Box>
@@ -220,7 +224,9 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                         <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
                         <Box>{entry.name}</Box>
                     </Box>
-                    <Box>{entry.count ? `Count: ${entry.count}, Score: ${score}` : score}</Box>
+                    <Box>
+                        {entry.count ? t('countAndScore', { count: entry.count, score }) : score}
+                    </Box>
                 </Box>
             );
         }
@@ -253,7 +259,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     </Box>
 
                     <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
-                        {entry.count ? `Count: ${entry.count}, Score: ${score}` : score}
+                        {entry.count ? t('countAndScore', { count: entry.count, score }) : score}
                     </Box>
                 </Box>
 
@@ -266,14 +272,16 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                                 {item.name}
                             </Box>{' '}
                             -{' '}
-                            {item.count ? `Count: ${item.count}, Score: ${childScore}` : childScore}
+                            {item.count
+                                ? t('countAndScore', { count: item.count, score: childScore })
+                                : childScore}
                         </Box>
                     );
                 })}
 
                 {!!breakdown.length && (
                     <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
-                        Click for more details
+                        {t('clickForMore')}
                     </Box>
                 )}
             </Box>
@@ -324,7 +332,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     selected={cohorts}
                     setSelected={onChangeCohort}
                     options={cohortOptions}
-                    label='Cohorts'
+                    label={t('cohorts')}
                     sx={{ mb: 3, width: 1 }}
                     size='small'
                     error={cohorts.length === 0}
@@ -334,7 +342,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
             <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                     select
-                    label='Timeframe'
+                    label={t('timeframe')}
                     value={timeframe}
                     onChange={(event) => onChangeTimeframe(event.target.value as Timeframe)}
                     sx={{ mb: 3, height: 1 }}
@@ -342,7 +350,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                 >
                     {Object.values(Timeframe).map((option) => (
                         <MenuItem key={option} value={option}>
-                            {displayTimeframe(option)}
+                            {t(option)}
                         </MenuItem>
                     ))}
                 </TextField>
@@ -350,50 +358,64 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
 
             <Grid size={12}>
                 <Typography variant='body2' color='text.secondary' textAlign='center'>
-                    Click on a segment of the pie chart to see more details
+                    {t('clickDetails')}
                 </Typography>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }} mt={4}>
                 <PieChart
-                    title={`Score Breakdown${scoreChartCategory && `: ${scoreChartCategory}`}`}
+                    title={
+                        scoreChartCategory
+                            ? t('scoreBreakdownCategory', { category: scoreChartCategory })
+                            : t('scoreBreakdown')
+                    }
                     data={scoreChartData}
                     renderTotal={(score) => (
                         <Stack alignItems='center'>
                             <Typography variant='subtitle1'>
-                                Total {scoreChartCategory ? 'Category' : 'Cohort'} Score:{' '}
-                                {Math.round(score * 100) / 100}
+                                {scoreChartCategory
+                                    ? t('totalCategoryScore', {
+                                          score: Math.round(score * 100) / 100,
+                                      })
+                                    : t('totalCohortScore', {
+                                          score: Math.round(score * 100) / 100,
+                                      })}
                             </Typography>
                             {scoreChartCategory && (
                                 <Button onClick={() => setScoreChartCategory('')}>
-                                    Back to Cohort
+                                    {t('backToCohort')}
                                 </Button>
                             )}
                         </Stack>
                     )}
-                    getTooltip={getScoreChartTooltip}
+                    getTooltip={(entry) => getScoreChartTooltip(entry)}
                     onClick={onClickScoreChart}
                 />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }} mt={4}>
                 <PieChart
-                    title={`Time Breakdown${timeChartCategory && `: ${timeChartCategory}`}`}
+                    title={
+                        timeChartCategory
+                            ? t('timeBreakdownCategory', { category: timeChartCategory })
+                            : t('timeBreakdown')
+                    }
                     data={timeChartData}
                     renderTotal={(time) => (
                         <Stack alignItems='center'>
                             <Typography variant='subtitle1'>
-                                Total {timeChartCategory ? 'Category' : 'Cohort'} Time:{' '}
-                                {getTimeDisplay(time)}
+                                {timeChartCategory
+                                    ? t('totalCategoryTime', { time: getTimeDisplay(time, t) })
+                                    : t('totalCohortTime', { time: getTimeDisplay(time, t) })}
                             </Typography>
                             {timeChartCategory && (
                                 <Button onClick={() => setTimeChartCategory('')}>
-                                    Back to Cohort
+                                    {t('backToCohort')}
                                 </Button>
                             )}
                         </Stack>
                     )}
-                    getTooltip={getTimeChartTooltip}
+                    getTooltip={(entry) => getTimeChartTooltip(entry)}
                     onClick={onClickTimeChart}
                 />
             </Grid>

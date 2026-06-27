@@ -13,6 +13,7 @@ import {
     Typography,
     TypographyOwnProps,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { BreadcrumbItem, useBreadcrumbs } from './DirectoryCache';
 
@@ -33,6 +34,7 @@ export const DirectoryBreadcrumbs = ({
     maxItems?: number;
     variant?: TypographyOwnProps['variant'];
 }) => {
+    const t = useTranslations('profile.directories');
     const { user } = useAuth();
     const { updateSearchParams } = useNextSearchParams();
     const currentBreadcrumbs = useBreadcrumbs(owner, id, currentProfile);
@@ -64,7 +66,7 @@ export const DirectoryBreadcrumbs = ({
         <Stack spacing={1} direction='row' alignItems='center'>
             {hiddenBreadcrumbs > 0 && (
                 <>
-                    <Tooltip title='Show path'>
+                    <Tooltip title={t('showPath')}>
                         <IconButton size='small' onClick={(e) => setMenuAnchor(e.currentTarget)}>
                             <MoreHoriz fontSize='inherit' sx={{ color: 'text.secondary' }} />
                         </IconButton>

@@ -3,11 +3,10 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
-import GameTable from '@/components/games/list/GameTable';
+import GameTable, { getOpenGame } from '@/components/games/list/GameTable';
 import { ListItemContextMenu } from '@/components/games/list/ListItemContextMenu';
 import { Link } from '@/components/navigation/Link';
 import ListGamesTutorial from '@/components/tutorial/ListGamesTutorial';
-import { GameInfo } from '@/database/game';
 import { RequirementCategory } from '@/database/requirement';
 import { useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
@@ -20,10 +19,12 @@ import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import UpsellPage from '@/upsell/UpsellPage';
 import { Badge, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import { GridPaginationModel } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import SearchFilters from './SearchFilters';
 
 const ListGamesPage = () => {
+    const t = useTranslations('games.list.listGamesPage');
     const isFreeTier = useFreeTier();
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [upsellAction, setUpsellAction] = useState('');
@@ -46,15 +47,6 @@ const ListGamesPage = () => {
 
     const pagination = usePagination(null, 0, 10);
     const { pageSize, setPageSize, request, data, onSearch } = pagination;
-
-    const onClick = ({ cohort, id }: GameInfo, event: React.MouseEvent) => {
-        const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll('?', '%3F')}`;
-        if (event.shiftKey) {
-            window.open(url, '_blank');
-        } else {
-            router.push(url);
-        }
-    };
 
     const onPaginationModelChange = (model: GridPaginationModel) => {
         if (model.pageSize !== pageSize) {
@@ -85,11 +77,7 @@ const ListGamesPage = () => {
             {isFreeTier && (
                 <>
                     <Stack alignItems='center' mb={5}>
-                        <UpsellAlert>
-                            To avoid unfair preparation against Dojo members, free-tier users have
-                            limited access to the Dojo Database. Upgrade your account to view the
-                            full Database.
-                        </UpsellAlert>
+                        <UpsellAlert>{t('freeTierAlert')}</UpsellAlert>
                     </Stack>
                     <UpsellDialog
                         open={upsellDialogOpen}
@@ -105,7 +93,7 @@ const ListGamesPage = () => {
                         namespace='games-list-page'
                         limitFreeTier
                         pagination={pagination}
-                        onRowClick={(params, event) => onClick(params.row, event)}
+                        onRowClick={getOpenGame(router)}
                         onPaginationModelChange={onPaginationModelChange}
                         contextMenu={contextMenu}
                         defaultVisibility={{
@@ -139,7 +127,7 @@ const ListGamesPage = () => {
                                 />
                             }
                         >
-                            Analyze a Game
+                            {t('analyzeGame')}
                         </Button>
 
                         <Divider />
@@ -158,7 +146,7 @@ const ListGamesPage = () => {
                                                 verticalAlign: 'middle',
                                             }}
                                         />
-                                        Sensei Game Review Queue
+                                        {t('senseiReviewQueue')}
                                     </Link>
                                 </Typography>
 
@@ -200,7 +188,7 @@ const ListGamesPage = () => {
                                             verticalAlign: 'middle',
                                         }}
                                     />
-                                    Download full database (updated daily)
+                                    {t('downloadDatabase')}
                                 </Link>
                             </Typography>
                         </Stack>

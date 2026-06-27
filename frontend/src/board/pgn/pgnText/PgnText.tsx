@@ -18,11 +18,9 @@ import StartingPositionComments from './StartingPositionComments';
 import Variation from './Variation';
 import EngineSection from './engine/EngineSection';
 
-const PgnText = () => {
-    const light = useLightMode();
+const PgnTextBody = () => {
     const ref = useRef<HTMLDivElement>(null);
     const { config, slots, slotProps, solitaire } = useChess();
-    const { unsaved, game, isOwner } = useGame();
     const [hideEngine] = useLocalStorage(HideEngine.Key, HideEngine.Default);
 
     const handleScroll = (child: HTMLElement | null) => {
@@ -40,32 +38,73 @@ const PgnText = () => {
     };
 
     return (
-        <Stack spacing={1} maxHeight={1}>
-            {game && game.unlisted === true && isOwner && <UnpublishedGameBanner dismissable />}
+        <>
+            {!config?.disableEngine && !hideEngine && !solitaire?.enabled && <EngineSection />}
+            <Stack
+                ref={ref}
+                sx={{
+                    overflowY: 'scroll',
+                    overflowX: 'clip',
+                    flexGrow: 1,
+                    minHeight: 0,
+                    width: 1,
+                }}
+            >
+                <GameComment />
+                <StartingPositionComments />
+                <Variation handleScroll={handleScroll} />
+                {!slotProps?.pgnText?.hideResult && !solitaire?.enabled && <Result />}
+
+                {slots?.afterPgnText ? (
+                    slots.afterPgnText
+                ) : solitaire?.enabled ? (
+                    <SolitaireAfterPgnText />
+                ) : undefined}
+            </Stack>
+        </>
+    );
+};
+
+export function PgnTextBanners() {
+    const { unsaved, game, isOwner } = useGame();
+
+    return (
+        <>
+            {game?.unlisted && isOwner && <UnpublishedGameBanner dismissable />}
             {unsaved && <UnsavedGameBanner dismissable />}
             <SaveAllVariationsButton />
+        </>
+    );
+}
 
+export const UnderboardPgnText = () => {
+    return (
+        <Stack
+            data-testid='pgn-text'
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: 0,
+                flexGrow: 1,
+            }}
+        >
+            <PgnTextBody />
+        </Stack>
+    );
+};
+
+const PgnText = () => {
+    const light = useLightMode();
+
+    return (
+        <Stack spacing={1} maxHeight={1}>
+            <PgnTextBanners />
             <Card
                 data-testid='pgn-text'
                 variant={light ? 'outlined' : 'elevation'}
                 sx={{ display: 'flex', flexDirection: 'column' }}
             >
-                {!config?.disableEngine && !hideEngine && !solitaire?.enabled && <EngineSection />}
-                <Stack
-                    ref={ref}
-                    sx={{ overflowY: 'scroll', overflowX: 'clip', flexGrow: 1, width: 1 }}
-                >
-                    <GameComment />
-                    <StartingPositionComments />
-                    <Variation handleScroll={handleScroll} />
-                    {!slotProps?.pgnText?.hideResult && !solitaire?.enabled && <Result />}
-
-                    {slots?.afterPgnText ? (
-                        slots.afterPgnText
-                    ) : solitaire?.enabled ? (
-                        <SolitaireAfterPgnText />
-                    ) : undefined}
-                </Stack>
+                <PgnTextBody />
             </Card>
         </Stack>
     );

@@ -14,6 +14,7 @@ import {
     Stack,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { NotificationListItem } from './NotificationListItem';
 
@@ -21,6 +22,7 @@ const NotificationButton = () => {
     const { notifications, clearNotifications } = useNotifications();
     const api = useApi();
     const clearRequest = useRequest();
+    const t = useTranslations('notifications');
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -48,7 +50,7 @@ const NotificationButton = () => {
     return (
         <>
             <RequestSnackbar request={clearRequest} />
-            <Tooltip title='Notifications'>
+            <Tooltip title={t('title')}>
                 <IconButton
                     data-testid='Notifications'
                     onClick={handleOpen}
@@ -85,7 +87,7 @@ const NotificationButton = () => {
                                         size='small'
                                         onClick={onClearAll}
                                     >
-                                        Clear All
+                                        {t('clearAll')}
                                     </Button>
                                 )}
                             </Stack>
@@ -96,7 +98,7 @@ const NotificationButton = () => {
                         <NotificationListItem key={n.id} notification={n} menuItem />
                     ))}
                     {notifications.length === 0 && (
-                        <MenuItem onClick={handleClose}>No notifications</MenuItem>
+                        <MenuItem onClick={handleClose}>{t('empty')}</MenuItem>
                     )}
                 </MenuList>
             </Menu>

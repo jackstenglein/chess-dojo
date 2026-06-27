@@ -19,7 +19,8 @@ import {
     Typography,
 } from '@mui/material';
 import { green, grey, lime, orange, pink } from '@mui/material/colors';
-import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxisOptions, Chart, Datum as ChartDatum, Series } from 'react-charts';
 import { useLocalStorage } from 'usehooks-ts';
 import { TimeControlEditor } from '../tags/TimeControlEditor';
@@ -32,10 +33,6 @@ import {
     MIN_MOVE,
     MIN_TIME_CONTROL,
 } from './rating/clockRating';
-
-const IDEAL_CLOCK_SERIES_LABEL = 'Ideal';
-const EVAL_SERIES_LABEL = 'Eval';
-const CURRENT_MOVE_SERIES_LABEL = 'Current Move';
 
 const showEvalInClockGraph = {
     key: 'showEvalInClockGraph',
@@ -84,14 +81,18 @@ export interface Datum {
     eval?: number;
 }
 
-const primaryAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.moveNumber,
-    scaleType: 'linear',
-    formatters: {
-        scale: (value) => (value % 1 === 0 ? `${value}` : ''),
-        tooltip: (value) => (value % 1 === 0 ? `Move ${value}` : ''),
-    },
-};
+function getPrimaryAxis(
+    t: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum> {
+    return {
+        getValue: (datum) => datum.moveNumber,
+        scaleType: 'linear',
+        formatters: {
+            scale: (value) => (value % 1 === 0 ? `${value}` : ''),
+            tooltip: (value) => (value % 1 === 0 ? t('moveTooltip', { value }) : ''),
+        },
+    };
+}
 
 const secondaryAxes: AxisOptions<Datum>[] = [
     {
@@ -138,14 +139,18 @@ const secondaryAxes: AxisOptions<Datum>[] = [
     },
 ];
 
-const barAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.moveNumber,
-    scaleType: 'band',
-    position: 'left',
-    formatters: {
-        tooltip: (value) => `Move ${(value as number)?.toString()}`,
-    },
-};
+function getBarAxis(
+    t: (key: string, values?: Record<string, string | number>) => string,
+): AxisOptions<Datum> {
+    return {
+        getValue: (datum) => datum.moveNumber,
+        scaleType: 'band',
+        position: 'left',
+        formatters: {
+            tooltip: (value) => t('moveTooltip', { value: (value as number)?.toString() }),
+        },
+    };
+}
 
 const secondaryBarAxis: AxisOptions<Datum>[] = [
     {
@@ -242,56 +247,15 @@ function shouldRerender(chess: Chess, event: Event): boolean {
     return false;
 }
 
-function getSeriesStyle(series: Series<Datum>, light: boolean) {
-    if (series.label === CURRENT_MOVE_SERIES_LABEL) {
-        if (light) {
-            return { fill: grey[600], stroke: grey[600], strokeDasharray: '3 10' };
-        }
-        return { fill: lime[100], stroke: lime[100], strokeDasharray: '3 10' };
-    }
-    if (series.label === IDEAL_CLOCK_SERIES_LABEL) {
-        return { fill: green[500], stroke: green[500] };
-    }
-    if (series.label === 'White') {
-        if (light) {
-            return { fill: pink[200], stroke: pink[200] };
-        }
-        return { fill: 'white', stroke: 'white' };
-    }
-
-    if (series.label === EVAL_SERIES_LABEL) {
-        if (light) {
-            return { fill: orange[300], stroke: orange[300] };
-        }
-        return { fill: pink[200], stroke: pink[200] };
-    }
-
-    if (light) {
-        return { fill: '#212121', stroke: '#212121' };
-    }
-    return { fill: 'rgb(15, 131, 171)', stroke: 'rgb(15, 131, 171)' };
-}
-
-function getDatumStyle(datum: ChartDatum<Datum>, light: boolean) {
-    if (datum.originalDatum.label === 'White') {
-        if (light) {
-            return { fill: pink[200] };
-        }
-        return { fill: 'white' };
-    }
-
-    if (light) {
-        return { fill: '#212121' };
-    }
-    return { fill: 'rgb(15, 131, 171)' };
-}
-
 interface ClockUsageProps {
     showEditor?: boolean;
 }
 
 const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.underboard.clock');
+    const primaryAxis = useMemo(() => getPrimaryAxis(t), [t]);
+    const barAxis = useMemo(() => getBarAxis(t), [t]);
     const light = useLightMode();
     const [forceRender, setForceRender] = useState(0);
     const reconcile = useReconcile();
@@ -306,6 +270,65 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
     );
 
     const timeControls = chess?.header().tags.TimeControl?.items;
+
+    const seriesLabels = useMemo(
+        () => ({
+            white: t('whiteLabel'),
+            black: t('blackLabel'),
+            ideal: t('idealClockSeriesLabel'),
+            eval: t('evalSeriesLabel'),
+            currentMove: t('currentMoveSeriesLabel'),
+            totalTime: t('totalTimeLabel'),
+        }),
+        [t],
+    );
+
+    const getSeriesStyle = useCallback(
+        (series: Series<Datum>) => {
+            if (series.label === seriesLabels.currentMove) {
+                if (light) {
+                    return { fill: grey[600], stroke: grey[600], strokeDasharray: '3 10' };
+                }
+                return { fill: lime[100], stroke: lime[100], strokeDasharray: '3 10' };
+            }
+            if (series.label === seriesLabels.ideal) {
+                return { fill: green[500], stroke: green[500] };
+            }
+            if (series.label === seriesLabels.white) {
+                if (light) {
+                    return { fill: pink[200], stroke: pink[200] };
+                }
+                return { fill: 'white', stroke: 'white' };
+            }
+            if (series.label === seriesLabels.eval) {
+                if (light) {
+                    return { fill: orange[300], stroke: orange[300] };
+                }
+                return { fill: pink[200], stroke: pink[200] };
+            }
+            if (light) {
+                return { fill: '#212121', stroke: '#212121' };
+            }
+            return { fill: 'rgb(15, 131, 171)', stroke: 'rgb(15, 131, 171)' };
+        },
+        [light, seriesLabels],
+    );
+
+    const getDatumStyle = useCallback(
+        (datum: ChartDatum<Datum>) => {
+            if (datum.originalDatum.label === seriesLabels.white) {
+                if (light) {
+                    return { fill: pink[200] };
+                }
+                return { fill: 'white' };
+            }
+            if (light) {
+                return { fill: '#212121' };
+            }
+            return { fill: 'rgb(15, 131, 171)' };
+        },
+        [light, seriesLabels],
+    );
 
     useEffect(() => {
         if (chess && showEditor) {
@@ -509,16 +532,16 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
             timeRatingEnabled: whiteClockRating >= 0 || blackClockRating >= 0,
             total: [
                 {
-                    label: 'Total Time',
+                    label: seriesLabels.totalTime,
                     data: [
                         {
-                            label: 'Black',
+                            label: seriesLabels.black,
                             seconds: blackSecTotal,
                             move: null,
                             moveNumber: 0,
                         },
                         {
-                            label: 'White',
+                            label: seriesLabels.white,
                             seconds: whiteSecTotal,
                             move: null,
                             moveNumber: 0,
@@ -527,18 +550,21 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                 },
             ],
             remainingPerMove: [
-                { label: 'White', data: whiteClockDisplay },
-                { label: 'Black', data: blackClockDisplay },
-                { label: IDEAL_CLOCK_SERIES_LABEL, data: perfectLine },
-                { label: EVAL_SERIES_LABEL, data: evalData, secondaryAxisId: 'eval' },
-                { label: CURRENT_MOVE_SERIES_LABEL, data: chess.isInMainline() ? currentLine : [] },
+                { label: seriesLabels.white, data: whiteClockDisplay },
+                { label: seriesLabels.black, data: blackClockDisplay },
+                { label: seriesLabels.ideal, data: perfectLine },
+                { label: seriesLabels.eval, data: evalData, secondaryAxisId: 'eval' },
+                {
+                    label: seriesLabels.currentMove,
+                    data: chess.isInMainline() ? currentLine : [],
+                },
             ],
             usedPerMove: [
-                { label: 'White', data: whiteTimePerMove.reverse() },
-                { label: 'Black', data: blackTimePerMove.reverse() },
+                { label: seriesLabels.white, data: whiteTimePerMove.reverse() },
+                { label: seriesLabels.black, data: blackTimePerMove.reverse() },
             ],
         };
-    }, [chess, timeControls, forceRender]);
+    }, [chess, timeControls, forceRender, seriesLabels]);
 
     if (!chess) {
         return null;
@@ -559,12 +585,12 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
     let remainingPerMoveData = data.remainingPerMove;
     if (!showIdealClock) {
         remainingPerMoveData = remainingPerMoveData.filter(
-            (series) => series.label !== IDEAL_CLOCK_SERIES_LABEL,
+            (series) => series.label !== seriesLabels.ideal,
         );
     }
     if (!showEval) {
         remainingPerMoveData = remainingPerMoveData.filter(
-            (series) => series.label !== EVAL_SERIES_LABEL,
+            (series) => series.label !== seriesLabels.eval,
         );
     }
 
@@ -573,10 +599,10 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
             <Stack height={1} spacing={4}>
                 <Stack>
                     <Stack direction='row' alignItems='center' spacing={0.5}>
-                        <Typography variant='subtitle1'>Time Control</Typography>
+                        <Typography variant='subtitle1'>{t('timeControlLabel')}</Typography>
 
                         {showEditor && (
-                            <Tooltip title='Edit time control'>
+                            <Tooltip title={t('editTimeControlTooltip')}>
                                 <IconButton
                                     size='small'
                                     sx={{ position: 'relative', top: '-2px' }}
@@ -593,25 +619,29 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                 {data.timeRatingEnabled && (
                     <Stack alignItems='center'>
                         <Typography variant='caption' color='text.secondary' sx={{ mb: 1 }}>
-                            Time Management Rating
+                            {t('timeManagementRatingLabel')}
                         </Typography>
                         <Stack direction='row' spacing={2}>
                             <TimeRatingCard
                                 backgroundColor='common.white'
-                                title='White'
+                                title={t('whiteLabel')}
                                 titleColor='grey.800'
                                 rating={data.whiteClockRating}
                                 ratingColor='common.black'
                                 area={data.whiteClockArea}
+                                movedFasterTooltip={t('movedFasterTooltip')}
+                                movedSlowerTooltip={t('movedSlowerTooltip')}
                             />
 
                             <TimeRatingCard
                                 backgroundColor='#121212'
-                                title='Black'
+                                title={t('blackLabel')}
                                 titleColor='rgba(255, 255, 255, 0.7)'
                                 rating={data.blackClockRating}
                                 ratingColor='common.white'
                                 area={data.blackClockArea}
+                                movedFasterTooltip={t('movedFasterTooltip')}
+                                movedSlowerTooltip={t('movedSlowerTooltip')}
                             />
                         </Stack>
                     </Stack>
@@ -619,7 +649,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
 
                 <Stack spacing={0.5} alignItems='center'>
                     <Typography variant='caption' color='text.secondary'>
-                        Remaining Clock Time by Move
+                        {t('remainingClockLabel')}
                     </Typography>
                     <Box width={1} height={300}>
                         <Chart
@@ -631,11 +661,11 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                                     : secondaryAxes.slice(0, -1),
                                 dark: !light,
                                 onClickDatum,
-                                getSeriesStyle: (series) => getSeriesStyle(series, light),
+                                getSeriesStyle,
                                 tooltip: {
                                     showDatumInTooltip: (datum) =>
                                         (showEval || datum.secondaryAxisId !== 'eval') &&
-                                        datum.seriesLabel !== CURRENT_MOVE_SERIES_LABEL,
+                                        datum.seriesLabel !== seriesLabels.currentMove,
                                 },
                             }}
                         />
@@ -650,7 +680,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                                     sx={{ '& .MuiSvgIcon-root': { fontSize: 16 } }}
                                 />
                             }
-                            label='Overlay evaluation'
+                            label={t('overlayEvaluationCheckbox')}
                             slotProps={{
                                 typography: {
                                     color: 'text.secondary',
@@ -668,7 +698,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                                         sx={{ '& .MuiSvgIcon-root': { fontSize: 16 } }}
                                     />
                                 }
-                                label='Show ideal time usage'
+                                label={t('showIdealTimeUsageCheckbox')}
                                 slotProps={{
                                     typography: {
                                         color: 'text.secondary',
@@ -682,7 +712,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
 
                 <Stack spacing={0.5} alignItems='center'>
                     <Typography variant='caption' color='text.secondary'>
-                        Time Used Per Move
+                        {t('timeUsedPerMoveLabel')}
                     </Typography>
                     <Box
                         width={1}
@@ -696,7 +726,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                                 secondaryAxes: secondaryBarAxis,
                                 dark: !light,
                                 onClickDatum,
-                                getSeriesStyle: (series) => getSeriesStyle(series, light),
+                                getSeriesStyle,
                             }}
                         />
                     </Box>
@@ -704,7 +734,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
 
                 <Stack spacing={0.5} alignItems='center'>
                     <Typography variant='caption' color='text.secondary'>
-                        Total Time Used
+                        {t('totalTimeUsedLabel')}
                     </Typography>
                     <Box width={1} height={120}>
                         <Chart
@@ -713,7 +743,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                                 primaryAxis: totalTimePrimaryAxis,
                                 secondaryAxes: secondaryBarAxis,
                                 dark: !light,
-                                getDatumStyle: (datum) => getDatumStyle(datum, light),
+                                getDatumStyle,
                             }}
                         />
                     </Box>
@@ -741,6 +771,8 @@ function TimeRatingCard({
     rating,
     ratingColor,
     area,
+    movedFasterTooltip,
+    movedSlowerTooltip,
 }: {
     backgroundColor: string;
     title: string;
@@ -748,6 +780,8 @@ function TimeRatingCard({
     rating: number;
     ratingColor: string;
     area: number;
+    movedFasterTooltip: string;
+    movedSlowerTooltip: string;
 }) {
     return (
         <Card sx={{ p: 1, minWidth: 120, backgroundColor }} elevation={10}>
@@ -778,12 +812,12 @@ function TimeRatingCard({
                 </Typography>
 
                 {area > 0 && (
-                    <Tooltip title='Player moved faster than ideal on average'>
+                    <Tooltip title={movedFasterTooltip}>
                         <RabbitIcon sx={{ gridArea: 'icon', color: ratingColor }} />
                     </Tooltip>
                 )}
                 {area < 0 && (
-                    <Tooltip title='Player moved slower than ideal on average'>
+                    <Tooltip title={movedSlowerTooltip}>
                         <SlothIcon sx={{ gridArea: 'icon', color: ratingColor }} />
                     </Tooltip>
                 )}

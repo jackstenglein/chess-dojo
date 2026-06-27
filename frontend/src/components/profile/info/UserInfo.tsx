@@ -3,6 +3,7 @@ import { User } from '@/database/user';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface UserInfoProps {
     user: User;
@@ -10,6 +11,7 @@ interface UserInfoProps {
 }
 
 const UserInfo: React.FC<UserInfoProps> = ({ user, linkUsername }) => {
+    const t = useTranslations('profile.info.userCard');
     return (
         <Stack direction='row' spacing={2}>
             <Avatar user={user} />
@@ -26,7 +28,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, linkUsername }) => {
 
                     <CohortIcon
                         cohort={user.dojoCohort}
-                        tooltip={`Member of the ${user.dojoCohort} cohort`}
+                        tooltip={t('memberOfCohort', { cohort: user.dojoCohort })}
                     />
                 </Stack>
                 <Typography variant='h5' color='text.secondary'>

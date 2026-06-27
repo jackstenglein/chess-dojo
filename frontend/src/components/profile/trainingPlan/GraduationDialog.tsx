@@ -12,6 +12,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface GraduationDialogProps {
@@ -21,6 +22,8 @@ interface GraduationDialogProps {
 }
 
 export function GraduationDialog({ open, onClose, user }: GraduationDialogProps) {
+    const t = useTranslations('profile.trainingPlan.graduation');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const api = useApi();
     const request = useRequest<string>();
     const [comments, setComments] = useState('');
@@ -30,7 +33,7 @@ export function GraduationDialog({ open, onClose, user }: GraduationDialogProps)
         request.onStart();
         api.graduate(comments)
             .then((response) => {
-                request.onSuccess('Congratulations! You have successfully graduated!');
+                request.onSuccess(t('success'));
                 trackEvent(EventType.Graduate, {
                     previous_cohort: response.data.graduation.previousCohort,
                     new_cohort: response.data.graduation.newCohort,
@@ -46,23 +49,13 @@ export function GraduationDialog({ open, onClose, user }: GraduationDialogProps)
         <>
             <RequestSnackbar request={request} showSuccess />
             <Dialog open={open} onClose={request.isLoading() ? undefined : onClose} fullWidth>
-                <DialogTitle>Graduate from {user?.dojoCohort}?</DialogTitle>
+                <DialogTitle>{t('title', { cohort: user?.dojoCohort ?? '' })}</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2}>
-                        <DialogContentText>
-                            This will move you to the next cohort and add a badge to your profile.
-                            You will also be added to the list of recent graduates, and Jesse will
-                            review your profile in the next grad show on Twitch. If you just want to
-                            look at tasks from other cohorts, use the dropdown in the training plan
-                            instead.
-                        </DialogContentText>
-                        <DialogContentText>
-                            Optionally add comments on what was most helpful about the program, what
-                            could be improved, etc. This will be visible to all other members of the
-                            Dojo.
-                        </DialogContentText>
+                        <DialogContentText>{t('description')}</DialogContentText>
+                        <DialogContentText>{t('commentsLabel')}</DialogContentText>
                         <TextField
-                            label='Comments'
+                            label={tCommon('comments')}
                             value={comments}
                             onChange={(event) => setComments(event.target.value)}
                             multiline
@@ -74,10 +67,10 @@ export function GraduationDialog({ open, onClose, user }: GraduationDialogProps)
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onClose} disabled={request.isLoading()}>
-                        Cancel
+                        {tCommon('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={onGraduate}>
-                        Graduate
+                        {t('graduate')}
                     </Button>
                 </DialogActions>
             </Dialog>

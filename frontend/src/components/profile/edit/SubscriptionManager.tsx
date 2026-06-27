@@ -10,6 +10,7 @@ import {
 import { OpenInNew } from '@mui/icons-material';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { Button, Divider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface SubscriptionManagerProps {
     user: User;
@@ -18,6 +19,7 @@ interface SubscriptionManagerProps {
 const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
     const request = useRequest();
     const api = useApi();
+    const t = useTranslations('profile.subscription');
 
     const onManageSubscription = () => {
         request.onStart();
@@ -46,22 +48,24 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
             >
                 <Typography variant='h5'>
                     <MonetizationOnIcon sx={{ verticalAlign: 'middle', marginRight: '0.1em' }} />{' '}
-                    Subscription/Billing
+                    {t('heading')}
                 </Typography>
                 <Divider />
             </Stack>
 
             {isFreeTier ? (
                 <>
-                    <Typography>Subscription Status: Free Tier</Typography>
+                    <Typography>{t('statusFree')}</Typography>
                     <Button variant='contained' component={Link} href='/prices'>
-                        View Prices
+                        {t('viewPrices')}
                     </Button>
                 </>
             ) : (
                 <>
-                    <Typography>Subscription Status: Subscribed</Typography>
-                    <Typography>Current Tier: {displaySubscriptionTier(user)}</Typography>
+                    <Typography>{t('statusSubscribed')}</Typography>
+                    <Typography>
+                        {t('currentTier', { tier: displaySubscriptionTier(user, t) })}
+                    </Typography>
 
                     {!isWix(paymentInfo) ? (
                         <Button
@@ -70,7 +74,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
                             variant='contained'
                             endIcon={<OpenInNew />}
                         >
-                            Manage Subscription
+                            {t('manageSubscription')}
                         </Button>
                     ) : (
                         <Button
@@ -78,7 +82,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
                             href='https://www.chessdojo.shop/account/my-subscriptions'
                             endIcon={<OpenInNew />}
                         >
-                            Manage Subscription
+                            {t('manageSubscription')}
                         </Button>
                     )}
                 </>
@@ -87,16 +91,16 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
     );
 };
 
-function displaySubscriptionTier(user: User): string {
+function displaySubscriptionTier(user: User, t: (key: string) => string): string {
     switch (getSubscriptionTier(user)) {
         case SubscriptionTier.Free:
-            return 'Free Tier';
+            return t('tierFree');
         case SubscriptionTier.Basic:
-            return 'Core';
+            return t('tierCore');
         case SubscriptionTier.Lecture:
-            return 'Workshops Tier';
+            return t('tierLecture');
         case SubscriptionTier.GameReview:
-            return 'Game & Profile Review';
+            return t('tierGameReview');
     }
 }
 

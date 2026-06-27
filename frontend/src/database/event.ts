@@ -1,4 +1,5 @@
 import { Event, EventType } from '@jackstenglein/chess-dojo-common/src/database/event';
+import { useTranslations } from 'next-intl';
 
 export { EventType };
 export type { Event };
@@ -113,58 +114,6 @@ export enum AvailabilityType {
     Lesson = 'LESSON',
 }
 
-export function getDisplaySessionString(type: CalendarSessionType | null | undefined): string {
-    if (!type) {
-        return '';
-    }
-
-    switch (type) {
-        case CalendarSessionType.AllSessions:
-            return 'All Events';
-        case CalendarSessionType.Availabilities:
-            return 'Availabilities';
-        case CalendarSessionType.CoachingSessions:
-            return 'Coaching Sessions';
-        case CalendarSessionType.DojoEvents:
-            return 'Dojo Events';
-        case CalendarSessionType.Meetings:
-            return 'Meetings';
-        case CalendarSessionType.Lectures:
-            return 'Workshops';
-        case CalendarSessionType.GameReviews:
-            return 'Game & Profile Reviews';
-    }
-}
-
-export function getDisplayString(type: AvailabilityType | null | undefined): string {
-    if (!type) {
-        return '';
-    }
-
-    switch (type) {
-        case AvailabilityType.AllTypes:
-            return 'All Types';
-        case AvailabilityType.ClassicalGame:
-            return 'Classical Game';
-        case AvailabilityType.OpeningSparring:
-            return 'Opening Sparring';
-        case AvailabilityType.MiddlegameSparring:
-            return 'Middlegame Sparring';
-        case AvailabilityType.EndgameSparring:
-            return 'Endgame Sparring';
-        case AvailabilityType.RookEndgameProgression:
-            return 'Rook Endgame Progression';
-        case AvailabilityType.ClassicAnalysis:
-            return 'Analyze Classic Game';
-        case AvailabilityType.AnalyzeOwnGame:
-            return 'Analyze Own Game';
-        case AvailabilityType.BookStudy:
-            return 'Book Study';
-        case AvailabilityType.Lesson:
-            return 'Lesson/Workshop';
-    }
-}
-
 export function getDefaultNumberOfParticipants(type: AvailabilityType): number {
     switch (type) {
         case AvailabilityType.ClassicalGame:
@@ -183,45 +132,42 @@ export function getDefaultNumberOfParticipants(type: AvailabilityType): number {
     }
 }
 
-export function displayTournamentType(type: TournamentType | null | undefined): string {
+export function getDisplaySessionString(
+    type: CalendarSessionType | null | undefined,
+    t: ReturnType<typeof useTranslations<'eventLabels'>>,
+): string {
     if (!type) return '';
+    return t(`session.${type}`);
+}
 
-    switch (type) {
-        case TournamentType.AllTournamentTypes:
-            return 'All Tournament Types';
-        case TournamentType.Arena:
-            return 'Arena';
-        case TournamentType.Swiss:
-            return 'Swiss';
-    }
+export function getDisplayString(
+    type: AvailabilityType | null | undefined,
+    t: ReturnType<typeof useTranslations<'eventLabels'>>,
+): string {
+    if (!type) return '';
+    return t(`availability.${type}`);
+}
+
+export function displayTournamentType(
+    type: TournamentType | null | undefined,
+    t: ReturnType<typeof useTranslations<'eventLabels'>>,
+): string {
+    if (!type) return '';
+    return t(`tournamentType.${type}`);
 }
 
 export function displayTimeControlType(
     type: TimeControlType | null | undefined,
-): '' | 'Blitz' | 'Classical' | 'Rapid' | 'All Time Controls' {
+    t: ReturnType<typeof useTranslations<'eventLabels'>>,
+): string {
     if (!type) return '';
-
-    switch (type) {
-        case TimeControlType.Blitz:
-            return 'Blitz';
-        case TimeControlType.Classical:
-            return 'Classical';
-        case TimeControlType.Rapid:
-            return 'Rapid';
-        case TimeControlType.AllTimeContols:
-            return 'All Time Controls';
-    }
+    return t(`timeControl.${type}`);
 }
 
-export function displayPositionType(type: PositionType | null | undefined): string {
+export function displayPositionType(
+    type: PositionType | null | undefined,
+    t: ReturnType<typeof useTranslations<'eventLabels'>>,
+): string {
     if (!type) return '';
-
-    switch (type) {
-        case PositionType.AllPositions:
-            return 'All Position Types';
-        case PositionType.Standard:
-            return 'Standard';
-        case PositionType.Custom:
-            return 'Custom';
-    }
+    return t(`position.${type}`);
 }

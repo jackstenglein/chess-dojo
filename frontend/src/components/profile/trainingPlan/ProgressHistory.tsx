@@ -15,6 +15,7 @@ import {
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, compareCohorts, dojoCohorts, TimeFormat, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
@@ -37,6 +38,7 @@ import { DateTimePicker } from '@mui/x-date-pickers';
 import { AxiosResponse } from 'axios';
 import deepEqual from 'deep-equal';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskDialogView } from './TaskDialog';
@@ -73,6 +75,8 @@ export const ProgressHistoryItem = ({
     updateItem,
     deleteItem,
 }: ProgressHistoryItemProps) => {
+    const t = useTranslations('profile.trainingPlan.progressHistory');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     if (item.deleted) {
         return null;
@@ -111,9 +115,14 @@ export const ProgressHistoryItem = ({
                     {item.isNew && (
                         <Grid size={12}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Chip label='New' size='small' color='primary' variant='outlined' />
+                                <Chip
+                                    label={t('newEntryLabel')}
+                                    size='small'
+                                    color='primary'
+                                    variant='outlined'
+                                />
                                 <Typography variant='body2' color='text.secondary'>
-                                    Fill in the details below
+                                    {t('fillInDetails')}
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -121,7 +130,7 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={{ xs: 12, sm: 'grow' }}>
                         <TextField
-                            label='Cohort'
+                            label={t('cohort')}
                             select
                             value={item.cohort}
                             onChange={(e) => onChange('cohort', e.target.value)}
@@ -137,7 +146,7 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={{ xs: 12, sm: 'grow' }} sx={{ minWidth: '145px' }}>
                         <DateTimePicker
-                            label='Date'
+                            label={tCommon('date')}
                             value={item.date}
                             onChange={(v) => onChange('date', v)}
                             slotProps={{
@@ -167,7 +176,7 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={{ xs: 12, sm: 'grow' }}>
                         <TextField
-                            label='Hours'
+                            label={tCommon('hours')}
                             value={item.hours}
                             slotProps={{
                                 htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
@@ -181,7 +190,7 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={{ xs: 12, sm: 'grow' }}>
                         <TextField
-                            label='Minutes'
+                            label={tCommon('minutes')}
                             value={item.minutes}
                             slotProps={{
                                 htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
@@ -195,8 +204,8 @@ export const ProgressHistoryItem = ({
 
                     <Grid size={12}>
                         <TextField
-                            label='Comments'
-                            placeholder='Optional comments about your progress or the task itself. Visible to others on the newsfeed.'
+                            label={tCommon('comments')}
+                            placeholder={tCommon('commentsPlaceholder')}
                             multiline={true}
                             maxRows={3}
                             value={item.notes}
@@ -206,10 +215,10 @@ export const ProgressHistoryItem = ({
                     </Grid>
                 </Grid>
 
-                <Tooltip title='Delete entry'>
+                <Tooltip title={t('deleteEntry')}>
                     <IconButton
                         data-testid='task-history-delete-button'
-                        aria-label='delete'
+                        aria-label={t('deleteAriaLabel')}
                         onClick={deleteItem}
                     >
                         <DeleteIcon />
@@ -286,7 +295,12 @@ function createNewEntry(
     };
 }
 
-function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
+type TranslateCommon = (key: 'fieldRequired' | 'mustBeInteger') => string;
+
+function validateItems(
+    items: HistoryItem[],
+    tc: TranslateCommon,
+): Record<number, HistoryItemError> {
     const errors: Record<number, HistoryItemError> = {};
 
     for (let i = 0; i < items.length; i++) {
@@ -296,22 +310,22 @@ function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
         const itemErrors: HistoryItemError = {};
 
         if (item.date === null) {
-            itemErrors.date = 'This field is required';
+            itemErrors.date = tc('fieldRequired');
         }
         if (
             item.count !== '' &&
             (!NEGATIVE_NUMBER_REGEX.test(item.count) || isNaN(parseInt(item.count)))
         ) {
-            itemErrors.count = 'This field must be an integer';
+            itemErrors.count = tc('mustBeInteger');
         }
         if (item.hours !== '' && (!NUMBER_REGEX.test(item.hours) || isNaN(parseInt(item.hours)))) {
-            itemErrors.hours = 'This field must be an integer';
+            itemErrors.hours = tc('mustBeInteger');
         }
         if (
             item.minutes !== '' &&
             (!NUMBER_REGEX.test(item.minutes) || isNaN(parseInt(item.minutes)))
         ) {
-            itemErrors.minutes = 'This field must be an integer';
+            itemErrors.minutes = tc('mustBeInteger');
         }
 
         if (Object.keys(itemErrors).length > 0) {
@@ -325,13 +339,14 @@ function validateItems(items: HistoryItem[]): Record<number, HistoryItemError> {
 function getTimelineUpdate(
     requirement: Requirement | CustomTask | undefined,
     items: HistoryItem[],
+    tc: TranslateCommon,
 ): {
     progress: RequirementProgress;
     updated: TimelineEntry[];
     deleted: TimelineEntry[];
     errors: Record<number, HistoryItemError>;
 } {
-    const errors = validateItems(items);
+    const errors = validateItems(items, tc);
 
     if (!requirement || Object.keys(errors).length > 0) {
         return {
@@ -414,6 +429,7 @@ export function useProgressHistoryEditor({
     requirement?: Requirement | CustomTask;
     onSuccess: () => void;
 }) {
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     const cohortOptions = requirement?.counts[ALL_COHORTS]
         ? dojoCohorts
@@ -462,7 +478,10 @@ export function useProgressHistoryEditor({
         setItems(initialItems);
     }, [initialItems]);
 
-    const update = useMemo(() => getTimelineUpdate(requirement, items), [requirement, items]);
+    const update = useMemo(
+        () => getTimelineUpdate(requirement, items, tCommon),
+        [requirement, items, tCommon],
+    );
 
     const cohortCount =
         update.progress.counts?.ALL_COHORTS ?? update.progress.counts?.[cohort] ?? 0;
@@ -560,7 +579,14 @@ interface ProgressHistoryProps {
     setView?: (view: TaskDialogView) => void;
 }
 
-const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps) => {
+const ProgressHistory = ({
+    requirement: rawRequirement,
+    onClose,
+    setView,
+}: ProgressHistoryProps) => {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
+    const t = useTranslations('profile.trainingPlan.progressHistory');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     const {
         errors,
@@ -577,7 +603,9 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
         addItem,
         onSubmit,
     } = useProgressHistoryEditor({
-        requirement,
+        // Pass the raw requirement so persisted TimelineEntry fields stay in
+        // the source language; the translated requirement is used for display only.
+        requirement: rawRequirement,
         initialCohort: user?.dojoCohort,
         onSuccess: onClose,
     });
@@ -605,14 +633,14 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                         size='small'
                         startIcon={<AddIcon />}
                     >
-                        Add New
+                        {t('addNew')}
                     </Button>
                 </Stack>
 
                 <Stack spacing={3}>
                     {items.length === 0 ? (
                         <DialogContentText data-testid='no-history-text'>
-                            No history yet. Use the + button above to log your first entry.
+                            {t('noHistory')}
                         </DialogContentText>
                     ) : (
                         <Stack spacing={3} mt={1} width={1}>
@@ -638,18 +666,26 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
                 {!isTimeOnly && (
                     <Typography color='text.secondary' data-testid='total-count-summary'>
-                        Total {countLabel} : {totalCount}. Current Cohort: {cohortCount}
+                        {t('totalCount', {
+                            label: countLabel,
+                            total: totalCount,
+                            cohortCount,
+                        })}
                     </Typography>
                 )}
                 <Typography color='text.secondary'>
-                    Total Time: {Math.floor(totalTime / 60)}h {totalTime % 60}m. Current Cohort:{' '}
-                    {Math.floor(cohortTime / 60)}h {Math.floor(cohortTime % 60)}m
+                    {t('totalTime', {
+                        totalHours: Math.floor(totalTime / 60),
+                        totalMinutes: totalTime % 60,
+                        cohortHours: Math.floor(cohortTime / 60),
+                        cohortMinutes: Math.floor(cohortTime % 60),
+                    })}
                 </Typography>
             </Stack>
 
             <DialogActions sx={{ flexWrap: 'wrap' }}>
                 <Button onClick={onClose} disabled={request.isLoading()}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
                 {setView && (
                     <>
@@ -657,13 +693,13 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                             onClick={() => setView(TaskDialogView.Details)}
                             disabled={request.isLoading()}
                         >
-                            Task Details
+                            {tCommon('taskDetails')}
                         </Button>
                         <Button
                             onClick={() => setView(TaskDialogView.Progress)}
                             disabled={request.isLoading()}
                         >
-                            Update Progress
+                            {tCommon('updateProgress')}
                         </Button>
                     </>
                 )}
@@ -672,7 +708,7 @@ const ProgressHistory = ({ requirement, onClose, setView }: ProgressHistoryProps
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
-                    Save
+                    {tCommon('save')}
                 </Button>
             </DialogActions>
 

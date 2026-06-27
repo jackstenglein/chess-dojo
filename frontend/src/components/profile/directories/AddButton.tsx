@@ -12,6 +12,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Add, CreateNewFolder } from '@mui/icons-material';
 import { Button, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { AddCurrentGameMenuItem } from './AddCurrentGameMenuItem';
 import { AddExistingGamesDialog } from './AddExistingGamesDialog';
@@ -25,6 +26,7 @@ export const AddButton = ({
     directory: Directory;
     accessRole?: DirectoryAccessRole;
 }) => {
+    const t = useTranslations('profile.directories');
     const cache = useDirectoryCache();
     const [anchorEl, setAnchorEl] = useState<HTMLElement>();
     const [newDirectoryOpen, setNewDirectoryOpen] = useState(false);
@@ -80,7 +82,7 @@ export const AddButton = ({
                 startIcon={<Add />}
                 onClick={(e) => setAnchorEl(e.currentTarget)}
             >
-                Add
+                {t('add')}
             </Button>
 
             <Menu open={!!anchorEl} onClose={handleClose} anchorEl={anchorEl}>
@@ -91,10 +93,8 @@ export const AddButton = ({
                         <CreateNewFolder />
                     </ListItemIcon>
                     <ListItemText
-                        primary='New Folder'
-                        secondary={
-                            canCreateNewFolders ? undefined : 'Missing required admin permissions'
-                        }
+                        primary={t('newFolder')}
+                        secondary={canCreateNewFolders ? undefined : t('missingAdminPermissions')}
                     />
                 </MenuItem>
 
@@ -105,14 +105,14 @@ export const AddButton = ({
                     <ListItemIcon>
                         <PawnIcon />
                     </ListItemIcon>
-                    <ListItemText primary='New Game' />
+                    <ListItemText primary={t('newGame')} />
                 </MenuItem>
 
                 <MenuItem onClick={() => setExistingGamesOpen(true)}>
                     <ListItemIcon>
                         <Avatar user={viewer} size={20} />
                     </ListItemIcon>
-                    <ListItemText primary='My Existing Games' />
+                    <ListItemText primary={t('myExistingGames')} />
                 </MenuItem>
             </Menu>
 

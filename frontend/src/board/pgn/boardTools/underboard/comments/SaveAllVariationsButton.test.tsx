@@ -49,7 +49,7 @@ describe('SaveAllVariationsButton', () => {
     beforeEach(() => {
         vi.mocked(useAuth).mockReturnValue({ user } as ReturnType<typeof useAuth>);
         vi.mocked(useApi).mockReturnValue(api as ReturnType<typeof useApi>);
-        vi.mocked(useChess).mockReturnValue({ chess } as ReturnType<typeof useChess>);
+        vi.mocked(useChess).mockReturnValue({ chess });
         vi.mocked(useGame).mockReturnValue({
             game,
             onUpdateGame,

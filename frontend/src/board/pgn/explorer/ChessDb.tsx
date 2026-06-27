@@ -9,47 +9,10 @@ import {
     GridRowModel,
     GridRowParams,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 import { useReconcile } from '../../Board';
 import { useChess } from '../PgnBoard';
-
-const CHESSDB_INFO =
-    'Chess Cloud Database (aka "CDB") is a massive chess knowledge database with close to 60 billion positions, including an opening book and endgame tablebases.\n\nIn contrast to traditional opening book building from game results, CDB is built entirely from analyzing individual moves using chess engines while overcoming their problems such as aggressive pruning and blind spots.\n\nCDB attempts to explore and define new chess opening theories. Currently it includes most of the popular opening lines and it is still refining its results.';
-
-const columns: GridColDef<ChessDbMove>[] = [
-    {
-        field: 'san',
-        headerName: 'Move',
-        align: 'left',
-        headerAlign: 'left',
-        minWidth: 55,
-        width: 55,
-    },
-    {
-        field: 'score',
-        headerName: 'Eval',
-        align: 'left',
-        headerAlign: 'left',
-        width: 75,
-        valueFormatter: (value: number) => (value >= 0 ? `+${value}` : value),
-    },
-    {
-        field: 'winrate',
-        headerName: 'Winrate',
-        align: 'left',
-        headerAlign: 'left',
-        width: 80,
-        renderCell: (params: GridRenderCellParams<ChessDbMove, string>) =>
-            params.value ? `${params.value}%` : '—',
-    },
-    {
-        field: 'note',
-        headerName: 'Note',
-        align: 'left',
-        headerAlign: 'left',
-        flex: 1,
-        renderCell: (params: GridRenderCellParams<ChessDbMove, string>) => params.value,
-    },
-];
 
 interface ChessDBTabProps {
     moves: ChessDbMove[];
@@ -61,6 +24,46 @@ interface ChessDBTabProps {
 export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTabProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
+    const t = useTranslations('analysisBoard.explorer');
+
+    const columns: GridColDef<ChessDbMove>[] = useMemo(
+        () => [
+            {
+                field: 'san',
+                headerName: t('chessDbColumnMove'),
+                align: 'left',
+                headerAlign: 'left',
+                minWidth: 55,
+                width: 55,
+            },
+            {
+                field: 'score',
+                headerName: t('chessDbColumnEval'),
+                align: 'left',
+                headerAlign: 'left',
+                width: 75,
+                valueFormatter: (value: number) => (value >= 0 ? `+${value}` : value),
+            },
+            {
+                field: 'winrate',
+                headerName: t('chessDbColumnWinrate'),
+                align: 'left',
+                headerAlign: 'left',
+                width: 80,
+                renderCell: (params: GridRenderCellParams<ChessDbMove, string>) =>
+                    params.value ? `${params.value}%` : '—',
+            },
+            {
+                field: 'note',
+                headerName: t('chessDbColumnNote'),
+                align: 'left',
+                headerAlign: 'left',
+                flex: 1,
+                renderCell: (params: GridRenderCellParams<ChessDbMove, string>) => params.value,
+            },
+        ],
+        [t],
+    );
 
     if (loading) return <LoadingPage />;
 
@@ -73,7 +76,7 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                     variant='outlined'
                     size='small'
                 >
-                    Queue Analysis
+                    {t('queueAnalysisButton')}
                 </Button>
             </Stack>
         );
@@ -82,13 +85,13 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
     if (moves.length === 0) {
         return (
             <Stack mt={2} spacing={1} alignItems='center'>
-                <Typography>Position not in ChessDB.</Typography>
+                <Typography>{t('positionNotInChessDb')}</Typography>
                 <Button
                     onClick={() => requestAnalysis(chess?.fen() ?? '')}
                     variant='outlined'
                     size='small'
                 >
-                    Queue Analysis
+                    {t('queueAnalysisButton')}
                 </Button>
             </Stack>
         );
@@ -110,13 +113,13 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
             <Grid size={12}>
                 <Stack direction='row' alignItems='center' spacing={0.5}>
                     <Typography variant='subtitle2' color='text.secondary'>
-                        Chess Cloud Database
+                        {t('chessCloudDatabaseLabel')}
                     </Typography>
                     <Tooltip
                         title={
                             <Box sx={{ p: 1, maxWidth: 320 }}>
                                 <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
-                                    {CHESSDB_INFO}
+                                    {t('chessDbInfo')}
                                 </Typography>
                             </Box>
                         }

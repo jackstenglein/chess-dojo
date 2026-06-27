@@ -7,6 +7,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { FolderOutlined } from '@mui/icons-material';
 import { Button, ButtonProps } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { DirectorySelectDialog } from './DirectorySelectDialog';
 
@@ -43,6 +44,7 @@ export function DirectorySelectButton<T>({
         };
     };
 }) {
+    const t = useTranslations('profile.directories.select.button');
     const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [directoryInfo, setDirectoryInfo] = useState(
@@ -89,7 +91,7 @@ export function DirectorySelectButton<T>({
             >
                 {slotProps?.button?.children ||
                     (showDirectoryName && directory?.name) ||
-                    'Add to Folder'}
+                    t('addToFolder')}
             </Button>
 
             <DirectorySelectDialog
@@ -100,13 +102,15 @@ export function DirectorySelectButton<T>({
                         fullWidth: true,
                     },
                     dialogTitle: {
-                        children: `Add current game to ${directory?.name || 'folder'}?`,
+                        children: t('addCurrentGameTitle', {
+                            directoryName: directory?.name || t('fallbackFolderName'),
+                        }),
                     },
                     dialogActions: {
                         children: (
                             <>
                                 <Button onClick={request?.isLoading() ? undefined : onCancel}>
-                                    Cancel
+                                    {t('cancel')}
                                 </Button>
                                 <Button
                                     loading={request?.isLoading()}
@@ -114,7 +118,7 @@ export function DirectorySelectButton<T>({
                                     disabled={isManagedDirectory(directoryInfo.id)}
                                     {...slotProps?.dialog?.confirmButton}
                                 >
-                                    {slotProps?.dialog?.confirmButton?.children || 'Add'}
+                                    {slotProps?.dialog?.confirmButton?.children || t('addButton')}
                                 </Button>
                             </>
                         ),

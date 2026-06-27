@@ -23,6 +23,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { forwardRef, useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long-press';
 import { useLocalStorage } from 'usehooks-ts';
@@ -58,6 +59,13 @@ export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?
     return 'text.primary';
 }
 
+function getFontWeight(chess: Chess | undefined, move: Move, inline?: boolean): string {
+    if (inline && chess?.isInMainline(move)) {
+        return 'bold';
+    }
+    return 'inherit';
+}
+
 export interface MoveButtonSlotProps {
     hideSuggestedVariationOwner?: boolean;
 }
@@ -76,8 +84,10 @@ export interface ButtonProps {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+    const { chess } = useChess();
     const { isCurrentMove, inline, move, onClickMove, onRightClick, text, time } = props;
     const { slots } = useChess();
+    const t = useTranslations('analysisBoard.pgnText');
     const longPress = useLongPress<HTMLButtonElement>(onRightClick, {
         detect: LongPressEventType.Touch,
         threshold: 700,
@@ -125,7 +135,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
             disableElevation
             sx={{
                 textTransform: 'none',
-                fontWeight: isCurrentMove ? 'bold' : 'inherit',
+                fontWeight: isCurrentMove ? 'bold' : getFontWeight(chess, move, inline),
                 color: isCurrentMove ? undefined : getTextColor(move, inline, highlightEngineLines),
                 backgroundColor: isCurrentMove ? 'primary' : undefined,
                 paddingRight: inline ? undefined : 2,
@@ -155,10 +165,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                     {text}
                     {suffixNags}
                     {move.isNullMove && (
-                        <Tooltip
-                            title='A null move passes the turn to the opponent and is commonly used for demonstrating a threat.'
-                            disableInteractive
-                        >
+                        <Tooltip title={t('nullMoveTooltip')} disableInteractive>
                             <Help
                                 fontSize='inherit'
                                 sx={{
@@ -204,6 +211,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     const { user } = useAuth();
     const api = useApi();
     const saveVariationRequest = useRequest();
+    const t = useTranslations('analysisBoard.pgnText');
     const canDeleteMove = config?.allowMoveDeletion || isVariationSuggestor(user?.username, move);
 
     if (!chess) {
@@ -264,7 +272,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemIcon>
                                 <CheckIcon />
                             </ListItemIcon>
-                            <ListItemText>Make main line</ListItemText>
+                            <ListItemText>{t('makeMainLine')}</ListItemText>
                         </MenuItem>,
 
                         <MenuItem
@@ -275,14 +283,14 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemIcon>
                                 <KeyboardReturn sx={{ transform: 'scale(-1, 1)' }} />
                             </ListItemIcon>
-                            <ListItemText>Force Variation</ListItemText>
+                            <ListItemText>{t('forceVariation')}</ListItemText>
                         </MenuItem>,
 
                         <MenuItem key='move-up' disabled={!canPromote} onClick={onPromote}>
                             <ListItemIcon>
                                 <ArrowUpwardIcon />
                             </ListItemIcon>
-                            <ListItemText>Move variation up</ListItemText>
+                            <ListItemText>{t('moveVariationUp')}</ListItemText>
                         </MenuItem>,
                     ]}
 
@@ -291,7 +299,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemIcon>
                                 <Backspace sx={{ transform: 'rotateY(180deg)' }} />
                             </ListItemIcon>
-                            <ListItemText>Delete from here</ListItemText>
+                            <ListItemText>{t('deleteFromHere')}</ListItemText>
                         </MenuItem>,
 
                         <MenuItem
@@ -302,7 +310,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemIcon>
                                 <Backspace />
                             </ListItemIcon>
-                            <ListItemText>Delete before here</ListItemText>
+                            <ListItemText>{t('deleteBeforeHere')}</ListItemText>
                         </MenuItem>,
                     ]}
 
@@ -312,7 +320,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                                 <StockfishIcon />
                             </ListItemIcon>
                             <ListItemText>
-                                {isEngineLine ? 'Unmark as engine line' : 'Mark as engine line'}
+                                {isEngineLine ? t('unmarkEngineLine') : t('markEngineLine')}
                             </ListItemText>
                         </MenuItem>,
                     ]}
@@ -321,7 +329,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                         <ListItemIcon>
                             <Merge />
                         </ListItemIcon>
-                        <ListItemText>Merge Line into Game</ListItemText>
+                        <ListItemText>{t('mergeLineIntoGame')}</ListItemText>
                     </MenuItem>
 
                     {game && isUnsavedVariation(move) && (
@@ -336,7 +344,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                                     <Chat />
                                 )}
                             </ListItemIcon>
-                            <ListItemText>Save Variation as Comment</ListItemText>
+                            <ListItemText>{t('saveVariationAsComment')}</ListItemText>
                         </MenuItem>
                     )}
                 </MenuList>

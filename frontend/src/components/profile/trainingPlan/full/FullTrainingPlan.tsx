@@ -36,6 +36,7 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
@@ -47,13 +48,16 @@ import { TrainingPlanContext } from '../TrainingPlanTab';
 import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
 
 /** Builds a minimal fake requirement for the "Graduate from {cohort}" task. */
-function getGraduationFakeTask(cohort: string): Requirement {
+function getGraduationFakeTask(
+    cohort: string,
+    t: (key: string, values?: Record<string, string>) => string,
+): Requirement {
     return {
         id: GRADUATION_TASK_ID,
         status: RequirementStatus.Active,
         category: RequirementCategory.Graduation,
-        name: `Graduate from ${cohort}`,
-        description: 'Move to the next cohort and get featured in the graduation show.',
+        name: t('graduateName', { cohort }),
+        description: t('graduateDescription'),
         freeDescription: '',
         counts: { [cohort]: 1 },
         startCount: 0,
@@ -89,6 +93,7 @@ export function FullTrainingPlan({
         isCurrentUser,
     } = use(TrainingPlanContext);
 
+    const t = useTranslations('profile.trainingPlan.full');
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
@@ -145,7 +150,7 @@ export function FullTrainingPlan({
 
         // Add a Graduation section when viewing the user's current cohort (they can only graduate from it).
         if (cohort === user.dojoCohort) {
-            const graduationTask = getGraduationFakeTask(cohort);
+            const graduationTask = getGraduationFakeTask(cohort, t);
             const gradComplete = user.graduationCohorts?.includes(cohort) ?? false;
             const minBoundary = getMinRatingBoundary(cohort, user.ratingSystem);
             const graduationBoundary = getRatingBoundary(cohort, user.ratingSystem);
@@ -180,7 +185,7 @@ export function FullTrainingPlan({
         }
 
         return sections;
-    }, [allRequirements, user, cohort, timeline]);
+    }, [allRequirements, user, cohort, timeline, t]);
 
     if (requirementRequest.isLoading() || sections.length === 0) {
         return <LoadingPage />;
@@ -218,7 +223,7 @@ export function FullTrainingPlan({
     return (
         <Stack spacing={2} width={1}>
             <Typography variant='h5' fontWeight='bold'>
-                Full Training Plan
+                {t('heading')}
             </Typography>
 
             <Stack alignItems='start' width={1}>
@@ -234,7 +239,7 @@ export function FullTrainingPlan({
                     <TextField
                         id='training-plan-cohort-select'
                         select
-                        label='Cohort'
+                        label={t('cohort')}
                         value={cohort}
                         onChange={(event) => onChangeCohort(event.target.value)}
                         size='small'
@@ -259,8 +264,8 @@ export function FullTrainingPlan({
                                 <Tooltip
                                     title={
                                         showCompleted
-                                            ? 'Hide Completed Tasks'
-                                            : 'Show Completed Tasks'
+                                            ? t('hideCompletedTasksTooltip')
+                                            : t('showCompletedTasksTooltip')
                                     }
                                 >
                                     <IconButton
@@ -270,12 +275,12 @@ export function FullTrainingPlan({
                                         {showCompleted ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title='Expand All'>
+                                <Tooltip title={t('expandAll')}>
                                     <IconButton onClick={onExpandAll} color='primary'>
                                         <KeyboardDoubleArrowDown />
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title='Collapse All'>
+                                <Tooltip title={t('collapseAll')}>
                                     <IconButton onClick={onCollapseAll} color='primary'>
                                         <KeyboardDoubleArrowUp />
                                     </IconButton>
@@ -289,19 +294,19 @@ export function FullTrainingPlan({
                                         showCompleted ? <CheckBox /> : <CheckBoxOutlineBlank />
                                     }
                                 >
-                                    Show Completed Tasks
+                                    {t('showCompletedTasks')}
                                 </Button>
                                 <Button
                                     onClick={onExpandAll}
                                     startIcon={<KeyboardDoubleArrowDown />}
                                 >
-                                    Expand All
+                                    {t('expandAll')}
                                 </Button>
                                 <Button
                                     onClick={onCollapseAll}
                                     startIcon={<KeyboardDoubleArrowUp />}
                                 >
-                                    Collapse All
+                                    {t('collapseAll')}
                                 </Button>
                             </>
                         )}

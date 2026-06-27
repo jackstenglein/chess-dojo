@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Badge } from './badgeHandler';
 
@@ -9,6 +10,7 @@ interface BadgeDialogProps {
 }
 
 export function BadgeDialog({ selectedBadge, handleCloseDialog }: BadgeDialogProps) {
+    const tInfo = useTranslations('profile.info');
     return (
         <Dialog open={selectedBadge !== undefined} onClose={handleCloseDialog} fullWidth>
             {selectedBadge && (
@@ -16,7 +18,7 @@ export function BadgeDialog({ selectedBadge, handleCloseDialog }: BadgeDialogPro
                     <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
                         {selectedBadge.title}
                         <IconButton
-                            aria-label='close'
+                            aria-label={tInfo('close')}
                             onClick={handleCloseDialog}
                             sx={{ position: 'absolute', right: 8, top: 8 }}
                         >

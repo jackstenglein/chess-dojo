@@ -5,7 +5,9 @@ import { logger } from '@/logging/logger';
 import Avatar from '@/profile/Avatar';
 import { Delete, Info, Upload } from '@mui/icons-material';
 import { Button, Divider, FormLabel, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import DiscordOAuthButton from './DiscordOAuthButton';
+import { LanguageSelector } from './LanguageSelector';
 
 /** The maximum size of the profile picture. */
 export const MAX_PROFILE_PICTURE_SIZE_MB = 9;
@@ -29,6 +31,10 @@ interface PersonalInfoEditorProps {
     timezone: string;
     /** A callback function to set the timezone. */
     setTimezone: (timezone: string) => void;
+    /** The user's preferred language. */
+    language: string;
+    /** A callback function to set the language. */
+    setLanguage: (language: string) => void;
     /** The URL of the edited profile picture. */
     profilePictureUrl?: string;
     /** A callback function to set the URL of the edited profile picture. */
@@ -51,17 +57,21 @@ export function PersonalInfoEditor({
     setCoachBio,
     timezone,
     setTimezone,
+    language,
+    setLanguage,
     profilePictureUrl,
     setProfilePictureUrl,
     setProfilePictureData,
     errors,
     request,
 }: PersonalInfoEditorProps) {
+    const t = useTranslations('profile.personalInfo');
+
     const onChangeProfilePicture = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files?.length) {
             if (files[0].size / 1024 / 1024 > MAX_PROFILE_PICTURE_SIZE_MB) {
-                request.onFailure({ message: 'Profile picture must be 9MB or smaller' });
+                request.onFailure({ message: t('pictureTooLarge') });
                 return;
             }
 
@@ -70,9 +80,9 @@ export function PersonalInfoEditor({
                     setProfilePictureData(encoded);
                     setProfilePictureUrl(URL.createObjectURL(files[0]));
                 })
-                .catch((err) => {
-                    logger.log?.(err);
-                    request.onFailure(err);
+                .catch((err: unknown) => {
+                    logger.warn?.(err);
+                    request.onFailure({ message: t('fileReadError') });
                 });
         }
     };
@@ -97,18 +107,18 @@ export function PersonalInfoEditor({
                             marginRight: '0.1em',
                         }}
                     />{' '}
-                    Personal Info
+                    {t('heading')}
                 </Typography>
                 <Divider />
             </Stack>
 
             <Stack>
-                <FormLabel sx={{ mb: 1 }}>Profile Picture</FormLabel>
+                <FormLabel sx={{ mb: 1 }}>{t('profilePicture')}</FormLabel>
                 <Stack direction='row' alignItems='center' spacing={3}>
                     <Avatar user={user} size={150} url={profilePictureUrl} />
                     <Stack spacing={2} alignItems='start'>
                         <Button component='label' variant='outlined' startIcon={<Upload />}>
-                            Upload Photo
+                            {t('uploadPhoto')}
                             <input
                                 type='file'
                                 accept='image/*'
@@ -121,7 +131,7 @@ export function PersonalInfoEditor({
                             startIcon={<Delete />}
                             onClick={onDeleteProfilePicture}
                         >
-                            Delete Photo
+                            {t('deletePhoto')}
                         </Button>
                     </Stack>
                 </Stack>
@@ -129,42 +139,40 @@ export function PersonalInfoEditor({
 
             <TextField
                 required
-                label='Display Name'
+                label={t('displayName')}
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
                 error={!!errors.displayName}
-                helperText={errors.displayName || 'This is how other users will identify you'}
+                helperText={errors.displayName || t('displayNameHelper')}
             />
 
             <DiscordOAuthButton />
 
             <TextField
-                label='Bio'
+                label={t('bio')}
                 multiline
                 minRows={3}
                 maxRows={6}
                 value={bio}
                 onChange={(event) => setBio(event.target.value)}
                 error={!!errors.bio}
-                helperText={
-                    errors.bio ||
-                    'Supports Markdown-style links like [click here](https://google.com)'
-                }
+                helperText={errors.bio || t('bioHelper')}
             />
 
             {user.isCoach && (
                 <TextField
-                    label='Coach Bio'
+                    label={t('coachBio')}
                     multiline
                     minRows={3}
                     maxRows={6}
                     value={coachBio}
                     onChange={(event) => setCoachBio(event.target.value)}
-                    helperText='An optional coaching-specific bio. If included, it will be displayed on the coaching page and on the coach tab on your profile. If not included, the coaching page will use your regular bio and the coach tab on your profile will not have an additional bio.'
+                    helperText={t('coachBioHelper')}
                 />
             )}
 
             <TimezoneSelector value={timezone} onChange={setTimezone} />
+            <LanguageSelector value={language} onChange={setLanguage} />
         </Stack>
     );
 }

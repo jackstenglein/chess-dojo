@@ -1,7 +1,7 @@
 import { CustomTask, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { Check, ExpandMore } from '@mui/icons-material';
 import {
     alpha,
@@ -18,6 +18,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
@@ -31,6 +32,8 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
 export function WeeklyTrainingPlan() {
+    const t = useTranslations('profile.trainingPlan.weekly');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { startDate, endDate, weekSuggestions, timeline, isCurrentUser, isLoading, user } =
         use(TrainingPlanContext);
 
@@ -67,7 +70,7 @@ export function WeeklyTrainingPlan() {
     return (
         <Stack spacing={2} width={1}>
             <Stack direction='row' alignItems='center' width={1}>
-                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
                             sx={{
@@ -79,7 +82,7 @@ export function WeeklyTrainingPlan() {
                 </Tooltip>
 
                 <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
-                    This Week
+                    {t('thisWeek')}
                 </Typography>
 
                 <WorkGoalSettingsEditor
@@ -94,7 +97,7 @@ export function WeeklyTrainingPlan() {
 
             <Collapse in={expanded}>
                 <Stack spacing={2} mb={1}>
-                    <Tooltip title='Only show tasks you have updated this week' placement='right'>
+                    <Tooltip title={t('activeOnlyTooltip')} placement='right'>
                         <FormControlLabel
                             control={
                                 <Switch
@@ -105,7 +108,7 @@ export function WeeklyTrainingPlan() {
                             }
                             label={
                                 <Typography variant='body2' color='text.secondary'>
-                                    Active Only
+                                    {t('activeOnlyLabel')}
                                 </Typography>
                             }
                             sx={{ ml: 1, width: 'fit-content' }}
@@ -153,6 +156,7 @@ function WeeklyTrainingPlanDay({
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
     activeOnly: boolean;
 }) {
+    const t = useTranslations('profile.trainingPlan.weekly');
     const { suggestionsByDay, startDate, timeline, user, allRequirements, pinnedTasks } =
         use(TrainingPlanContext);
     const suggestedTasks = suggestionsByDay[dayIndex];
@@ -191,7 +195,7 @@ function WeeklyTrainingPlanDay({
                 color={todayIndex === dayIndex ? 'primary' : 'text.secondary'}
                 sx={{ ml: 0.25 }}
             >
-                {days[dayIndex]}
+                {t(days[dayIndex])}
             </Typography>
 
             <Card
@@ -247,7 +251,9 @@ function WeeklyTrainingPlanItem({
     endDate: string;
     activeOnly: boolean;
 }) {
-    const { task } = suggestion;
+    const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
+    const tTime = useTranslations('common');
+    const tCategoryShort = useTranslations('enums.requirementCategoryShort');
     const { isCurrentUser, user, timeline } = use(TrainingPlanContext);
     const tasks = useMemo(() => [suggestion], [suggestion]);
     const [goalMinutes, timeWorked, _, __, active] = useTrainingPlanProgress({
@@ -302,12 +308,16 @@ function WeeklyTrainingPlanItem({
             >
                 <Stack spacing={3} width={1}>
                     <Typography variant='body2' fontWeight='bold'>
-                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes })}
+                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes, tCommon: tTime })}
                     </Typography>
 
                     <Stack direction='row' flexWrap='wrap' gap={1}>
                         <Chip
-                            label={displayRequirementCategoryShort(task.category)}
+                            label={
+                                tCategoryShort.has(task.category)
+                                    ? tCategoryShort(task.category)
+                                    : task.category
+                            }
                             color={themeRequirementCategory(task.category)}
                             size='small'
                             sx={{

@@ -11,6 +11,7 @@ import {
 } from '@/stockfish/engine/engine';
 import { Chess, Color, Move } from '@jackstenglein/chess';
 import { Box, ListItem, Skeleton, styled, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ReactElement, useCallback, useEffect } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function LineEvaluation({ engineInfo, line, isTop, icon, enabled }: Props) {
+    const t = useTranslations('analysisBoard.engine');
     const { chess, addEngineMoveRef } = useChess();
     const reconcile = useReconcile();
     const [primaryEvalType] = useLocalStorage<PrimaryEvalType>(
@@ -151,7 +153,7 @@ export default function LineEvaluation({ engineInfo, line, isTop, icon, enabled 
 
             {showEval && (
                 <Tooltip
-                    title={showSkeleton ? '' : `Depth: ${line.depth}`}
+                    title={showSkeleton ? '' : t('lineDepthTooltip', { depth: line.depth })}
                     placement='left'
                     disableInteractive
                 >

@@ -38,6 +38,7 @@ import {
     GridToolbarFilterButton,
     useGridApiRef,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddButton } from './AddButton';
@@ -46,7 +47,7 @@ import { BulkItemEditor } from './BulkItemEditor';
 import { ContextMenu } from './ContextMenu';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 import { useDirectory } from './DirectoryCache';
-import { adminColumns, DirectoryCreatedAt, publicColumns } from './DirectoryGridColumns';
+import { DirectoryCreatedAt, getAdminColumns, getPublicColumns } from './DirectoryGridColumns';
 import { ShareButton } from './share/ShareButton';
 import { StatsButton } from './stats/StatsButton';
 
@@ -103,6 +104,7 @@ const DirectorySection = ({
     sx,
 }: DirectoriesSectionProps) => {
     const api = useApi();
+    const tDir = useTranslations('profile.directories');
     const { searchParams, updateSearchParams } = useNextSearchParams({
         directory: 'home',
     });
@@ -281,7 +283,7 @@ const DirectorySection = ({
                     listViewColumn={listViewColDef}
                     listView={isMobile}
                     rows={rows}
-                    columns={isAdmin ? adminColumns : publicColumns}
+                    columns={isAdmin ? getAdminColumns(tDir) : getPublicColumns(tDir)}
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
                     onColumnOrderChange={() => {
@@ -345,6 +347,7 @@ const DirectorySection = ({
 };
 
 function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
+    const t = useTranslations('profile.directories');
     if (params.row.type !== DirectoryItemTypes.DIRECTORY) {
         return (
             <GameCell
@@ -411,7 +414,8 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
                 <Grid size={1} />
                 <Grid size={11} mt={0.25}>
                     <Typography variant='body2' color='text.secondary'>
-                        Created <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
+                        {t('createdPrefix')}
+                        <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
                     </Typography>
                 </Grid>
             </Grid>

@@ -16,6 +16,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ChangeEvent, useState } from 'react';
 
 /**
@@ -26,6 +27,7 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
     const { user } = useAuth();
     const isPlayer = user && tournament.players[user.username];
     const [round, setRound] = useState<number>(isPlayer ? 0 : 1);
+    const t = useTranslations('tournaments.roundRobin.pairings');
 
     const handleRoundChange = (event: ChangeEvent<HTMLInputElement>) => {
         setRound(Number(event.target.value));
@@ -38,16 +40,16 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
                 value={round}
                 onChange={handleRoundChange}
                 fullWidth
-                helperText='Matches can be played in any order, regardless of the round number'
+                helperText={t('helperText')}
             >
                 {isPlayer && (
                     <MenuItem key={0} value={0}>
-                        My Pairings
+                        {t('myPairings')}
                     </MenuItem>
                 )}
-                {[...Array(tournament.pairings.length).keys()].map((round) => (
-                    <MenuItem key={round + 1} value={round + 1}>
-                        Round {round + 1}
+                {[...Array(tournament.pairings.length).keys()].map((roundIdx) => (
+                    <MenuItem key={roundIdx + 1} value={roundIdx + 1}>
+                        {t('roundNumber', { number: roundIdx + 1 })}
                     </MenuItem>
                 ))}
             </TextField>
@@ -57,24 +59,24 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
                     <TableRow>
                         {round === 0 && (
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>Round</Typography>
+                                <Typography fontWeight='bold'>{t('columnRound')}</Typography>
                             </TableCell>
                         )}
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>White</Typography>
+                            <Typography fontWeight='bold'>{t('columnWhite')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>Black</Typography>
+                            <Typography fontWeight='bold'>{t('columnBlack')}</Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>Result</Typography>
+                            <Typography fontWeight='bold'>{t('columnResult')}</Typography>
                         </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {round === 0 ? (
-                        tournament.pairings.flatMap((round, idx) =>
-                            round.map((pair) => {
+                        tournament.pairings.flatMap((roundPairings, idx) =>
+                            roundPairings.map((pair) => {
                                 if (
                                     pair.white === user?.username ||
                                     pair.black === user?.username
@@ -98,9 +100,7 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
                     ) : (
                         <TableRow>
                             <TableCell colSpan={3}>
-                                <Typography textAlign={'center'}>
-                                    No pairings available for this round.
-                                </Typography>
+                                <Typography textAlign={'center'}>{t('noPairings')}</Typography>
                             </TableCell>
                         </TableRow>
                     )}
@@ -119,6 +119,7 @@ function Pairing({
     tournament: RoundRobin;
     round?: number;
 }) {
+    const t = useTranslations('tournaments.roundRobin.pairings');
     const whiteWithdrawn =
         pairing.white &&
         tournament.players[pairing.white].status === RoundRobinPlayerStatuses.WITHDRAWN;
@@ -131,7 +132,7 @@ function Pairing({
             {tournament.players[pairing.white].displayName}
         </Link>
     ) : (
-        'Bye'
+        t('bye')
     );
 
     const Black = pairing.black ? (
@@ -139,7 +140,7 @@ function Pairing({
             {tournament.players[pairing.black].displayName}
         </Link>
     ) : (
-        'Bye'
+        t('bye')
     );
 
     const result =
@@ -160,16 +161,20 @@ function Pairing({
             )}
             <TableCell align='center'>
                 <Typography>
-                    {whiteWithdrawn && 'Bye ('}
-                    {White}
-                    {whiteWithdrawn && ' withdrew)'}
+                    {whiteWithdrawn
+                        ? t.rich('byeWithdrew', {
+                              player: () => White,
+                          })
+                        : White}
                 </Typography>
             </TableCell>
             <TableCell align='center'>
                 <Typography>
-                    {blackWithdrawn && 'Bye ('}
-                    {Black}
-                    {blackWithdrawn && ' withdrew)'}
+                    {blackWithdrawn
+                        ? t.rich('byeWithdrew', {
+                              player: () => Black,
+                          })
+                        : Black}
                 </Typography>
             </TableCell>
             <TableCell align='center'>

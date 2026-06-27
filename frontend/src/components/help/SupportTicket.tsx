@@ -3,9 +3,11 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { Button, Grid, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 const SupportTicket = () => {
+    const t = useTranslations('help.support');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [subject, setSubject] = useState('');
@@ -19,16 +21,16 @@ const SupportTicket = () => {
         const newErrors: Record<string, string> = {};
 
         if (name.trim().length === 0) {
-            newErrors.name = 'This field is required';
+            newErrors.name = t('fieldRequired');
         }
         if (email.trim().length === 0) {
-            newErrors.email = 'This field is required';
+            newErrors.email = t('fieldRequired');
         }
         if (subject.trim().length === 0) {
-            newErrors.subject = 'This field is required';
+            newErrors.subject = t('fieldRequired');
         }
         if (message.trim().length === 0) {
-            newErrors.message = 'This field is required';
+            newErrors.message = t('fieldRequired');
         }
 
         setErrors(newErrors);
@@ -54,14 +56,15 @@ const SupportTicket = () => {
     if (request.data) {
         return (
             <Stack id='support-ticket'>
-                <Typography variant='h4'>Contact Support</Typography>
+                <Typography variant='h4'>{t('title')}</Typography>
                 <Typography color='text.secondary' mb={2}>
-                    Please note that we are a small team, and it may take a few business days for us
-                    to get back to you. Thank you for your patience.
+                    {t('patience')}
                     <br />
                     <br />
-                    Your ticket has been submitted with ID <strong>{request.data}</strong>. You have
-                    been CC'd on the support email.
+                    {t.rich('ticketSubmitted', {
+                        strong: (chunks) => <strong>{chunks}</strong>,
+                        ticketId: request.data,
+                    })}
                 </Typography>
             </Stack>
         );
@@ -69,10 +72,9 @@ const SupportTicket = () => {
 
     return (
         <Stack id='support-ticket'>
-            <Typography variant='h4'>Contact Support</Typography>
+            <Typography variant='h4'>{t('title')}</Typography>
             <Typography color='text.secondary' mb={2}>
-                Please note that we are a small team, and it may take a few business days for us to
-                get back to you. Thank you for your patience.
+                {t('patience')}
             </Typography>
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <Grid
@@ -83,7 +85,7 @@ const SupportTicket = () => {
                 >
                     <TextField
                         data-testid='support-ticket-name'
-                        label='Full Name'
+                        label={t('fullName')}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         error={Boolean(errors.name)}
@@ -100,7 +102,7 @@ const SupportTicket = () => {
                 >
                     <TextField
                         data-testid='support-ticket-email'
-                        label='Email'
+                        label={t('email')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         error={Boolean(errors.email)}
@@ -112,7 +114,7 @@ const SupportTicket = () => {
                 <Grid size={12}>
                     <TextField
                         data-testid='support-ticket-subject'
-                        label='Subject'
+                        label={t('subject')}
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         error={Boolean(errors.subject)}
@@ -124,7 +126,7 @@ const SupportTicket = () => {
                 <Grid size={12}>
                     <TextField
                         data-testid='support-ticket-message'
-                        label='Message'
+                        label={t('message')}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         error={Boolean(errors.message)}
@@ -132,7 +134,7 @@ const SupportTicket = () => {
                         fullWidth
                         multiline
                         minRows={3}
-                        placeholder='Please include as much detail about your issue as possible. Help us help you!'
+                        placeholder={t('messagePlaceholder')}
                     />
                 </Grid>
 
@@ -143,7 +145,7 @@ const SupportTicket = () => {
                         loading={request.isLoading()}
                         onClick={onSubmit}
                     >
-                        Submit
+                        {t('submit')}
                     </Button>
                 </Grid>
             </Grid>

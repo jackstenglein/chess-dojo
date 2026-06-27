@@ -1,12 +1,25 @@
 import { fontFamily } from '@/style/font';
 import { Box, Container, Divider, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import davidImage from './david.webp';
 import { barlow, barlowCondensed } from './fonts';
 import jesseImage from './jesse.webp';
 import kostyaImage from './kostya.webp';
 
+type SenseiKey = 'jesse' | 'kostya' | 'david';
+
+const senseiImages: Record<SenseiKey, string> = {
+    jesse: jesseImage,
+    kostya: kostyaImage,
+    david: davidImage,
+};
+
+const senseiKeys: SenseiKey[] = ['jesse', 'kostya', 'david'];
+
 export function Senseis() {
+    const t = useTranslations('landing');
+
     return (
         <Container maxWidth='lg' sx={{ py: '5.5rem' }}>
             <Grid container spacing='2rem'>
@@ -27,7 +40,7 @@ export function Senseis() {
                                 fontWeight: '500',
                             }}
                         >
-                            The Senseis
+                            {t('senseis.heading')}
                         </Typography>
 
                         <Divider
@@ -46,16 +59,21 @@ export function Senseis() {
                                 lineHeight: '2.125rem',
                             }}
                         >
-                            Led by world class chess trainers, ChessDojo has been meticulously
-                            crafted to improve players of any level
+                            {t('senseis.description')}
                         </Typography>
                     </Stack>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
                     <Stack gap='3.75rem'>
-                        {senseis.map((s) => (
-                            <Sensei key={s.name} {...s} />
+                        {senseiKeys.map((key) => (
+                            <Sensei
+                                key={key}
+                                image={senseiImages[key]}
+                                title={t(`senseis.${key}.title`)}
+                                name={t(`senseis.${key}.name`)}
+                                bio={t(`senseis.${key}.bio`)}
+                            />
                         ))}
                     </Stack>
                 </Grid>
@@ -146,24 +164,3 @@ function Sensei({
         </Box>
     );
 }
-
-const senseis = [
-    {
-        image: jesseImage,
-        title: 'Grandmaster',
-        name: 'Jesse Kraai',
-        bio: `GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things.`,
-    },
-    {
-        image: kostyaImage,
-        title: 'International Master',
-        name: 'Kostya Kavutskiy',
-        bio: `Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites.`,
-    },
-    {
-        image: davidImage,
-        title: 'International Master',
-        name: 'David Pruess',
-        bio: `David is a  chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure.`,
-    },
-];

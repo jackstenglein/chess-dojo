@@ -19,6 +19,7 @@ import {
     Tooltip,
     styled,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 
 const openWidth = 167;
@@ -111,6 +112,7 @@ export const NavigationMenu = ({
     hideAllUploads?: boolean;
     onClick?: (value: { owner: string; id: string }) => void;
 }) => {
+    const t = useTranslations('profile.directories.navigationMenu');
     const { user } = useAuth();
     const { updateSearchParams } = useNextSearchParams();
     const [open, setOpen] = useLocalStorage(
@@ -140,7 +142,7 @@ export const NavigationMenu = ({
     if (horizontal) {
         return (
             <Stack direction='row' flexWrap='wrap'>
-                <Tooltip title='Home' disableInteractive>
+                <Tooltip title={t('home')} disableInteractive>
                     <IconButton
                         onClick={handleClick(HOME_DIRECTORY_ID)}
                         color={
@@ -152,7 +154,7 @@ export const NavigationMenu = ({
                         <Home />
                     </IconButton>
                 </Tooltip>
-                <Tooltip title='Shared with Me' disableInteractive>
+                <Tooltip title={t('sharedWithMe')} disableInteractive>
                     <IconButton
                         onClick={handleClick(SHARED_DIRECTORY_ID)}
                         color={
@@ -165,7 +167,7 @@ export const NavigationMenu = ({
                     </IconButton>
                 </Tooltip>
                 {!hideAllUploads && (
-                    <Tooltip title='All My Uploads' disableInteractive>
+                    <Tooltip title={t('allMyUploads')} disableInteractive>
                         <IconButton
                             onClick={handleClick(ALL_MY_UPLOADS_DIRECTORY_ID)}
                             color={
@@ -184,7 +186,7 @@ export const NavigationMenu = ({
 
     return (
         <List dense disablePadding open={open}>
-            <Tooltip title={open ? '' : 'Home'} disableInteractive>
+            <Tooltip title={open ? '' : t('home')} disableInteractive>
                 <ListItemButton
                     selected={id === HOME_DIRECTORY_ID && owner === user.username}
                     onClick={handleClick(HOME_DIRECTORY_ID)}
@@ -192,11 +194,11 @@ export const NavigationMenu = ({
                     <ListItemIcon>
                         <Home />
                     </ListItemIcon>
-                    <ListItemText primary='Home' />
+                    <ListItemText primary={t('home')} />
                 </ListItemButton>
             </Tooltip>
 
-            <Tooltip title={open ? '' : 'Shared with Me'} disableInteractive>
+            <Tooltip title={open ? '' : t('sharedWithMe')} disableInteractive>
                 <ListItemButton
                     selected={id === SHARED_DIRECTORY_ID && owner === user.username}
                     onClick={handleClick(SHARED_DIRECTORY_ID)}
@@ -204,12 +206,12 @@ export const NavigationMenu = ({
                     <ListItemIcon>
                         <PeopleAlt />
                     </ListItemIcon>
-                    <ListItemText primary='Shared with Me' />
+                    <ListItemText primary={t('sharedWithMe')} />
                 </ListItemButton>
             </Tooltip>
 
             {!hideAllUploads && (
-                <Tooltip title={open ? '' : 'All My Uploads'} disableInteractive>
+                <Tooltip title={open ? '' : t('allMyUploads')} disableInteractive>
                     <ListItemButton
                         selected={id === ALL_MY_UPLOADS_DIRECTORY_ID && owner === user.username}
                         onClick={handleClick(ALL_MY_UPLOADS_DIRECTORY_ID)}
@@ -217,17 +219,17 @@ export const NavigationMenu = ({
                         <ListItemIcon>
                             <Upload />
                         </ListItemIcon>
-                        <ListItemText primary='All My Uploads' />
+                        <ListItemText primary={t('allMyUploads')} />
                     </ListItemButton>
                 </Tooltip>
             )}
 
             <Divider />
 
-            <Tooltip title={open ? '' : 'Expand'} disableInteractive>
+            <Tooltip title={open ? '' : t('expand')} disableInteractive>
                 <ListItemButton onClick={() => setOpen(!open)}>
                     <ListItemIcon>{open ? <ChevronLeft /> : <ChevronRight />}</ListItemIcon>
-                    <ListItemText primary='Collapse' />
+                    <ListItemText primary={t('collapse')} />
                 </ListItemButton>
             </Tooltip>
         </List>

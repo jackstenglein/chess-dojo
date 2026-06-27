@@ -3,6 +3,7 @@ import { Event, getDisplayString } from '@/database/event';
 import Icon from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Field from './Field';
 import ParticipantsList from './ParticipantsList';
 
@@ -13,26 +14,34 @@ interface MeetingViewerProps {
 }
 
 const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
+    const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const event = processedEvent.event as Event;
 
     const participantsLength = Object.values(event.participants).length;
 
     return (
         <Stack sx={{ pt: 2 }} spacing={2}>
-            <Field title='Description' body={event.description} iconName='notes' />
-            <Field title='Location' body={event.location || 'Discord'} iconName='location' />
+            <Field title={t('description')} body={event.description} iconName='notes' />
+            <Field
+                title={t('location')}
+                body={event.location || t('discord')}
+                iconName='location'
+            />
 
             {event.bookedType ? (
                 <Field
-                    title='Meeting Type'
-                    body={getDisplayString(event.bookedType)}
+                    title={t('meetingType')}
+                    body={getDisplayString(event.bookedType, labelT)}
                     iconName='meet'
                 />
             ) : (
                 <Field
-                    title='Meeting Types'
+                    title={t('meetingTypes')}
                     iconName='meet'
-                    body={event.types?.map((t) => getDisplayString(t)).join(', ') || ''}
+                    body={
+                        event.types?.map((type) => getDisplayString(type, labelT)).join(', ') || ''
+                    }
                 />
             )}
 
@@ -43,12 +52,12 @@ const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
                         color='primary'
                         sx={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
                     />
-                    Particpants
+                    {t('participants')}
                 </Typography>
                 <ParticipantsList event={event} maxItems={maxDisplayParticipants} />
                 {participantsLength > maxDisplayParticipants - 1 && (
                     <Typography>
-                        ... and {participantsLength - (maxDisplayParticipants - 1)} more
+                        {t('andMore', { count: participantsLength - (maxDisplayParticipants - 1) })}
                     </Typography>
                 )}
             </Stack>
@@ -59,7 +68,7 @@ const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
                 href={`/meeting/${event.id}`}
                 startIcon={<Icon name='eye' />}
             >
-                View Details
+                {t('viewDetails')}
             </Button>
         </Stack>
     );

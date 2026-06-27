@@ -7,11 +7,12 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import React, { ReactNode, useState } from 'react';
 import { useApi } from '../../api/Api';
 import { RequestSnackbar, useRequest } from '../../api/Request';
 import { RatingSystem, User, getRatingUsername, hideRatingUsername } from '../../database/user';
-import { getHelperText, getUsernameLabel, getUsernameType } from './PreferredRatingSystemForm';
+import { getHelperText, getHideMyLabel, getUsernameLabel } from './PreferredRatingSystemForm';
 import { ProfileCreatorFormProps } from './ProfileCreatorPage';
 
 const { Custom, Custom2, Custom3, ...RatingSystems } = RatingSystem;
@@ -41,6 +42,9 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
     onNextStep,
     onPrevStep,
 }) => {
+    const tRatings = useTranslations('profile.ratings');
+    const tCreator = useTranslations('profile.creator');
+    const tExtra = useTranslations('profile.creator.extra');
     const api = useApi();
     const request = useRequest();
 
@@ -90,14 +94,13 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
     return (
         <Stack spacing={4}>
             <Typography>
-                You have been placed in the <strong>{user.dojoCohort}</strong> cohort. You can
-                change this later if the program is too hard or too easy.
+                {tExtra.rich('cohortPlaced', {
+                    cohort: user.dojoCohort,
+                    strong: (chunks: ReactNode) => <strong>{chunks}</strong>,
+                })}
             </Typography>
 
-            <Typography>
-                Add any additional rating systems you would like to track below. These are optional
-                and will not affect your cohort.
-            </Typography>
+            <Typography>{tExtra('additionalRatings')}</Typography>
 
             <Grid container columnSpacing={2} alignItems='center'>
                 {Object.values(RatingSystems).map((rs) => {
@@ -108,10 +111,10 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                         <React.Fragment key={rs}>
                             <Grid size={{ xs: 12, sm: 6 }} mb={4}>
                                 <TextField
-                                    label={getUsernameLabel(rs)}
+                                    label={getUsernameLabel(rs, tRatings)}
                                     value={usernames[rs]}
                                     onChange={(event) => setUsername(rs, event.target.value)}
-                                    helperText={getHelperText(rs)}
+                                    helperText={getHelperText(rs, tRatings, tCreator)}
                                     fullWidth
                                 />
                             </Grid>
@@ -126,7 +129,7 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                                             }
                                         />
                                     }
-                                    label={`Hide ${getUsernameType(rs)} from other Dojo members`}
+                                    label={getHideMyLabel(rs, tCreator)}
                                     sx={{ justifyContent: 'end' }}
                                 />
                             </Grid>
@@ -137,7 +140,7 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
 
             <Stack direction='row' justifyContent='space-between'>
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
-                    Back
+                    {tExtra('back')}
                 </Button>
 
                 <Button
@@ -146,7 +149,7 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                     onClick={onSave}
                     sx={{ alignSelf: 'end' }}
                 >
-                    Next
+                    {tExtra('next')}
                 </Button>
             </Stack>
 

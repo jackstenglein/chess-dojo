@@ -2,6 +2,7 @@ import Board from '@/board/Board';
 import { Box, Fade, Stack, Tooltip, Typography } from '@mui/material';
 import { LineChart, useAxesTooltip } from '@mui/x-charts';
 import { useSvgRef, useXScale, useYScale } from '@mui/x-charts/hooks';
+import { useTranslations } from 'next-intl';
 import { PuzzleSession } from '../checkmate/CheckmatePuzzlePage';
 
 const GRAPH_SUCCESS_COLOR = 'green';
@@ -89,6 +90,7 @@ export function PuzzleSessionChart({ session }: { session: PuzzleSession }) {
 }
 
 function TooltipPlacement({ session }: { session: PuzzleSession }) {
+    const t = useTranslations('puzzles.sessionChart');
     const tooltipData = useAxesTooltip({ directions: ['x'] });
     const xScale = useXScale();
     const yScale = useYScale();
@@ -163,14 +165,14 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                             mt={0.5}
                             alignItems='center'
                         >
-                            <Typography variant='caption'>Puzzle Rating</Typography>
+                            <Typography variant='caption'>{t('puzzleRating')}</Typography>
                             <Typography variant='caption' fontWeight='bold'>
                                 {item?.puzzle.rating}
                             </Typography>
                         </Stack>
 
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='caption'>Your Rating</Typography>
+                            <Typography variant='caption'>{t('yourRating')}</Typography>
                             <Typography
                                 variant='caption'
                                 fontWeight='bold'
@@ -190,7 +192,7 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                 ) : (
                     <Box sx={{ p: 1, minWidth: 200 }}>
                         <Stack direction='row' justifyContent='space-between'>
-                            <Typography variant='caption'>Start Rating</Typography>
+                            <Typography variant='caption'>{t('startRating')}</Typography>
                             <Typography variant='caption'>{session.start}</Typography>
                         </Stack>
                     </Box>

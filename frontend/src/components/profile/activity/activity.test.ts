@@ -27,7 +27,7 @@ function makeTimelineEntry(overrides: Partial<TimelineEntry>): TimelineEntry {
         comments: null,
         reactions: null,
         ...overrides,
-    } as TimelineEntry;
+    };
 }
 
 function makeRequirement(overrides: Partial<Requirement>): Requirement {

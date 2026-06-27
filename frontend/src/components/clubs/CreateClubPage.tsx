@@ -6,7 +6,7 @@ import { useCache } from '@/api/cache/Cache';
 import {
     MAX_PROFILE_PICTURE_SIZE_MB,
     encodeFileToBase64,
-} from '@/app/(scoreboard)/profile/edit/ProfileEditorPage';
+} from '@/app/[locale]/(scoreboard)/profile/edit/ProfileEditorPage';
 import { ClubDetails } from '@/database/club';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
@@ -25,9 +25,11 @@ import {
     Typography,
 } from '@mui/material';
 import { AxiosResponse } from 'axios';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 export const CreateClubPage = ({ id }: { id: string }) => {
+    const t = useTranslations('clubs.create');
     const api = useApi();
     const getRequest = useRequest<ClubDetails>();
     const saveRequest = useRequest();
@@ -82,7 +84,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
         const files = e.target.files;
         if (files?.length) {
             if (files[0].size / 1024 / 1024 > MAX_PROFILE_PICTURE_SIZE_MB) {
-                saveRequest.onFailure({ message: 'Logo must be 9MB or smaller' });
+                saveRequest.onFailure({ message: t('logoSizeError') });
                 return;
             }
 
@@ -106,17 +108,17 @@ export const CreateClubPage = ({ id }: { id: string }) => {
     const onSave = () => {
         const errors: Record<string, string> = {};
         if (name.trim().length === 0) {
-            errors.name = 'This field is required';
+            errors.name = t('requiredError');
         }
         if (!unlisted) {
             if (shortDescription.trim().length === 0) {
-                errors.shortDescription = 'This field is required';
+                errors.shortDescription = t('requiredError');
             } else if (shortDescription.length > 300) {
                 errors.shortDescriptionOverride = 'true';
             }
         }
         if (description.trim().length === 0) {
-            errors.description = 'This field is required';
+            errors.description = t('requiredError');
         }
         setErrors(errors);
         if (Object.values(errors).length > 0) {
@@ -162,15 +164,15 @@ export const CreateClubPage = ({ id }: { id: string }) => {
     return (
         <Container sx={{ py: 4 }}>
             <RequestSnackbar request={saveRequest} />
-            <Typography variant='h5'>{id ? 'Edit Club' : 'Create New Club'}</Typography>
+            <Typography variant='h5'>{id ? t('editTitle') : t('createTitle')}</Typography>
             <Stack spacing={3} mt={5}>
                 <Stack>
-                    <FormLabel sx={{ mb: 1 }}>Club Logo</FormLabel>
+                    <FormLabel sx={{ mb: 1 }}>{t('logoLabel')}</FormLabel>
                     <Stack direction='row' alignItems='center' spacing={3}>
                         <ClubAvatar id={id} name={name} size={150} url={logoUrl} />
                         <Stack spacing={2} alignItems='start'>
                             <Button component='label' variant='outlined' startIcon={<Upload />}>
-                                Upload Photo
+                                {t('uploadPhoto')}
                                 <input
                                     type='file'
                                     accept='image/*'
@@ -183,14 +185,14 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                                 startIcon={<Delete />}
                                 onClick={onDeletePicture}
                             >
-                                Delete Photo
+                                {t('deletePhoto')}
                             </Button>
                         </Stack>
                     </Stack>
                 </Stack>
 
                 <TextField
-                    label='Name'
+                    label={t('nameLabel')}
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -200,7 +202,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
 
                 {!unlisted && (
                     <TextField
-                        label='Short Description'
+                        label={t('shortDescriptionLabel')}
                         required
                         multiline
                         minRows={3}
@@ -209,28 +211,25 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                         error={Boolean(errors.shortDescription) || shortDescription.length > 300}
                         helperText={
                             errors.shortDescription ||
-                            `${shortDescription.length}/300 characters. Displayed on the club list page.`
+                            t('shortDescriptionHelper', { count: shortDescription.length })
                         }
                     />
                 )}
 
                 <TextField
-                    label='Full Description'
+                    label={t('descriptionLabel')}
                     required
                     multiline
                     minRows={5}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     error={Boolean(errors.description)}
-                    helperText={
-                        errors.description ||
-                        "Supports markdown formatting and is displayed on the club's main page"
-                    }
+                    helperText={errors.description || t('descriptionHelper')}
                 />
 
                 <TextField
-                    label='URL'
-                    helperText='Add this if you want to link to an external site'
+                    label={t('urlLabel')}
+                    helperText={t('urlHelper')}
                     value={externalUrl}
                     onChange={(e) => setExternalUrl(e.target.value)}
                 />
@@ -242,7 +241,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                         }}
                     >
                         <TextField
-                            label='City'
+                            label={t('cityLabel')}
                             fullWidth
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
@@ -254,7 +253,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                         }}
                     >
                         <TextField
-                            label='State'
+                            label={t('stateLabel')}
                             fullWidth
                             value={state}
                             onChange={(e) => setState(e.target.value)}
@@ -266,7 +265,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                         }}
                     >
                         <TextField
-                            label='Country'
+                            label={t('countryLabel')}
                             fullWidth
                             value={country}
                             onChange={(e) => setCountry(e.target.value)}
@@ -282,7 +281,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                                 onChange={(_, checked) => setAllowFreeTier(!checked)}
                             />
                         }
-                        label='Limit access to subscribers? If checked, free-tier users will not be able to join.'
+                        label={t('limitAccessLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -291,7 +290,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                                 onChange={(_, checked) => setUnlisted(checked)}
                             />
                         }
-                        label='Unlisted? If checked, this club will not appear in the list and can only be shared by its URL.'
+                        label={t('unlistedLabel')}
                     />
                     <FormControlLabel
                         control={
@@ -300,7 +299,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                                 onChange={(_, checked) => setApprovalRequired(checked)}
                             />
                         }
-                        label="Require approval to join? If checked, you must manually approve each user's request to join."
+                        label={t('approvalRequiredLabel')}
                     />
                 </Stack>
 
@@ -310,7 +309,7 @@ export const CreateClubPage = ({ id }: { id: string }) => {
                     loading={saveRequest.isLoading()}
                     sx={{ alignSelf: 'center' }}
                 >
-                    {id ? 'Save' : 'Create Club'}
+                    {id ? t('saveButton') : t('createButton')}
                 </Button>
             </Stack>
         </Container>

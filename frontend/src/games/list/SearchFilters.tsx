@@ -30,6 +30,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 const Accordion = styled((props: AccordionProps) => (
@@ -90,14 +91,15 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
     setEndDate,
     onSearch,
 }) => {
+    const t = useTranslations('games.list.searchFilters');
     return (
         <Stack data-testid='search-by-cohort' spacing={2}>
             <FormControl>
-                <InputLabel>Cohort</InputLabel>
+                <InputLabel>{t('cohortLabel')}</InputLabel>
                 <Select
                     data-testid='cohort-select'
                     value={cohort}
-                    label='Cohort'
+                    label={t('cohortLabel')}
                     onChange={(e) => setCohort(e.target.value)}
                 >
                     {dojoCohorts.concat(MastersCohort).map((c) => (
@@ -109,7 +111,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
                                 tooltip=''
                                 color='primary'
                             />
-                            {c === MastersCohort ? 'Masters DB' : c}
+                            {c === MastersCohort ? t('mastersDb') : c}
                         </MenuItem>
                     ))}
                 </Select>
@@ -118,7 +120,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
             <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='Start Date'
+                        label={t('startDate')}
                         value={startDate}
                         onChange={(newValue) => {
                             setStartDate(newValue);
@@ -131,7 +133,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
 
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='End Date'
+                        label={t('endDate')}
                         value={endDate}
                         onChange={(newValue) => {
                             setEndDate(newValue);
@@ -150,7 +152,7 @@ export const SearchByCohort: React.FC<SearchByCohortProps> = ({
                 onClick={onSearch}
                 startIcon={<Icon name='search' color='primary' />}
             >
-                Search
+                {t('search')}
             </Button>
         </Stack>
     );
@@ -164,16 +166,16 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
     setEndDate,
     onSearch,
 }) => {
+    const t = useTranslations('games.list.searchFilters');
     return (
         <Stack data-testid='search-by-owner' spacing={2}>
             <Typography data-testid='owner-search-description' gutterBottom>
-                Find games that you have uploaded to the Dojo Database. Note that games uploaded
-                previously through Dojo 1.0's Google Form submission will not be matched.
+                {t('ownerDescription')}
             </Typography>
             <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='Start Date'
+                        label={t('startDate')}
                         value={startDate}
                         onChange={(newValue) => {
                             setStartDate(newValue);
@@ -186,7 +188,7 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
 
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='End Date'
+                        label={t('endDate')}
                         value={endDate}
                         onChange={(newValue) => {
                             setEndDate(newValue);
@@ -205,7 +207,7 @@ const SearchByOwner: React.FC<BaseFilterProps> = ({
                 onClick={onSearch}
                 startIcon={<Icon name='search' color='primary' />}
             >
-                Search
+                {t('search')}
             </Button>
         </Stack>
     );
@@ -230,13 +232,14 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
     setEndDate,
     onSearch,
 }) => {
+    const t = useTranslations('games.list.searchFilters');
     const isFreeTier = useFreeTier();
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSearch = () => {
         const errors: Record<string, string> = {};
         if (player === '') {
-            errors.player = 'This field is required';
+            errors.player = t('fieldRequired');
         }
         setErrors(errors);
 
@@ -249,13 +252,10 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
 
     return (
         <Stack data-testid='search-by-player' spacing={2}>
-            <Typography gutterBottom>
-                Find games based on player name. Note this is the name as it was recorded in the PGN
-                file.
-            </Typography>
+            <Typography gutterBottom>{t('playerDescription')}</Typography>
             <TextField
                 data-testid='player-name'
-                label='Player Name'
+                label={t('playerName')}
                 value={player}
                 onChange={(e) => setPlayer(e.target.value)}
                 error={!!errors.player}
@@ -265,18 +265,18 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
             <Select
                 data-testid='color'
                 value={color}
-                label='Color'
+                label={t('color')}
                 onChange={(e) => setColor(e.target.value)}
             >
-                <MenuItem value='either'>Either</MenuItem>
-                <MenuItem value='white'>White</MenuItem>
-                <MenuItem value='black'>Black</MenuItem>
+                <MenuItem value='either'>{t('either')}</MenuItem>
+                <MenuItem value='white'>{t('white')}</MenuItem>
+                <MenuItem value='black'>{t('black')}</MenuItem>
             </Select>
 
             <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='Start Date'
+                        label={t('startDate')}
                         value={startDate}
                         onChange={(newValue) => {
                             setStartDate(newValue);
@@ -289,7 +289,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
 
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='End Date'
+                        label={t('endDate')}
                         value={endDate}
                         onChange={(newValue) => {
                             setEndDate(newValue);
@@ -309,7 +309,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
                 disabled={isFreeTier}
                 startIcon={<Icon name='search' color='primary' />}
             >
-                Search
+                {t('search')}
             </Button>
             {isFreeTier && (
                 <Typography
@@ -317,7 +317,7 @@ const SearchByPlayer: React.FC<SearchByPlayerProps> = ({
                     color='text.secondary'
                     sx={{ mt: '0 !important', alignSelf: 'center' }}
                 >
-                    Free-tier users are not able to search by player name
+                    {t('freeTierPlayer')}
                 </Typography>
             )}
         </Stack>
@@ -339,12 +339,13 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
     setEndDate,
     onSearch,
 }) => {
+    const t = useTranslations('games.list.searchFilters');
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSearch = () => {
         const errors: Record<string, string> = {};
         if (eco === '') {
-            errors.eco = 'This field is required';
+            errors.eco = t('fieldRequired');
         }
         setErrors(errors);
 
@@ -358,11 +359,11 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
     return (
         <Stack data-testid='search-by-opening' spacing={2}>
             <FormControl>
-                <Typography gutterBottom>Find games based on opening ECO Codes</Typography>
+                <Typography gutterBottom>{t('openingDescription')}</Typography>
                 <TextField
                     data-testid='opening-eco'
                     value={eco}
-                    label='Opening ECO'
+                    label={t('openingEco')}
                     onChange={(e) => setEco(e.target.value)}
                     error={!!errors.eco}
                     helperText={errors.eco}
@@ -372,7 +373,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
             <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='Start Date'
+                        label={t('startDate')}
                         value={startDate}
                         onChange={(newValue) => {
                             setStartDate(newValue);
@@ -385,7 +386,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
 
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
-                        label='End Date'
+                        label={t('endDate')}
                         value={endDate}
                         onChange={(newValue) => {
                             setEndDate(newValue);
@@ -404,7 +405,7 @@ const SearchByOpening: React.FC<SearchByOpeningProps> = ({
                 onClick={handleSearch}
                 startIcon={<Icon name='search' color='primary' />}
             >
-                Search
+                {t('search')}
             </Button>
         </Stack>
     );
@@ -421,13 +422,14 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
     setFen,
     onSearch,
 }) => {
+    const t = useTranslations('games.list.searchFilters');
     const isFreeTier = useFreeTier();
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSearch = () => {
         const errors: Record<string, string> = {};
         if (fen === '') {
-            errors.fen = 'This field is required';
+            errors.fen = t('fieldRequired');
         }
         setErrors(errors);
 
@@ -444,7 +446,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                 <TextField
                     data-testid='fen'
                     value={fen}
-                    label='FEN'
+                    label={t('fen')}
                     onChange={(e) => setFen(e.target.value)}
                     error={!!errors.fen}
                     helperText={errors.fen}
@@ -459,7 +461,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                 disabled={isFreeTier}
                 startIcon={<Icon name='search' color='primary' />}
             >
-                Search
+                {t('search')}
             </Button>
 
             {isFreeTier ? (
@@ -468,7 +470,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                     color='text.secondary'
                     sx={{ mt: '0 !important', alignSelf: 'center' }}
                 >
-                    Free-tier users are not able to search by position
+                    {t('freeTierPosition')}
                 </Typography>
             ) : (
                 <Button
@@ -478,7 +480,7 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                     variant='outlined'
                     startIcon={<Icon name='explore' color='primary' />}
                 >
-                    Position Explorer
+                    {t('positionExplorer')}
                 </Button>
             )}
         </Stack>
@@ -486,10 +488,11 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
 };
 
 const SearchFiles = () => {
+    const t = useTranslations('games.list.searchFilters');
     return (
         <Stack data-testid='search-files' spacing={2}>
             <Button href='/profile?view=games' variant='outlined'>
-                Go to My Files
+                {t('goToMyFiles')}
             </Button>
         </Stack>
     );
@@ -514,6 +517,7 @@ interface SearchFiltersProps {
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) => {
+    const t = useTranslations('games.list.searchFilters');
     const { user } = useAuth();
     const api = useApi();
 
@@ -695,7 +699,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
             >
                 <AccordionSummary>
                     <Icon name='cohort' color='primary' sx={{ marginRight: '0.6rem' }} />
-                    <Typography> Search By Cohort </Typography>
+                    <Typography>{t('searchByCohort')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchByCohort
@@ -717,7 +721,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
             >
                 <AccordionSummary>
                     <Icon name='player' color='primary' sx={{ marginRight: '0.6rem' }} />
-                    <Typography>Search By Player</Typography>
+                    <Typography>{t('searchByPlayer')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchByPlayer
@@ -745,7 +749,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
                         color='primary'
                         sx={{ marginRight: '0.6rem' }}
                     />
-                    <Typography>Search By Position</Typography>
+                    <Typography>{t('searchByPosition')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchByPosition
@@ -771,7 +775,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
                         color='primary'
                         sx={{ marginRight: '0.6rem' }}
                     />
-                    <Typography>Search By Opening </Typography>
+                    <Typography>{t('searchByOpening')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchByOpening
@@ -792,7 +796,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
             >
                 <AccordionSummary>
                     <Icon name='upload' color='primary' sx={{ marginRight: '0.6rem' }} />
-                    <Typography>Search My Uploads</Typography>
+                    <Typography>{t('searchMyUploads')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchByOwner
@@ -811,7 +815,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
             >
                 <AccordionSummary>
                     <Folder color='primary' sx={{ mr: '0.6rem' }} />
-                    <Typography>My Files</Typography>
+                    <Typography>{t('myFiles')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <SearchFiles />

@@ -24,6 +24,7 @@ import {
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pro';
 import { TimeField } from '@mui/x-date-pickers';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { BlockBoardKeyboardShortcuts } from '../../../PgnBoard';
@@ -31,6 +32,8 @@ import { convertSecondsToDateTime } from '../clock/ClockEditor';
 import { TagRow } from './Tags';
 
 const DEFAULT_TIME_CONTROL_KEY = 'defaultTimeControl';
+
+type TFunc = ReturnType<typeof useTranslations<'analysisBoard.underboard.tags'>>;
 
 function parseTimeControlString(value: string): TimeControl[] {
     if (!value || value.trim() === '' || value === '?') {
@@ -99,6 +102,8 @@ export function TimeControlEditor({
     onCancel,
     onSuccess,
 }: TimeControlEditorProps) {
+    const t = useTranslations('analysisBoard.underboard.tags');
+
     const [defaultTimeControl, setDefaultTimeControl] = useLocalStorage<string>(
         DEFAULT_TIME_CONTROL_KEY,
         '',
@@ -119,7 +124,7 @@ export function TimeControlEditor({
     const [errors, setErrors] = useState<TimeControlErrors>({});
 
     const onSave = () => {
-        const newErrors = validateTimeControls(timeControls);
+        const newErrors = validateTimeControls(timeControls, t);
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) {
             return;
@@ -196,7 +201,7 @@ export function TimeControlEditor({
             }}
             className={BlockBoardKeyboardShortcuts}
         >
-            <DialogTitle>Update Time Control</DialogTitle>
+            <DialogTitle>{t('updateTimeControlTitle')}</DialogTitle>
             <DialogContent>
                 <Stack pt={1}>
                     {timeControls.map((item, i) => (
@@ -208,10 +213,12 @@ export function TimeControlEditor({
                             spacing={1}
                         >
                             <Stack flexGrow={1}>
-                                <Typography variant='h6'>Time Control {i + 1}</Typography>
+                                <Typography variant='h6'>
+                                    {t('timeControlNumber', { index: i + 1 })}
+                                </Typography>
 
                                 <FormControl sx={{ width: 1, mt: 3 }} error={!!errors[i]?.moves}>
-                                    <InputLabel shrink>Number of Moves</InputLabel>
+                                    <InputLabel shrink>{t('numMovesLabel')}</InputLabel>
                                     <OutlinedInput
                                         value={`${item.moves || ''}`}
                                         onChange={(e) => onChangeNumMoves(i, e.target.value)}
@@ -221,15 +228,21 @@ export function TimeControlEditor({
                                             type: 'number',
                                             style: { width: '100%' },
                                         }}
-                                        label='Number of Moves'
-                                        placeholder={i ? 'Rest of Game' : 'Entire Game'}
+                                        label={t('numMovesLabel')}
+                                        placeholder={
+                                            i
+                                                ? t('restOfGamePlaceholder')
+                                                : t('entireGamePlaceholder')
+                                        }
                                         notched
                                     />
                                     <FormHelperText>{errors[i]?.moves}</FormHelperText>
                                 </FormControl>
 
                                 <TimeField
-                                    label={`${i ? 'Additional Time' : 'Initial Time'} (hh:mm:ss)`}
+                                    label={
+                                        i === 0 ? t('initialTimeLabel') : t('additionalTimeLabel')
+                                    }
                                     format='HH:mm:ss'
                                     value={
                                         convertSecondsToDateTime(item.seconds) || defaultDateTime
@@ -246,7 +259,7 @@ export function TimeControlEditor({
                                 />
 
                                 <TextField
-                                    label='Bonus Time (Sec)'
+                                    label={t('bonusTimeLabel')}
                                     value={getBonus(item)}
                                     onChange={(e) => onChangeBonusTime(i, e.target.value)}
                                     fullWidth
@@ -256,7 +269,7 @@ export function TimeControlEditor({
                                 />
 
                                 <FormControl>
-                                    <FormLabel>Bonus Type</FormLabel>
+                                    <FormLabel>{t('bonusTypeLabel')}</FormLabel>
                                     <RadioGroup
                                         row
                                         value={getBonusType(item)}
@@ -265,18 +278,18 @@ export function TimeControlEditor({
                                         <FormControlLabel
                                             value='increment'
                                             control={<Radio />}
-                                            label='Increment'
+                                            label={t('incrementLabel')}
                                         />
                                         <FormControlLabel
                                             value='delay'
                                             control={<Radio />}
-                                            label='Delay'
+                                            label={t('delayLabel')}
                                         />
                                     </RadioGroup>
                                 </FormControl>
                             </Stack>
 
-                            <Tooltip title='Delete time control'>
+                            <Tooltip title={t('deleteTimeControlTooltip')}>
                                 <span>
                                     <IconButton
                                         disabled={timeControls.length <= 1}
@@ -296,13 +309,13 @@ export function TimeControlEditor({
                         startIcon={<Add />}
                         onClick={onAddTimeControl}
                     >
-                        Add Time Control
+                        {t('addTimeControlButton')}
                     </Button>
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button onClick={onSave}>Update</Button>
+                <Button onClick={onCancel}>{t('cancelButton')}</Button>
+                <Button onClick={onSave}>{t('updateButton')}</Button>
             </DialogActions>
         </Dialog>
     );
@@ -386,34 +399,34 @@ interface TimeControlError {
 
 type TimeControlErrors = Record<number, TimeControlError>;
 
-function validateTimeControls(timeControls: TimeControl[]): TimeControlErrors {
+function validateTimeControls(timeControls: TimeControl[], t: TFunc): TimeControlErrors {
     const errors: Record<number, TimeControlError> = {};
 
     timeControls.forEach((timeControl, i) => {
         if (isNaN(timeControl.moves || 0) || (timeControl.moves ?? 0) < 0) {
             errors[i] = {
                 ...errors[i],
-                moves: 'Number of moves must be a non-negative integer',
+                moves: t('movesNonNegativeError'),
             };
         } else if (i + 1 < timeControls.length && !timeControl.moves) {
             errors[i] = {
                 ...errors[i],
-                moves: 'Number of moves must be specified if not the last time control',
+                moves: t('movesRequiredError'),
             };
         }
 
         if (i === 0 && !timeControl.seconds) {
             errors[i] = {
                 ...errors[i],
-                initialTime: 'First time control must specify a non-zero amount of initial time',
+                initialTime: t('initialTimeRequiredError'),
             };
         }
 
         if (i > 0 && !timeControl.seconds && !timeControl.increment && !timeControl.delay) {
             errors[i] = {
                 ...errors[i],
-                initialTime: 'Time control must specify either additional time or bonus time',
-                bonusTime: 'Time control must specify either additional time or bonus time',
+                initialTime: t('timeControlSpecifyError'),
+                bonusTime: t('timeControlSpecifyError'),
             };
         }
 
@@ -425,7 +438,7 @@ function validateTimeControls(timeControls: TimeControl[]): TimeControlErrors {
         ) {
             errors[i] = {
                 ...errors[i],
-                bonusTime: 'Bonus time must be a non-negative integer',
+                bonusTime: t('bonusTimeNonNegativeError'),
             };
         }
     });

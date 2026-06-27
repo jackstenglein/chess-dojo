@@ -1,6 +1,10 @@
 import { RatingSystem } from '@/database/user';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { renderWithIntl } from '@/i18n/intl.test';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { useTranslations } from 'next-intl';
+import { createTranslator } from 'use-intl/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import messages from '~/messages/en.json';
 import type { RatingEditor } from './RatingsEditor';
 import {
     RatingsEditor,
@@ -10,6 +14,8 @@ import {
 } from './RatingsEditor';
 
 afterEach(cleanup);
+
+const t = createTranslator({ locale: 'en', messages, namespace: 'enums.ratingSystem' });
 
 function editor(overrides: Partial<RatingEditor> = {}): RatingEditor {
     return {
@@ -28,7 +34,7 @@ function editors(
     return Object.values(RatingSystem).reduce<Record<string, RatingEditor>>((result, system) => {
         result[system] = editor(overrides[system]);
         return result;
-    }, {}) as Record<RatingSystem, RatingEditor>;
+    }, {});
 }
 
 describe('RatingsEditor visibility helpers', () => {
@@ -60,9 +66,24 @@ describe('RatingsEditor visibility helpers', () => {
     });
 
     it('disambiguates repeated custom rating labels', () => {
-        expect(getRatingSystemLabel(RatingSystem.Custom)).toBe('Custom');
-        expect(getRatingSystemLabel(RatingSystem.Custom2)).toBe('Custom (2)');
-        expect(getRatingSystemLabel(RatingSystem.Custom3)).toBe('Custom (3)');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom2,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom (2)');
+        expect(
+            getRatingSystemLabel(
+                RatingSystem.Custom3,
+                t as ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+            ),
+        ).toBe('Custom (3)');
     });
 });
 
@@ -70,7 +91,7 @@ function renderRatingsEditor(
     ratingEditors: Record<RatingSystem, RatingEditor>,
     ratingSystem = RatingSystem.Chesscom,
 ) {
-    return render(
+    renderWithIntl(
         <RatingsEditor
             dojoCohort='1600-1700'
             setDojoCohort={vi.fn()}

@@ -13,6 +13,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import {
     CORRECT_SOUND_KEY,
@@ -72,6 +73,7 @@ function PuzzleSpecificSettings({
     /** A callback to invoke when the user changes options that affect the next puzzle. */
     onChangeOptions: () => void;
 }) {
+    const t = useTranslations('puzzles.settings');
     const { solitaire } = useChess();
 
     const [rated, setRated] = useLocalStorage(RATED_KEY, true);
@@ -86,27 +88,23 @@ function PuzzleSpecificSettings({
     return (
         <Stack spacing={3} mb={3}>
             <Stack spacing={0.5}>
-                <Typography variant='h5'>Puzzle Settings</Typography>
+                <Typography variant='h5'>{t('title')}</Typography>
 
-                {!solitaire?.complete && (
-                    <Typography>
-                        Some options can not be changed while in the middle of a puzzle.
-                    </Typography>
-                )}
+                {!solitaire?.complete && <Typography>{t('inProgressNote')}</Typography>}
             </Stack>
 
             <Stack>
                 <MultipleSelectChip
-                    label='Themes'
+                    label={t('themesLabel')}
                     selected={themes}
                     setSelected={(v) => {
                         setThemes(v);
                         onChangeOptions();
                     }}
                     options={[
-                        { value: 'mateIn1', label: 'Mate in 1' },
-                        { value: 'mateIn2', label: 'Mate in 2' },
-                        { value: 'mateIn3', label: 'Mate in 3' },
+                        { value: 'mateIn1', label: t('themeMateIn1') },
+                        { value: 'mateIn2', label: t('themeMateIn2') },
+                        { value: 'mateIn3', label: t('themeMateIn3') },
                     ]}
                     size='small'
                     sx={{ mb: 2.5 }}
@@ -114,7 +112,7 @@ function PuzzleSpecificSettings({
                 />
 
                 <TextField
-                    label='Difficulty'
+                    label={t('difficultyLabel')}
                     select
                     value={difficulty}
                     size='small'
@@ -125,18 +123,18 @@ function PuzzleSpecificSettings({
                     }}
                     disabled={!solitaire?.complete}
                 >
-                    <MenuItem value='easiest'>Easiest (-600)</MenuItem>
-                    <MenuItem value='easier'>Easier (-300)</MenuItem>
-                    <MenuItem value='standard'>Standard (±200)</MenuItem>
-                    <MenuItem value='harder'>Harder (+300)</MenuItem>
-                    <MenuItem value='hardest'>Hardest (+600)</MenuItem>
+                    <MenuItem value='easiest'>{t('difficultyEasiest')}</MenuItem>
+                    <MenuItem value='easier'>{t('difficultyEasier')}</MenuItem>
+                    <MenuItem value='standard'>{t('difficultyStandard')}</MenuItem>
+                    <MenuItem value='harder'>{t('difficultyHarder')}</MenuItem>
+                    <MenuItem value='hardest'>{t('difficultyHardest')}</MenuItem>
                 </TextField>
 
                 <FormControlLabel
                     control={
                         <Checkbox checked={rated} onChange={(e) => setRated(e.target.checked)} />
                     }
-                    label='Rated'
+                    label={t('rated')}
                     disabled={!solitaire?.complete}
                 />
 
@@ -147,7 +145,7 @@ function PuzzleSpecificSettings({
                             onChange={(e) => setShowStreak(e.target.checked)}
                         />
                     }
-                    label='Show Streak'
+                    label={t('showStreak')}
                 />
 
                 <FormControlLabel
@@ -157,7 +155,7 @@ function PuzzleSpecificSettings({
                             onChange={(e) => setShowRating(e.target.checked)}
                         />
                     }
-                    label='Show Rating'
+                    label={t('showRating')}
                 />
 
                 <FormControlLabel
@@ -167,7 +165,7 @@ function PuzzleSpecificSettings({
                             onChange={(e) => setShowTimer(e.target.checked)}
                         />
                     }
-                    label='Show Timer'
+                    label={t('showTimer')}
                 />
 
                 <FormControlLabel
@@ -177,7 +175,7 @@ function PuzzleSpecificSettings({
                             onChange={(e) => setCorrectSound(e.target.checked)}
                         />
                     }
-                    label='Play sound on correct move'
+                    label={t('playSoundCorrect')}
                 />
 
                 <FormControlLabel
@@ -187,7 +185,7 @@ function PuzzleSpecificSettings({
                             onChange={(e) => setIncorrectSound(e.target.checked)}
                         />
                     }
-                    label='Play sound on incorrect move'
+                    label={t('playSoundIncorrect')}
                 />
                 {/* TODO: re-enable this */}
                 {/* <FormControlLabel

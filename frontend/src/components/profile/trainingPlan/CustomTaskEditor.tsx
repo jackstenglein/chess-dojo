@@ -24,6 +24,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -53,6 +54,8 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
     onClose,
     initialCategory,
 }) => {
+    const t = useTranslations('profile.trainingPlan.customTask');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const request = useRequest();
     const api = useApi();
     const { user } = useAuth();
@@ -89,24 +92,24 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
     const onCreate = () => {
         const newErrors: Record<string, string> = {};
         if (name.trim() === '') {
-            newErrors.name = 'This field is required and must be non-empty';
+            newErrors.name = t('nameRequired');
         }
         if (cohorts.length === 0) {
-            newErrors.cohorts = 'At least one cohort is required';
+            newErrors.cohorts = t('cohortsRequired');
         }
         const startCountInt = Number(startCount || '0');
         if (!Number.isInteger(startCountInt) || startCountInt < 0) {
-            newErrors.startCount = 'Must be a positive integer or empty';
+            newErrors.startCount = t('startCountPositive');
         }
         const countInt = Number(count || '0');
         if (!Number.isInteger(countInt) || countInt < 0) {
-            newErrors.count = 'Must be a positive integer or empty';
+            newErrors.count = t('countPositive');
         }
         if (startCountInt > 0 && startCountInt >= countInt) {
-            newErrors.startCount = 'Must be less than Goal';
+            newErrors.startCount = t('startCountLessThanGoal');
         }
         if (countType === OTHER_COUNT_TYPE && otherType.trim() === '') {
-            newErrors.otherType = 'This field is required';
+            newErrors.otherType = t('otherTypeRequired');
         }
         setErrors(newErrors);
 
@@ -178,7 +181,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             });
     };
 
-    const title = task ? `Update ${task.name}?` : `Create Custom Task?`;
+    const title = task ? t('updateTitle', { name: task.name }) : t('createTitle');
 
     return (
         <Dialog
@@ -193,7 +196,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             <DialogContent>
                 <Stack gap={3} mt={2}>
                     <TextField
-                        label='Category'
+                        label={t('category')}
                         required
                         value={category}
                         onChange={(e) => setCategory(e.target.value as CustomTaskCategory)}
@@ -213,7 +216,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                     </TextField>
 
                     <TextField
-                        label='Task Name'
+                        label={t('taskName')}
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -224,7 +227,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                     />
 
                     <TextField
-                        label='Description (Optional)'
+                        label={t('description')}
                         multiline
                         minRows={3}
                         maxRows={3}
@@ -236,63 +239,54 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
 
                     <CohortSelect
                         multiple
-                        label='Cohorts'
+                        label={t('cohorts')}
                         selected={cohorts}
                         setSelected={setCohorts}
                         error={!!errors.cohorts}
-                        helperText={
-                            errors.cohorts ||
-                            'Your time will be tracked individually across each cohort'
-                        }
+                        helperText={errors.cohorts || t('cohortsHelper')}
                     />
 
                     <TextField
-                        label='Starting Point (Optional)'
+                        label={t('startingPoint')}
                         value={startCount}
                         onChange={(e) => setStartCount(e.target.value)}
                         fullWidth
                         error={!!errors.startCount}
-                        helperText={
-                            errors.startCount ||
-                            'Where you want to start for this task. Leave blank if you are only tracking time in this task.'
-                        }
+                        helperText={errors.startCount || t('startingPointHelper')}
                         data-testid='custom-task-starting-point-input'
                     />
 
                     <TextField
-                        label='Goal (Optional)'
+                        label={t('goal')}
                         value={count}
                         onChange={(e) => setCount(e.target.value)}
                         fullWidth
                         error={!!errors.count}
-                        helperText={
-                            errors.count ||
-                            'The final target you want to reach. Leave blank if you are only tracking time in this task.'
-                        }
+                        helperText={errors.count || t('goalHelper')}
                         data-testid='custom-task-goal-input'
                     />
 
                     <TextField
                         select
-                        label='Goal Type'
+                        label={t('goalType')}
                         value={countType}
                         onChange={(e) => setCountType(e.target.value)}
                         fullWidth
                         data-testid='custom-task-goal-type-select'
                     >
-                        <MenuItem value=''>None</MenuItem>
-                        <MenuItem value='Chapters'>Chapters</MenuItem>
-                        <MenuItem value='Exercises'>Exercises</MenuItem>
-                        <MenuItem value='Games'>Games</MenuItem>
-                        <MenuItem value='Minutes'>Minutes</MenuItem>
-                        <MenuItem value='Pages'>Pages</MenuItem>
-                        <MenuItem value='Problems'>Problems</MenuItem>
-                        <MenuItem value='Other'>Other</MenuItem>
+                        <MenuItem value=''>{t('goalTypeNone')}</MenuItem>
+                        <MenuItem value='Chapters'>{t('goalTypeChapters')}</MenuItem>
+                        <MenuItem value='Exercises'>{t('goalTypeExercises')}</MenuItem>
+                        <MenuItem value='Games'>{t('goalTypeGames')}</MenuItem>
+                        <MenuItem value='Minutes'>{t('goalTypeMinutes')}</MenuItem>
+                        <MenuItem value='Pages'>{t('goalTypePages')}</MenuItem>
+                        <MenuItem value='Problems'>{t('goalTypeProblems')}</MenuItem>
+                        <MenuItem value='Other'>{t('goalTypeOther')}</MenuItem>
                     </TextField>
 
                     {countType === 'Other' && (
                         <TextField
-                            label='Other Goal Type'
+                            label={t('otherGoalType')}
                             value={otherType}
                             onChange={(e) => setOtherType(e.target.value)}
                             fullWidth
@@ -306,7 +300,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                                 onChange={(e) => setTrackCountPerCohort(e.target.checked)}
                             />
                         }
-                        label='Reset count to 0 when switching cohorts'
+                        label={t('resetCount')}
                         data-testid='custom-task-reset-count-checkbox'
                     />
                 </Stack>
@@ -317,7 +311,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                     disabled={request.isLoading()}
                     data-testid='custom-task-cancel-button'
                 >
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
 
                 <Button
@@ -325,7 +319,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                     onClick={onCreate}
                     data-testid='custom-task-submit-button'
                 >
-                    {task ? 'Update' : 'Create'}
+                    {task ? t('update') : t('create')}
                 </Button>
             </DialogActions>
         </Dialog>

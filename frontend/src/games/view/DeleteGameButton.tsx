@@ -13,6 +13,7 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { EventType, trackEvent } from '../../analytics/events';
 import { useApi } from '../../api/Api';
@@ -35,12 +36,13 @@ const DeleteGameButton: React.FC<DeleteGameButtonProps> = ({
     slotProps,
     onSuccess,
 }) => {
+    const t = useTranslations('games.deleteButton');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     return (
         <>
             {variant === 'icon' ? (
-                <Tooltip title={`Delete Game${games.length !== 1 ? 's' : ''}`}>
+                <Tooltip title={t('deleteGame', { count: games.length })}>
                     <IconButton
                         data-testid='delete-game-button'
                         onClick={() => setShowDeleteModal(true)}
@@ -56,7 +58,7 @@ const DeleteGameButton: React.FC<DeleteGameButtonProps> = ({
                     onClick={() => setShowDeleteModal(true)}
                     color='error'
                 >
-                    Delete Game{games.length !== 1 ? 's' : ''}
+                    {t('deleteGame', { count: games.length })}
                 </Button>
             )}
 
@@ -83,6 +85,7 @@ export function DeleteGamesDialog({
     onSuccess?: (games: GameKey[]) => void;
     games: GameKey[];
 }) {
+    const t = useTranslations('games.deleteButton');
     const api = useApi();
     const request = useRequest();
     const router = useRouter();
@@ -125,22 +128,14 @@ export function DeleteGamesDialog({
 
     return (
         <Dialog open={open} onClose={request.isLoading() ? undefined : handleClose}>
-            <DialogTitle>
-                Permanently Delete{games.length !== 1 ? ` ${games.length}` : ''} Game
-                {games.length !== 1 ? 's' : ''}?
-            </DialogTitle>
+            <DialogTitle>{t('dialogTitle', { count: games.length })}</DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <DialogContentText>
-                    Are you sure you want to delete{' '}
-                    {games.length === 1 ? 'this game' : 'these games'}? This action cannot be
-                    undone.
-                </DialogContentText>
+                <DialogContentText>{t('confirmPrompt', { count: games.length })}</DialogContentText>
                 <DialogContentText variant='body2' color='text.secondary'>
-                    Games added to multiple folders share a single copy. Deleting this game will
-                    remove it from all folders it appears in.
+                    {t('multiFolderWarning')}
                 </DialogContentText>
                 <TextField
-                    label='Type "delete" to confirm'
+                    label={t('confirmInputLabel')}
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value.toLowerCase())}
                     fullWidth
@@ -150,7 +145,7 @@ export function DeleteGamesDialog({
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={handleClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button
                     data-testid='delete-game-confirm-button'
@@ -159,7 +154,7 @@ export function DeleteGamesDialog({
                     disabled={confirmText.trim() !== 'delete'}
                     onClick={onDelete}
                 >
-                    Delete
+                    {t('deleteConfirmButton')}
                 </Button>
             </DialogActions>
             <RequestSnackbar request={request} />

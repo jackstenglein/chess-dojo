@@ -1,15 +1,17 @@
 import { compareCohorts } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { SectionProps } from './section';
 
 const GraduationSection = ({ review }: SectionProps) => {
+    const t = useTranslations('profile.yearReview.graduations');
+
     if (!review.graduations || review.graduations.length === 0) {
         return null;
     }
 
     const count = review.graduations.length;
-    const isPlural = count !== 1;
 
     const sorted = [...new Set(review.graduations)].sort(compareCohorts);
 
@@ -21,7 +23,7 @@ const GraduationSection = ({ review }: SectionProps) => {
                 fontSize='clamp(16px,3vw,32px)'
                 textAlign='center'
             >
-                In {review.period}, you graduated {count} time{isPlural ? 's' : ''}!
+                {t('headerLine', { period: review.period, count })}
             </Typography>
 
             <Typography
@@ -30,7 +32,7 @@ const GraduationSection = ({ review }: SectionProps) => {
                 fontSize='clamp(14px,2vw,28px)'
                 textAlign='center'
             >
-                Congratulations on earning {isPlural ? 'these belts' : 'this belt'}!
+                {t('congratulationsBelts', { count })}
             </Typography>
 
             <Stack

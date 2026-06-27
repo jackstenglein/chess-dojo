@@ -13,6 +13,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Badge, BadgeCategory } from './badgeHandler';
 import { BadgeImage } from './BadgeImage';
@@ -25,7 +26,18 @@ interface BadgeCabinetDialogProps {
 }
 
 export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDialogProps) {
+    const tBadge = useTranslations('profile.info.badge');
+    const tInfo = useTranslations('profile.info');
     const [badgeCategory, setBadgeCategory] = useState(BadgeCategory.All);
+
+    const categoryLabels: Record<BadgeCategory, string> = {
+        [BadgeCategory.All]: tBadge('categoryAll'),
+        [BadgeCategory.Achieved]: tBadge('categoryAchieved'),
+        [BadgeCategory.Polgar]: tBadge('categoryPolgar'),
+        [BadgeCategory.Games]: tBadge('categoryGames'),
+        [BadgeCategory.Annotation]: tBadge('categoryAnnotation'),
+        [BadgeCategory.Graduation]: tBadge('categoryGraduation'),
+    };
 
     let displayedBadges = allBadges;
     if (badgeCategory === BadgeCategory.Achieved) {
@@ -44,9 +56,9 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                     position: 'relative',
                 }}
             >
-                All Badges
+                {tBadge('allBadges')}
                 <IconButton
-                    aria-label='close'
+                    aria-label={tInfo('close')}
                     onClick={onClose}
                     sx={{ position: 'absolute', right: 8, top: 8 }}
                 >
@@ -57,11 +69,11 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                 <FormControl sx={{ mb: 2 }}>
                     <Select
                         value={badgeCategory}
-                        onChange={(e) => setBadgeCategory(e.target.value as BadgeCategory)}
+                        onChange={(e) => setBadgeCategory(e.target.value)}
                     >
                         {Object.entries(BadgeCategory).map(([key, value]) => (
                             <MenuItem key={key} value={value}>
-                                {value}
+                                {categoryLabels[value]}
                             </MenuItem>
                         ))}
                     </Select>

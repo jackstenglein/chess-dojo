@@ -18,6 +18,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 function getSettingValue(
     notificationSettings: UserNotificationSettings | undefined,
@@ -60,7 +61,7 @@ function setSettingValue(
 }
 
 interface NotificationRow {
-    label: string;
+    labelKey: string;
     sitePath?: string;
     emailPath?: string;
     discordPath?: string;
@@ -68,53 +69,53 @@ interface NotificationRow {
 
 const notificationRows: NotificationRow[] = [
     {
-        label: 'Game Comment (New)',
+        labelKey: 'gameComment',
         sitePath: 'siteNotificationSettings.disableGameComment',
     },
     {
-        label: 'Game Comment (Reply)',
+        labelKey: 'gameCommentReplies',
         sitePath: 'siteNotificationSettings.disableGameCommentReplies',
     },
     {
-        label: 'New Follower',
+        labelKey: 'newFollower',
         sitePath: 'siteNotificationSettings.disableNewFollower',
     },
     {
-        label: 'Newsfeed Comment',
+        labelKey: 'newsfeedComment',
         sitePath: 'siteNotificationSettings.disableNewsfeedComment',
     },
     {
-        label: 'Newsfeed Reaction',
+        labelKey: 'newsfeedReaction',
         sitePath: 'siteNotificationSettings.disableNewsfeedReaction',
     },
     {
-        label: 'Calendar Event Invite',
+        labelKey: 'calendarInvite',
         sitePath: 'siteNotificationSettings.disableCalendarInvite',
         discordPath: 'discordNotificationSettings.disableCalendarInvite',
     },
     {
-        label: 'Meeting Booked',
+        labelKey: 'meetingBooked',
         discordPath: 'discordNotificationSettings.disableMeetingBooking',
     },
     {
-        label: 'Meeting Cancelled',
+        labelKey: 'meetingCancelled',
         discordPath: 'discordNotificationSettings.disableMeetingCancellation',
     },
     {
-        label: 'Round Robin Tournament Start',
+        labelKey: 'roundRobin',
         emailPath: 'emailNotificationSettings.disableRoundRobinStart',
         discordPath: 'discordNotificationSettings.disableRoundRobinStart',
     },
     {
-        label: 'Account Inactivity Warning',
+        labelKey: 'inactiveWarning',
         emailPath: 'emailNotificationSettings.disableInactiveWarning',
     },
     {
-        label: 'Dojo Digest (Newsletter)',
+        labelKey: 'newsletter',
         emailPath: 'emailNotificationSettings.disableNewsletter',
     },
     {
-        label: 'Getting Started Tips',
+        labelKey: 'gettingStarted',
         emailPath: 'emailNotificationSettings.disableSubscriptionCreated',
     },
 ];
@@ -128,6 +129,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
     notificationSettings,
     setNotificationSettings,
 }) => {
+    const t = useTranslations('profile.notifications');
     const renderCheckbox = (path?: string) => {
         if (!path) {
             return (
@@ -159,7 +161,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
             >
                 <Typography variant='h5'>
                     <Notifications style={{ verticalAlign: 'middle', marginRight: '0.1em' }} />{' '}
-                    Notifications
+                    {t('heading')}
                 </Typography>
                 <Divider />
             </Stack>
@@ -169,7 +171,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography fontWeight='bold'>Notification Type</Typography>
+                                <Typography fontWeight='bold'>{t('heading')}</Typography>
                             </TableCell>
                             <TableCell align='center'>
                                 <Stack
@@ -179,7 +181,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                 >
                                     <Web fontSize='small' />
-                                    <Typography fontWeight='bold'>Site</Typography>
+                                    <Typography fontWeight='bold'>{t('site')}</Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
@@ -190,7 +192,7 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                 >
                                     <Email fontSize='small' />
-                                    <Typography fontWeight='bold'>Email</Typography>
+                                    <Typography fontWeight='bold'>{t('email')}</Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
@@ -201,16 +203,16 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                 >
                                     <DiscordIcon />
-                                    <Typography fontWeight='bold'>Discord</Typography>
+                                    <Typography fontWeight='bold'>{t('discord')}</Typography>
                                 </Stack>
                             </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {notificationRows.map((row) => (
-                            <TableRow key={row.label} hover>
+                            <TableRow key={row.labelKey} hover>
                                 <TableCell component='th' scope='row'>
-                                    {row.label}
+                                    {t(row.labelKey)}
                                 </TableCell>
                                 <TableCell align='center'>{renderCheckbox(row.sitePath)}</TableCell>
                                 <TableCell align='center'>

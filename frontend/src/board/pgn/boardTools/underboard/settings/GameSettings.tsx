@@ -27,6 +27,7 @@ import {
     Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useChess } from '../../../PgnBoard';
 import AnnotationWarnings from '../../../annotations/AnnotationWarnings';
@@ -38,6 +39,7 @@ interface GameSettingsProps {
 }
 
 const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     const initialVisibility = game.unlisted ? 'unlisted' : 'published';
     const initialOrientation = game.orientation ?? GameOrientations.white;
 
@@ -69,25 +71,25 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
             <AnnotationWarnings />
 
             <Stack spacing={3}>
-                <Typography variant='h5'>Game Settings</Typography>
+                <Typography variant='h5'>{t('gameSettingsTitle')}</Typography>
 
                 <Stack spacing={2}>
                     <TextField
                         fullWidth
                         data-testid='white'
-                        label="White's Name"
+                        label={t('whitesNameLabel')}
                         value={headers.White}
                         onChange={(e) => onChangeHeader('White', e.target.value)}
                     />
                     <TextField
                         fullWidth
                         data-testid='black'
-                        label="Black's Name"
+                        label={t('blacksNameLabel')}
                         value={headers.Black}
                         onChange={(e) => onChangeHeader('Black', e.target.value)}
                     />
                     <DatePicker
-                        label='Date Played'
+                        label={t('datePlayedLabel')}
                         value={parsePgnDate(headers.Date)}
                         onChange={(newValue) => {
                             onChangeHeader('Date', toPgnDate(newValue) ?? '');
@@ -104,7 +106,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
                     />
 
                     <FormControl>
-                        <FormLabel>Default Orientation</FormLabel>
+                        <FormLabel>{t('defaultOrientationLabel')}</FormLabel>
                         <RadioGroup
                             row
                             value={orientation}
@@ -113,18 +115,18 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
                             <FormControlLabel
                                 value={GameOrientations.white}
                                 control={<Radio />}
-                                label='White'
+                                label={t('whiteOrientationLabel')}
                             />
                             <FormControlLabel
                                 value={GameOrientations.black}
                                 control={<Radio />}
-                                label='Black'
+                                label={t('blackOrientationLabel')}
                             />
                         </RadioGroup>
                     </FormControl>
 
                     <FormControl disabled={isFreeTier}>
-                        <FormLabel>Visibility</FormLabel>
+                        <FormLabel>{t('visibilityLabel')}</FormLabel>
                         <RadioGroup
                             row
                             value={visibility}
@@ -133,18 +135,16 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
                             <FormControlLabel
                                 value='published'
                                 control={<Radio disabled={isFreeTier} />}
-                                label='Published'
+                                label={t('publishedLabel')}
                             />
                             <FormControlLabel
                                 value='unlisted'
                                 control={<Radio disabled={isFreeTier} />}
-                                label='Unlisted'
+                                label={t('unlistedLabel')}
                             />
                         </RadioGroup>
                         {isFreeTier && (
-                            <FormHelperText>
-                                Free-tier users can only submit unlisted games
-                            </FormHelperText>
+                            <FormHelperText>{t('freeTierUnlistedOnlyMessage')}</FormHelperText>
                         )}
                     </FormControl>
                 </Stack>
@@ -170,7 +170,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
                     variant='outlined'
                     onClick={() => router.push(`/games/${game.cohort}/${game.id}/edit`)}
                 >
-                    Replace PGN
+                    {t('replacePgnButton')}
                 </Button>
                 <DeleteGameButton
                     variant='contained'
@@ -200,6 +200,7 @@ const SaveGameButton = ({
     dirty,
     onSaveGame,
 }: SaveGameButtonProps) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     const { chess } = useChess();
     const api = useApi();
     const request = useRequest();
@@ -284,7 +285,7 @@ const SaveGameButton = ({
                 loading={loading}
                 onClick={() => (needsPreflight ? onShowPreflight() : onSave())}
             >
-                {isPublishing ? 'Publish' : 'Save Changes'}
+                {isPublishing ? t('publishButton') : t('saveChangesButton')}
             </Button>
             <MissingGameDataPreflight
                 open={showPreflight}
@@ -294,7 +295,7 @@ const SaveGameButton = ({
                 onSubmit={onSave}
                 loading={loading}
             >
-                Your game is missing data. Please fill out these fields to publish your analysis.
+                {t('missingGameDataMessage')}
             </MissingGameDataPreflight>
         </>
     );

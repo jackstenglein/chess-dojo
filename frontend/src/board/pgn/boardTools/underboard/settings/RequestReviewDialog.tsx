@@ -26,6 +26,7 @@ import {
     Typography,
 } from '@mui/material';
 import { AxiosResponse } from 'axios';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 const estimatedReviewDate = new Date(new Date().getTime() + ONE_WEEK_IN_MS);
@@ -36,6 +37,7 @@ interface RequestReviewDialogProps {
 }
 
 const RequestReviewDialog: React.FC<RequestReviewDialogProps> = ({ game }) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     const [open, setOpen] = useState(false);
     const onClose = () => setOpen(false);
 
@@ -43,10 +45,10 @@ const RequestReviewDialog: React.FC<RequestReviewDialogProps> = ({ game }) => {
         <>
             <Button variant='contained' onClick={() => setOpen(true)}>
                 {!game.review
-                    ? 'Request Sensei Review'
+                    ? t('requestSenseiReviewButton')
                     : game.review.reviewedAt
-                      ? 'Sensei Review Complete'
-                      : 'Sensei Review Pending'}
+                      ? t('senseiReviewCompleteButton')
+                      : t('senseiReviewPendingButton')}
             </Button>
             <Dialog open={open} onClose={onClose} fullWidth>
                 {!game.review ? (
@@ -71,6 +73,7 @@ const SubmitDialogContent: React.FC<{
     id: string;
     onClose: () => void;
 }> = ({ cohort, id, onClose }) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     const user = useAuth().user;
     const [reviewType, setReviewType] = useState<GameReviewType>();
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -105,10 +108,10 @@ const SubmitDialogContent: React.FC<{
     const onPurchase = () => {
         const newErrors: Record<string, string> = {};
         if (!reviewType) {
-            newErrors.reviewType = 'This field is required';
+            newErrors.reviewType = t('fieldRequired');
         }
         if (!isConfirmed) {
-            newErrors.isConfirmed = 'This field is required';
+            newErrors.isConfirmed = t('fieldRequired');
         }
 
         setErrors(newErrors);
@@ -131,34 +134,42 @@ const SubmitDialogContent: React.FC<{
 
     return (
         <>
-            <DialogTitle>Submit Game for Review?</DialogTitle>
+            <DialogTitle>{t('submitGameForReviewDialogTitle')}</DialogTitle>
             <DialogContent>
                 <DialogContentText mb={3}>
-                    One of the senseis will review this game on a future{' '}
-                    <Link href='https://www.twitch.tv/chessdojo' target='_blank' rel='noreferrer'>
-                        Twitch stream
-                    </Link>
-                    . If you miss the live stream, you can watch the review in the{' '}
-                    <Link
-                        href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        Twitch VODs
-                    </Link>{' '}
-                    or on the{' '}
-                    <Link
-                        href='https://www.youtube.com/@ChessDojoLive'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        ChessDojoLive Youtube channel
-                    </Link>
-                    .
+                    {t.rich('submitReviewDescription', {
+                        stream: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        vods: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        youtube: (chunks) => (
+                            <Link
+                                href='https://www.youtube.com/@ChessDojoLive'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                    })}
                 </DialogContentText>
 
                 <FormControl error={Boolean(errors.reviewType)}>
-                    <FormLabel>Review Type</FormLabel>
+                    <FormLabel>{t('reviewTypeLabel')}</FormLabel>
                     <RadioGroup
                         value={reviewType}
                         onChange={(e) => setReviewType(e.target.value as GameReviewType)}
@@ -166,12 +177,12 @@ const SubmitDialogContent: React.FC<{
                         <FormControlLabel
                             value={GameReviewType.Quick}
                             control={<Radio />}
-                            label='Quick - $50 (~15-20 min, recommended for U1600)'
+                            label={t('reviewTypeQuickLabel')}
                         />
                         <FormControlLabel
                             value={GameReviewType.Deep}
                             control={<Radio />}
-                            label='Deep Dive - $100 (~30-45 min, recommended for 1600+)'
+                            label={t('reviewTypeDeepLabel')}
                         />
                     </RadioGroup>
                     <FormHelperText>{errors.reviewType}</FormHelperText>
@@ -197,31 +208,34 @@ const SubmitDialogContent: React.FC<{
                                 color: errors.isConfirmed && !isConfirmed ? 'error' : undefined,
                             },
                         }}
-                        label='I confirm that this game is annotated and that the senseis will skip reviewing unannotated games'
+                        label={t('confirmAnnotatedGameLabel')}
                     />
                 </FormControl>
 
                 <Stack mt={5}>
                     <Typography>
-                        Current Queue Length:{' '}
-                        {queueRequest.isLoading() ? (
-                            <CircularProgress size={16} sx={{ ml: 0.5 }} />
-                        ) : (
-                            queueRequest.data
-                        )}
+                        {t.rich('currentQueueLengthLabel', {
+                            value: () =>
+                                queueRequest.isLoading() ? (
+                                    <CircularProgress size={16} sx={{ ml: 0.5 }} />
+                                ) : (
+                                    <>{queueRequest.data}</>
+                                ),
+                        })}
                     </Typography>
                     <Typography>
-                        Estimated Review Date: by{' '}
-                        {toDojoDateString(estimatedReviewDate, user?.timezoneOverride)}
+                        {t('estimatedReviewDateLabel', {
+                            date: toDojoDateString(estimatedReviewDate, user?.timezoneOverride),
+                        })}
                     </Typography>
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('settingsCancelButton')}
                 </Button>
                 <Button loading={request.isLoading()} onClick={onPurchase}>
-                    Purchase Review
+                    {t('purchaseReviewButton')}
                 </Button>
             </DialogActions>
 
@@ -234,6 +248,8 @@ const SubmitDialogContent: React.FC<{
  * Renders the dialog content for a game whose review has been completed.
  */
 const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
+    const tGames = useTranslations('games');
     const user = useAuth().user;
 
     const review = game.review;
@@ -251,35 +267,43 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
 
     return (
         <>
-            <DialogTitle>Game Review Complete</DialogTitle>
+            <DialogTitle>{t('gameReviewCompleteDialogTitle')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Your game review was reviewed on a previous{' '}
-                    <Link href='https://www.twitch.tv/chessdojo' target='_blank' rel='noreferrer'>
-                        Twitch stream
-                    </Link>
-                    . If you missed the live stream, you can watch the review in the{' '}
-                    <Link
-                        href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        Twitch VODs
-                    </Link>{' '}
-                    or on the{' '}
-                    <Link
-                        href='https://www.youtube.com/@ChessDojoLive'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        ChessDojoLive Youtube channel
-                    </Link>
-                    .
+                    {t.rich('completedReviewDescription', {
+                        stream: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        vods: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        youtube: (chunks) => (
+                            <Link
+                                href='https://www.youtube.com/@ChessDojoLive'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                    })}
                 </DialogContentText>
 
                 <Stack mt={3}>
                     <Stack direction='row' spacing={1}>
-                        <Typography>Reviewer:</Typography>
+                        <Typography>{t('reviewerLabel')}</Typography>
 
                         <Avatar
                             size={25}
@@ -291,15 +315,22 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
                         </Link>
                     </Stack>
                     <Typography>
-                        Date Reviewed: {reviewDateStr} • {reviewTimeStr}
+                        {t('dateReviewedLabel', { date: reviewDateStr, time: reviewTimeStr })}
                     </Typography>
                     {game.reviewRequestedAt && (
                         <Typography>
-                            Date Requested: {requestDateStr} • {requestTimeStr}
+                            {t('dateRequestedLabel', {
+                                date: requestDateStr,
+                                time: requestTimeStr,
+                            })}
                         </Typography>
                     )}
                     {review.type && (
-                        <Typography>Review Type: {displayGameReviewType(review.type)}</Typography>
+                        <Typography>
+                            {t('reviewTypeDisplayLabel', {
+                                type: displayGameReviewType(review.type, tGames),
+                            })}
+                        </Typography>
                     )}
                 </Stack>
             </DialogContent>
@@ -311,6 +342,8 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
  * Renders the dialog content for a game whose review is pending.
  */
 const PendingDialogContent: React.FC<{ game: Game }> = ({ game }) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
+    const tGames = useTranslations('games');
     const user = useAuth().user;
     const queueRequest = useRequest<number>();
     const api = useApi();
@@ -363,51 +396,64 @@ const PendingDialogContent: React.FC<{ game: Game }> = ({ game }) => {
 
     return (
         <>
-            <DialogTitle>Game Review Pending</DialogTitle>
+            <DialogTitle>{t('gameReviewPendingDialogTitle')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Your game review is still in the queue. One of the senseis will review this game
-                    on a future{' '}
-                    <Link href='https://www.twitch.tv/chessdojo' target='_blank' rel='noreferrer'>
-                        Twitch stream
-                    </Link>
-                    . If you miss the live stream, you can watch the review in the{' '}
-                    <Link
-                        href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        Twitch VODs
-                    </Link>{' '}
-                    or on the{' '}
-                    <Link
-                        href='https://www.youtube.com/@ChessDojoLive'
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        ChessDojoLive Youtube channel
-                    </Link>
-                    .
+                    {t.rich('pendingReviewDescription', {
+                        stream: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        vods: (chunks) => (
+                            <Link
+                                href='https://www.twitch.tv/chessdojo/videos?filter=archives&sort=time'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                        youtube: (chunks) => (
+                            <Link
+                                href='https://www.youtube.com/@ChessDojoLive'
+                                target='_blank'
+                                rel='noreferrer'
+                            >
+                                {chunks}
+                            </Link>
+                        ),
+                    })}
                 </DialogContentText>
 
                 <Stack mt={3}>
                     <Typography>
-                        Date Requested: {dateStr} • {timeStr}
+                        {t('dateRequestedLabel', { date: dateStr, time: timeStr })}
                     </Typography>
                     {game.review?.type && (
                         <Typography>
-                            Review Type: {displayGameReviewType(game.review.type)}
+                            {t('reviewTypeDisplayLabel', {
+                                type: displayGameReviewType(game.review.type, tGames),
+                            })}
                         </Typography>
                     )}
                     <Typography>
-                        Current Position in Queue:{' '}
-                        {queueRequest.isLoading() ? (
-                            <CircularProgress size={16} sx={{ ml: 0.5 }} />
-                        ) : (
-                            queueRequest.data
-                        )}
+                        {t.rich('currentQueuePositionLabel', {
+                            value: () =>
+                                queueRequest.isLoading() ? (
+                                    <CircularProgress size={16} sx={{ ml: 0.5 }} />
+                                ) : (
+                                    <>{queueRequest.data}</>
+                                ),
+                        })}
                     </Typography>
-                    <Typography>Estimated Review Date: by {reviewDeadline}</Typography>
+                    <Typography>
+                        {t('estimatedReviewDateByLabel', { date: reviewDeadline })}
+                    </Typography>
                 </Stack>
             </DialogContent>
         </>

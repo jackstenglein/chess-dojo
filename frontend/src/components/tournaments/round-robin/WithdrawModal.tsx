@@ -13,6 +13,7 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface WithdrawModalProps {
     open: boolean;
@@ -33,6 +34,7 @@ export function WithdrawModal({
 }: WithdrawModalProps) {
     const request = useRequest<string>();
     const api = useApi();
+    const t = useTranslations('tournaments.roundRobin.withdrawModal');
 
     if (!user) {
         return null;
@@ -42,7 +44,7 @@ export function WithdrawModal({
         try {
             request.onStart();
             const resp = await api.withdrawFromRoundRobin({ cohort, startsAt });
-            request.onSuccess('Successfully withdrew from round robin');
+            request.onSuccess(t('successWithdrawn'));
             if (startsAt === RoundRobinStatuses.WAITING) {
                 onUpdateTournaments({ waitlist: resp.data });
             } else {
@@ -62,19 +64,16 @@ export function WithdrawModal({
     return (
         <>
             <Dialog open={open} onClose={request.isLoading() ? undefined : handleClose} fullWidth>
-                <DialogTitle>Withdraw from Round Robin?</DialogTitle>
+                <DialogTitle>{t('title')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        You will not be able to rejoin, and all your games will be counted as
-                        losses, even those you have already played.
-                    </DialogContentText>
+                    <DialogContentText>{t('body')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={handleSubmit}>
-                        Withdraw
+                        {t('withdraw')}
                     </Button>
                 </DialogActions>
             </Dialog>

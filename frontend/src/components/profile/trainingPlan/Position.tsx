@@ -27,6 +27,7 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { SiChessdotcom } from 'react-icons/si';
 
@@ -44,6 +45,7 @@ interface PositionProps {
 }
 
 const Position = ({ position, orientation }: PositionProps) => {
+    const t = useTranslations('profile.trainingPlan.position');
     const [copied, setCopied] = useState('');
     const lichessRequest = useRequest();
     const playComputerAnchor = useRef<HTMLButtonElement>(null);
@@ -123,8 +125,12 @@ const Position = ({ position, orientation }: PositionProps) => {
 
                         <Stack direction='row' justifyContent='space-between'>
                             <Typography variant='body1' color='text.secondary'>
-                                {turn[0].toLocaleUpperCase() + turn.slice(1)} to play
-                                {position.result && ` and ${position.result.toLocaleLowerCase()}`}
+                                {position.result
+                                    ? t('toPlayAndResult', {
+                                          color: turn,
+                                          result: position.result.toLocaleLowerCase(),
+                                      })
+                                    : t('toPlay', { color: turn })}
                             </Typography>
                         </Stack>
                     </Stack>
@@ -142,7 +148,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                 </Box>
             </CardContent>
             <CardActions disableSpacing sx={{ flexWrap: 'wrap', columnGap: 1 }}>
-                <Tooltip title='Copy position FEN to clipboard'>
+                <Tooltip title={t('copyFenTooltip')}>
                     <Button
                         data-testid='position-fen-copy'
                         startIcon={
@@ -154,22 +160,22 @@ const Position = ({ position, orientation }: PositionProps) => {
                         }
                         onClick={() => onCopyFen(position.fen.trim())}
                     >
-                        FEN
+                        {t('fenButton')}
                     </Button>
                 </Tooltip>
 
-                <Tooltip title='Open in analysis board'>
+                <Tooltip title={t('openAnalysisTooltip')}>
                     <Button
                         startIcon={<Biotech color='dojoOrange' />}
                         href={`/games/explorer?fen=${position.fen}`}
                         rel='noopener'
                         target='_blank'
                     >
-                        Analysis
+                        {t('analysisButton')}
                     </Button>
                 </Tooltip>
 
-                <Tooltip title='Copy a URL and send to another player to play on Lichess'>
+                <Tooltip title={t('challengeUrlTooltip')}>
                     <Button
                         data-testid='position-challenge-url'
                         startIcon={
@@ -182,17 +188,17 @@ const Position = ({ position, orientation }: PositionProps) => {
                         loading={lichessRequest.isLoading()}
                         onClick={generateLichessUrl}
                     >
-                        Challenge URL
+                        {t('challengeUrlButton')}
                     </Button>
                 </Tooltip>
 
-                <Tooltip title='Play against computer on Chess.com'>
+                <Tooltip title={t('playComputerTooltip')}>
                     <Button
                         ref={playComputerAnchor}
                         startIcon={<SiChessdotcom size={20} color='#81b64c' />}
                         onClick={() => setPlayComputerOpen(true)}
                     >
-                        Play Computer
+                        {t('playComputerButton')}
                     </Button>
                 </Tooltip>
 
@@ -229,7 +235,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                         target='_blank'
                         rel='noopener'
                     >
-                        Play as white
+                        {t('playAsWhite')}
                     </MenuItem>
                     <MenuItem
                         component='a'
@@ -237,7 +243,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                         target='_blank'
                         rel='noopener'
                     >
-                        Play as black
+                        {t('playAsBlack')}
                     </MenuItem>
                 </Menu>
             </CardActions>

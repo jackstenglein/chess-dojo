@@ -33,6 +33,7 @@ import {
     ratingBoundaries,
 } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { AuthTokens } from 'aws-amplify/auth';
+import { useTranslations } from 'next-intl';
 import { ScoreboardSummary } from './scoreboard';
 
 // TODO: migrate re-exports.
@@ -78,32 +79,11 @@ export interface User extends CommonUser {
     cognitoUser?: CognitoUser;
 }
 
-export function formatRatingSystem(ratingSystem: RatingSystem | string): string {
-    switch (ratingSystem) {
-        case RatingSystem.Chesscom:
-            return 'Chess.com Rapid';
-        case RatingSystem.Lichess:
-            return 'Lichess Classical';
-        case RatingSystem.Fide:
-            return 'FIDE';
-        case RatingSystem.Uscf:
-            return 'USCF';
-        case RatingSystem.Ecf:
-            return 'ECF';
-        case RatingSystem.Cfc:
-            return 'CFC';
-        case RatingSystem.Dwz:
-            return 'DWZ';
-        case RatingSystem.Acf:
-            return 'ACF';
-        case RatingSystem.Knsb:
-            return 'KNSB';
-        case RatingSystem.Custom:
-        case RatingSystem.Custom2:
-        case RatingSystem.Custom3:
-            return 'Custom';
-    }
-    return ratingSystem;
+export function formatRatingSystem(
+    ratingSystem: RatingSystem | string,
+    t: ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+): string {
+    return t.has(ratingSystem) ? t(ratingSystem) : ratingSystem;
 }
 
 export function parseUser(apiResponse: Omit<User, 'cognitoUser'>, cognitoUser?: CognitoUser): User {

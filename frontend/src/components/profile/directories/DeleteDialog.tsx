@@ -18,6 +18,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useDirectoryCache } from './DirectoryCache';
 
@@ -50,6 +51,7 @@ export const DeleteDialog = ({
     const request = useRequest();
     const api = useApi();
     const cache = useDirectoryCache();
+    const t = useTranslations('profile.directories');
 
     const requiresConfirmation =
         items.some((item) => item.type === DirectoryItemTypes.DIRECTORY) ||
@@ -125,17 +127,17 @@ export const DeleteDialog = ({
 
     return (
         <Dialog open={true} onClose={request.isLoading() ? undefined : onCancel} fullWidth>
-            <DialogTitle>{getDialogTitle(type, items)}</DialogTitle>
+            <DialogTitle>{getDialogTitle(t, type, items)}</DialogTitle>
             <DialogContent data-testid='delete-directory-form'>
                 <Stack spacing={1}>
                     <DeleteDialogContentText type={type} directory={directory} items={items} />
 
                     {requiresConfirmation && (
                         <>
-                            <DialogContentText>To confirm, type `delete` below:</DialogContentText>
+                            <DialogContentText>{t('confirmDelete')}</DialogContentText>
                             <TextField
                                 data-testid='delete-directory-confirm'
-                                placeholder='delete'
+                                placeholder={t('deletePlaceholder')}
                                 value={value}
                                 onChange={(e) => setValue(e.target.value.toLowerCase())}
                                 onKeyDown={(e) => {
@@ -152,7 +154,7 @@ export const DeleteDialog = ({
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onCancel}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button
                     data-testid='delete-directory-button'
@@ -161,7 +163,9 @@ export const DeleteDialog = ({
                     loading={request.isLoading()}
                     onClick={onDelete}
                 >
-                    {type === DeleteDialogType.Delete || requiresConfirmation ? 'Delete' : 'Remove'}
+                    {type === DeleteDialogType.Delete || requiresConfirmation
+                        ? t('delete')
+                        : t('remove')}
                 </Button>
             </DialogActions>
 
@@ -170,15 +174,19 @@ export const DeleteDialog = ({
     );
 };
 
-function getDialogTitle(type: DeleteDialogType, items: DirectoryItem[]) {
+function getDialogTitle(
+    t: ReturnType<typeof useTranslations<'profile.directories'>>,
+    type: DeleteDialogType,
+    items: DirectoryItem[],
+) {
     if (items.length === 1) {
         if (items[0].type === DirectoryItemTypes.DIRECTORY) {
-            return `Delete ${items[0].metadata.name}?`;
+            return t('deleteDirectoryTitle', { name: items[0].metadata.name });
         }
         if (type === DeleteDialogType.Remove) {
-            return `Remove Game?`;
+            return t('removeGameTitle');
         }
-        return 'Delete Game?';
+        return t('deleteGameTitle');
     }
 
     let directoryCount = 0;
@@ -192,25 +200,20 @@ function getDialogTitle(type: DeleteDialogType, items: DirectoryItem[]) {
         }
     }
 
-    let title = '';
-
+    if (directoryCount > 0 && gameCount > 0) {
+        return t('deleteFoldersAndGamesTitle', {
+            dirCount: directoryCount,
+            gameCount,
+            type: type === DeleteDialogType.Remove ? 'remove' : 'delete',
+        });
+    }
     if (directoryCount > 0) {
-        title += `Delete ${directoryCount} Folder${directoryCount > 1 ? 's' : ''}`;
-        if (gameCount > 0) {
-            title += ' and ';
-        }
+        return t('deleteFoldersTitle', { count: directoryCount });
     }
-    if (gameCount > 0) {
-        if (type === DeleteDialogType.Remove) {
-            title += 'Remove ';
-        } else if (title === '') {
-            title += 'Delete ';
-        }
-        title += `${gameCount} Game${gameCount > 1 ? 's' : ''}`;
-    }
-
-    title += '?';
-    return title;
+    return t('deleteOnlyGamesTitle', {
+        type: type === DeleteDialogType.Remove ? 'remove' : 'delete',
+        gameCount,
+    });
 }
 
 const DeleteDialogContentText = ({
@@ -222,45 +225,47 @@ const DeleteDialogContentText = ({
     directory: Directory;
     items: DirectoryItem[];
 }) => {
+    const t = useTranslations('profile.directories');
+
+    const richComponents = {
+        error: (chunks: React.ReactNode) => (
+            <Typography component='strong' color='error' fontWeight='bold'>
+                {chunks}
+            </Typography>
+        ),
+        strong: (chunks: React.ReactNode) => <strong>{chunks}</strong>,
+    };
+
     if (items.length === 1) {
         if (items[0].type === DirectoryItemTypes.DIRECTORY) {
             return (
                 <DialogContentText>
-                    This will{' '}
-                    <Typography component='strong' color='error' fontWeight='bold'>
-                        permanently delete
-                    </Typography>{' '}
-                    {items[0].metadata.name} and any folders it contains. Any of your games within
-                    these folders will not be deleted and will still be available in the All Uploads
-                    folder.
+                    {t.rich('contentDeleteDirectory', {
+                        ...richComponents,
+                        name: items[0].metadata.name,
+                    })}
                 </DialogContentText>
             );
         }
         if (type === DeleteDialogType.Remove) {
             return (
                 <DialogContentText>
-                    This will remove the game{' '}
-                    <strong>
-                        {items[0].metadata.white} - {items[0].metadata.black}
-                    </strong>{' '}
-                    from the <strong>{directory.name}</strong> folder. The game will still be
-                    accessible from the All Uploads folder and from any other folders it is in.
+                    {t.rich('contentRemoveSingleGame', {
+                        ...richComponents,
+                        white: items[0].metadata.white,
+                        black: items[0].metadata.black,
+                        folder: directory.name,
+                    })}
                 </DialogContentText>
             );
         }
         return (
             <DialogContentText>
-                This will{' '}
-                <Typography component='strong' color='error' fontWeight='bold'>
-                    permanently delete
-                </Typography>{' '}
-                the game{' '}
-                <strong>
-                    {items[0].metadata.white} - {items[0].metadata.black}
-                </strong>
-                . Games added to multiple folders share a single copy. Deleting This games will
-                remove it from all folders. It will be <strong>permanently removed</strong> from the
-                Dojo website.
+                {t.rich('contentDeleteSingleGame', {
+                    ...richComponents,
+                    white: items[0].metadata.white,
+                    black: items[0].metadata.black,
+                })}
             </DialogContentText>
         );
     }
@@ -279,13 +284,10 @@ const DeleteDialogContentText = ({
     if (directoryCount > 0 && gameCount === 0) {
         return (
             <DialogContentText>
-                This will{' '}
-                <Typography component='strong' color='error' fontWeight='bold'>
-                    permanently delete
-                </Typography>{' '}
-                {directoryCount} folders and any subfolders. Any of your games within these folders
-                will not be permanently deleted and will still be available in the All Uploads
-                folder and from any other folders they may be in.
+                {t.rich('contentDeleteDirectoriesOnly', {
+                    ...richComponents,
+                    count: directoryCount,
+                })}
             </DialogContentText>
         );
     }
@@ -294,21 +296,17 @@ const DeleteDialogContentText = ({
         if (type === DeleteDialogType.Remove) {
             return (
                 <DialogContentText>
-                    This will remove {gameCount} games from the <strong>{directory.name}</strong>{' '}
-                    folder. The games will still be accessible from the All Uploads folder and from
-                    any other folders they may be in.
+                    {t.rich('contentRemoveGamesOnly', {
+                        ...richComponents,
+                        count: gameCount,
+                        folder: directory.name,
+                    })}
                 </DialogContentText>
             );
         }
         return (
             <DialogContentText>
-                This will{' '}
-                <Typography component='strong' color='error' fontWeight='bold'>
-                    permanently delete
-                </Typography>{' '}
-                {gameCount} games. Games added to multiple folders share a single copy. Deleting
-                these games will remove them from all folders. They will be{' '}
-                <strong>permanently removed</strong> from the Dojo website.
+                {t.rich('contentDeleteGamesOnly', { ...richComponents, count: gameCount })}
             </DialogContentText>
         );
     }
@@ -316,31 +314,23 @@ const DeleteDialogContentText = ({
     if (type === DeleteDialogType.Remove) {
         return (
             <DialogContentText>
-                This will delete {directoryCount} folder{directoryCount > 1 && 's'} and remove{' '}
-                {gameCount} game{gameCount > 1 && 's'} from the {directory.name} folder. The game
-                {gameCount > 1 && 's'} will still be available in the All Uploads folder and from
-                any other folders they may be in. However, the folder
-                {directoryCount > 1 && 's'} will be{' '}
-                <Typography component='strong' color='error' fontWeight='bold'>
-                    permanently deleted
-                </Typography>
-                , along with any subfolders.
+                {t.rich('contentRemoveMixed', {
+                    ...richComponents,
+                    dirCount: directoryCount,
+                    gameCount,
+                    folder: directory.name,
+                })}
             </DialogContentText>
         );
     }
 
     return (
         <DialogContentText>
-            This will{' '}
-            <Typography component='strong' color='error' fontWeight='bold'>
-                permanently delete
-            </Typography>{' '}
-            {directoryCount} folder
-            {directoryCount > 1 && 's'} and {gameCount} game{gameCount > 1 && 's'}. Games added to
-            multiple folders share a single copy. Deleting{' '}
-            {gameCount > 1 ? 'these games will remove them' : 'this game will remove it'} from all
-            folders. {gameCount > 1 ? 'They' : 'It'} will be <strong>permanently removed</strong>{' '}
-            from the Dojo website. Any subfolders will also be <strong>permanently deleted</strong>.
+            {t.rich('contentDeleteMixed', {
+                ...richComponents,
+                dirCount: directoryCount,
+                gameCount,
+            })}
         </DialogContentText>
     );
 };

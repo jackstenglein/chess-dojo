@@ -16,7 +16,8 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { MAIA_RATINGS, MaiaRating } from './maiaengine';
 import { RATING_DESCRIPTIONS } from './playbot';
 
@@ -42,17 +43,22 @@ export function PlayMaiaDialog({
 }: PlayMaiaDialogProps) {
     const router = useRouter();
     const [maiaRating, setMaiaRating] = useState<MaiaRating>(1500);
+    const [selectedColor, setSelectedColor] = useState<'white' | 'black'>(playerColor);
+
+    useEffect(() => {
+        setSelectedColor(playerColor);
+    }, [playerColor]);
 
     const mins = limitSeconds / 60;
     const inc = incrementSeconds;
     const isUnlimited = limitSeconds === 0 && incrementSeconds === 0;
-
+    const t = useTranslations('PlayMaia');
     const handleStart = () => {
         const params = new URLSearchParams({
             fen: fen.trim(),
             mins: String(mins),
             inc: String(inc),
-            color: playerColor,
+            color: selectedColor,
             rating: String(maiaRating),
         });
         router.push(`/play-bot?${params.toString()}`);
@@ -63,7 +69,7 @@ export function PlayMaiaDialog({
             <DialogTitle>
                 <Stack direction='row' alignItems='center' spacing={1}>
                     <SmartToy color='primary' />
-                    <span>Play vs Dojo Sparring Bot</span>
+                    <span>{t('title')}</span>
                 </Stack>
                 {positionTitle && (
                     <Typography variant='body2' color='text.secondary' mt={0.5}>
@@ -80,25 +86,45 @@ export function PlayMaiaDialog({
                             size='small'
                             label={isUnlimited ? 'Unlimited' : `${mins}+${inc}`}
                             variant='outlined'
+                            sx={{ height: 32 }}
                         />
-                        <Chip
+                        <Select
                             size='small'
-                            label={`Play as ${playerColor}`}
-                            variant='outlined'
-                            icon={
-                                <Box
-                                    sx={{
-                                        width: 10,
-                                        height: 10,
-                                        borderRadius: '50%',
-                                        ml: '6px !important',
-                                        bgcolor: playerColor === 'white' ? 'white' : 'grey.700',
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                    }}
-                                />
-                            }
-                        />
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            sx={{ height: 32 }}
+                        >
+                            <MenuItem value='white'>
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor: 'white',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    />
+                                    <span>{t('playAsWhite')}</span>
+                                </Stack>
+                            </MenuItem>
+                            <MenuItem value='black'>
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            bgcolor: 'grey.700',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    />
+                                    <span>{t('playAsBlack')}</span>
+                                </Stack>
+                            </MenuItem>
+                        </Select>
                     </Stack>
 
                     <Divider />
@@ -111,7 +137,7 @@ export function PlayMaiaDialog({
                         <Select
                             size='small'
                             value={maiaRating}
-                            onChange={(e) => setMaiaRating(e.target.value as MaiaRating)}
+                            onChange={(e) => setMaiaRating(e.target.value)}
                             fullWidth
                         >
                             {MAIA_RATINGS.map((r) => (

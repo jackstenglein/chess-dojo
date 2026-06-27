@@ -363,7 +363,7 @@ export function ProfileAdminTab({
                             labelId='admin-tier-label'
                             label='Tier'
                             value={tier}
-                            onChange={(e) => setTier(e.target.value as SubscriptionTier)}
+                            onChange={(e) => setTier(e.target.value)}
                         >
                             {PAID_TIER_OPTIONS.map((t) => (
                                 <MenuItem key={t} value={t}>

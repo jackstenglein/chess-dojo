@@ -8,6 +8,7 @@ import { Game } from '@/database/game';
 import { User } from '@/database/user';
 import { Chess, Move } from '@jackstenglein/chess';
 import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
@@ -173,6 +174,7 @@ export interface DeletePromptProps {
 export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
+    const t = useTranslations('analysisBoard.underboard');
     const { user } = useAuth();
     const { game, onUpdateGame } = useGame();
     const api = useApi();
@@ -224,16 +226,15 @@ export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
         <>
             <Dialog open onClose={onClose}>
                 <DialogTitle>
-                    Delete {deleteAction.moves} move
-                    {deleteAction.moves > 1 ? 's' : ''}
+                    {t('deleteMovesTitle', { count: deleteAction.moves })}
                     {deleteAction.comments
-                        ? ` and ${deleteAction.comments} comment${deleteAction.comments > 1 ? 's' : ''}`
+                        ? ` ${t('deleteCommentsAppend', { count: deleteAction.comments })}`
                         : ''}
                     ?
                 </DialogTitle>
                 <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button onClick={onDelete}>Delete</Button>
+                    <Button onClick={onClose}>{t('cancel')}</Button>
+                    <Button onClick={onDelete}>{t('delete')}</Button>
                 </DialogActions>
             </Dialog>
             <RequestSnackbar request={syncRequest} />

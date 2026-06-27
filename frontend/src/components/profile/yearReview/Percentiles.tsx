@@ -1,5 +1,6 @@
 import { Help } from '@mui/icons-material';
 import { Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface PercentilesProps {
     cohort: string;
@@ -14,6 +15,7 @@ const Percentiles: React.FC<PercentilesProps> = ({
     cohortPercentile,
     description,
 }) => {
+    const t = useTranslations('profile.yearReview.percentiles');
     return (
         <>
             <Grid
@@ -27,11 +29,9 @@ const Percentiles: React.FC<PercentilesProps> = ({
                 <Stack alignItems='center'>
                     <Stack spacing={0.5} direction='row' alignItems='center'>
                         <Typography variant='caption' color='text.secondary'>
-                            Percentile
+                            {t('percentile')}
                         </Typography>
-                        <Tooltip
-                            title={`The percent of Dojo members active in the past 3 months whose ${description} is below yours`}
-                        >
+                        <Tooltip title={t('percentileTooltip', { description })}>
                             <Help
                                 fontSize='inherit'
                                 sx={{
@@ -63,11 +63,9 @@ const Percentiles: React.FC<PercentilesProps> = ({
                 <Stack alignItems='center'>
                     <Stack spacing={0.5} direction='row' alignItems='center'>
                         <Typography variant='caption' color='text.secondary'>
-                            Cohort Percentile
+                            {t('cohortPercentile')}
                         </Typography>
-                        <Tooltip
-                            title={`The percent of members in the ${cohort} cohort active in the past 3 months whose ${description} is below yours`}
-                        >
+                        <Tooltip title={t('cohortPercentileTooltip', { cohort, description })}>
                             <Help
                                 fontSize='inherit'
                                 sx={{

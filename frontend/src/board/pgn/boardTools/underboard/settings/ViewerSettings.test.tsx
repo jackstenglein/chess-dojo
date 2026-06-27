@@ -1,4 +1,5 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { renderWithIntl } from '@/i18n/intl.test';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ViewerSettings, {
     CoordinateSize,
@@ -18,7 +19,7 @@ afterEach(() => {
 
 describe('ViewerSettings coordinate size', () => {
     it('shows the coordinate size setting with the standard default', () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         expect(screen.getByRole('combobox', { name: 'Coordinate Size' })).toHaveTextContent(
             'Standard',
@@ -26,7 +27,7 @@ describe('ViewerSettings coordinate size', () => {
     });
 
     it('persists the large coordinate size selection', async () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Coordinate Size' }));
         const listbox = await screen.findByRole('listbox');
@@ -36,13 +37,17 @@ describe('ViewerSettings coordinate size', () => {
     });
 
     it('can be hidden by enabledSettings', () => {
-        render(<ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />);
+        renderWithIntl(
+            <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />,
+        );
 
         expect(screen.queryByRole('combobox', { name: 'Coordinate Size' })).not.toBeInTheDocument();
     });
 
     it('can be shown by enabledSettings', () => {
-        render(<ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateSize]: true }} />);
+        renderWithIntl(
+            <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateSize]: true }} />,
+        );
 
         expect(screen.getByRole('combobox', { name: 'Coordinate Size' })).toBeInTheDocument();
     });
@@ -50,7 +55,7 @@ describe('ViewerSettings coordinate size', () => {
 
 describe('ViewerSettings inline comments in PGN', () => {
     it('shows inline comments in PGN by default', () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         expect(
             screen.getByRole('checkbox', { name: 'Display comments in PGN text' }),
@@ -58,7 +63,7 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('persists the inline comments in PGN selection', () => {
-        render(<ViewerSettings />);
+        renderWithIntl(<ViewerSettings />);
 
         fireEvent.click(screen.getByRole('checkbox', { name: 'Display comments in PGN text' }));
 
@@ -66,7 +71,9 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('can hide the inline comments in PGN setting with enabledSettings', () => {
-        render(<ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />);
+        renderWithIntl(
+            <ViewerSettings enabledSettings={{ [ViewerSetting.CoordinateStyle]: true }} />,
+        );
 
         expect(
             screen.queryByRole('checkbox', { name: 'Display comments in PGN text' }),
@@ -74,7 +81,7 @@ describe('ViewerSettings inline comments in PGN', () => {
     });
 
     it('can show the inline comments in PGN setting with enabledSettings', () => {
-        render(
+        renderWithIntl(
             <ViewerSettings enabledSettings={{ [ViewerSetting.DisplayInlineComments]: true }} />,
         );
 

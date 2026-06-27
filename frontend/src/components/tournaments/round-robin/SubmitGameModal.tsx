@@ -11,6 +11,7 @@ import {
     DialogTitle,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface SubmitGameModalProps {
@@ -34,6 +35,7 @@ export function SubmitGameModal({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const request = useRequest<string>();
     const api = useApi();
+    const t = useTranslations('tournaments.roundRobin.submitGameModal');
 
     if (!user) {
         return null;
@@ -41,7 +43,7 @@ export function SubmitGameModal({
 
     const handleSubmit = async () => {
         if (gameUrl.trim() === '') {
-            setErrors({ gameUrl: 'This field is required ' });
+            setErrors({ gameUrl: t('errorRequired') });
             return;
         }
         setErrors({});
@@ -54,7 +56,7 @@ export function SubmitGameModal({
                 url: gameUrl,
             });
             onUpdateTournaments({ tournament: resp.data });
-            request.onSuccess('Game submitted');
+            request.onSuccess(t('successSubmitted'));
             onClose();
             setGameUrl('');
         } catch (err) {
@@ -71,12 +73,12 @@ export function SubmitGameModal({
     return (
         <>
             <Dialog open={open} onClose={request.isLoading() ? undefined : handleClose} fullWidth>
-                <DialogTitle>Submit Game</DialogTitle>
+                <DialogTitle>{t('title')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>Input your Lichess or Chess.com game URL.</DialogContentText>
+                    <DialogContentText>{t('instructions')}</DialogContentText>
                     <TextField
                         fullWidth
-                        label='Game URL'
+                        label={t('labelGameUrl')}
                         value={gameUrl}
                         onChange={(e) => setGameUrl(e.target.value)}
                         error={!!errors.gameUrl}
@@ -86,10 +88,10 @@ export function SubmitGameModal({
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={handleClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={handleSubmit}>
-                        Submit
+                        {t('submit')}
                     </Button>
                 </DialogActions>
             </Dialog>

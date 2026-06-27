@@ -15,18 +15,20 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 function StatusIcon({ status }: { status: boolean | 'active' | 'inactive' | 'pending' }) {
+    const t = useTranslations('coach.stripe.accountStatus');
     let title = '';
     let icon = null;
     if (status === true || status === 'active') {
-        title = 'Enabled';
+        title = t('statusEnabled');
         icon = <CheckCircle color='success' sx={{ mt: 1 }} />;
     } else if (status === false || status === 'inactive') {
-        title = 'Disabled';
+        title = t('statusDisabled');
         icon = <Cancel color='error' sx={{ mt: 1 }} />;
     } else if (status === 'pending') {
-        title = 'Pending';
+        title = t('statusPending');
         icon = <HourglassEmpty sx={{ opacity: 0.8, mt: 1 }} />;
     }
 
@@ -47,6 +49,7 @@ interface AccountStatusCardProps {
 }
 
 const AccountStatusCard: React.FC<AccountStatusCardProps> = ({ account }) => {
+    const t = useTranslations('coach.stripe.accountStatus');
     const request = useRequest();
     const api = useApi();
 
@@ -75,7 +78,7 @@ const AccountStatusCard: React.FC<AccountStatusCardProps> = ({ account }) => {
     return (
         <Card variant='outlined'>
             <CardHeader
-                title='Account Status'
+                title={t('title')}
                 action={
                     anyDisabled ? (
                         <Button
@@ -84,7 +87,7 @@ const AccountStatusCard: React.FC<AccountStatusCardProps> = ({ account }) => {
                             loading={request.isLoading()}
                             onClick={onSetupAccount}
                         >
-                            Update Stripe
+                            {t('updateButton')}
                         </Button>
                     ) : undefined
                 }
@@ -93,38 +96,35 @@ const AccountStatusCard: React.FC<AccountStatusCardProps> = ({ account }) => {
                 <Stack spacing={2}>
                     {anyDisabled && (
                         <Stack>
-                            <Alert severity='warning'>
-                                Your account is missing some functionality. Update your Stripe
-                                account info to re-enable full functionality.
-                            </Alert>
+                            <Alert severity='warning'>{t('warning')}</Alert>
                         </Stack>
                     )}
 
                     <Table size='small'>
                         <TableBody>
                             <TableRow>
-                                <TableCell>Stripe Onboarding Complete</TableCell>
+                                <TableCell>{t('onboardingComplete')}</TableCell>
                                 <TableCell>
                                     <StatusIcon status={account.details_submitted} />
                                 </TableCell>
                             </TableRow>
 
                             <TableRow>
-                                <TableCell>Charges Enabled</TableCell>
+                                <TableCell>{t('chargesEnabled')}</TableCell>
                                 <TableCell>
                                     <StatusIcon status={account.charges_enabled} />
                                 </TableCell>
                             </TableRow>
 
                             <TableRow>
-                                <TableCell>Payouts Enabled</TableCell>
+                                <TableCell>{t('payoutsEnabled')}</TableCell>
                                 <TableCell>
                                     <StatusIcon status={account.payouts_enabled} />
                                 </TableCell>
                             </TableRow>
 
                             <TableRow>
-                                <TableCell>Tax Reporting Enabled</TableCell>
+                                <TableCell>{t('taxReportingEnabled')}</TableCell>
                                 <TableCell>
                                     <StatusIcon
                                         status={account.capabilities.tax_reporting_us_1099_k}

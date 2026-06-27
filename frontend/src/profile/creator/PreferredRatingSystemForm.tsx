@@ -20,29 +20,33 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { ReactNode, useState } from 'react';
 import { ProfileCreatorFormProps } from './ProfileCreatorPage';
 
-export function getUsernameLabel(rs: RatingSystem): string {
+type RatingsT = ReturnType<typeof useTranslations<'profile.ratings'>>;
+type CreatorT = ReturnType<typeof useTranslations<'profile.creator'>>;
+
+export function getUsernameLabel(rs: RatingSystem, t: RatingsT): string {
     switch (rs) {
         case RatingSystem.Chesscom:
-            return 'Chess.com Username';
+            return t('chesscomUsername');
         case RatingSystem.Lichess:
-            return 'Lichess Username';
+            return t('lichessUsername');
         case RatingSystem.Fide:
-            return 'FIDE ID';
+            return t('fideId');
         case RatingSystem.Uscf:
-            return 'USCF ID';
+            return t('uscfId');
         case RatingSystem.Ecf:
-            return 'ECF Rating Code';
+            return t('ecfRatingCode');
         case RatingSystem.Cfc:
-            return 'CFC ID';
+            return t('cfcId');
         case RatingSystem.Dwz:
-            return 'DWZ ID';
+            return t('dwzId');
         case RatingSystem.Acf:
-            return 'ACF ID';
+            return t('acfId');
         case RatingSystem.Knsb:
-            return 'KNSB ID';
+            return t('knsbId');
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
@@ -50,7 +54,11 @@ export function getUsernameLabel(rs: RatingSystem): string {
     }
 }
 
-export function getHelperText(rs: RatingSystem): React.ReactNode | undefined {
+export function getHelperText(
+    rs: RatingSystem,
+    tRatings: RatingsT,
+    tCreator: CreatorT,
+): React.ReactNode | undefined {
     switch (rs) {
         case RatingSystem.Chesscom:
         case RatingSystem.Lichess:
@@ -65,35 +73,31 @@ export function getHelperText(rs: RatingSystem): React.ReactNode | undefined {
             return undefined;
 
         case RatingSystem.Dwz:
-            return (
-                <>
-                    Learn how to find your DWZ ID{' '}
-                    <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>here</Link>
-                </>
-            );
+            return tRatings.rich('dwzHelper', {
+                link: (chunks: ReactNode) => (
+                    <Link href='/help#How%20do%20I%20find%20my%20DWZ%20ID?'>{chunks}</Link>
+                ),
+            });
 
         case RatingSystem.Ecf:
-            return 'Enter your ECF rating code, not your membership number';
+            return tCreator('ecfRatingCodeHelper');
     }
 }
 
-export function getUsernameType(rs: RatingSystem): string {
+export function getHideMyLabel(rs: RatingSystem, t: CreatorT): string {
     switch (rs) {
         case RatingSystem.Chesscom:
         case RatingSystem.Lichess:
-            return 'username';
-
+            return t('hideMyUsernameFromMembers');
         case RatingSystem.Fide:
         case RatingSystem.Uscf:
         case RatingSystem.Cfc:
         case RatingSystem.Dwz:
         case RatingSystem.Acf:
         case RatingSystem.Knsb:
-            return 'ID';
-
+            return t('hideMyIdFromMembers');
         case RatingSystem.Ecf:
-            return 'rating code';
-
+            return t('hideMyRatingCodeFromMembers');
         case RatingSystem.Custom:
         case RatingSystem.Custom2:
         case RatingSystem.Custom3:
@@ -157,6 +161,10 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
     onNextStep,
     onPrevStep,
 }) => {
+    const tRatings = useTranslations('profile.ratings');
+    const tCreator = useTranslations('profile.creator');
+    const tPreferred = useTranslations('profile.creator.preferred');
+    const tRating = useTranslations('enums.ratingSystem');
     const api = useApi();
     const request = useRequest();
 
@@ -189,24 +197,19 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
 
     return (
         <Stack spacing={4}>
-            <Typography>
-                Enter your preferred rating system, and we will place you in a cohort based on your
-                rating. You should choose the rating system that best reflects your strength (IE:
-                the one you play most often). You can always change your cohort later if the program
-                is too hard or too easy.
-            </Typography>
+            <Typography>{tPreferred('intro')}</Typography>
 
             <TextField
                 required
                 select
-                label='Preferred Rating System'
+                label={tPreferred('label')}
                 value={ratingSystem}
                 onChange={(event) => setRatingSystem(event.target.value as RatingSystem)}
-                helperText='Choose the rating system you play most often'
+                helperText={tPreferred('helper')}
             >
                 {Object.values(RatingSystems).map((option) => (
                     <MenuItem key={option} value={option}>
-                        {formatRatingSystem(option)}
+                        {formatRatingSystem(option, tRating)}
                     </MenuItem>
                 ))}
             </TextField>
@@ -243,10 +246,10 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                 <Stack spacing={3}>
                     <TextField
                         required
-                        label={getUsernameLabel(ratingSystem)}
+                        label={getUsernameLabel(ratingSystem, tRatings)}
                         value={username}
                         onChange={(event) => setUsername(event.target.value)}
-                        helperText={getHelperText(ratingSystem)}
+                        helperText={getHelperText(ratingSystem, tRatings, tCreator)}
                     />
 
                     <FormControlLabel
@@ -256,14 +259,14 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                                 onChange={(event) => setHideUsername(event.target.checked)}
                             />
                         }
-                        label={`Hide my ${getUsernameType(ratingSystem)} from other dojo members`}
+                        label={getHideMyLabel(ratingSystem, tCreator)}
                     />
                 </Stack>
             )}
 
             <Stack direction='row' justifyContent='space-between'>
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
-                    Back
+                    {tPreferred('back')}
                 </Button>
 
                 <Button
@@ -273,7 +276,7 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                     disabled={!canSave}
                     sx={{ alignSelf: 'end' }}
                 >
-                    Next
+                    {tPreferred('next')}
                 </Button>
             </Stack>
 

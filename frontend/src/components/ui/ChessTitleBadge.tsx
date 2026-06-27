@@ -1,20 +1,7 @@
 import { Chip, Tooltip } from '@mui/material';
 import { SxProps, Theme } from '@mui/material/styles';
-
-// * Standard chess titles recognized by FIDE
-const CHESS_TITLES: Record<string, string> = {
-    GM: 'Grandmaster',
-    WGM: 'Woman Grandmaster',
-    IM: 'International Master',
-    WIM: 'Woman International Master',
-    FM: 'FIDE Master',
-    WFM: 'Woman FIDE Master',
-    CM: 'Candidate Master',
-    WCM: 'Woman Candidate Master',
-    NM: 'National Master',
-    WNM: 'Woman National Master',
-    LM: 'Lifetime Master',
-};
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 interface ChessTitleBadgeProps {
     /** The chess title abbreviation (e.g., 'GM', 'IM') */
@@ -30,12 +17,32 @@ interface ChessTitleBadgeProps {
  * Only displays if the title is a recognized chess title.
  */
 export function ChessTitleBadge({ title, sx = [], size = 'small' }: ChessTitleBadgeProps) {
+    const t = useTranslations('ui.chessTitleBadge');
+
+    // * Standard chess titles recognized by FIDE
+    const chessTitles = useMemo<Record<string, string>>(
+        () => ({
+            GM: t('GM'),
+            WGM: t('WGM'),
+            IM: t('IM'),
+            WIM: t('WIM'),
+            FM: t('FM'),
+            WFM: t('WFM'),
+            CM: t('CM'),
+            WCM: t('WCM'),
+            NM: t('NM'),
+            WNM: t('WNM'),
+            LM: t('LM'),
+        }),
+        [t],
+    );
+
     // * Only render if this is a recognized chess title
-    if (!title || !CHESS_TITLES[title]) {
+    if (!title || !chessTitles[title]) {
         return null;
     }
 
-    const fullTitle = CHESS_TITLES[title];
+    const fullTitle = chessTitles[title];
 
     return (
         <Tooltip title={fullTitle} arrow>

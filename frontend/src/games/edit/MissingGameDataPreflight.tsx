@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { parsePgnDate, stripTagValue, toPgnDate } from '../../api/gameApi';
 import { GameResult, PgnHeaders, isGameResult } from '../../database/game';
@@ -83,6 +84,7 @@ export const MissingGameDataPreflight = ({
     children,
     onSubmit,
 }: MissingGameDataPreflightProps) => {
+    const t = useTranslations('games.missingDataPreflight');
     const [headers, setHeaders] = useState<FormHeader>(getFormHeader(initHeaders));
     const [errors, setErrors] = useState<Partial<FormError>>({});
     const [orientation, setOrientation] = useState<GameOrientation>(
@@ -93,9 +95,7 @@ export const MissingGameDataPreflight = ({
         skippable = false;
     }
 
-    if (title === undefined) {
-        title = 'Missing Data';
-    }
+    const displayTitle = title ?? t('defaultTitle');
 
     useEffect(() => {
         setHeaders(getFormHeader(initHeaders));
@@ -110,16 +110,16 @@ export const MissingGameDataPreflight = ({
 
         if (!skippable) {
             if (stripTagValue(headers.white) === '') {
-                newErrors.white = 'This field is required';
+                newErrors.white = t('fieldRequired');
             }
             if (stripTagValue(headers.black) === '') {
-                newErrors.black = 'This field is required';
+                newErrors.black = t('fieldRequired');
             }
             if (!isGameResult(headers.result)) {
-                newErrors.result = 'This field is required';
+                newErrors.result = t('fieldRequired');
             }
             if (!headers.date?.isValid) {
-                newErrors.date = 'This field is required';
+                newErrors.date = t('fieldRequired');
             }
         }
 
@@ -133,7 +133,7 @@ export const MissingGameDataPreflight = ({
 
     return (
         <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth='lg'>
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle>{displayTitle}</DialogTitle>
             <DialogContent>
                 {children && <DialogContentText>{children}</DialogContentText>}
 
@@ -148,7 +148,7 @@ export const MissingGameDataPreflight = ({
                             <TextField
                                 fullWidth
                                 data-testid='white'
-                                label="White's name"
+                                label={t('whiteNameLabel')}
                                 value={headers.white}
                                 onChange={(e) => onChangeHeader('white', e.target.value)}
                                 error={!!errors.white}
@@ -165,7 +165,7 @@ export const MissingGameDataPreflight = ({
                             <TextField
                                 fullWidth
                                 data-testid='black'
-                                label="Black's name"
+                                label={t('blackNameLabel')}
                                 value={headers.black}
                                 onChange={(e) => onChangeHeader('black', e.target.value)}
                                 error={!!errors.black}
@@ -182,16 +182,20 @@ export const MissingGameDataPreflight = ({
                             <TextField
                                 select
                                 data-testid='result'
-                                label='Game Result'
+                                label={t('gameResultLabel')}
                                 value={headers.result.replaceAll('*', '')}
                                 onChange={(e) => onChangeHeader('result', e.target.value)}
                                 error={!!errors.result}
                                 helperText={errors.result}
                                 fullWidth
                             >
-                                <MenuItem value={GameResult.White}>White Won</MenuItem>
-                                <MenuItem value={GameResult.Draw}>Draw</MenuItem>
-                                <MenuItem value={GameResult.Black}>Black Won</MenuItem>
+                                <MenuItem value={GameResult.White}>
+                                    {t('gameResultWhiteWon')}
+                                </MenuItem>
+                                <MenuItem value={GameResult.Draw}>{t('gameResultDraw')}</MenuItem>
+                                <MenuItem value={GameResult.Black}>
+                                    {t('gameResultBlackWon')}
+                                </MenuItem>
                             </TextField>
                         </Grid>
 
@@ -202,7 +206,7 @@ export const MissingGameDataPreflight = ({
                             }}
                         >
                             <DatePicker
-                                label='Date'
+                                label={t('dateLabel')}
                                 disableFuture
                                 value={headers.date}
                                 onChange={(newValue) => {
@@ -224,7 +228,7 @@ export const MissingGameDataPreflight = ({
 
                         <Grid size={12}>
                             <FormControl>
-                                <FormLabel>Default Orientation</FormLabel>
+                                <FormLabel>{t('defaultOrientationLabel')}</FormLabel>
                                 <RadioGroup
                                     row
                                     value={orientation}
@@ -235,12 +239,12 @@ export const MissingGameDataPreflight = ({
                                     <FormControlLabel
                                         value={GameOrientations.white}
                                         control={<Radio />}
-                                        label='White'
+                                        label={t('orientationWhite')}
                                     />
                                     <FormControlLabel
                                         value={GameOrientations.black}
                                         control={<Radio />}
-                                        label='Black'
+                                        label={t('orientationBlack')}
                                     />
                                 </RadioGroup>
                             </FormControl>
@@ -250,10 +254,10 @@ export const MissingGameDataPreflight = ({
             </DialogContent>
             <DialogActions>
                 <Button data-testid='cancel-preflight' onClick={onClose} disabled={loading}>
-                    {skippable ? 'Skip for now' : 'Cancel'}
+                    {skippable ? t('skipForNow') : t('cancel')}
                 </Button>
                 <Button data-testid='submit-preflight' onClick={submit} loading={loading}>
-                    Submit
+                    {t('submit')}
                 </Button>
             </DialogActions>
         </Dialog>

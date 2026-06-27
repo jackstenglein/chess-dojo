@@ -3,8 +3,10 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { StripeAccount } from '@/database/payment';
 import { OpenInNew } from '@mui/icons-material';
 import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const DashboardCard = ({ account }: { account?: StripeAccount }) => {
+    const t = useTranslations('coach.stripe.dashboard');
     const api = useApi();
     const request = useRequest();
 
@@ -28,14 +30,10 @@ const DashboardCard = ({ account }: { account?: StripeAccount }) => {
         <Card variant='outlined'>
             <RequestSnackbar request={request} />
 
-            <CardHeader title='Stripe Dashboard' />
+            <CardHeader title={t('title')} />
             <CardContent>
                 <Stack spacing={2} alignItems='start'>
-                    <Typography>
-                        ChessDojo uses Stripe to process payments. Click the button below to go to
-                        your Stripe dashboard, where you can see your current balance, view upcoming
-                        payouts and track your earnings.
-                    </Typography>
+                    <Typography>{t('body')}</Typography>
 
                     <Button
                         variant='contained'
@@ -43,7 +41,7 @@ const DashboardCard = ({ account }: { account?: StripeAccount }) => {
                         onClick={onDashboard}
                         endIcon={<OpenInNew />}
                     >
-                        Go to Dashboard
+                        {t('button')}
                     </Button>
                 </Stack>
             </CardContent>

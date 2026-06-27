@@ -1,7 +1,6 @@
 import { fontFamily } from '@/style/font';
 import { ArrowForward } from '@mui/icons-material';
 import { Stack, StackProps, Typography, TypographyProps } from '@mui/material';
-import { BulletPointData } from './bulletPoints';
 import { barlow, barlowCondensed } from './fonts';
 
 import type { JSX } from 'react';
@@ -10,7 +9,9 @@ function DefaultIcon() {
     return <ArrowForward color='darkBlue' />;
 }
 
-interface BulletPointProps extends BulletPointData {
+interface BulletPointProps {
+    title?: string;
+    description?: string;
     icon?: JSX.Element;
     slotProps?: {
         root?: StackProps;

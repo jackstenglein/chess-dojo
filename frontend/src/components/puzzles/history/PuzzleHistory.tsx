@@ -27,6 +27,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 export function PuzzleHistory() {
@@ -40,6 +41,7 @@ export function PuzzleHistory() {
 }
 
 function UserPuzzleHistory({ user }: { user: User }) {
+    const t = useTranslations('puzzles.history');
     const api = useApi();
     const request = useRequest<GetPuzzleHistoryResponse>();
     const { user: viewer } = useAuth();
@@ -81,7 +83,7 @@ function UserPuzzleHistory({ user }: { user: User }) {
     return (
         <Container maxWidth='md' sx={{ py: 5 }}>
             <Typography variant='h5' sx={{ mb: 3 }}>
-                Puzzle History for {user.displayName}
+                {t('title', { displayName: user.displayName })}
             </Typography>
 
             <Paper elevation={3} sx={{ width: 1, borderRadius: 1, overflow: 'hidden' }}>
@@ -89,11 +91,11 @@ function UserPuzzleHistory({ user }: { user: User }) {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Date</TableCell>
-                                <TableCell>ID</TableCell>
-                                <TableCell align='center'>Puzzle Rating</TableCell>
-                                <TableCell align='center'>Time Spent</TableCell>
-                                <TableCell>Result</TableCell>
+                                <TableCell>{t('columnDate')}</TableCell>
+                                <TableCell>{t('columnId')}</TableCell>
+                                <TableCell align='center'>{t('columnPuzzleRating')}</TableCell>
+                                <TableCell align='center'>{t('columnTimeSpent')}</TableCell>
+                                <TableCell>{t('columnResult')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -167,7 +169,7 @@ function UserPuzzleHistory({ user }: { user: User }) {
                                                             {h.ratingChange})
                                                         </>
                                                     ) : (
-                                                        'Unrated'
+                                                        t('unrated')
                                                     )}
                                                 </Stack>
                                             </TableCell>

@@ -7,11 +7,12 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import Bio from '@/components/profile/info/Bio';
-import { displayEvent } from '../../app/(scoreboard)/coaching/CoachingList';
-import UpcomingSessions from '../../app/(scoreboard)/coaching/UpcomingSessions';
+import { displayEvent } from '../../app/[locale]/(scoreboard)/coaching/CoachingList';
+import UpcomingSessions from '../../app/[locale]/(scoreboard)/coaching/UpcomingSessions';
 import { Event } from '../../database/event';
 import { User } from '../../database/user';
 
@@ -20,6 +21,7 @@ interface CoachTabProps {
 }
 
 const CoachTab: React.FC<CoachTabProps> = ({ user }) => {
+    const t = useTranslations('profile.coachTab');
     const filterFunction = useCallback(
         (e: Event, viewer?: User) => e.owner === user.username && displayEvent(e, viewer),
         [user],
@@ -38,7 +40,7 @@ const CoachTab: React.FC<CoachTabProps> = ({ user }) => {
                 header={(view, onChangeView) => (
                     <Stack>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='h6'>Upcoming Sessions</Typography>
+                            <Typography variant='h6'>{t('upcomingSessions')}</Typography>
                             <ToggleButtonGroup
                                 exclusive
                                 value={view}
@@ -46,13 +48,13 @@ const CoachTab: React.FC<CoachTabProps> = ({ user }) => {
                                 size='small'
                             >
                                 <ToggleButton value='list'>
-                                    <Tooltip title='View as list'>
+                                    <Tooltip title={t('viewAsList')}>
                                         <FormatListBulleted />
                                     </Tooltip>
                                 </ToggleButton>
 
                                 <ToggleButton value='calendar'>
-                                    <Tooltip title='View in calendar'>
+                                    <Tooltip title={t('viewInCalendar')}>
                                         <CalendarToday />
                                     </Tooltip>
                                 </ToggleButton>

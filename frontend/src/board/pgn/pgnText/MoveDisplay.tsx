@@ -17,9 +17,10 @@ import MoveNumber from './MoveNumber';
 interface MoveProps {
     move: Move;
     handleScroll: (child: HTMLElement | null) => void;
+    forceInline?: boolean;
 }
 
-const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
+const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll, forceInline }) => {
     const { user } = useAuth();
     const username = user?.username;
     const { chess } = useChess();
@@ -115,7 +116,7 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
 
     return (
         <>
-            {(move.ply % 2 === 1 || needReminder) && (
+            {!forceInline && (move.ply % 2 === 1 || needReminder) && (
                 <>
                     <MoveNumber key={`move-number-${move.ply}`} ply={move.ply} />
 
@@ -134,9 +135,15 @@ const MoveDisplay: React.FC<MoveProps> = ({ move, handleScroll }) => {
                 move={move}
                 handleScroll={handleScroll}
                 firstMove={move.previous === null}
+                inline={forceInline}
             />
 
-            <Interrupt key={`interrupt-${move.ply}`} move={move} handleScroll={handleScroll} />
+            <Interrupt
+                key={`interrupt-${move.ply}`}
+                move={move}
+                handleScroll={handleScroll}
+                forceInline={forceInline}
+            />
         </>
     );
 };

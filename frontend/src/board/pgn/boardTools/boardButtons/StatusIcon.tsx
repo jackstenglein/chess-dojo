@@ -5,12 +5,14 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { useReconcile } from '@/board/Board';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import useGame from '@/context/useGame';
 import { Game } from '@/database/game';
 import { EventType as ChessEventType, Event } from '@jackstenglein/chess';
 import { GameImportTypes } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { CloudDone, CloudOff } from '@mui/icons-material';
 import { Box, CircularProgress, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import debounce from 'lodash.debounce';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChess } from '../../PgnBoard';
 
@@ -43,6 +45,7 @@ interface StatusIconProps {
 }
 
 const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
+    const t = useTranslations('analysisBoard.boardButtons');
     const { chess } = useChess();
     const api = useApi();
     const request = useRequest<Date>();
@@ -51,6 +54,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
+    const { setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
 
     const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
@@ -123,6 +127,11 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
         }
     }, [chess, game, initialPgn, setInitialPgn, debouncedOnSave, setHasChanges]);
 
+    useEffect(() => {
+        setHasUnsavedGameChanges?.(hasChanges);
+        return () => setHasUnsavedGameChanges?.(false);
+    }, [hasChanges, setHasUnsavedGameChanges]);
+
     const onRestore = () => {
         setAnchorEl(null);
         const undo = undoLog[undoLog.length - 1];
@@ -159,11 +168,11 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             }}
         >
             {request.isLoading() ? (
-                <Tooltip title='Saving'>
+                <Tooltip title={t('saving')}>
                     <CircularProgress size={24} sx={{ mx: 1 }} />
                 </Tooltip>
             ) : request.isFailure() ? (
-                <Tooltip title='Failed to save. Click to retry.'>
+                <Tooltip title={t('failedToSave')}>
                     <IconButton
                         onClick={() => chess && onSave(game.cohort, game.id, chess.renderPgn())}
                     >
@@ -171,22 +180,30 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                     </IconButton>
                 </Tooltip>
             ) : hasChanges ? (
-                <Tooltip title='Unsaved changes.'>
+                <Tooltip title={t('unsavedChanges')}>
                     <CloudOff sx={{ color: 'text.secondary', mx: 1 }} />
                 </Tooltip>
             ) : (
                 <Tooltip
                     title={
                         request.data || game.updatedAt
-                            ? `Last saved at ${toDojoDateString(
-                                  request.data || new Date(game.updatedAt || ''),
-                                  user?.timezoneOverride,
-                              )} ${toDojoTimeString(
-                                  request.data || new Date(game.updatedAt || ''),
-                                  user?.timezoneOverride,
-                                  user?.timeFormat,
-                              )}. ${undoLog.length ? 'Click to restore previous version.' : 'No changes made since opening.'}`
-                            : `No changes made since opening.`
+                            ? t(
+                                  undoLog.length
+                                      ? 'lastSavedAtWithRestore'
+                                      : 'lastSavedAtNoChanges',
+                                  {
+                                      date: toDojoDateString(
+                                          request.data || new Date(game.updatedAt || ''),
+                                          user?.timezoneOverride,
+                                      ),
+                                      time: toDojoTimeString(
+                                          request.data || new Date(game.updatedAt || ''),
+                                          user?.timezoneOverride,
+                                          user?.timeFormat,
+                                      ),
+                                  },
+                              )
+                            : t('noChangesSinceOpening')
                     }
                 >
                     <IconButton
@@ -201,20 +218,22 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 <Menu anchorEl={anchorEl} open onClose={() => setAnchorEl(null)}>
                     {undoLog.length ? (
                         <MenuItem onClick={onRestore}>
-                            Restore Previous Save (
-                            {toDojoDateString(
-                                undoLog[undoLog.length - 1].date,
-                                user?.timezoneOverride,
-                            )}{' '}
-                            {toDojoTimeString(
-                                undoLog[undoLog.length - 1].date,
-                                user?.timezoneOverride,
-                                user?.timeFormat,
-                            )}
-                            )
+                            {t('restorePreviousSave', {
+                                date: toDojoDateString(
+                                    undoLog[undoLog.length - 1].date,
+                                    user?.timezoneOverride,
+                                ),
+                                time: toDojoTimeString(
+                                    undoLog[undoLog.length - 1].date,
+                                    user?.timezoneOverride,
+                                    user?.timeFormat,
+                                ),
+                            })}
                         </MenuItem>
                     ) : (
-                        <MenuItem onClick={() => setAnchorEl(null)}>No Previous Versions</MenuItem>
+                        <MenuItem onClick={() => setAnchorEl(null)}>
+                            {t('noPreviousVersions')}
+                        </MenuItem>
                     )}
                 </Menu>
             )}

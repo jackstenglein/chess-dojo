@@ -797,9 +797,11 @@ functions:
             type: jwt
             id: ${param:apiAuthorizer}
     environment:
+      frontendHost: ${file(../config-${sls:stage}.yml):frontendHost}
       discordAuth: ${file(../discord.yml):discordAuth}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
       discordPublicGuildId: ${file(../config-${sls:stage}.yml):discordPublicGuildId}
+      discordGraduationsChannelId: ${file(../config-${sls:stage}.yml):discordGraduationsChannelId}
       discordFreeRoles: ${file(../config-${sls:stage}.yml):discordFreeRoles}
       discordPaidRoles: ${file(../config-${sls:stage}.yml):discordPaidRoles}
     iamRoleStatements:

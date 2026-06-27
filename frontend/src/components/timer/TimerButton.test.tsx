@@ -6,16 +6,15 @@ import {
     RequirementStatus,
     ScoreboardDisplay,
 } from '@/database/requirement';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { renderWithIntl } from '@/i18n/intl.test';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TimerButton } from './TimerButton';
 import { Timer, TimerContext } from './TimerContext';
 
-const authState = vi.hoisted(() => ({
-    user: { username: 'testuser', dojoCohort: '1000-1100' } as
-        | { username: string; dojoCohort: string }
-        | undefined,
+const authState: { user?: { username: string; dojoCohort: string } } = vi.hoisted(() => ({
+    user: { username: 'testuser', dojoCohort: '1000-1100' },
 }));
 
 vi.mock('@/auth/Auth', () => ({
@@ -50,7 +49,7 @@ function createTimer(overrides: Partial<Timer> = {}): Timer {
 function renderTimerButton(timer: Partial<Timer> = {}) {
     const value = createTimer(timer);
     return {
-        ...render(
+        ...renderWithIntl(
             <TimerContext.Provider value={value}>
                 <TimerButton />
             </TimerContext.Provider>,
@@ -91,7 +90,7 @@ describe('TimerButton', () => {
 
     it('renders nothing when there is no user', () => {
         authState.user = undefined;
-        const { container } = render(
+        const { container } = renderWithIntl(
             <TimerContext.Provider value={createTimer()}>
                 <TimerButton />
             </TimerContext.Provider>,

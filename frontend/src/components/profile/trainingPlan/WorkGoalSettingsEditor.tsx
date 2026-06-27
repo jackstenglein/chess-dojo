@@ -16,6 +16,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Fragment, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { TimeProgressChip } from './TimeProgressChip';
@@ -45,6 +46,8 @@ export function WorkGoalSettingsEditor({
     /** Whether the editor is disabled. */
     disabled: boolean;
 }) {
+    const t = useTranslations('profile.trainingPlan.workGoal');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const [open, setOpen] = useState(false);
     const api = useApi();
     const request = useRequest();
@@ -62,10 +65,10 @@ export function WorkGoalSettingsEditor({
         for (const timeEditor of timePerDay) {
             const newErrors: Record<string, string> = {};
             if (!NUMBER_REGEX.test(timeEditor.hours)) {
-                newErrors.hours = 'Must be numeric';
+                newErrors.hours = t('hoursError');
             }
             if (!NUMBER_REGEX.test(timeEditor.minutes)) {
-                newErrors.minutes = 'Must be numeric';
+                newErrors.minutes = t('minutesError');
             }
             timeEditor.setErrors(newErrors);
             error = error || Object.keys(newErrors).length > 0;
@@ -107,7 +110,7 @@ export function WorkGoalSettingsEditor({
 
     return (
         <>
-            <Tooltip title={disabled ? undefined : 'Edit work goal'}>
+            <Tooltip title={disabled ? undefined : t('editGoalTooltip')}>
                 <TimeProgressChip
                     goal={currentGoal}
                     value={currentValue}
@@ -125,25 +128,25 @@ export function WorkGoalSettingsEditor({
 
                 <DialogContent>
                     <TextField
-                        label='Start Week On'
+                        label={t('startWeekOn')}
                         select
                         value={weekStart}
                         onChange={(e) => setWeekStart(parseInt(e.target.value) as WeekDays)}
                         fullWidth
                         sx={{ mb: 3 }}
                     >
-                        <MenuItem value={0}>Sunday</MenuItem>
-                        <MenuItem value={1}>Monday</MenuItem>
-                        <MenuItem value={2}>Tuesday</MenuItem>
-                        <MenuItem value={3}>Wednesday</MenuItem>
-                        <MenuItem value={4}>Thursday</MenuItem>
-                        <MenuItem value={5}>Friday</MenuItem>
-                        <MenuItem value={6}>Saturday</MenuItem>
+                        <MenuItem value={0}>{t('Sunday')}</MenuItem>
+                        <MenuItem value={1}>{t('Monday')}</MenuItem>
+                        <MenuItem value={2}>{t('Tuesday')}</MenuItem>
+                        <MenuItem value={3}>{t('Wednesday')}</MenuItem>
+                        <MenuItem value={4}>{t('Thursday')}</MenuItem>
+                        <MenuItem value={5}>{t('Friday')}</MenuItem>
+                        <MenuItem value={6}>{t('Saturday')}</MenuItem>
                     </TextField>
 
                     <Grid container alignItems='baseline' rowGap={2}>
                         <Grid size={12} mt={1}>
-                            <FormLabel>Work Goal</FormLabel>
+                            <FormLabel>{t('workGoalLabel')}</FormLabel>
                         </Grid>
 
                         {new Array(7).fill(0).map((_, i) => {
@@ -153,20 +156,20 @@ export function WorkGoalSettingsEditor({
                             return (
                                 <Fragment key={day}>
                                     <Grid size={{ xs: 4.5, sm: 3 }}>
-                                        <Typography>{day}</Typography>
+                                        <Typography>{t(day)}</Typography>
                                     </Grid>
 
                                     <Grid size={{ xs: 7.5, sm: 9 }}>
                                         <Stack direction='row' gap={{ xs: 0.5, sm: 1 }}>
                                             <TextField
-                                                label='Hours'
+                                                label={tCommon('hours')}
                                                 value={time.hours}
                                                 onChange={(e) => time.setHours(e.target.value)}
                                                 error={!!time.errors.hours}
                                                 helperText={time.errors.hours}
                                             />
                                             <TextField
-                                                label='Minutes'
+                                                label={tCommon('minutes')}
                                                 value={time.minutes}
                                                 onChange={(e) => time.setMinutes(e.target.value)}
                                                 error={!!time.errors.minutes}
@@ -179,16 +182,18 @@ export function WorkGoalSettingsEditor({
                         })}
 
                         <Grid size={12} mt={1}>
-                            <Typography>Total Per Week: {formatTime(minutesPerWeek)}</Typography>
+                            <Typography>
+                                {t('totalPerWeek', { time: formatTime(minutesPerWeek, t) })}
+                            </Typography>
                         </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {tCommon('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={onSave}>
-                        Save
+                        {tCommon('save')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -228,16 +233,14 @@ function useTimePerDay(workGoal: WorkGoalSettings) {
     ];
 }
 
-function formatTime(timeMinutes: number): string {
+function formatTime(
+    timeMinutes: number,
+    t: ReturnType<typeof useTranslations<'profile.trainingPlan.workGoal'>>,
+): string {
     const hours = Math.floor(timeMinutes / 60);
     const minutes = timeMinutes % 60;
 
-    let time = '';
-    if (hours !== 0) {
-        time = `${hours} hour${hours !== 1 ? 's' : ''}`;
-    }
-    if (minutes !== 0) {
-        time += ` ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-    }
-    return time.trimStart();
+    const hoursStr = t('hoursDisplay', { hours });
+    const minutesStr = t('minutesDisplay', { minutes });
+    return `${hoursStr} ${minutesStr}`.trim();
 }

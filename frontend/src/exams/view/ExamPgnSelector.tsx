@@ -17,6 +17,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ColorFormat } from 'react-countdown-circle-timer';
 import { BlockBoardKeyboardShortcuts } from '../../board/pgn/PgnBoard';
@@ -58,6 +59,7 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
     onPause,
     pauseLoading,
 }) => {
+    const t = useTranslations('exams.pgnSelector');
     const [isFinishEarly, setIsFinishEarly] = useState(false);
     const [statusAnchorEl, setStatusAnchorEl] = useState<HTMLElement | null>(null);
     const [openStatusProblem, setOpenStatusProblem] = useState(-1);
@@ -94,7 +96,7 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                 <CountdownTimer {...countdown} />
                 {onPause && (
                     <Button variant='contained' onClick={onPause} loading={pauseLoading}>
-                        {pauseLoading ? 'Saving...' : 'Pause'}
+                        {pauseLoading ? t('saving') : t('pause')}
                     </Button>
                 )}
             </Stack>
@@ -124,22 +126,23 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                                 width={1}
                                 spacing={1}
                             >
-                                <Typography>{pgnNames?.[i] || `Problem ${i + 1}`}</Typography>
+                                <Typography>
+                                    {pgnNames?.[i] || t('problemFallback', { number: i + 1 })}
+                                </Typography>
 
                                 <Stack direction='row' spacing={2}>
                                     {problemStatus?.[i] === ProblemStatus.Complete && (
-                                        <Tooltip title='You marked this problem as complete. Right click to change.'>
+                                        <Tooltip title={t('tooltipMarkedComplete')}>
                                             <Check color='success' />
                                         </Tooltip>
                                     )}
                                     {problemStatus?.[i] === ProblemStatus.NeedsReview && (
-                                        <Tooltip title='You marked this problem as needs review. Right click to change.'>
+                                        <Tooltip title={t('tooltipMarkedNeedsReview')}>
                                             <Warning color='warning' />
                                         </Tooltip>
                                     )}
                                     <Typography color='text.secondary'>
-                                        {orientations[i][0].toUpperCase()}
-                                        {orientations[i].slice(1)}
+                                        {orientations[i] === 'white' ? t('white') : t('black')}
                                     </Typography>
                                 </Stack>
                             </Stack>
@@ -154,7 +157,7 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                     onClick={() => setIsFinishEarly(true)}
                     sx={{ alignSelf: 'center' }}
                 >
-                    Finish Early
+                    {t('finishEarly')}
                 </Button>
             </Stack>
 
@@ -166,16 +169,13 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                 }}
                 fullWidth
             >
-                <DialogTitle>Finish Early?</DialogTitle>
+                <DialogTitle>{t('finishEarlyDialogTitle')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to finish the test early? This will end the entire
-                        test, and you will not be able to change your answers if you continue.
-                    </DialogContentText>
+                    <DialogContentText>{t('finishEarlyDialogBody')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsFinishEarly(false)}>Cancel</Button>
-                    <Button onClick={onComplete}>Finish</Button>
+                    <Button onClick={() => setIsFinishEarly(false)}>{t('cancel')}</Button>
+                    <Button onClick={onComplete}>{t('finish')}</Button>
                 </DialogActions>
             </Dialog>
 
@@ -196,19 +196,19 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                     onClick={() => markStatus(ProblemStatus.Complete)}
                     disabled={problemStatus?.[openStatusProblem] === ProblemStatus.Complete}
                 >
-                    Mark as Completed
+                    {t('markAsCompleted')}
                 </MenuItem>
                 <MenuItem
                     onClick={() => markStatus(ProblemStatus.NeedsReview)}
                     disabled={problemStatus?.[openStatusProblem] === ProblemStatus.NeedsReview}
                 >
-                    Mark as Needs Review
+                    {t('markAsNeedsReview')}
                 </MenuItem>
                 <MenuItem
                     onClick={() => markStatus(ProblemStatus.Unknown)}
                     disabled={!problemStatus?.[openStatusProblem]}
                 >
-                    Clear Status
+                    {t('clearStatus')}
                 </MenuItem>
             </Menu>
         </CardContent>

@@ -16,6 +16,7 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { GridPaginationModel, GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { useDirectoryCache } from './DirectoryCache';
 
@@ -26,6 +27,7 @@ export const AddExistingGamesDialog = ({
     directory: Directory;
     onCancel: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const api = useApi();
     const { user } = useRequiredAuth();
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
@@ -112,12 +114,9 @@ export const AddExistingGamesDialog = ({
             fullWidth
             maxWidth='md'
         >
-            <DialogTitle>Add Games to {directory.name}?</DialogTitle>
+            <DialogTitle>{t('addGamesToFolder', { name: directory.name })}</DialogTitle>
             <DialogContent>
-                <DialogContentText sx={{ mb: 1 }}>
-                    Click games to select. Use Shift+Click or Cmd/Ctrl+Click to select multiple
-                    games.
-                </DialogContentText>
+                <DialogContentText sx={{ mb: 1 }}>{t('selectGamesHelp')}</DialogContentText>
 
                 <GameTable
                     apiRef={gridApiRef}
@@ -137,7 +136,7 @@ export const AddExistingGamesDialog = ({
 
             <DialogActions>
                 <Button disabled={addRequest.isLoading()} onClick={onCancel}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
 
                 <Button
@@ -145,9 +144,7 @@ export const AddExistingGamesDialog = ({
                     loading={addRequest.isLoading()}
                     onClick={onAdd}
                 >
-                    {selectedRows.ids.size
-                        ? `Add ${selectedRows.ids.size} Game${selectedRows.ids.size > 1 ? 's' : ''}`
-                        : 'Add Games'}
+                    {t('addGamesCount', { count: selectedRows.ids.size })}
                 </Button>
             </DialogActions>
 

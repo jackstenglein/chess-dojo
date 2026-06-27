@@ -2,8 +2,10 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { OpenInNew } from '@mui/icons-material';
 import { Button, Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const ConnectStripeAccount = () => {
+    const t = useTranslations('coach.stripe.connect');
     const api = useApi();
     const request = useRequest();
 
@@ -24,14 +26,10 @@ const ConnectStripeAccount = () => {
             <RequestSnackbar request={request} />
 
             <Card variant='outlined'>
-                <CardHeader title='Setup Stripe Account' />
+                <CardHeader title={t('title')} />
                 <CardContent>
                     <Stack spacing={2} alignItems='start'>
-                        <Typography>
-                            ChessDojo uses Stripe to process payments. Before you can withdraw
-                            funds, schedule lessons or create courses, you must setup your Stripe
-                            account. Click the button below to be redirected to Stripe.
-                        </Typography>
+                        <Typography>{t('body')}</Typography>
 
                         <Button
                             variant='contained'
@@ -39,7 +37,7 @@ const ConnectStripeAccount = () => {
                             onClick={onSetup}
                             endIcon={<OpenInNew />}
                         >
-                            Setup Stripe
+                            {t('button')}
                         </Button>
                     </Stack>
                 </CardContent>

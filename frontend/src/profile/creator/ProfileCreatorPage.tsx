@@ -1,8 +1,9 @@
 import { metaLead } from '@/analytics/meta';
 import { getSubscriptionStatus } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { Box, Container, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import { useState } from 'react';
-import PricingPage from '../../app/(scoreboard)/prices/PricingPage';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import PricingPage from '../../app/[locale]/(scoreboard)/prices/PricingPage';
 import { useRequiredAuth } from '../../auth/Auth';
 import { SubscriptionStatus, User, dojoCohorts } from '../../database/user';
 import ExtraRatingSystemsForm from './ExtraRatingSystemsForm';
@@ -21,29 +22,6 @@ export interface ProfileCreatorFormProps {
     onNextStep: () => void;
     onPrevStep: () => void;
 }
-
-const steps: StepProps[] = [
-    {
-        label: 'Personal Information',
-        optional: false,
-        form: PersonalInfoForm,
-    },
-    {
-        label: 'Dojo Cohort',
-        optional: false,
-        form: PreferredRatingSystemForm,
-    },
-    {
-        label: 'Extra Rating Systems',
-        optional: true,
-        form: ExtraRatingSystemsForm,
-    },
-    {
-        label: 'Referral Source',
-        optional: false,
-        form: ReferralSourceForm,
-    },
-];
 
 function getActiveStep(user?: User): number {
     if (!user) {
@@ -64,9 +42,36 @@ function getActiveStep(user?: User): number {
 }
 
 const ProfileCreatorPage = () => {
+    const t = useTranslations('profile.creator');
     const { user } = useRequiredAuth();
     const [activeStep, setActiveStep] = useState(getActiveStep(user));
     const [showPricingPage, setShowPricingPage] = useState(true);
+
+    const steps: StepProps[] = useMemo(
+        () => [
+            {
+                label: t('stepPersonalInformation'),
+                optional: false,
+                form: PersonalInfoForm,
+            },
+            {
+                label: t('stepDojoCohort'),
+                optional: false,
+                form: PreferredRatingSystemForm,
+            },
+            {
+                label: t('stepExtraRatingSystems'),
+                optional: true,
+                form: ExtraRatingSystemsForm,
+            },
+            {
+                label: t('stepReferralSource'),
+                optional: false,
+                form: ReferralSourceForm,
+            },
+        ],
+        [t],
+    );
 
     const Form = steps[activeStep].form;
 
@@ -85,13 +90,15 @@ const ProfileCreatorPage = () => {
 
     return (
         <Container maxWidth='md' sx={{ pt: 6, pb: 4 }}>
-            <Typography variant='h6'>Create Profile</Typography>
+            <Typography variant='h6'>{t('createProfile')}</Typography>
             <Stepper activeStep={activeStep}>
                 {steps.map((s) => (
                     <Step key={s.label}>
                         <StepLabel
                             optional={
-                                s.optional && <Typography variant='caption'>Optional</Typography>
+                                s.optional && (
+                                    <Typography variant='caption'>{t('stepOptional')}</Typography>
+                                )
                             }
                         >
                             {s.label}

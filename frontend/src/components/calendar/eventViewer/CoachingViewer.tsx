@@ -12,6 +12,7 @@ import Icon from '@/style/Icon';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { LinkOutlined } from '@mui/icons-material';
 import { Alert, Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Field from './Field';
 import OwnerField from './OwnerField';
 import ParticipantsList from './ParticipantsList';
@@ -24,6 +25,7 @@ interface CoachingViewerProps {
 }
 
 const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
+    const t = useTranslations('calendar');
     const api = useApi();
     const request = useRequest();
     const user = useAuth().user;
@@ -70,24 +72,22 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
             <RequestSnackbar request={request} />
             {event.status === EventStatus.Canceled && (isOwner || isParticipant) && (
                 <Alert severity='warning' variant='filled'>
-                    {isOwner
-                        ? 'You have canceled this event.'
-                        : 'This event has been canceled by the coach. If you already paid, you will receive a full refund.'}
+                    {isOwner ? t('canceledOwner') : t('canceledParticipant')}
                 </Alert>
             )}
 
             <Typography>{event.title}</Typography>
 
-            <OwnerField title='Coach' event={event} />
+            <OwnerField title={t('coach')} event={event} />
 
-            <Field title='Description' body={event.description} iconName='notes' />
+            <Field title={t('description')} body={event.description} iconName='notes' />
 
             <Field
-                title='Cohorts'
+                title={t('cohorts')}
                 iconName='cohort'
                 body={
                     dojoCohorts.length === event.cohorts.length || event.cohorts.length === 0
-                        ? 'All Cohorts'
+                        ? t('allCohorts')
                         : event.cohorts.join(', ')
                 }
             />
@@ -98,14 +98,15 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                 <Field
                     iconName='participant'
                     showEmptyBody
-                    title={`Participants (${Object.values(event.participants).length} / ${
-                        event.maxParticipants
-                    })`}
+                    title={t('participantsCount', {
+                        count: Object.values(event.participants).length,
+                        total: event.maxParticipants,
+                    })}
                     body={
                         Object.values(event.participants).length === 0
-                            ? 'No Participants Yet'
+                            ? t('noParticipantsYet')
                             : event.coaching.hideParticipants && !isParticipant && !isOwner
-                              ? 'Participants hidden until after booking'
+                              ? t('participantsHidden')
                               : undefined
                     }
                 />
@@ -115,7 +116,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
             </Stack>
 
             <Button variant='outlined' startIcon={<LinkOutlined />} onClick={onCopyLink}>
-                Copy Link
+                {t('copyLink')}
             </Button>
 
             {isOwner || isParticipant ? (
@@ -126,7 +127,7 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                     color='success'
                     startIcon={<Icon name='eye' />}
                 >
-                    View Details
+                    {t('viewDetails')}
                 </Button>
             ) : (
                 <Stack spacing={2} pb={1}>
@@ -138,12 +139,10 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                         color='success'
                         startIcon={<Icon name='join' />}
                     >
-                        Book
+                        {t('book')}
                     </Button>
                     <Typography variant='caption' color='text.secondary' textAlign='center'>
-                        Upon booking, you will have 30 minutes to complete payment before losing
-                        your spot. Cancelations must be made more than 24 hours in advance to
-                        receive a refund.
+                        {t('bookingPolicy')}
                     </Typography>
                 </Stack>
             )}
