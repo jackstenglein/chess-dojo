@@ -155,26 +155,6 @@ resources:
             - true
             - false
         GlobalSecondaryIndexes:
-          - IndexName: SummaryIndex
-            KeySchema:
-              - AttributeName: type
-                KeyType: HASH
-              - AttributeName: id
-                KeyType: RANGE
-            Projection:
-              ProjectionType: INCLUDE
-              NonKeyAttributes:
-                - name
-                - description
-                - whatsIncluded
-                - color
-                - cohorts
-                - cohortRange
-                - includedWithSubscription
-                - availableForFreeUsers
-                - purchaseOptions
-                - owner
-                - ownerDisplayName
           - IndexName: SummaryIdx
             KeySchema:
               - AttributeName: type
