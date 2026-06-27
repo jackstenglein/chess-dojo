@@ -1,4 +1,27 @@
 {
+    "_translationMeta": {
+        "_about": "Instructions for whoever produces a translated copy of this file. Paths listed under skipAutoTranslate should not be passed through an automated translator; manual human translation of those paths is welcome where appropriate. preserveStructure rules apply to every key during translation. This block is stripped at message-load time and never reaches the runtime UI.",
+        "skipAutoTranslate": {
+            "enums.ratingSystem": "Backend wire values plus brand-name display labels. Keep English so users can match the labels on the actual rating-system websites. Manual translation OK if the translator knows the local convention.",
+            "enums.requirementCategory": "Display labels for a backend category enum. Manual translation welcome.",
+            "enums.requirementCategoryShort": "Same as requirementCategory.",
+            "landing.senseis": "Trainer names are proper nouns; bios are credential prose with embedded titles and platform names. Manual translation only.",
+            "coach.stripe.connect": "References a payment processor brand. Manual translation if surrounding text needs it.",
+            "coach.stripe.dashboard": "Same.",
+            "profile.ratings.chesscomUsername": "Brand name in label.",
+            "profile.ratings.lichessUsername": "Brand name in label.",
+            "profile.ratings.fideId": "Acronym for an international chess federation.",
+            "profile.ratings.uscfId": "Acronym for a national chess federation.",
+            "profile.ratings.ecfRatingCode": "Acronym for a national chess federation.",
+            "profile.ratings.cfcId": "Acronym for a national chess federation.",
+            "profile.ratings.dwzId": "Acronym for a national rating system."
+        },
+        "preserveStructure": {
+            "icuPlurals": "Preserve {count, plural, =1 {...} other {...}} syntax verbatim. Translate only the text inside the inner braces.",
+            "tagPlaceholders": "Preserve <tagName>...</tagName> tags including the tag name itself. Translate only the text between tags.",
+            "variables": "Preserve {variableName} placeholders verbatim. Surrounding sentence may be restructured for word order, but placeholder spelling and case must not change."
+        }
+    },
     "common": {
         "timezone": "Zona horaria",
         "language": "Idioma",
@@ -53,13 +76,13 @@
             "customRatingName": "Nombre del rating personalizado {number}",
             "customRatingHelper": "Registra tu rating manualmente",
             "zenMode": "Activar modo zen (oculta los ratings al ver tu propio perfil)",
-            "chesscomUsername": "Nombre de usuario de Chess.com",
-            "lichessUsername": "Nombre de usuario de Lichess",
-            "fideId": "ID de la FIDE",
-            "uscfId": "ID de la USCF",
-            "ecfRatingCode": "Código de rating de la ECF",
-            "cfcId": "ID de la CFC",
-            "dwzId": "ID de DWZ",
+            "chesscomUsername": "Chess.com Username",
+            "lichessUsername": "Lichess Username",
+            "fideId": "FIDE ID",
+            "uscfId": "USCF ID",
+            "ecfRatingCode": "ECF Rating Code",
+            "cfcId": "CFC ID",
+            "dwzId": "DWZ ID",
             "acfId": "ID de la ACF",
             "knsbId": "ID de la KNSB",
             "hideUsername": "Ocultar nombre de usuario",
@@ -484,6 +507,7 @@
             "addGamesCount": "{count, plural, =0 {Añadir partidas} =1 {Añadir 1 partida} other {Añadir {count} partidas}}",
             "analyzeGame": "Analizar una partida",
             "freeTierGamesRestriction": "Para evitar una preparación injusta contra los miembros del Dojo, los usuarios del plan gratuito no pueden ver las partidas de un jugador específico. Mejora tu cuenta para ver la base de datos completa del Dojo.",
+            "openInNew": "Abrir en una pestaña nueva",
             "downloadPGN": "Descargar PGN",
             "editNameVisibility": "Editar nombre/visibilidad",
             "publishGames": "{count, plural, =1 {Publicar partida} other {Publicar partidas}}",
@@ -958,22 +982,22 @@
             "signUpFree": "Regístrate gratis"
         },
         "senseis": {
-            "heading": "Los senseis",
-            "description": "Dirigido por entrenadores de ajedrez de talla mundial, ChessDojo se ha diseñado meticulosamente para ayudar a jugadores de cualquier nivel a mejorar",
+            "heading": "The Senseis",
+            "description": "Led by world class chess trainers, ChessDojo has been meticulously crafted to improve players of any level",
             "jesse": {
-                "title": "Gran Maestro",
+                "title": "Grandmaster",
                 "name": "Jesse Kraai",
-                "bio": "El GM Kraai lleva jugando y enseñando ajedrez desde las profundidades del milenio pasado. Se convirtió en GM en 2007 examinando sus partidas con constancia, uno de los pilares del programa de entrenamiento de ChessDojo. Ha jugado siete campeonatos de Estados Unidos y quedó segundo en solitario en el US Senior Closed de 2024. Cuando no está con el ajedrez, pastorea a dos niños más bien pequeños y saca tiempo para levantar cosas pesadas."
+                "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things."
             },
             "kostya": {
-                "title": "Maestro Internacional",
+                "title": "International Master",
                 "name": "Kostya Kavutskiy",
-                "bio": "Kostya obtuvo el título de IM a los 24 años y lleva más de 15 años enseñando ajedrez a jugadores de todos los niveles y edades. Fue entrenador del equipo de Estados Unidos en varios Campeonatos Mundiales de la Juventud y Panamericanos, donde varios de sus alumnos ganaron medallas de oro. Kostya también ha publicado libros y ha creado varios cursos populares para Chess.com, Chessable y otros sitios."
+                "bio": "Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites."
             },
             "david": {
-                "title": "Maestro Internacional",
+                "title": "International Master",
                 "name": "David Pruess",
-                "bio": "David es un maximalista del ajedrez: nunca rehúye lo que considera el camino más fiel a los principios. Con este enfoque de locos, alcanzó el título de Maestro Internacional en 2003 y en 2006 ganó la prestigiosa beca Samford Chess Fellowship. Tiene las tres normas de Gran Maestro y solo necesita superar los 2500 para conseguir el título. David ayudó a diseñar el programa de entrenamiento de ChessDojo con el sueño de poder cruzar esa difícil barrera de los 2500 gracias a su guía y estructura."
+                "bio": "David is a chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure."
             }
         },
         "footer": {
@@ -1778,6 +1802,7 @@
             "publishGames": "Publicar partidas"
         },
         "bulkEditor": {
+            "openInNew": "Abrir en una pestaña nueva",
             "addToFolder": "Añadir a carpeta",
             "publishGame": "Publicar {count, plural, =1 {partida} other {partidas}}",
             "unlistGame": "Quitar {count, plural, =1 {partida} other {partidas}} de la lista",
@@ -1816,6 +1841,13 @@
             "save": "Guardar",
             "saveAnalysis": "Guardar análisis",
             "analysisNotSaved": "Análisis sin guardar"
+        },
+        "unsavedNavigationGuard": {
+            "title": "¿Cambios sin guardar?",
+            "gameWarning": "Este juego tiene cambios sin guardar. Si sales de la aplicación, podrían eliminarse permanentemente.",
+            "suggestedVariationWarning": "Tienes sugerencias de variaciones sin guardar. Si sales de esta página, se eliminarán permanentemente.",
+            "cancel": "Cancelar",
+            "leave": "Dejar"
         },
         "moveExtras": {
             "unsavedVariation": "Esta variante no está guardada. Haz clic derecho para guardarla como comentario.",
@@ -2127,9 +2159,7 @@
             "openClassicalName": "Open Classical",
             "openClassicalDescription": "Torneo clásico de siete rondas con dos secciones y una partida por semana.",
             "dojoligaName": "DojoLiga",
-            "dojoligaDescription": "Arenas semanales de blitz, rápidas y clásicas. No se necesita cuenta del Dojo.",
-            "championsCircuit": "Circuito de campeones",
-            "championsDescription": "Los ganadores de los torneos Round Robin y Open Classical obtendrán cada uno un año de membresía gratuita del Dojo, además de un lugar en nuestro torneo de campeones de fin de año. Quienes ganen varias veces recibirán un solo premio. A los jugadores expulsados por infracciones de juego limpio se les cancelará la suscripción sin previo aviso."
+            "dojoligaDescription": "Arenas semanales de blitz, rápidas y clásicas. No se necesita cuenta del Dojo."
         },
         "liga": {
             "tabs": {
@@ -2153,6 +2183,7 @@
                 "columnUsername": "Usuario",
                 "columnRating": "Rating",
                 "columnScore": "Puntuación",
+                "columnEvents": "Torneos",
                 "labelSite": "Sitio",
                 "labelTimeControl": "Control de tiempo",
                 "labelTournamentType": "Tipo de torneo",
@@ -2187,28 +2218,34 @@
                 "lichessJoin": "Únete al <link>equipo de ChessDojo</link> en Lichess.",
                 "chesscomJoin": "Únete al <link>equipo de ChessDojo</link> en Chess.com.",
                 "discordJoin": "¡Únete al <link>Discord de ChessDojo</link> y, si quieres, conecta tus cuentas de Lichess y Chess.com!",
+                "eventsHeader": "Eventos semanales en Suiza",
+                "mondayEvents": "Lunes, 14:00 ET — Blitz 3+2 (9 rondas)",
+                "wednesdayEvents": "Miércoles, 13:00 ET — Rápido 15+5 (5 rondas)",
+                "saturdayEvents": "Sábado, 12:00 p. m. ET — Clásico 30+5 (4 asaltos)",
                 "leaderboardHeader": "Información de la clasificación",
-                "leaderboardIntro": "Los puntos obtenidos en cada torneo arena y suizo se registran para elaborar la clasificación de las distintas categorías. La clasificación del Grand Prix cuenta el número total de veces que un jugador termina entre los 10 primeros en todos los eventos de un control de tiempo determinado, y los puntos se otorgan de la siguiente manera:",
-                "leaderboardArena": "Arena de blitz/rápidas/clásicas - Puntos totales obtenidos por cada jugador en todas las arenas de la liga.",
-                "leaderboardSwiss": "Suizo de blitz/rápidas/clásicas - Puntos totales obtenidos por cada jugador en todos los suizos de la liga.",
-                "leaderboardGrandPrix": "Grand Prix de blitz/rápidas/clásicas - Puntos totales ganados al terminar entre los 10 primeros, con 10 puntos para el 1.er puesto, 9 para el 2.º, ..., 1 punto para el 10.º.",
-                "leaderboardMiddlegame": "Sparring de medio juego - Puntos totales obtenidos en los torneos de sparring de medio juego.",
-                "leaderboardEndgame": "Sparring de finales - Puntos totales obtenidos en los torneos de sparring de finales.",
+                "weeklyEvents": "Eventos semanales en Suiza:",
+                "weeklySwissPoints": {
+                    "first": "1º: 12 puntos",
+                    "second": "2º: 9 puntos",
+                    "third": "3º: 7 puntos",
+                    "fourth": "4º: 5 puntos",
+                    "fifth": "5º: 4 puntos",
+                    "sixthToTenth": "6º-10º: 3 puntos",
+                    "allOthers": "Todos los demás participantes: 1 punto"
+                },
+                "lichessTeamEvents": "Eventos por equipos de Lichess:",
+                "lichessTeamPoints": {
+                    "first": "1º: 7 puntos",
+                    "second": "2º: 6 puntos",
+                    "third": "3º: 5 puntos",
+                    "fourth": "4º: 4 puntos",
+                    "fifth": "5º: 3 puntos",
+                    "allOthers": "Todos los demás participantes: 2 puntos"
+                },
                 "antiCheatHeader": "Información antitrampas",
                 "antiCheatIntro": "La DojoLiga se toma las trampas muy en serio y aplica las siguientes políticas antitrampas:",
                 "antiCheatBanned": "Si a un jugador le cierran la cuenta por trampas o infracciones del juego limpio en Chess.com/Lichess, puede ser expulsado del servidor de Discord de ChessDojo.",
-                "antiCheatAdmit": "Si se descubre que un jugador ha hecho trampas pero admite de inmediato su falta y se disculpa, se le puede dar una segunda oportunidad según la gravedad de sus acciones. Aun así, tendrá prohibido jugar en la DojoLiga durante al menos 3 meses.",
-                "antiCheatTracked": "El sistema detecta automáticamente a los tramposos y los elimina de inmediato de las clasificaciones.",
-                "discordHeader": "Información de Discord",
-                "discordIntro": "¡Únete al Discord de ChessDojo, conecta tus cuentas y ejecuta más comandos en el canal #player-commands para mantenerte al día con la liga!",
-                "cmdVerify": "Unirte a la liga y conectar tu Discord con tu cuenta de Lichess",
-                "cmdVerifyChesscom": "Unirte a la liga y conectar tu Discord con tu cuenta de Chess.com",
-                "cmdProfile": "Ver tus ratings y estadísticas",
-                "cmdUpdate": "Actualizar tus ratings y tu rol de cinturón",
-                "cmdScore": "Ver tus puntuaciones individuales en la liga",
-                "cmdRank": "Ver tu ranking individual en la liga",
-                "cmdTop10": "Ver el top 10 de jugadores de la liga por rating de blitz, clásicas y rápidas",
-                "cmdHelp": "Ver la lista de comandos"
+                "antiCheatAdmit": "Si se descubre que un jugador ha hecho trampas pero admite de inmediato su falta y se disculpa, se le puede dar una segunda oportunidad según la gravedad de sus acciones. Aun así, tendrá prohibido jugar en la DojoLiga durante al menos 3 meses."
             }
         },
         "openClassical": {
@@ -2245,6 +2282,12 @@
                 "headerBlack": "Negras",
                 "headerResult": "Resultado",
                 "headerGame": "Partida",
+                "headerScreenshots": "Capturas de pantalla",
+                "viewScreenshotsTooltip": "Ver capturas de pantalla enviadas",
+                "screenshotsDialogTitle": "Capturas de pantalla enviadas",
+                "screenshotNumber": "Captura de pantalla {number}",
+                "screenshotAlt": "Captura de pantalla enviada {number}",
+                "close": "Cerca",
                 "unverifiedResultTooltip": "Este resultado no ha sido verificado y el TD podría modificarlo más adelante"
             },
             "info": {
@@ -2317,6 +2360,8 @@
                 "labelBlack": "Negras",
                 "labelResult": "Resultado",
                 "labelNotes": "Notas",
+                "labelScreenshots": "Subir capturas de pantalla",
+                "screenshotSelected": "Seleccionado: {name}",
                 "regionA": "Región A (América)",
                 "regionB": "Región B (Eurasia/África/Oceanía)",
                 "sectionOpen": "Open",
@@ -2331,9 +2376,12 @@
                 "whiteHelper": "Nombre de usuario de Lichess del jugador con las piezas blancas",
                 "blackHelper": "Nombre de usuario de Lichess del jugador con las piezas negras",
                 "reportOpponent": "¿Reportar a tu oponente por no responder o por negarse a programar la partida?",
+                "screenshotsHelper": "Sube capturas de pantalla de tu conversación con tu oponente como prueba de la rendición.",
                 "submit": "Enviar",
                 "errorRequired": "Este campo es obligatorio",
-                "errorFetchLichess": "No se pudieron obtener los resultados de Lichess. Asegúrate de que la URL sea correcta antes de enviar."
+                "errorFetchLichess": "No se pudieron obtener los resultados de Lichess. Asegúrate de que la URL sea correcta antes de enviar.",
+                "errorScreenshotTooLarge": "La captura de pantalla debe pesar menos de 9 MB.",
+                "errorScreenshotRead": "No se puede leer el archivo de captura de pantalla."
             },
             "standings": {
                 "byeTooltip": "El jugador recibió un bye de 0,5 puntos",
@@ -2658,14 +2706,14 @@
         },
         "stripe": {
             "connect": {
-                "title": "Configurar cuenta de Stripe",
-                "body": "ChessDojo usa Stripe para procesar los pagos. Antes de poder retirar fondos, programar clases o crear cursos, debes configurar tu cuenta de Stripe. Haz clic en el botón de abajo para ir a Stripe.",
-                "button": "Configurar Stripe"
+                "title": "Setup Stripe Account",
+                "body": "ChessDojo uses Stripe to process payments. Before you can withdraw funds, schedule lessons or create courses, you must setup your Stripe account. Click the button below to be redirected to Stripe.",
+                "button": "Setup Stripe"
             },
             "dashboard": {
-                "title": "Panel de Stripe",
-                "body": "ChessDojo usa Stripe para procesar los pagos. Haz clic en el botón de abajo para ir a tu panel de Stripe, donde puedes ver tu saldo actual, consultar los próximos retiros y hacer seguimiento de tus ganancias.",
-                "button": "Ir al panel"
+                "title": "Stripe Dashboard",
+                "body": "ChessDojo uses Stripe to process payments. Click the button below to go to your Stripe dashboard, where you can see your current balance, view upcoming payouts and track your earnings.",
+                "button": "Go to Dashboard"
             },
             "accountStatus": {
                 "title": "Estado de la cuenta",
@@ -3417,7 +3465,15 @@
                 "hideSourceTooltip": "Ocultar fuente de los resultados",
                 "removeSourceTooltip": "Eliminar fuente",
                 "clearDataButton": "Borrar datos",
-                "addSourceButton": "Añadir fuente"
+                "addSourceButton": "Añadir fuente",
+                "playModeTitle": "Juego vs. Repertorio",
+                "playModeDescription": "Utiliza la base de datos filtrada de este jugador hasta que la muestra sea pequeña y, a continuación, deja que Maia continúe el juego.",
+                "playAsLabel": "Juega como",
+                "databasePlaysLabel": "La base de datos reproduce {color}",
+                "minimumGamesLabel": "Juegos con base de datos mínima",
+                "maiaFallbackRatingLabel": "Calificación de reserva de Maia",
+                "startPlayModeButton": "Comienza el sparring",
+                "stopPlayModeButton": "Deja de pelear"
             }
         },
         "boardButtons": {
@@ -3677,6 +3733,7 @@
                 "replyPostButton": "responder",
                 "updatedAt": "Actualizado el {date} • {time}"
             },
+            "directories": {},
             "share": {
                 "addToFolder": "Añadir a carpeta",
                 "copyUrl": "Copiar URL",
@@ -3936,6 +3993,7 @@
             "faqClassCalendar": "<faqLink>Preguntas frecuentes</faqLink> / <calendarLink>Calendario de clases</calendarLink>",
             "perClassSubtitle": "(~ {currency}{amount} / clase)"
         },
+        "sellingPoint": {},
         "pricingPage": {
             "tabMonthly": "Mensual",
             "tabYearly": "Anual",
@@ -3984,32 +4042,32 @@
     },
     "enums": {
         "requirementCategory": {
-            "Welcome to the Dojo": "Bienvenida al Dojo",
-            "Games + Analysis": "Partidas + análisis",
-            "Tactics": "Táctica",
-            "Middlegames + Strategy": "Medio juego",
-            "Endgame": "Finales",
-            "Opening": "Aperturas",
-            "Graduation": "Graduación",
-            "Non-Dojo": "Fuera del Dojo",
-            "Suggested Tasks": "Tareas sugeridas",
-            "Pinned Tasks": "Tareas fijadas"
+            "Welcome to the Dojo": "Welcome to the Dojo",
+            "Games + Analysis": "Games + Analysis",
+            "Tactics": "Tactics",
+            "Middlegames + Strategy": "Middlegame",
+            "Endgame": "Endgame",
+            "Opening": "Opening",
+            "Graduation": "Graduation",
+            "Non-Dojo": "Non-Dojo",
+            "Suggested Tasks": "Suggested Tasks",
+            "Pinned Tasks": "Pinned Tasks"
         },
         "requirementCategoryShort": {
-            "Welcome to the Dojo": "Bienvenida",
-            "Games + Analysis": "Partidas",
-            "Tactics": "Táctica",
-            "Middlegames + Strategy": "Medio juego",
-            "Endgame": "Finales",
-            "Opening": "Aperturas",
-            "Graduation": "Graduación",
-            "Non-Dojo": "Fuera del Dojo",
-            "Suggested Tasks": "Tareas sugeridas",
-            "Pinned Tasks": "Tareas fijadas"
+            "Welcome to the Dojo": "Welcome",
+            "Games + Analysis": "Games",
+            "Tactics": "Tactics",
+            "Middlegames + Strategy": "Middlegame",
+            "Endgame": "Endgame",
+            "Opening": "Opening",
+            "Graduation": "Graduation",
+            "Non-Dojo": "Non-Dojo",
+            "Suggested Tasks": "Suggested Tasks",
+            "Pinned Tasks": "Pinned Tasks"
         },
         "ratingSystem": {
-            "CHESSCOM": "Chess.com Rápidas",
-            "LICHESS": "Lichess Clásico",
+            "CHESSCOM": "Chess.com Rapid",
+            "LICHESS": "Lichess Classical",
             "FIDE": "FIDE",
             "USCF": "USCF",
             "ECF": "ECF",
@@ -4017,9 +4075,9 @@
             "DWZ": "DWZ",
             "ACF": "ACF",
             "KNSB": "KNSB",
-            "CUSTOM": "Personalizado",
-            "CUSTOM_2": "Personalizado",
-            "CUSTOM_3": "Personalizado"
+            "CUSTOM": "Custom",
+            "CUSTOM_2": "Custom",
+            "CUSTOM_3": "Custom"
         }
     },
     "material": {
@@ -4061,5 +4119,11 @@
         "unsubscribeSuccess": "Se ha cancelado la suscripción de {email}. El cambio puede tardar hasta 24 horas en aplicarse.",
         "emailLabel": "Correo electrónico",
         "unsubscribeButton": "Cancelar suscripción"
+    },
+    "PlayMaia": {
+        "title": "Juega contra el bot de entrenamiento del dojo",
+        "playAsWhite": "Juega como Blanco",
+        "playAsBlack": "Juega como Negro",
+        "randomColor": "Color aleatorio"
     }
 }
