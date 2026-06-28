@@ -13,6 +13,8 @@ export interface TimeManagementRating {
     currentRating: number;
     /** The number of games included in the aggregate. */
     numGames: number;
+    /** The average signed clock area. Positive means too fast, negative means too slow. */
+    area?: number;
 }
 
 /**
@@ -37,6 +39,15 @@ function calculateRating(currentRating: number, gameRating: number): number {
     return Math.round(currentRating + K_FACTOR * (DRAW_SCORE - expected));
 }
 
+function calculateAverageArea(
+    current: TimeManagementRating | undefined,
+    gameArea: number,
+    newCount: number,
+): number {
+    const currentArea = current?.area ?? 0;
+    return currentArea + (gameArea - currentArea) / newCount;
+}
+
 /**
  * Incrementally updates the time management aggregate with a new game rating
  * and returns the new rating. The current rating is left unchanged.
@@ -45,29 +56,33 @@ function calculateRating(currentRating: number, gameRating: number): number {
  *
  * @param current The current aggregate, or undefined if this is the user's first game.
  * @param gameRating The time management rating from the new game.
+ * @param gameArea The signed clock area from the new game.
  * @returns The new aggregate rating.
  */
 export function newTimeManagementRating(
     current: TimeManagementRating | undefined,
     gameRating: number,
+    gameArea = 0,
 ): TimeManagementRating {
-    if (!current) {
-        return { currentRating: gameRating, numGames: 1 };
+    if (!current || current.numGames <= 0) {
+        return { currentRating: gameRating, numGames: 1, area: gameArea };
     }
 
     const newCount = current.numGames + 1;
+    const area = calculateAverageArea(current, gameArea, newCount);
 
     if (newCount <= MIN_GAMES_FOR_ELO) {
         // Running average: newAvg = oldAvg + (gameRating - oldAvg) / newCount
         const newRating = Math.round(
             current.currentRating + (gameRating - current.currentRating) / newCount,
         );
-        return { currentRating: newRating, numGames: newCount };
+        return { currentRating: newRating, numGames: newCount, area };
     }
 
     // Elo draw adjustment
     return {
         currentRating: calculateRating(current.currentRating, gameRating),
         numGames: newCount,
+        area,
     };
 }

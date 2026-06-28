@@ -329,8 +329,10 @@ export function getGame(
             positionComments: {},
             unlisted: !publish,
             directories: directory ? [directory] : undefined,
-            timeManagementRatingWhite: tmRatings.white,
-            timeManagementRatingBlack: tmRatings.black,
+            timeManagementRatingWhite: tmRatings.white?.rating,
+            timeManagementRatingBlack: tmRatings.black?.rating,
+            timeManagementAreaWhite: tmRatings.white?.area,
+            timeManagementAreaBlack: tmRatings.black?.area,
         };
 
         if (publish) {
@@ -492,7 +494,7 @@ export async function createTimelineEntry(game: Game) {
  * @param games The newly created games.
  */
 async function updateUserTimeManagementRating(user: User, games: Game[]): Promise<void> {
-    const newRatings: number[] = [];
+    const newRatings: { rating: number; area: number }[] = [];
     games.sort((lhs, rhs) => (lhs.date || lhs.createdAt).localeCompare(rhs.date || rhs.createdAt));
 
     for (const game of games) {
@@ -500,9 +502,13 @@ async function updateUserTimeManagementRating(user: User, games: Game[]): Promis
             game.orientation === 'black'
                 ? game.timeManagementRatingBlack
                 : game.timeManagementRatingWhite;
+        const ownerArea =
+            game.orientation === 'black'
+                ? game.timeManagementAreaBlack
+                : game.timeManagementAreaWhite;
 
         if (ownerRating !== undefined) {
-            newRatings.push(ownerRating);
+            newRatings.push({ rating: ownerRating, area: ownerArea ?? 0 });
         }
     }
 
@@ -513,7 +519,7 @@ async function updateUserTimeManagementRating(user: User, games: Game[]): Promis
     try {
         let rating = user.timeManagementRating;
         for (const gameRating of newRatings) {
-            rating = newTimeManagementRating(rating, gameRating);
+            rating = newTimeManagementRating(rating, gameRating.rating, gameRating.area);
         }
 
         if (rating) {

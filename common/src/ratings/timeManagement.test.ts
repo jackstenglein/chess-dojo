@@ -16,6 +16,14 @@ describe('newTimeManagementRating', () => {
         assert.equal(result.numGames, 1);
     });
 
+    test('stores first game signed area', () => {
+        const result = newTimeManagementRating(undefined, 2000, 125);
+
+        assert.equal(result.currentRating, 2000);
+        assert.equal(result.numGames, 1);
+        assert.equal(result.area, 125);
+    });
+
     test('computes running average for < 10 games', () => {
         let agg = newTimeManagementRating(undefined, 2000);
         agg = newTimeManagementRating(agg, 2100);
@@ -23,6 +31,24 @@ describe('newTimeManagementRating', () => {
 
         assert.equal(agg.numGames, 3);
         assert.equal(agg.currentRating, Math.round((2000 + 2100 + 1900) / 3));
+    });
+
+    test('computes running average signed area', () => {
+        let agg = newTimeManagementRating(undefined, 2000, 100);
+        agg = newTimeManagementRating(agg, 2100, -40);
+        agg = newTimeManagementRating(agg, 1900, 30);
+
+        assert.equal(agg.numGames, 3);
+        assert.equal(agg.currentRating, Math.round((2000 + 2100 + 1900) / 3));
+        assert.closeTo(agg.area ?? 0, 30, 0.000001);
+    });
+
+    test('treats missing legacy area as neutral', () => {
+        const result = newTimeManagementRating({ currentRating: 2000, numGames: 1 }, 2200);
+
+        assert.equal(result.numGames, 2);
+        assert.equal(result.currentRating, 2100);
+        assert.equal(result.area, 0);
     });
 
     test('is provisional for < 10 games', () => {

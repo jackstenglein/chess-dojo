@@ -22,13 +22,12 @@ import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
-import { MIN_GAMES_FOR_ELO } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { Card, CardContent, Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
+import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 
 const categories = [
     RequirementCategory.Games,
@@ -232,31 +231,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                     })}
 
                     {timeManagementRating && timeManagementRating.currentRating > 0 && (
-                        <Grid size={12}>
-                            <Tooltip title='Time Management Rating is calculated from the classical games in your My Games folder (and subfolders).'>
-                                <Stack direction='row' alignItems='center' gap={0.5}>
-                                    <AccessTimeIcon
-                                        sx={{ fontSize: 15, color: 'text.secondary' }}
-                                    />
-                                    <Typography
-                                        variant='body2'
-                                        color='text.secondary'
-                                        sx={{ fontWeight: 'bold' }}
-                                    >
-                                        Time Management
-                                    </Typography>
-                                    <Typography
-                                        variant='body2'
-                                        color='text.secondary'
-                                        sx={{ ml: 'auto', fontWeight: 'bold' }}
-                                    >
-                                        {timeManagementRating.currentRating}
-                                        {(timeManagementRating.numGames ?? 0) < MIN_GAMES_FOR_ELO &&
-                                            '?'}
-                                    </Typography>
-                                </Stack>
-                            </Tooltip>
-                        </Grid>
+                        <TimeManagementRatingRow timeManagementRating={timeManagementRating} />
                     )}
                 </Grid>
             </CardContent>

@@ -242,6 +242,12 @@ type Game struct {
 
 	// The time management rating for black in this game.
 	TimeManagementRatingBlack int `dynamodbav:"timeManagementRatingBlack,omitempty" json:"timeManagementRatingBlack,omitempty"`
+
+	// The signed time management area for white in this game.
+	TimeManagementAreaWhite float64 `dynamodbav:"timeManagementAreaWhite,omitempty" json:"timeManagementAreaWhite,omitempty"`
+
+	// The signed time management area for black in this game.
+	TimeManagementAreaBlack float64 `dynamodbav:"timeManagementAreaBlack,omitempty" json:"timeManagementAreaBlack,omitempty"`
 }
 
 type Reviewer struct {

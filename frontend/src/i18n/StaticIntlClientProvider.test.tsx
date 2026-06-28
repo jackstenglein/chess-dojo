@@ -32,7 +32,7 @@ describe('StaticIntlClientProvider', () => {
 
     it('falls back to the default locale for an unknown locale', () => {
         render(
-            <StaticIntlClientProvider locale='fr'>
+            <StaticIntlClientProvider locale='zz'>
                 <Consumer />
             </StaticIntlClientProvider>,
         );
