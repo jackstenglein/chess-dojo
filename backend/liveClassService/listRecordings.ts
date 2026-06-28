@@ -1,8 +1,11 @@
+import { AttributeValue, QueryCommand, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
 import { _Object, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { errToApiGatewayProxyResultV2, success } from '../directoryService/api';
+import { dynamo, LIVE_CLASSES_TABLE } from '../directoryService/database';
 import { MeetingInfo, parseMeetingInfo } from './meetingInfo';
 
 const S3_BUCKET = process.env.s3Bucket;
@@ -20,15 +23,39 @@ var meetingInfos: MeetingInfo[] = [];
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         console.log('Event: ', event);
+        const dynamoClasses = await fetchFromDynamo();
         const meetingInfos = getMeetingInfos();
         const command = new ListObjectsV2Command({ Bucket: S3_BUCKET });
         const response = await S3_CLIENT.send(command);
         const classes = getLiveClasses(response.Contents ?? [], meetingInfos);
-        return success({ classes });
+        return success({ classes: dynamoClasses.concat(classes) });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
 };
+
+async function fetchFromDynamo(): Promise<LiveClass[]> {
+    let lastEvaluatedKey: Record<string, AttributeValue> | undefined = undefined;
+    const classes: LiveClass[] = [];
+
+    for (const tier of [SubscriptionTier.Lecture, SubscriptionTier.GameReview]) {
+        do {
+            const response: QueryCommandOutput = await dynamo.send(
+                new QueryCommand({
+                    KeyConditionExpression: `#type = :type`,
+                    ExpressionAttributeNames: { '#type': 'type' },
+                    ExpressionAttributeValues: { ':type': { S: tier } },
+                    TableName: LIVE_CLASSES_TABLE,
+                    ExclusiveStartKey: lastEvaluatedKey,
+                }),
+            );
+            classes.push(...(response.Items ?? []).map((item) => unmarshall(item) as LiveClass));
+            lastEvaluatedKey = response.LastEvaluatedKey;
+        } while (lastEvaluatedKey);
+    }
+
+    return classes;
+}
 
 /**
  * Gets the list of live classes from the S3 items and meeting infos.
@@ -82,6 +109,12 @@ function processItem(
     const meetingInfo = meetingInfos.find((info) => item.Key?.includes(`/${info.awsS3Folder}/`));
     if (!meetingInfo) {
         console.error(`No meeting info found for item ${item.Key}`);
+        return;
+    }
+    if (meetingInfo.id) {
+        console.log(
+            `Meeting info ${meetingInfo.name} is handled outside of S3. Skipping ${item.Key}`,
+        );
         return;
     }
 

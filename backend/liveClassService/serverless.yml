@@ -80,6 +80,10 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:Query
+        Resource: !GetAtt LiveClassesTable.Arn
+      - Effect: Allow
+        Action:
           - s3:ListBucket
         Resource: !Join
           - ''
