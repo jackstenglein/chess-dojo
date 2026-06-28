@@ -30,7 +30,14 @@ import type { EventRendererProps, SchedulerRef } from '@jackstenglein/react-sche
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Container, Grid, Snackbar, Stack, Typography } from '@mui/material';
-import { de as dateFnsDe, enUS as dateFnsEnUS } from 'date-fns/locale';
+import {
+    de as dateFnsDe,
+    enUS as dateFnsEnUS,
+    es as dateFnsEs,
+    fr as dateFnsFr,
+    it as dateFnsIt,
+    ptBR as dateFnsPtBR,
+} from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RRule } from 'rrule';
@@ -39,6 +46,10 @@ const SCHEDULER_LOCALES = {
     en: dateFnsEnUS,
     pseudo: dateFnsEnUS,
     de: dateFnsDe,
+    it: dateFnsIt,
+    fr: dateFnsFr,
+    es: dateFnsEs,
+    pt: dateFnsPtBR,
 } as const;
 
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;

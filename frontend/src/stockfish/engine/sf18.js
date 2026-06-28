@@ -485,14 +485,14 @@ async function Sf_18_Web(moduleArg = {}) {
             c = e + c;
             if (d) d = c;
             else {
-                for (; a[e] && !(e >= c); ) ++e;
+                for (; a[e] && !(e >= c);) ++e;
                 d = e;
             }
             if (16 < d - b && a.buffer && fc)
                 return fc.decode(
                     a.buffer instanceof ArrayBuffer ? a.subarray(b, d) : a.slice(b, d),
                 );
-            for (e = ''; b < d; )
+            for (e = ''; b < d;)
                 if (((c = a[b++]), c & 128)) {
                     var f = a[b++] & 63;
                     if (192 == (c & 224)) e += String.fromCharCode(((c & 31) << 6) | f);
@@ -768,7 +768,7 @@ async function Sf_18_Web(moduleArg = {}) {
                         e = rc(d.parent.id, d.name);
                         if (R[e] === d) R[e] = d.sa;
                         else
-                            for (e = R[e]; e; ) {
+                            for (e = R[e]; e;) {
                                 if (e.sa === d) {
                                     e.sa = d.sa;
                                     break;
@@ -1136,7 +1136,7 @@ async function Sf_18_Web(moduleArg = {}) {
             if ((a = zc(e, 'w'))) throw new P(a);
             Ec(e, { size: 0, timestamp: Date.now() });
         }
-        a: for (e = d; ; ) {
+        a: for (e = d; ;) {
             if (e === e.parent) {
                 e = e.ma.Oa;
                 var g = g ? ('/' !== e[e.length - 1] ? `${e}/${g}` : e + g) : e;
@@ -1233,7 +1233,7 @@ async function Sf_18_Web(moduleArg = {}) {
                 case 0:
                     var e = M();
                     if (0 > e) break;
-                    for (; K[e]; ) e++;
+                    for (; K[e];) e++;
                     return Dc(d, e).pa;
                 case 1:
                 case 2:
@@ -1761,7 +1761,7 @@ async function Sf_18_Web(moduleArg = {}) {
         if (!(0 < tc))
             if (l) (ua?.(h), Ma());
             else {
-                for (var a = Qb; 0 < a.length; ) a.shift()(h);
+                for (var a = Qb; 0 < a.length;) a.shift()(h);
                 0 < tc || ((h.calledRun = !0), ra || (Ma(), ua?.(h), Qc(la)));
             }
     }

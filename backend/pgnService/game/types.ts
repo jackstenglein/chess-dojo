@@ -70,6 +70,12 @@ export interface Game {
 
     /** The time management rating for black in this game. */
     timeManagementRatingBlack?: number;
+
+    /** The signed time management area for white in this game. */
+    timeManagementAreaWhite?: number;
+
+    /** The signed time management area for black in this game. */
+    timeManagementAreaBlack?: number;
 }
 
 export interface GameUpdate {
@@ -108,6 +114,12 @@ export interface GameUpdate {
 
     /** The time management rating for black in this game. */
     timeManagementRatingBlack?: number;
+
+    /** The signed time management area for white in this game. */
+    timeManagementAreaWhite?: number;
+
+    /** The signed time management area for black in this game. */
+    timeManagementAreaBlack?: number;
 }
 
 export interface GameImportHeaders {
@@ -136,12 +148,7 @@ function stripPlayerNameHeader(value?: string): string {
  * @param game The game to check for publishability
  * @returns An error message if the update is missing data.
  */
-export function isMissingData({
-    white,
-    black,
-    result,
-    date,
-}: Partial<GameImportHeaders>): string {
+export function isMissingData({ white, black, result, date }: Partial<GameImportHeaders>): string {
     const strippedWhite = stripPlayerNameHeader(white);
     if (!strippedWhite) {
         return `invalid White header: '${white}'`;

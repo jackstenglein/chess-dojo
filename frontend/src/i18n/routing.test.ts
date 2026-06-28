@@ -2,16 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { routing } from './routing';
 
 describe('routing config', () => {
-    it('includes en in locales', () => {
-        expect(routing.locales).toContain('en');
-    });
-
-    it('includes pseudo in locales on nonprod', () => {
-        expect(routing.locales).toContain('pseudo');
-    });
-
-    it('includes de in locales', () => {
-        expect(routing.locales).toContain('de');
+    it('contains expected locales', () => {
+        expect(routing.locales).toEqual(['en', 'pseudo', 'de', 'it', 'fr', 'es', 'pt']);
     });
 
     it('defaults to en', () => {

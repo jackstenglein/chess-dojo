@@ -315,6 +315,12 @@ export interface GameInfo extends GameKey {
 
     /** The time management rating for black in this game. */
     timeManagementRatingBlack?: number;
+
+    /** The signed time management area for white in this game. */
+    timeManagementAreaWhite?: number;
+
+    /** The signed time management area for black in this game. */
+    timeManagementAreaBlack?: number;
 }
 
 export interface CommentOwner {

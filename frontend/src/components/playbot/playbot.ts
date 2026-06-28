@@ -13,13 +13,7 @@ export interface MoveRecord {
 
 export type GameResult = 'white' | 'black' | 'draw' | null;
 export type GameOverReason =
-    | 'checkmate'
-    | 'stalemate'
-    | 'insufficient'
-    | 'repetition'
-    | 'fifty-move'
-    | 'resign'
-    | null;
+    'checkmate' | 'stalemate' | 'insufficient' | 'repetition' | 'fifty-move' | 'resign' | null;
 
 export interface UsePlayBotGameResult {
     chess: Chess;

@@ -205,6 +205,7 @@ test.describe('Player Opening Explorer', () => {
         // The loader finishes quickly after the 404 — the tree is built but empty.
         // After loading completes, "Clear Data" should appear (tree exists but has no games),
         // and the move table should have no move rows (only the total row or be empty).
+        await page.getByText('Filters').click();
         await expect(page.getByRole('button', { name: 'Clear Data' })).toBeVisible({
             timeout: 15000,
         });

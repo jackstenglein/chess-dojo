@@ -23,7 +23,7 @@ const LeaderboardTab = () => {
     const request = useRequest<Leaderboard>();
     const t = useTranslations('tournaments.liga.leaderboard');
 
-    const [selectedDate, setSelectedDate] = useState(DateTime.now());
+    const [selectedDate, setSelectedDate] = useState<DateTime>(DateTime.now());
 
     const columns = useMemo<GridColDef<LeaderboardRow>[]>(
         () => [
