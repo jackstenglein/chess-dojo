@@ -1,4 +1,4 @@
-import { CustomTask, Requirement } from '@/database/requirement';
+import { CustomTask, getCurrentCount, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
@@ -263,6 +263,13 @@ function WeeklyTrainingPlanItem({
         timeline,
     });
 
+    const currentCount = getCurrentCount({
+        cohort: user.dojoCohort,
+        requirement: task,
+        progress: user.progress[task.id],
+        timeline,
+    });
+
     const isComplete = timeWorked >= goalMinutes;
 
     if (activeOnly && !active) {
@@ -293,7 +300,14 @@ function WeeklyTrainingPlanItem({
                 }}
             />
             <ButtonBase
-                onClick={() => onOpenTask(task, TaskDialogView.Details)}
+                onClick={() =>
+                    onOpenTask(
+                        task,
+                        isCurrentUser && currentCount > 0
+                            ? TaskDialogView.Progress
+                            : TaskDialogView.Details,
+                    )
+                }
                 sx={{
                     flexGrow: 1,
                     pl: 0.75,

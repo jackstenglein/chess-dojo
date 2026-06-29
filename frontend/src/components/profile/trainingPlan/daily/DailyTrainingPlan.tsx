@@ -234,6 +234,13 @@ function DailyTrainingPlanItem({
         timeline,
     });
 
+    const currentCount = getCurrentCount({
+        cohort: user.dojoCohort,
+        requirement: task,
+        progress: user.progress[task.id],
+        timeline,
+    });
+
     const isComplete = timeWorkedMinutes >= goalMinutes;
     return (
         <Grid key={task.id} size={{ xs: 12, md: 4 }}>
@@ -248,7 +255,14 @@ function DailyTrainingPlanItem({
             >
                 <CardActionArea
                     sx={{ flexGrow: 1 }}
-                    onClick={() => onOpenTask(task, TaskDialogView.Details)}
+                    onClick={() =>
+                        onOpenTask(
+                            task,
+                            isCurrentUser && currentCount > 0
+                                ? TaskDialogView.Progress
+                                : TaskDialogView.Details,
+                        )
+                    }
                 >
                     <CardContent sx={{ height: 1 }}>
                         <Stack sx={{ height: 1 }}>
@@ -298,12 +312,7 @@ function DailyTrainingPlanItem({
                                     <Typography color='textSecondary'>
                                         {t('progressCompleted', {
                                             current: Math.max(
-                                                getCurrentCount({
-                                                    cohort: user.dojoCohort,
-                                                    requirement: task,
-                                                    progress: user.progress[task.id],
-                                                    timeline,
-                                                }) - (task.startCount || 0),
+                                                currentCount - (task.startCount || 0),
                                                 0,
                                             ),
                                             total: Math.max(totalCount - (task.startCount || 0), 0),
