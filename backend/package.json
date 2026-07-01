@@ -30,6 +30,7 @@
         "@aws-sdk/s3-request-presigner": "^3.1061.0",
         "@aws-sdk/util-dynamodb": "^3.996.2",
         "@googleapis/drive": "^20.2.0",
+        "@googleapis/youtube": "^33.0.0",
         "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
         "@savi2w/chess-tcn": "^1.0.0",

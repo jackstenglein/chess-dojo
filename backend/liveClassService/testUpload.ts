@@ -1,31 +1,46 @@
 /**
- * Uploads live class recordings from S3 to YouTube using titles from video_titles.csv.
- * Only classes with a playlistId in lectures-{stage}.json are uploaded.
+ * Uploads live class recordings from S3 to YouTube for classes in lectures-{stage}.json.
+ * For each class, compares S3 recordings against DynamoDB and uploads any missing dates.
+ * Titles and descriptions come from video_titles.csv.
  *
- * Requires AWS credentials with access to the live classes bucket and YouTube OAuth secret.
+ * Requires AWS credentials with access to the live classes bucket, DynamoDB table,
+ * and YouTube OAuth secret.
  *
  * Run from the backend directory, e.g.:
  *   cd backend && stage=prod npx tsx liveClassService/testUpload.ts
+ *   cd backend && stage=prod npx tsx liveClassService/testUpload.ts --dry-run
  */
 
-import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import { execSync } from 'child_process';
 import csvParser from 'csv-parser';
-import { createReadStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
+import { unlink } from 'fs/promises';
 import path from 'path';
 import { stdin as input, stdout as output } from 'process';
 import { createInterface } from 'readline/promises';
 import { Readable } from 'stream';
+import { finished } from 'stream/promises';
+import {
+    GetItemBuilder,
+    LIVE_CLASSES_TABLE,
+    UpdateItemBuilder,
+} from '../directoryService/database';
 import { getYoutubeClient, uploadVideoToYouTube } from './copyRecordings';
 import { MeetingInfo, parseMeetingInfo } from './meetingInfo';
 
 const STAGE = process.env.stage || '';
+const DRY_RUN = process.argv.includes('--dry-run') || process.env.dryRun === 'true';
 const S3_BUCKET = process.env.s3Bucket || `chess-dojo-${STAGE}-live-classes`;
 const S3_CLIENT = new S3Client({ region: 'us-east-1' });
 const VIDEO_TITLES_PATH = path.join(__dirname, 'video_titles.csv');
+const DATE_REGEX = /\d{4}-\d{2}-\d{2}/;
 
 /** Maps CSV class names to the name field in lectures-{stage}.json. */
 const CLASS_NAME_ALIASES: Record<string, string> = {
+    'Board Visualization': 'Basic Board Visualization',
     'Calculation Training': 'Calculation 1000+',
     '1.d4 Starter Repertoire / Typical Plans': 'Starter d4 Repertoire/Typical Plans',
 };
@@ -41,9 +56,13 @@ interface VideoTitleRow {
     description: string;
 }
 
+interface S3Recording {
+    date: string;
+    s3Key: string;
+}
+
 interface UploadJob {
     lecture: LectureConfig;
-    className: string;
     date: string;
     title: string;
     description: string;
@@ -107,31 +126,100 @@ function resolveLectureName(csvClassName: string): string {
     return CLASS_NAME_ALIASES[csvClassName] ?? csvClassName;
 }
 
-function buildUploadJobs(
-    rows: VideoTitleRow[],
-    lecturesByName: Map<string, LectureConfig>,
-): UploadJob[] {
-    const jobs: UploadJob[] = [];
-
+function buildTitlesByLectureAndDate(rows: VideoTitleRow[]): Map<string, VideoTitleRow> {
+    const titlesByLectureAndDate = new Map<string, VideoTitleRow>();
     for (const row of rows) {
         const lectureName = resolveLectureName(row.className);
-        const lecture = lecturesByName.get(lectureName);
-        if (!lecture?.playlistId) {
-            console.log(
-                `Skipping "${row.className}" / "${row.title}" — no playlist ID configured.`,
-            );
+        const date = parseCsvDate(row.date);
+        titlesByLectureAndDate.set(`${lectureName}:${date}`, row);
+    }
+    return titlesByLectureAndDate;
+}
+
+function parseS3KeyDate(s3Key: string): string | undefined {
+    const lastSegment = s3Key.split('/').at(-1);
+    if (!lastSegment) {
+        return undefined;
+    }
+    return DATE_REGEX.exec(lastSegment)?.[0];
+}
+
+async function fetchLiveClassFromDynamo(lecture: LectureConfig): Promise<LiveClass | undefined> {
+    if (!lecture.id) {
+        return undefined;
+    }
+    return new GetItemBuilder<LiveClass>()
+        .key('type', SubscriptionTier.GameReview)
+        .key('id', lecture.id)
+        .table(LIVE_CLASSES_TABLE)
+        .send();
+}
+
+async function listS3RecordingsForClass(lecture: LectureConfig): Promise<S3Recording[]> {
+    const prefix = `${SubscriptionTier.GameReview}/${lecture.awsS3Folder}/`;
+    const recordings: S3Recording[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+        const response = await S3_CLIENT.send(
+            new ListObjectsV2Command({
+                Bucket: S3_BUCKET,
+                Prefix: prefix,
+                ContinuationToken: continuationToken,
+            }),
+        );
+
+        for (const item of response.Contents ?? []) {
+            if (!item.Key) {
+                continue;
+            }
+            const date = parseS3KeyDate(item.Key);
+            if (!date) {
+                console.warn(`Skipping S3 object with unparseable date: ${item.Key}`);
+                continue;
+            }
+            recordings.push({ date, s3Key: item.Key });
+        }
+
+        continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    return recordings.sort((lhs, rhs) => lhs.date.localeCompare(rhs.date));
+}
+
+function buildUploadJobsForClass({
+    lecture,
+    dynamoClass,
+    s3Recordings,
+    titlesByLectureAndDate,
+}: {
+    lecture: LectureConfig;
+    dynamoClass: LiveClass | undefined;
+    s3Recordings: S3Recording[];
+    titlesByLectureAndDate: Map<string, VideoTitleRow>;
+}): UploadJob[] {
+    if (!lecture.playlistId) {
+        console.log(`Skipping "${lecture.name}" — no playlist ID configured.`);
+        return [];
+    }
+
+    const existingDates = new Set(
+        (dynamoClass?.recordings ?? []).map((recording) => recording.date),
+    );
+    const jobs: UploadJob[] = [];
+
+    for (const s3Recording of s3Recordings) {
+        if (existingDates.has(s3Recording.date)) {
             continue;
         }
 
-        const date = parseCsvDate(row.date);
-        const s3Key = `${SubscriptionTier.Lecture}/${lecture.awsS3Folder}/${date}`;
+        const titleRow = titlesByLectureAndDate.get(`${lecture.name}:${s3Recording.date}`);
         jobs.push({
             lecture,
-            className: row.className,
-            date,
-            title: row.title,
-            description: row.description,
-            s3Key,
+            date: s3Recording.date,
+            title: titleRow?.title || `${lecture.name} — ${s3Recording.date}`,
+            description: titleRow?.description || '',
+            s3Key: s3Recording.s3Key,
             playlistId: lecture.playlistId,
         });
     }
@@ -139,28 +227,10 @@ function buildUploadJobs(
     return jobs;
 }
 
-async function s3ObjectExists(uploadJob: UploadJob): Promise<boolean> {
-    try {
-        await S3_CLIENT.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: uploadJob.s3Key }));
-        return true;
-    } catch {
-        for (const googleMeetName of uploadJob.lecture.googleMeetNames) {
-            const fallbackKey = `${SubscriptionTier.Lecture}/${uploadJob.lecture.awsS3Folder}/${googleMeetName} (${uploadJob.date})`;
-            try {
-                await S3_CLIENT.send(
-                    new HeadObjectCommand({ Bucket: S3_BUCKET, Key: fallbackKey }),
-                );
-                uploadJob.s3Key = fallbackKey;
-                return true;
-            } catch {
-                continue;
-            }
-        }
-        return false;
-    }
-}
-
-async function getS3ObjectStream(key: string): Promise<{ body: Readable; contentType?: string }> {
+async function downloadS3ObjectToFile(
+    key: string,
+    localFilePath: string,
+): Promise<string | undefined> {
     const response = await S3_CLIENT.send(
         new GetObjectCommand({
             Bucket: S3_BUCKET,
@@ -171,7 +241,55 @@ async function getS3ObjectStream(key: string): Promise<{ body: Readable; content
     if (!body) {
         throw new Error(`Empty response body for s3://${S3_BUCKET}/${key}`);
     }
-    return { body, contentType: response.ContentType };
+
+    const fileStream = createWriteStream(localFilePath);
+    body.pipe(fileStream);
+    await finished(fileStream);
+    return response.ContentType;
+}
+
+function getVideoDurationSeconds(filePath: string): number {
+    const output = execSync(
+        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`,
+        { encoding: 'utf-8' },
+    ).trim();
+    const duration = parseFloat(output);
+    if (!Number.isFinite(duration)) {
+        throw new Error(`Could not read duration from ${filePath}`);
+    }
+    return Math.round(duration);
+}
+
+async function updateDynamoDBRecording({
+    lecture,
+    job,
+    videoId,
+    durationSeconds,
+}: {
+    lecture: LectureConfig;
+    job: UploadJob;
+    videoId: string;
+    durationSeconds: number;
+}): Promise<void> {
+    if (!lecture.id) {
+        throw new Error(`Cannot update DynamoDB for "${lecture.name}" because it has no id.`);
+    }
+
+    await new UpdateItemBuilder()
+        .key('type', SubscriptionTier.GameReview)
+        .key('id', lecture.id)
+        .appendToList('recordings', [
+            {
+                date: job.date,
+                s3Key: job.s3Key,
+                url: `https://www.youtube.com/embed/${videoId}`,
+                title: job.title,
+                description: job.description,
+                durationSeconds,
+            },
+        ])
+        .table(LIVE_CLASSES_TABLE)
+        .send();
 }
 
 async function main() {
@@ -180,30 +298,50 @@ async function main() {
     }
 
     const lectures = parseMeetingInfo(
-        path.join(__dirname, `lectures-${STAGE}.json`),
-        SubscriptionTier.Lecture,
+        path.join(__dirname, `game-reviews-${STAGE}.json`),
+        SubscriptionTier.GameReview,
     ) as LectureConfig[];
-    const lecturesByName = new Map(lectures.map((lecture) => [lecture.name, lecture]));
+    const titlesByLectureAndDate = buildTitlesByLectureAndDate(await readCsv(VIDEO_TITLES_PATH));
 
-    const rows = await readCsv(VIDEO_TITLES_PATH);
-    const jobs = buildUploadJobs(rows, lecturesByName);
+    const jobs: UploadJob[] = [];
+    for (const lecture of lectures) {
+        console.log(`Checking "${lecture.name}"...`);
+        const dynamoClass = await fetchLiveClassFromDynamo(lecture);
+        if (!dynamoClass) {
+            console.warn(`No DynamoDB record found for "${lecture.name}" (${lecture.id}).`);
+        } else {
+            console.log(
+                `  DynamoDB has ${dynamoClass.recordings.length} recording(s): ${dynamoClass.recordings.map((recording) => recording.date).join(', ') || '(none)'}`,
+            );
+        }
+
+        const s3Recordings = await listS3RecordingsForClass(lecture);
+        console.log(
+            `  S3 has ${s3Recordings.length} recording(s): ${s3Recordings.map((recording) => recording.date).join(', ') || '(none)'}`,
+        );
+
+        const classJobs = buildUploadJobsForClass({
+            lecture,
+            dynamoClass,
+            s3Recordings,
+            titlesByLectureAndDate,
+        });
+        jobs.push(...classJobs);
+    }
+
     if (jobs.length === 0) {
-        console.log('No videos to upload.');
+        console.log('No recordings to upload.');
         return;
     }
 
-    const missingS3Keys: string[] = [];
+    console.log(`\n${DRY_RUN ? '[DRY RUN] ' : ''}Videos to upload: ${jobs.length}`);
     for (const job of jobs) {
-        if (!(await s3ObjectExists(job))) {
-            missingS3Keys.push(job.s3Key);
-        }
+        console.log(`  [${job.lecture.name}] ${job.date} — "${job.title}" (${job.s3Key})`);
     }
-    if (missingS3Keys.length > 0) {
-        console.error('Missing S3 objects:');
-        for (const key of missingS3Keys) {
-            console.error(`  s3://${S3_BUCKET}/${key}`);
-        }
-        throw new Error(`${missingS3Keys.length} recording(s) not found in S3.`);
+
+    if (DRY_RUN) {
+        console.log('\nDry run complete. No uploads or DynamoDB updates were performed.');
+        return;
     }
 
     const youtubeClient = await getYoutubeClient();
@@ -216,14 +354,11 @@ async function main() {
         throw new Error('No YouTube channel found for these OAuth credentials.');
     }
 
-    console.log(`Authenticated channel: ${channel.snippet.title} (${channel.id})`);
+    console.log(`\nAuthenticated channel: ${channel.snippet.title} (${channel.id})`);
     console.log(`S3 bucket: ${S3_BUCKET}`);
-    console.log(`Videos to upload: ${jobs.length}`);
-    for (const job of jobs) {
-        console.log(`  [${job.className}] ${job.date} — "${job.title}" (${job.s3Key})`);
-    }
+    console.log(`DynamoDB table: ${LIVE_CLASSES_TABLE}`);
 
-    const confirmed = await confirmUpload('Upload these videos to YouTube?');
+    const confirmed = await confirmUpload('Upload these videos to YouTube and update DynamoDB?');
     if (!confirmed) {
         console.log('Upload cancelled.');
         return;
@@ -231,16 +366,30 @@ async function main() {
 
     for (const [index, job] of jobs.entries()) {
         console.log(`Uploading ${index + 1}/${jobs.length}: "${job.title}"...`);
-        const { body, contentType } = await getS3ObjectStream(job.s3Key);
-        const result = await uploadVideoToYouTube({
-            youtubeClient,
-            videoStream: body,
-            title: job.title,
-            playlistId: job.playlistId,
-            description: job.description,
-            mimeType: contentType || 'video/mp4',
-        });
-        console.log(`  Uploaded: ${result.videoUrl}`);
+        const localFilePath = `/tmp/test-upload-${index}.mp4`;
+        try {
+            const contentType = await downloadS3ObjectToFile(job.s3Key, localFilePath);
+            const durationSeconds = getVideoDurationSeconds(localFilePath);
+            const result = await uploadVideoToYouTube({
+                youtubeClient,
+                videoStream: createReadStream(localFilePath),
+                title: job.title,
+                playlistId: job.playlistId,
+                description: job.description,
+                mimeType: contentType || 'video/mp4',
+            });
+            console.log(`  Uploaded: ${result.videoUrl}`);
+
+            await updateDynamoDBRecording({
+                lecture: job.lecture,
+                job,
+                videoId: result.videoId,
+                durationSeconds,
+            });
+            console.log(`  Updated DynamoDB for "${job.lecture.name}" on ${job.date}.`);
+        } finally {
+            await unlink(localFilePath).catch(console.error);
+        }
     }
 
     console.log('All uploads complete.');

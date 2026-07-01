@@ -53,6 +53,8 @@ export interface LiveClassRecording {
     title?: string;
     /** The description of the recording. */
     description?: string;
+    /** The duration of the recording in seconds. */
+    durationSeconds?: number;
 }
 
 /** A cohort of users in the Game & Profile Review tier. */

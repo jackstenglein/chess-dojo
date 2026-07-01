@@ -23,7 +23,7 @@ var meetingInfos: MeetingInfo[] = [];
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         console.log('Event: ', event);
-        const dynamoClasses = await fetchFromDynamo();
+        const dynamoClasses: LiveClass[] = await fetchFromDynamo();
         const meetingInfos = getMeetingInfos();
         const command = new ListObjectsV2Command({ Bucket: S3_BUCKET });
         const response = await S3_CLIENT.send(command);
@@ -54,6 +54,12 @@ async function fetchFromDynamo(): Promise<LiveClass[]> {
         } while (lastEvaluatedKey);
     }
 
+    for (const liveClass of classes) {
+        liveClass.recordings.sort((lhs, rhs) => rhs.date.localeCompare(lhs.date));
+    }
+    classes.sort((lhs, rhs) =>
+        lhs.recordings[0]?.date.localeCompare(rhs.recordings[0]?.date || ''),
+    );
     return classes;
 }
 
