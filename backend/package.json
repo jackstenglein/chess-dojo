@@ -33,7 +33,7 @@
         "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
         "@savi2w/chess-tcn": "^1.0.0",
-        "adm-zip": "^0.5.17",
+        "adm-zip": "^0.5.18",
         "aws-lambda": "^1.0.7",
         "aws4": "^1.13.2",
         "axios": "^1.16.1",
