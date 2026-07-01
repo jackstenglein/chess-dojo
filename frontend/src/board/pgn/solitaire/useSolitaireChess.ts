@@ -242,6 +242,11 @@ function handleCorrectMove({
     setResults: React.Dispatch<React.SetStateAction<SolitaireResults>>;
 }) {
     const nextMove = chess.move(move);
+
+    nextMove?.variations?.forEach((variation) => {
+        variation[0].commentMove = 'Incorrect guess in solitaire mode';
+    });
+
     const color = nextMove?.color === Color.white ? 'white' : 'black';
     setResults((results) => ({
         ...results,
