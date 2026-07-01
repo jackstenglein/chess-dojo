@@ -27,7 +27,7 @@
         "@aws-sdk/client-sesv2": "^3.1063.0",
         "@aws-sdk/client-sqs": "^3.1063.0",
         "@aws-sdk/lib-storage": "^3.1063.0",
-        "@aws-sdk/s3-request-presigner": "^3.1061.0",
+        "@aws-sdk/s3-request-presigner": "^3.1077.0",
         "@aws-sdk/util-dynamodb": "^3.996.2",
         "@googleapis/drive": "^20.2.0",
         "@jackstenglein/chess": "^2.2.21",
