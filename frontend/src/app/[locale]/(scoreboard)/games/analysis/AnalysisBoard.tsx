@@ -56,9 +56,8 @@ export default function AnalysisBoard() {
     const { searchParams } = useNextSearchParams();
     const { user, status } = useAuth();
     const navGuard = useNavigationGuard({
-        enabled: ({ to }) => {
-            return !gameUrlRegex.test(to);
-        },
+        enabled: ({ to }) =>
+            !gameUrlRegex.test(to) && Math.ceil((latestChessRef.current?.plyCount() ?? 0) / 2) > 5,
     });
     const [chess, setChess] = useState<Chess>();
     const maiaGame = useMaiaGame();
