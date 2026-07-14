@@ -36,6 +36,7 @@ import { Club, ClubJoinRequestStatus } from '../database/club';
 import { Course } from '../database/course';
 import { Event } from '../database/event';
 import { GameReviewType, PositionComment } from '../database/game';
+import { CreatePatRequest } from '../database/pat';
 import { Requirement } from '../database/requirement';
 import { LeaderboardSite, TournamentType } from '../database/tournament';
 import { User } from '../database/user';
@@ -190,6 +191,8 @@ import {
     UpdateUserTimelineRequest,
     UserApiContextType,
     checkUserAccess,
+    createPersonalAccessToken,
+    deletePersonalAccessToken,
     discordAuth,
     editFollower,
     getFollower,
@@ -200,6 +203,7 @@ import {
     graduate,
     listFollowers,
     listFollowing,
+    listPersonalAccessTokens,
     listUserTimeline,
     listUsersByCohort,
     resetUserProgress,
@@ -281,6 +285,10 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             listFollowing: (username: string, startKey?: string) =>
                 listFollowing(username, startKey),
             discordAuth: (request: DiscordAuthRequest) => discordAuth(idToken, request),
+            createPersonalAccessToken: (request: CreatePatRequest) =>
+                createPersonalAccessToken(idToken, request),
+            listPersonalAccessTokens: () => listPersonalAccessTokens(idToken),
+            deletePersonalAccessToken: (id: string) => deletePersonalAccessToken(idToken, id),
 
             bookEvent: (id: string, startTime?: Date, type?: string) =>
                 bookEvent(idToken, id, startTime, type),

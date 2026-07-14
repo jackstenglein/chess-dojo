@@ -310,6 +310,37 @@ resources:
         StreamSpecification:
           StreamViewType: NEW_IMAGE
 
+    PersonalAccessTokensTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        TableName: ${sls:stage}-personal-access-tokens
+        AttributeDefinitions:
+          - AttributeName: tokenHash
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tokenHash
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        GlobalSecondaryIndexes:
+          - IndexName: UsernameIdx
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
     FollowersTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
@@ -774,6 +805,8 @@ resources:
       Value: !GetAtt TimelineTable.StreamArn
     FollowersTableArn:
       Value: !GetAtt FollowersTable.Arn
+    PatsTableArn:
+      Value: !GetAtt PersonalAccessTokensTable.Arn
     FollowersTableStreamArn:
       Value: !GetAtt FollowersTable.StreamArn
     NotificationsTableArn:
