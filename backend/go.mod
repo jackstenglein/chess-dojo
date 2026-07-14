@@ -8,7 +8,7 @@ require (
 	github.com/corentings/chess v0.0.0-20241113092200-3f44c4e3e959
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stripe/stripe-go/v81 v81.4.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 )
 
 require (
