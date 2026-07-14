@@ -76,4 +76,8 @@ describe('isCorrectAnswer', () => {
     it('rejects castling wrong way', () => {
         expect(isCorrectAnswer('', 'O-O-O', 'O-O')).toBe(false);
     });
+
+    it('accepts another move that is checkmate', () => {
+        expect(isCorrectAnswer('8/8/pK6/8/k7/2Q5/1P6/3q4 w - - 0 1', 'Qa3', 'Qc4#')).toBe(true);
+    });
 });
