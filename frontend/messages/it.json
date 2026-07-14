@@ -1,4 +1,27 @@
 {
+    "_translationMeta": {
+        "_about": "Instructions for whoever produces a translated copy of this file. Paths listed under skipAutoTranslate should not be passed through an automated translator; manual human translation of those paths is welcome where appropriate. preserveStructure rules apply to every key during translation. This block is stripped at message-load time and never reaches the runtime UI.",
+        "skipAutoTranslate": {
+            "enums.ratingSystem": "Backend wire values plus brand-name display labels. Keep English so users can match the labels on the actual rating-system websites. Manual translation OK if the translator knows the local convention.",
+            "enums.requirementCategory": "Display labels for a backend category enum. Manual translation welcome.",
+            "enums.requirementCategoryShort": "Same as requirementCategory.",
+            "landing.senseis": "Trainer names are proper nouns; bios are credential prose with embedded titles and platform names. Manual translation only.",
+            "coach.stripe.connect": "References a payment processor brand. Manual translation if surrounding text needs it.",
+            "coach.stripe.dashboard": "Same.",
+            "profile.ratings.chesscomUsername": "Brand name in label.",
+            "profile.ratings.lichessUsername": "Brand name in label.",
+            "profile.ratings.fideId": "Acronym for an international chess federation.",
+            "profile.ratings.uscfId": "Acronym for a national chess federation.",
+            "profile.ratings.ecfRatingCode": "Acronym for a national chess federation.",
+            "profile.ratings.cfcId": "Acronym for a national chess federation.",
+            "profile.ratings.dwzId": "Acronym for a national rating system."
+        },
+        "preserveStructure": {
+            "icuPlurals": "Preserve {count, plural, =1 {...} other {...}} syntax verbatim. Translate only the text inside the inner braces.",
+            "tagPlaceholders": "Preserve <tagName>...</tagName> tags including the tag name itself. Translate only the text between tags.",
+            "variables": "Preserve {variableName} placeholders verbatim. Surrounding sentence may be restructured for word order, but placeholder spelling and case must not change."
+        }
+    },
     "common": {
         "timezone": "Fuso orario",
         "language": "Lingua",
@@ -3876,7 +3899,8 @@
                 "startFromCurrentMoveButton": "Inizia dalla mossa attuale",
                 "exitSolitaireModeButton": "Esci dalla modalità solitario",
                 "cannotStartLastMoveError": "Impossibile iniziare dall'ultima mossa",
-                "cannotStartVariationError": "Impossibile iniziare da una variante"
+                "cannotStartVariationError": "Impossibile iniziare da una variante",
+                "incorrectMoveComment": "Indovinare in modo errato nella modalità solitario"
             }
         }
     },

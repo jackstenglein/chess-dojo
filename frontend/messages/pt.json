@@ -3899,7 +3899,8 @@
                 "startFromCurrentMoveButton": "Começar do lance atual",
                 "exitSolitaireModeButton": "Sair do modo solitário",
                 "cannotStartLastMoveError": "Não é possível começar do último lance",
-                "cannotStartVariationError": "Não é possível começar de uma variante"
+                "cannotStartVariationError": "Não é possível começar de uma variante",
+                "incorrectMoveComment": "Palpite incorreto no modo solitário"
             }
         }
     },

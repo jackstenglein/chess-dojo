@@ -1,4 +1,27 @@
 {
+    "_translationMeta": {
+        "_about": "Instructions for whoever produces a translated copy of this file. Paths listed under skipAutoTranslate should not be passed through an automated translator; manual human translation of those paths is welcome where appropriate. preserveStructure rules apply to every key during translation. This block is stripped at message-load time and never reaches the runtime UI.",
+        "skipAutoTranslate": {
+            "enums.ratingSystem": "Backend wire values plus brand-name display labels. Keep English so users can match the labels on the actual rating-system websites. Manual translation OK if the translator knows the local convention.",
+            "enums.requirementCategory": "Display labels for a backend category enum. Manual translation welcome.",
+            "enums.requirementCategoryShort": "Same as requirementCategory.",
+            "landing.senseis": "Trainer names are proper nouns; bios are credential prose with embedded titles and platform names. Manual translation only.",
+            "coach.stripe.connect": "References a payment processor brand. Manual translation if surrounding text needs it.",
+            "coach.stripe.dashboard": "Same.",
+            "profile.ratings.chesscomUsername": "Brand name in label.",
+            "profile.ratings.lichessUsername": "Brand name in label.",
+            "profile.ratings.fideId": "Acronym for an international chess federation.",
+            "profile.ratings.uscfId": "Acronym for a national chess federation.",
+            "profile.ratings.ecfRatingCode": "Acronym for a national chess federation.",
+            "profile.ratings.cfcId": "Acronym for a national chess federation.",
+            "profile.ratings.dwzId": "Acronym for a national rating system."
+        },
+        "preserveStructure": {
+            "icuPlurals": "Preserve {count, plural, =1 {...} other {...}} syntax verbatim. Translate only the text inside the inner braces.",
+            "tagPlaceholders": "Preserve <tagName>...</tagName> tags including the tag name itself. Translate only the text between tags.",
+            "variables": "Preserve {variableName} placeholders verbatim. Surrounding sentence may be restructured for word order, but placeholder spelling and case must not change."
+        }
+    },
     "common": {
         "timezone": "Zeitzone",
         "language": "Sprache",
@@ -2195,11 +2218,11 @@
                 "lichessJoin": "Tritt <link>ChessDoji's Team</link> auf Lichess bei.",
                 "chesscomJoin": "Tritt <link>ChessDojo's Team</link> auf Chess.com bei",
                 "discordJoin": "Tritt <link>ChessDojo's Discord</link> bei, um optional deine Lichess- und Chess.com-Konten zu verbinden!",
-                "leaderboardHeader": "Ranglisten Info",
                 "eventsHeader": "Wöchentliche Swiss-Events",
                 "mondayEvents": "Montag 14 Uhr ET — Blitz 3+2 (9 Runden)",
                 "wednesdayEvents": "Mittwoch 13 Uhr ET — Rapid 15+5 (5 Runden)",
                 "saturdayEvents": "Samstag 12 Uhr ET — Klassisch 30+5 (4 Runden)",
+                "leaderboardHeader": "Ranglisten Info",
                 "weeklyEvents": "Wöchentliche Swiss-Events:",
                 "weeklySwissPoints": {
                     "first": "1. Platz: 12 Punkte",
@@ -3710,6 +3733,7 @@
                 "replyPostButton": "Antworten",
                 "updatedAt": "Aktualisiert am {date} • {time}"
             },
+            "directories": {},
             "share": {
                 "addToFolder": "Zum Ordner hinzufügen",
                 "copyUrl": "URL kopieren",
@@ -3875,7 +3899,8 @@
                 "startFromCurrentMoveButton": "Vom aktuellen Zug starten",
                 "exitSolitaireModeButton": "Solitär-Modus beenden",
                 "cannotStartLastMoveError": "Kann nicht vom letzten Zug starten",
-                "cannotStartVariationError": "Kann nicht von einer Variante starten"
+                "cannotStartVariationError": "Kann nicht von einer Variante starten",
+                "incorrectMoveComment": "Falsche Eingabe im Solitärmodus"
             }
         }
     },
@@ -3969,6 +3994,7 @@
             "faqClassCalendar": "<faqLink>FAQ</faqLink> / <calendarLink>Kurs-Kalender</calendarLink>",
             "perClassSubtitle": "(~ {currency}{amount} / Klasse)"
         },
+        "sellingPoint": {},
         "pricingPage": {
             "tabMonthly": "Monatlich",
             "tabYearly": "Jährlich",

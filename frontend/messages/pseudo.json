@@ -2218,11 +2218,11 @@
                 "lichessJoin": "[T] Join <link>ChessDojo's Team</link> on Lichess.",
                 "chesscomJoin": "[T] Join <link>ChessDojo's Team</link> on Chess.com.",
                 "discordJoin": "[T] Join <link>ChessDojo's Discord</link> to optionally connect your Lichess and Chess.com accounts!",
-                "leaderboardHeader": "[T] Leaderboard Info",
                 "eventsHeader": "[T] Weekly Swiss Events",
                 "mondayEvents": "[T] Monday 2pm ET — Blitz 3+2 (9 rounds)",
                 "wednesdayEvents": "[T] Wednesday 1pm ET — Rapid 15+5 (5 rounds)",
                 "saturdayEvents": "[T] Saturday 12pm ET — Classical 30+5 (4 rounds)",
+                "leaderboardHeader": "[T] Leaderboard Info",
                 "weeklyEvents": "[T] Weekly Swiss Events:",
                 "weeklySwissPoints": {
                     "first": "[T] 1st: 12 points",
@@ -3733,6 +3733,7 @@
                 "replyPostButton": "[T] reply",
                 "updatedAt": "[T] Updated at {date} • {time}"
             },
+            "directories": {},
             "share": {
                 "addToFolder": "[T] Add to Folder",
                 "copyUrl": "[T] Copy URL",
@@ -3898,7 +3899,8 @@
                 "startFromCurrentMoveButton": "[T] Start from Current Move",
                 "exitSolitaireModeButton": "[T] Exit Solitaire Mode",
                 "cannotStartLastMoveError": "[T] Cannot start from the last move",
-                "cannotStartVariationError": "[T] Cannot start from a variation"
+                "cannotStartVariationError": "[T] Cannot start from a variation",
+                "incorrectMoveComment": "[T] Incorrect guess in solitaire mode"
             }
         }
     },
@@ -3992,6 +3994,7 @@
             "faqClassCalendar": "[T] <faqLink>FAQ</faqLink> / <calendarLink>Class Calendar</calendarLink>",
             "perClassSubtitle": "[T] (~ {currency}{amount} / class)"
         },
+        "sellingPoint": {},
         "pricingPage": {
             "tabMonthly": "[T] Monthly",
             "tabYearly": "[T] Yearly",
