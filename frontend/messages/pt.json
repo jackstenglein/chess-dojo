@@ -2999,6 +2999,12 @@
                 "recordingCount": "{count, plural, =1 {# gravação} other {# gravações}}",
                 "play": "Reproduzir"
             },
+            "recordingsPage": {
+                "back": "Voltar às aulas ao vivo",
+                "notFound": "Aula não encontrada",
+                "playlist": "Gravações",
+                "aiDescription": "Descrição gerada por IA"
+            },
             "upsell": {
                 "title": "Faça upgrade para acessar todas as aulas ao vivo",
                 "description": "Seu plano atual não dá acesso a esta aula. Faça upgrade para:",

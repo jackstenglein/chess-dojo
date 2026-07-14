@@ -2976,6 +2976,12 @@
                 "recordingCount": "{count, plural, =1 {# Aufnahme} other {# Aufnahmen}}",
                 "play": "Spielen"
             },
+            "recordingsPage": {
+                "back": "Zurück zu Live-Kursen",
+                "notFound": "Kurs nicht gefunden",
+                "playlist": "Aufnahmen",
+                "aiDescription": "KI-generierte Beschreibung"
+            },
             "upsell": {
                 "title": "Upgrade zum Zugriff auf alle Live-Kurse",
                 "description": "Dein aktueller Plan bietet keinen Zugriff auf diese Klasse. Upgrade auf:",

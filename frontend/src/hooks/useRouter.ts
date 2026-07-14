@@ -18,6 +18,7 @@ export const pagesWithVideos = [
     /\/scoreboard\/.*/,
     /^\/learn\/guides$/,
     /^\/learn\/live-classes$/,
+    /^\/learn\/live-classes\/.+$/,
     /^\/live-classes$/,
 
     // Blog

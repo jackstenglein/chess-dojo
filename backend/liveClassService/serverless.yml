@@ -96,6 +96,12 @@ functions:
       - httpApi:
           path: /public/live-classes/recordings
           method: get
+      - httpApi:
+          path: /live-classes/recordings
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     environment:
       stage: ${sls:stage}
       s3Bucket: !Ref LiveClassesBucket
@@ -104,6 +110,10 @@ functions:
         Action:
           - dynamodb:Query
         Resource: !GetAtt LiveClassesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
       - Effect: Allow
         Action:
           - s3:ListBucket

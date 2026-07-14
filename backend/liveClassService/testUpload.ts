@@ -364,6 +364,7 @@ async function main() {
         return;
     }
 
+    let success = 0;
     for (const [index, job] of jobs.entries()) {
         console.log(`Uploading ${index + 1}/${jobs.length}: "${job.title}"...`);
         const localFilePath = `/tmp/test-upload-${index}.mp4`;
@@ -387,6 +388,10 @@ async function main() {
                 durationSeconds,
             });
             console.log(`  Updated DynamoDB for "${job.lecture.name}" on ${job.date}.`);
+            success++;
+            if (success >= 10) {
+                break;
+            }
         } finally {
             await unlink(localFilePath).catch(console.error);
         }

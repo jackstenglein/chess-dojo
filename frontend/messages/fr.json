@@ -2976,6 +2976,12 @@
                 "recordingCount": "{count, plural, =1 {# enregistrement} other {# enregistrements}}",
                 "play": "Lire"
             },
+            "recordingsPage": {
+                "back": "Retour aux cours en direct",
+                "notFound": "Cours introuvable",
+                "playlist": "Enregistrements",
+                "aiDescription": "Description générée par l'IA"
+            },
             "upsell": {
                 "title": "Passe à un forfait supérieur pour accéder à tous les cours en direct",
                 "description": "Ton forfait actuel ne donne pas accès à ce cours. Passe à un forfait supérieur pour :",

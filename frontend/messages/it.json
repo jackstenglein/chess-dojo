@@ -2976,6 +2976,12 @@
                 "recordingCount": "{count, plural, =1 {# registrazione} other {# registrazioni}}",
                 "play": "Riproduci"
             },
+            "recordingsPage": {
+                "back": "Torna alle lezioni dal vivo",
+                "notFound": "Lezione non trovata",
+                "playlist": "Registrazioni",
+                "aiDescription": "Descrizione generata dall'IA"
+            },
             "upsell": {
                 "title": "Esegui l'upgrade per accedere a tutte le lezioni dal vivo",
                 "description": "Il tuo piano attuale non dà accesso a questa lezione. Esegui l'upgrade per:",

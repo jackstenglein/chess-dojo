@@ -2999,6 +2999,12 @@
                 "recordingCount": "{count, plural, =1 {# recording} other {# recordings}}",
                 "play": "Play"
             },
+            "recordingsPage": {
+                "back": "Back to Live Classes",
+                "notFound": "Class not found",
+                "playlist": "Recordings",
+                "aiDescription": "AI-generated description"
+            },
             "upsell": {
                 "title": "Upgrade to Access All Live Classes",
                 "description": "Your current plan doesn't provide access to this class. Upgrade to:",

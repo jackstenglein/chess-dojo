@@ -2999,6 +2999,12 @@
                 "recordingCount": "{count, plural, =1 {# grabación} other {# grabaciones}}",
                 "play": "Reproducir"
             },
+            "recordingsPage": {
+                "back": "Volver a clases en vivo",
+                "notFound": "Clase no encontrada",
+                "playlist": "Grabaciones",
+                "aiDescription": "Descripción generada por IA"
+            },
             "upsell": {
                 "title": "Cambia a un plan superior para acceder a todas las clases en vivo",
                 "description": "Tu plan actual no incluye acceso a esta clase. Cambia a un plan superior para:",
