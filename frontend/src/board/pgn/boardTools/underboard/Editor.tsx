@@ -93,6 +93,8 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
     const [moreNagAnchorEl, setMoreNagAnchorEl] = useState<HTMLElement>();
 
     const t = useTranslations('analysisBoard.underboard');
+    const editorMoveNags = moveNags.filter((nag) => nag !== '$7');
+    const moreNags = ['$7', ...positionalNags];
 
     useEffect(() => {
         if (chess) {
@@ -167,7 +169,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
     };
 
     const onClickMenuNag = (nag: string) => {
-        const currentNags = getNagsInSet(positionalNags, move?.nags);
+        const currentNags = getNagsInSet(moreNags, move?.nags);
         const index = currentNags.indexOf(nag);
         if (index < 0) {
             currentNags.push(nag);
@@ -182,6 +184,16 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
         reconcile();
     };
 
+    const onToggleDrawOffer = () => {
+        if (!move) {
+            return;
+        }
+
+        move.drawOffer = !move.drawOffer;
+        chess.setNags([...(move.nags ?? [])], move);
+        reconcile();
+    };
+
     const onUpdateTimeControl = (value: string) => {
         chess.setHeader('TimeControl', value);
         setShowTimeControlEditor(false);
@@ -192,6 +204,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
         (Boolean(move) && config?.disableTakebacks?.[0] === move?.color);
 
     const nullMoveStatus = getNullMoveStatus(chess, t);
+    const currentMoveNag = getNagInSet(editorMoveNags, chess.currentMove()?.nags);
 
     return (
         <CardContent sx={{ height: { md: 1 } }}>
@@ -306,17 +319,18 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         ))}
                     </ToggleButtonGroup>
 
-                    <ToggleButtonGroup
-                        disabled={!move}
-                        exclusive
-                        value={getNagInSet(moveNags, chess.currentMove()?.nags)}
-                        onChange={handleExclusiveNag(moveNags)}
-                        size='small'
-                    >
-                        {moveNags.map((nag) => (
+                    <ToggleButtonGroup disabled={!move} size='small'>
+                        {editorMoveNags.map((nag) => (
                             <NagButton
                                 key={nag}
                                 value={nag}
+                                selected={currentMoveNag === nag}
+                                onClick={() =>
+                                    handleExclusiveNag(editorMoveNags)(
+                                        undefined,
+                                        currentMoveNag === nag ? null : nag,
+                                    )
+                                }
                                 text={nags[nag].label}
                                 description={nags[nag].description}
                                 sx={{
@@ -325,6 +339,31 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                                 }}
                             />
                         ))}
+
+                        <Tooltip title={t('offerDraw')} disableInteractive>
+                            <span style={{ width: `${100 / 8}%` }}>
+                                <ToggleButton
+                                    value='draw'
+                                    selected={Boolean(move?.drawOffer)}
+                                    onChange={onToggleDrawOffer}
+                                    sx={{
+                                        width: 1,
+                                        borderTopLeftRadius: 0,
+                                        borderTopRightRadius: 0,
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            whiteSpace: 'nowrap',
+                                            fontSize: '1.3rem',
+                                            fontWeight: '600',
+                                        }}
+                                    >
+                                        (=)
+                                    </Typography>
+                                </ToggleButton>
+                            </span>
+                        </Tooltip>
 
                         <Tooltip title={t('viewMore')} disableInteractive>
                             <span style={{ width: `${100 / 8}%` }}>
@@ -344,7 +383,7 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         open={!!moreNagAnchorEl}
                         onClose={() => setMoreNagAnchorEl(undefined)}
                     >
-                        {positionalNags.map((nag) => (
+                        {moreNags.map((nag) => (
                             <MenuItem
                                 key={nag}
                                 onClick={() => onClickMenuNag(nag)}

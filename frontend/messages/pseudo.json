@@ -3519,6 +3519,7 @@
             "commentBefore": "[T] Comment Before",
             "commentAfter": "[T] Comment After",
             "viewMore": "[T] View more",
+            "offerDraw": "[T] Offer draw",
             "nullMove": "[T] Null",
             "makeMainLine": "[T] Make main line",
             "moveVariationUp": "[T] Move variation up",

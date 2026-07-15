@@ -458,7 +458,7 @@ const MoveButton: React.FC<MoveButtonProps> = ({
         setMenuAnchorEl(undefined);
     };
 
-    const moveText = move.san;
+    const moveText = move.drawOffer ? `${move.san} (=)` : move.san;
 
     if (inline) {
         let text = '';
