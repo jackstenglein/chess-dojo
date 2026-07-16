@@ -1,3 +1,4 @@
+import path from 'path';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
@@ -8,9 +9,17 @@ const withNextIntl = createNextIntlPlugin();
 // the new locale's URLs.
 const LOCALE_PATTERN = ':locale(en|pseudo|de|es|pt|fr|it)';
 
+// chess-dojo-common is linked via file:../common. Turbopack only resolves
+// files under this root, and outputFileTracingRoot must match turbopack.root.
+const monorepoRoot = path.join(import.meta.dirname, '..');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    outputFileTracingRoot: import.meta.dirname,
+    outputFileTracingRoot: monorepoRoot,
+    turbopack: {
+        root: monorepoRoot,
+    },
+    transpilePackages: ['@jackstenglein/chess-dojo-common'],
     productionBrowserSourceMaps: process.env.ENABLE_SOURCE_MAPS === 'true',
     images: {
         remotePatterns: [
