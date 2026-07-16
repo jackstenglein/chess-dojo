@@ -15,7 +15,7 @@
         "@jackstenglein/chess": "^2.2.21",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
-        "uuid": "^14.0.0",
+        "uuid": "^14.0.1",
         "zod": "^4.4.3"
     },
     "devDependencies": {
