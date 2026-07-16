@@ -57,7 +57,7 @@
         "@jackstenglein/react-scheduler": "^4.0.3",
         "@mui/icons-material": "^7.3.7",
         "@mui/lab": "^7.0.1-beta.25",
-        "@mui/material": "^7.3.7",
+        "@mui/material": "^9.2.0",
         "@mui/material-nextjs": "^9.0.1",
         "@mui/x-charts": "^8.26.0",
         "@mui/x-data-grid-pro": "^8.28.6",
