@@ -200,10 +200,18 @@ export function getUserPublic(username: string) {
 /** The billing path hint for an admin-only user. */
 export type AdminBillingPathHint = 'override' | 'stripe' | 'wix' | 'none';
 
+/** The user as viewed by an admin. */
+export interface UserAdminView extends User {
+    /** The email of the user. */
+    email: string;
+    /** The email of the user on wix. */
+    wixEmail: string;
+}
+
 /** The response from an admin getting a user. */
 export interface AdminUserResponse {
     /** The user. */
-    user: User;
+    user: UserAdminView;
     /** The admin hints. */
     adminHints: {
         /** The billing path hint. */

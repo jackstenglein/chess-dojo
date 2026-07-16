@@ -193,6 +193,10 @@ export function ProfileAdminTab({
         : '';
 
     const onSubmitComplimentary = () => {
+        if (!user) {
+            return;
+        }
+
         let expiresAt = '';
         if (expiresLocal?.isValid) {
             expiresAt = expiresLocal.toUTC().toISO() ?? '';
@@ -207,7 +211,7 @@ export function ProfileAdminTab({
                 mutateRequest.onSuccess(r.data);
                 onProfileUserUpdated?.(r.data);
                 if (loadRequest.data) {
-                    loadRequest.onSuccess({ ...loadRequest.data, user: r.data });
+                    loadRequest.onSuccess({ ...loadRequest.data, user: { ...user, ...r.data } });
                 }
             })
             .catch((e: unknown) => mutateRequest.onFailure(e));
@@ -217,13 +221,16 @@ export function ProfileAdminTab({
         if (!window.confirm('Remove admin complimentary access for this user?')) {
             return;
         }
+        if (!user) {
+            return;
+        }
         mutateRequest.onStart();
         deleteAdminComplimentary(profileUsername)
             .then((r) => {
                 mutateRequest.onSuccess(r.data);
                 onProfileUserUpdated?.(r.data);
                 if (loadRequest.data) {
-                    loadRequest.onSuccess({ ...loadRequest.data, user: r.data });
+                    loadRequest.onSuccess({ ...loadRequest.data, user: { ...user, ...r.data } });
                 }
             })
             .catch((e: unknown) => mutateRequest.onFailure(e));
@@ -233,8 +240,8 @@ export function ProfileAdminTab({
         return (
             <Stack spacing={2} sx={{ py: 2 }} alignItems='start'>
                 <Typography>
-                    This page can contain sensitive information (e.g. user subscription tier). Make
-                    sure nobody else can see your screen before showing details.
+                    This page can contain sensitive information (e.g. user email and subscription
+                    tier). Make sure nobody else can see your screen before showing details.
                 </Typography>
                 <Button variant='contained' onClick={() => setHidden(false)}>
                     Show details
@@ -261,6 +268,9 @@ export function ProfileAdminTab({
             <Box>
                 <Typography variant='body2'>
                     Username: <strong>{profileUsername}</strong>
+                </Typography>
+                <Typography variant='body2'>
+                    Email: <strong>{user.email}</strong>
                 </Typography>
                 <Typography variant='body2'>
                     Subscription Status:{' '}
