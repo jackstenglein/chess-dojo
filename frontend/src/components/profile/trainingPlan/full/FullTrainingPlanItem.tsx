@@ -154,7 +154,13 @@ export const FullTrainingPlanItem = ({
                 >
                     <Grid
                         size={{ xs: 'grow', md: 9 }}
-                        onClick={() => setTaskDialogView(TaskDialogView.Details)}
+                        onClick={() =>
+                            setTaskDialogView(
+                                isCurrentUser && currentCount > 0
+                                    ? TaskDialogView.Progress
+                                    : TaskDialogView.Details,
+                            )
+                        }
                         sx={{ cursor: 'pointer', position: 'relative', maxWidth: { sm: '75%' } }}
                         id='task-details'
                         display='flex'
