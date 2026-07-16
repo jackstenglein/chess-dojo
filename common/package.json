@@ -23,7 +23,7 @@
         "@types/uuid": "^11.0.0",
         "eslint": "^9.39.2",
         "jiti": "^2.7.0",
-        "prettier": "^3.8.3",
+        "prettier": "^3.9.5",
         "prettier-plugin-organize-imports": "^4.3.0",
         "typescript-eslint": "^8.60.1",
         "vitest": "^4.1.10"
