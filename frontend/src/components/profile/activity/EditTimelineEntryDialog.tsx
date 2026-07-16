@@ -15,7 +15,8 @@ import {
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { ProgressHistoryItem, useProgressHistoryEditor } from '../trainingPlan/ProgressHistory';
+import { useProgressHistoryEditor } from '../trainingPlan/ProgressHistory';
+import { ProgressHistoryItem } from '../trainingPlan/ProgressHistoryItem';
 
 export function EditTimelinEntryDialog({
     entry,
@@ -51,8 +52,10 @@ export function EditTimelinEntryDialog({
         cohortTime,
         totalCount,
         totalTime,
-        getUpdateItem,
-        getDeleteItem,
+        updateItem,
+        updateDraftItem,
+        getDraftItem,
+        deleteItem,
         onSubmit,
     } = useProgressHistoryEditor({
         requirement,
@@ -140,10 +143,12 @@ export function EditTimelinEntryDialog({
                 <Box sx={{ mt: 1 }}>
                     <ProgressHistoryItem
                         requirement={requirement}
-                        item={items[index]}
+                        item={getDraftItem(index) ?? items[index]}
                         error={errors[index] || {}}
-                        updateItem={getUpdateItem(index)}
-                        deleteItem={getDeleteItem(index)}
+                        itemIndex={index}
+                        updateItem={updateItem}
+                        updateDraftItem={updateDraftItem}
+                        deleteItem={deleteItem}
                     />
                 </Box>
 

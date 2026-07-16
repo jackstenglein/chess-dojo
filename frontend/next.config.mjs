@@ -108,6 +108,7 @@ const pagesWithVideosRaw = [
     '/scoreboard/:path*',
     '/learn/guides',
     '/learn/live-classes',
+    '/learn/live-classes/:path*',
     '/learn/sparring',
     '/live-classes',
 

@@ -284,7 +284,7 @@
                 "fillInDetails": "Fill in the details below",
                 "cohort": "Cohort",
                 "deleteEntry": "Delete entry",
-                "totalCount": "Total {label} : {total}. Current Cohort: {cohortCount}",
+                "totalCount": "Total {label}: {total}. Current Cohort: {cohortCount}",
                 "totalTime": "Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m",
                 "deleteAriaLabel": "delete"
             },
@@ -2999,6 +2999,12 @@
                 "recordingCount": "{count, plural, =1 {# recording} other {# recordings}}",
                 "play": "Play"
             },
+            "recordingsPage": {
+                "back": "Back to Live Classes",
+                "notFound": "Class not found",
+                "playlist": "Recordings",
+                "aiDescription": "AI-generated description"
+            },
             "upsell": {
                 "title": "Upgrade to Access All Live Classes",
                 "description": "Your current plan doesn't provide access to this class. Upgrade to:",
@@ -3899,7 +3905,8 @@
                 "startFromCurrentMoveButton": "Start from Current Move",
                 "exitSolitaireModeButton": "Exit Solitaire Mode",
                 "cannotStartLastMoveError": "Cannot start from the last move",
-                "cannotStartVariationError": "Cannot start from a variation"
+                "cannotStartVariationError": "Cannot start from a variation",
+                "incorrectMoveComment": "Incorrect guess in solitaire mode"
             }
         }
     },

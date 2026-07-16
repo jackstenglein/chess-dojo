@@ -1,3 +1,4 @@
+import { Chess } from '@jackstenglein/chess';
 import { MateInOneAttempt } from '@jackstenglein/chess-dojo-common/src/mateInOne/api';
 import {
     PUZZLES_PER_BLOCK,
@@ -27,8 +28,23 @@ export function normalizeSan(san: string): string {
  * @param correctSan - The puzzle's correct mating move in SAN.
  * @returns Whether the user's input matches the correct move.
  */
-export function isCorrectAnswer(userInput: string, correctSan: string): boolean {
-    return normalizeSan(userInput) === normalizeSan(correctSan);
+export function isCorrectAnswer(fen: string, userInput: string, correctSan: string): boolean {
+    if (normalizeSan(userInput) === normalizeSan(correctSan)) {
+        return true;
+    }
+
+    try {
+        const chess = new Chess({ fen });
+        const moveResult = chess.move(userInput);
+
+        if (moveResult && chess.isCheckmate()) {
+            return true;
+        }
+    } catch (_e) {
+        return false;
+    }
+
+    return false;
 }
 
 /** Aggregate stats for a list of mate-in-one attempts. */

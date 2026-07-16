@@ -28,9 +28,18 @@ custom:
   simple:
     schedule: cron(0 0 ? * FRI 1970) # Never
 
+layers:
+  ffmpeg:
+    package:
+      artifact: ffmpeg-layer.zip
+
 functions:
   copyRecordings:
+    memorySize: 2048 # MB
+    ephemeralStorageSize: 2048 # MB
     handler: copyRecordings.handler
+    layers:
+      - !Ref FfmpegLambdaLayer
     package:
       individually: true
       patterns:
@@ -44,11 +53,13 @@ functions:
       meetRecordingsDriveFolder: ${file(../config-${sls:stage}.yml):meetRecordingsDriveFolder}
       finishedUploadsDriveFolder: ${file(../config-${sls:stage}.yml):finishedUploadsDriveFolder}
       s3Bucket: !Ref LiveClassesBucket
+      PATH: '/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
     iamRoleStatements:
       - Effect: Allow
         Action:
           - s3:PutObject
           - s3:PutObjectTagging
+          - s3:GetObject
         Resource: !Join
           - ''
           - - 'arn:aws:s3:::'
@@ -62,6 +73,17 @@ functions:
           - - 'arn:aws:s3:::'
             - ${param:SecretsBucket}
             - /liveClassesServiceAccountKey.json
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-liveClassesYouTubeOAuthCredentials-*
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-googleGenerativeAiApiKey-*
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - !GetAtt LiveClassesTable.Arn
 
   listRecordings:
     handler: listRecordings.handler
@@ -74,10 +96,24 @@ functions:
       - httpApi:
           path: /public/live-classes/recordings
           method: get
+      - httpApi:
+          path: /live-classes/recordings
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     environment:
       stage: ${sls:stage}
       s3Bucket: !Ref LiveClassesBucket
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt LiveClassesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
       - Effect: Allow
         Action:
           - s3:ListBucket
@@ -214,7 +250,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:Scan
+          - dynamodb:Query
         Resource: !GetAtt LiveClassesTable.Arn
       - Effect: Allow
         Action:

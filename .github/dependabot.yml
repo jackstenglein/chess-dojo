@@ -14,6 +14,10 @@ updates:
       interval: 'monthly'
     open-pull-requests-limit: 50
     target-branch: dev
+    groups:
+      aws_sdk:
+        patterns:
+          - "@aws-sdk/*"
   - package-ecosystem: 'gomod' # See documentation for possible values
     directory: '/backend' # Location of package manifests
     schedule:

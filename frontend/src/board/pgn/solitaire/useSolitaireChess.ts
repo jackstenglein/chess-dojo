@@ -8,7 +8,8 @@ import {
     CORRECT_SOUND_KEY,
     INCORRECT_SOUND_KEY,
 } from '@/components/puzzles/settings/puzzleSettingsKeys';
-import { Chess, Color, Move, Square } from '@jackstenglein/chess';
+import { Chess, Color, CommentType, Move, Square } from '@jackstenglein/chess';
+import { useTranslations } from 'next-intl';
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -92,6 +93,8 @@ export function useSolitaireChess(
     const allowDifferentMates = useRef(false);
     const [correctSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
     const [incorrectSound] = useLocalStorage(INCORRECT_SOUND_KEY, true);
+    const t = useTranslations('analysisBoard.underboard.tools');
+    const incorrectMoveComment = t('incorrectMoveComment');
 
     const start = useCallback(
         (move: Move | null, opts?: SolitaireChessOptions) => {
@@ -148,6 +151,11 @@ export function useSolitaireChess(
             }
 
             const move = { from: primMove.orig, to: primMove.dest, promotion: primMove.promotion };
+            const existingMove = chess.move(move, {
+                previousMove: currentMove,
+                skipSeek: true,
+                existingOnly: true,
+            });
             const testMove = chess.move(move, { previousMove: currentMove, skipSeek: true });
             if (
                 chess.isMainline(move) ||
@@ -176,8 +184,15 @@ export function useSolitaireChess(
             }
 
             incorrectMoves.current.push(move);
-            if (!addWrongMoves) {
+            if (!addWrongMoves && existingMove === null) {
                 chess.delete(testMove);
+            } else if (
+                addWrongMoves &&
+                testMove &&
+                !testMove.commentAfter?.includes(incorrectMoveComment)
+            ) {
+                const newComment = (testMove.commentAfter ?? '') + '\n\n' + incorrectMoveComment;
+                chess.setComment(newComment.trim(), CommentType.After, testMove);
             }
             board.set({
                 movable: {},
@@ -194,7 +209,15 @@ export function useSolitaireChess(
             }, 500);
             onWrongMove.current?.();
         },
-        [showGlyphs, addWrongMoves, currentMove, playAs, incorrectSound, correctSound],
+        [
+            showGlyphs,
+            addWrongMoves,
+            currentMove,
+            playAs,
+            incorrectSound,
+            correctSound,
+            incorrectMoveComment,
+        ],
     );
 
     const complete = currentMove === lastMove.current || chess.isCheckmate(currentMove);

@@ -15,6 +15,27 @@ export function formatRecordingDate(dateStr: string): string {
 }
 
 /**
+ * Formats a recording duration in seconds as m:ss or h:mm:ss.
+ * @param durationSeconds - The duration in seconds.
+ * @returns The formatted duration string, or undefined if duration is missing/invalid.
+ */
+export function formatRecordingDuration(durationSeconds?: number): string | undefined {
+    if (durationSeconds == null || durationSeconds < 0 || !Number.isFinite(durationSeconds)) {
+        return undefined;
+    }
+
+    const totalSeconds = Math.floor(durationSeconds);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/**
  * Checks if a live class matches a search query.
  * @param c - The live class to check.
  * @param query - The search query to check.
@@ -92,6 +113,35 @@ export function matchesCohortLevel(c: LiveClass, level: CohortLevelValue): boole
 
     const [min, max] = getCohortRangeInt(c.cohortRange);
     return rangesOverlap({ min, max }, { min: levelDef.min, max: levelDef.max });
+}
+
+/**
+ * Returns the URL slug for a live class.
+ * @param liveClass - The live class to get the slug for.
+ * @returns The URL slug for the live class.
+ */
+export function getLiveClassSlug(liveClass: LiveClass): string {
+    return liveClass.id ?? encodeURIComponent(liveClass.name);
+}
+
+/**
+ * Returns the href for a live class recordings page.
+ * @param liveClass - The live class to get the href for.
+ * @returns The href for the live class recordings page.
+ */
+export function getLiveClassHref(liveClass: LiveClass): string {
+    return `/learn/live-classes/${getLiveClassSlug(liveClass)}`;
+}
+
+/**
+ * Finds a live class by its URL slug.
+ * @param classes - The live classes to search.
+ * @param slug - The URL slug to find.
+ * @returns The matching live class, if any.
+ */
+export function findLiveClassBySlug(classes: LiveClass[], slug: string): LiveClass | undefined {
+    const decodedName = decodeURIComponent(slug);
+    return classes.find((c) => c.id === slug || c.name === decodedName);
 }
 
 /**

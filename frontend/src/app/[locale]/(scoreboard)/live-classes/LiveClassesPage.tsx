@@ -25,7 +25,7 @@ import PricingPage from '../prices/PricingPage';
 import { useOnSubscribe } from '../prices/useOnSubscribe';
 import gameReviewImage from './game_review.webp';
 
-const SAMPLE_CLASSES: LiveClass[] = [
+const SAMPLE_CLASSES: Partial<LiveClass>[] = [
     {
         name: 'Calculation 1000+',
         type: SubscriptionTier.Lecture,
@@ -106,7 +106,7 @@ export default function LiveClassesPage() {
                     </Typography>
 
                     <LiveClassesList
-                        classes={SAMPLE_CLASSES}
+                        classes={SAMPLE_CLASSES as LiveClass[]}
                         onTagClick={() => null}
                         selectedTags={[]}
                         variant='grid'

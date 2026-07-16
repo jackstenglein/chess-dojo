@@ -382,12 +382,12 @@ def collect_translation_units(en_node, existing_node, key_path, skip_paths, over
         if not isinstance(en_value, str):
             return
 
-        if should_skip_auto_translate(path, skip_paths):
-            units.append((path, en_value, existing_value, 'skip'))
-            return
-
         if not overwrite_existing and not is_empty_value(existing_value):
             units.append((path, en_value, existing_value, 'keep'))
+            return
+        
+        if should_skip_auto_translate(path, skip_paths):
+            units.append((path, en_value, existing_value, 'skip'))
             return
 
         units.append((path, en_value, existing_value, 'translate'))
@@ -472,10 +472,10 @@ def apply_plan_to_tree(en_tree: dict, existing_tree: dict, plan: LocalePlan, ski
     changes_by_key = {change.key: change.translated for change in plan.changes}
 
     def resolve(path, english, existing_value):
-        if should_skip_auto_translate(path, skip_paths):
-            return english
         if not overwrite_existing and not is_empty_value(existing_value):
             return existing_value
+        if should_skip_auto_translate(path, skip_paths):
+            return english
         return changes_by_key.get(path, english)
 
     def walk(en_value, existing_value, path):

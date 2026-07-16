@@ -2999,6 +2999,12 @@
                 "recordingCount": "{count, plural, =1 {# gravação} other {# gravações}}",
                 "play": "Reproduzir"
             },
+            "recordingsPage": {
+                "back": "Voltar às aulas ao vivo",
+                "notFound": "Aula não encontrada",
+                "playlist": "Gravações",
+                "aiDescription": "Descrição gerada por IA"
+            },
             "upsell": {
                 "title": "Faça upgrade para acessar todas as aulas ao vivo",
                 "description": "Seu plano atual não dá acesso a esta aula. Faça upgrade para:",
@@ -3899,7 +3905,8 @@
                 "startFromCurrentMoveButton": "Começar do lance atual",
                 "exitSolitaireModeButton": "Sair do modo solitário",
                 "cannotStartLastMoveError": "Não é possível começar do último lance",
-                "cannotStartVariationError": "Não é possível começar de uma variante"
+                "cannotStartVariationError": "Não é possível começar de uma variante",
+                "incorrectMoveComment": "Palpite incorreto no modo solitário"
             }
         }
     },
