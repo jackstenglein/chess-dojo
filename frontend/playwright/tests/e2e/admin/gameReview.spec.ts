@@ -98,9 +98,7 @@ test.describe('Admin game review page', () => {
     });
 
     test('displays unassigned users section', async ({ page }) => {
-        const unassigned = page
-            .locator('.MuiCard-root')
-            .filter({ hasText: 'Unassigned Users' });
+        const unassigned = page.locator('.MuiCard-root').filter({ hasText: 'Unassigned Users' });
 
         await expect(unassigned.getByText('Unassigned Users')).toBeVisible();
         await expect(unassigned.getByRole('link', { name: 'Dave' })).toBeVisible();
