@@ -47,6 +47,7 @@ export interface MultipleSelectChipProps {
     'data-testid'?: string;
     displayEmpty?: string;
     disabled?: boolean;
+    noTranslate?: boolean;
 }
 
 export default function MultipleSelectChip({
@@ -60,6 +61,7 @@ export default function MultipleSelectChip({
     helperText,
     displayEmpty,
     disabled,
+    noTranslate,
     ...others
 }: MultipleSelectChipProps) {
     const theme = useTheme();
@@ -75,7 +77,13 @@ export default function MultipleSelectChip({
     };
 
     return (
-        <FormControl {...others} sx={sx} error={error}>
+        <FormControl
+            {...others}
+            sx={sx}
+            error={error}
+            translate={noTranslate ? 'no' : undefined}
+            className={noTranslate ? 'notranslate' : undefined}
+        >
             {label && <InputLabel>{label}</InputLabel>}
             <Select
                 multiple
@@ -107,6 +115,8 @@ export default function MultipleSelectChip({
                         key={option.value}
                         value={option.value}
                         style={getStyles(option.value, selected, theme)}
+                        translate={noTranslate ? 'no' : undefined}
+                        className={noTranslate ? 'notranslate' : undefined}
                     >
                         {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
                         <ListItemText>{option.label}</ListItemText>

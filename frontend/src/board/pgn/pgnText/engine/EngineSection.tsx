@@ -167,14 +167,20 @@ export default function EngineSection() {
                                         }}
                                     >
                                         <Tooltip
-                                            title={t('localDepthTooltip', {
-                                                depth: engineLines[0].depth,
-                                            })}
+                                            title={
+                                                <span translate='no' className='notranslate'>
+                                                    {t('localDepthTooltip', {
+                                                        depth: engineLines[0].depth,
+                                                    })}
+                                                </span>
+                                            }
                                         >
                                             <Typography variant='caption'>
-                                                {t('depthDisplay', {
-                                                    depth: engineLines[0].depth,
-                                                })}
+                                                <span translate='no' className='notranslate'>
+                                                    {t('depthDisplay', {
+                                                        depth: engineLines[0].depth,
+                                                    })}
+                                                </span>
                                             </Typography>
                                         </Tooltip>
                                         <Typography
@@ -191,7 +197,13 @@ export default function EngineSection() {
 
                                     {showCloudDepth && (
                                         <Tooltip
-                                            title={t('cloudDepthTooltip', { depth: chessDbDepth })}
+                                            title={
+                                                <span translate='no' className='notranslate'>
+                                                    {t('cloudDepthTooltip', {
+                                                        depth: chessDbDepth,
+                                                    })}
+                                                </span>
+                                            }
                                             disableInteractive
                                         >
                                             <Stack direction='row' alignItems='center' spacing={1}>
@@ -208,7 +220,9 @@ export default function EngineSection() {
                                                     variant='caption'
                                                     sx={{ color: 'text.secondary' }}
                                                 >
-                                                    {t('depthDisplay', { depth: chessDbDepth })}
+                                                    <span translate='no' className='notranslate'>
+                                                        {t('depthDisplay', { depth: chessDbDepth })}
+                                                    </span>
                                                 </Typography>
                                             </Stack>
                                         </Tooltip>
