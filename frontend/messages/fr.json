@@ -2317,7 +2317,7 @@
                 "disputesThen": "Alors tu peux :",
                 "disputesAction1": "Soumettre la partie comme une victoire par forfait pour toi-même",
                 "disputesAction2": "Lors de la soumission de ta partie, tu auras la possibilité de signaler ton adversaire - cela alerte le TD que ton adversaire devrait être considéré pour une exclusion de ce tournoi et des tournois futurs",
-                "disputesAction3": "Envoyer un message privé au TD sur Discord avec des captures d'écran de tes tentatives pour contacter ton adversaire",
+                "disputesAction3": "Veuillez joindre des captures d'écran de vos tentatives de contact avec votre adversaire lorsque vous soumettez le résultat. Il n'est pas nécessaire de contacter directement l'arbitre.",
                 "disputesFootnote": "*Un effort concerté consiste soit à prendre contact en premier, soit à répondre à un premier contact dans les 48 heures ; et à proposer au moins 3 horaires différents, sur au moins 2 jours distincts, où tu es disponible pour jouer cette semaine-là. Si les deux joueurs font un effort concerté pour planifier une partie et ne parviennent toujours pas à trouver un moment pour jouer, la partie peut être soumise comme une nulle (1/2-1/2). En cas de litige, merci de contacter le TD sur Discord.",
                 "winnersTitle": "Vainqueurs",
                 "winnersBody": "Pour consulter le classement d'une ronde, tu peux te rendre sur la <tournamentLink>page du tournoi</tournamentLink>. Les vainqueurs de chaque section recevront une invitation à jouer dans un tournoi toutes rondes des champions. Les vainqueurs de l'année précédente sont invités à jouer par e-mail chaque mois de janvier."

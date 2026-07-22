@@ -2317,7 +2317,7 @@
                 "disputesThen": "Então você pode:",
                 "disputesAction1": "Enviar a partida como vitória por W.O. a seu favor",
                 "disputesAction2": "Ao enviar sua partida, você terá a opção de denunciar seu oponente - isso alerta o TD de que seu oponente deve ser considerado para remoção deste e de futuros torneios",
-                "disputesAction3": "Envie um MD ao TD no Discord com capturas de tela das suas tentativas de contatar seu oponente",
+                "disputesAction3": "Ao enviar o resultado, inclua capturas de tela das suas tentativas de contato com o seu oponente. Não é necessário enviar mensagem diretamente ao diretor do torneio.",
                 "disputesFootnote": "*Um esforço razoável consiste em entrar em contato primeiro ou responder a um contato inicial em até 48 horas; e oferecer ao menos 3 horários diferentes, em ao menos 2 dias distintos, em que você esteja disponível para jogar naquela semana. Se ambos os jogadores fizerem um esforço razoável para agendar a partida e ainda assim não conseguirem encontrar um horário para jogar, a partida pode ser enviada como empate (1/2-1/2). Em caso de disputa, entre em contato com o TD no Discord.",
                 "winnersTitle": "Vencedores e prêmios",
                 "winnersBody": "Para ver a classificação de qualquer rodada, você pode ir até a <tournamentLink>página do torneio</tournamentLink>. Ao final das 7 rodadas, os vencedores serão anunciados. Os vencedores de cada torneio se classificam para um torneio de fim de ano em janeiro de 2026."

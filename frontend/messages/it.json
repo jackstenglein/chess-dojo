@@ -2317,7 +2317,7 @@
                 "disputesThen": "Allora puoi:",
                 "disputesAction1": "Inviare la partita come vittoria per forfait a tuo favore",
                 "disputesAction2": "Al momento dell'invio della partita avrai la possibilità di segnalare il tuo avversario: questo avvisa il TD che il tuo avversario dovrebbe essere preso in considerazione per l'esclusione da questo e dai futuri tornei",
-                "disputesAction3": "Invia un messaggio diretto al TD su Discord con gli screenshot dei tuoi tentativi di contattare il tuo avversario",
+                "disputesAction3": "Allega gli screenshot dei tuoi tentativi di contattare l'avversario al momento della comunicazione del risultato. Non è necessario inviare un messaggio direttamente al direttore di gara.",
                 "disputesFootnote": "*Un impegno concreto consiste nel contattare per primo l'avversario oppure nel rispondere entro 48 ore a un primo contatto; e nel proporre almeno 3 orari diversi, in almeno 2 giorni distinti, in cui sei disponibile a giocare quella settimana. Se entrambi i giocatori si impegnano concretamente per organizzare una partita e non riescono comunque a trovare un orario per giocare, la partita può essere inviata come patta (1/2-1/2). In caso di controversia, contatta il TD su Discord.",
                 "winnersTitle": "Vincitori",
                 "winnersBody": "Per vedere la classifica di un qualsiasi turno, puoi andare alla <tournamentLink>pagina del torneo</tournamentLink>. I vincitori di ciascuna sezione riceveranno un invito a giocare un girone all'italiana dei Campioni. I vincitori dell'anno precedente verranno invitati a giocare via e-mail ogni gennaio."

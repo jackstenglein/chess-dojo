@@ -2317,7 +2317,7 @@
                 "disputesThen": "Entonces puedes:",
                 "disputesAction1": "Enviar la partida como victoria por incomparecencia a tu favor",
                 "disputesAction2": "Al enviar tu partida tendrás la opción de reportar a tu oponente; esto alerta al TD para que considere expulsarlo de este y de futuros torneos",
-                "disputesAction3": "Enviar un MD al TD en Discord con capturas de pantalla de tus intentos de contactar a tu oponente",
+                "disputesAction3": "Adjunte capturas de pantalla de sus intentos de contactar a su oponente al enviar el resultado. No es necesario que envíe un mensaje directamente al director del torneo.",
                 "disputesFootnote": "*Un esfuerzo razonable consiste en contactar primero o en responder a un contacto inicial en un plazo de 48 horas, y en ofrecer al menos 3 horarios diferentes, en al menos 2 días distintos, en los que estés disponible para jugar esa semana. Si ambos jugadores hacen un esfuerzo razonable por programar la partida y aun así no encuentran un horario para jugar, la partida se puede enviar como tablas (1/2-1/2). En caso de disputa, contacta al TD en Discord.",
                 "winnersTitle": "Ganadores y premios",
                 "winnersBody": "Para ver la clasificación de cualquier ronda, puedes ir a la <tournamentLink>página del torneo</tournamentLink>. Al final de las 7 rondas se anunciarán los ganadores. Los ganadores de cada torneo se clasificarán para un torneo de fin de año en enero de 2026."

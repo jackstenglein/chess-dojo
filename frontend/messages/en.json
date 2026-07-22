@@ -2317,7 +2317,7 @@
                 "disputesThen": "Then you can:",
                 "disputesAction1": "Submit the game as a forfeit win for yourself",
                 "disputesAction2": "When submitting your game will be given the option to report your opponent - this alerts the TD that your opponent should be considered for removal from this and future tournaments",
-                "disputesAction3": "DM the TD on Discord with screenshots of your attempts to reach out to your opponent",
+                "disputesAction3": "Submit screenshots of your attempt(s) to reach out to your opponent when you submit the result. You do not need to message the TD directly.",
                 "disputesFootnote": "*A concerted effort consists of either reaching out first or responding to an initial contact within 48 hours; and offering at least 3 different times, on at least 2 separate days, that you are available to play that week. If both players make a concerted effort to schedule a game and are still unable to find a time to play, the game can be submitted as a draw (1/2-1/2). In case of a dispute, please contact the TD on Discord.",
                 "winnersTitle": "Winners",
                 "winnersBody": "To view the standings for any round, you can navigate to the <tournamentLink>Tournament Page</tournamentLink>. The winners of each section will receive an invitation to play in a Champions' Round Robin. Winners from the previous year will be invited to play via email each January."
