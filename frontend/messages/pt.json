@@ -2553,6 +2553,8 @@
                 "columnChesscom": "Usuário do Chess.com",
                 "columnDiscord": "Usuário do Discord",
                 "columnScore": "Pontuação",
+                "columnActions": "Ações",
+                "editPlayer": "Editar jogador",
                 "withdrawnSuffix": " (Desistiu)"
             },
             "pairings": {
@@ -2563,9 +2565,37 @@
                 "columnWhite": "Brancas",
                 "columnBlack": "Pretas",
                 "columnResult": "Resultado",
+                "columnActions": "Ações",
+                "editResult": "Atualizar resultado",
                 "noPairings": "Nenhum emparelhamento disponível para esta rodada.",
                 "bye": "Bye",
                 "byeWithdrew": "Bye (<player></player> desistiu)"
+            },
+            "adminSetResult": {
+                "title": "Atualizar resultado",
+                "pairing": "{white} vs {black}",
+                "labelResult": "Resultado",
+                "resultHelper": "Deixe em branco e forneça uma URL da partida para preencher a partir do PGN, ou escolha Limpar para remover o resultado.",
+                "resultWhiteWins": "Brancas vencem (1-0)",
+                "resultBlackWins": "Pretas vencem (0-1)",
+                "resultDraw": "Empate (1/2-1/2)",
+                "resultClear": "Limpar resultado",
+                "labelGameUrl": "URL da partida (opcional)",
+                "urlHelper": "URL opcional do Lichess ou Chess.com. Se fornecida sem resultado, o resultado é obtido da partida.",
+                "errorResultOrUrl": "Forneça um resultado ou uma URL da partida",
+                "cancel": "Cancelar",
+                "update": "Atualizar"
+            },
+            "adminEditPlayer": {
+                "title": "Editar jogador",
+                "labelDisplayName": "Nome de exibição",
+                "labelLichessUsername": "Usuário do Lichess",
+                "labelChesscomUsername": "Usuário do Chess.com",
+                "labelDiscordUsername": "Usuário do Discord",
+                "labelDiscordId": "ID do Discord",
+                "errorRequired": "Este campo é obrigatório",
+                "cancel": "Cancelar",
+                "update": "Atualizar"
             },
             "crosstable": {
                 "noData": "Nenhum dado de tabela cruzada disponível.",

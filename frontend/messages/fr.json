@@ -2553,6 +2553,8 @@
                 "columnChesscom": "Nom d'utilisateur Chess.com",
                 "columnDiscord": "Nom d'utilisateur Discord",
                 "columnScore": "Score",
+                "columnActions": "Actions",
+                "editPlayer": "Modifier le joueur",
                 "withdrawnSuffix": " (Retiré)"
             },
             "pairings": {
@@ -2563,9 +2565,37 @@
                 "columnWhite": "Blancs",
                 "columnBlack": "Noirs",
                 "columnResult": "Résultat",
+                "columnActions": "Actions",
+                "editResult": "Mettre à jour le résultat",
                 "noPairings": "Aucun appariement disponible pour cette ronde.",
                 "bye": "Bye",
                 "byeWithdrew": "Bye (<player></player> s'est retiré)"
+            },
+            "adminSetResult": {
+                "title": "Mettre à jour le résultat",
+                "pairing": "{white} vs {black}",
+                "labelResult": "Résultat",
+                "resultHelper": "Laissez vide et fournissez une URL de partie pour remplir depuis le PGN, ou choisissez Effacer pour supprimer le résultat.",
+                "resultWhiteWins": "Les blancs gagnent (1-0)",
+                "resultBlackWins": "Les noirs gagnent (0-1)",
+                "resultDraw": "Nulle (1/2-1/2)",
+                "resultClear": "Effacer le résultat",
+                "labelGameUrl": "URL de la partie (facultatif)",
+                "urlHelper": "URL Lichess ou Chess.com facultative. Si fournie sans résultat, le résultat est pris depuis la partie.",
+                "errorResultOrUrl": "Fournissez un résultat ou une URL de partie",
+                "cancel": "Annuler",
+                "update": "Mettre à jour"
+            },
+            "adminEditPlayer": {
+                "title": "Modifier le joueur",
+                "labelDisplayName": "Nom d'affichage",
+                "labelLichessUsername": "Nom d'utilisateur Lichess",
+                "labelChesscomUsername": "Nom d'utilisateur Chess.com",
+                "labelDiscordUsername": "Nom d'utilisateur Discord",
+                "labelDiscordId": "ID Discord",
+                "errorRequired": "Ce champ est obligatoire",
+                "cancel": "Annuler",
+                "update": "Mettre à jour"
             },
             "crosstable": {
                 "noData": "Aucune donnée de tableau croisé disponible.",

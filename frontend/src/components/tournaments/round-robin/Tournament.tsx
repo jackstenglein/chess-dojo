@@ -111,7 +111,12 @@ export function Tournament({
                     </Tabs>
 
                     <TabPanel value='players' sx={{ px: 0 }}>
-                        <Players tournament={tournament} />
+                        <Players
+                            tournament={tournament}
+                            onUpdate={(updated) =>
+                                onUpdateTournaments({ tournament: updated as RoundRobin })
+                            }
+                        />
                     </TabPanel>
 
                     <TabPanel value='crosstable' sx={{ px: 0 }}>
@@ -119,7 +124,10 @@ export function Tournament({
                     </TabPanel>
 
                     <TabPanel value='pairings' sx={{ px: 0 }}>
-                        <Pairings tournament={tournament} />
+                        <Pairings
+                            tournament={tournament}
+                            onUpdate={(updated) => onUpdateTournaments({ tournament: updated })}
+                        />
                     </TabPanel>
 
                     <TabPanel value='games' sx={{ px: 0 }}>

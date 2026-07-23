@@ -2553,6 +2553,8 @@
                 "columnChesscom": "[T] Chess.com Username",
                 "columnDiscord": "[T] Discord Username",
                 "columnScore": "[T] Score",
+                "columnActions": "[T] Actions",
+                "editPlayer": "[T] Edit player",
                 "withdrawnSuffix": "[T]  (Withdrawn)"
             },
             "pairings": {
@@ -2563,9 +2565,37 @@
                 "columnWhite": "[T] White",
                 "columnBlack": "[T] Black",
                 "columnResult": "[T] Result",
+                "columnActions": "[T] Actions",
+                "editResult": "[T] Update result",
                 "noPairings": "[T] No pairings available for this round.",
                 "bye": "[T] Bye",
                 "byeWithdrew": "[T] Bye (<player></player> withdrew)"
+            },
+            "adminSetResult": {
+                "title": "[T] Update Result",
+                "pairing": "[T] {white} vs {black}",
+                "labelResult": "[T] Result",
+                "resultHelper": "[T] Leave blank and provide a game URL to auto-fill from the PGN, or choose Clear to remove the result.",
+                "resultWhiteWins": "[T] White Wins (1-0)",
+                "resultBlackWins": "[T] Black Wins (0-1)",
+                "resultDraw": "[T] Draw (1/2-1/2)",
+                "resultClear": "[T] Clear Result",
+                "labelGameUrl": "[T] Game URL (optional)",
+                "urlHelper": "[T] Optional Lichess or Chess.com URL. If provided without a result, the result is taken from the game.",
+                "errorResultOrUrl": "[T] Provide a result or a game URL",
+                "cancel": "[T] Cancel",
+                "update": "[T] Update"
+            },
+            "adminEditPlayer": {
+                "title": "[T] Edit Player",
+                "labelDisplayName": "[T] Display Name",
+                "labelLichessUsername": "[T] Lichess Username",
+                "labelChesscomUsername": "[T] Chess.com Username",
+                "labelDiscordUsername": "[T] Discord Username",
+                "labelDiscordId": "[T] Discord ID",
+                "errorRequired": "[T] This field is required",
+                "cancel": "[T] Cancel",
+                "update": "[T] Update"
             },
             "crosstable": {
                 "noData": "[T] No crosstable data available.",

@@ -2553,6 +2553,8 @@
                 "columnChesscom": "Chess.com Username",
                 "columnDiscord": "Discord Username",
                 "columnScore": "Score",
+                "columnActions": "Actions",
+                "editPlayer": "Edit player",
                 "withdrawnSuffix": " (Withdrawn)"
             },
             "pairings": {
@@ -2563,9 +2565,37 @@
                 "columnWhite": "White",
                 "columnBlack": "Black",
                 "columnResult": "Result",
+                "columnActions": "Actions",
+                "editResult": "Update result",
                 "noPairings": "No pairings available for this round.",
                 "bye": "Bye",
                 "byeWithdrew": "Bye (<player></player> withdrew)"
+            },
+            "adminSetResult": {
+                "title": "Update Result",
+                "pairing": "{white} vs {black}",
+                "labelResult": "Result",
+                "resultHelper": "Leave blank and provide a game URL to auto-fill from the PGN, or choose Clear to remove the result.",
+                "resultWhiteWins": "White Wins (1-0)",
+                "resultBlackWins": "Black Wins (0-1)",
+                "resultDraw": "Draw (1/2-1/2)",
+                "resultClear": "Clear Result",
+                "labelGameUrl": "Game URL (optional)",
+                "urlHelper": "Optional Lichess or Chess.com URL. If provided without a result, the result is taken from the game.",
+                "errorResultOrUrl": "Provide a result or a game URL",
+                "cancel": "Cancel",
+                "update": "Update"
+            },
+            "adminEditPlayer": {
+                "title": "Edit Player",
+                "labelDisplayName": "Display Name",
+                "labelLichessUsername": "Lichess Username",
+                "labelChesscomUsername": "Chess.com Username",
+                "labelDiscordUsername": "Discord Username",
+                "labelDiscordId": "Discord ID",
+                "errorRequired": "This field is required",
+                "cancel": "Cancel",
+                "update": "Update"
             },
             "crosstable": {
                 "noData": "No crosstable data available.",
