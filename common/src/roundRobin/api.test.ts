@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    RoundRobinAdminSetResultSchema,
-    RoundRobinAdminUpdatePlayerSchema,
-} from './api';
+import { RoundRobinAdminSetResultSchema, RoundRobinAdminUpdatePlayerSchema } from './api';
 
 describe('roundRobin/api admin schemas', () => {
     describe('RoundRobinAdminSetResultSchema', () => {
