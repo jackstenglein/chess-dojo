@@ -55,7 +55,7 @@
         "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
         "@jackstenglein/react-scheduler": "^4.0.3",
-        "@mui/icons-material": "^7.3.7",
+        "@mui/icons-material": "^9.2.0",
         "@mui/lab": "^7.0.1-beta.25",
         "@mui/material": "^7.3.7",
         "@mui/material-nextjs": "^9.0.1",
