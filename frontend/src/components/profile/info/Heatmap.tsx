@@ -154,8 +154,8 @@ export function Heatmap({
     description,
     blockSize = MIN_BLOCK_SIZE,
     onPopOut,
-    minDate,
-    maxDate,
+    minDate: initialMinDate,
+    maxDate: initialMaxDate,
     workGoalHistory,
     slotProps,
 }: {
@@ -203,9 +203,8 @@ export function Heatmap({
         [t],
     );
 
-    if (!maxDate) {
-        maxDate = new Date().toISOString().split('T')[0];
-    }
+    const maxDate = initialMaxDate || new Date().toISOString().split('T')[0];
+    let minDate = initialMinDate;
     if (!minDate) {
         minDate = `${parseInt(maxDate.split('-')[0]) - 1}${maxDate.slice(4)}`;
         const d = new Date(minDate);
