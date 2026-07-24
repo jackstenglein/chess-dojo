@@ -36,7 +36,7 @@ layers:
 functions:
   copyRecordings:
     memorySize: 2048 # MB
-    ephemeralStorageSize: 2048 # MB
+    ephemeralStorageSize: 4096 # MB
     handler: copyRecordings.handler
     layers:
       - !Ref FfmpegLambdaLayer
