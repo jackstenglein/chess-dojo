@@ -1,4 +1,27 @@
 {
+    "_translationMeta": {
+        "_about": "Instructions for whoever produces a translated copy of this file. Paths listed under skipAutoTranslate should not be passed through an automated translator; manual human translation of those paths is welcome where appropriate. preserveStructure rules apply to every key during translation. This block is stripped at message-load time and never reaches the runtime UI.",
+        "skipAutoTranslate": {
+            "enums.ratingSystem": "Backend wire values plus brand-name display labels. Keep English so users can match the labels on the actual rating-system websites. Manual translation OK if the translator knows the local convention.",
+            "enums.requirementCategory": "Display labels for a backend category enum. Manual translation welcome.",
+            "enums.requirementCategoryShort": "Same as requirementCategory.",
+            "landing.senseis": "Trainer names are proper nouns; bios are credential prose with embedded titles and platform names. Manual translation only.",
+            "coach.stripe.connect": "References a payment processor brand. Manual translation if surrounding text needs it.",
+            "coach.stripe.dashboard": "Same.",
+            "profile.ratings.chesscomUsername": "Brand name in label.",
+            "profile.ratings.lichessUsername": "Brand name in label.",
+            "profile.ratings.fideId": "Acronym for an international chess federation.",
+            "profile.ratings.uscfId": "Acronym for a national chess federation.",
+            "profile.ratings.ecfRatingCode": "Acronym for a national chess federation.",
+            "profile.ratings.cfcId": "Acronym for a national chess federation.",
+            "profile.ratings.dwzId": "Acronym for a national rating system."
+        },
+        "preserveStructure": {
+            "icuPlurals": "Preserve {count, plural, =1 {...} other {...}} syntax verbatim. Translate only the text inside the inner braces.",
+            "tagPlaceholders": "Preserve <tagName>...</tagName> tags including the tag name itself. Translate only the text between tags.",
+            "variables": "Preserve {variableName} placeholders verbatim. Surrounding sentence may be restructured for word order, but placeholder spelling and case must not change."
+        }
+    },
     "common": {
         "timezone": "Fuso orario",
         "language": "Lingua",
@@ -261,7 +284,7 @@
                 "fillInDetails": "Compila i dettagli qui sotto",
                 "cohort": "Coorte",
                 "deleteEntry": "Elimina voce",
-                "totalCount": "Totale {label} : {total}. Coorte attuale: {cohortCount}",
+                "totalCount": "Totale {label}: {total}. Coorte attuale: {cohortCount}",
                 "totalTime": "Tempo totale: {totalHours}h {totalMinutes}m. Coorte attuale: {cohortHours}h {cohortMinutes}m",
                 "deleteAriaLabel": "elimina"
             },
@@ -1447,10 +1470,8 @@
             "analyzeContent": "Per analizzare una partita, clicca su questo pulsante. Puoi importare partite da diverse fonti e, se vuoi, puoi scegliere di mantenerle private.",
             "publicTitle": "Partite pubbliche",
             "publicContent": "Le partite pubbliche compaiono in questa tabella. Clicca su una riga per visualizzare quella partita.",
-            "searchCohortTitle": "Cercare partite",
-            "searchCohortContent": "Per impostazione predefinita, vedi le partite della tua coorte attuale, ma se vuoi visualizzare un'altra coorte puoi usare questo menu a tendina. Puoi anche cercare partite all'interno di un intervallo di date specifico.",
-            "searchPlayerTitle": "Cercare per giocatore",
-            "searchPlayerContent": "Puoi usare questa sezione per cercare un nome di giocatore specifico. Con questo metodo di ricerca, la tua query deve corrispondere esattamente al nome così come è stato scritto nel PGN.",
+            "searchGamesTitle": "Cercare partite",
+            "searchGamesContent": "Puoi usare questa sezione per cercare nel database con vari filtri.",
             "downloadTitle": "Scaricare il database",
             "downloadContent": "Se vuoi scaricare l'intero Dojo Database come un unico grande file PGN, puoi farlo tramite questo link.",
             "completeTitle": "Tutorial completato",
@@ -2045,25 +2066,38 @@
                 "search": "Cerca",
                 "fieldRequired": "Questo campo è obbligatorio",
                 "ownerDescription": "Trova le partite che hai caricato nel Dojo Database. Tieni presente che le partite caricate in precedenza tramite il modulo Google di Dojo 1.0 non verranno riconosciute.",
-                "playerDescription": "Trova le partite in base al nome del giocatore. Tieni presente che questo è il nome così come è stato registrato nel file PGN.",
-                "playerName": "Nome del giocatore",
-                "color": "Colore",
-                "either": "Entrambi",
+                "playerDescription": "Trova le partite per nome del giocatore e tramite filtri. Verranno considerati anche nomi parziali e piccoli errori di battitura. Lascia i campi del nome vuoti per cercare solo tramite filtri.",
+                "minElo": "Valutazione minima",
+                "maxElo": "Valutazione massima",
+                "eloModeLabel": "La valutazione si applica a",
+                "eloModeOne": "Un giocatore",
+                "eloModeBoth": "Entrambi i giocatori",
+                "eloModeAverage": "Media",
+                "resultLabel": "Risultato",
+                "anyCohort": "Tutte le coorti",
+                "openingLabel": "Apertura",
+                "openingHelp": "Nome di apertura (Caro-Kann) o codice ECO (B12)",
+                "minMoves": "Mini Mosse",
+                "maxMoves": "Mosse massime",
+                "timeClassLabel": "Controllo del tempo",
+                "anyTimeClass": "Qualunque",
+                "bullet": "Proiettile",
+                "blitz": "Blitz",
+                "rapid": "Rapid",
+                "classical": "Classico",
+                "daily": "Quotidiano",
+                "player1": "Giocatore 1",
+                "player2": "Giocatore 2",
+                "ignoreColors": "Ignora i colori",
+                "clearFilters": "Cancella filtri",
                 "white": "Bianco",
                 "black": "Nero",
-                "freeTierPlayer": "Gli utenti del piano gratuito non possono cercare per nome del giocatore",
-                "openingDescription": "Trova le partite in base ai codici ECO delle aperture",
-                "openingEco": "ECO dell'apertura",
+                "freeTierPlayer": "Gli utenti del piano gratuito non possono utilizzare la ricerca avanzata",
                 "fen": "FEN",
                 "freeTierPosition": "Gli utenti del piano gratuito non possono cercare per posizione",
                 "positionExplorer": "Esploratore di posizioni",
-                "goToMyFiles": "Vai a I miei file",
-                "searchByCohort": " Cerca per coorte ",
-                "searchByPlayer": "Cerca per giocatore",
-                "searchByPosition": "Cerca per posizione",
-                "searchByOpening": "Cerca per apertura ",
-                "searchMyUploads": "Cerca tra i miei caricamenti",
-                "myFiles": "I miei file"
+                "searchGames": "Cerca partite",
+                "searchByPosition": "Cerca per posizione"
             }
         },
         "view": {
@@ -2294,7 +2328,7 @@
                 "disputesThen": "Allora puoi:",
                 "disputesAction1": "Inviare la partita come vittoria per forfait a tuo favore",
                 "disputesAction2": "Al momento dell'invio della partita avrai la possibilità di segnalare il tuo avversario: questo avvisa il TD che il tuo avversario dovrebbe essere preso in considerazione per l'esclusione da questo e dai futuri tornei",
-                "disputesAction3": "Invia un messaggio diretto al TD su Discord con gli screenshot dei tuoi tentativi di contattare il tuo avversario",
+                "disputesAction3": "Allega gli screenshot dei tuoi tentativi di contattare l'avversario al momento della comunicazione del risultato. Non è necessario inviare un messaggio direttamente al direttore di gara.",
                 "disputesFootnote": "*Un impegno concreto consiste nel contattare per primo l'avversario oppure nel rispondere entro 48 ore a un primo contatto; e nel proporre almeno 3 orari diversi, in almeno 2 giorni distinti, in cui sei disponibile a giocare quella settimana. Se entrambi i giocatori si impegnano concretamente per organizzare una partita e non riescono comunque a trovare un orario per giocare, la partita può essere inviata come patta (1/2-1/2). In caso di controversia, contatta il TD su Discord.",
                 "winnersTitle": "Vincitori",
                 "winnersBody": "Per vedere la classifica di un qualsiasi turno, puoi andare alla <tournamentLink>pagina del torneo</tournamentLink>. I vincitori di ciascuna sezione riceveranno un invito a giocare un girone all'italiana dei Campioni. I vincitori dell'anno precedente verranno invitati a giocare via e-mail ogni gennaio."
@@ -2530,6 +2564,8 @@
                 "columnChesscom": "Nome utente Chess.com",
                 "columnDiscord": "Nome utente Discord",
                 "columnScore": "Punteggio",
+                "columnActions": "Azioni",
+                "editPlayer": "Modifica giocatore",
                 "withdrawnSuffix": " (Ritirato)"
             },
             "pairings": {
@@ -2540,9 +2576,37 @@
                 "columnWhite": "Bianco",
                 "columnBlack": "Nero",
                 "columnResult": "Risultato",
+                "columnActions": "Azioni",
+                "editResult": "Aggiorna risultato",
                 "noPairings": "Nessun abbinamento disponibile per questo turno.",
                 "bye": "Bye",
                 "byeWithdrew": "Bye (<player></player> si è ritirato)"
+            },
+            "adminSetResult": {
+                "title": "Aggiorna risultato",
+                "pairing": "{white} vs {black}",
+                "labelResult": "Risultato",
+                "resultHelper": "Lascia vuoto e fornisci un URL della partita per compilare dal PGN, oppure scegli Cancella per rimuovere il risultato.",
+                "resultWhiteWins": "Vince il bianco (1-0)",
+                "resultBlackWins": "Vince il nero (0-1)",
+                "resultDraw": "Patta (1/2-1/2)",
+                "resultClear": "Cancella risultato",
+                "labelGameUrl": "URL della partita (opzionale)",
+                "urlHelper": "URL Lichess o Chess.com opzionale. Se fornito senza risultato, il risultato viene preso dalla partita.",
+                "errorResultOrUrl": "Fornisci un risultato o un URL della partita",
+                "cancel": "Annulla",
+                "update": "Aggiorna"
+            },
+            "adminEditPlayer": {
+                "title": "Modifica giocatore",
+                "labelDisplayName": "Nome visualizzato",
+                "labelLichessUsername": "Nome utente Lichess",
+                "labelChesscomUsername": "Nome utente Chess.com",
+                "labelDiscordUsername": "Nome utente Discord",
+                "labelDiscordId": "ID Discord",
+                "errorRequired": "Questo campo è obbligatorio",
+                "cancel": "Annulla",
+                "update": "Aggiorna"
             },
             "crosstable": {
                 "noData": "Nessun dato della tabella incrociata disponibile.",
@@ -2975,6 +3039,12 @@
                 "cover": "Copertina di {name}",
                 "recordingCount": "{count, plural, =1 {# registrazione} other {# registrazioni}}",
                 "play": "Riproduci"
+            },
+            "recordingsPage": {
+                "back": "Torna alle lezioni dal vivo",
+                "notFound": "Lezione non trovata",
+                "playlist": "Registrazioni",
+                "aiDescription": "Descrizione generata dall'IA"
             },
             "upsell": {
                 "title": "Esegui l'upgrade per accedere a tutte le lezioni dal vivo",
@@ -3876,7 +3946,8 @@
                 "startFromCurrentMoveButton": "Inizia dalla mossa attuale",
                 "exitSolitaireModeButton": "Esci dalla modalità solitario",
                 "cannotStartLastMoveError": "Impossibile iniziare dall'ultima mossa",
-                "cannotStartVariationError": "Impossibile iniziare da una variante"
+                "cannotStartVariationError": "Impossibile iniziare da una variante",
+                "incorrectMoveComment": "Indovinare in modo errato nella modalità solitario"
             }
         }
     },

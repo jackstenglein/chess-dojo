@@ -12,6 +12,8 @@ export interface MeetingInfo extends Omit<LiveClass, 'recordings'> {
     googleMeetIds: string[];
     /** The AWS S3 folder of the meeting's recordings. */
     awsS3Folder: string;
+    /** The YouTube playlist ID for uploading recordings. */
+    playlistId?: string;
 }
 
 /**

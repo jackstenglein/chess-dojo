@@ -3,7 +3,11 @@ import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api'
 import { describe, expect, it } from 'vitest';
 import {
     compareLiveClasses,
+    findLiveClassBySlug,
     formatRecordingDate,
+    formatRecordingDuration,
+    getLiveClassHref,
+    getLiveClassSlug,
     getUniqueTags,
     matchesCohortLevel,
     matchesSearch,
@@ -12,6 +16,7 @@ import {
 
 function mockLiveClass(overrides: Partial<LiveClass> = {}): LiveClass {
     return {
+        id: 'test-class',
         name: 'Test Class',
         type: SubscriptionTier.Lecture,
         cohortRange: '0-1200',
@@ -36,6 +41,25 @@ describe('liveClassUtils', () => {
 
         it('returns original string when no date pattern found', () => {
             expect(formatRecordingDate('not-a-date')).toBe('not-a-date');
+        });
+    });
+
+    describe('formatRecordingDuration', () => {
+        it('formats minutes and seconds', () => {
+            expect(formatRecordingDuration(0)).toBe('0:00');
+            expect(formatRecordingDuration(65)).toBe('1:05');
+            expect(formatRecordingDuration(600)).toBe('10:00');
+        });
+
+        it('formats hours when present', () => {
+            expect(formatRecordingDuration(3661)).toBe('1:01:01');
+            expect(formatRecordingDuration(3600)).toBe('1:00:00');
+        });
+
+        it('returns undefined for missing or invalid values', () => {
+            expect(formatRecordingDuration(undefined)).toBeUndefined();
+            expect(formatRecordingDuration(-1)).toBeUndefined();
+            expect(formatRecordingDuration(Number.NaN)).toBeUndefined();
         });
     });
 
@@ -146,6 +170,46 @@ describe('liveClassUtils', () => {
             expect(matchesCohortLevel(mockLiveClass({ cohortRange: '0-1000' }), 'expert')).toBe(
                 false,
             );
+        });
+    });
+
+    describe('getLiveClassSlug', () => {
+        it('uses id when available', () => {
+            const c = mockLiveClass({ id: 'abc-123', name: 'Test Class' });
+            expect(getLiveClassSlug(c)).toBe('abc-123');
+        });
+
+        it('encodes name when id is missing', () => {
+            const c = mockLiveClass({ id: undefined, name: 'Calculation 1000+' });
+            expect(getLiveClassSlug(c)).toBe(encodeURIComponent('Calculation 1000+'));
+        });
+    });
+
+    describe('getLiveClassHref', () => {
+        it('returns the recordings page path', () => {
+            const c = mockLiveClass({ id: 'abc-123' });
+            expect(getLiveClassHref(c)).toBe('/learn/live-classes/abc-123');
+        });
+    });
+
+    describe('findLiveClassBySlug', () => {
+        const classes = [
+            mockLiveClass({ id: 'abc-123', name: 'Class A' }),
+            mockLiveClass({ id: undefined, name: 'Class B' }),
+        ];
+
+        it('finds class by id', () => {
+            expect(findLiveClassBySlug(classes, 'abc-123')?.name).toBe('Class A');
+        });
+
+        it('finds class by encoded name', () => {
+            expect(findLiveClassBySlug(classes, encodeURIComponent('Class B'))?.name).toBe(
+                'Class B',
+            );
+        });
+
+        it('returns undefined when not found', () => {
+            expect(findLiveClassBySlug(classes, 'missing')).toBeUndefined();
         });
     });
 

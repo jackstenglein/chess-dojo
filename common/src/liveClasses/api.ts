@@ -21,10 +21,12 @@ export type GetRecordingRequest = z.infer<typeof getRecordingRequestSchema>;
 
 /** The data for a live class. */
 export interface LiveClass {
+    /** The type of the class and the partition key of the DynamoDB table. */
+    type: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
+    /** The id of the class and the range key of the DynamoDB table. */
+    id: string;
     /** The name of the class. */
     name: string;
-    /** The type of the class. */
-    type: SubscriptionTier.GameReview | SubscriptionTier.Lecture;
     /** The cohort range of the class. */
     cohortRange: string;
     /** The tags of the class. */
@@ -47,6 +49,12 @@ export interface LiveClassRecording {
     s3Key: string;
     /** The url of the recording, if it is not saved in S3. */
     url?: string;
+    /** The title of the recording. */
+    title?: string;
+    /** The description of the recording. */
+    description?: string;
+    /** The duration of the recording in seconds. */
+    durationSeconds?: number;
 }
 
 /** A cohort of users in the Game & Profile Review tier. */

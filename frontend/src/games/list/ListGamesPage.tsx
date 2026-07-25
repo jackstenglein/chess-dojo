@@ -28,7 +28,9 @@ const ListGamesPage = () => {
     const isFreeTier = useFreeTier();
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [upsellAction, setUpsellAction] = useState('');
-    const type = useNextSearchParams().searchParams.get('type') || '';
+    const params = useNextSearchParams().searchParams;
+    const type = params.get('type') || '';
+    const player = params.get('white') || params.get('black') || '';
     const api = useApi();
     const [reviewQueueLabel, setReviewQueueLabel] = useState('');
     const contextMenu = useDataGridContextMenu();
@@ -63,7 +65,7 @@ const ListGamesPage = () => {
         return <LoadingPage />;
     }
 
-    if (isFreeTier && type === 'player') {
+    if (isFreeTier && type === 'games' && player) {
         return <UpsellPage redirectTo='/games' currentAction={RestrictedAction.SearchDatabase} />;
     }
     if (isFreeTier && type === 'position') {

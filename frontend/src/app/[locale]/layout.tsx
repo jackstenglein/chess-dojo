@@ -1,5 +1,6 @@
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { WebVitals } from '@/components/analytics/WebVitals';
+import { CoepBoundaryGuard } from '@/components/navigation/CoepBoundaryGuard';
 import { getConfig } from '@/config';
 import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
 import { routing } from '@/i18n/routing';
@@ -77,6 +78,7 @@ export default async function LocaleLayout({
             </head>
             <body>
                 <NavigationGuardProvider>
+                    <CoepBoundaryGuard />
                     <MetaPixel />
                     <WebVitals />
                     <div id='root'>

@@ -17,6 +17,7 @@ services:
       UserPoolArn: ${chess-dojo-scheduler.UserPoolArn}
       UserPoolId: ${chess-dojo-scheduler.UserPoolId}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+      FideRatingsTableArn: ${chess-dojo-scheduler.FideRatingsTableArn}
       RequirementsTableArn: ${chess-dojo-scheduler.RequirementsTableArn}
       TimelineTableArn: ${chess-dojo-scheduler.TimelineTableArn}
       GraduationsTableArn: ${chess-dojo-scheduler.GraduationsTableArn}
@@ -181,6 +182,8 @@ services:
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       TournamentsTableArn: ${chess-dojo-scheduler.TournamentsTableArn}
       GamesTableStreamArn: ${chess-dojo-scheduler.GamesTableStreamArn}
+      GameSearchEndpoint: ${chess-dojo-scheduler.GameSearchEndpoint}
+      AlertNotificationsTopic: ${chess-dojo-scheduler.AlertNotificationsTopic}
       NotificationsTableArn: ${chess-dojo-scheduler.NotificationsTableArn}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
       TimelineTableArn: ${chess-dojo-scheduler.TimelineTableArn}

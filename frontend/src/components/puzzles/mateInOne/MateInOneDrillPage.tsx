@@ -342,8 +342,11 @@ function MateInOneDrill() {
         if (!currentPuzzle || feedback !== null || userInput.trim() === '') return;
 
         const responseTimeMs = performance.now() - questionStartRef.current;
-        const correct = isCorrectAnswer(userInput, currentPuzzle.correctSan);
-
+        const correct = isCorrectAnswer(
+            currentPuzzle.fenAfterSetup,
+            userInput,
+            currentPuzzle.correctSan,
+        );
         const attempt: MateInOneAttempt = {
             puzzleId: currentPuzzle.puzzle.id,
             fen: currentPuzzle.fenAfterSetup,

@@ -416,10 +416,11 @@ function Database({
                                 sx={{ width: 1 }}
                                 size='small'
                                 error={timeControls.length === 0}
+                                noTranslate
                             />
                             <Tooltip
                                 title={
-                                    <span>
+                                    <span translate='no' className='notranslate'>
                                         {t.rich('timeControlTooltip', {
                                             br: () => <br />,
                                         })}

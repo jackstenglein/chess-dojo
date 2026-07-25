@@ -156,6 +156,12 @@ type Rating struct {
 
 	// Whether the user's rating is provisional
 	IsProvisional bool `dynamodbav:"isProvisional,omitempty" json:"isProvisional,omitempty"`
+
+	// The number of confirmed not-found responses for the username since the
+	// last successful fetch. Maintained by the ratings update pipeline for
+	// Chesscom and Lichess only; fetches are skipped once it reaches the
+	// threshold.
+	NotFoundCount int `dynamodbav:"notFoundCount,omitempty" json:"-"`
 }
 
 type RatingHistory struct {
@@ -1426,6 +1432,23 @@ const ratingsProjection = "username, dojoCohort, subscriptionStatus, paymentInfo
 // startkey is an optional parameter that can be used to perform pagination.
 // The list of users and the next start key are returned.
 func (repo *dynamoRepository) ListUserRatings(cohort DojoCohort, startKey string) ([]*User, string, error) {
+	return repo.ListUserRatingsPage(cohort, startKey, 0)
+}
+
+// ListUserRatingsPage returns up to limit Users matching the provided cohort.
+// A limit of 0 means no limit (up to 1MB of data). Only the fields necessary
+// for the rating/statistics update are returned. startKey is an optional
+// parameter that can be used to perform pagination.
+func (repo *dynamoRepository) ListUserRatingsPage(cohort DojoCohort, startKey string, limit int64) ([]*User, string, error) {
+	var users []*User
+	lastKey, err := repo.query(listUserRatingsInput(cohort, limit), startKey, &users)
+	if err != nil {
+		return nil, "", err
+	}
+	return users, lastKey, nil
+}
+
+func listUserRatingsInput(cohort DojoCohort, limit int64) *dynamodb.QueryInput {
 	input := &dynamodb.QueryInput{
 		KeyConditionExpression: aws.String("#cohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
@@ -1438,13 +1461,10 @@ func (repo *dynamoRepository) ListUserRatings(cohort DojoCohort, startKey string
 		IndexName:            aws.String("CohortIdx"),
 		TableName:            aws.String(userTable),
 	}
-
-	var users []*User
-	lastKey, err := repo.query(input, startKey, &users)
-	if err != nil {
-		return nil, "", err
+	if limit > 0 {
+		input.SetLimit(limit)
 	}
-	return users, lastKey, nil
+	return input
 }
 
 func (repo *dynamoRepository) UpdateUserRatings(users []*User) error {
@@ -1475,7 +1495,25 @@ func (repo *dynamoRepository) UpdateUserRatings(users []*User) error {
 	output, err := repo.svc.BatchExecuteStatement(input)
 	log.Debugf("Batch execute statement output: %v", output)
 
-	return errors.Wrap(500, "Temporary server error", "Failed BatchExecuteStatement", err)
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed BatchExecuteStatement", err)
+	}
+	return batchStatementsError(output.Responses)
+}
+
+// batchStatementsError returns an error if any individual statement in a
+// BatchExecuteStatement response failed. DynamoDB can report overall success
+// while individual statements fail, so callers must inspect each response.
+func batchStatementsError(responses []*dynamodb.BatchStatementResponse) error {
+	for _, response := range responses {
+		if response.Error != nil {
+			return errors.New(500, "Temporary server error", fmt.Sprintf(
+				"PartiQL batch statement failed: %s: %s",
+				aws.StringValue(response.Error.Code), aws.StringValue(response.Error.Message),
+			))
+		}
+	}
+	return nil
 }
 
 const (

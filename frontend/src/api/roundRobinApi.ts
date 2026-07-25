@@ -1,5 +1,7 @@
 import {
     RoundRobin,
+    RoundRobinAdminSetResultRequest,
+    RoundRobinAdminUpdatePlayerRequest,
     RoundRobinListRequest,
     RoundRobinRegisterRequest,
     RoundRobinSubmitGameRequest,
@@ -86,6 +88,32 @@ export function submitRoundRobinGame(idToken: string, request: RoundRobinSubmitG
         headers: { Authorization: `Bearer ${idToken}` },
         functionName: 'submitRoundRobinGame',
     });
+}
+
+/**
+ * Sends an admin request to set or clear a round robin pairing result.
+ * @param request The request to set the result.
+ * @returns The updated tournament.
+ */
+export function adminSetRoundRobinResult(request: RoundRobinAdminSetResultRequest) {
+    return axiosService.put<RoundRobin>(`/tournaments/round-robin/admin/set-result`, request, {
+        functionName: 'adminSetRoundRobinResult',
+    });
+}
+
+/**
+ * Sends an admin request to update a player's identity fields in a round robin.
+ * @param request The request to update the player.
+ * @returns The updated tournament or waitlist.
+ */
+export function adminUpdateRoundRobinPlayer(request: RoundRobinAdminUpdatePlayerRequest) {
+    return axiosService.put<RoundRobin | RoundRobinWaitlist>(
+        `/tournaments/round-robin/admin/update-player`,
+        request,
+        {
+            functionName: 'adminUpdateRoundRobinPlayer',
+        },
+    );
 }
 
 export interface RoundRobinListResponse {

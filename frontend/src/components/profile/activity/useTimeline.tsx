@@ -1,5 +1,5 @@
-import { useApi } from '@/api/Api';
 import { Request, useRequest } from '@/api/Request';
+import { listUserTimeline } from '@/api/userApi';
 import { TimelineEntry } from '@/database/timeline';
 import React, {
     createContext,
@@ -7,6 +7,7 @@ import React, {
     useCallback,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from 'react';
 
@@ -38,31 +39,55 @@ interface TimelineProviderProps {
 }
 
 export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, children }) => {
-    const api = useApi();
     const [entries, setEntries] = useState<TimelineEntry[]>([]);
     const [startKey, setStartKey] = useState<string>();
     const request = useRequest();
+    const lastYearFetched = useRef(false);
+
+    const { onStart, onSuccess, onFailure } = request;
+
+    const fetchEntriesForLastYear = useCallback(
+        async (owner: string, startKey?: string) => {
+            try {
+                const oneYearAgo = new Date();
+                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                const oneYearAgoStr = oneYearAgo.toISOString();
+
+                const newEntries: TimelineEntry[] = [];
+                do {
+                    onStart();
+                    lastYearFetched.current = true;
+                    const response = await listUserTimeline(owner, startKey);
+                    newEntries.push(...response.entries);
+                    startKey = response.lastEvaluatedKey;
+
+                    if (
+                        newEntries.length > 0 &&
+                        newEntries[newEntries.length - 1].createdAt < oneYearAgoStr
+                    ) {
+                        break;
+                    }
+                } while (startKey);
+
+                onSuccess();
+                setEntries(
+                    newEntries.sort((a, b) =>
+                        (b.date || b.createdAt).localeCompare(a.date || a.createdAt),
+                    ),
+                );
+                setStartKey(startKey);
+            } catch (err) {
+                onFailure(err);
+            }
+        },
+        [setEntries, setStartKey, onStart, onSuccess, onFailure],
+    );
 
     useEffect(() => {
         if (owner && !request.isSent()) {
-            request.onStart();
-            api.listUserTimeline(owner, startKey)
-                .then((res) => {
-                    request.onSuccess();
-                    setEntries(
-                        entries
-                            .concat(res.entries)
-                            .sort((a, b) =>
-                                (b.date || b.createdAt).localeCompare(a.date || a.createdAt),
-                            ),
-                    );
-                    setStartKey(res.lastEvaluatedKey);
-                })
-                .catch((err) => {
-                    request.onFailure(err);
-                });
+            void fetchEntriesForLastYear(owner, startKey);
         }
-    }, [request, api, owner, startKey, entries, setEntries, setStartKey]);
+    }, [owner, request, fetchEntriesForLastYear, startKey]);
 
     const reset = request.reset;
 

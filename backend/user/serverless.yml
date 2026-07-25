@@ -110,6 +110,10 @@ functions:
         Resource: ${param:UsersTableArn}
       - Effect: Allow
         Action:
+          - dynamodb:GetItem
+        Resource: ${param:FideRatingsTableArn}
+      - Effect: Allow
+        Action:
           - dynamodb:Query
           - dynamodb:BatchWriteItem
         Resource: ${param:TimelineTableArn}
@@ -643,6 +647,29 @@ functions:
               - ''
               - - ${param:UsersTableArn}
                 - '/index/CohortIdx'
+      - Effect: Allow
+        Action:
+          - lambda:InvokeFunction
+        Resource: arn:aws:lambda:${aws:region}:${aws:accountId}:function:chess-dojo-users-${sls:stage}-updateRatings
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:FideRatingsTableArn}
+
+  downloadFideRatings:
+    handler: ratings/fide/main.go
+    timeout: 900
+    reservedConcurrency: 1
+    events:
+      - schedule:
+          rate: cron(0 12 1 * ? *)
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: ${param:FideRatingsTableArn}
 
   updateStatistics:
     handler: statistics/update/main.go
@@ -992,6 +1019,46 @@ resources:
         Threshold: 700000
         ComparisonOperator: GreaterThanThreshold
         TreatMissingData: ignore
+
+    UpdateRatingsErrorAlarm:
+      Condition: IsNotSimple
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: UpdateRatingsError-${sls:stage}
+        AlarmDescription: 'Notifications about Lambda errors for the updateRatings function, including continuation-cap hits and failed writes'
+        AlarmActions:
+          - ${param:AlertNotificationsTopic}
+        Namespace: AWS/Lambda
+        MetricName: Errors
+        Statistic: Sum
+        Dimensions:
+          - Name: FunctionName
+            Value: chess-dojo-users-${sls:stage}-updateRatings
+        Period: 86400
+        EvaluationPeriods: 1
+        Threshold: 0
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+    DownloadFideRatingsErrorAlarm:
+      Condition: IsNotSimple
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: DownloadFideRatingsError-${sls:stage}
+        AlarmDescription: 'Notifications about Lambda errors for the downloadFideRatings function, including stale-list aborts and failed imports'
+        AlarmActions:
+          - ${param:AlertNotificationsTopic}
+        Namespace: AWS/Lambda
+        MetricName: Errors
+        Statistic: Sum
+        Dimensions:
+          - Name: FunctionName
+            Value: chess-dojo-users-${sls:stage}-downloadFideRatings
+        Period: 86400
+        EvaluationPeriods: 1
+        Threshold: 0
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
 
     UpdateStatisticsTimeoutAlarm:
       Condition: IsNotSimple

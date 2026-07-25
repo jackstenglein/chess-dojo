@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { useFreeTier, waitForNavigation } from '../../../../lib/helpers';
+import { useFreeTier } from '../../../../lib/helpers';
 
 test.describe('List Games Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -28,63 +28,52 @@ test.describe('List Games Page', () => {
     });
 
     test('allows searching by cohort by default', async ({ page }) => {
-        const searchForm = page.getByTestId('search-by-cohort');
+        const searchForm = page.getByTestId('search-games');
         await expect(searchForm).toBeVisible();
         await expect(searchForm.getByTestId('cohort-select')).toBeVisible();
-        await expect(searchForm.getByTestId('cohort-search-button')).toBeVisible();
+        await expect(searchForm.getByTestId('search-games-button')).toBeVisible();
 
         await searchForm.getByTestId('cohort-select').click();
         await page.locator('.MuiPopover-root').getByText('1600-1700').click();
-        await searchForm.getByTestId('cohort-search-button').click();
+        await searchForm.getByTestId('search-games-button').click();
 
         await expect(page.getByTestId('games-table').getByText('16-1700').first()).toBeVisible();
-        expect(page.url()).toContain('?type=cohort&cohort=1600-1700&startDate=&endDate=');
+        expect(page.url()).toContain('?type=games&cohort=1600-1700');
     });
 
     test('allows searching by player', async ({ page }) => {
-        await page.getByRole('button', { name: 'Search By Player' }).click();
+        const searchForm = page.getByTestId('search-games');
+        await expect(searchForm.getByTestId('player-white')).toBeVisible();
+        await expect(searchForm.getByTestId('player-black')).toBeVisible();
+        await expect(searchForm.getByTestId('ignore-colors')).toBeVisible();
+        await expect(searchForm.getByTestId('player-min-elo')).toBeVisible();
+        await expect(searchForm.getByTestId('elo-mode')).toBeVisible();
+        await expect(searchForm.getByTestId('player-result')).toBeVisible();
+        await expect(searchForm.getByTestId('player-opening')).toBeVisible();
+        await expect(searchForm.getByTestId('player-time-class')).toBeVisible();
+        await expect(searchForm.getByTestId('search-games-button')).toBeVisible();
 
-        const searchForm = page.getByTestId('search-by-player');
-        await expect(searchForm.getByTestId('player-name')).toBeVisible();
-        await expect(searchForm.getByTestId('player-search-button')).toBeVisible();
+        await searchForm.getByTestId('player-white').locator('input').fill('JackStenglein');
+        await searchForm.getByTestId('ignore-colors').check();
+        await searchForm.getByTestId('search-games-button').click();
 
-        await searchForm.getByTestId('player-name').locator('input').fill('JackStenglein');
-        await searchForm.getByTestId('player-search-button').click();
-
-        await waitForNavigation(
-            page,
-            /\/(?:(?:en|pseudo|de)\/)?games\?type=player&player=JackStenglein&color=either&startDate=&endDate=$/,
-        );
+        await page.waitForURL((url) => url.searchParams.get('white') === 'JackStenglein');
+        const params = new URL(page.url()).searchParams;
+        expect(params.get('type')).toBe('games');
+        expect(params.get('ignoreColors')).toBe('true');
+        expect(params.get('eloMode')).toBe('one');
+        expect(params.get('results')).toBe('1-0,0-1,1/2-1/2');
     });
 
-    test('allows searching by eco', async ({ page }) => {
-        await page.getByRole('button', { name: 'Search By Opening' }).click();
+    test('allows filtering by a subset of results', async ({ page }) => {
+        const searchForm = page.getByTestId('search-games');
+        await searchForm.getByTestId('player-result').click();
+        await page.getByRole('option', { name: '0-1' }).click();
+        await page.keyboard.press('Escape');
+        await searchForm.getByTestId('search-games-button').click();
 
-        const searchForm = page.getByTestId('search-by-opening');
-        await expect(searchForm.getByTestId('opening-eco')).toBeVisible();
-        await expect(searchForm.getByTestId('opening-search-button')).toBeVisible();
-
-        await searchForm.getByTestId('opening-eco').locator('input').fill('B01');
-        await searchForm.getByTestId('opening-search-button').click();
-
-        await waitForNavigation(
-            page,
-            /\/(?:(?:en|pseudo|de)\/)?games\?type=opening&eco=B01&startDate=&endDate=$/,
-        );
-    });
-
-    test('allows searching current user uploads', async ({ page }) => {
-        await page.getByRole('button', { name: 'Search My Uploads' }).click();
-
-        const searchForm = page.getByTestId('search-by-owner');
-        await expect(searchForm.getByTestId('owner-search-description')).toBeVisible();
-        await expect(searchForm.getByTestId('owner-search-button')).toBeVisible();
-        await searchForm.getByTestId('owner-search-button').click();
-
-        await waitForNavigation(
-            page,
-            /\/(?:(?:en|pseudo|de)\/)?games\?type=owner&startDate=&endDate=$/,
-        );
+        await page.waitForURL((url) => url.searchParams.get('type') === 'games');
+        expect(new URL(page.url()).searchParams.get('results')).toBe('1-0,1/2-1/2');
     });
 
     test('links to game page on row click', async ({ page }) => {
@@ -113,17 +102,8 @@ test.describe('List Games Page (Free Tier)', () => {
         await expect(page.locator('[aria-label="Go to next page"]')).toBeDisabled();
     });
 
-    test('prevents searching by player', async ({ page }) => {
-        await page.getByRole('button', { name: 'Search By Player' }).click();
-
-        await expect(page.getByTestId('player-search-button')).toBeDisabled();
-        await expect(
-            page.getByText('Free-tier users are not able to search by player name'),
-        ).toBeVisible();
-    });
-
     test('prevents searching by player through URL', async ({ page }) => {
-        await page.goto('/games?type=player&player=JackStenglein&color=either&startDate=&endDate=');
+        await page.goto('/games?type=games&white=JackStenglein&startDate=&endDate=');
 
         await expect(page.getByTestId('upsell-dialog')).toBeVisible();
     });

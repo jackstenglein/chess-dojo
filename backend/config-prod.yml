@@ -32,3 +32,5 @@ coaches: 'google_108763076343237273295,google_100898429805622416873,google_11167
 mongoUri: mongodb+srv://chess-dojo-prod.bsc8oxy.mongodb.net/?retryWrites=true&w=majority&appName=chess-dojo-prod
 meetRecordingsDriveFolder: '102cXp0zEAGaMMBC0hzNnxdB5PeStvYfX'
 finishedUploadsDriveFolder: '1mU7cW4z8UWm21c4lyRlf7E4_Lvk5BrXX'
+# Unused in prod: the GameSearchEndpoint output reads the domain directly.
+gameSearchEndpoint: unset

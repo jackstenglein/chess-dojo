@@ -1,8 +1,16 @@
+import { AttributeValue, QueryCommand, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
 import { _Object, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
-import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { SubscriptionTier, User } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { LiveClass } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
-import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { errToApiGatewayProxyResultV2, success } from '../directoryService/api';
+import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { errToApiGatewayProxyResultV2, getUserInfo, success } from '../directoryService/api';
+import {
+    dynamo,
+    GetItemBuilder,
+    LIVE_CLASSES_TABLE,
+    USER_TABLE,
+} from '../directoryService/database';
 import { MeetingInfo, parseMeetingInfo } from './meetingInfo';
 
 const S3_BUCKET = process.env.s3Bucket;
@@ -20,15 +28,77 @@ var meetingInfos: MeetingInfo[] = [];
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         console.log('Event: ', event);
+        const dynamoClasses: LiveClass[] = await fetchFromDynamo();
         const meetingInfos = getMeetingInfos();
         const command = new ListObjectsV2Command({ Bucket: S3_BUCKET });
         const response = await S3_CLIENT.send(command);
         const classes = getLiveClasses(response.Contents ?? [], meetingInfos);
+        classes.push(...dynamoClasses);
+        await redactRecordings(event, classes);
         return success({ classes });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
 };
+
+async function fetchFromDynamo(): Promise<LiveClass[]> {
+    let lastEvaluatedKey: Record<string, AttributeValue> | undefined = undefined;
+    const classes: LiveClass[] = [];
+
+    for (const tier of [SubscriptionTier.Lecture /*SubscriptionTier.GameReview*/]) {
+        do {
+            const response: QueryCommandOutput = await dynamo.send(
+                new QueryCommand({
+                    KeyConditionExpression: `#type = :type`,
+                    ExpressionAttributeNames: { '#type': 'type' },
+                    ExpressionAttributeValues: { ':type': { S: tier } },
+                    TableName: LIVE_CLASSES_TABLE,
+                    ExclusiveStartKey: lastEvaluatedKey,
+                }),
+            );
+            classes.push(...(response.Items ?? []).map((item) => unmarshall(item) as LiveClass));
+            lastEvaluatedKey = response.LastEvaluatedKey;
+        } while (lastEvaluatedKey);
+    }
+
+    for (const liveClass of classes) {
+        liveClass.recordings.sort((lhs, rhs) => rhs.date.localeCompare(lhs.date));
+    }
+    classes.sort((lhs, rhs) =>
+        lhs.recordings[0]?.date.localeCompare(rhs.recordings[0]?.date || ''),
+    );
+    return classes;
+}
+
+const tiersByType: Partial<Record<SubscriptionTier, SubscriptionTier[]>> = {
+    [SubscriptionTier.Lecture]: [SubscriptionTier.Lecture, SubscriptionTier.GameReview],
+    [SubscriptionTier.GameReview]: [SubscriptionTier.GameReview],
+};
+
+/**
+ * Redacts the recordings URL for public requests or if the user does not have a subscription.
+ * The classes are modified in place.
+ * @param event The event that triggered the lambda.
+ * @param classes The list of live classes to redact.
+ */
+async function redactRecordings(event: APIGatewayProxyEventV2, classes: LiveClass[]) {
+    let tier = SubscriptionTier.Free;
+    if (getUserInfo(event).username) {
+        const user = await new GetItemBuilder<User>()
+            .key('username', getUserInfo(event).username)
+            .table(USER_TABLE)
+            .send();
+        tier = user?.subscriptionTier ?? SubscriptionTier.Free;
+    }
+
+    for (const liveClass of classes) {
+        if (!tiersByType[liveClass.type]?.includes(tier)) {
+            for (const recording of liveClass.recordings) {
+                recording.url = undefined;
+            }
+        }
+    }
+}
 
 /**
  * Gets the list of live classes from the S3 items and meeting infos.
@@ -82,6 +152,12 @@ function processItem(
     const meetingInfo = meetingInfos.find((info) => item.Key?.includes(`/${info.awsS3Folder}/`));
     if (!meetingInfo) {
         console.error(`No meeting info found for item ${item.Key}`);
+        return;
+    }
+    if (meetingInfo.id && meetingInfo.type === SubscriptionTier.Lecture) {
+        console.log(
+            `Meeting info ${meetingInfo.name} is handled outside of S3. Skipping ${item.Key}`,
+        );
         return;
     }
 

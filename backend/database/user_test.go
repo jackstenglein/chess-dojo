@@ -2,6 +2,9 @@ package database
 
 import (
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 func TestIsValidCohort(t *testing.T) {
@@ -237,6 +240,56 @@ func TestGetRatings(t *testing.T) {
 				t.Errorf("GetRatings(%v) gotCurrent: %d; wantCurrent: %d", tc.user, gotCurrent, tc.wantCurrent)
 			}
 		})
+	}
+}
+
+func TestBatchStatementsError(t *testing.T) {
+	table := []struct {
+		name      string
+		responses []*dynamodb.BatchStatementResponse
+		wantErr   bool
+	}{
+		{name: "NilResponses", responses: nil, wantErr: false},
+		{
+			name:      "AllSuccessful",
+			responses: []*dynamodb.BatchStatementResponse{{}, {}},
+			wantErr:   false,
+		},
+		{
+			name: "OneFailed",
+			responses: []*dynamodb.BatchStatementResponse{
+				{},
+				{Error: &dynamodb.BatchStatementError{
+					Code:    aws.String("ValidationError"),
+					Message: aws.String("Item size exceeded"),
+				}},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range table {
+		t.Run(tc.name, func(t *testing.T) {
+			err := batchStatementsError(tc.responses)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("batchStatementsError() error = %v, wantErr %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestListUserRatingsInput_Limit(t *testing.T) {
+	input := listUserRatingsInput("1000-1100", 50)
+	if input.Limit == nil || *input.Limit != 50 {
+		t.Errorf("expected Limit 50, got %v", input.Limit)
+	}
+
+	input = listUserRatingsInput("1000-1100", 0)
+	if input.Limit != nil {
+		t.Errorf("expected no Limit for 0, got %v", input.Limit)
+	}
+	if aws.StringValue(input.IndexName) != "CohortIdx" {
+		t.Errorf("expected CohortIdx index, got %v", input.IndexName)
 	}
 }
 

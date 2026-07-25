@@ -5,7 +5,9 @@ import {
     RoundRobinPairing,
     RoundRobinPlayerStatuses,
 } from '@jackstenglein/chess-dojo-common/src/roundRobin/api';
+import { Edit } from '@mui/icons-material';
 import {
+    IconButton,
     MenuItem,
     Stack,
     Table,
@@ -14,19 +16,32 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ChangeEvent, useState } from 'react';
+import { AdminSetResultDialog } from './AdminSetResultDialog';
 
 /**
  * Renders the pairings for the given Round Robin tournament.
  * @param tournament The tournament to render the pairings for.
  */
-export function Pairings({ tournament }: { tournament: RoundRobin }) {
+export function Pairings({
+    tournament,
+    onUpdate,
+}: {
+    tournament: RoundRobin;
+    onUpdate?: (tournament: RoundRobin) => void;
+}) {
     const { user } = useAuth();
     const isPlayer = user && tournament.players[user.username];
+    const isAdmin = Boolean(user?.isAdmin || user?.isTournamentAdmin);
     const [round, setRound] = useState<number>(isPlayer ? 0 : 1);
+    const [editing, setEditing] = useState<{
+        pairing: RoundRobinPairing;
+        round: number;
+    }>();
     const t = useTranslations('tournaments.roundRobin.pairings');
 
     const handleRoundChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -71,22 +86,31 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
                         <TableCell align='center'>
                             <Typography fontWeight='bold'>{t('columnResult')}</Typography>
                         </TableCell>
+                        {isAdmin && (
+                            <TableCell align='center'>
+                                <Typography fontWeight='bold'>{t('columnActions')}</Typography>
+                            </TableCell>
+                        )}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {round === 0 ? (
                         tournament.pairings.flatMap((roundPairings, idx) =>
-                            roundPairings.map((pair) => {
+                            roundPairings.map((pair, pairingIdx) => {
                                 if (
                                     pair.white === user?.username ||
                                     pair.black === user?.username
                                 ) {
                                     return (
                                         <Pairing
-                                            key={idx}
+                                            key={`${idx}-${pairingIdx}`}
                                             pairing={pair}
                                             tournament={tournament}
                                             round={idx + 1}
+                                            isAdmin={isAdmin}
+                                            onEdit={() =>
+                                                setEditing({ pairing: pair, round: idx + 1 })
+                                            }
                                         />
                                     );
                                 }
@@ -95,17 +119,43 @@ export function Pairings({ tournament }: { tournament: RoundRobin }) {
                         )
                     ) : tournament.pairings?.[round - 1] ? (
                         tournament.pairings[round - 1].map((pair, index) => (
-                            <Pairing key={index} pairing={pair} tournament={tournament} />
+                            <Pairing
+                                key={index}
+                                pairing={pair}
+                                tournament={tournament}
+                                isAdmin={isAdmin}
+                                onEdit={() => setEditing({ pairing: pair, round })}
+                            />
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={3}>
+                            <TableCell colSpan={isAdmin ? 4 : 3}>
                                 <Typography textAlign={'center'}>{t('noPairings')}</Typography>
                             </TableCell>
                         </TableRow>
                     )}
                 </TableBody>
             </Table>
+
+            {editing?.pairing.white && editing.pairing.black && onUpdate && (
+                <AdminSetResultDialog
+                    open
+                    onClose={() => setEditing(undefined)}
+                    cohort={tournament.cohort}
+                    startsAt={tournament.startsAt}
+                    round={editing.round}
+                    white={editing.pairing.white}
+                    black={editing.pairing.black}
+                    whiteDisplayName={tournament.players[editing.pairing.white]?.displayName ?? ''}
+                    blackDisplayName={tournament.players[editing.pairing.black]?.displayName ?? ''}
+                    initialResult={editing.pairing.result}
+                    initialUrl={editing.pairing.url}
+                    onUpdate={(updated) => {
+                        onUpdate(updated);
+                        setEditing(undefined);
+                    }}
+                />
+            )}
         </Stack>
     );
 }
@@ -114,10 +164,14 @@ function Pairing({
     pairing,
     tournament,
     round,
+    isAdmin,
+    onEdit,
 }: {
     pairing: RoundRobinPairing;
     tournament: RoundRobin;
     round?: number;
+    isAdmin?: boolean;
+    onEdit?: () => void;
 }) {
     const t = useTranslations('tournaments.roundRobin.pairings');
     const whiteWithdrawn =
@@ -152,6 +206,8 @@ function Pairing({
                 ? '0-0'
                 : pairing.result;
 
+    const canEdit = isAdmin && pairing.white && pairing.black && !whiteWithdrawn && !blackWithdrawn;
+
     return (
         <TableRow>
             {round && (
@@ -182,6 +238,17 @@ function Pairing({
                     {pairing.url ? <Link href={pairing.url}>{result}</Link> : result}
                 </Typography>
             </TableCell>
+            {isAdmin && (
+                <TableCell align='center'>
+                    {canEdit && (
+                        <Tooltip title={t('editResult')}>
+                            <IconButton size='small' aria-label={t('editResult')} onClick={onEdit}>
+                                <Edit fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </TableCell>
+            )}
         </TableRow>
     );
 }
