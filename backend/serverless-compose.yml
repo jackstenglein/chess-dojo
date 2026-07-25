@@ -2,19 +2,18 @@ services:
   chess-dojo-scheduler:
     path: root
 
-  pats:
+  patService:
     path: patService
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
-      PatsTableArn: ${chess-dojo-scheduler.PatsTableArn}
 
   users:
     path: user
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
-      patAuthorizer: ${pats.patAuthorizer}
+      patAuthorizer: ${patService.patAuthorizer}
       UserPoolArn: ${chess-dojo-scheduler.UserPoolArn}
       UserPoolId: ${chess-dojo-scheduler.UserPoolId}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
@@ -57,7 +56,7 @@ services:
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
-      patAuthorizer: ${pats.patAuthorizer}
+      patAuthorizer: ${patService.patAuthorizer}
       RequirementsTableArn: ${chess-dojo-scheduler.RequirementsTableArn}
 
   graduations:

@@ -60,11 +60,11 @@ functions:
         Action:
           - dynamodb:PutItem
           - dynamodb:DeleteItem
-        Resource: ${param:PatsTableArn}
+        Resource: !GetAtt PersonalAccessTokensTable.Arn
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: !Join ['', ['${param:PatsTableArn}', '/index/UsernameIdx']]
+        Resource: !Join ['', [!GetAtt PersonalAccessTokensTable.Arn, '/index/UsernameIdx']]
 
   authorizer:
     handler: authorizer/main.go
@@ -73,10 +73,45 @@ functions:
         Action:
           - dynamodb:GetItem
           - dynamodb:UpdateItem
-        Resource: ${param:PatsTableArn}
+        Resource: !GetAtt PersonalAccessTokensTable.Arn
 
 resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+    IsNotSimple: !Not [!Equals ['${sls:stage}', 'simple']]
+
   Resources:
+    PersonalAccessTokensTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        TableName: ${sls:stage}-personal-access-tokens
+        AttributeDefinitions:
+          - AttributeName: tokenHash
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tokenHash
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        GlobalSecondaryIndexes:
+          - IndexName: UsernameIdx
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
     HttpApiAuthorizerPat:
       Type: AWS::ApiGatewayV2::Authorizer
       Properties:
