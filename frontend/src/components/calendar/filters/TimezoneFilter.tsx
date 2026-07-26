@@ -94,6 +94,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                         size: 'small',
                         helperText: minHourNum >= maxHourNum ? t('minHourError') : undefined,
                     },
+                    popper: { disablePortal: true },
                 }}
             />
             <TimePicker
@@ -108,6 +109,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                         size: 'small',
                         helperText: maxHourNum <= minHourNum ? t('maxHourError') : undefined,
                     },
+                    popper: { disablePortal: true },
                 }}
             />
         </Stack>

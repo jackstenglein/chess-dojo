@@ -1622,9 +1622,9 @@
         "copyLink": "Copy Link",
         "participants": "Participants",
         "andMore": "... and {count} more",
-        "filtersTitle": "Filters",
         "resetFilters": "Reset Filters",
-        "myDojoCalendar": "My Dojo Calendar",
+        "cohortsSelected": "{count, plural, =1 {# selected} other {# selected}}",
+        "myDojoCalendar": "Dojo Calendars",
         "dojoLigaTournaments": "DojoLiga Tournaments",
         "bookableMeetings": "Bookable Meetings",
         "viewMeetings": "{count, plural, =1 {View # upcoming meeting} other {View # upcoming meetings}}",
@@ -4011,10 +4011,10 @@
     "eventLabels": {
         "session": {
             "ALL_SESSIONS": "All Events",
-            "AVAILABILITIES": "Availabilities",
+            "AVAILABILITIES": "Bookable Meetings",
             "COACHING_SESSIONS": "Coaching Sessions",
-            "DOJO_EVENTS": "Dojo Events",
-            "MEETINGS": "Meetings",
+            "DOJO_EVENTS": "Streams & Community Events",
+            "MEETINGS": "My Booked Meetings",
             "LECTURE_TIER": "Workshops",
             "GAME_REVIEW_TIER": "Game & Profile Reviews"
         },

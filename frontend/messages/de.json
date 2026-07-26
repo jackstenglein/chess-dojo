@@ -1623,8 +1623,9 @@
         "participants": "Teilnehmer",
         "andMore": "... und {count} weitere",
         "filtersTitle": "Filter",
-        "resetFilters": "Filter zurücksetzen",
-        "myDojoCalendar": "Mein Dojo Kalender",
+        "resetFilters": "Zurücksetzen",
+        "cohortsSelected": "{count, plural, =1 {# ausgewählt} other {# ausgewählt}}",
+        "myDojoCalendar": "Dojo-Kalender",
         "dojoLigaTournaments": "DojoLiga Turniere",
         "bookableMeetings": "Buchbare Besprechungen",
         "viewMeetings": "{count, plural, =1 {Zeige # bevorstehenden Termin} other {Zeige # bevorstehende Termine}}",
@@ -4010,13 +4011,13 @@
     },
     "eventLabels": {
         "session": {
-            "ALL_SESSIONS": "Alle Veranstaltungen",
-            "AVAILABILITIES": "Verfügbarkeiten",
+            "ALL_SESSIONS": "Alle Events",
+            "AVAILABILITIES": "Buchbare Meetings",
             "COACHING_SESSIONS": "Coaching-Sitzungen",
-            "DOJO_EVENTS": "Dojo-Veranstaltungen",
-            "MEETINGS": "Treffen",
-            "LECTURE_TIER": "Lektionen",
-            "GAME_REVIEW_TIER": "Spiel & Profilbewertungen"
+            "DOJO_EVENTS": "Streams & Community-Events",
+            "MEETINGS": "Meine gebuchten Meetings",
+            "LECTURE_TIER": "Workshops",
+            "GAME_REVIEW_TIER": "Partie- & Profilanalysen"
         },
         "availability": {
             "ALL_TYPES": "Alle Typen",
