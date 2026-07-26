@@ -65,38 +65,63 @@ test.describe('Admin game review page', () => {
             body: mockGameReviewCohortsResponse,
         });
         await page.goto('/admin/game-review');
+        // Wait for mocked cohort data to render before assertions
+        await expect(page.locator('input[value="Group A"]')).toBeVisible();
     });
 
     test('displays game review cohort groups with member names', async ({ page }) => {
+        const groupA = page
+            .locator('.MuiCard-root')
+            .filter({ has: page.locator('input[value="Group A"]') });
+        const groupB = page
+            .locator('.MuiCard-root')
+            .filter({ has: page.locator('input[value="Group B"]') });
+
         await expect(page.locator('input[value="Group A"]')).toBeVisible();
         await expect(page.locator('input[value="Group B"]')).toBeVisible();
-        await expect(page.getByText('Alice').first()).toBeVisible();
-        await expect(page.getByText('Bob').first()).toBeVisible();
-        await expect(page.getByText('Charlie').first()).toBeVisible();
+        await expect(groupA.getByRole('link', { name: 'Alice' })).toBeVisible();
+        await expect(groupA.getByRole('link', { name: 'Bob' })).toBeVisible();
+        await expect(groupB.getByRole('link', { name: 'Charlie' })).toBeVisible();
     });
 
     test('displays dojoCohort next to members', async ({ page }) => {
-        await expect(page.getByText('(1200-1300)')).toBeVisible();
-        await expect(page.getByText('(1300-1400)')).toBeVisible();
-        await expect(page.getByText('(1800-1900)')).toBeVisible();
+        const groupA = page
+            .locator('.MuiCard-root')
+            .filter({ has: page.locator('input[value="Group A"]') });
+        const groupB = page
+            .locator('.MuiCard-root')
+            .filter({ has: page.locator('input[value="Group B"]') });
+
+        await expect(groupA.getByText('(1200-1300)')).toBeVisible();
+        await expect(groupA.getByText('(1300-1400)')).toBeVisible();
+        await expect(groupB.getByText('(1800-1900)')).toBeVisible();
     });
 
     test('displays unassigned users section', async ({ page }) => {
-        await expect(page.getByText('Unassigned')).toBeVisible();
-        await expect(page.getByText('Dave')).toBeVisible();
+        const unassigned = page.locator('.MuiCard-root').filter({ hasText: 'Unassigned Users' });
+
+        await expect(unassigned.getByText('Unassigned Users')).toBeVisible();
+        await expect(unassigned.getByRole('link', { name: 'Dave' })).toBeVisible();
     });
 
     test('displays Workshops Tier Users card', async ({ page }) => {
-        await expect(page.getByText('Workshops Tier Users')).toBeVisible();
-        await expect(page.getByText('Eve')).toBeVisible();
-        await expect(page.getByText('Frank')).toBeVisible();
-        await expect(page.getByText('Grace')).toBeVisible();
+        const card = page.getByTestId('lecture-tier-card');
+        await expect(card.getByText('Workshops Tier Users')).toBeVisible();
+        await expect(card.getByRole('link', { name: 'Eve' })).toBeVisible();
+        await expect(card.getByRole('link', { name: 'Frank' })).toBeVisible();
+        await expect(card.getByRole('link', { name: 'Grace' })).toBeVisible();
     });
 
     test('groups lecture tier users by cohort with lower cohorts first', async ({ page }) => {
         const card = page.getByTestId('lecture-tier-card');
         const cohortLabels = card.getByText(/^\d+-\d+$/);
-        const texts = await cohortLabels.allTextContents();
-        expect(texts.indexOf('800-900')).toBeLessThan(texts.indexOf('1500-1600'));
+
+        await expect(cohortLabels.first()).toBeVisible();
+        await expect
+            .poll(async () => {
+                const texts = await cohortLabels.allTextContents();
+                return texts.indexOf('800-900') < texts.indexOf('1500-1600');
+            })
+            .toBe(true);
     });
 });

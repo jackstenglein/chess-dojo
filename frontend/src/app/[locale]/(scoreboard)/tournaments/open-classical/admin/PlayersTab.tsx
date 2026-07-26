@@ -29,7 +29,7 @@ import {
 } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 
-declare module '@mui/x-data-grid' {
+declare module '@mui/x-data-grid-pro' {
     interface ToolbarPropsOverrides {
         region: string;
         ratingRange: string;

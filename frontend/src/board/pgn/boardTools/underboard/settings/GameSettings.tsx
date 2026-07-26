@@ -26,7 +26,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useChess } from '../../../PgnBoard';

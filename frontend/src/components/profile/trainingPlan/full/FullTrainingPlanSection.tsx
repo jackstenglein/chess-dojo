@@ -87,6 +87,11 @@ export function FullTrainingPlanSection({
     const tCategory = useTranslations('enums.requirementCategory');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
+    const preventCategoryTranslation =
+        section.category === RequirementCategory.Opening ||
+        section.category === RequirementCategory.Middlegames ||
+        section.category === RequirementCategory.Endgame ||
+        section.category === RequirementCategory.Graduation;
 
     const hiddenTaskCount = useMemo(() => {
         if (!isFreeTier) {
@@ -126,9 +131,14 @@ export function FullTrainingPlanSection({
                                     verticalAlign: 'middle',
                                 }}
                             />
-                            {tCategory.has(section.category)
-                                ? tCategory(section.category)
-                                : section.category}
+                            <span
+                                translate={preventCategoryTranslation ? 'no' : undefined}
+                                className={preventCategoryTranslation ? 'notranslate' : undefined}
+                            >
+                                {tCategory.has(section.category)
+                                    ? tCategory(section.category)
+                                    : section.category}
+                            </span>
                         </Typography>
                     </Grid>
 

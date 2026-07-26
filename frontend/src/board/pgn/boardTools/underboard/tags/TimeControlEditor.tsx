@@ -22,7 +22,7 @@ import {
     Typography,
 } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pro';
-import { TimeField } from '@mui/x-date-pickers';
+import { TimeField } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';

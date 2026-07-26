@@ -514,7 +514,6 @@ async function prependIntroToRecording(recordingPath: string, outputPath: string
 function runFfmpeg(args: string[]) {
     execSync(`ffmpeg ${args.join(' ')}`, {
         cwd: '/tmp',
-        stdio: 'ignore',
     });
 }
 

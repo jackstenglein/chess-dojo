@@ -96,7 +96,16 @@ export function Waitlist({
                           })}
                 </Typography>
 
-                <Players tournament={tournament} />
+                <Players
+                    tournament={tournament}
+                    onUpdate={(updated) => {
+                        if (updated.startsAt === 'WAITING') {
+                            onUpdateTournaments({ waitlist: updated as RoundRobin });
+                        } else {
+                            onUpdateTournaments({ tournament: updated as RoundRobin });
+                        }
+                    }}
+                />
             </CardContent>
 
             {user && (

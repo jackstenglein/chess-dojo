@@ -10,32 +10,35 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
 
       - name: Prepare Frontend
         working-directory: frontend
-        run: npm ci && npx next typegen
+        run: pnpm install --frozen-lockfile && npx next typegen
 
       - name: Format Check Frontend
         working-directory: frontend
-        run: npm run format:check
+        run: pnpm format:check
 
       - name: Format Check Common
         working-directory: common
-        run: npm run format:check
+        run: pnpm format:check
       
       - name: Format Check Backend
         working-directory: backend
-        run: npm ci && npm run format:check
+        run: pnpm install --frozen-lockfile && pnpm format:check
 
       - name: Lint Frontend
         working-directory: frontend
-        run: npm run lint
+        run: pnpm lint
       
       - name: Lint Common
         working-directory: common
-        run: npm run lint
+        run: pnpm lint
 
       - name: Build frontend
         working-directory: frontend
-        run: npm run build
+        run: pnpm build

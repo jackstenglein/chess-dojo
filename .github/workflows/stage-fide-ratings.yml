@@ -1,0 +1,79 @@
+# Downloads the monthly FIDE players list from ratings.fide.com (which blocks
+# AWS Lambda egress) and stages it in S3, then invokes downloadFideRatings.
+name: Stage FIDE Ratings
+
+on:
+  schedule:
+    # FIDE often publishes a few days into the month; retry through day 10.
+    - cron: '0 10 1-10 * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  FIDE_URL: https://ratings.fide.com/download/players_list.zip
+  OBJECT_KEY: players_list.zip
+
+jobs:
+  stage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: [dev, prod]
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_FIDE_RATINGS }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download FIDE players list
+        id: download
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 5 \
+            -D headers.txt \
+            -o players_list.zip \
+            "$FIDE_URL"
+          LAST_MODIFIED_HTTP=$(awk 'BEGIN{IGNORECASE=1} /^Last-Modified:/{sub(/\r$/,""); print substr($0, index($0,$2))}' headers.txt)
+          if [ -z "$LAST_MODIFIED_HTTP" ]; then
+            echo "FIDE response missing Last-Modified header" >&2
+            exit 1
+          fi
+          LAST_MODIFIED_UNIX=$(date -u -d "$LAST_MODIFIED_HTTP" +%s)
+          echo "fide_last_modified_unix=$LAST_MODIFIED_UNIX" >> "$GITHUB_OUTPUT"
+          echo "Downloaded players_list.zip ($(wc -c < players_list.zip) bytes), Last-Modified: $LAST_MODIFIED_HTTP ($LAST_MODIFIED_UNIX)"
+
+      - name: Upload to S3 if newer
+        id: upload
+        env:
+          STAGE: ${{ matrix.stage }}
+          FIDE_LAST_MODIFIED_UNIX: ${{ steps.download.outputs.fide_last_modified_unix }}
+        run: |
+          set -euo pipefail
+          BUCKET="chess-dojo-${STAGE}-fide-ratings"
+          EXISTING=$(aws s3api head-object \
+            --bucket "$BUCKET" \
+            --key "$OBJECT_KEY" \
+            --query 'Metadata.fide-last-modified-unix' \
+            --output text 2>/dev/null || true)
+          if [ "$EXISTING" = "$FIDE_LAST_MODIFIED_UNIX" ]; then
+            echo "S3 already has this Last-Modified; skipping upload"
+            echo "uploaded=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # put-object --metadata uses key=value shorthand; unix timestamps avoid
+          # commas/spaces that break HTTP-date values in that format.
+          aws s3api put-object \
+            --bucket "$BUCKET" \
+            --key "$OBJECT_KEY" \
+            --body players_list.zip \
+            --content-type application/zip \
+            --metadata "fide-last-modified-unix=${FIDE_LAST_MODIFIED_UNIX}"
+          echo "uploaded=true" >> "$GITHUB_OUTPUT"
+          echo "Uploaded to s3://${BUCKET}/${OBJECT_KEY}"

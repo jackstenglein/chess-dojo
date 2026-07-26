@@ -60,22 +60,6 @@ export interface GameApiContextType {
     deleteGames: (request: DeleteGamesRequest) => Promise<AxiosResponse<DeleteGamesResponse>>;
 
     /**
-     * listGamesByCohort returns a list of GameInfo objects corresponding to the provided cohort,
-     * as well as the next start key for pagination.
-     * @param cohort The cohort to search for games in.
-     * @param startKey The optional startKey to use when searching.
-     * @param startDate The optional startDate to limit the search to.
-     * @param endDate The optional endDate to limit the search to.
-     * @returns The list of games and the next start key.
-     */
-    listGamesByCohort: (
-        cohort: string,
-        startKey?: string,
-        startDate?: string,
-        endDate?: string,
-    ) => Promise<AxiosResponse<ListGamesResponse>>;
-
-    /**
      * listGamesByOwner returns a list of GameInfo objects owned by the provided user,
      * as well as the next start key for pagination. If the optional player parameter
      * is passed, that user's games will be searched instead of the current user's.
@@ -94,22 +78,6 @@ export interface GameApiContextType {
         endDate?: string,
         player?: string,
         color?: string,
-    ) => Promise<AxiosResponse<ListGamesResponse>>;
-
-    /**
-     * listGamesByOpening returns a list of GameInfo objects with the provided ECO code,
-     * as well as the next start key for pagination.
-     * @param eco The ECO to search for.
-     * @param startKey The optional startKey to use when searching.
-     * @param startDate The optional start date to limit the search to.
-     * @param endDate The optional end date to limit the search to.
-     * @returns A list of games matching the provided ECO.
-     */
-    listGamesByOpening: (
-        eco: string,
-        startKey?: string,
-        startDate?: string,
-        endDate?: string,
     ) => Promise<AxiosResponse<ListGamesResponse>>;
 
     /**
@@ -304,6 +272,49 @@ export interface ListGamesResponse {
     lastEvaluatedKey?: string;
 }
 
+/** A request to the game search API. */
+export interface SearchGamesRequest {
+    /**
+     * White / player-1 name. Partial names and small typos match.
+     * When both white and black are omitted, the search is filter-only.
+     */
+    white?: string;
+    /** Black / player-2 name. Partial names and small typos match. */
+    black?: string;
+    /**
+     * When true, white/black names may match either color
+     * (player 1 as white or black).
+     */
+    ignoreColors?: boolean;
+    /** The minimum rating to filter by. */
+    minElo?: string;
+    /** The maximum rating to filter by. */
+    maxElo?: string;
+    /**
+     * How min/max elo apply: to one player, both players, or the average.
+     */
+    eloMode?: 'one' | 'both' | 'average';
+    /**
+     * Comma-separated PGN results to include (1-0, 0-1, 1/2-1/2).
+     * Omit or pass all three for no result filter.
+     */
+    results?: string;
+    /** The cohort to restrict the search to, including masters. */
+    cohort?: string;
+    /** An ECO code/prefix (B12) or opening name (Caro-Kann) to filter by. */
+    opening?: string;
+    /** The minimum number of full moves. */
+    minMoves?: string;
+    /** The maximum number of full moves. */
+    maxMoves?: string;
+    /** The time control class: bullet, blitz, rapid, classical or daily. */
+    timeClass?: string;
+    /** The start date to limit the search to. */
+    startDate?: string;
+    /** The end date to limit the search to. */
+    endDate?: string;
+}
+
 /**
  * listGamesByCohort returns a list of GameInfo objects corresponding to the provided cohort,
  * as well as the next start key for pagination.
@@ -359,6 +370,19 @@ export function listGamesByOwner(
             Authorization: 'Bearer ' + idToken,
         },
         functionName: 'listGamesByOwner',
+    });
+}
+
+/**
+ * searchGames returns a list of GameInfo objects matching the search request,
+ * as well as the next start key for pagination.
+ * @param request The search request.
+ * @param startKey The optional startKey to use when searching.
+ */
+export function searchGames(request: SearchGamesRequest, startKey?: string) {
+    return axiosService.get<ListGamesResponse>('/game/search', {
+        params: { ...request, startKey },
+        functionName: 'searchGames',
     });
 }
 

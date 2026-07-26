@@ -10,7 +10,7 @@ import {
     DialogTitle,
     Stack,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useState } from 'react';
 

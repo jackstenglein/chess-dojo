@@ -12,6 +12,7 @@ import {
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
+import { Color } from '@jackstenglein/chess';
 import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -99,7 +100,7 @@ export default function EngineSection() {
                                     ? formatLineEval({
                                           cp: normalizeChessDBScore(
                                               chessDbPv?.score,
-                                              chess?.turn() || 'w',
+                                              chess?.turn() || Color.white,
                                           ),
                                       })
                                     : formatLineEval(engineLines[0])}

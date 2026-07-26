@@ -23,7 +23,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-const MAX_SCREENSHOT_SIZE_MB = 9;
+const MAX_SCREENSHOT_SIZE_MB = 6;
 
 interface LichessGameResponse {
     players: {

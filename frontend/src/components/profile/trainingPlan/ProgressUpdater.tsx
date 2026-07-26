@@ -25,7 +25,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';

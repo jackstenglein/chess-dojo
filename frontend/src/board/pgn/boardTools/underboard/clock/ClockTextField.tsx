@@ -2,7 +2,7 @@ import { BlockBoardKeyboardShortcuts, useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { FormHelperText, Stack, TextField } from '@mui/material';
-import { TimeField } from '@mui/x-date-pickers';
+import { TimeField } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useRef } from 'react';

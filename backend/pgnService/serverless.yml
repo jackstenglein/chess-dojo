@@ -83,6 +83,62 @@ functions:
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/prod-masters-explorer
           - !GetAtt ExplorerTable.Arn
 
+  indexGameSearch:
+    handler: search/indexGame.handler
+    timeout: 120
+    events:
+      - stream:
+          type: dynamodb
+          arn: ${param:GamesTableStreamArn}
+          batchWindow: 20
+          batchSize: 100
+          # Failed records are reported individually (ReportBatchItemFailures)
+          # and retried; upserts/deletes are idempotent, so generous retries
+          # are safe and cover brief domain outages without losing updates.
+          maximumRetryAttempts: 10
+          functionResponseType: ReportBatchItemFailures
+          parallelizationFactor: 2
+          destinations:
+            onFailure:
+              arn:
+                Fn::GetAtt:
+                  - GameSearchIndexFailuresQueue
+                  - Arn
+              type: sqs
+    environment:
+      gameSearchEndpoint: ${param:GameSearchEndpoint}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - es:ESHttpPost
+          - es:ESHttpPut
+          - es:ESHttpDelete
+          - es:ESHttpGet
+          - es:ESHttpHead
+        Resource: arn:aws:es:${aws:region}:${aws:accountId}:domain/chess-dojo-game-search/*
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+        Resource: !GetAtt GameSearchIndexFailuresQueue.Arn
+
+  searchGames:
+    handler: search/searchGames.handler
+    events:
+      - httpApi:
+          path: /game/search
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    environment:
+      gameSearchEndpoint: ${param:GameSearchEndpoint}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - es:ESHttpGet
+          - es:ESHttpPost
+        Resource: arn:aws:es:${aws:region}:${aws:accountId}:domain/chess-dojo-game-search/*
+
   notifyFollowers:
     handler: explorer/notifyFollowers.handler
     timeout: 300
@@ -387,3 +443,49 @@ resources:
               ProjectionType: INCLUDE
               NonKeyAttributes:
                 - followMetadata
+
+    GameSearchIndexFailuresQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: chess-dojo-game-search-index-failures-${sls:stage}
+        MessageRetentionPeriod: 1209600
+
+    IndexGameSearchErrorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Condition: IsProd
+      Properties:
+        AlarmName: IndexGameSearchErrors-${sls:stage}
+        AlarmDescription: 'Errors in the game search indexer Lambda'
+        AlarmActions:
+          - ${param:AlertNotificationsTopic}
+        Namespace: AWS/Lambda
+        MetricName: Errors
+        Statistic: Sum
+        Dimensions:
+          - Name: FunctionName
+            Value: chess-dojo-pgn-${sls:stage}-indexGameSearch
+        Period: 3600
+        EvaluationPeriods: 1
+        Threshold: 0
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+    IndexGameSearchFailureQueueAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Condition: IsProd
+      Properties:
+        AlarmName: IndexGameSearchDiscardedRecords-${sls:stage}
+        AlarmDescription: 'Game search index updates exhausted their retries'
+        AlarmActions:
+          - ${param:AlertNotificationsTopic}
+        Namespace: AWS/SQS
+        MetricName: ApproximateNumberOfMessagesVisible
+        Statistic: Maximum
+        Dimensions:
+          - Name: QueueName
+            Value: !GetAtt GameSearchIndexFailuresQueue.QueueName
+        Period: 300
+        EvaluationPeriods: 1
+        Threshold: 0
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
