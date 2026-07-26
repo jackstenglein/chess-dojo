@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EditTimelinEntryDialog } from './EditTimelineEntryDialog';
 import { UseTimelineResponse } from './useTimeline';
 
@@ -298,6 +298,24 @@ const ActivityTimelineCalendar = ({
         calendarRef.current?.scheduler.handleState(events, 'events');
     };
 
+    const CustomEventViewer = useCallback(
+        ({ event }: { event: ProcessedEvent }) => {
+            return event.entry ? (
+                <NewsfeedItem
+                    entry={event.entry as TimelineEntry}
+                    onEdit={(e) => onEdit(entries.indexOf(event.entry as TimelineEntry), e)}
+                    maxComments={3}
+                    onChangeActivity={setEditEntry}
+                />
+            ) : event.user ? (
+                <CreatedAtItem user={event.user as User} />
+            ) : (
+                <></>
+            );
+        },
+        [onEdit, setEditEntry, entries],
+    );
+
     return (
         <Box
             sx={{
@@ -316,6 +334,7 @@ const ActivityTimelineCalendar = ({
                 events={initialEvents}
                 view='month'
                 agenda={false}
+                hideDates
                 month={{
                     weekDays: [0, 1, 2, 3, 4, 5, 6],
                     weekStartOn: filters.weekStartOn,
@@ -341,20 +360,9 @@ const ActivityTimelineCalendar = ({
                 hourFormat={filters.timeFormat || TimeFormat.TwelveHour}
                 timeZone={filters.timezone === DefaultTimezone ? undefined : filters.timezone}
                 editable={false}
-                customViewer={(event) =>
-                    event.entry ? (
-                        <NewsfeedItem
-                            entry={event.entry as TimelineEntry}
-                            onEdit={(e) => onEdit(entries.indexOf(event.entry as TimelineEntry), e)}
-                            maxComments={3}
-                            onChangeActivity={setEditEntry}
-                        />
-                    ) : event.user ? (
-                        <CreatedAtItem user={event.user as User} />
-                    ) : (
-                        <></>
-                    )
-                }
+                slots={{
+                    eventViewer: CustomEventViewer,
+                }}
                 navigationPickerProps={{
                     disableFuture: true,
                     minDate: new Date('2023-05-01') as unknown as DateTime,

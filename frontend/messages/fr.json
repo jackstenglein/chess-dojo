@@ -1622,7 +1622,6 @@
         "copyLink": "Copier le lien",
         "participants": "Participants",
         "andMore": "... et {count} de plus",
-        "filtersTitle": "Filtres",
         "resetFilters": "Réinitialiser",
         "cohortsSelected": "{count, plural, =1 {# sélectionné} other {# sélectionnés}}",
         "myDojoCalendar": "Calendriers Dojo",

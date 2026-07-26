@@ -10,8 +10,13 @@ import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector'
 import { Event } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
-import { ProcessedEvent, SchedulerRef } from '@jackstenglein/react-scheduler/types';
-import { Grid, Stack } from '@mui/material';
+import {
+    EditorSlotProps,
+    EventViewerExtraSlotProps,
+    ProcessedEvent,
+    SchedulerRef,
+} from '@jackstenglein/react-scheduler/types';
+import { Grid, Stack, useTheme } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -34,6 +39,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
     const user = useAuth().user;
     const calendarRef = useRef<SchedulerRef>(null);
     const filters = useFilters();
+    const theme = useTheme();
 
     const [shiftHeld, setShiftHeld] = useState(false);
     const copyRequest = useRequest();
@@ -41,8 +47,8 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
 
     const processedEvents = useMemo(() => {
         const modifiedFilters = { ...filters, coaching: true };
-        return getProcessedEvents(user, modifiedFilters, events, tCalendar);
-    }, [user, filters, events, tCalendar]);
+        return getProcessedEvents(user, modifiedFilters, events, tCalendar, theme);
+    }, [user, filters, events, tCalendar, theme]);
 
     useEffect(() => {
         calendarRef.current?.scheduler.handleState(processedEvents, 'events');
@@ -91,7 +97,6 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
         };
     }, [downHandler, upHandler]);
 
-    const view = calendarRef.current?.scheduler.view;
     const copyAvailability = useCallback(
         async (
             _event: React.DragEvent<HTMLButtonElement>,
@@ -100,6 +105,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
             originalEvent: ProcessedEvent,
         ) => {
             try {
+                const view = calendarRef.current?.scheduler.view;
                 let startIso = newEvent.start.toISOString();
                 let endIso = newEvent.end.toISOString();
 
@@ -151,7 +157,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                 copyRequest.onFailure(err);
             }
         },
-        [copyRequest, api, shiftHeld, view, putEvent],
+        [copyRequest, api, shiftHeld, putEvent],
     );
 
     const [minHour, maxHour] = getHours(filters.minHour, filters.maxHour);
@@ -209,12 +215,12 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                         step: 60,
                         navigation: true,
                     }}
-                    customEditor={(scheduler) => <EventEditor scheduler={scheduler} />}
+                    slots={{
+                        editor: CoachingEventEditor,
+                        eventViewerExtra: CalendarEventViewerExtra,
+                    }}
                     onDelete={deleteAvailability}
                     onEventDrop={copyAvailability}
-                    viewerExtraComponent={(_, event) => (
-                        <ProcessedEventViewer processedEvent={event} />
-                    )}
                     events={processedEvents}
                     timeZone={filters.timezone === DefaultTimezone ? undefined : filters.timezone}
                     hourFormat={filters.timeFormat || TimeFormat.TwelveHour}
@@ -223,5 +229,13 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
         </Grid>
     );
 };
+
+function CoachingEventEditor(props: EditorSlotProps) {
+    return <EventEditor scheduler={props} />;
+}
+
+function CalendarEventViewerExtra({ event }: EventViewerExtraSlotProps) {
+    return <ProcessedEventViewer processedEvent={event} />;
+}
 
 export default CoachingCalendar;

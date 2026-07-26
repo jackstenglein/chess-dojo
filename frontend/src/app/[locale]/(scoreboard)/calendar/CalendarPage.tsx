@@ -17,6 +17,7 @@ import {
 import CalendarSettingsMenu from '@/components/calendar/filters/CalendarSettingsMenu';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import CalendarTutorial from '@/components/tutorial/CalendarTutorial';
+import { getConfig } from '@/config';
 import {
     AvailabilityType,
     CalendarSessionType,
@@ -31,20 +32,23 @@ import { Scheduler } from '@jackstenglein/react-scheduler';
 import type {
     EditorSlotProps,
     EventRendererProps,
+    EventViewerActionsExtraSlotProps,
     EventViewerExtraSlotProps,
     ProcessedEvent,
     SchedulerRef,
 } from '@jackstenglein/react-scheduler/types';
-import { FilterList } from '@mui/icons-material';
+import { Check, FilterList, Link } from '@mui/icons-material';
 import {
     Box,
     Button,
     Container,
     Grid,
+    IconButton,
     Snackbar,
     Stack,
     SwipeableDrawer,
     Theme,
+    Tooltip,
     Typography,
     useMediaQuery,
     useTheme,
@@ -457,6 +461,44 @@ function CalendarEventViewerExtra({ event }: EventViewerExtraSlotProps) {
     return <ProcessedEventViewer processedEvent={event} />;
 }
 
+function CalendarEventViewerActionsExtra({
+    event: processedEvent,
+}: EventViewerActionsExtraSlotProps) {
+    const { user } = useAuth();
+    const t = useTranslations('calendar');
+    const [isCopied, setIsCopied] = useState(false);
+
+    const event = processedEvent.event as Event;
+    if (event.type === EventType.Dojo || event.type === EventType.LigaTournament) {
+        return null;
+    }
+
+    let link = `${getConfig().baseUrl}/meeting/${event.id}`;
+    const isParticipant =
+        event.owner === user?.username || Boolean(event.participants[user?.username || '']);
+    if (
+        event.type === EventType.Availability &&
+        (Object.values(event.participants).length === 0 || !isParticipant)
+    ) {
+        link = `${getConfig().baseUrl}/calendar/availability/${event.id}`;
+    }
+
+    return (
+        <Tooltip title={t('copyLink')}>
+            <IconButton
+                color='inherit'
+                onClick={async () => {
+                    await navigator.clipboard.writeText(link);
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 2000);
+                }}
+            >
+                {isCopied ? <Check /> : <Link />}
+            </IconButton>
+        </Tooltip>
+    );
+}
+
 export default function CalendarPage() {
     const theme = useTheme();
     const t = useTranslations('calendar');
@@ -657,7 +699,7 @@ export default function CalendarPage() {
                                 }}
                                 slots={{
                                     editor: isFreeTier ? FreeTierEditor : DojoEventEditor,
-                                    // event: CalendarEventSlot,
+                                    eventViewerActionsExtra: CalendarEventViewerActionsExtra,
                                     eventViewerExtra: CalendarEventViewerExtra,
                                     navigationExtra: CalendarSettingsMenu,
                                 }}

@@ -1622,7 +1622,6 @@
         "copyLink": "[T] Copy Link",
         "participants": "[T] Participants",
         "andMore": "[T] ... and {count} more",
-        "filtersTitle": "[T] Filters",
         "resetFilters": "[T] Reset",
         "cohortsSelected": "[T] {count, plural, =1 {# selected} other {# selected}}",
         "myDojoCalendar": "[T] Dojo Calendars",
