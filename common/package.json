@@ -1,9 +1,11 @@
 {
     "name": "@jackstenglein/chess-dojo-common",
     "version": "1.0.0",
+    "packageManager": "pnpm@11.17.0",
     "description": "Common code shared between ChessDojo website, mobile app and backend",
     "main": "index.ts",
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "test": "vitest run",
         "lint": "eslint .",
         "format": "prettier src --write",
