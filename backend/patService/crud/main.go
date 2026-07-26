@@ -23,8 +23,6 @@ var repository database.PersonalAccessTokenManager = database.DynamoDB
 
 const maxNameLength = 100
 
-// The maximum token lifetime (approx. 2 years) that can be requested.
-const maxExpirationDays = 730
 
 // CreatePatRequest is the request body for creating a personal access token.
 type CreatePatRequest struct {
@@ -90,7 +88,7 @@ func handleCreate(info *api.UserInfo, event api.Request) (api.Response, error) {
 	if len(request.Name) > maxNameLength {
 		return api.Failure(errors.New(400, "Invalid request: name is too long", "")), nil
 	}
-	if request.ExpirationDays < 0 || request.ExpirationDays > maxExpirationDays {
+	if request.ExpirationDays < 0 {
 		return api.Failure(errors.New(400, "Invalid request: expirationDays is invalid", "")), nil
 	}
 

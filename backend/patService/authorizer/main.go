@@ -26,9 +26,7 @@ func main() {
 	lambda.Start(Handler)
 }
 
-func deny() events.APIGatewayV2CustomAuthorizerSimpleResponse {
-	return events.APIGatewayV2CustomAuthorizerSimpleResponse{IsAuthorized: false}
-}
+var deny events.APIGatewayV2CustomAuthorizerSimpleResponse = events.APIGatewayV2CustomAuthorizerSimpleResponse{IsAuthorized: false}
 
 func Handler(ctx context.Context, event events.APIGatewayV2CustomAuthorizerV2Request) (events.APIGatewayV2CustomAuthorizerSimpleResponse, error) {
 	log.SetRequestId(event.RequestContext.RequestID)
@@ -40,18 +38,18 @@ func Handler(ctx context.Context, event events.APIGatewayV2CustomAuthorizerV2Req
 	rawToken := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(authHeader), "Bearer "))
 	if !strings.HasPrefix(rawToken, database.PatTokenPrefix) {
 		log.Debug("Authorization header is missing or is not a personal access token")
-		return deny(), nil
+		return deny, nil
 	}
 
 	pat, err := repository.GetPatByHash(database.HashPatToken(rawToken))
 	if err != nil {
 		log.Debug("Failed to find personal access token: ", err)
-		return deny(), nil
+		return deny, nil
 	}
 
 	if pat.IsExpired() {
 		log.Debugf("Personal access token %s is expired", pat.Id)
-		return deny(), nil
+		return deny, nil
 	}
 
 	requiredScope := database.PatScopeWrite
@@ -60,7 +58,7 @@ func Handler(ctx context.Context, event events.APIGatewayV2CustomAuthorizerV2Req
 	}
 	if !pat.HasScope(requiredScope) {
 		log.Debugf("Personal access token %s does not have required scope %s", pat.Id, requiredScope)
-		return deny(), nil
+		return deny, nil
 	}
 
 	if err := repository.UpdatePatLastUsed(pat.TokenHash); err != nil {
