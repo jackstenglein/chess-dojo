@@ -14,7 +14,7 @@ import {
     getHours,
     useFilters,
 } from '@/components/calendar/filters/CalendarFilters';
-import CalendarSettingsMenu from '@/components/calendar/filters/CalendarSettingsMenu';
+import CalendarNavigationExtra from '@/components/calendar/filters/CalendarNavigationExtra';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import CalendarTutorial from '@/components/tutorial/CalendarTutorial';
 import { getConfig } from '@/config';
@@ -701,7 +701,7 @@ export default function CalendarPage() {
                                     editor: isFreeTier ? FreeTierEditor : DojoEventEditor,
                                     eventViewerActionsExtra: CalendarEventViewerActionsExtra,
                                     eventViewerExtra: CalendarEventViewerExtra,
-                                    navigationExtra: CalendarSettingsMenu,
+                                    navigationExtra: CalendarNavigationExtra,
                                 }}
                                 onDelete={deleteAvailability}
                                 onEventDrop={copyAvailability}

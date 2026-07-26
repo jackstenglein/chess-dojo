@@ -84,23 +84,17 @@ func includeInICS(event *database.Event, user *database.User, filters Filters) b
 
 	switch event.Type {
 	case database.EventType_Availability:
-		if !isOwner && !isParticipant {
-			return false
+		if (isOwner && len(event.Participants) > 0) || isParticipant {
+			return filters.allowsSession(SessionType_Meetings)
 		}
-		if len(event.Participants) > 0 {
-			if !filters.allowsSession(SessionType_Meetings) {
-				return false
-			}
-		} else if !filters.allowsSession(SessionType_Availabilities) {
+		if !filters.allowsSession(SessionType_Availabilities) {
 			return false
 		}
 		if len(filters.Types) > 0 && filters.Types[0] != "ALL_TYPES" {
 			if event.BookedType != "" {
-				if !containsAvailabilityType(filters.Types, event.BookedType) {
-					return false
-				}
-			} else if len(event.Types) > 0 && !anyAvailabilityTypeMatch(filters.Types, event.Types) {
-				return false
+				return containsAvailabilityType(filters.Types, event.BookedType)
+			} else if len(event.Types) > 0 {
+				return anyAvailabilityTypeMatch(filters.Types, event.Types)
 			}
 		}
 		return true

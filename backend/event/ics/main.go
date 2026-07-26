@@ -17,6 +17,7 @@ import (
 var repository database.EventLister = database.DynamoDB
 var userGetter database.UserGetter = database.DynamoDB
 var stage = os.Getenv("stage")
+var frontendHost = os.Getenv("frontendHost")
 
 func main() {
 	if stage == "prod" {
@@ -54,10 +55,12 @@ func Handler(ctx context.Context, request api.Request) (api.Response, error) {
 		if !includeInICS(event, user, filters) {
 			continue
 		}
-		if visibility.ShouldHideEventDetails(event, user) {
-			event.Location = ""
-			event.Messages = nil
+
+		event.Messages = nil
+		if event.Type == database.EventType_LectureTier || event.Type == database.EventType_GameReviewTier {
+			event.Location = fmt.Sprintf("%s/meeting/%s", frontendHost, event.Id)
 		}
+
 		matched = append(matched, event)
 	}
 
