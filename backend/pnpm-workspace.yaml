@@ -1,4 +1,5 @@
 allowBuilds:
+  '@jackstenglein/chess-dojo-common@file:../common': true
   '@parcel/watcher': true
   aws-sdk: true
   es5-ext: true
