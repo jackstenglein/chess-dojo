@@ -32,7 +32,7 @@ import {
     Typography,
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
-import { TimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';

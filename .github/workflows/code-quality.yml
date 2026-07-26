@@ -11,7 +11,8 @@ jobs:
     steps:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-        working-directory: frontend
+        with:
+          version: 11.17.0
 
       - name: Check out Git repository
         uses: actions/checkout@v4

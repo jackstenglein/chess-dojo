@@ -1,4 +1,4 @@
-import { Chess, Color } from 'chess.js';
+import { Chess, Color } from '@jackstenglein/chess';
 import { axiosService } from './axiosService';
 import { ChessDbMove, ChessDbPv } from './cache/chessdb';
 
@@ -140,7 +140,7 @@ export class ChessDBService {
     }
 
     private processMoves(moves: ChessDbMove[], fen: string): ChessDbMove[] {
-        const turn = new Chess(fen).turn();
+        const turn = new Chess({ fen }).turn();
 
         return moves.map((move) => {
             const scoreNum = Number(move.score);

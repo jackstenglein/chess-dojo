@@ -38,6 +38,9 @@ importers:
       '@jackstenglein/chess-dojo-common':
         specifier: file:../common
         version: file:../common
+      '@jackstenglein/pgn-parser':
+        specifier: ^2.0.13
+        version: 2.0.13
       '@jackstenglein/react-scheduler':
         specifier: ^4.0.3
         version: 4.0.3(b0ec8fc45363e90cd7f86cb23b8b4a1e)
@@ -62,6 +65,9 @@ importers:
       '@mui/x-date-pickers-pro':
         specifier: ^9.3.0
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@7.3.11(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(date-fns@4.4.0)(luxon@3.7.2)(moment@2.30.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@mui/x-license':
+        specifier: ^8.26.0
+        version: 8.29.2(@types/react@19.2.17)(react@19.2.8)
       '@savi2w/chess-tcn':
         specifier: ^1.0.0
         version: 1.0.0
@@ -98,6 +104,9 @@ importers:
       deep-equal:
         specifier: ^2.2.3
         version: 2.2.3
+      idb:
+        specifier: ^8.0.3
+        version: 8.0.3
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
@@ -3441,6 +3450,9 @@ packages:
 
   idb@5.0.6:
     resolution: {integrity: sha512-/PFvOWPzRcEPmlDt5jEvzVZVs0wyd/EvGvkDIcbBpGuMMLQKrTPG0TxvE2UJtgZtCQCmOtM2QD7yQJBVEjKGOw==}
+
+  idb@8.0.3:
+    resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -8640,6 +8652,8 @@ snapshots:
       '@formatjs/icu-messageformat-parser': 3.5.15
 
   idb@5.0.6: {}
+
+  idb@8.0.3: {}
 
   ieee754@1.2.1: {}
 
