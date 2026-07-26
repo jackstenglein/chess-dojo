@@ -282,6 +282,9 @@ importers:
       typescript-eslint:
         specifier: ^8.54.0
         version: 8.65.0(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+      use-intl:
+        specifier: ^4.13.4
+        version: 4.13.4(react@19.2.8)
       vite:
         specifier: ^7.1.9
         version: 7.3.6(@types/node@25.9.5)(jiti@2.7.0)(yaml@2.9.0)
