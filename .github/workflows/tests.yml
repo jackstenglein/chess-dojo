@@ -7,10 +7,11 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11.17.0
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -22,9 +23,6 @@ jobs:
         run: |
           node --version
           pnpm --version
-
-      - name: Checkout
-        uses: actions/checkout@v6
 
       - name: Determine Changed Paths
         uses: dorny/paths-filter@v3

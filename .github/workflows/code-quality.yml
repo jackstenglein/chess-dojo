@@ -9,13 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11.17.0
-
-      - name: Check out Git repository
-        uses: actions/checkout@v4
 
       - name: Prepare Frontend
         working-directory: frontend
