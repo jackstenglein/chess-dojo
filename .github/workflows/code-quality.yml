@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        working-directory: frontend
+
       - name: Check out Git repository
         uses: actions/checkout@v4
 

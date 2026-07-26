@@ -9,6 +9,7 @@ jobs:
     steps:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
+        working-directory: frontend
 
       - name: Setup Node
         uses: actions/setup-node@v6
