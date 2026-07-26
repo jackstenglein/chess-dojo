@@ -95,6 +95,10 @@ functions:
 
   update:
     handler: update/main.go
+    # First FIDE lookup in a cold instance downloads+parses the ~44MB list.
+    # HTTP API integration timeout caps at 30s.
+    timeout: 25
+    memorySize: 2048
     events:
       - httpApi:
           path: /user
@@ -108,10 +112,6 @@ functions:
           - dynamodb:UpdateItem
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-        Resource: ${param:FideRatingsTableArn}
       - Effect: Allow
         Action:
           - dynamodb:Query
@@ -134,7 +134,16 @@ functions:
           - - 'arn:aws:s3:::'
             - ${param:SecretsBucket}
             - /openClassicalServiceAccountKey.json
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+        Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${param:FideRatingsBucket}
+            - /players_list.zip
     environment:
+      fideRatingsBucket: ${param:FideRatingsBucket}
       discordAuth: ${file(../discord.yml):discordAuth}
       discordFindGameChannelId: ${file(../config-${sls:stage}.yml):discordFindGameChannelId}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
@@ -622,6 +631,9 @@ functions:
               cohorts:
                 - 2400+
     timeout: 900
+    memorySize: 3008
+    environment:
+      fideRatingsBucket: ${param:FideRatingsBucket}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -641,23 +653,12 @@ functions:
         Resource: arn:aws:lambda:${aws:region}:${aws:accountId}:function:chess-dojo-users-${sls:stage}-updateRatings
       - Effect: Allow
         Action:
-          - dynamodb:GetItem
-        Resource: ${param:FideRatingsTableArn}
-
-  downloadFideRatings:
-    handler: ratings/fide/main.go
-    timeout: 900
-    reservedConcurrency: 1
-    events:
-      - schedule:
-          rate: cron(0 12 1 * ? *)
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:BatchWriteItem
-          - dynamodb:GetItem
-          - dynamodb:PutItem
-        Resource: ${param:FideRatingsTableArn}
+          - s3:GetObject
+        Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${param:FideRatingsBucket}
+            - /players_list.zip
 
   updateStatistics:
     handler: statistics/update/main.go
@@ -1022,26 +1023,6 @@ resources:
         Dimensions:
           - Name: FunctionName
             Value: chess-dojo-users-${sls:stage}-updateRatings
-        Period: 86400
-        EvaluationPeriods: 1
-        Threshold: 0
-        ComparisonOperator: GreaterThanThreshold
-        TreatMissingData: notBreaching
-
-    DownloadFideRatingsErrorAlarm:
-      Condition: IsNotSimple
-      Type: AWS::CloudWatch::Alarm
-      Properties:
-        AlarmName: DownloadFideRatingsError-${sls:stage}
-        AlarmDescription: 'Notifications about Lambda errors for the downloadFideRatings function, including stale-list aborts and failed imports'
-        AlarmActions:
-          - ${param:AlertNotificationsTopic}
-        Namespace: AWS/Lambda
-        MetricName: Errors
-        Statistic: Sum
-        Dimensions:
-          - Name: FunctionName
-            Value: chess-dojo-users-${sls:stage}-downloadFideRatings
         Period: 86400
         EvaluationPeriods: 1
         Threshold: 0

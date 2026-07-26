@@ -343,22 +343,6 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    FideRatingsTable:
-      Type: AWS::DynamoDB::Table
-      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
-      Properties:
-        TableName: ${sls:stage}-fide-ratings
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        TimeToLiveSpecification:
-          AttributeName: expiresAt
-          Enabled: true
-
     EventsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
@@ -776,6 +760,19 @@ resources:
             'chess-dojo-simple-${aws:accountId}-secrets',
           ]
 
+    # Staged FIDE players_list.zip (uploaded by GitHub Actions; Lambda cannot
+    # reach ratings.fide.com from AWS egress IPs).
+    FideRatingsBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        BucketName:
+          !If [
+            IsNotSimple,
+            'chess-dojo-${sls:stage}-fide-ratings',
+            'chess-dojo-simple-${aws:accountId}-fide-ratings',
+          ]
+
     ############# End S3 Resources ##############
 
     ############# Alert Resources ###############
@@ -807,8 +804,6 @@ resources:
       Value: !GetAtt CognitoUserPool.ProviderURL
     UsersTableArn:
       Value: !GetAtt UsersTable.Arn
-    FideRatingsTableArn:
-      Value: !GetAtt FideRatingsTable.Arn
     RequirementsTableArn:
       Value: !GetAtt RequirementsTable.Arn
     GraduationsTableArn:
@@ -846,5 +841,7 @@ resources:
       Value: !Ref GameDatabaseBucket
     SecretsBucket:
       Value: !Ref SecretsBucket
+    FideRatingsBucket:
+      Value: !Ref FideRatingsBucket
     AlertNotificationsTopic:
       Value: !Ref AlertNotificationsTopic
