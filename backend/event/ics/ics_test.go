@@ -64,14 +64,14 @@ func TestIncludeInICS(t *testing.T) {
 			want:    true,
 		},
 		{
-			name: "other availability excluded",
+			name: "other availability included",
 			event: &database.Event{
 				Type:   database.EventType_Availability,
 				Owner:  "bob",
 				Status: database.SchedulingStatus_Scheduled,
 			},
 			filters: Filters{Sessions: []SessionType{SessionType_AllSessions}},
-			want:    false,
+			want:    true,
 		},
 		{
 			name: "own availability excluded by session filter",
@@ -120,6 +120,21 @@ func TestIncludeInICS(t *testing.T) {
 			name: "meeting type filter",
 			event: &database.Event{
 				Type:         database.EventType_Availability,
+				Owner:        "bob",
+				Status:       database.SchedulingStatus_Booked,
+				BookedType:   "CLASSICAL_GAME",
+				Participants: map[string]*database.Participant{"carol": {Username: "carol"}},
+			},
+			filters: Filters{
+				Sessions: []SessionType{SessionType_Meetings},
+				Types:    []database.AvailabilityType{"BOOK_STUDY"},
+			},
+			want: false,
+		},
+		{
+			name: "meeting type filter ignored for owners",
+			event: &database.Event{
+				Type:         database.EventType_Availability,
 				Owner:        "alice",
 				Status:       database.SchedulingStatus_Booked,
 				BookedType:   "CLASSICAL_GAME",
@@ -129,7 +144,7 @@ func TestIncludeInICS(t *testing.T) {
 				Sessions: []SessionType{SessionType_Meetings},
 				Types:    []database.AvailabilityType{"BOOK_STUDY"},
 			},
-			want: false,
+			want: true,
 		},
 	}
 
