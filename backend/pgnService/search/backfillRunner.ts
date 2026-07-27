@@ -1,6 +1,5 @@
 import { AttributeValue } from '@aws-sdk/client-dynamodb';
 import { DynamoDBRecord } from 'aws-lambda';
-import { dojoCohorts } from '../explorer/types';
 import { BulkIndexError } from './indexGame';
 
 /** One page of scanned game records plus the key of the next page, if any. */
@@ -16,6 +15,7 @@ export interface BackfillResult {
 }
 
 interface RunBackfillOptions {
+    cohorts: string[];
     scanPage: (cohort: string, startKey?: Record<string, AttributeValue>) => Promise<BackfillPage>;
     indexRecords: (records: DynamoDBRecord[]) => Promise<unknown>;
     sleep?: () => Promise<void>;
@@ -27,6 +27,7 @@ interface RunBackfillOptions {
  * collected so later pages can continue; infrastructure failures still abort.
  */
 export async function runBackfill({
+    cohorts,
     scanPage,
     indexRecords,
     sleep = () => Promise.resolve(),
@@ -35,7 +36,7 @@ export async function runBackfill({
     let processed = 0;
     const failedDocumentIds = new Set<string>();
 
-    for (const cohort of dojoCohorts) {
+    for (const cohort of cohorts) {
         let startKey: Record<string, AttributeValue> | undefined;
         do {
             const page = await scanPage(cohort, startKey);

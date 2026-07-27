@@ -20,14 +20,20 @@ describe('runBackfill', () => {
         const sleep = vi.fn().mockResolvedValue(undefined);
         const onProgress = vi.fn();
 
-        const result = await runBackfill({ scanPage, indexRecords, sleep, onProgress });
+        const result = await runBackfill({
+            cohorts: ['1500-1600'],
+            scanPage,
+            indexRecords,
+            sleep,
+            onProgress,
+        });
 
         expect(result).toEqual({
             processed: 2,
             failedDocumentIds: ['1500-1600#poison'],
         });
-        expect(scanPage).toHaveBeenNthCalledWith(1, undefined);
-        expect(scanPage).toHaveBeenNthCalledWith(2, nextKey);
+        expect(scanPage).toHaveBeenNthCalledWith(1, '1500-1600', undefined);
+        expect(scanPage).toHaveBeenNthCalledWith(2, '1500-1600', nextKey);
         expect(indexRecords).toHaveBeenCalledTimes(2);
         expect(sleep).toHaveBeenCalledTimes(1);
         expect(onProgress).toHaveBeenNthCalledWith(1, 1);
@@ -38,8 +44,8 @@ describe('runBackfill', () => {
         const scanPage = vi.fn().mockResolvedValue({ records: [record('first')] });
         const indexRecords = vi.fn().mockRejectedValue(new Error('OpenSearch unavailable'));
 
-        await expect(runBackfill({ scanPage, indexRecords })).rejects.toThrow(
-            'OpenSearch unavailable',
-        );
+        await expect(
+            runBackfill({ cohorts: ['1500-1600'], scanPage, indexRecords }),
+        ).rejects.toThrow('OpenSearch unavailable');
     });
 });

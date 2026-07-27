@@ -12,6 +12,7 @@ import {
     QueryCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 import { Context, DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda';
+import { dojoCohorts } from '../explorer/types';
 import { runBackfill } from './backfillRunner';
 import { gamesIndex, getClient } from './client';
 import { handler } from './indexGame';
@@ -27,6 +28,7 @@ async function main() {
 
     try {
         const result = await runBackfill({
+            cohorts: dojoCohorts.concat('masters'),
             scanPage: async (cohort: string, startKey?: Record<string, AttributeValue>) => {
                 console.log(`Scanning ${cohort} page: `, startKey);
                 const scanOutput: QueryCommandOutput = await dynamo.send(
