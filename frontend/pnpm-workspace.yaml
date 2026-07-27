@@ -6,3 +6,5 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@jackstenglein/react-scheduler@5.0.6'

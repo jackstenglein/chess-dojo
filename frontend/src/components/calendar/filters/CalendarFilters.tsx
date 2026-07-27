@@ -445,6 +445,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                     selected={filters.types}
                     allValue={AvailabilityType.AllTypes}
                     onChange={(next) => filters.setTypes(next as AvailabilityType[])}
+                    data-testid='bookable-meetings'
                     options={AVAILABILITY_OPTIONS.map((type) => ({
                         value: type,
                         label: getDisplayString(type, labelT),

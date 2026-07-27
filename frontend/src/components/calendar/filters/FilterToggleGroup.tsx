@@ -1,12 +1,4 @@
-'use client';
-
-import {
-    Checkbox,
-    FormControlLabel,
-    FormGroup,
-    Stack,
-    Typography,
-} from '@mui/material';
+import { Checkbox, FormControlLabel, FormGroup, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 
 export interface FilterToggleOption {

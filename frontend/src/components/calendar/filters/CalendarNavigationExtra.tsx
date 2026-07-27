@@ -1,5 +1,3 @@
-'use client';
-
 import CalendarSettingsMenu from './CalendarSettingsMenu';
 import CalendarShareMenu from './CalendarShareMenu';
 

@@ -42,8 +42,8 @@ importers:
         specifier: ^2.0.13
         version: 2.0.13
       '@jackstenglein/react-scheduler':
-        specifier: ^4.0.3
-        version: 4.0.3(b0ec8fc45363e90cd7f86cb23b8b4a1e)
+        specifier: ^5.0.6
+        version: 5.0.6(b0ec8fc45363e90cd7f86cb23b8b4a1e)
       '@mui/icons-material':
         specifier: ^7.3.7
         version: 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -1070,8 +1070,8 @@ packages:
   '@jackstenglein/pgn-parser@2.0.13':
     resolution: {integrity: sha512-QnvOdpRxeOvVp8gfQFk8FJfb/2G4x9upMnenkSEfH/0xNUlvR5nTfO3Ug2x3M5V6wEV/7WupA2tBuOK8PuBlnA==}
 
-  '@jackstenglein/react-scheduler@4.0.3':
-    resolution: {integrity: sha512-bC+mzTlxRxeBGZA2BN017wwkRerFliN6qUnfLlr49VCJ/EI2ukF/FRY+oXmQSSg8MSCQnTxFNZqSf0vtcBHtWw==}
+  '@jackstenglein/react-scheduler@5.0.6':
+    resolution: {integrity: sha512-FmFy4bfyb/XTalJK61PUHnYV0IknCiTq/7JsM5HQzZCUM438sMaKFRjw3h2qFMgsb0+661SHsUO6nlqtUvd2qA==}
     peerDependencies:
       '@mui/icons-material': '>=7.0.0'
       '@mui/material': '>=7.0.0'
@@ -6148,7 +6148,7 @@ snapshots:
 
   '@jackstenglein/pgn-parser@2.0.13': {}
 
-  '@jackstenglein/react-scheduler@4.0.3(b0ec8fc45363e90cd7f86cb23b8b4a1e)':
+  '@jackstenglein/react-scheduler@5.0.6(b0ec8fc45363e90cd7f86cb23b8b4a1e)':
     dependencies:
       '@mui/icons-material': 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       '@mui/material': 7.3.11(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react@19.2.8)(supports-color@7.2.0))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
