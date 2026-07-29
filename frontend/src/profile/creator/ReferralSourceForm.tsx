@@ -22,15 +22,7 @@ const defaultSources = [
     'Friend/Word of Mouth',
 ];
 
-function getReferralSource(source: string): string {
-    if (!source) {
-        return source;
-    }
-    if (defaultSources.includes(source)) {
-        return source;
-    }
-    return 'Other';
-}
+const OTHER = 'Other';
 
 const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevStep }) => {
     const t = useTranslations('profile.creator.referral');
@@ -39,7 +31,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
     const redirectUri = useSearchParams().get('redirectUri');
     const router = useRouter();
 
-    const [referralSource, setReferralSource] = useState(getReferralSource(user.referralSource));
+    const [referralSource, setReferralSource] = useState('');
     const [otherSource, setOtherSource] = useState(
         defaultSources.includes(user.referralSource) ? '' : user.referralSource,
     );
@@ -58,10 +50,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
     const onSave = () => {
         const newErrors: Record<string, string> = {};
-        if (referralSource.trim() === '') {
-            newErrors.referralSource = t('fieldRequired');
-        }
-        if (!defaultSources.includes(referralSource.trim()) && otherSource.trim() === '') {
+        if (referralSource === OTHER && otherSource.trim() === '') {
             newErrors.otherSource = t('fieldRequired');
         }
         setErrors(newErrors);
@@ -70,7 +59,7 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
             return;
         }
 
-        const source = referralSource === 'Other' ? otherSource.trim() : referralSource.trim();
+        const source = referralSource === OTHER ? otherSource.trim() : referralSource.trim();
         request.onStart();
         api.updateUser({
             referralSource: source,
@@ -93,7 +82,6 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
 
             <TextField
                 select
-                required
                 label={t('label')}
                 value={referralSource}
                 onChange={(e) => setReferralSource(e.target.value)}
@@ -106,10 +94,10 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
                     </MenuItem>
                 ))}
 
-                <MenuItem value='Other'>{t('otherLabel')}</MenuItem>
+                <MenuItem value={OTHER}>{t('otherLabel')}</MenuItem>
             </TextField>
 
-            {referralSource === 'Other' && (
+            {referralSource === OTHER && (
                 <TextField
                     required
                     label={t('otherSpecify')}

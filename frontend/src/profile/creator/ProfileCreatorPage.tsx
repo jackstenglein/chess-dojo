@@ -6,7 +6,6 @@ import { useMemo, useState } from 'react';
 import PricingPage from '../../app/[locale]/(scoreboard)/prices/PricingPage';
 import { useRequiredAuth } from '../../auth/Auth';
 import { SubscriptionStatus, User, dojoCohorts } from '../../database/user';
-import ExtraRatingSystemsForm from './ExtraRatingSystemsForm';
 import PersonalInfoForm from './PersonalInfoForm';
 import PreferredRatingSystemForm from './PreferredRatingSystemForm';
 import ReferralSourceForm from './ReferralSourceForm';
@@ -60,13 +59,8 @@ const ProfileCreatorPage = () => {
                 form: PreferredRatingSystemForm,
             },
             {
-                label: t('stepExtraRatingSystems'),
-                optional: true,
-                form: ExtraRatingSystemsForm,
-            },
-            {
                 label: t('stepReferralSource'),
-                optional: false,
+                optional: true,
                 form: ReferralSourceForm,
             },
         ],

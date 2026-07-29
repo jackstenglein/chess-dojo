@@ -42,11 +42,6 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 		return handleError(event, errors.New("Invalid request: cognitoUsername field is required"))
 	}
 
-	name, _ := event.Request.UserAttributes["name"]
-	if name == "" {
-		return handleError(event, errors.New("Invalid request: name field is required"))
-	}
-
 	var paymentInfo *database.PaymentInfo
 	if isForbidden, _ := access.IsForbidden(email, 3*time.Second); !isForbidden {
 		paymentInfo = &database.PaymentInfo{
@@ -55,6 +50,7 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 		}
 	}
 
+	name := event.Request.UserAttributes["name"]
 	_, err := repository.CreateUser(cognitoUsername, email, name, paymentInfo)
 	if err != nil {
 		return handleError(event, err)

@@ -69,11 +69,7 @@ interface AuthContextType {
     socialSignin: (provider: 'Google' | 'Apple', redirectUri: string) => void;
     signin: (email: string, password: string) => Promise<void>;
 
-    signup: (
-        name: string,
-        email: string,
-        password: string,
-    ) => Promise<SignUpOutput & { username: string }>;
+    signup: (email: string, password: string) => Promise<SignUpOutput & { username: string }>;
     confirmSignup: (username: string, code: string) => Promise<ConfirmSignUpOutput>;
     resendSignupCode: (username: string) => Promise<ResendSignUpCodeOutput>;
     forgotPassword: (email: string) => Promise<ResetPasswordOutput>;
@@ -119,7 +115,7 @@ function socialSignin(provider: 'Google' | 'Apple', redirectUri: string) {
         });
 }
 
-async function signup(name: string, email: string, password: string) {
+async function signup(email: string, password: string) {
     trackEvent(EventType.Signup);
     const username = uuidv4();
     const resp = await amplifySignUp({
@@ -128,7 +124,6 @@ async function signup(name: string, email: string, password: string) {
         options: {
             userAttributes: {
                 email,
-                name,
             },
         },
     });

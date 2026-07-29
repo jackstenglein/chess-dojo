@@ -1275,7 +1275,6 @@
         },
         "signup": {
             "name": "[T] Name",
-            "nameRequired": "[T] Name is required",
             "email": "[T] Email",
             "emailRequired": "[T] Email is required",
             "password": "[T] Password",
