@@ -40,7 +40,7 @@
         "adm-zip": "^0.5.18",
         "aws-lambda": "^1.0.7",
         "aws4": "^1.13.2",
-        "axios": "^1.18.1",
+        "axios": "^1.19.0",
         "bad-words": "^4.1.5",
         "deep-equal": "^2.2.3",
         "discord.js": "^14.26.4",
