@@ -3,7 +3,7 @@
 import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Game } from './types';
+import { Game, GameUpdate } from './types';
 
 const { mockSend } = vi.hoisted(() => {
     const mockSend = vi.fn();
@@ -88,6 +88,34 @@ describe('applyUpdate', () => {
         expect(command.input.ReturnValuesOnConditionCheckFailure).toBe('ALL_OLD');
     });
 
+    it('does not require updatedAt for non-PGN updates', async () => {
+        const existing = makeGame();
+        mockSend.mockResolvedValue({
+            Attributes: marshall(existing, { removeUndefinedValues: true }),
+        });
+
+        const update: GameUpdate = {
+            orientation: 'black',
+            updatedAt: '2025-06-18T00:00:00.000Z',
+        };
+        const result = await applyUpdate(
+            'test-user',
+            existing.cohort,
+            existing.id,
+            update,
+            undefined,
+        );
+
+        expect(result.old.pgn).toBe(existing.pgn);
+        expect(result.new.orientation).toBe(update.orientation);
+        expect(result.new.updatedAt).toBe(update.updatedAt);
+
+        const command = mockSend.mock.calls[0][0];
+        expect(command.input.ConditionExpression).not.toContain('#updatedAt = :expectedUpdatedAt');
+        expect(command.input.ExpressionAttributeValues[':expectedUpdatedAt']).toEqual(undefined);
+        expect(command.input.ReturnValuesOnConditionCheckFailure).toBe('ALL_OLD');
+    });
+
     it('returns 409 when updatedAt is stale', async () => {
         const existing = makeGame({ updatedAt: '2025-06-18T00:00:00.000Z' });
         mockSend.mockRejectedValue(
@@ -156,6 +184,8 @@ describe('applyUpdate', () => {
             ),
         ).rejects.toMatchObject({
             statusCode: 400,
+            publicMessage:
+                'Invalid request: game not found or you do not have permission to update it',
         });
     });
 });

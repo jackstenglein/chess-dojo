@@ -31,13 +31,12 @@ const EditGamePage = ({ cohort, id }: { cohort: string; id: string }) => {
 
         request.onStart();
         try {
-            const current = (await api.getGame(cohort, id)).data;
             const req: UpdateGameRequest = {
                 ...remoteGame,
                 cohort,
                 id,
                 headers,
-                updatedAt: current.updatedAt || current.createdAt || '',
+                forceUpdate: true,
             };
 
             await api.updateGame(cohort, id, req);

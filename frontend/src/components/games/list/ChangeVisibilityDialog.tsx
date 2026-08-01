@@ -40,12 +40,7 @@ export function ChangeVisibilityDialog({
                     continue;
                 }
 
-                const updatedAt =
-                    game.updatedAt ||
-                    game.createdAt ||
-                    (await api.getGame(game.cohort, game.id)).data.updatedAt ||
-                    '';
-                await api.updateGame(game.cohort, game.id, { unlisted, updatedAt });
+                await api.updateGame(game.cohort, game.id, { unlisted });
                 updated.push(game);
             }
 

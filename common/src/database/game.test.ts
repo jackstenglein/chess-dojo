@@ -47,7 +47,28 @@ describe('UpdateGameSchema', () => {
                 cohort: '1900-2000',
                 id: 'MjAyNi4wNS4yOF8yYzIwNDkwNS0zYzY1LTQ5ODAtYjVlYy0zZWVhN2EwNmRhZTk=',
                 orientation: 'white',
+                type: 'manual',
+                pgnText: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. O-O Nf6 5. d3 Bb4+ 6. c3 d5 7. cxd5',
             }),
         ).toThrow();
+    });
+
+    it('allows forceUpdate to bypass updatedAt for optimistic concurrency', () => {
+        const result = UpdateGameSchema.parse({
+            cohort: '1900-2000',
+            id: 'MjAyNi4wNS4yOF8yYzIwNDkwNS0zYzY1LTQ5ODAtYjVlYy0zZWVhN2EwNmRhZTk=',
+            orientation: 'white',
+            type: 'manual',
+            pgnText: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. O-O Nf6 5. d3 Bb4+ 6. c3 d5 7. cxd5',
+            forceUpdate: true,
+        });
+        expect(result).toEqual({
+            cohort: '1900-2000',
+            id: '2026.05.28_2c204905-3c65-4980-b5ec-3eea7a06dae9',
+            orientation: 'white',
+            forceUpdate: true,
+            type: 'manual',
+            pgnText: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. O-O Nf6 5. d3 Bb4+ 6. c3 d5 7. cxd5',
+        });
     });
 });

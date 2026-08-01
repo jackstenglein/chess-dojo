@@ -146,7 +146,7 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
  * @param cohort The cohort the Game is in.
  * @param id The id of the Game.
  * @param update The update to apply.
- * @param expectedUpdatedAt The client's known updatedAt; must match the DB value.
+ * @param expectedUpdatedAt The client's known updatedAt; must match the DB value if updating the PGN.
  * @returns The updated Game.
  */
 export async function applyUpdate(
@@ -154,16 +154,17 @@ export async function applyUpdate(
     cohort: string,
     id: string,
     update: GameUpdate,
-    expectedUpdatedAt: string,
+    expectedUpdatedAt: string | undefined,
 ): Promise<{ old: Game; new: Game }> {
     const updateParams = getUpdateParams(update);
     updateParams.ExpressionAttributeNames['#owner'] = 'owner';
     updateParams.ExpressionAttributeValues[':owner'] = { S: owner };
-    updateParams.ExpressionAttributeValues[':expectedUpdatedAt'] = { S: expectedUpdatedAt };
+    if (expectedUpdatedAt) {
+        updateParams.ExpressionAttributeValues[':expectedUpdatedAt'] = { S: expectedUpdatedAt };
+    }
 
     const input = new UpdateItemCommand({
-        ConditionExpression:
-            'attribute_exists(id) AND #owner = :owner AND #updatedAt = :expectedUpdatedAt',
+        ConditionExpression: `attribute_exists(id) AND #owner = :owner${expectedUpdatedAt ? ' AND #updatedAt = :expectedUpdatedAt' : ''}`,
         Key: {
             cohort: { S: cohort },
             id: { S: id },
