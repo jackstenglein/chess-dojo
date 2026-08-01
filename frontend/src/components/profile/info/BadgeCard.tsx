@@ -54,9 +54,12 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 setPreviousEarnedBadges(result.badges);
                 break;
             case 'new_badge':
-                setSelectedBadge(result.newBadge);
                 setPreviousEarnedBadges(result.allEarned);
-                break;
+                // Defer opening so a concurrently-closing TaskDialog releases the
+                // MUI ModalManager before this award dialog mounts.
+                const badge = result.newBadge;
+                const timeoutId = window.setTimeout(() => setSelectedBadge(badge), 0);
+                return () => window.clearTimeout(timeoutId);
         }
     }, [
         earnedBadges,
@@ -115,8 +118,20 @@ export const BadgeCard = ({ user }: { user: User }) => {
         badges.push(<BadgeImage badge={badge} onClick={handleBadgeClick} />);
     }
 
+    const dialogs = (
+        <>
+            <BadgeDialog selectedBadge={selectedBadge} handleCloseDialog={handleCloseDialog} />
+
+            <BadgCabinetDialog
+                isOpen={isViewAllModalOpen}
+                onClose={() => setIsViewAllModalOpen(false)}
+                allBadges={allBadges}
+            />
+        </>
+    );
+
     if (badges.length === 0) {
-        return null;
+        return dialogs;
     }
 
     return (
@@ -164,13 +179,7 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 </CardContent>
             </Card>
 
-            <BadgeDialog selectedBadge={selectedBadge} handleCloseDialog={handleCloseDialog} />
-
-            <BadgCabinetDialog
-                isOpen={isViewAllModalOpen}
-                onClose={() => setIsViewAllModalOpen(false)}
-                allBadges={allBadges}
-            />
+            {dialogs}
         </>
     );
 };
