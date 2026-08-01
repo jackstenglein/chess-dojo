@@ -15,7 +15,8 @@ export interface BackfillResult {
 }
 
 interface RunBackfillOptions {
-    scanPage: (startKey?: Record<string, AttributeValue>) => Promise<BackfillPage>;
+    cohorts: string[];
+    scanPage: (cohort: string, startKey?: Record<string, AttributeValue>) => Promise<BackfillPage>;
     indexRecords: (records: DynamoDBRecord[]) => Promise<unknown>;
     sleep?: () => Promise<void>;
     onProgress?: (processed: number) => void;
@@ -26,36 +27,39 @@ interface RunBackfillOptions {
  * collected so later pages can continue; infrastructure failures still abort.
  */
 export async function runBackfill({
+    cohorts,
     scanPage,
     indexRecords,
     sleep = () => Promise.resolve(),
     onProgress = () => undefined,
 }: RunBackfillOptions): Promise<BackfillResult> {
     let processed = 0;
-    let startKey: Record<string, AttributeValue> | undefined;
     const failedDocumentIds = new Set<string>();
 
-    do {
-        const page = await scanPage(startKey);
-        try {
-            await indexRecords(page.records);
-        } catch (err) {
-            if (!(err instanceof BulkIndexError)) {
-                throw err;
+    for (const cohort of cohorts) {
+        let startKey: Record<string, AttributeValue> | undefined;
+        do {
+            const page = await scanPage(cohort, startKey);
+            try {
+                await indexRecords(page.records);
+            } catch (err) {
+                if (!(err instanceof BulkIndexError)) {
+                    throw err;
+                }
+                for (const id of err.documentIds) {
+                    failedDocumentIds.add(id);
+                }
+                console.error('Skipping failed backfill documents: %j', err.documentIds);
             }
-            for (const id of err.documentIds) {
-                failedDocumentIds.add(id);
-            }
-            console.error('Skipping failed backfill documents: %j', err.documentIds);
-        }
 
-        processed += page.records.length;
-        onProgress(processed);
-        startKey = page.lastEvaluatedKey;
-        if (startKey) {
-            await sleep();
-        }
-    } while (startKey);
+            processed += page.records.length;
+            onProgress(processed);
+            startKey = page.lastEvaluatedKey;
+            if (startKey) {
+                await sleep();
+            }
+        } while (startKey);
+    }
 
     return { processed, failedDocumentIds: [...failedDocumentIds] };
 }

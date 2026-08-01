@@ -3,7 +3,7 @@ import { Client } from '@opensearch-project/opensearch';
 import { Context, DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { BulkIndexError, handler, recordsToBulkOperations } from './indexGame';
-import { createGamesIndex } from './mapping';
+import { ensureGamesIndex, resetGamesIndexEnsureCache } from './mapping';
 
 process.env.stage = 'test';
 
@@ -81,11 +81,13 @@ describe.runIf(runIntegration)('indexGame handler (integration)', () => {
 
     beforeAll(async () => {
         process.env.gameSearchEndpoint = 'http://localhost:9200';
-        await createGamesIndex(client, 'test-games');
+        resetGamesIndexEnsureCache();
+        await ensureGamesIndex(client, 'test-games');
     });
 
     afterAll(async () => {
         await client.indices.delete({ index: 'test-games' });
+        resetGamesIndexEnsureCache();
     });
 
     async function invoke(records: DynamoDBRecord[]) {

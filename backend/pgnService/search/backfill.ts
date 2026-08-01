@@ -8,28 +8,34 @@
 import {
     AttributeValue,
     DynamoDBClient,
-    ScanCommand,
-    ScanCommandOutput,
+    QueryCommand,
+    QueryCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 import { Context, DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda';
+import { dojoCohorts } from '../explorer/types';
 import { runBackfill } from './backfillRunner';
 import { gamesIndex, getClient } from './client';
 import { handler } from './indexGame';
-import { createGamesIndex } from './mapping';
+import { ensureGamesIndex } from './mapping';
 
 const dynamo = new DynamoDBClient({ region: 'us-east-1' });
 const gamesTable = process.env.stage + '-games';
 
 async function main() {
-    await createGamesIndex(getClient(), gamesIndex());
+    await ensureGamesIndex(getClient(), gamesIndex());
 
     let processed = 0;
 
     try {
         const result = await runBackfill({
-            scanPage: async (startKey?: Record<string, AttributeValue>) => {
-                const scanOutput: ScanCommandOutput = await dynamo.send(
-                    new ScanCommand({
+            cohorts: dojoCohorts.concat('masters'),
+            scanPage: async (cohort: string, startKey?: Record<string, AttributeValue>) => {
+                console.log(`Scanning ${cohort} page: `, startKey);
+                const scanOutput: QueryCommandOutput = await dynamo.send(
+                    new QueryCommand({
+                        KeyConditionExpression: `#cohort = :cohort`,
+                        ExpressionAttributeNames: { '#cohort': 'cohort' },
+                        ExpressionAttributeValues: { ':cohort': { S: cohort } },
                         ExclusiveStartKey: startKey,
                         TableName: gamesTable,
                         Limit: 250,
