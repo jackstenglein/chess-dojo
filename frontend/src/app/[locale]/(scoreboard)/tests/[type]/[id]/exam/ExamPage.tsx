@@ -646,12 +646,11 @@ const CompletedMoveButtonExtras: React.FC<MoveButtonProps> = ({ move, inline }) 
                 >
                     <Typography
                         variant={inline ? 'body2' : 'caption'}
-                        fontWeight='600'
                         sx={{
+                            fontWeight: '600',
                             pt: '2px',
-                            color: found || altFound ? 'success.contrastText' : 'background.paper',
-                        }}
-                    >
+                            color: found || altFound ? 'success.contrastText' : 'background.paper'
+                        }}>
                         {found || altFound ? '+' : '-'}
                         {score}
                     </Typography>

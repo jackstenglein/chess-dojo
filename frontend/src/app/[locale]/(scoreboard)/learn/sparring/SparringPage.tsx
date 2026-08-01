@@ -47,7 +47,9 @@ const SparringRequirement: React.FC<SparringRequirementProps> = ({
     if (!forceExpanded && requirement.positions.length > 1) {
         return (
             <Box>
-                <Stack direction='row' alignItems='center'>
+                <Stack direction='row' sx={{
+                    alignItems: 'center'
+                }}>
                     <IconButton size='small' onClick={toggleOpen}>
                         {open ? (
                             <Icon name='innerMenuUp' color='dojoOrange' />
@@ -57,16 +59,19 @@ const SparringRequirement: React.FC<SparringRequirementProps> = ({
                     </IconButton>
                     <Typography
                         variant='subtitle1'
-                        fontWeight='bold'
-                        color='text.secondary'
                         onClick={toggleOpen}
-                        sx={{ cursor: 'pointer' }}
-                    >
+                        sx={{
+                            fontWeight: 'bold',
+                            color: 'text.secondary',
+                            cursor: 'pointer'
+                        }}>
                         {requirement.shortName || requirement.name}
                     </Typography>
                 </Stack>
                 <Collapse in={open} timeout='auto' unmountOnExit>
-                    <Grid container spacing={2} justifyContent={{ xs: 'center', sm: 'start' }}>
+                    <Grid container spacing={2} sx={{
+                        justifyContent: { xs: 'center', sm: 'start' }
+                    }}>
                         {requirement.positions.map((p) => (
                             <Grid
                                 key={p.fen}
@@ -85,7 +90,9 @@ const SparringRequirement: React.FC<SparringRequirementProps> = ({
 
     if (stacked) {
         return (
-            <Grid container spacing={2} justifyContent={{ xs: 'center', sm: 'start' }}>
+            <Grid container spacing={2} sx={{
+                justifyContent: { xs: 'center', sm: 'start' }
+            }}>
                 {requirement.positions.map((p) => (
                     <Grid
                         key={p.fen}
@@ -130,7 +137,9 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
 
     return (
         <Box>
-            <Stack direction='row' alignItems='center'>
+            <Stack direction='row' sx={{
+                alignItems: 'center'
+            }}>
                 <IconButton size='small' onClick={toggleOpen}>
                     {open ? (
                         <Icon name='innerMenuUp' color='dojoOrange' />
@@ -140,11 +149,12 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
                 </IconButton>
                 <Typography
                     variant='subtitle1'
-                    fontWeight='bold'
-                    color='text.secondary'
                     onClick={toggleOpen}
-                    sx={{ cursor: 'pointer' }}
-                >
+                    sx={{
+                        fontWeight: 'bold',
+                        color: 'text.secondary',
+                        cursor: 'pointer'
+                    }}>
                     <>
                         {dojoCohorts.includes(subsection.name) ? (
                             <>
@@ -168,7 +178,9 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
             </Stack>
             <Collapse in={open} timeout='auto' unmountOnExit>
                 {subsection.stacked ? (
-                    <Stack pl={{ xs: 0, sm: 2 }} spacing={1}>
+                    <Stack spacing={1} sx={{
+                        pl: { xs: 0, sm: 2 }
+                    }}>
                         {subsection.requirements.map((r) => (
                             <SparringRequirement key={r.id} requirement={r} stacked />
                         ))}
@@ -187,14 +199,17 @@ const SparringSubsection: React.FC<SparringSubsectionProps> = ({ subsection }) =
                             <Grid size='auto'>
                                 <Stack
                                     data-testid='upsell-message'
-                                    px={1}
-                                    mt={2}
                                     spacing={2}
-                                    alignItems='center'
-                                    justifyContent='center'
-                                    height={1}
-                                >
-                                    <Typography textAlign='center'>
+                                    sx={{
+                                        px: 1,
+                                        mt: 2,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        height: 1
+                                    }}>
+                                    <Typography sx={{
+                                        textAlign: 'center'
+                                    }}>
                                         {t('unlockPositions', { count: subsection.hidden })}
                                     </Typography>
                                     <Button variant='outlined' component={Link} href='/prices'>
@@ -222,7 +237,9 @@ const SparringSection: React.FC<SparringSectionProps> = ({ section }) => {
 
     return (
         <Box>
-            <Stack direction='row' alignItems='center'>
+            <Stack direction='row' sx={{
+                alignItems: 'center'
+            }}>
                 <IconButton size='small' onClick={toggleOpen}>
                     {open ? (
                         <Icon name='menuUp' color='dojoOrange' />

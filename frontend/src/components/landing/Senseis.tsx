@@ -65,7 +65,9 @@ export function Senseis() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Stack gap='3.75rem'>
+                    <Stack sx={{
+                        gap: '3.75rem'
+                    }}>
                         {senseiKeys.map((key) => (
                             <Sensei
                                 key={key}
@@ -121,7 +123,11 @@ function Sensei({
                 }}
             />
 
-            <Stack gridArea='name' justifyContent={{ xs: 'center', md: 'unset' }}>
+            <Stack
+                sx={{
+                    gridArea: 'name',
+                    justifyContent: { xs: 'center', md: 'unset' }
+                }}>
                 <Typography
                     color='darkBlue'
                     sx={{
@@ -149,16 +155,15 @@ function Sensei({
             </Stack>
 
             <Typography
-                gridArea='bio'
                 sx={{
+                    gridArea: 'bio',
                     fontFmaily: barlow.style.fontFamily,
                     fontWeight: '400',
                     fontSize: '1.1875rem',
                     lineHeight: '1.9375rem',
                     letterSpacing: '0%',
-                    marginTop: '0.9375rem',
-                }}
-            >
+                    marginTop: '0.9375rem'
+                }}>
                 {bio}
             </Typography>
         </Box>

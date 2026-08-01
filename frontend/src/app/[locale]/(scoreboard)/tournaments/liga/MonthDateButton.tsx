@@ -68,7 +68,9 @@ const MonthDateButton = ({ selectedDate, onChange }: MonthDateButtonProps) => {
     };
 
     return (
-        <Stack direction='row' alignItems='center'>
+        <Stack direction='row' sx={{
+            alignItems: 'center'
+        }}>
             <LocaleArrow
                 type='prev'
                 onClick={handlePrev}

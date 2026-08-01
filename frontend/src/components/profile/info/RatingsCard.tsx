@@ -30,7 +30,12 @@ export const RatingsCard = ({ user }: { user: User }) => {
     return (
         <Card>
             <CardContent>
-                <Grid container rowGap={1} alignItems='center'>
+                <Grid
+                    container
+                    sx={{
+                        rowGap: 1,
+                        alignItems: 'center'
+                    }}>
                     {systems.map((rs) => {
                         const currentRating = getSystemCurrentRating(user, rs);
                         if (currentRating <= 0) {
@@ -64,7 +69,13 @@ const RatingRow = ({
     const tRating = useTranslations('enums.ratingSystem');
     return (
         <>
-            <Grid display='flex' alignItems='center' justifyContent='center' size={2}>
+            <Grid
+                size={2}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
                 <RatingSystemIcon system={system} size='small' />
             </Grid>
             <Grid size={8}>
@@ -73,7 +84,9 @@ const RatingRow = ({
                 </Typography>
             </Grid>
             <Grid size={2}>
-                <Typography fontWeight='bold'>{currentRating}</Typography>
+                <Typography sx={{
+                    fontWeight: 'bold'
+                }}>{currentRating}</Typography>
             </Grid>
         </>
     );

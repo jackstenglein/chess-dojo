@@ -71,7 +71,9 @@ function GameReviewSection({ user }: { user: User }) {
             </Typography>
             <Divider />
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('discord')}
             </Typography>
             <Typography color='textSecondary'>
@@ -93,7 +95,9 @@ function GameReviewSection({ user }: { user: User }) {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('classes')}
             </Typography>
             <Typography color='textSecondary'>
@@ -102,7 +106,9 @@ function GameReviewSection({ user }: { user: User }) {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('joiningClasses')}
             </Typography>
             <Typography color='textSecondary'>
@@ -111,7 +117,9 @@ function GameReviewSection({ user }: { user: User }) {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('recordings')}
             </Typography>
             <Typography color='textSecondary'>
@@ -120,7 +128,9 @@ function GameReviewSection({ user }: { user: User }) {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('scoreboard')}
             </Typography>
             <Typography color='textSecondary'>
@@ -131,10 +141,14 @@ function GameReviewSection({ user }: { user: User }) {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('reviewQueue')}
             </Typography>
-            <Typography color='textSecondary' mb={3}>
+            <Typography color='textSecondary' sx={{
+                mb: 3
+            }}>
                 {t('reviewQueueText')}
             </Typography>
 
@@ -175,14 +189,20 @@ function WorkshopsSection() {
             <Typography variant='h5'>{t('lectures')}</Typography>
             <Divider />
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('classes')}
             </Typography>
             <Typography color='textSecondary'>{t('lectureClassesText')}</Typography>
 
             {nextEvents.map((e) => (
-                <Stack key={e.event.id} mt={2}>
-                    <Typography variant='subtitle1' fontWeight='bold'>
+                <Stack key={e.event.id} sx={{
+                    mt: 2
+                }}>
+                    <Typography variant='subtitle1' sx={{
+                        fontWeight: 'bold'
+                    }}>
                         <Link href={`/meeting/${e.event.id}`}>{e.event.title}</Link>
                     </Typography>
                     <Typography>
@@ -193,7 +213,9 @@ function WorkshopsSection() {
                 </Stack>
             ))}
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('joiningClasses')}
             </Typography>
             <Typography color='textSecondary'>
@@ -202,7 +224,9 @@ function WorkshopsSection() {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('recordings')}
             </Typography>
             <Typography color='textSecondary'>
@@ -211,7 +235,9 @@ function WorkshopsSection() {
                 })}
             </Typography>
 
-            <Typography variant='h6' mt={2}>
+            <Typography variant='h6' sx={{
+                mt: 2
+            }}>
                 {t('communicatingPeers')}
             </Typography>
             <Typography color='textSecondary'>{t('communicatingPeersText')}</Typography>

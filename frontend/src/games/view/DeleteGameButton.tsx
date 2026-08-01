@@ -131,7 +131,9 @@ export function DeleteGamesDialog({
             <DialogTitle>{t('dialogTitle', { count: games.length })}</DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <DialogContentText>{t('confirmPrompt', { count: games.length })}</DialogContentText>
-                <DialogContentText variant='body2' color='text.secondary'>
+                <DialogContentText variant='body2' sx={{
+                    color: 'text.secondary'
+                }}>
                     {t('multiFolderWarning')}
                 </DialogContentText>
                 <TextField

@@ -31,7 +31,13 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     if (!isInTablebase(fen)) {
         return (
-            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
+            <Stack
+                data-testid='explorer-tab-tablebase'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2
+                }}>
                 <Typography>{t('tablebaseAvailabilityMessage')}</Typography>
             </Stack>
         );
@@ -43,7 +49,13 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     if (!position) {
         return (
-            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
+            <Stack
+                data-testid='explorer-tab-tablebase'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2
+                }}>
                 <Typography>{t('noTablebaseFound')}</Typography>
             </Stack>
         );
@@ -66,7 +78,7 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
             index = 0;
 
             items.push(
-                <TablebaseHeader key={status} direction='row' pl={1} py={0.5}>
+                <TablebaseHeader key={status} direction='row' sx={{ pl: 1, py: 0.5 }}>
                     <Typography>{status}</Typography>
                 </TablebaseHeader>,
             );
@@ -89,11 +101,10 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                 <Stack
                     direction='row'
                     sx={{
-                        width: 1,
-                    }}
-                    justifyContent='space-between'
-                    alignItems='center'
-                >
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: 1
+                    }}>
                     {move.san}
 
                     <Stack direction='row' spacing={0.5}>
@@ -120,12 +131,13 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     return (
         <Stack
-            mt={2}
-            borderRadius='4px'
-            border='1px solid'
-            sx={{ borderColor: 'divider' }}
             data-testid='explorer-tab-tablebase'
-        >
+            sx={{
+                mt: 2,
+                borderRadius: '4px',
+                border: '1px solid',
+                borderColor: 'divider'
+            }}>
             {items}
         </Stack>
     );

@@ -72,14 +72,23 @@ export const ListClubItem: React.FC<ListClubItemProps> = ({ club, sx }) => {
                 <CardHeader
                     sx={{ pb: 1 }}
                     title={
-                        <Stack direction='row' spacing={1} alignItems='center'>
+                        <Stack direction='row' spacing={1} sx={{
+                            alignItems: 'center'
+                        }}>
                             <ClubAvatar club={club} size={40} />
                             <Typography variant='h5'>{club.name}</Typography>
                         </Stack>
                     }
                 />
                 <CardContent sx={{ pt: 0 }}>
-                    <Stack direction='row' mb={2} spacing={1} flexWrap='wrap' rowGap={1}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            mb: 2,
+                            flexWrap: 'wrap',
+                            rowGap: 1
+                        }}>
                         <MemberCountChip count={club.memberCount} />
                         <LocationChip location={club.location} />
                     </Stack>

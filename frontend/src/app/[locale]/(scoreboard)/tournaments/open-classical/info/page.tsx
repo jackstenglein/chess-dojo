@@ -22,7 +22,9 @@ export default function InfoPage() {
                         {t('title')}
                     </Typography>
 
-                    <Typography variant='h6' align='center' color='text.secondary'>
+                    <Typography variant='h6' align='center' sx={{
+                        color: 'text.secondary'
+                    }}>
                         {t('subtitle')}
                     </Typography>
                 </Stack>
@@ -66,7 +68,9 @@ export default function InfoPage() {
                             <li>{t('playingGamesU1900')}</li>
                         </ul>
                         <Typography>{t('playingGamesBody1')}</Typography>
-                        <Typography mt={2}>{t('playingGamesBody2')}</Typography>
+                        <Typography sx={{
+                            mt: 2
+                        }}>{t('playingGamesBody2')}</Typography>
                     </InfoEntryAccordion>
 
                     <InfoEntryAccordion icon='submit' title={t('submittingTitle')}>
@@ -125,7 +129,9 @@ const InfoEntryAccordion = ({
     return (
         <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography variant='h6' sx={{
+                    color: 'text.secondary'
+                }}>
                     <Icon
                         name={icon}
                         sx={{ mr: 1, mt: -0.5, verticalAlign: 'middle' }}

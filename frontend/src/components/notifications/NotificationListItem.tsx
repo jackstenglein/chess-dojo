@@ -84,11 +84,12 @@ const NotificationItem: React.FC<NotificationListItemProps & DeletableNotificati
         <Stack spacing={1}>
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
                 spacing={1}
-                width={1}
-            >
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: 1
+                }}>
                 <NotificationDescription notification={notification} menuItem />
 
                 <Stack direction='row' spacing={2}>
@@ -123,11 +124,12 @@ const NotificationMenuItem: React.FC<NotificationListItemProps & DeletableNotifi
             <MenuItem component='a' href={href}>
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
                     spacing={2}
-                    width={1}
-                >
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: 1
+                    }}>
                     <NotificationDescription notification={notification} menuItem />
 
                     {deleteRequest.isLoading() ? (

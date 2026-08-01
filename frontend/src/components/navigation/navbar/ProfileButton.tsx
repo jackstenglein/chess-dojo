@@ -38,7 +38,9 @@ const ProfileButton = () => {
     return (
         <>
             <Button data-testid='navbar-profile-button' onClick={handleOpen}>
-                <Stack direction='row' alignItems='center'>
+                <Stack direction='row' sx={{
+                    alignItems: 'center'
+                }}>
                     <Avatar user={user} size={40} />
                     <ExpandMoreIcon sx={{ color: 'white' }} />
                 </Stack>
@@ -61,14 +63,18 @@ const ProfileButton = () => {
                     <ListItemIcon>
                         <Person2Icon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>{t('profile')}</Typography>
+                    <Typography sx={{
+                        textAlign: 'center'
+                    }}>{t('profile')}</Typography>
                 </MenuItem>
 
                 <MenuItem component='a' href='/profile/edit'>
                     <ListItemIcon>
                         <SettingsIcon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>{t('settings')}</Typography>
+                    <Typography sx={{
+                        textAlign: 'center'
+                    }}>{t('settings')}</Typography>
                 </MenuItem>
 
                 {user.isCoach && (
@@ -76,7 +82,9 @@ const ProfileButton = () => {
                         <ListItemIcon>
                             <SportsIcon />
                         </ListItemIcon>
-                        <Typography textAlign='center'>{t('coachPortal')}</Typography>
+                        <Typography sx={{
+                            textAlign: 'center'
+                        }}>{t('coachPortal')}</Typography>
                     </MenuItem>
                 )}
 
@@ -86,7 +94,9 @@ const ProfileButton = () => {
                     <ListItemIcon>
                         <ExitToAppIcon color='error' />
                     </ListItemIcon>
-                    <Typography textAlign='center' color='error'>
+                    <Typography color='error' sx={{
+                        textAlign: 'center'
+                    }}>
                         {t('signOut')}
                     </Typography>
                 </MenuItem>

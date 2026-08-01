@@ -142,16 +142,19 @@ export const FullTrainingPlanItem = ({
         <Tooltip title={blocker.reason} followCursor>
             <Stack
                 spacing={2}
-                mt={2}
                 data-testid={`${requirement.name.replaceAll(' ', '-')}-training-plan-entry`}
+                sx={{
+                    mt: 2
+                }}
             >
                 <Grid
                     container
-                    columnGap={1}
-                    alignItems='center'
-                    justifyContent='space-between'
-                    position='relative'
-                >
+                    sx={{
+                        columnGap: 1,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        position: 'relative'
+                    }}>
                     <Grid
                         size={{ xs: 'grow', md: 9 }}
                         onClick={() =>
@@ -161,12 +164,15 @@ export const FullTrainingPlanItem = ({
                                     : TaskDialogView.Details,
                             )
                         }
-                        sx={{ cursor: 'pointer', position: 'relative', maxWidth: { sm: '75%' } }}
                         id='task-details'
-                        display='flex'
-                        flexDirection='column'
-                        rowGap='0.25rem'
-                    >
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            rowGap: '0.25rem',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            maxWidth: { sm: '75%' }
+                        }}>
                         {expired && (
                             <Tooltip title={t('renewTooltip')}>
                                 <Chip
@@ -192,11 +198,12 @@ export const FullTrainingPlanItem = ({
 
                         <Stack
                             direction='row'
-                            flexWrap='wrap'
-                            justifyContent='space-between'
-                            alignItems='center'
-                            columnGap='1rem'
-                        >
+                            sx={{
+                                flexWrap: 'wrap',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                columnGap: '1rem'
+                            }}>
                             <Typography
                                 sx={{
                                     opacity: blocker.isBlocked ? 0.5 : 1,
@@ -208,8 +215,10 @@ export const FullTrainingPlanItem = ({
 
                             {displayProgress(requirement) && (
                                 <Box
-                                    mr={1}
                                     data-testid={`${requirement.name.replaceAll(' ', '-')}-progress-text`}
+                                    sx={{
+                                        mr: 1
+                                    }}
                                 >
                                     <ProgressText
                                         value={currentCount}
@@ -236,18 +245,22 @@ export const FullTrainingPlanItem = ({
                         )}
                     </Grid>
                     <Grid size='auto' id='task-status'>
-                        <Stack direction='row' alignItems='center' justifyContent='end'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                justifyContent: 'end'
+                            }}>
                             {!blocker.isBlocked && (
                                 <Typography
-                                    color='text.secondary'
-                                    sx={{
-                                        display: { xs: 'none', sm: 'initial' },
-                                        fontWeight: 'bold',
-                                    }}
                                     noWrap
-                                    textOverflow='unset'
-                                    mr={1}
-                                >
+                                    sx={{
+                                        color: 'text.secondary',
+                                        textOverflow: 'unset',
+                                        mr: 1,
+                                        display: { xs: 'none', sm: 'initial' },
+                                        fontWeight: 'bold'
+                                    }}>
                                     {time}
                                 </Typography>
                             )}

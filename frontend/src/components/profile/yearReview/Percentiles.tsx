@@ -19,16 +19,23 @@ const Percentiles: React.FC<PercentilesProps> = ({
     return (
         <>
             <Grid
-                display='flex'
-                justifyContent='center'
                 size={{
                     xs: 12,
                     sm: 4,
                 }}
-            >
-                <Stack alignItems='center'>
-                    <Stack spacing={0.5} direction='row' alignItems='center'>
-                        <Typography variant='caption' color='text.secondary'>
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
+                <Stack sx={{
+                    alignItems: 'center'
+                }}>
+                    <Stack spacing={0.5} direction='row' sx={{
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant='caption' sx={{
+                            color: 'text.secondary'
+                        }}>
                             {t('percentile')}
                         </Typography>
                         <Tooltip title={t('percentileTooltip', { description })}>
@@ -53,16 +60,23 @@ const Percentiles: React.FC<PercentilesProps> = ({
                 </Stack>
             </Grid>
             <Grid
-                display='flex'
-                justifyContent='center'
                 size={{
                     xs: 12,
                     sm: 4,
                 }}
-            >
-                <Stack alignItems='center'>
-                    <Stack spacing={0.5} direction='row' alignItems='center'>
-                        <Typography variant='caption' color='text.secondary'>
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
+                <Stack sx={{
+                    alignItems: 'center'
+                }}>
+                    <Stack spacing={0.5} direction='row' sx={{
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant='caption' sx={{
+                            color: 'text.secondary'
+                        }}>
                             {t('cohortPercentile')}
                         </Typography>
                         <Tooltip title={t('cohortPercentileTooltip', { cohort, description })}>

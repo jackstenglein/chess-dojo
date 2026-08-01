@@ -28,7 +28,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ user }) => {
     useWindowSizeEffect(resizeDialogBlocks);
 
     return (
-        <Grid container justifyContent='space-between' rowSpacing={5}>
+        <Grid container rowSpacing={5} sx={{
+            justifyContent: 'space-between'
+        }}>
             {isSmall && (
                 <Grid size={12}>
                     <Heatmap

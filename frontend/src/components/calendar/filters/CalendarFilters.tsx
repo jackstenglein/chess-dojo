@@ -399,7 +399,12 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                 {t('hideFilters')}
             </Button>
 
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
                 {!filtersDefault && (
                     <Button
                         size='small'
@@ -456,22 +461,28 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                 <Stack>
                     <Stack
                         direction='row'
-                        alignItems='center'
-                        justifyContent='space-between'
-                        sx={{ cursor: 'pointer' }}
-                    >
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer'
+                        }}>
                         <Typography
                             variant='subtitle2'
-                            color='text.secondary'
-                            sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
-                        >
+                            sx={{
+                                color: 'text.secondary',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.75
+                            }}>
                             <Icon name='cohort' color='book' fontSize='small' />
                             {t('cohorts')}
                             {cohortSummary && (
                                 <Typography
                                     component='span'
                                     variant='caption'
-                                    color='text.disabled'
+                                    sx={{
+                                        color: 'text.disabled'
+                                    }}
                                 >
                                     · {cohortSummary}
                                 </Typography>

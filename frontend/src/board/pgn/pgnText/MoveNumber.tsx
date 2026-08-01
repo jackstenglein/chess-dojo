@@ -13,11 +13,15 @@ const MoveNumber: React.FC<MoveNumberProps> = ({ ply }) => {
     return (
         <Grid key={`move-number-${ply}`} size={2}>
             <Stack
-                justifyContent='center'
-                alignItems='center'
-                sx={{ height: 1, position: 'relative' }}
-            >
-                <Typography color='text.secondary'>{moveNumber}</Typography>
+                sx={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: 1,
+                    position: 'relative'
+                }}>
+                <Typography sx={{
+                    color: 'text.secondary'
+                }}>{moveNumber}</Typography>
                 <Divider orientation='vertical' sx={{ position: 'absolute', right: 0 }} />
             </Stack>
         </Grid>

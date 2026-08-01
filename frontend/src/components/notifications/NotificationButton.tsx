@@ -77,7 +77,13 @@ const NotificationButton = () => {
             >
                 <MenuList>
                     {notifications.length > 0 && [
-                        <Stack key='stack' direction='row' justifyContent='center' sx={{ pb: 1 }}>
+                        <Stack
+                            key='stack'
+                            direction='row'
+                            sx={{
+                                justifyContent: 'center',
+                                pb: 1
+                            }}>
                             {clearRequest.isLoading() ? (
                                 <CircularProgress size={24} />
                             ) : (

@@ -23,7 +23,9 @@ export function Footer() {
             }}
         >
             <Container maxWidth='lg'>
-                <Grid container alignItems='center'>
+                <Grid container sx={{
+                    alignItems: 'center'
+                }}>
                     <FooterItem>
                         <ChessDojoIcon />
                         <Typography sx={{ ml: 1, display: { xs: 'initial', md: 'none' } }}>

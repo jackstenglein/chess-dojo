@@ -791,21 +791,24 @@ export function CustomEventRenderer({ event, timeFormat, ...props }: CustomEvent
             {...props}
         >
             <Typography
-                fontSize='inherit'
-                color='inherit'
                 sx={{
+                    fontSize: 'inherit',
+                    color: 'inherit',
                     WebkitLineClamp: maxLines,
                     display: '-webkit-box',
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     lineClamp: maxLines,
                     fontWeight: 'bold',
-                    lineHeight: 1.3,
-                }}
-            >
+                    lineHeight: 1.3
+                }}>
                 {event.title}
             </Typography>
-            <Typography fontSize='inherit' color='inherit'>
+            <Typography
+                sx={{
+                    fontSize: 'inherit',
+                    color: 'inherit'
+                }}>
                 {start} – {end}
             </Typography>
         </Stack>

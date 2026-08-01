@@ -110,8 +110,12 @@ export const MoveDialog = ({
             <DialogContent data-testid='move-directory-form'>
                 {newDirectory ? (
                     <Stack>
-                        <Stack alignItems='center' direction='row' spacing={1.5}>
-                            <Typography color='text.secondary'>{t('from')}</Typography>
+                        <Stack direction='row' spacing={1.5} sx={{
+                            alignItems: 'center'
+                        }}>
+                            <Typography sx={{
+                                color: 'text.secondary'
+                            }}>{t('from')}</Typography>
                             <DirectoryBreadcrumbs
                                 owner={parent.owner}
                                 id={parent.id}
@@ -121,8 +125,16 @@ export const MoveDialog = ({
                             />
                         </Stack>
 
-                        <Stack alignItems='center' direction='row' spacing={1.5} mb={1}>
-                            <Typography color='text.secondary'>{t('to')}</Typography>
+                        <Stack
+                            direction='row'
+                            spacing={1.5}
+                            sx={{
+                                alignItems: 'center',
+                                mb: 1
+                            }}>
+                            <Typography sx={{
+                                color: 'text.secondary'
+                            }}>{t('to')}</Typography>
                             <DirectoryBreadcrumbs
                                 owner={newDirectoryOwner}
                                 id={newDirectoryId}
@@ -150,7 +162,11 @@ export const MoveDialog = ({
                                 ))}
                         </List>
                         {Object.values(newDirectory.items).length === 0 && (
-                            <Typography textAlign='center' width={1}>
+                            <Typography
+                                sx={{
+                                    textAlign: 'center',
+                                    width: 1
+                                }}>
                                 {t('folderEmpty')}
                             </Typography>
                         )}

@@ -40,13 +40,16 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            mb={2}
-            flexWrap='wrap'
-            rowGap={1}
-        >
-            <Stack direction='row' spacing={2} alignItems='center'>
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+                flexWrap: 'wrap',
+                rowGap: 1
+            }}>
+            <Stack direction='row' spacing={2} sx={{
+                alignItems: 'center'
+            }}>
                 <Avatar username={entry.owner} displayName={entry.ownerDisplayName} size={60} />
 
                 <Stack>
@@ -62,7 +65,9 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                         />
                     </Typography>
 
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography variant='body2' sx={{
+                        color: 'text.secondary'
+                    }}>
                         {t('dateTime', { date, year: displayYear, time })}
                     </Typography>
                 </Stack>
@@ -73,15 +78,23 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                     <CohortIcon cohort={entry.cohort} size={50} />
                 </Box>
             ) : (
-                <Stack direction='row' spacing={1} alignItems='center'>
-                    <Stack alignItems='end'>
+                <Stack direction='row' spacing={1} sx={{
+                    alignItems: 'center'
+                }}>
+                    <Stack sx={{
+                        alignItems: 'end'
+                    }}>
                         <Typography sx={{ color: CategoryColors[category] }}>{category}</Typography>
                         {entry.isCustomRequirement && (
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography variant='body2' sx={{
+                                color: 'text.secondary'
+                            }}>
                                 {t('customTask')}
                             </Typography>
                         )}
-                        <Typography variant='body2' color='text.secondary'>
+                        <Typography variant='body2' sx={{
+                            color: 'text.secondary'
+                        }}>
                             {entry.cohort}
                         </Typography>
                     </Stack>

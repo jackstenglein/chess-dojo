@@ -70,13 +70,22 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
     return (
         <Card variant='outlined' sx={{ width: 1 }}>
             <CardContent>
-                <Stack direction='row' justifyContent='space-between'>
+                <Stack direction='row' sx={{
+                    justifyContent: 'space-between'
+                }}>
                     <Stack>
                         <Typography variant='h6'>{formatRatingSystem(system, tRating)}</Typography>
-                        <Stack direction='row' alignItems='center' sx={{ mb: 2 }}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                mb: 2
+                            }}>
                             {Boolean(data.username) && (
                                 <>
-                                    <Typography variant='subtitle1' color='text.secondary'>
+                                    <Typography variant='subtitle1' sx={{
+                                        color: 'text.secondary'
+                                    }}>
                                         {data.username}
                                     </Typography>
                                     <Link
@@ -103,18 +112,25 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                     )}
                 </Stack>
 
-                <Grid container alignItems='center' rowSpacing={2}>
+                <Grid container rowSpacing={2} sx={{
+                    alignItems: 'center'
+                }}>
                     <Grid
-                        display='flex'
-                        justifyContent={{ xs: 'start', sm: 'center' }}
                         size={{
                             xs: 6,
                             sm: 4,
                             md: 'grow',
                         }}
-                    >
-                        <Stack alignItems={{ xs: 'start', sm: 'center' }}>
-                            <Typography variant='caption' color='text.secondary'>
+                        sx={{
+                            display: 'flex',
+                            justifyContent: { xs: 'start', sm: 'center' }
+                        }}>
+                        <Stack sx={{
+                            alignItems: { xs: 'start', sm: 'center' }
+                        }}>
+                            <Typography variant='caption' sx={{
+                                color: 'text.secondary'
+                            }}>
                                 {t('jan1', { period })}
                             </Typography>
 
@@ -131,16 +147,21 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                     </Grid>
 
                     <Grid
-                        display='flex'
-                        justifyContent={{ xs: 'end', sm: 'center' }}
                         size={{
                             xs: 6,
                             sm: 4,
                             md: 'grow',
                         }}
-                    >
-                        <Stack alignItems={{ xs: 'end', sm: 'center' }}>
-                            <Typography variant='caption' color='text.secondary'>
+                        sx={{
+                            display: 'flex',
+                            justifyContent: { xs: 'end', sm: 'center' }
+                        }}>
+                        <Stack sx={{
+                            alignItems: { xs: 'end', sm: 'center' }
+                        }}>
+                            <Typography variant='caption' sx={{
+                                color: 'text.secondary'
+                            }}>
                                 {endDateByPeriod[period]}
                             </Typography>
                             <Typography
@@ -156,20 +177,27 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                     </Grid>
 
                     <Grid
-                        display='flex'
-                        justifyContent={{ xs: 'start', sm: 'center' }}
                         size={{
                             xs: 6,
                             sm: 4,
                             md: 'grow',
                         }}
-                    >
-                        <Stack alignItems={{ xs: 'start', sm: 'center' }}>
-                            <Typography variant='caption' color='text.secondary'>
+                        sx={{
+                            display: 'flex',
+                            justifyContent: { xs: 'start', sm: 'center' }
+                        }}>
+                        <Stack sx={{
+                            alignItems: { xs: 'start', sm: 'center' }
+                        }}>
+                            <Typography variant='caption' sx={{
+                                color: 'text.secondary'
+                            }}>
                                 {t('change')}
                             </Typography>
 
-                            <Stack direction='row' alignItems='start'>
+                            <Stack direction='row' sx={{
+                                alignItems: 'start'
+                            }}>
                                 {data.ratingChange >= 0 ? (
                                     <ArrowUpward
                                         sx={{
@@ -207,17 +235,24 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                     {!isCustom(system) && (
                         <>
                             <Grid
-                                display='flex'
-                                justifyContent={{ xs: 'end', sm: 'center' }}
                                 size={{
                                     xs: 6,
                                     sm: 4,
                                     md: 'grow',
                                 }}
-                            >
-                                <Stack alignItems={{ xs: 'end', sm: 'center' }}>
-                                    <Stack spacing={0.5} direction='row' alignItems='center'>
-                                        <Typography variant='caption' color='text.secondary'>
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: { xs: 'end', sm: 'center' }
+                                }}>
+                                <Stack sx={{
+                                    alignItems: { xs: 'end', sm: 'center' }
+                                }}>
+                                    <Stack spacing={0.5} direction='row' sx={{
+                                        alignItems: 'center'
+                                    }}>
+                                        <Typography variant='caption' sx={{
+                                            color: 'text.secondary'
+                                        }}>
                                             {t('normalized')}
                                         </Typography>
                                         <Tooltip title={t('normalizedTooltip')}>
@@ -245,17 +280,24 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                             </Grid>
 
                             <Grid
-                                display='flex'
-                                justifyContent={{ xs: 'start', sm: 'center' }}
                                 size={{
                                     xs: 6,
                                     sm: 4,
                                     md: 'grow',
                                 }}
-                            >
-                                <Stack alignItems={{ xs: 'start', sm: 'center' }}>
-                                    <Stack spacing={0.5} direction='row' alignItems='center'>
-                                        <Typography variant='caption' color='text.secondary'>
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: { xs: 'start', sm: 'center' }
+                                }}>
+                                <Stack sx={{
+                                    alignItems: { xs: 'start', sm: 'center' }
+                                }}>
+                                    <Stack spacing={0.5} direction='row' sx={{
+                                        alignItems: 'center'
+                                    }}>
+                                        <Typography variant='caption' sx={{
+                                            color: 'text.secondary'
+                                        }}>
                                             {t('percentile')}
                                         </Typography>
                                         <Tooltip
@@ -292,17 +334,24 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                             </Grid>
 
                             <Grid
-                                display='flex'
-                                justifyContent={{ xs: 'end', sm: 'center' }}
                                 size={{
                                     xs: 6,
                                     sm: 4,
                                     md: 'grow',
                                 }}
-                            >
-                                <Stack alignItems={{ xs: 'end', sm: 'center' }}>
-                                    <Stack spacing={0.5} direction='row' alignItems='center'>
-                                        <Typography variant='caption' color='text.secondary'>
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: { xs: 'end', sm: 'center' }
+                                }}>
+                                <Stack sx={{
+                                    alignItems: { xs: 'end', sm: 'center' }
+                                }}>
+                                    <Stack spacing={0.5} direction='row' sx={{
+                                        alignItems: 'center'
+                                    }}>
+                                        <Typography variant='caption' sx={{
+                                            color: 'text.secondary'
+                                        }}>
                                             {t('cohortPercentile')}
                                         </Typography>
                                         <Tooltip
@@ -345,7 +394,11 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                 </Grid>
 
                 <Stack>
-                    <Box height={300} mt={2}>
+                    <Box
+                        sx={{
+                            height: 300,
+                            mt: 2
+                        }}>
                         <Chart
                             options={{
                                 data: historyData,

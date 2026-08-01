@@ -77,8 +77,12 @@ export function DailyTrainingPlan() {
     };
 
     return (
-        <Stack data-testid='training-plan-today' spacing={2} width={1}>
-            <Stack direction='row' alignItems='center'>
+        <Stack data-testid='training-plan-today' spacing={2} sx={{
+            width: 1
+        }}>
+            <Stack direction='row' sx={{
+                alignItems: 'center'
+            }}>
                 <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
@@ -90,7 +94,13 @@ export function DailyTrainingPlan() {
                     </IconButton>
                 </Tooltip>
 
-                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        fontWeight: 'bold',
+                        ml: 0.5,
+                        mr: 2
+                    }}>
                     {t('today')}
                 </Typography>
 
@@ -158,7 +168,9 @@ function DailyTrainingPlanInternal({
     };
 
     return (
-        <Stack width={1}>
+        <Stack sx={{
+            width: 1
+        }}>
             {taskDialogView && selectedTask && (
                 <TaskDialog
                     open
@@ -266,7 +278,9 @@ function DailyTrainingPlanItem({
                 >
                     <CardContent sx={{ height: 1 }}>
                         <Stack sx={{ height: 1 }}>
-                            <Stack spacing={1} alignItems='start'>
+                            <Stack spacing={1} sx={{
+                                alignItems: 'start'
+                            }}>
                                 <Chip
                                     variant='outlined'
                                     label={
@@ -278,7 +292,9 @@ function DailyTrainingPlanItem({
                                     size='small'
                                 />
 
-                                <Typography variant='h6' fontWeight='bold'>
+                                <Typography variant='h6' sx={{
+                                    fontWeight: 'bold'
+                                }}>
                                     {taskTitle({
                                         task,
                                         cohort: user.dojoCohort,
@@ -290,17 +306,16 @@ function DailyTrainingPlanItem({
 
                             {task.description && (
                                 <Box
-                                    color='text.secondary'
                                     sx={{
+                                        color: 'text.secondary',
                                         mt: 1,
                                         lineClamp: 4,
                                         display: '-webkit-box',
                                         WebkitLineClamp: 4,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}
-                                >
+                                        textOverflow: 'ellipsis'
+                                    }}>
                                     <TaskDescription>
                                         {task.description.replaceAll('{{count}}', `${totalCount}`)}
                                     </TaskDescription>
@@ -381,7 +396,7 @@ function DailyTrainingPlanItem({
                                         ? () => onOpenTask(task, TaskDialogView.Progress)
                                         : undefined,
                                 },
-                                container: { mx: 0.5 },
+                                container: { sx: { mx: 0.5 } },
                             }}
                             data-testid='update-task-button'
                         />

@@ -108,17 +108,24 @@ const DojoPointSection = ({ review }: SectionProps) => {
         <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
             <CardHeader title={t('title')} />
             <CardContent>
-                <Grid container alignItems='center' rowSpacing={2}>
+                <Grid container rowSpacing={2} sx={{
+                    alignItems: 'center'
+                }}>
                     <Grid
-                        display='flex'
-                        justifyContent='center'
                         size={{
                             xs: 12,
                             sm: 4,
                         }}
-                    >
-                        <Stack alignItems='center'>
-                            <Typography variant='caption' color='text.secondary'>
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center'
+                        }}>
+                        <Stack sx={{
+                            alignItems: 'center'
+                        }}>
+                            <Typography variant='caption' sx={{
+                                color: 'text.secondary'
+                            }}>
                                 {t('totalPoints')}
                             </Typography>
 
@@ -142,10 +149,19 @@ const DojoPointSection = ({ review }: SectionProps) => {
                     />
                 </Grid>
 
-                <Stack mt={4} spacing={4}>
-                    <Stack alignItems='start' spacing={0.5}>
+                <Stack spacing={4} sx={{
+                    mt: 4
+                }}>
+                    <Stack spacing={0.5} sx={{
+                        alignItems: 'start'
+                    }}>
                         <Typography>{t('byCategory')}</Typography>
-                        <Box width={1} height={300} mt={2}>
+                        <Box
+                            sx={{
+                                width: 1,
+                                height: 300,
+                                mt: 2
+                            }}>
                             <Chart
                                 options={{
                                     data: categoryData,
@@ -160,9 +176,16 @@ const DojoPointSection = ({ review }: SectionProps) => {
                         </Box>
                     </Stack>
 
-                    <Stack alignItems='start' spacing={0.5}>
+                    <Stack spacing={0.5} sx={{
+                        alignItems: 'start'
+                    }}>
                         <Typography>{t('byMonth')}</Typography>
-                        <Box width={1} height={400} mt={2}>
+                        <Box
+                            sx={{
+                                width: 1,
+                                height: 400,
+                                mt: 2
+                            }}>
                             <Chart
                                 options={{
                                     data: monthData,
@@ -175,9 +198,16 @@ const DojoPointSection = ({ review }: SectionProps) => {
                     </Stack>
 
                     {taskData && (
-                        <Stack alignItems='start' spacing={0.5}>
+                        <Stack spacing={0.5} sx={{
+                            alignItems: 'start'
+                        }}>
                             <Typography>{t('top10Tasks')}</Typography>
-                            <Box width={1} height={400} mt={2}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2
+                                }}>
                                 <Chart
                                     options={{
                                         data: taskData,

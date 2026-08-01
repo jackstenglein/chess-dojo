@@ -94,14 +94,15 @@ export default function GraduationShareDialog({
                 <Stack spacing={2}>
                     <DialogContentText>{t('description')}</DialogContentText>
                     <Stack
-                        display='grid'
-                        gridTemplateRows='auto 1fr'
-                        alignItems='center'
-                        justifyContent='center'
-                    >
+                        sx={{
+                            display: 'grid',
+                            gridTemplateRows: 'auto 1fr',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                         {imageData ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            (<img
                                 style={{
                                     height: 'auto',
                                     maxWidth: '100%',
@@ -109,7 +110,7 @@ export default function GraduationShareDialog({
                                 }}
                                 alt={t('imageAlt')}
                                 src={imageData}
-                            />
+                            />)
                         ) : (
                             <ReportCanvas reportRef={setReportRef}>
                                 <GraduationCard graduation={graduation} />
@@ -138,30 +139,32 @@ interface ReportCanvasProps {
 const ReportCanvas = ({ reportRef, children }: ReportCanvasProps) => {
     return (
         <Box
-            position='relative'
-            overflow='hidden'
-            sx={{ aspectRatio: '1.6/1', borderRadius: 1 }}
-            width='100%'
-            height='auto'
-        >
+            sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                width: '100%',
+                height: 'auto',
+                aspectRatio: '1.6/1',
+                borderRadius: 1
+            }}>
             <Box
-                display='grid'
-                height='100%'
-                width='100%'
-                bgcolor='background.default'
-                position='absolute'
-                zIndex={1}
-            >
+                sx={{
+                    display: 'grid',
+                    height: '100%',
+                    width: '100%',
+                    bgcolor: 'background.default',
+                    position: 'absolute',
+                    zIndex: 1
+                }}>
                 <LoadingPage />
             </Box>
             <Box
                 ref={reportRef}
-                display='grid'
                 sx={{
+                    display: 'grid',
                     width: '800px',
-                    height: '540px',
-                }}
-            >
+                    height: '540px'
+                }}>
                 {children}
             </Box>
         </Box>

@@ -40,9 +40,9 @@ import {
     MenuBook,
     MilitaryTech,
     Notes,
-    PeopleOutline,
+    PeopleOutlined,
     Person,
-    PersonOutline,
+    PersonOutlined,
     PhoneAndroid,
     PunchClock,
     QueryBuilder,
@@ -103,7 +103,7 @@ export const icons = {
     cohort: Group,
     player: Person,
     upload: Backup,
-    line: PeopleOutline,
+    line: PeopleOutlined,
     download: Download,
     eye: Visibility,
     clock: QueryBuilder,
@@ -153,7 +153,7 @@ export const icons = {
     write: Create,
     join: Login,
     notes: Notes,
-    participant: PersonOutline,
+    participant: PersonOutlined,
     [TournamentType.Arena]: Stadium,
     [TournamentType.Swiss]: LocalHospital,
     [TournamentType.AllTournamentTypes]: AllInclusiveRounded,
@@ -236,9 +236,9 @@ export const FontAwesomeSvgIcon = forwardRef<SVGSVGElement, FontAwesomeSvgIconPr
                      *
                      * @see https://fontawesome.com/how-to-use/on-the-web/styling/duotone-icons#changing-opacity
                      */
-                    svgPathData.map((d: string, i: number) => (
+                    (svgPathData.map((d: string, i: number) => (
                         <path key={i} style={{ opacity: i === 0 ? 0.4 : 1 }} d={d} />
-                    ))
+                    )))
                 )}
             </SvgIcon>
         );

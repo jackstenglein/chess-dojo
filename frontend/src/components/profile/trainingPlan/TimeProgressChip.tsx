@@ -31,23 +31,31 @@ export function TimeProgressChip({ goal, value, slotProps, ref, ...rest }: TimeP
     const tCommon = useTranslations('common');
     const percentage = Math.min(100, goal > 0 ? (100 * value) / goal : 100);
     const color = percentage < 50 ? 'error' : percentage < 100 ? 'warning' : 'success';
+    const { sx: containerSx, ...containerProps } = slotProps?.container ?? {};
+    const { sx: backgroundSx, ...backgroundProps } = slotProps?.background ?? {};
 
     return (
         <Box
             ref={ref}
-            sx={{ position: 'relative', borderRadius: '16px', overflow: 'hidden' }}
             {...rest}
-            {...slotProps?.container}
+            {...containerProps}
+            sx={{
+                position: 'relative',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                ...containerSx,
+            }}
         >
             <Box
+                {...backgroundProps}
                 sx={{
                     position: 'absolute',
                     top: 1,
                     bottom: 1,
                     width: `${percentage}%`,
                     backgroundColor: (theme) => alpha(theme.palette[color].main, 0.2),
+                    ...backgroundSx,
                 }}
-                {...slotProps?.background}
             />
             <Chip
                 variant='outlined'
