@@ -2,11 +2,17 @@ import { useApi } from '@/api/Api';
 import { Request, RequestSnackbar, useRequest } from '@/api/Request';
 import { getProcessedEvents } from '@/app/[locale]/(scoreboard)/calendar/CalendarPage';
 import { useAuth } from '@/auth/Auth';
+import { useRecurrenceEditPrompt } from '@/components/calendar/EditRecurrenceDialog';
 import EventEditor from '@/components/calendar/eventEditor/EventEditor';
 import ProcessedEventViewer from '@/components/calendar/eventViewer/ProcessedEventViewer';
 import { getHours, useFilters } from '@/components/calendar/filters/CalendarFilters';
 import TimezoneFilter from '@/components/calendar/filters/TimezoneFilter';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
+import {
+    haveTimesChanged,
+    moveAllOccurrences,
+    moveSingleOccurrence,
+} from '@/components/calendar/recurrence';
 import { Event } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
@@ -44,6 +50,8 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
     const [shiftHeld, setShiftHeld] = useState(false);
     const copyRequest = useRequest();
     const deleteRequest = useRequest<string>();
+    const { prompt: promptRecurrenceEdit, dialog: recurrenceEditDialog } =
+        useRecurrenceEditPrompt();
 
     const processedEvents = useMemo(() => {
         const modifiedFilters = { ...filters, coaching: true };
@@ -122,8 +130,6 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                         originalEndIso.substring(originalEndIso.indexOf('T'));
                 }
 
-                copyRequest.onStart();
-
                 const event = originalEvent.event as Event | undefined;
 
                 let id = event?.id;
@@ -140,14 +146,46 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                     publicDiscordEventId = undefined;
                 }
 
+                let startTime = startIso;
+                let endTime = endIso;
+                let rrule = event?.rrule ?? '';
+
+                const isRecurringEdit =
+                    Boolean(event?.rrule) &&
+                    Boolean(id) &&
+                    haveTimesChanged(
+                        originalEvent.start,
+                        originalEvent.end,
+                        new Date(startIso),
+                        new Date(endIso),
+                    );
+
+                if (isRecurringEdit && event) {
+                    const scope = await promptRecurrenceEdit();
+                    if (scope === 'cancel') {
+                        return;
+                    }
+
+                    if (scope === 'this') {
+                        startTime = event.startTime;
+                        endTime = event.endTime;
+                        rrule = moveSingleOccurrence(event, originalEvent.start, new Date(startIso));
+                    } else if (event.rrule) {
+                        rrule = moveAllOccurrences(event.rrule, new Date(startIso));
+                    }
+                }
+
+                copyRequest.onStart();
+
                 const response = await api.setEvent({
                     ...event,
-                    startTime: startIso,
-                    endTime: endIso,
+                    startTime,
+                    endTime,
                     id,
                     discordMessageId,
                     privateDiscordEventId,
                     publicDiscordEventId,
+                    rrule,
                 });
                 const availability = response.data;
 
@@ -157,7 +195,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                 copyRequest.onFailure(err);
             }
         },
-        [copyRequest, api, shiftHeld, putEvent],
+        [copyRequest, api, shiftHeld, putEvent, promptRecurrenceEdit],
     );
 
     const [minHour, maxHour] = getHours(filters.minHour, filters.maxHour);
@@ -165,6 +203,7 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
     return (
         <Grid container spacing={2}>
             <RequestSnackbar request={request} />
+            {recurrenceEditDialog}
             <Grid
                 size={{
                     xs: 12,
