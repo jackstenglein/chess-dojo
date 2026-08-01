@@ -10,10 +10,12 @@ import TimezoneFilter from '@/components/calendar/filters/TimezoneFilter';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import {
     haveTimesChanged,
+    isRecurringEvent,
     moveAllOccurrences,
     moveSingleOccurrence,
 } from '@/components/calendar/recurrence';
 import { Event } from '@/database/event';
+import { getEventDurationMs } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
 import {
@@ -146,12 +148,17 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                     publicDiscordEventId = undefined;
                 }
 
-                let startTime = startIso;
-                let endTime = endIso;
-                let rrule = event?.rrule ?? '';
+                if (!event) {
+                    return;
+                }
+
+                const { startTime: _legacyStart, endTime: _legacyEnd, ...eventWithoutTimes } =
+                    event;
+                let durationMs = new Date(endIso).getTime() - new Date(startIso).getTime();
+                let rrule = event.rrule ?? '';
 
                 const isRecurringEdit =
-                    Boolean(event?.rrule) &&
+                    isRecurringEvent(event) &&
                     Boolean(id) &&
                     haveTimesChanged(
                         originalEvent.start,
@@ -160,36 +167,34 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                         new Date(endIso),
                     );
 
-                if (isRecurringEdit && event) {
+                if (isRecurringEdit) {
                     const scope = await promptRecurrenceEdit();
                     if (scope === 'cancel') {
                         return;
                     }
 
                     if (scope === 'this') {
-                        startTime = event.startTime;
-                        endTime = event.endTime;
+                        durationMs = getEventDurationMs(event);
                         rrule = moveSingleOccurrence(event, originalEvent.start, new Date(startIso));
-                    } else if (event.rrule) {
-                        rrule = moveAllOccurrences(event.rrule, new Date(startIso));
+                    } else {
+                        rrule = moveAllOccurrences(rrule, new Date(startIso));
                     }
+                } else {
+                    rrule = moveAllOccurrences(rrule, new Date(startIso));
                 }
 
                 copyRequest.onStart();
 
                 const response = await api.setEvent({
-                    ...event,
-                    startTime,
-                    endTime,
+                    ...eventWithoutTimes,
+                    durationMs,
                     id,
                     discordMessageId,
                     privateDiscordEventId,
                     publicDiscordEventId,
                     rrule,
                 });
-                const availability = response.data;
-
-                putEvent(availability);
+                putEvent(response.data);
                 copyRequest.onSuccess();
             } catch (err) {
                 copyRequest.onFailure(err);

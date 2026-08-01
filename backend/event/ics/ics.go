@@ -182,18 +182,25 @@ func formatICS(events []*database.Event, user *database.User, calendarName strin
 }
 
 func writeVEVENT(b *strings.Builder, event *database.Event, username string) {
-	startStr := event.StartTime
+	start, err := database.GetEventStart(event)
+	if err != nil {
+		return
+	}
 	if event.BookedStartTime != "" {
-		startStr = event.BookedStartTime
+		if booked, bookedErr := time.Parse(time.RFC3339, event.BookedStartTime); bookedErr == nil {
+			start = booked
+		}
 	}
 
-	start, err := time.Parse(time.RFC3339, startStr)
+	end, err := database.GetEventEnd(event)
 	if err != nil {
 		return
 	}
-	end, err := time.Parse(time.RFC3339, event.EndTime)
-	if err != nil {
-		return
+	if event.BookedStartTime != "" {
+		duration, durErr := database.GetEventDuration(event)
+		if durErr == nil {
+			end = start.Add(duration)
+		}
 	}
 
 	b.WriteString("BEGIN:VEVENT\r\n")

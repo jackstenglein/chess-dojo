@@ -47,6 +47,79 @@ function validateTimes(
 }
 
 /**
+ * Builds rrule (always including DTSTART) and durationMs for scheduled events.
+ * Does not set deprecated startTime/endTime.
+ */
+function buildRruleAndDuration(
+    editor: UseEventEditorResponse,
+    timezoneOverride: string,
+    errors: Record<string, string>,
+    t: TranslateFn,
+): { rrule: string; durationMs: number } | null {
+    if (!editor.start || !editor.end) {
+        return null;
+    }
+
+    const start = getTimeZonedDate(editor.start.toJSDate(), timezoneOverride, 'forward');
+    const end = getTimeZonedDate(editor.end.toJSDate(), timezoneOverride, 'forward');
+    const durationMs = end.getTime() - start.getTime();
+    if (durationMs <= 0) {
+        errors.end = t('validationEndTooEarly');
+        return null;
+    }
+
+    const options: Partial<Options> = {
+        dtstart: start,
+    };
+
+    if (editor.rruleOptions.freq) {
+        options.freq = editor.rruleOptions.freq;
+
+        if (editor.rruleOptions.ends === RRuleEnds.Count) {
+            options.count =
+                editor.rruleOptions.count ?? getDefaultRRuleCount(editor.rruleOptions.freq);
+            if (options.count <= 0) {
+                errors.count = t('validationCountPositive');
+            }
+        }
+
+        if (editor.rruleOptions.ends === RRuleEnds.Until) {
+            if (editor.rruleOptions.until) {
+                options.until = new Date(
+                    getTimeZonedDate(
+                        editor.rruleOptions.until.toJSDate(),
+                        timezoneOverride,
+                    ).toISOString(),
+                );
+            } else {
+                options.until = new Date(
+                    getTimeZonedDate(
+                        editor.start.plus({ months: 1 }).toJSDate(),
+                        timezoneOverride,
+                    ).toISOString(),
+                );
+            }
+        }
+    }
+
+    return {
+        rrule: RRule.optionsToString(options),
+        durationMs,
+    };
+}
+
+/**
+ * Strips deprecated startTime/endTime from a legacy event before rewriting.
+ */
+function withoutLegacyTimes(event: Event | undefined): Omit<Event, 'startTime' | 'endTime'> {
+    if (!event) {
+        return {} as Omit<Event, 'startTime' | 'endTime'>;
+    }
+    const { startTime: _startTime, endTime: _endTime, ...rest } = event;
+    return rest;
+}
+
+/**
  * Validates that the given field is not empty.
  * @param editor The event editor to validate.
  * @param field The field to validate.
@@ -154,56 +227,6 @@ function selectedCohorts(editor: UseEventEditorResponse): string[] {
 }
 
 /**
- * Validates the recurrence rule for the given editor.
- * @param editor The editor to validate.
- * @param timezoneOverride The timezone override of the user creating the recurrence.
- * @param errors The object to set errors on.
- * @returns The final recurrence rule as a string.
- */
-function validateRrule(
-    editor: UseEventEditorResponse,
-    timezoneOverride: string,
-    errors: Record<string, string>,
-    t: TranslateFn,
-): string {
-    if (!editor.rruleOptions.freq || !editor.start) {
-        return '';
-    }
-
-    const options: Partial<Options> = {
-        freq: editor.rruleOptions.freq,
-        dtstart: getTimeZonedDate(editor.start.toJSDate(), timezoneOverride, 'forward'),
-    };
-
-    if (editor.rruleOptions.ends === RRuleEnds.Count) {
-        options.count = editor.rruleOptions.count ?? getDefaultRRuleCount(editor.rruleOptions.freq);
-        if (options.count <= 0) {
-            errors.count = t('validationCountPositive');
-        }
-    }
-
-    if (editor.rruleOptions.ends === RRuleEnds.Until) {
-        if (editor.rruleOptions.until) {
-            options.until = new Date(
-                getTimeZonedDate(
-                    editor.rruleOptions.until.toJSDate(),
-                    timezoneOverride,
-                ).toISOString(),
-            );
-        } else {
-            options.until = new Date(
-                getTimeZonedDate(
-                    editor.start.plus({ months: 1 }).toJSDate(),
-                    timezoneOverride,
-                ).toISOString(),
-            );
-        }
-    }
-
-    return RRule.optionsToString(options);
-}
-
-/**
  * Validates class events (IE: lectures and game reviews).
  * @param user The user creating the event.
  * @param originalEvent The original event, if it is being edited.
@@ -224,34 +247,22 @@ function validateClassEditor(
     requireField(editor, 'location', errors, t);
     const fullPrice = optionalPrice(editor, 'fullPrice', errors, t);
     const currentPrice = optionalPrice(editor, 'currentPrice', errors, t);
-    const rrule = validateRrule(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
 
-    if (Object.entries(errors).length > 0) {
-        return [null, errors];
-    }
-    if (!editor.start || !editor.end) {
+    if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
     }
 
     return [
         {
-            ...((originalEvent?.event as Event) ?? {}),
+            ...withoutLegacyTimes(originalEvent?.event as Event | undefined),
             type: editor.type,
             owner: user.username,
             ownerDisplayName: user.displayName,
             ownerCohort: user.dojoCohort,
             title: editor.title.trim(),
-            startTime: getTimeZonedDate(
-                editor.start.toJSDate(),
-                user.timezoneOverride,
-                'forward',
-            ).toISOString(),
-            endTime: getTimeZonedDate(
-                editor.end.toJSDate(),
-                user.timezoneOverride,
-                'forward',
-            ).toISOString(),
-            rrule,
+            rrule: times.rrule,
+            durationMs: times.durationMs,
             cohorts: selectedCohorts(editor),
             status: EventStatus.Scheduled,
             location: editor.location.trim(),
@@ -294,35 +305,23 @@ function validateCoachingEditor(
     const fullPrice = requirePrice(editor, 'fullPrice', errors, t);
     const currentPrice = optionalPrice(editor, 'currentPrice', errors, t);
     const maxParticipants = requireMaxParticipants(editor, errors, t);
-    const rrule = validateRrule(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
 
-    if (Object.entries(errors).length > 0) {
-        return [null, errors];
-    }
-    if (!editor.start || !editor.end) {
+    if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
     }
 
     return [
         {
-            ...((originalEvent?.event as Event) ?? {}),
+            ...withoutLegacyTimes(originalEvent?.event as Event | undefined),
             type: editor.type,
             owner: user.username,
             ownerDisplayName: user.displayName,
             ownerCohort: user.dojoCohort,
             ownerPreviousCohort: user.previousCohort,
             title: editor.title.trim(),
-            startTime: getTimeZonedDate(
-                editor.start.toJSDate(),
-                user.timezoneOverride,
-                'forward',
-            ).toISOString(),
-            endTime: getTimeZonedDate(
-                editor.end.toJSDate(),
-                user.timezoneOverride,
-                'forward',
-            ).toISOString(),
-            rrule,
+            rrule: times.rrule,
+            durationMs: times.durationMs,
             types: [],
             cohorts: selectedCohorts(editor),
             status: EventStatus.Scheduled,
@@ -360,38 +359,23 @@ function validateDojoEventEditor(
 
     validateTimes(editor, errors, t);
     requireField(editor, 'title', errors, t);
-    const rrule = validateRrule(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
 
-    if (Object.entries(errors).length > 0) {
+    if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
     }
-    if (!editor.start || !editor.end) {
-        return [null, errors];
-    }
-
-    const startTime = getTimeZonedDate(
-        editor.start.toJSDate(),
-        user.timezoneOverride,
-        'forward',
-    ).toISOString();
-    const endTime = getTimeZonedDate(
-        editor.end.toJSDate(),
-        user.timezoneOverride,
-        'forward',
-    ).toISOString();
 
     return [
         {
-            ...((originalEvent?.event as Event) ?? {}),
+            ...withoutLegacyTimes(originalEvent?.event as Event | undefined),
             type: editor.type,
             owner: user.username,
             ownerDisplayName: user.displayName,
             ownerCohort: user.dojoCohort,
             ownerPreviousCohort: user.previousCohort,
             title: editor.title.trim(),
-            startTime,
-            endTime,
-            rrule,
+            rrule: times.rrule,
+            durationMs: times.durationMs,
             types: [],
             cohorts: selectedCohorts(editor),
             status: EventStatus.Scheduled,
@@ -477,32 +461,23 @@ function validateAvailabilityEditor(
     if (Object.entries(errors).length > 0) {
         return [null, errors];
     }
-    if (!editor.start || !editor.end) {
+
+    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
+    if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
     }
 
-    const startTime = getTimeZonedDate(
-        editor.start.toJSDate(),
-        user.timezoneOverride,
-        'forward',
-    ).toISOString();
-    const endTime = getTimeZonedDate(
-        editor.end.toJSDate(),
-        user.timezoneOverride,
-        'forward',
-    ).toISOString();
-
     return [
         {
-            ...((originalEvent?.event as Event) ?? {}),
+            ...withoutLegacyTimes(originalEvent?.event as Event | undefined),
             type: editor.type,
             owner: user.username,
             ownerDisplayName: user.displayName,
             ownerCohort: user.dojoCohort,
             ownerPreviousCohort: user.previousCohort,
             title: editor.title.trim(),
-            startTime,
-            endTime,
+            rrule: times.rrule,
+            durationMs: times.durationMs,
             types: selectedTypes,
             cohorts,
             status: EventStatus.Scheduled,

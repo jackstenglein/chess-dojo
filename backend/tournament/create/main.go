@@ -64,8 +64,6 @@ func (a LichessArenaResponse) ToEvent() (*database.Event, error) {
 		Owner:            "Sensei",
 		OwnerDisplayName: "Sensei",
 		Title:            a.Name,
-		StartTime:        a.StartsAt,
-		EndTime:          endTime.Format(time.RFC3339),
 		ExpirationTime:   expirationTime.Unix(),
 		Status:           database.SchedulingStatus_Scheduled,
 		Location:         fmt.Sprintf("%s%s", lichessArenaPrefix, a.Id),
@@ -81,6 +79,7 @@ func (a LichessArenaResponse) ToEvent() (*database.Event, error) {
 			Fen:              a.Position.Fen,
 		},
 	}
+	database.SetNonRecurringTimes(event, startTime, endTime)
 	return event, nil
 }
 
@@ -149,8 +148,6 @@ func (s LichessSwissResponse) ToEvent(round int) (*database.Event, error) {
 		Owner:            "Sensei",
 		OwnerDisplayName: "Sensei",
 		Title:            s.Name,
-		StartTime:        startTime.Format(time.RFC3339),
-		EndTime:          endTime.Format(time.RFC3339),
 		ExpirationTime:   expirationTime.Unix(),
 		Status:           database.SchedulingStatus_Scheduled,
 		Location:         fmt.Sprintf("%s%s", lichessSwissPrefix, s.Id),
@@ -166,6 +163,7 @@ func (s LichessSwissResponse) ToEvent(round int) (*database.Event, error) {
 			Fen:              s.Position.Fen,
 		},
 	}
+	database.SetNonRecurringTimes(event, startTime, endTime)
 	return event, nil
 }
 
@@ -231,8 +229,6 @@ func (cr ChesscomResponse) ToEvent() (*database.Event, error) {
 		Owner:            "Sensei",
 		OwnerDisplayName: "Sensei",
 		Title:            cr.Name,
-		StartTime:        startTime.Format(time.RFC3339),
-		EndTime:          endTime.Format(time.RFC3339),
 		ExpirationTime:   expirationTime.Unix(),
 		Status:           database.SchedulingStatus_Scheduled,
 		Location:         cr.Url,
@@ -247,6 +243,7 @@ func (cr ChesscomResponse) ToEvent() (*database.Event, error) {
 			IncrementSeconds: incrementSeconds,
 		},
 	}
+	database.SetNonRecurringTimes(event, startTime, endTime)
 	return event, nil
 }
 

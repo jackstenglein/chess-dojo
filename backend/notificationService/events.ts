@@ -2,6 +2,10 @@ import { GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { availabilityTypeString, Event } from '@jackstenglein/chess-dojo-common/src/database/event';
 import {
+    getEventEnd,
+    getEventStart,
+} from '@jackstenglein/chess-dojo-common/src/database/eventTimes';
+import {
     CalendarInviteEvent,
     EventBookedEvent,
     NotificationEventTypes,
@@ -117,7 +121,7 @@ async function handleCalendarInviteSite(user: PartialUser, event: Event) {
         .set('calendarInviteMetadata', {
             id: event.id,
             ownerDisplayName: event.ownerDisplayName,
-            startTime: event.startTime,
+            startTime: getEventStart(event).toISOString(),
         })
         .add('count', 1)
         .table(notificationTable)
@@ -162,7 +166,7 @@ async function handleCalendarInviteDiscord(
 function calendarInviteDiscordMessage(event: Event, ownerDiscordId?: string): string {
     let message = `${ownerDiscordId ? `<@${ownerDiscordId}>` : event.ownerDisplayName} has invited you to a meeting on the ChessDojo calendar!
     
-<t:${new Date(event.startTime).getTime() / 1000}:f> — <t:${new Date(event.endTime).getTime() / 1000}:t>`;
+<t:${getEventStart(event).getTime() / 1000}:f> — <t:${getEventEnd(event).getTime() / 1000}:t>`;
 
     if (event.title) {
         message += `\n**Title:** ${event.title}`;

@@ -4,6 +4,7 @@ import { useEvents } from '@/api/cache/Cache';
 import { Filters, getHours, useFilters } from '@/components/calendar/filters/CalendarFilters';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import { Event, EventType, PositionType, TimeControlType, TournamentType } from '@/database/event';
+import { getSeriesTimes } from '@/components/calendar/recurrence';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
 import { ProcessedEvent, SchedulerRef } from '@jackstenglein/react-scheduler/types';
@@ -63,11 +64,12 @@ function getProcessedEvents(filters: Filters, events: Event[]): ProcessedEvent[]
             continue;
         }
 
+        const { start, end } = getSeriesTimes(event);
         result.push({
             event_id: event.id,
             title: event.title,
-            start: new Date(event.startTime),
-            end: new Date(event.endTime),
+            start,
+            end,
             color: getColor(event.ligaTournament.timeControlType),
             isOwner: false,
             event,

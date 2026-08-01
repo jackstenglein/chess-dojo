@@ -2,7 +2,7 @@
 
 import { useEvents } from '@/api/cache/Cache';
 import { useAuth } from '@/auth/Auth';
-import { Event, EventStatus } from '@/database/event';
+import { Event, EventStatus, getEventEnd } from '@/database/event';
 import {
     AppBar,
     Container,
@@ -42,7 +42,7 @@ const Navbar = () => {
         if (e.owner !== auth.user?.username && !e.participants[auth.user?.username || '']) {
             return false;
         }
-        return e.status !== EventStatus.Canceled && e.endTime >= filterTime;
+        return e.status !== EventStatus.Canceled && getEventEnd(e).toISOString() >= filterTime;
     }).length;
 
     return (

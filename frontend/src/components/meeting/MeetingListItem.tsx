@@ -1,6 +1,6 @@
 import { useRequiredAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
-import { Event, EventStatus, getDisplayString } from '@/database/event';
+import { Event, EventStatus, getDisplayString, getEventStart } from '@/database/event';
 import Avatar from '@/profile/Avatar';
 import {
     Card,
@@ -23,7 +23,7 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
     const { user } = useRequiredAuth();
     const labelT = useTranslations('eventLabels');
 
-    const start = new Date(meeting.bookedStartTime || meeting.startTime);
+    const start = new Date(meeting.bookedStartTime || getEventStart(meeting).toISOString());
 
     const title = meeting.coaching
         ? meeting.title

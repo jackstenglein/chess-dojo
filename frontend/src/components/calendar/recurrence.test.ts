@@ -1,9 +1,11 @@
-import { Event, EventStatus, EventType } from '@/database/event';
+import { Event, EventStatus, EventType, getEventDurationMs } from '@/database/event';
 import { RRule, RRuleSet, rrulestr } from 'rrule';
 import { describe, expect, it, vi } from 'vitest';
 import {
     getProcessedRecurrence,
+    getSeriesTimes,
     haveTimesChanged,
+    isRecurringEvent,
     moveAllOccurrences,
     moveSingleOccurrence,
 } from './recurrence';
@@ -29,8 +31,7 @@ function baseEvent(overrides: Partial<Event> = {}): Event {
         ownerDisplayName: 'Admin',
         ownerCohort: '1500-1600',
         title: 'Weekly Class',
-        startTime: '2026-08-01T15:00:00.000Z',
-        endTime: '2026-08-01T16:00:00.000Z',
+        durationMs: 3600000,
         status: EventStatus.Scheduled,
         location: 'Discord',
         description: 'Desc',
@@ -50,6 +51,11 @@ describe('recurrence helpers', () => {
         expect(
             haveTimesChanged(start, end, new Date('2026-08-01T17:00:00.000Z'), end),
         ).toBe(true);
+    });
+
+    it('isRecurringEvent requires an RRULE line', () => {
+        expect(isRecurringEvent(baseEvent())).toBe(true);
+        expect(isRecurringEvent(baseEvent({ rrule: 'DTSTART:20260801T150000Z' }))).toBe(false);
     });
 
     it('moveSingleOccurrence excludes the original day and adds the new time', () => {
@@ -96,8 +102,16 @@ describe('recurrence helpers', () => {
         expect((recurring as RRuleSet).rdates()).toHaveLength(1);
     });
 
-    it('getProcessedRecurrence returns an RRule for simple rules', () => {
-        const recurring = getProcessedRecurrence(baseEvent());
-        expect(recurring).toBeInstanceOf(RRule);
+    it('getProcessedRecurrence returns undefined for DTSTART-only events', () => {
+        expect(
+            getProcessedRecurrence(baseEvent({ rrule: 'DTSTART:20260801T150000Z' })),
+        ).toBeUndefined();
+    });
+
+    it('getSeriesTimes uses durationMs when start/end are omitted', () => {
+        const { start, end } = getSeriesTimes(baseEvent());
+        expect(start.toISOString()).toBe('2026-08-01T15:00:00.000Z');
+        expect(end.toISOString()).toBe('2026-08-01T16:00:00.000Z');
+        expect(getEventDurationMs(baseEvent())).toBe(3600000);
     });
 });

@@ -19,7 +19,9 @@ import CalendarNavigationExtra from '@/components/calendar/filters/CalendarNavig
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import {
     getProcessedRecurrence,
+    getSeriesTimes,
     haveTimesChanged,
+    isRecurringEvent,
     moveAllOccurrences,
     moveSingleOccurrence,
 } from '@/components/calendar/recurrence';
@@ -33,6 +35,7 @@ import {
     EventType,
     TimeControlType,
 } from '@/database/event';
+import { getEventDurationMs } from '@/database/event';
 import { ALL_COHORTS, isFree, TimeFormat, User } from '@/database/user';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { Scheduler } from '@jackstenglein/react-scheduler';
@@ -119,12 +122,13 @@ function processAvailability(
         const isOwner = event.owner === user.username;
         const editable =
             isOwner && Object.values(event.participants).length < event.maxParticipants;
+        const series = getSeriesTimes(event);
 
         return {
             event_id: event.id,
             title,
-            start: new Date(event.bookedStartTime || event.startTime),
-            end: new Date(event.endTime),
+            start: new Date(event.bookedStartTime || series.start),
+            end: series.end,
             color: theme.palette.meet.main,
             isOwner,
             editable,
@@ -146,11 +150,12 @@ function processAvailability(
         const title =
             event.title ||
             (event.maxParticipants === 1 ? t('available1on1Title') : t('availableGroupTitle'));
+        const series = getSeriesTimes(event);
         return {
             event_id: event.id,
             title: title,
-            start: new Date(event.startTime),
-            end: new Date(event.endTime),
+            start: series.start,
+            end: series.end,
             color: theme.palette.info.main,
             draggable: true,
             isOwner: true,
@@ -194,6 +199,7 @@ function processAvailability(
         return null;
     }
 
+    const series = getSeriesTimes(event);
     return {
         event_id: event.id,
         title:
@@ -204,8 +210,8 @@ function processAvailability(
                       max: event.maxParticipants,
                   })
                 : t('bookableTitle', { name: event.ownerDisplayName })),
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
+        start: series.start,
+        end: series.end,
         color: theme.palette.book.main,
         editable: false,
         deletable: false,
@@ -250,8 +256,8 @@ function processDojoEvent(
     return {
         event_id: event.id,
         title: event.title,
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
+        start: getSeriesTimes(event).start,
+        end: getSeriesTimes(event).end,
         color: event.color || color,
         editable: user?.isAdmin || user?.isCalendarAdmin,
         deletable: user?.isAdmin || user?.isCalendarAdmin,
@@ -283,8 +289,8 @@ function processLigaTournament(
     return {
         event_id: event.id,
         title: event.title,
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
+        start: getSeriesTimes(event).start,
+        end: getSeriesTimes(event).end,
         color: event.color || theme.palette.liga.main,
         editable: user?.isAdmin || user?.isCalendarAdmin,
         deletable: user?.isAdmin || user?.isCalendarAdmin,
@@ -333,8 +339,8 @@ export function processCoachingEvent(
     return {
         event_id: event.id,
         title: event.title,
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
+        start: getSeriesTimes(event).start,
+        end: getSeriesTimes(event).end,
         color: event.color || theme.palette.coaching.main,
         editable: isOwner,
         deletable: isOwner && Object.values(event.participants).length === 0,
@@ -373,12 +379,13 @@ export function processLiveClassEvent(
     }
 
     const canMove = isOwner || Boolean(user?.isAdmin || user?.isCalendarAdmin);
+    const { start, end } = getSeriesTimes(event);
 
     return {
         event_id: event.id,
         title: event.title,
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
+        start,
+        end,
         color: event.color
             ? event.color
             : event.type === EventType.LectureTier
@@ -405,7 +412,7 @@ export function getProcessedEvents(
     for (const event of events) {
         let processedEvent: ProcessedEvent | null = null;
 
-        const startHour = getTimeZonedDate(new Date(event.startTime), filters.timezone).getHours();
+        const startHour = getTimeZonedDate(getSeriesTimes(event).start, filters.timezone).getHours();
         if (
             startHour < (filters?.minHour?.hour || 0) ||
             startHour > (filters?.maxHour?.hour || 24)
@@ -573,12 +580,30 @@ export default function CalendarPage() {
                     publicDiscordEventId = undefined;
                 }
 
-                let startTime = startIso;
-                let endTime = endIso;
-                let rrule = dojoEvent?.rrule ?? '';
+                const { startTime: _legacyStart, endTime: _legacyEnd, ...eventWithoutTimes } =
+                    dojoEvent ?? ({} as Event);
+
+                if (!dojoEvent || dojoEvent.type === EventType.Availability) {
+                    copyRequest.onStart();
+                    const response = await api.setEvent({
+                        ...eventWithoutTimes,
+                        rrule: moveAllOccurrences(dojoEvent?.rrule ?? '', new Date(startIso)),
+                        durationMs: new Date(endIso).getTime() - new Date(startIso).getTime(),
+                        id,
+                        discordMessageId,
+                        privateDiscordEventId,
+                        publicDiscordEventId,
+                    });
+                    putEvent(response.data);
+                    copyRequest.onSuccess();
+                    return;
+                }
+                let durationMs =
+                    new Date(endIso).getTime() - new Date(startIso).getTime();
+                let rrule = dojoEvent.rrule ?? '';
 
                 const isRecurringEdit =
-                    Boolean(dojoEvent?.rrule) &&
+                    isRecurringEvent(dojoEvent) &&
                     Boolean(id) &&
                     haveTimesChanged(
                         originalEvent.start,
@@ -587,41 +612,38 @@ export default function CalendarPage() {
                         new Date(endIso),
                     );
 
-                if (isRecurringEdit && dojoEvent) {
+                if (isRecurringEdit) {
                     const scope = await promptRecurrenceEdit();
                     if (scope === 'cancel') {
                         return;
                     }
 
                     if (scope === 'this') {
-                        // Keep the series anchor times; only the RRuleSet changes.
-                        startTime = dojoEvent.startTime;
-                        endTime = dojoEvent.endTime;
+                        durationMs = getEventDurationMs(dojoEvent);
                         rrule = moveSingleOccurrence(
                             dojoEvent,
                             originalEvent.start,
                             new Date(startIso),
                         );
-                    } else if (dojoEvent.rrule) {
-                        rrule = moveAllOccurrences(dojoEvent.rrule, new Date(startIso));
+                    } else {
+                        rrule = moveAllOccurrences(rrule, new Date(startIso));
                     }
+                } else {
+                    rrule = moveAllOccurrences(rrule, new Date(startIso));
                 }
 
                 copyRequest.onStart();
 
                 const response = await api.setEvent({
-                    ...dojoEvent,
-                    startTime,
-                    endTime,
+                    ...eventWithoutTimes,
+                    durationMs,
                     id,
                     discordMessageId,
                     privateDiscordEventId,
                     publicDiscordEventId,
                     rrule,
                 });
-                const availability = response.data;
-
-                putEvent(availability);
+                putEvent(response.data);
                 copyRequest.onSuccess();
             } catch (err) {
                 copyRequest.onFailure(err);

@@ -6,6 +6,7 @@ import { useRequiredAuth } from '@/auth/Auth';
 import { useRecurrenceEditPrompt } from '@/components/calendar/EditRecurrenceDialog';
 import {
     haveTimesChanged,
+    isRecurringEvent,
     moveSingleOccurrence,
 } from '@/components/calendar/recurrence';
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
@@ -15,6 +16,9 @@ import {
     EventType,
     getDefaultNumberOfParticipants,
     getDisplayString,
+    getEventDurationMs,
+    getEventEnd,
+    getEventStart,
 } from '@/database/event';
 import { User } from '@/database/user';
 import Icon from '@/style/Icon';
@@ -143,11 +147,11 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
         const timesChanged = haveTimesChanged(
             defaultStart,
             defaultEnd,
-            new Date(event.startTime),
-            new Date(event.endTime),
+            getEventStart(event),
+            getEventEnd(event),
         );
         const isRecurringEdit =
-            Boolean(originalDojoEvent?.rrule) &&
+            Boolean(originalDojoEvent && isRecurringEvent(originalDojoEvent)) &&
             Boolean(originalDojoEvent?.id) &&
             timesChanged &&
             !haveRecurrenceOptionsChanged(originalDojoEvent, editor);
@@ -160,15 +164,14 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
             }
 
             if (scope === 'this') {
+                const { startTime: _s, endTime: _e, ...rest } = event;
                 eventToSave = {
-                    ...event,
-                    // Preserve the series anchor; only the RRuleSet changes this occurrence.
-                    startTime: originalDojoEvent.startTime,
-                    endTime: originalDojoEvent.endTime,
+                    ...rest,
+                    durationMs: getEventDurationMs(originalDojoEvent),
                     rrule: moveSingleOccurrence(
                         originalDojoEvent,
                         defaultStart,
-                        new Date(event.startTime),
+                        getEventStart(event),
                     ),
                 };
             }

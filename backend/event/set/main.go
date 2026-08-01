@@ -379,20 +379,17 @@ func checkCohorts(cohorts []database.DojoCohort) error {
 }
 
 func checkTimes(event *database.Event) error {
-	if event.StartTime >= event.EndTime {
-		return errors.New(400, "Invalid request: startTime must be less than endTime", "")
+	if err := database.ValidateEventTimes(event); err != nil {
+		return err
 	}
 
-	if _, err := time.Parse(time.RFC3339, event.StartTime); err != nil {
-		return errors.Wrap(400, "Invalid request: startTime must be RFC3339 format", "", err)
-	}
-
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
-	if err != nil {
-		return errors.Wrap(400, "Invalid request: endTime must be RFC3339 format", "", err)
-	}
-
-	if event.RRule == "" {
+	// Non-recurring events (no RRULE FREQ) expire 48h after they end.
+	// DTSTART-only rrules still count as non-recurring.
+	if event.RRule == "" || !strings.Contains(event.RRule, "RRULE:") {
+		endTime, err := database.GetEventEnd(event)
+		if err != nil {
+			return err
+		}
 		expirationTime := endTime.Add(48 * time.Hour)
 		event.ExpirationTime = expirationTime.Unix()
 	}
