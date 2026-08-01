@@ -222,9 +222,6 @@ importers:
       '@types/react-copy-to-clipboard':
         specifier: ^5.0.7
         version: 5.0.7
-      '@types/react-resizable':
-        specifier: ^4.0.0
-        version: 4.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -2062,10 +2059,6 @@ packages:
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
       '@types/react': ^19.2.0
-
-  '@types/react-resizable@4.0.0':
-    resolution: {integrity: sha512-zEMfyoFP/I6L796+dIjXeAVL2q7C4vwCXwQW2be79uPZAQLsI/pU1NOVqqfVQG3FkIxr/n96KjhzdRnWGZcTcg==}
-    deprecated: This is a stub types definition. react-resizable provides its own type definitions, so you do not need this installed.
 
   '@types/react-transition-group@4.4.12':
     resolution: {integrity: sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==}
@@ -7036,13 +7029,6 @@ snapshots:
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
       '@types/react': 19.2.17
-
-  '@types/react-resizable@4.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      react-resizable: 4.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-    transitivePeerDependencies:
-      - react
-      - react-dom
 
   '@types/react-transition-group@4.4.12(@types/react@19.2.17)':
     dependencies:
