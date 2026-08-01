@@ -548,11 +548,6 @@ export const sections: BookSection[] = [
                         author: 'Laszlo Polgar',
                         link: 'https://amzn.to/3lwCsGN',
                     },
-                    {
-                        title: '1001 Chess Exercises for Beginners',
-                        author: 'Franco Masetti',
-                        link: 'https://amzn.to/3wpO5ol',
-                    },
                 ],
             },
             {
@@ -594,9 +589,9 @@ export const sections: BookSection[] = [
                         link: 'https://amzn.to/3lwCsGN',
                     },
                     {
-                        title: '1001 Chess Exercises for Club Players',
-                        author: 'Frank Erwich',
-                        link: 'https://amzn.to/3Ue8AMA',
+                        title: '1001 Chess Exercises for Beginners',
+                        author: 'Franco Masetti',
+                        link: 'https://amzn.to/3wpO5ol',
                     },
                 ],
             },
@@ -945,6 +940,11 @@ export const sections: BookSection[] = [
                         title: "Silman's Complete Endgame Course Parts 1-3",
                         author: 'Jeremy Silman',
                         link: 'https://amzn.to/3Yt3goN',
+                    },
+                    {
+                        title: '1001 Chess Endgame Exercises for Beginners',
+                        author: 'Thomas Willemze',
+                        link: 'https://amzn.to/4vpwohJ',
                     },
                 ],
             },
