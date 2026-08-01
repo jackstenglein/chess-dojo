@@ -109,7 +109,7 @@
     "devDependencies": {
         "@eslint/js": "^9.39.2",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@next/eslint-plugin-next": "^16.2.7",
+        "@next/eslint-plugin-next": "^16.2.12",
         "@playwright/test": "^1.62.0",
         "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.2",
