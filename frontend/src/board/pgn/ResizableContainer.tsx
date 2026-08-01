@@ -106,8 +106,9 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                 px: { xs: 0, sm: 0 },
                 flexWrap: 'wrap',
                 rowGap: 0.5,
-                columnGap: { xs: 0.5, md: 1, lg: 1 }
-            }}>
+                columnGap: { xs: 0.5, md: 1, lg: 1 },
+            }}
+        >
             <KeyboardHandler underboardRef={underboardRef} />
 
             {showUnderboard && (

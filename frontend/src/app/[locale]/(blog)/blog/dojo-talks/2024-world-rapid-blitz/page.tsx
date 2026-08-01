@@ -16,8 +16,9 @@ const SectionHeader = ({ children }: { children: ReactNode }) => (
         variant='subtitle1'
         sx={{
             fontWeight: 'bold',
-            mt: 3
-        }}>
+            mt: 3,
+        }}
+    >
         {children}
     </Typography>
 );
@@ -34,9 +35,11 @@ export default function DojoTalks2024WorldRapidBlitz() {
                 subtitle='Jesse, Kostya, David, & GM Hammer • January 3, 2025'
             />
 
-            <Typography sx={{
-                mb: 3
-            }}>
+            <Typography
+                sx={{
+                    mb: 3,
+                }}
+            >
                 The sensei are joined by GM Jon Ludvig Hammer to discuss the 2024 World Rapid Blitz
                 Championship and Magnus Carlsen's controversial decision to split the championship
                 title with Ian Nepomniachtchi, drawing significant criticism for bending competition
@@ -133,8 +136,9 @@ export default function DojoTalks2024WorldRapidBlitz() {
             <Typography
                 sx={{
                     fontWeight: 'bold',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 Make sure to follow the DojoTalks podcast
             </Typography>
 
@@ -144,8 +148,9 @@ export default function DojoTalks2024WorldRapidBlitz() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '20px',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <a
                     href='https://www.youtube.com/chessdojo'
                     target='_blank'

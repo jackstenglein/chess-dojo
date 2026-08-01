@@ -105,8 +105,9 @@ export default function MultipleSelectChip({
                             <Typography
                                 sx={{
                                     color: 'text.secondary',
-                                    fontStyle: 'italic'
-                                }}>
+                                    fontStyle: 'italic',
+                                }}
+                            >
                                 {displayEmpty}
                             </Typography>
                         )}

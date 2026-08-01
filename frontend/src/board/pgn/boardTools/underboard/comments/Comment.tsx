@@ -127,21 +127,28 @@ const BaseComment: React.FC<BaseCommentProps> = ({
 
                                 ':hover .MuiDivider-root': {
                                     borderColor: 'primary.main',
-                                }
-                            }}>
+                                },
+                            }}
+                        >
                             <Divider orientation='vertical' />
                         </Stack>
                     </Tooltip>
-                    <Stack spacing={0.5} sx={{
-                        flexGrow: 1
-                    }}>
+                    <Stack
+                        spacing={0.5}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {renderContent ? (
                             renderContent
                         ) : comment.suggestedVariation ? (
                             <>
-                                <Typography variant='body2' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('suggestedVariation')}
                                 </Typography>
                                 {suggestedVariation && (
@@ -260,9 +267,11 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                 move={move}
                 renderContent={
                     editValue === undefined ? undefined : (
-                        <Stack sx={{
-                            width: 1
-                        }}>
+                        <Stack
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <TextField
                                 id={BlockBoardKeyboardShortcuts}
                                 value={editValue}
@@ -369,26 +378,37 @@ const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
     }
 
     return (
-        <Stack direction='row' spacing={1.5} sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Avatar
                 username={comment.owner.username}
                 displayName={comment.owner.displayName}
                 size={20}
             />
-            <Stack direction='row' spacing={1} sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Link href={`/profile/${comment.owner.username}`} sx={{ textDecoration: 'none' }}>
                     <Typography variant='subtitle1' sx={{ color: 'text.primary' }}>
                         {comment.owner.displayName} ({comment.owner.cohort})
                     </Typography>
                 </Link>
                 <CohortIcon cohort={comment.owner.previousCohort} size={20} />
-                <Typography variant='caption' sx={{
-                    color: 'text.secondary'
-                }}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     • {createdAtDate} {createdAtTime}
                 </Typography>
                 {updatedAtDate && (

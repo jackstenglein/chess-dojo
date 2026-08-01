@@ -84,14 +84,20 @@ export default function CalendarShareMenu() {
                 }}
             >
                 <Stack spacing={1.5}>
-                    <Typography variant='subtitle1' sx={{
-                        fontWeight: 'bold'
-                    }}>
+                    <Typography
+                        variant='subtitle1'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
                         {t('shareMenuTitle')}
                     </Typography>
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('shareGoogleIntro')}
                     </Typography>
                     <List

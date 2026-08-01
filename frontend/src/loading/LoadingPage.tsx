@@ -8,8 +8,9 @@ const LoadingPage = ({ disableShrink, sx }: { disableShrink?: boolean; sx?: SxPr
                 alignItems: 'center',
                 pt: 6,
                 pb: 4,
-                ...sx
-            }}>
+                ...sx,
+            }}
+        >
             <CircularProgress disableShrink={disableShrink} />
         </Stack>
     );

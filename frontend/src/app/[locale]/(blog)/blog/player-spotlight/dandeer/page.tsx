@@ -27,8 +27,9 @@ export default function Page() {
             spacing={2}
             sx={{
                 alignItems: 'center',
-                pb: 5
-            }}>
+                pb: 5,
+            }}
+        >
             <Container maxWidth='sm' sx={{ pt: 5 }}>
                 <Header
                     title='Dandeer'
@@ -109,9 +110,11 @@ export default function Page() {
             <GameViewer cohort='1300-1400' id='2024.08.26_74044686-c0b3-4cd6-83c1-c62833a9c994' />
 
             <Container maxWidth='sm' sx={{ mt: 8 }}>
-                <Typography sx={{
-                    textAlign: 'center'
-                }}>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     Interested in being featured on the blog? Fill out{' '}
                     <Link
                         target='_blank'

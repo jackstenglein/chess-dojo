@@ -25,15 +25,17 @@ export function TestimonialSection() {
             <Stack
                 sx={{
                     gap: '1rem',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
                     sx={{
                         textAlign: 'center',
                         fontFamily: (theme) => fontFamily(theme, anton),
                         lineHeight: '4.625rem',
-                        fontSize: '3.75rem'
-                    }}>
+                        fontSize: '3.75rem',
+                    }}
+                >
                     {t('testimonialSection.heading')
                         .split('\n')
                         .map((line, i) => (
@@ -51,15 +53,19 @@ export function TestimonialSection() {
                         lineHeight: '2.125rem',
                         letterSpacing: '11%',
                         textAlign: 'center',
-                        textTransform: 'uppercase'
-                    }}>
+                        textTransform: 'uppercase',
+                    }}
+                >
                     {t('testimonialSection.subheading')}
                 </Typography>
             </Stack>
 
-            <Stack direction='row' sx={{
-                mt: '3.125rem'
-            }}>
+            <Stack
+                direction='row'
+                sx={{
+                    mt: '3.125rem',
+                }}
+            >
                 {isSm ? (
                     <Carousel>
                         {testimonials.map((testimonial) => (
@@ -75,9 +81,13 @@ export function TestimonialSection() {
                 ) : (
                     <Grid container spacing='2rem'>
                         {testimonials.map((testimonial) => (
-                            <Grid size={3} key={testimonial.key} sx={{
-                                height: 1
-                            }}>
+                            <Grid
+                                size={3}
+                                key={testimonial.key}
+                                sx={{
+                                    height: 1,
+                                }}
+                            >
                                 <Testimonial
                                     quote={t(`testimonials.${testimonial.key}.quote`)}
                                     name={t(`testimonials.${testimonial.key}.name`)}
@@ -93,8 +103,9 @@ export function TestimonialSection() {
             <Stack
                 sx={{
                     alignItems: 'center',
-                    mt: '3rem'
-                }}>
+                    mt: '3rem',
+                }}
+            >
                 <JoinDojoButton />
             </Stack>
         </BackgroundImageContainer>
@@ -136,14 +147,19 @@ function Testimonial({
                 {quote}
             </Typography>
 
-            <Stack direction='row' sx={{
-                columnGap: '0.625rem'
-            }}>
+            <Stack
+                direction='row'
+                sx={{
+                    columnGap: '0.625rem',
+                }}
+            >
                 <CohortIcon cohort={cohort} tooltip='' />
 
-                <Stack sx={{
-                    gap: 0.75
-                }}>
+                <Stack
+                    sx={{
+                        gap: 0.75,
+                    }}
+                >
                     <Typography
                         sx={{
                             fontFamily: (theme) => fontFamily(theme, barlowCondensed),
@@ -195,15 +211,19 @@ function Carousel({ children }: { children: ReactNode }) {
                 direction='row'
                 sx={{
                     justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <IconButton size='large' onClick={onPrev}>
                     <ChevronLeft fontSize='large' />
                 </IconButton>
 
-                <Stack direction='row' sx={{
-                    gap: 0.5
-                }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 0.5,
+                    }}
+                >
                     {Array.from({ length: count }).map((_, i) => (
                         <Circle
                             onClick={() => setIndex(i)}

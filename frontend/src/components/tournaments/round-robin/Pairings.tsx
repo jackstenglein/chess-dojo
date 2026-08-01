@@ -74,31 +74,51 @@ export function Pairings({
                     <TableRow>
                         {round === 0 && (
                             <TableCell align='center'>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnRound')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnRound')}
+                                </Typography>
                             </TableCell>
                         )}
                         <TableCell align='center'>
-                            <Typography sx={{
-                                fontWeight: 'bold'
-                            }}>{t('columnWhite')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnWhite')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography sx={{
-                                fontWeight: 'bold'
-                            }}>{t('columnBlack')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnBlack')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography sx={{
-                                fontWeight: 'bold'
-                            }}>{t('columnResult')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnResult')}
+                            </Typography>
                         </TableCell>
                         {isAdmin && (
                             <TableCell align='center'>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnActions')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnActions')}
+                                </Typography>
                             </TableCell>
                         )}
                     </TableRow>
@@ -140,9 +160,13 @@ export function Pairings({
                     ) : (
                         <TableRow>
                             <TableCell colSpan={isAdmin ? 4 : 3}>
-                                <Typography sx={{
-                                    textAlign: 'center'
-                                }}>{t('noPairings')}</Typography>
+                                <Typography
+                                    sx={{
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    {t('noPairings')}
+                                </Typography>
                             </TableCell>
                         </TableRow>
                     )}

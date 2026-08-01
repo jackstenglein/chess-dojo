@@ -403,8 +403,9 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
+                    justifyContent: 'space-between',
+                }}
+            >
                 {!filtersDefault && (
                     <Button
                         size='small'
@@ -464,16 +465,18 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                         sx={{
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            cursor: 'pointer'
-                        }}>
+                            cursor: 'pointer',
+                        }}
+                    >
                         <Typography
                             variant='subtitle2'
                             sx={{
                                 color: 'text.secondary',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 0.75
-                            }}>
+                                gap: 0.75,
+                            }}
+                        >
                             <Icon name='cohort' color='book' fontSize='small' />
                             {t('cohorts')}
                             {cohortSummary && (
@@ -481,7 +484,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
                                     component='span'
                                     variant='caption'
                                     sx={{
-                                        color: 'text.disabled'
+                                        color: 'text.disabled',
                                     }}
                                 >
                                     · {cohortSummary}

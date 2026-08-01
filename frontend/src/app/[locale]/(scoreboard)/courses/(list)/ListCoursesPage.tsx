@@ -73,7 +73,7 @@ const ListCoursesPage = () => {
                             xs: 12,
                         }}
                         sx={{
-                            pb: 5
+                            pb: 5,
                         }}
                     >
                         <Grid size={{ xs: 12 }} sx={{ mt: 6, mb: 2 }}>
@@ -81,8 +81,9 @@ const ListCoursesPage = () => {
                                 variant='h4'
                                 sx={{
                                     fontWeight: 'bold',
-                                    mb: 1
-                                }}>
+                                    mb: 1,
+                                }}
+                            >
                                 Workshops
                             </Typography>
                             <Typography variant='h6'>
@@ -138,9 +139,12 @@ const ListCoursesPage = () => {
                     }}
                 >
                     <Grid size={{ xs: 12 }} sx={{ mb: 1 }}>
-                        <Typography variant='h4' sx={{
-                            fontWeight: 'bold'
-                        }}>
+                        <Typography
+                            variant='h4'
+                            sx={{
+                                fontWeight: 'bold',
+                            }}
+                        >
                             Courses
                         </Typography>
                     </Grid>
@@ -173,8 +177,9 @@ const ListCoursesPage = () => {
                             sx={{
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                width: 1
-                            }}>
+                                width: 1,
+                            }}
+                        >
                             <LoadingPage />
                         </Stack>
                     )}
@@ -184,11 +189,16 @@ const ListCoursesPage = () => {
                             sx={{
                                 width: 1,
                                 mt: 2,
-                                mb: 4
-                            }}>
-                            <Typography sx={{
-                                color: 'text.secondary'
-                            }}>{t('noCoursesFound')}</Typography>
+                                mb: 4,
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
+                                {t('noCoursesFound')}
+                            </Typography>
                         </Stack>
                     )}
                 </Grid>

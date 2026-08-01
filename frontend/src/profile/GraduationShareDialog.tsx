@@ -98,11 +98,12 @@ export default function GraduationShareDialog({
                             display: 'grid',
                             gridTemplateRows: 'auto 1fr',
                             alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
                         {imageData ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            (<img
+                            <img
                                 style={{
                                     height: 'auto',
                                     maxWidth: '100%',
@@ -110,7 +111,7 @@ export default function GraduationShareDialog({
                                 }}
                                 alt={t('imageAlt')}
                                 src={imageData}
-                            />)
+                            />
                         ) : (
                             <ReportCanvas reportRef={setReportRef}>
                                 <GraduationCard graduation={graduation} />
@@ -145,8 +146,9 @@ const ReportCanvas = ({ reportRef, children }: ReportCanvasProps) => {
                 width: '100%',
                 height: 'auto',
                 aspectRatio: '1.6/1',
-                borderRadius: 1
-            }}>
+                borderRadius: 1,
+            }}
+        >
             <Box
                 sx={{
                     display: 'grid',
@@ -154,8 +156,9 @@ const ReportCanvas = ({ reportRef, children }: ReportCanvasProps) => {
                     width: '100%',
                     bgcolor: 'background.default',
                     position: 'absolute',
-                    zIndex: 1
-                }}>
+                    zIndex: 1,
+                }}
+            >
                 <LoadingPage />
             </Box>
             <Box
@@ -163,8 +166,9 @@ const ReportCanvas = ({ reportRef, children }: ReportCanvasProps) => {
                 sx={{
                     display: 'grid',
                     width: '800px',
-                    height: '540px'
-                }}>
+                    height: '540px',
+                }}
+            >
                 {children}
             </Box>
         </Box>

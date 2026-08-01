@@ -38,9 +38,12 @@ const Bio: React.FC<BioProps> = ({ bio }) => {
     }
 
     return (
-        <Stack spacing={1} sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            spacing={1}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Box
                 ref={ref}
                 sx={{

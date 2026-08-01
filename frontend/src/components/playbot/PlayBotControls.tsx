@@ -48,13 +48,14 @@ function ClockDisplay({ ms, isActive, isLow, label }: ClockDisplayProps) {
                 border: '1px solid',
                 borderColor: isActive ? 'primary.main' : 'divider',
                 bgcolor: isActive ? (isLow ? 'error.main' : 'action.selected') : 'transparent',
-                transition: 'all 0.2s ease'
-            }}>
+                transition: 'all 0.2s ease',
+            }}
+        >
             <Typography
                 variant='caption'
                 color={isActive ? (isLow ? 'white' : 'text.primary') : 'text.secondary'}
                 sx={{
-                    fontWeight: isActive ? 600 : 400
+                    fontWeight: isActive ? 600 : 400,
                 }}
             >
                 {label}
@@ -66,8 +67,9 @@ function ClockDisplay({ ms, isActive, isLow, label }: ClockDisplayProps) {
                     fontFamily: 'monospace',
                     fontWeight: 700,
                     letterSpacing: 1,
-                    lineHeight: 1
-                }}>
+                    lineHeight: 1,
+                }}
+            >
                 {isTimed ? formatClock(ms) : '—'}
             </Typography>
         </Stack>
@@ -102,8 +104,9 @@ function ResultBanner({
                 p: 1,
                 borderRadius: 1,
                 bgcolor: `${color}.main`,
-                color: 'white'
-            }}>
+                color: 'white',
+            }}
+        >
             {isDraw ? (
                 <Handshake fontSize='small' />
             ) : playerWon ? (
@@ -111,9 +114,12 @@ function ResultBanner({
             ) : (
                 <SmartToy fontSize='small' />
             )}
-            <Typography variant='body2' sx={{
-                fontWeight: 'bold'
-            }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
                 {headline}
             </Typography>
         </Stack>
@@ -165,12 +171,16 @@ export function PlayBotControls({ game, maiaRating, onNewGame }: PlayBotControls
                 sx={{
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: 0.5
-                }}>
+                    gap: 0.5,
+                }}
+            >
                 <SmartToy color='primary' fontSize='small' />
-                <Typography variant='subtitle2' sx={{
-                    fontWeight: 'bold'
-                }}>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
                     Maia
                 </Typography>
                 <Chip label={maiaRating} size='small' color='primary' variant='outlined' />
@@ -204,8 +214,9 @@ export function PlayBotControls({ game, maiaRating, onNewGame }: PlayBotControls
                     variant='caption'
                     sx={{
                         color: 'text.secondary',
-                        minHeight: 18
-                    }}>
+                        minHeight: 18,
+                    }}
+                >
                     {botThinking
                         ? 'Maia is thinking…'
                         : playerToMove

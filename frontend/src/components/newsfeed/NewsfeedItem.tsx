@@ -49,8 +49,9 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
                         sx={{
                             gap: 1,
                             mt: 1,
-                            flexWrap: 'wrap'
-                        }}>
+                            flexWrap: 'wrap',
+                        }}
+                    >
                         {isCurrentUser && onChangeActivity && (
                             <Tooltip title={t('editActivity')}>
                                 <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
@@ -114,9 +115,12 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
 
             {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
                 <Stack direction='row' spacing={1}>
-                    <Typography component='span' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('dojoPoints')}
                     </Typography>
                     <Typography>
@@ -129,9 +133,12 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
 
             {entry.totalMinutesSpent > 0 && entry.minutesSpent > 0 && (
                 <Stack direction='row' spacing={1}>
-                    <Typography component='span' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('totalTime')}
                     </Typography>
                     <Typography>
@@ -155,8 +162,9 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
                 <Typography
                     sx={{
                         py: 2,
-                        whiteSpace: 'pre-line'
-                    }}>
+                        whiteSpace: 'pre-line',
+                    }}
+                >
                     {entry.notes}
                 </Typography>
             )}

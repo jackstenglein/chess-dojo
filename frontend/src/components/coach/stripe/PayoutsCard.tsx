@@ -82,9 +82,13 @@ const PayoutsCard = ({ account }: { account?: StripeAccount }) => {
                         <Stack spacing={1.5}>
                             <Typography variant='h6'>{t('payoutMethodTitle')}</Typography>
 
-                            <Stack direction='row' spacing={1} sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 {account.external_accounts.data[0].object ===
                                 StripePayoutMethod.BankAccount ? (
                                     <>

@@ -11,9 +11,11 @@ interface CloseButtonProps {
 export default function CloseButton({ onClose }: CloseButtonProps) {
     const t = useTranslations('ui.closeButton');
     return (
-        <Box sx={{
-            display: 'relative'
-        }}>
+        <Box
+            sx={{
+                display: 'relative',
+            }}
+        >
             <IconButton
                 aria-label={t('ariaLabel')}
                 onClick={(e) => onClose?.(e)}

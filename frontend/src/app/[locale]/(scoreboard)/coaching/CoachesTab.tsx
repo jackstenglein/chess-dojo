@@ -104,8 +104,9 @@ const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
                                 justifyContent: 'space-between',
                                 alignItems: 'start',
                                 flexWrap: 'wrap',
-                                rowGap: 2
-                            }}>
+                                rowGap: 2,
+                            }}
+                        >
                             <UserInfo user={coach} />
 
                             {currentUser && currentUser.username !== coach.username && (

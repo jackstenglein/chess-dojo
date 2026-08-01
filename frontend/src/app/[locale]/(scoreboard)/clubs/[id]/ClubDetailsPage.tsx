@@ -150,8 +150,9 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                 <Stack
                     sx={{
                         alignItems: 'center',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <TabContext value={searchParams.get('view') || 'scoreboard'}>
                         <Container>
                             <Stack spacing={4}>
@@ -160,11 +161,16 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                         direction='row'
                                         sx={{
                                             justifyContent: 'space-between',
-                                            alignItems: 'center'
-                                        }}>
-                                        <Stack direction='row' spacing={2} sx={{
-                                            alignItems: 'center'
-                                        }}>
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Stack
+                                            direction='row'
+                                            spacing={2}
+                                            sx={{
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <ClubAvatar club={club} />
                                             <Typography variant='h4'>{club.name}</Typography>
                                         </Stack>
@@ -203,9 +209,13 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                         )}
                                     </Stack>
 
-                                    <Stack direction='row' spacing={1} sx={{
-                                        alignItems: 'center'
-                                    }}>
+                                    <Stack
+                                        direction='row'
+                                        spacing={1}
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <MemberCountChip count={club.memberCount} />
                                         <LocationChip location={club.location} />
                                         <UrlChip url={club.externalUrl} />

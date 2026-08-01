@@ -72,8 +72,9 @@ export function FilterToggleGroup({
                     color: 'text.secondary',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 0.75
-                }}>
+                    gap: 0.75,
+                }}
+            >
                 {titleIcon}
                 {title}
             </Typography>
@@ -120,8 +121,9 @@ export function FilterToggleGroup({
                                 spacing={1}
                                 sx={{
                                     alignItems: 'center',
-                                    py: 0.25
-                                }}>
+                                    py: 0.25,
+                                }}
+                            >
                                 {option.icon}
                                 <Typography variant='body2'>{option.label}</Typography>
                             </Stack>

@@ -116,16 +116,22 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
             <Stack
                 sx={{
                     alignItems: 'center',
-                    py: 3
-                }}>
+                    py: 3,
+                }}
+            >
                 <CircularProgress />
             </Stack>
         );
     } else if (request.data === undefined && request.isSent()) {
         content = (
-            <Typography variant='body2' color='error' align='center' sx={{
-                py: 2
-            }}>
+            <Typography
+                variant='body2'
+                color='error'
+                align='center'
+                sx={{
+                    py: 2,
+                }}
+            >
                 {t('loadError')}
             </Typography>
         );
@@ -136,8 +142,9 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                 align='center'
                 sx={{
                     color: 'text.secondary',
-                    py: 2
-                }}>
+                    py: 2,
+                }}
+            >
                 {t('empty')}
             </Typography>
         );
@@ -151,14 +158,16 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         px: 0.5,
-                        mb: -1
-                    }}>
+                        mb: -1,
+                    }}
+                >
                     <Typography
                         variant='caption'
                         sx={{
                             color: 'text.secondary',
-                            fontWeight: 'bold'
-                        }}>
+                            fontWeight: 'bold',
+                        }}
+                    >
                         {t('name')}
                     </Typography>
                 </Stack>
@@ -186,18 +195,24 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                                     direction='row'
                                     sx={{
                                         alignItems: 'center',
-                                        justifyContent: 'space-between'
-                                    }}>
-                                    <Stack direction='row' spacing={1.5} sx={{
-                                        alignItems: 'center'
-                                    }}>
+                                        justifyContent: 'space-between',
+                                    }}
+                                >
+                                    <Stack
+                                        direction='row'
+                                        spacing={1.5}
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <Typography
                                             variant='body2'
                                             sx={{
                                                 color: 'text.secondary',
                                                 width: 20,
-                                                textAlign: 'center'
-                                            }}>
+                                                textAlign: 'center',
+                                            }}
+                                        >
                                             {rankDisplay}
                                         </Typography>
                                         <Avatar
@@ -211,9 +226,13 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                                             </Typography>
                                         </Link>
                                     </Stack>
-                                    <Typography variant='body2' color='primary' sx={{
-                                        fontWeight: 'bold'
-                                    }}>
+                                    <Typography
+                                        variant='body2'
+                                        color='primary'
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
                                         {metric === 'score'
                                             ? displayScore
                                             : formatTime(getTime(player))}
@@ -232,11 +251,15 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
             spacing={2}
             sx={{
                 width: 1,
-                mt: 4
-            }}>
-            <Typography variant='h5' sx={{
-                fontWeight: 'bold'
-            }}>
+                mt: 4,
+            }}
+        >
+            <Typography
+                variant='h5'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
                 {t('heading')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1 }}>
@@ -246,11 +269,16 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
                         sx={{
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            mb: 2
-                        }}>
-                        <Stack direction='row' spacing={1.5} sx={{
-                            alignItems: 'center'
-                        }}>
+                            mb: 2,
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            spacing={1.5}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <CohortIcon cohort={cohort} size={32} />
                             <Typography variant='h6' sx={{ mb: 0 }}>
                                 {cohort}

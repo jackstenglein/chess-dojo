@@ -65,8 +65,9 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                         sx={{
                             alignItems: 'center',
                             justifyContent: 'center',
-                            height: 1
-                        }}>
+                            height: 1,
+                        }}
+                    >
                         <CohortIcon
                             cohort={item.metadata.cohort}
                             tooltip={item.metadata.cohort}
@@ -110,8 +111,9 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                                         lineHeight: 'initial',
                                         whiteSpace: 'nowrap',
                                         textOverflow: 'ellipsis',
-                                        overflow: 'hidden'
-                                    }}>
+                                        overflow: 'hidden',
+                                    }}
+                                >
                                     {item.metadata.description}
                                 </Typography>
                             )}
@@ -175,7 +177,7 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                         spacing={1}
                         onClick={(e) => e.stopPropagation()}
                         sx={{
-                            alignItems: 'center'
+                            alignItems: 'center',
                         }}
                     >
                         <Avatar
@@ -249,8 +251,9 @@ export function getAdminColumns(t: (key: string) => string): GridColDef<Director
                             width: 1,
                             height: 1,
                             alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Tooltip
                             title={
                                 isPublic

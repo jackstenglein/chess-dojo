@@ -342,9 +342,13 @@ const SubmitResultsPage = () => {
 
                 {isForfeit && (
                     <Stack spacing={1}>
-                        <Typography sx={{
-                            color: 'text.secondary'
-                        }}>{t('screenshotsHelper')}</Typography>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
+                            {t('screenshotsHelper')}
+                        </Typography>
                         <Button
                             component='label'
                             variant='outlined'
@@ -363,9 +367,13 @@ const SubmitResultsPage = () => {
                         {screenshotNames.length > 0 && (
                             <Stack spacing={0.5}>
                                 {screenshotNames.map((name) => (
-                                    <Typography key={name} variant='body2' sx={{
-                                        color: 'text.secondary'
-                                    }}>
+                                    <Typography
+                                        key={name}
+                                        variant='body2'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
                                         {t('screenshotSelected', { name })}
                                     </Typography>
                                 ))}

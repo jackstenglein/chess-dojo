@@ -104,8 +104,9 @@ const CommentList: React.FC<CommentListProps> = ({
                 sx={{
                     width: 1,
                     alignItems: 'start',
-                    mb: 2
-                }}>
+                    mb: 2,
+                }}
+            >
                 <RequestSnackbar request={replyRequest} />
 
                 {hiddenThreads > 0 && viewCommentsLink && (
@@ -123,9 +124,13 @@ const CommentList: React.FC<CommentListProps> = ({
                         isCollapsible && !isExpanded ? thread.replies.slice(-2) : thread.replies;
 
                     return (
-                        <Stack key={thread.root.id} spacing={1} sx={{
-                            width: 1
-                        }}>
+                        <Stack
+                            key={thread.root.id}
+                            spacing={1}
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <CommentListItem
                                 comment={thread.root}
                                 onEdit={onEdit}
@@ -173,8 +178,9 @@ const CommentList: React.FC<CommentListProps> = ({
                                     spacing={1}
                                     sx={{
                                         pl: '52px',
-                                        width: 1
-                                    }}>
+                                        width: 1,
+                                    }}
+                                >
                                     <CommentListItem
                                         comment={reply}
                                         onEdit={onEdit}
@@ -211,8 +217,9 @@ const CommentList: React.FC<CommentListProps> = ({
             sx={{
                 width: 1,
                 alignItems: 'start',
-                mb: 2
-            }}>
+                mb: 2,
+            }}
+        >
             {hiddenComments > 0 && viewCommentsLink && (
                 <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
                     {t('viewEarlierComments', { count: hiddenComments })}
@@ -306,9 +313,13 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     };
 
     return (
-        <Stack direction='row' spacing={1.5} sx={{
-            width: 1
-        }}>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                width: 1,
+            }}
+        >
             <RequestSnackbar request={editRequest} />
             <RequestSnackbar request={deleteRequest} />
 
@@ -317,20 +328,25 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
             <Stack
                 sx={{
                     flexGrow: 1,
-                    minWidth: 0
-                }}>
+                    minWidth: 0,
+                }}
+            >
                 <Paper elevation={2} sx={{ px: '12px', py: '8px', borderRadius: '6px' }}>
                     <Stack>
                         <Stack
                             direction='row'
                             sx={{
                                 justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Link href={`/profile/${comment.owner}`}>
-                                <Typography variant='subtitle1' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    variant='subtitle1'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {comment.ownerDisplayName} ({comment.ownerCohort})
                                 </Typography>
                             </Link>
@@ -376,9 +392,13 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                     onChange={(e) => setEditContent(e.target.value)}
                                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                                 />
-                                <Stack direction='row' spacing={1} sx={{
-                                    justifyContent: 'flex-end'
-                                }}>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        justifyContent: 'flex-end',
+                                    }}
+                                >
                                     <Tooltip title={t('cancel')}>
                                         <IconButton
                                             size='small'
@@ -449,12 +469,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         )}
                     </Stack>
                 </Paper>
-                <Stack direction='row' spacing={1} sx={{
-                    alignItems: 'center'
-                }}>
-                    <Typography variant='caption' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {toDojoDateString(createdAt, timezone)} •{' '}
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
                         {isEdited && ` • ${t('edited')}`}
@@ -506,23 +533,35 @@ const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
             spacing={0.5}
             sx={{
                 pl: '52px',
-                width: 1
-            }}>
-            <Stack direction='row' spacing={1} sx={{
-                alignItems: 'center'
-            }}>
-                <Typography variant='body2' sx={{
-                    color: 'text.secondary'
-                }}>
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('replyingTo', { name: parentName })}
                 </Typography>
                 <IconButton size='small' onClick={onCancel} disabled={isLoading}>
                     <CloseIcon fontSize='small' />
                 </IconButton>
             </Stack>
-            <Stack direction='row' spacing={1} sx={{
-                alignItems: 'start'
-            }}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 <TextField
                     fullWidth
                     multiline

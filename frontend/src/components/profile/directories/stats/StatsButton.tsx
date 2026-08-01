@@ -129,13 +129,20 @@ export function StatsButton({ directory }: StatsButtonProps) {
                 <RequestSnackbar request={request} />
 
                 <DialogTitle>
-                    <Stack direction='row' spacing={2} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        spacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Assessment color='primary' />
-                        <Typography variant='h5' sx={{
-                            fontWeight: 'bold'
-                        }}>
+                        <Typography
+                            variant='h5'
+                            sx={{
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('performanceStats')}
                         </Typography>
                     </Stack>
@@ -186,9 +193,13 @@ export function StatsButton({ directory }: StatsButtonProps) {
                             >
                                 {Object.values(validRatingSystems).map((system) => (
                                     <MenuItem key={system} value={system}>
-                                        <Stack direction='row' spacing={2} sx={{
-                                            alignItems: 'center'
-                                        }}>
+                                        <Stack
+                                            direction='row'
+                                            spacing={2}
+                                            sx={{
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <Box
                                                 sx={{
                                                     display: 'flex',
@@ -255,27 +266,38 @@ function DirectoryStats({
     const tRating = useTranslations('enums.ratingSystem');
     return (
         <Fade in timeout={500}>
-            <Stack spacing={4} sx={{
-                mt: 6
-            }}>
+            <Stack
+                spacing={4}
+                sx={{
+                    mt: 6,
+                }}
+            >
                 <Typography
                     variant='h4'
                     color='primary'
                     sx={{
                         fontWeight: 'bold',
                         textAlign: 'center',
-                        mb: -2
-                    }}>
+                        mb: -2,
+                    }}
+                >
                     {t('playerPerformance', { name: playerName })}
                 </Typography>
 
                 <Stack spacing={2}>
-                    <Typography variant='h6' sx={{
-                        fontWeight: 'bold'
-                    }}>
-                        <Stack direction='row' spacing={1} sx={{
-                            alignItems: 'center'
-                        }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <RatingSystemIcon system={ratingSystem} size='medium' />
                             <span>
                                 {t('ratingPerformance', {
@@ -322,12 +344,19 @@ function DirectoryStats({
                 </Stack>
 
                 <Stack spacing={2}>
-                    <Typography variant='h6' sx={{
-                        fontWeight: 'bold'
-                    }}>
-                        <Stack direction='row' spacing={1} sx={{
-                            alignItems: 'center'
-                        }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <StarBorder color='primary' />
                             <span>{t('avgOpponentRating')}</span>
                         </Stack>
@@ -439,15 +468,17 @@ function RatingCard({
                             direction='row'
                             sx={{
                                 justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Stack
                                 direction='row'
                                 spacing={1}
                                 sx={{
                                     alignItems: 'center',
-                                    color: colorValue
-                                }}>
+                                    color: colorValue,
+                                }}
+                            >
                                 {icon}
                                 <Typography
                                     component='span'
@@ -455,8 +486,9 @@ function RatingCard({
                                     sx={{
                                         color: 'text.secondary',
                                         fontWeight: 500,
-                                        pt: '2px'
-                                    }}>
+                                        pt: '2px',
+                                    }}
+                                >
                                     {title}
                                 </Typography>
                             </Stack>
@@ -467,8 +499,9 @@ function RatingCard({
                             variant='h4'
                             sx={{
                                 fontWeight: 'bold',
-                                color: 'inherit'
-                            }}>
+                                color: 'inherit',
+                            }}
+                        >
                             {rating > 0 ? Math.round(rating) : 'N/A'}{' '}
                             {rating > 0 && (
                                 <Tooltip title={t('normalizedRatingTooltip')}>
@@ -477,8 +510,9 @@ function RatingCard({
                                         variant='h5'
                                         sx={{
                                             color: 'text.secondary',
-                                            whiteSpace: 'nowrap'
-                                        }}>
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
                                         ({Math.round(normalizedRating)}{' '}
                                         <ChessDojoIcon
                                             fontSize='small'
@@ -491,27 +525,43 @@ function RatingCard({
                         </Typography>
 
                         {totalGames > 0 && (
-                            <Typography sx={{
-                                whiteSpace: 'pre'
-                            }}>
-                                <Typography component='span' color='success' sx={{
-                                    fontWeight: 'bold'
-                                }}>
+                            <Typography
+                                sx={{
+                                    whiteSpace: 'pre',
+                                }}
+                            >
+                                <Typography
+                                    component='span'
+                                    color='success'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {wins} W
                                 </Typography>
-                                <Typography component='span' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    component='span'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {'  '}/{'  '}
                                 </Typography>
-                                <Typography component='span' color='info' sx={{
-                                    fontWeight: 'bold'
-                                }}>
+                                <Typography
+                                    component='span'
+                                    color='info'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {draws} D
                                 </Typography>
-                                <Typography component='span' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    component='span'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {'  '}/{'  '}
                                 </Typography>
 
@@ -519,8 +569,9 @@ function RatingCard({
                                     component='span'
                                     sx={{
                                         color: 'error.light',
-                                        fontWeight: 'bold'
-                                    }}>
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {losses} L
                                 </Typography>
                             </Typography>
@@ -550,12 +601,19 @@ function CohortStatsTable({ stats }: { stats: PerformanceStats }) {
 
     return (
         <Stack spacing={2}>
-            <Typography variant='h6' sx={{
-                fontWeight: 'bold'
-            }}>
-                <Stack direction='row' spacing={1} sx={{
-                    alignItems: 'center'
-                }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <PeopleAlt color='primary' />
                     <span>{t('performanceByCohort')}</span>
                 </Stack>
@@ -573,8 +631,9 @@ function CohortStatsTable({ stats }: { stats: PerformanceStats }) {
                                                 variant='subtitle2'
                                                 sx={{
                                                     fontWeight: 'bold',
-                                                    color: 'text.secondary'
-                                                }}>
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {t(key)}
                                             </Typography>
                                         </TableCell>
@@ -621,12 +680,16 @@ function CohortStatsTableRow({
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        gap: 1
-                    }}>
+                        gap: 1,
+                    }}
+                >
                     <CohortIcon cohort={cohort} size={24} />
-                    <Typography variant='body2' sx={{
-                        fontWeight: '600'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: '600',
+                        }}
+                    >
                         {cohort}
                     </Typography>
                 </Stack>
@@ -638,14 +701,19 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'success.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {cohortData.rating.total > 0 ? Math.round(cohortData.rating.total) : 'N/A'}{' '}
                     {cohortData.normalizedRating.total > 0 && (
                         <Tooltip title={t('normalizedRatingTooltip')}>
-                            <Typography component='span' variant='body2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                component='span'
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 ({Math.round(cohortData.normalizedRating.total)}{' '}
                                 <ChessDojoIcon
                                     fontSize='inherit'
@@ -664,16 +732,21 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'warning.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {cohortData.avgOppRating.total > 0
                         ? round(cohortData.avgOppRating.total)
                         : 'N/A'}{' '}
                     {cohortData.normalizedAvgOppRating.total > 0 && (
                         <Tooltip title={t('normalizedRatingTooltip')}>
-                            <Typography component='span' variant='body2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                component='span'
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 ({Math.round(cohortData.normalizedAvgOppRating.total)}{' '}
                                 <ChessDojoIcon
                                     fontSize='inherit'
@@ -692,8 +765,9 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'info.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {totalGames}
                 </Typography>
             </TableCell>
@@ -704,8 +778,9 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'success.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {round((cohortData.wins.total / totalGames) * 100)}%
                 </Typography>
             </TableCell>
@@ -716,8 +791,9 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'info.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {round((cohortData.draws.total / totalGames) * 100)}%
                 </Typography>
             </TableCell>
@@ -728,8 +804,9 @@ function CohortStatsTableRow({
                     sx={{
                         fontWeight: 'bold',
                         color: 'error.main',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {round((cohortData.losses.total / totalGames) * 100)}%
                 </Typography>
             </TableCell>

@@ -39,8 +39,9 @@ export function ChatMessage({ message }: { message: Message }) {
                 py: 1.5,
                 borderRadius: 2,
                 maxWidth: '80%',
-                position: 'relative'
-            }}>
+                position: 'relative',
+            }}
+        >
             {isUser ? (
                 message.content
             ) : (

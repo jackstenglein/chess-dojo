@@ -130,9 +130,12 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                     {t('viewDetails')}
                 </Button>
             ) : (
-                <Stack spacing={2} sx={{
-                    pb: 1
-                }}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        pb: 1,
+                    }}
+                >
                     <Button
                         data-testid='book-button'
                         variant='contained'
@@ -147,8 +150,9 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                         variant='caption'
                         sx={{
                             color: 'text.secondary',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('bookingPolicy')}
                     </Typography>
                 </Stack>

@@ -120,9 +120,12 @@ const ReferralSourceForm: React.FC<ProfileCreatorFormProps> = ({ user, onPrevSte
                 />
             )}
 
-            <Stack direction='row' sx={{
-                justifyContent: 'space-between'
-            }}>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
                     {t('back')}
                 </Button>

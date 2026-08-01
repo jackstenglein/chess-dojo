@@ -60,8 +60,9 @@ const SupportTicket = () => {
                 <Typography
                     sx={{
                         color: 'text.secondary',
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     {t('patience')}
                     <br />
                     <br />
@@ -80,8 +81,9 @@ const SupportTicket = () => {
             <Typography
                 sx={{
                     color: 'text.secondary',
-                    mb: 2
-                }}>
+                    mb: 2,
+                }}
+            >
                 {t('patience')}
             </Typography>
             <Grid container rowSpacing={2} columnSpacing={2}>
@@ -150,8 +152,9 @@ const SupportTicket = () => {
                     size={12}
                     sx={{
                         display: 'flex',
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     <Button
                         data-testid='support-ticket-submit'
                         variant='contained'

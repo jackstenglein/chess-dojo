@@ -18,8 +18,9 @@ export default function GraduationLinkCardGrid({ graduations }: GraduationLinkCa
             sx={{
                 p: '16px',
                 alignItems: 'center',
-                justifyContent: 'center'
-            }}>
+                justifyContent: 'center',
+            }}
+        >
             {graduations.map((grad) => (
                 <Grid key={`${grad.username} ${grad.createdAt}`} size={{ xs: 8, md: 4, xl: 2 }}>
                     <GraduationLinkCard

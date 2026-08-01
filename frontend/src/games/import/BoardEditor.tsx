@@ -182,14 +182,16 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
             sx={{
                 width: 1,
                 flexWrap: 'wrap',
-                gap: 2
-            }}>
+                gap: 2,
+            }}
+        >
             <Stack
                 spacing={1}
                 sx={{
                     width: 1,
-                    maxWidth: '336px'
-                }}>
+                    maxWidth: '336px',
+                }}
+            >
                 <PieceToggleButtonGroup
                     pieces={orientation === 'white' ? blackPieces : whitePieces}
                     value={currentButton}
@@ -221,8 +223,9 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
             <Stack
                 sx={{
                     alignItems: 'start',
-                    maxWidth: '188px'
-                }}>
+                    maxWidth: '188px',
+                }}
+            >
                 <TextField
                     select
                     value={toMove}
@@ -263,8 +266,9 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                     color='textSecondary'
                     sx={{
                         mt: 1.5,
-                        ml: 0.5
-                    }}>
+                        ml: 0.5,
+                    }}
+                >
                     {t('castlingLabel')}
                 </Typography>
                 <Stack
@@ -272,8 +276,9 @@ export function BoardEditor({ fen, onUpdate }: { fen: string; onUpdate: (fen: st
                     sx={{
                         width: 1,
                         justifyContent: 'space-between',
-                        ml: 0.5
-                    }}>
+                        ml: 0.5,
+                    }}
+                >
                     <FormControl>
                         <FormLabel>{t('castlingWhite')}</FormLabel>
                         <FormGroup>

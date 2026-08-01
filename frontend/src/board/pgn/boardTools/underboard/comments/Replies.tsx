@@ -25,9 +25,12 @@ const Replies: React.FC<RepliesProps> = ({ isReadonly, comment }) => {
     });
 
     return (
-        <Stack spacing={1.5} sx={{
-            pt: 1
-        }}>
+        <Stack
+            spacing={1.5}
+            sx={{
+                pt: 1,
+            }}
+        >
             {sortedComments.map((reply) => (
                 <Comment isReadonly={isReadonly} key={reply.id} comment={reply} />
             ))}

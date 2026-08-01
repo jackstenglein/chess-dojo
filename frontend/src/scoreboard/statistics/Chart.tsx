@@ -56,8 +56,9 @@ const Chart: React.FC<ChartProps> = ({
                     sx={{
                         mb: 1,
                         rowGap: 1,
-                        flexWrap: 'wrap'
-                    }}>
+                        flexWrap: 'wrap',
+                    }}
+                >
                     {series.map((s, i) => {
                         const sum = s.data.reduce((sum, d) => sum + d.value, 0);
                         const formattedSum = sumFormatter ? sumFormatter(sum) : sum;
@@ -78,9 +79,11 @@ const Chart: React.FC<ChartProps> = ({
                     })}
                 </Stack>
             )}
-            <Box sx={{
-                height: '200px'
-            }}>
+            <Box
+                sx={{
+                    height: '200px',
+                }}
+            >
                 <ReactChart
                     options={{
                         data: series,

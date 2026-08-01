@@ -33,8 +33,9 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                     sx={{
                         justifyContent: 'center',
                         rowGap: 1,
-                        columnGap: 1
-                    }}>
+                        columnGap: 1,
+                    }}
+                >
                     <Grid
                         size={{
                             xs: 12,
@@ -43,11 +44,15 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                         }}
                         sx={{
                             display: 'flex',
-                            justifyContent: 'center'
-                        }}>
-                        <Stack direction='row' sx={{
-                            alignItems: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography>{t('tacticsRating')}</Typography>
 
                             <Tooltip title={t('tacticsRatingTooltip')}>
@@ -56,8 +61,9 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                             <Typography
                                 sx={{
                                     ml: 1,
-                                    fontWeight: 'bold'
-                                }}>
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {Math.round(
                                     10 * calculateTacticsRating(user, requirements).overall,
                                 ) / 10}
@@ -82,18 +88,23 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                                 }}
                                 sx={{
                                     display: 'flex',
-                                    justifyContent: 'center'
-                                }}>
-                                <Stack direction='row' sx={{
-                                    alignItems: 'center'
-                                }}>
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography>{formatRatingSystem(rs, tRating)}</Typography>
 
                                     <Typography
                                         sx={{
                                             ml: 1,
-                                            fontWeight: 'bold'
-                                        }}>
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
                                         {currentRating}
                                     </Typography>
                                 </Stack>

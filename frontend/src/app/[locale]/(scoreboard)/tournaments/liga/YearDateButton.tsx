@@ -34,9 +34,12 @@ const YearDateButton = ({ selectedDate, onChange }: YearDateButtonProps) => {
     };
 
     return (
-        <Stack direction='row' sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <LocaleArrow
                 type='prev'
                 onClick={handlePrev}

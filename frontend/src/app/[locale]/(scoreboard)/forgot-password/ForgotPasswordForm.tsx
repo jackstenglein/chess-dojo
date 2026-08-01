@@ -61,8 +61,9 @@ export const ForgotPasswordForm = () => {
         <Stack
             sx={{
                 justifyContent: 'center',
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <ChessDojoIcon
@@ -79,8 +80,9 @@ export const ForgotPasswordForm = () => {
                 data-testid='title'
                 sx={{
                     textAlign: 'center',
-                    mb: 4
-                }}>
+                    mb: 4,
+                }}
+            >
                 {t('chessDojo')}
             </Typography>
 
@@ -90,8 +92,9 @@ export const ForgotPasswordForm = () => {
                 sx={{
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingTop: 1.5
-                }}>
+                    paddingTop: 1.5,
+                }}
+            >
                 {step === ForgotPasswordStep.Start && (
                     <StartStep
                         email={email}
@@ -146,7 +149,7 @@ const StartStep: React.FC<StartStepProps> = ({
                 gutterBottom
                 data-testid='description'
                 sx={{
-                    textAlign: 'center'
+                    textAlign: 'center',
                 }}
             >
                 {t('forgotPassword.startDescription')}
@@ -276,7 +279,7 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 gutterBottom
                 data-testid='description'
                 sx={{
-                    textAlign: 'center'
+                    textAlign: 'center',
                 }}
             >
                 {t('forgotPassword.confirmDescription')}
@@ -353,7 +356,7 @@ const SuccessStep = () => {
                 gutterBottom
                 data-testid='description'
                 sx={{
-                    textAlign: 'center'
+                    textAlign: 'center',
                 }}
             >
                 {t('forgotPassword.successDescription')}

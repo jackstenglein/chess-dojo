@@ -73,8 +73,9 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                 spacing={1}
                 sx={{
                     mt: 2,
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Typography color='error'>{error}</Typography>
                 <Button
                     onClick={() => requestAnalysis(chess?.fen() ?? '')}
@@ -93,8 +94,9 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
                 spacing={1}
                 sx={{
                     mt: 2,
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Typography>{t('positionNotInChessDb')}</Typography>
                 <Button
                     onClick={() => requestAnalysis(chess?.fen() ?? '')}
@@ -119,16 +121,28 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
     };
 
     return (
-        <Grid container columnSpacing={1} rowSpacing={2} sx={{
-            mt: 2
-        }}>
+        <Grid
+            container
+            columnSpacing={1}
+            rowSpacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
             <Grid size={12}>
-                <Stack direction='row' spacing={0.5} sx={{
-                    alignItems: 'center'
-                }}>
-                    <Typography variant='subtitle2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Stack
+                    direction='row'
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('chessCloudDatabaseLabel')}
                     </Typography>
                     <Tooltip

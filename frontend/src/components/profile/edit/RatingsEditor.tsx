@@ -273,9 +273,12 @@ export function RatingsEditor({
             </TextField>
 
             {availableRatingSystems.length > 0 && (
-                <Stack direction='row' sx={{
-                    justifyContent: 'flex-start'
-                }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'flex-start',
+                    }}
+                >
                     <Button
                         variant='outlined'
                         startIcon={<AddIcon />}
@@ -316,8 +319,9 @@ export function RatingsEditor({
                             container
                             sx={{
                                 columnGap: 2,
-                                alignItems: 'start'
-                            }}>
+                                alignItems: 'start',
+                            }}
+                        >
                             <Grid size='grow'>
                                 <TextField
                                     required={ratingSystem === rs}
@@ -380,8 +384,9 @@ export function RatingsEditor({
                         container
                         sx={{
                             columnGap: 2,
-                            alignItems: 'start'
-                        }}>
+                            alignItems: 'start',
+                        }}
+                    >
                         <Grid size='grow'>
                             <TextField
                                 label={t('customRatingName', { number: idx + 1 })}

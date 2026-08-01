@@ -61,9 +61,11 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunct
             )}
 
             {coachingEvents.length === 0 ? (
-                <Stack sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography>{t('list.noSessionsFound')}</Typography>
                 </Stack>
             ) : view === 'list' ? (

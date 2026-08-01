@@ -45,9 +45,13 @@ export function LiveClassesList({
         useLiveClassPlayback();
 
     return (
-        <Grid container spacing={3} sx={{
-            mt: 1
-        }}>
+        <Grid
+            container
+            spacing={3}
+            sx={{
+                mt: 1,
+            }}
+        >
             {classes.map((c) => (
                 <Grid
                     key={c.name}
@@ -180,27 +184,42 @@ function LiveClassCard({
                         sx={{
                             flexWrap: 'wrap',
                             gap: 2,
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         {c.teacher && (
-                            <Stack direction='row' spacing={0.75} sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={0.75}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Person fontSize='small' color='action' />
-                                <Typography variant='body2' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {c.teacher}
                                 </Typography>
                             </Stack>
                         )}
-                        <Stack direction='row' spacing={0.75} sx={{
-                            alignItems: 'center'
-                        }}>
+                        <Stack
+                            direction='row'
+                            spacing={0.75}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <ShowChart fontSize='small' color='action' />
-                            <Typography variant='body2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {c.cohortRange}
                             </Typography>
                         </Stack>
@@ -211,8 +230,9 @@ function LiveClassCard({
                         sx={{
                             flexWrap: 'wrap',
                             gap: 0.75,
-                            mb: 1.5
-                        }}>
+                            mb: 1.5,
+                        }}
+                    >
                         {c.type === SubscriptionTier.GameReview ? (
                             <Tooltip title={t('showTagGameReview')}>
                                 <Chip
@@ -284,8 +304,9 @@ function LiveClassCard({
 
                             ...(isList
                                 ? { flex: { sm: 1 }, WebkitLineClamp: { xs: 6, sm: 2 } }
-                                : {})
-                        }}>
+                                : {}),
+                        }}
+                    >
                         {c.description}
                     </Typography>
 
@@ -294,8 +315,9 @@ function LiveClassCard({
                             variant='subtitle2'
                             sx={{
                                 color: 'primary.main',
-                                mt: 2
-                            }}>
+                                mt: 2,
+                            }}
+                        >
                             {t('card.recordingCount', { count: c.recordings.length })}
                         </Typography>
                     )}

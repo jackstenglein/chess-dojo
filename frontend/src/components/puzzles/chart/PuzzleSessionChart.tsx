@@ -165,12 +165,16 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                             sx={{
                                 justifyContent: 'space-between',
                                 mt: 0.5,
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='caption'>{t('puzzleRating')}</Typography>
-                            <Typography variant='caption' sx={{
-                                fontWeight: 'bold'
-                            }}>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {item?.puzzle.rating}
                             </Typography>
                         </Stack>
@@ -179,8 +183,9 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                             direction='row'
                             sx={{
                                 justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='caption'>{t('yourRating')}</Typography>
                             <Typography
                                 variant='caption'
@@ -192,7 +197,7 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                                           : undefined
                                 }
                                 sx={{
-                                    fontWeight: 'bold'
+                                    fontWeight: 'bold',
                                 }}
                             >
                                 {item?.rating} ({item?.ratingChange >= 0 && '+'}
@@ -202,9 +207,12 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                     </Box>
                 ) : (
                     <Box sx={{ p: 1, minWidth: 200 }}>
-                        <Stack direction='row' sx={{
-                            justifyContent: 'space-between'
-                        }}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                            }}
+                        >
                             <Typography variant='caption'>{t('startRating')}</Typography>
                             <Typography variant='caption'>{session.start}</Typography>
                         </Stack>

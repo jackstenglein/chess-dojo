@@ -209,8 +209,9 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                                 spacing={1}
                                 sx={{
                                     alignItems: 'center',
-                                    height: 1
-                                }}>
+                                    height: 1,
+                                }}
+                            >
                                 <Avatar
                                     username={params.row.value.username}
                                     displayName={params.row.value.displayName}
@@ -321,9 +322,11 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
     }
 
     return (
-        <Box sx={{
-            height: 1
-        }}>
+        <Box
+            sx={{
+                height: 1,
+            }}
+        >
             {allowEdits && (
                 <Typography
                     variant='body2'
@@ -331,8 +334,9 @@ const Tags: React.FC<TagsProps> = ({ game, allowEdits }) => {
                         color: 'text.secondary',
                         ml: 1,
                         mt: 1,
-                        mb: 1
-                    }}>
+                        mb: 1,
+                    }}
+                >
                     {t('doubleClickHint')}
                 </Typography>
             )}

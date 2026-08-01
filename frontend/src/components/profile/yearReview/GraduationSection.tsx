@@ -16,16 +16,19 @@ const GraduationSection = ({ review }: SectionProps) => {
     const sorted = [...new Set(review.graduations)].sort(compareCohorts);
 
     return (
-        <Stack sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
                 sx={{
                     fontWeight: '800',
                     fontSize: 'clamp(16px,3vw,32px)',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 {t('headerLine', { period: review.period, count })}
             </Typography>
 
@@ -34,8 +37,9 @@ const GraduationSection = ({ review }: SectionProps) => {
                 sx={{
                     fontWeight: '800',
                     fontSize: 'clamp(14px,2vw,28px)',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 {t('congratulationsBelts', { count })}
             </Typography>
 
@@ -46,8 +50,9 @@ const GraduationSection = ({ review }: SectionProps) => {
                     flexWrap: 'wrap',
                     rowGap: 1,
                     justifyContent: 'center',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 {sorted.map((cohort) => (
                     <CohortIcon key={cohort} cohort={cohort} size={75} />
                 ))}

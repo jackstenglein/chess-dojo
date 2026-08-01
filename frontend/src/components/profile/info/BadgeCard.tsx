@@ -128,8 +128,9 @@ export const BadgeCard = ({ user }: { user: User }) => {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         px: 2,
-                        pt: 2
-                    }}>
+                        pt: 2,
+                    }}
+                >
                     <CardHeader title={t('badgesCardTitle')} sx={{ p: 0 }} />
                     <Tooltip title={t('viewAllBadges')}>
                         <IconButton color='primary' onClick={() => setIsViewAllModalOpen(true)}>
@@ -145,8 +146,9 @@ export const BadgeCard = ({ user }: { user: User }) => {
                             flexWrap: 'wrap',
                             rowGap: 1,
                             alignItems: 'center',
-                            p: 1
-                        }}>
+                            p: 1,
+                        }}
+                    >
                         {badges.map((badge, idx) => (
                             <Box
                                 key={idx}

@@ -41,12 +41,16 @@ export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardPr
                         <Stack
                             sx={{
                                 justifyContent: 'center',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Icon sx={{ fontSize: '5rem', mb: 2 }} color='primary' />
-                            <Typography variant='h5' sx={{
-                                mb: 0.5
-                            }}>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    mb: 0.5,
+                                }}
+                            >
                                 {name}
                             </Typography>
                             <Typography
@@ -54,8 +58,9 @@ export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardPr
                                 sx={{
                                     color: 'text.secondary',
                                     lineHeight: '1.3',
-                                    textAlign: 'center'
-                                }}>
+                                    textAlign: 'center',
+                                }}
+                            >
                                 {description}
                             </Typography>
                         </Stack>

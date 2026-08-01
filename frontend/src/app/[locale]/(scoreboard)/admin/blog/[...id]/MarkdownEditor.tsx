@@ -108,8 +108,9 @@ export function MarkdownEditor({
                         variant='body2'
                         sx={{
                             color: 'text.secondary',
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         How this post appears on the blog list page:
                     </Typography>
                     <Container maxWidth='sm' disableGutters>
@@ -151,8 +152,9 @@ export function MarkdownEditor({
                             <Typography
                                 sx={{
                                     color: 'text.secondary',
-                                    fontStyle: 'italic'
-                                }}>
+                                    fontStyle: 'italic',
+                                }}
+                            >
                                 Nothing to preview. Switch to Write to add content.
                             </Typography>
                         )}
@@ -185,9 +187,12 @@ function MarkdownSyntaxHelp() {
 
     return (
         <Stack spacing={2.5}>
-            <Typography variant='subtitle1' sx={{
-                fontWeight: 600
-            }}>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    fontWeight: 600,
+                }}
+            >
                 Markdown syntax reference
             </Typography>
 
@@ -197,8 +202,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Headings
                 </Typography>
                 <Typography
@@ -216,8 +222,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Bold and italic
                 </Typography>
                 <Typography variant='body2'>
@@ -232,8 +239,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Links
                 </Typography>
                 <Typography
@@ -251,8 +259,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Images
                 </Typography>
                 <Typography
@@ -266,8 +275,9 @@ function MarkdownSyntaxHelp() {
                     variant='body2'
                     sx={{
                         color: 'text.secondary',
-                        mt: 0.5
-                    }}>
+                        mt: 0.5,
+                    }}
+                >
                     Use an exclamation mark before the brackets. Alt text is shown if the image
                     cannot load. Add dimensions in quotes to set size:{' '}
                     {code('![alt](url "400x300")')} for width×height in pixels; use {code('"400x"')}{' '}
@@ -284,8 +294,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     YouTube videos
                 </Typography>
                 <Typography
@@ -299,8 +310,9 @@ function MarkdownSyntaxHelp() {
                     variant='body2'
                     sx={{
                         color: 'text.secondary',
-                        mt: 0.5
-                    }}>
+                        mt: 0.5,
+                    }}
+                >
                     A link to a YouTube video (watch, embed, or youtu.be URL) is rendered as an
                     embedded player.
                 </Typography>
@@ -312,8 +324,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Game viewer
                 </Typography>
                 <Typography
@@ -327,8 +340,9 @@ function MarkdownSyntaxHelp() {
                     variant='body2'
                     sx={{
                         color: 'text.secondary',
-                        mt: 0.5
-                    }}>
+                        mt: 0.5,
+                    }}
+                >
                     A link with URL {code(`${GAME_LINK_PREFIX}cohortId/gameId`)} (cohort and game ID
                     from the Dojo) is rendered as an embedded interactive game viewer. Replace
                     cohortId and gameId with the actual cohort and game IDs. Note that the leading
@@ -342,8 +356,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Lists
                 </Typography>
                 <Typography
@@ -361,8 +376,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Code
                 </Typography>
                 <Typography variant='body2'>
@@ -376,8 +392,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Blockquote
                 </Typography>
                 <Typography
@@ -395,8 +412,9 @@ function MarkdownSyntaxHelp() {
                     gutterBottom
                     sx={{
                         fontWeight: 600,
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     Horizontal rule
                 </Typography>
                 <Typography variant='body2' component='div' sx={{ fontFamily: 'monospace' }}>
@@ -404,9 +422,12 @@ function MarkdownSyntaxHelp() {
                 </Typography>
             </Box>
 
-            <Typography variant='body2' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 Leave a blank line between paragraphs and between blocks (headings, lists, etc.).
             </Typography>
         </Stack>
@@ -483,8 +504,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         component='p'
                         sx={{
                             mt: 2,
-                            lineHeight: 1.7
-                        }}>
+                            lineHeight: 1.7,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -494,8 +516,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         component='h1'
                         sx={{
                             mt: 3,
-                            mb: 1
-                        }}>
+                            mb: 1,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -505,8 +528,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         component='h2'
                         sx={{
                             mt: 3,
-                            mb: 1
-                        }}>
+                            mb: 1,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -516,8 +540,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         component='h3'
                         sx={{
                             mt: 2,
-                            mb: 1
-                        }}>
+                            mb: 1,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -528,8 +553,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         sx={{
                             mt: 2,
                             mb: 0.5,
-                            fontWeight: 600
-                        }}>
+                            fontWeight: 600,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -540,8 +566,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         sx={{
                             mt: 2,
                             mb: 0.5,
-                            fontWeight: 600
-                        }}>
+                            fontWeight: 600,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -552,8 +579,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                         sx={{
                             mt: 1.5,
                             mb: 0.5,
-                            fontWeight: 600
-                        }}>
+                            fontWeight: 600,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -687,16 +715,22 @@ export function BlogMarkdown({ children }: { children: string }) {
                     />
                 ),
                 strong: (props) => (
-                    <Typography component='strong' sx={{
-                        fontWeight: 700
-                    }}>
+                    <Typography
+                        component='strong'
+                        sx={{
+                            fontWeight: 700,
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
                 em: (props) => (
-                    <Typography component='em' sx={{
-                        fontStyle: 'italic'
-                    }}>
+                    <Typography
+                        component='em'
+                        sx={{
+                            fontStyle: 'italic',
+                        }}
+                    >
                         {props.children}
                     </Typography>
                 ),
@@ -726,8 +760,9 @@ export function BlogMarkdown({ children }: { children: string }) {
                             sx={{
                                 width: 1,
                                 alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Box
                                 component='img'
                                 src={props.src}

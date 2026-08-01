@@ -45,9 +45,12 @@ const FAQSection = () => {
 
     return (
         <Stack spacing={2}>
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <HelpOutlined sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('faqHeader')}
             </Typography>
@@ -75,17 +78,21 @@ export const InfoPage = () => {
                 sx={{
                     textAlign: 'center',
                     color: 'text.secondary',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 {t('welcome')}
                 <WavingHandIcon sx={{ verticalAlign: 'middle', ml: 1 }} color='dojoOrange' />
             </Typography>
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <MilitaryTechIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('overviewHeader')}
             </Typography>
@@ -118,9 +125,12 @@ export const InfoPage = () => {
             <TimeControlTable />
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <EmojiEvents sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('championsHeader')}
             </Typography>
@@ -129,9 +139,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <MonetizationOn sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('feeHeader')}
             </Typography>
@@ -165,9 +178,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('leaderboardHeader')}
             </Typography>
@@ -197,9 +213,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('tiebreaksHeader')}
             </Typography>
@@ -220,9 +239,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' sx={{
-                color: 'text.secondary'
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <NotInterestedIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('antiCheatHeader')}
             </Typography>

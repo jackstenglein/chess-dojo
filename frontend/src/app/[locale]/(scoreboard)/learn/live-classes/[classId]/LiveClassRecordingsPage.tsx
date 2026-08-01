@@ -134,27 +134,42 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                     flexWrap: 'wrap',
                     gap: 2,
                     mt: 1,
-                    mb: 1
-                }}>
+                    mb: 1,
+                }}
+            >
                 {liveClass.teacher && (
-                    <Stack direction='row' spacing={0.75} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        spacing={0.75}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Person fontSize='small' color='action' />
-                        <Typography variant='body2' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {liveClass.teacher}
                         </Typography>
                     </Stack>
                 )}
-                <Stack direction='row' spacing={0.75} sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    direction='row'
+                    spacing={0.75}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <ShowChart fontSize='small' color='action' />
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {liveClass.cohortRange}
                     </Typography>
                 </Stack>
@@ -165,8 +180,9 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                 sx={{
                     flexWrap: 'wrap',
                     gap: 0.75,
-                    mb: 2
-                }}>
+                    mb: 2,
+                }}
+            >
                 {liveClass.type === SubscriptionTier.GameReview ? (
                     <Chip
                         label={t('gameReview')}
@@ -192,8 +208,9 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                     variant='body1'
                     sx={{
                         color: 'text.secondary',
-                        mb: 4
-                    }}>
+                        mb: 4,
+                    }}
+                >
                     {liveClass.description}
                 </Typography>
             )}
@@ -218,12 +235,16 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                                         sx={{
                                             flexWrap: 'wrap',
                                             gap: 2,
-                                            mb: recording.description ? 1.5 : 0
-                                        }}>
+                                            mb: recording.description ? 1.5 : 0,
+                                        }}
+                                    >
                                         {recording.title && (
-                                            <Typography variant='body2' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {formatRecordingDate(recording.date)}
                                             </Typography>
                                         )}
@@ -232,13 +253,16 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                                                 direction='row'
                                                 spacing={0.5}
                                                 sx={{
-                                                    alignItems: 'center'
+                                                    alignItems: 'center',
                                                 }}
                                             >
                                                 <Schedule fontSize='small' color='action' />
-                                                <Typography variant='body2' sx={{
-                                                    color: 'text.secondary'
-                                                }}>
+                                                <Typography
+                                                    variant='body2'
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                    }}
+                                                >
                                                     {duration}
                                                 </Typography>
                                             </Stack>
@@ -250,7 +274,7 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                                             direction='row'
                                             spacing={0.75}
                                             sx={{
-                                                alignItems: 'flex-start'
+                                                alignItems: 'flex-start',
                                             }}
                                         >
                                             <Tooltip title={t('recordingsPage.aiDescription')}>
@@ -259,9 +283,12 @@ export function LiveClassRecordingsPage({ classSlug }: { classSlug: string }) {
                                                     sx={{ color: 'text.secondary' }}
                                                 />
                                             </Tooltip>
-                                            <Typography variant='body2' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {recording.description}
                                             </Typography>
                                         </Stack>

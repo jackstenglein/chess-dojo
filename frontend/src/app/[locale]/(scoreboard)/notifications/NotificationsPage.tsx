@@ -38,8 +38,9 @@ export function NotificationsPage() {
                 direction='row'
                 sx={{
                     justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Typography variant='h4'>{t('title')}</Typography>
 
                 {notifications.length > 0 &&
@@ -56,9 +57,12 @@ export function NotificationsPage() {
                     ))}
             </Stack>
 
-            <Stack spacing={2} sx={{
-                pt: 3
-            }}>
+            <Stack
+                spacing={2}
+                sx={{
+                    pt: 3,
+                }}
+            >
                 {notifications.map((n) => (
                     <NotificationListItem key={n.id} notification={n} />
                 ))}

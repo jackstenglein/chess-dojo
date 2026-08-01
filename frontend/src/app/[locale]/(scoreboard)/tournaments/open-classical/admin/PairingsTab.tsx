@@ -63,9 +63,13 @@ const PairingsTab: React.FC<PairingsTabProps> = ({ openClassical, onUpdate }) =>
                 />
             </Stack>
 
-            <Stack direction='row' spacing={2} sx={{
-                width: 1
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    width: 1,
+                }}
+            >
                 <TextField
                     label='Region'
                     select
@@ -178,8 +182,9 @@ const AdminPairingsTable: React.FC<AdminPairingsTableProps> = ({
                             sx={{
                                 height: 1,
                                 alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Tooltip title={t('viewScreenshotsTooltip')}>
                                 <IconButton
                                     size='small'

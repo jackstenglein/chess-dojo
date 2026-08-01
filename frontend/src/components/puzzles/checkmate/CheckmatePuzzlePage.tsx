@@ -512,9 +512,12 @@ function CheckmatePuzzleUnderboard({
     return (
         <CardContent sx={{ minHeight: 1 }}>
             <Stack sx={{ minHeight: 1 }}>
-                <Stack direction='row' sx={{
-                    gap: 1.5
-                }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1.5,
+                    }}
+                >
                     <Box
                         sx={{
                             minHeight: 1,
@@ -532,8 +535,9 @@ function CheckmatePuzzleUnderboard({
                             variant='subtitle1'
                             sx={{
                                 color: 'text.secondary',
-                                fontWeight: 'bold'
-                            }}>
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('mateIn', {
                                 count:
                                     puzzle?.themes
@@ -552,19 +556,24 @@ function CheckmatePuzzleUnderboard({
                         alignItems: 'center',
                         columnGap: 2,
                         rowGap: 1,
-                        flexWrap: 'wrap'
-                    }}>
+                        flexWrap: 'wrap',
+                    }}
+                >
                     {(showRating || !rated) && (
                         <Stack
                             direction='row'
                             sx={{
                                 alignItems: 'center',
-                                gap: 1.5
-                            }}>
+                                gap: 1.5,
+                            }}
+                        >
                             <Timeline fontSize='large' />
-                            <Typography variant='h4' sx={{
-                                fontWeight: 'bold'
-                            }}>
+                            <Typography
+                                variant='h4'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {rated
                                     ? `${Math.round(displayedRating)}${ratingDeviation >= PROVISIONAL_PUZZLE_RATING_DEVIATION ? '?' : ''}`
                                     : t('unrated')}
@@ -579,7 +588,7 @@ function CheckmatePuzzleUnderboard({
                                               : 'textSecondary'
                                     }
                                     sx={{
-                                        fontWeight: 'bold'
+                                        fontWeight: 'bold',
                                     }}
                                 >
                                     {ratingChange >= 0 && '+'}
@@ -595,8 +604,9 @@ function CheckmatePuzzleUnderboard({
                             sx={{
                                 alignItems: 'center',
                                 gap: 1.5,
-                                color: seconds >= 60 ? 'error.main' : 'text.secondary'
-                            }}>
+                                color: seconds >= 60 ? 'error.main' : 'text.secondary',
+                            }}
+                        >
                             <AccessTime />
                             <Typography variant='h5'>{formatTime(60 - seconds)}</Typography>
                         </Stack>
@@ -609,12 +619,17 @@ function CheckmatePuzzleUnderboard({
                         sx={{
                             alignItems: 'center',
                             mt: 1,
-                            gap: 0.5
-                        }}>
+                            gap: 0.5,
+                        }}
+                    >
                         <LocalFireDepartment color='dojoOrange' sx={{ fontSize: 30 }} />
-                        <Typography variant='h6' color='dojoOrange' sx={{
-                            fontWeight: 'bold'
-                        }}>
+                        <Typography
+                            variant='h6'
+                            color='dojoOrange'
+                            sx={{
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('streakRow', { streak })}
                         </Typography>
                     </Stack>
@@ -625,9 +640,11 @@ function CheckmatePuzzleUnderboard({
                 )}
 
                 {solitaire?.complete && puzzle && (
-                    <Stack sx={{
-                        mt: 2
-                    }}>
+                    <Stack
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <PuzzleDetailRow label={t('puzzleId')} value={puzzle.id} />
                         {showRating && (
                             <>
@@ -656,8 +673,9 @@ function CheckmatePuzzleUnderboard({
                             variant='body2'
                             sx={{
                                 mt: 0.5,
-                                alignSelf: 'end'
-                            }}>
+                                alignSelf: 'end',
+                            }}
+                        >
                             <Link href='/puzzles/history'>{t('viewPuzzleHistory')}</Link>
                         </Typography>
                     </Stack>
@@ -677,12 +695,17 @@ function PuzzleDetailRow({ label, value }: { label: ReactNode; value: string | n
                 borderBottom: '1px solid',
                 borderColor: 'divider',
                 color: 'text.secondary',
-                pt: '2px'
-            }}>
+                pt: '2px',
+            }}
+        >
             <Typography>{label}</Typography>
-            <Typography sx={{
-                fontWeight: 'bold'
-            }}>{value}</Typography>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
         </Stack>
     );
 }

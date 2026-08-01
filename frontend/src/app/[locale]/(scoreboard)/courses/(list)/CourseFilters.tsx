@@ -99,9 +99,12 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                 onChange={handleAccordionChange('categories')}
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
-                    <Typography variant='h6' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('categories')}
                     </Typography>
                 </AccordionSummary>
@@ -134,16 +137,22 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                 onChange={handleAccordionChange('cohortRange')}
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
-                    <Typography variant='h6' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('cohortRange')}
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <Stack spacing={3} sx={{
-                        mt: 2
-                    }}>
+                    <Stack
+                        spacing={3}
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <TextField
                             select
                             fullWidth
@@ -208,9 +217,12 @@ export const CourseFilterEditor: React.FC<CourseFilterEditorProps> = ({ filters 
                 onChange={handleAccordionChange('accessibility')}
             >
                 <AccordionSummary forceExpansion={forceExpansion}>
-                    <Typography variant='h6' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('accessibility')}
                     </Typography>
                 </AccordionSummary>

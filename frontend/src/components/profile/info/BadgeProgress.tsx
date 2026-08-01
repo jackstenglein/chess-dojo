@@ -16,8 +16,9 @@ export function BadgeProgress({ total, earned }: BadgeProgressProps) {
                 gutterBottom
                 sx={{
                     fontWeight: 'bold',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 {t('badgeProgress', {
                     earned,
                     total,

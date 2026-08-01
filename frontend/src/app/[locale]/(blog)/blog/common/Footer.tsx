@@ -17,8 +17,9 @@ export function Footer({
         <Stack
             sx={{
                 alignItems: 'center',
-                mt: 4
-            }}>
+                mt: 4,
+            }}
+        >
             <a
                 href={`https://www.chessdojo.club?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}`}
                 target='_blank'
@@ -35,15 +36,17 @@ export function Footer({
                         backgroundColor: '#F4931E',
                         padding: '20px',
                         borderRadius: '20px',
-                        cursor: 'pointer'
-                    }}>
+                        cursor: 'pointer',
+                    }}
+                >
                     <Image src={logoBlack} alt='' width={80} height={80} />
                     <Typography
                         color='black'
                         sx={{
                             fontWeight: 'bold',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('cta')}
                     </Typography>
                 </Stack>

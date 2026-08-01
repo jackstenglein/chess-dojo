@@ -69,9 +69,12 @@ export function FullTrainingPlanGraduationItem({
     return (
         <>
             <Tooltip title={disabled ? t('reachRatingToUnlock') : ''} followCursor>
-                <Stack spacing={2} sx={{
-                    mt: 2
-                }}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Grid
                         container
                         onClick={isCurrentUser && !disabled ? onOpen : undefined}
@@ -80,38 +83,51 @@ export function FullTrainingPlanGraduationItem({
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             cursor: isCurrentUser && !disabled ? 'pointer' : 'default',
-                            opacity: disabled ? 0.6 : 1
-                        }}>
+                            opacity: disabled ? 0.6 : 1,
+                        }}
+                    >
                         <Grid
                             size={9}
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                rowGap: '0.25rem'
-                            }}>
-                            <Stack direction='row' spacing={1} sx={{
-                                alignItems: 'center'
-                            }}>
+                                rowGap: '0.25rem',
+                            }}
+                        >
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 {disabled && (
                                     <Lock sx={{ color: 'text.secondary', fontSize: 20 }} />
                                 )}
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{requirement.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {requirement.name}
+                                </Typography>
                             </Stack>
                             {showRatingProgress &&
                                 (() => {
                                     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
                                     return (
-                                        <Stack sx={{
-                                            width: 1
-                                        }}>
+                                        <Stack
+                                            sx={{
+                                                width: 1,
+                                            }}
+                                        >
                                             <Stack
                                                 direction='row'
                                                 sx={{
                                                     alignItems: 'center',
-                                                    gap: 0.5
-                                                }}>
+                                                    gap: 0.5,
+                                                }}
+                                            >
                                                 <RatingSystemIcon
                                                     system={user.ratingSystem}
                                                     size='small'
@@ -120,8 +136,9 @@ export function FullTrainingPlanGraduationItem({
                                                     variant='body2'
                                                     sx={{
                                                         color: 'text.secondary',
-                                                        fontWeight: 'bold'
-                                                    }}>
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
                                                     {formatRatingSystem(user.ratingSystem, tRating)}
                                                     {isCustom(user.ratingSystem) &&
                                                         ratingSystemName &&
@@ -132,8 +149,9 @@ export function FullTrainingPlanGraduationItem({
                                                 direction='row'
                                                 sx={{
                                                     alignItems: 'center',
-                                                    gap: 0.5
-                                                }}>
+                                                    gap: 0.5,
+                                                }}
+                                            >
                                                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                                                     <ScoreboardProgress
                                                         value={currentRating}

@@ -17,8 +17,9 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
             spacing={1.5}
             sx={{
                 px: 1,
-                py: 0.75
-            }}>
+                py: 0.75,
+            }}
+        >
             {comments.map((comment) => (
                 <Stack
                     key={comment.id}
@@ -26,7 +27,7 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
                     direction='row'
                     spacing={0.75}
                     sx={{
-                        alignItems: 'flex-start'
+                        alignItems: 'flex-start',
                     }}
                 >
                     <Tooltip title={`Comment by ${comment.owner.displayName}`}>
@@ -45,8 +46,9 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
                             whiteSpace: 'pre-line',
                             minWidth: 0,
                             wordBreak: 'break-word',
-                            paddingTop: '2px'
-                        }}>
+                            paddingTop: '2px',
+                        }}
+                    >
                         {comment.content.trim()}
                     </Typography>
                 </Stack>

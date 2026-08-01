@@ -24,18 +24,25 @@ export default function DojoDigestVol15() {
                 subtitle='Dojo Digest Vol 15 • December 1, 2024'
             />
 
-            <Stack sx={{
-                mt: 3
-            }}>
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>THE WORLD CHAMPIONSHIP!</strong> - The Dojo is doing live commentary for
                     all games on{' '}
                     <Link href='https://www.twitch.tv/chessdojo' target='_blank'>
@@ -56,9 +63,11 @@ export default function DojoDigestVol15() {
                     </Link>{' '}
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The heatmap has evolved! Many thanks to Jalp aka Noobmaster for making a vision
                     into a reality. Take a look at{' '}
                     <Link
@@ -72,8 +81,9 @@ export default function DojoDigestVol15() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={image}
                         alt=''
@@ -81,9 +91,11 @@ export default function DojoDigestVol15() {
                     />
                 </Stack>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Let’s do another one because they are so pretty. Here is{' '}
                     <Link
                         href='https://www.chessdojo.club/profile/google_109298489842354097766?utm_source=newsletter&utm_medium=email&utm_campaign=digest15'
@@ -97,8 +109,9 @@ export default function DojoDigestVol15() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={sidmandoo}
                         alt=''
@@ -106,9 +119,11 @@ export default function DojoDigestVol15() {
                     />
                 </Stack>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     At a glance, we can now see how much a Dojoer has been playing and what kind of
                     work they’ve done. Sensei Kraai is seeing an immediate impact in the graduation
                     show (Twitch.tv/ChessDojo at 12 ET every Wednesday and Thursday!). Dojoers are
@@ -119,9 +134,11 @@ export default function DojoDigestVol15() {
                     better habits.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Round Robin Tournaments</strong> - Jalp also gets credit for creating
                     the{' '}
                     <Link href='https://www.chessdojo.club/tournaments/round-robin' target='_blank'>
@@ -138,8 +155,9 @@ export default function DojoDigestVol15() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={roundrobin}
                         alt=''
@@ -147,24 +165,31 @@ export default function DojoDigestVol15() {
                     />
                 </Stack>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or European club team? Let
                     us know! We would like to bring your teammates to the Dojo and see you with them
                     on a customized scoreboard. We believe the Dojo is the place for teams to track
                     their progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Are you part of a team that wants to have their own scoreboard where you can all
                     follow a program? Then do as the{' '}
                     <Link
@@ -178,17 +203,20 @@ export default function DojoDigestVol15() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={patterson}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/90957cf2-7e8c-43a7-a4f3-f063f24e3781'
                         target='_blank'
@@ -199,9 +227,11 @@ export default function DojoDigestVol15() {
                     of the game here.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/0fed9f5f-0130-4838-aa0e-022fe22ce09a'
                         target='_blank'
@@ -211,9 +241,11 @@ export default function DojoDigestVol15() {
                     won a 16 round blitz tournament for Class C and below players!
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     {' '}
                     <Link
                         href='https://www.chessdojo.club/profile/d34225b1-7332-4cf2-b8e2-3c27d0fef8f8'
@@ -225,9 +257,11 @@ export default function DojoDigestVol15() {
                     improvement since joining the Dojo.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     The Dojo has crossed 2000 total graduations! Great job, everyone!
                 </Typography>
 

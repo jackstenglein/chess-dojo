@@ -47,8 +47,9 @@ export function PlayerNameWithTitle({
             spacing={0.5}
             sx={{
                 alignItems: 'center',
-                minHeight: 0
-            }}>
+                minHeight: 0,
+            }}
+        >
             {titleBeforeName ? (
                 <>
                     {titleElement}

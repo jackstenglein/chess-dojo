@@ -20,27 +20,36 @@ export default function CustomTasks() {
         <Container>
             <Header title='Dojo 4.0 is live!' subtitle='Dojo Blog • May 16, 2025' />
 
-            <Stack sx={{
-                mt: 3
-            }}>
-                <Typography sx={{
-                    mt: 2
-                }}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Not a member? Use code DOJO at checkout to get 40% off your first month at{' '}
                     <Link href='https://chessdojo.club/' target='_blank'>
                         chessdojo.club!
                     </Link>
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Weekly Training Planner + Algo 🗓️
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Introduced several weeks ago, you can now set a weekly training goal (in terms
                     of hours) and the new Dojo algorithm will populate your schedule with tasks from
                     your training plan. The tasks it suggests will be based on the buckets you have
@@ -51,8 +60,9 @@ export default function CustomTasks() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={daily}
                         alt=''
@@ -60,39 +70,50 @@ export default function CustomTasks() {
                     />
                 </Stack>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Folks who preferred the old way can still use the 'Full Training Plan' tab and
                     mark progress in their tasks accordingly.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Check out Jesse's vid on the new training algo{' '}
                     <Link href='https://www.youtube.com/watch?v=PznFV_3EMdE' target='_blank'>
                         here.
                     </Link>{' '}
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updated Training Plan 📚
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Based on member feedback, some books were moved, a few were taken out, and a few
                     were added to the program in various sections (Tactics, Middlegames, Endgames).
                     In general we have tried not to change things too dramatically as we continue to
                     hone in the plan.
                 </Typography>
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Very soon (like today or tomorrow), you'll be able to pin any task, including
                     tasks in other cohorts. So if the book you're reading is in a different cohort,
                     you can select that cohort from the dropdown menu under training plan, locate
@@ -100,22 +121,29 @@ export default function CustomTasks() {
                     progress logged will still count for your heatmap/activity tracker.
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Dojo Points Adjustment 📊
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     New formula for points! Here is the new amount of time each cohort needs to log
                     to earn a Dojo Point:
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     0-400 - 30 minutes <br></br>
                     400-800 - 45 minutes <br></br>
                     800-1200 - 1 hour <br></br>
@@ -124,46 +152,60 @@ export default function CustomTasks() {
                     2000+ - 4 hours
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Yearly Games Requirement ⏱
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Every cohort now has a minimum req to play 40 classical games per year. This is
                     regardless of level. So if you play 20 games this year and then graduate, you
                     will only have 20 games left to complete the requirement, rather than resetting
                     your progress to 0 and having to log another 40 games.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Keep in mind that this is a suggested minimum, more is better! You will continue
                     to earn credit for any games played past 40. The same goes for the Review w/
                     plus, minus, & equal tasks -- you can do more than the suggested minimum and
                     still earn credit.
                 </Typography>
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The goal is to encourage folks to play and review their games as much as
                     possible. Recently I heard that Indian juniors are told to play 150 games per
                     year!
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Bots for Sparring 🤼
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     We've decided that it is OK to spar against bots to fulfill certain sparring
                     requirements. Note that we still 100% recommend doing as much of your training
                     against a real person 🧍‍♂️, but if you have no other option, you can check out
@@ -173,15 +215,20 @@ export default function CustomTasks() {
                     </Link>{' '}
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Repertoire Spy Tool 🔍
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Prepping for a game? Use our new tool to lookup any opponent on
                     Chess.com/Lichess. Stay tuned for Jesse's vid coming up. You can find the tool
                     by going{' '}
@@ -193,8 +240,9 @@ export default function CustomTasks() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={spytool}
                         alt=''
@@ -202,15 +250,20 @@ export default function CustomTasks() {
                     />
                 </Stack>
 
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     DojoAI 🤖
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Got a question about the program? Ask our new{' '}
                     <Link href='https://www.chessdojo.club/help/chat' target='_blank'>
                         DojoAI
@@ -221,8 +274,9 @@ export default function CustomTasks() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={dojoai}
                         alt=''
@@ -230,9 +284,11 @@ export default function CustomTasks() {
                     />
                 </Stack>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     That's all for now! Reminder that you can use code DOJO at checkout to get 40%
                     off your first month at{' '}
                     <Link href='https://chessdojo.club/' target='_blank'>
@@ -240,9 +296,11 @@ export default function CustomTasks() {
                     </Link>
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>
                         Thanks to all for making this the best chess training program out there!
                     </strong>{' '}

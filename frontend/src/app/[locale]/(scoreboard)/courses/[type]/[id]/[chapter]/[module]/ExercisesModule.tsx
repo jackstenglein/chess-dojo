@@ -118,14 +118,16 @@ const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
                 <Stack
                     sx={{
                         mt: 3,
-                        gridArea: 'subtitle'
-                    }}>
+                        gridArea: 'subtitle',
+                    }}
+                >
                     <Typography
                         variant='subtitle2'
                         sx={{
                             fontWeight: 'bold',
-                            color: 'text.secondary'
-                        }}>
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('exerciseNumber', { index: selectedIndex + 1 })}
                     </Typography>
                 </Stack>

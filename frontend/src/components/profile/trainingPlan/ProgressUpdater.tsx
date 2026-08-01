@@ -199,8 +199,9 @@ export const ProgressUpdater = ({
                             container
                             sx={{
                                 width: 1,
-                                gap: 2
-                            }}>
+                                gap: 2,
+                            }}
+                        >
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <DateTimePicker
                                     label={tCommon('date')}

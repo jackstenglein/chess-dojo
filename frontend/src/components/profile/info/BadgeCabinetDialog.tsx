@@ -124,7 +124,7 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                     variant='h6'
                                     color={badge.isEarned ? 'text' : 'text.secondary'}
                                     sx={{
-                                        fontWeight: 'bold'
+                                        fontWeight: 'bold',
                                     }}
                                 >
                                     {badge.title}
@@ -139,8 +139,9 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                             sx={{
                                                 width: 1,
                                                 gap: 1,
-                                                alignItems: 'center'
-                                            }}>
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <LinearProgress
                                                 variant='determinate'
                                                 color='success'
@@ -152,9 +153,12 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                                     filter: 'grayscale(20%) opacity(0.6)',
                                                 }}
                                             />
-                                            <Typography variant='body2' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {badge.currentCount} / {badge.level}
                                             </Typography>
                                         </Stack>

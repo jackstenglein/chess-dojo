@@ -59,9 +59,11 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                     onSuccess={(blog) => setComments(blog.comments ?? null)}
                 />
             ) : (
-                <Typography sx={{
-                    color: 'text.secondary'
-                }}>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t.rich('signInToComment', {
                         link: (chunks) => <Link href='/signin'>{chunks}</Link>,
                     })}

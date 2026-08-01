@@ -105,9 +105,12 @@ export function GameReviewCohortQueue({
                                 </TableCell>
 
                                 <TableCell>
-                                    <Stack direction='row' sx={{
-                                        alignItems: 'center'
-                                    }}>
+                                    <Stack
+                                        direction='row'
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <Avatar
                                             username={member.username}
                                             displayName={member.displayName}
@@ -185,8 +188,9 @@ export function GameReviewCohortQueue({
                                             sx={{
                                                 gap: 2,
                                                 flexWrap: 'wrap',
-                                                alignItems: 'center'
-                                            }}>
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <PauseButton
                                                 member={member}
                                                 onClickPause={onPause}

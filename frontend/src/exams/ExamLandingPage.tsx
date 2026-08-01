@@ -77,20 +77,25 @@ const ExamCard = ({ name, description, href, icon, disabled }: ExamCardProps) =>
                         <Stack
                             sx={{
                                 justifyContent: 'center',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Icon sx={{ fontSize: '5rem', mb: 2 }} color='primary' />
-                            <Typography variant='h5' sx={{
-                                mb: 0.5
-                            }}>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    mb: 0.5,
+                                }}
+                            >
                                 {name}
                             </Typography>
                             <Typography
                                 variant='subtitle1'
                                 sx={{
                                     color: 'text.secondary',
-                                    lineHeight: '1.3'
-                                }}>
+                                    lineHeight: '1.3',
+                                }}
+                            >
                                 {description}
                             </Typography>
                         </Stack>

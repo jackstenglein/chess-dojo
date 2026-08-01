@@ -146,8 +146,9 @@ export const AddToDirectoryDialog = ({
                                 <Typography
                                     sx={{
                                         textAlign: 'center',
-                                        width: 1
-                                    }}>
+                                        width: 1,
+                                    }}
+                                >
                                     {t('folderEmpty')}
                                 </Typography>
                             )}

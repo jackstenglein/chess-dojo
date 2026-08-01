@@ -32,8 +32,9 @@ export default function SidePanelSettings({ tabs }: SidePanelSettingsProps) {
                     spacing={1}
                     sx={{
                         alignItems: { xs: 'stretch', sm: 'center' },
-                        justifyContent: 'space-between'
-                    }}>
+                        justifyContent: 'space-between',
+                    }}
+                >
                     <Typography>{SIDE_PANEL_TAB_LABELS[tab]}</Typography>
                     <ToggleButtonGroup
                         size='small'

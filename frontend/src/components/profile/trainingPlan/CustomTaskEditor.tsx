@@ -197,8 +197,9 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                 <Stack
                     sx={{
                         gap: 3,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <TextField
                         label={t('category')}
                         required

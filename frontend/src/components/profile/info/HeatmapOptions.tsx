@@ -89,16 +89,18 @@ export function HeatmapOptions({ onPopOut }: { onPopOut?: () => void }) {
                 mb: 3,
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                justifyContent: 'space-between'
-            }}>
+                justifyContent: 'space-between',
+            }}
+        >
             <Stack
                 direction='row'
                 sx={{
                     gap: 2,
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    flexGrow: 1
-                }}>
+                    flexGrow: 1,
+                }}
+            >
                 <TextField
                     label={t('type')}
                     size='small'

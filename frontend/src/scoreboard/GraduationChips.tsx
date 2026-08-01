@@ -29,8 +29,9 @@ const GraduationChips: React.FC<GraduationChipsProps> = ({ cohort }) => {
                 columnGap: 1,
                 rowGap: 1,
                 mb: 2,
-                flexWrap: 'wrap'
-            }}>
+                flexWrap: 'wrap',
+            }}
+        >
             {Object.values(ratingSystems).map((rs) => {
                 let minRating = getMinRatingBoundary(cohort, rs);
                 const maxRating = getRatingBoundary(cohort, rs);

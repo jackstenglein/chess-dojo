@@ -33,8 +33,9 @@ function CompletedAfterPgnText() {
             sx={{
                 alignItems: 'center',
                 pb: 1,
-                textAlign: 'center'
-            }}>
+                textAlign: 'center',
+            }}
+        >
             <Divider sx={{ width: 1, mb: 2 }} />
             <Typography>{t('solitaireCompletionMessage')}</Typography>
             <Typography sx={{ mt: 1 }}>

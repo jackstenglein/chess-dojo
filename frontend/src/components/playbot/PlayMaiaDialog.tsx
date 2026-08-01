@@ -67,9 +67,13 @@ export function PlayMaiaDialog({
     return (
         <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
             <DialogTitle>
-                <Stack direction='row' spacing={1} sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <SmartToy color='primary' />
                     <span>{t('title')}</span>
                 </Stack>
@@ -78,25 +82,30 @@ export function PlayMaiaDialog({
                         variant='body2'
                         sx={{
                             color: 'text.secondary',
-                            mt: 0.5
-                        }}>
+                            mt: 0.5,
+                        }}
+                    >
                         {positionTitle}
                     </Typography>
                 )}
             </DialogTitle>
 
             <DialogContent>
-                <Stack spacing={2.5} sx={{
-                    pt: 0.5
-                }}>
+                <Stack
+                    spacing={2.5}
+                    sx={{
+                        pt: 0.5,
+                    }}
+                >
                     {/* Fixed config summary */}
                     <Stack
                         direction='row'
                         spacing={1}
                         sx={{
                             flexWrap: 'wrap',
-                            gap: 0.75
-                        }}>
+                            gap: 0.75,
+                        }}
+                    >
                         <Chip
                             size='small'
                             label={isUnlimited ? 'Unlimited' : `${mins}+${inc}`}
@@ -110,9 +119,13 @@ export function PlayMaiaDialog({
                             sx={{ height: 32 }}
                         >
                             <MenuItem value='white'>
-                                <Stack direction='row' spacing={1} sx={{
-                                    alignItems: 'center'
-                                }}>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Box
                                         sx={{
                                             width: 10,
@@ -127,9 +140,13 @@ export function PlayMaiaDialog({
                                 </Stack>
                             </MenuItem>
                             <MenuItem value='black'>
-                                <Stack direction='row' spacing={1} sx={{
-                                    alignItems: 'center'
-                                }}>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Box
                                         sx={{
                                             width: 10,
@@ -154,8 +171,9 @@ export function PlayMaiaDialog({
                             variant='subtitle2'
                             sx={{
                                 fontWeight: 'bold',
-                                color: 'text.secondary'
-                            }}>
+                                color: 'text.secondary',
+                            }}
+                        >
                             MAIA RATING
                         </Typography>
                         <Select
@@ -166,9 +184,13 @@ export function PlayMaiaDialog({
                         >
                             {MAIA_RATINGS.map((r) => (
                                 <MenuItem key={r} value={r}>
-                                    <Stack direction='row' spacing={1.5} sx={{
-                                        alignItems: 'center'
-                                    }}>
+                                    <Stack
+                                        direction='row'
+                                        spacing={1.5}
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <Chip
                                             label={r}
                                             size='small'
@@ -182,9 +204,12 @@ export function PlayMaiaDialog({
                                 </MenuItem>
                             ))}
                         </Select>
-                        <Typography variant='caption' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             Maia plays like a real human at this rating level — not a weakened
                             engine.
                         </Typography>

@@ -206,8 +206,9 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
                     variant='subtitle2'
                     sx={{
                         color: 'text.secondary',
-                        gridArea: 'header'
-                    }}>
+                        gridArea: 'header',
+                    }}
+                >
                     {chess.pgn.header.tags.White} vs {chess.pgn.header.tags.Black}
                 </Typography>
             )}
@@ -217,8 +218,9 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
                     sx={{
                         gridArea: 'board',
                         aspectRatio: 1,
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Board onInitialize={onRestart} onMove={onMove} />
                 </Box>
                 <Stack
@@ -226,8 +228,9 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
                     sx={{
                         gridArea: 'coach',
                         height: 1,
-                        justifyContent: { xs: 'start', sm: 'flex-end' }
-                    }}>
+                        justifyContent: { xs: 'start', sm: 'flex-end' },
+                    }}
+                >
                     <HintSection
                         status={status}
                         move={move}

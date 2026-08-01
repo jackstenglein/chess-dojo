@@ -137,9 +137,11 @@ export function DownloadGamesDialog({
                                 suffix={t('games')}
                             />
                         ) : (
-                            <Stack sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <CircularProgress />
                             </Stack>
                         )}
@@ -186,8 +188,9 @@ export function DownloadGamesDialog({
                     sx={{
                         flexWrap: 'wrap',
                         columnGap: 1,
-                        mt: 1
-                    }}>
+                        mt: 1,
+                    }}
+                >
                     <FormGroup sx={{ flexGrow: 1, width: { xs: 1, sm: 'unset' } }}>
                         <FormControlLabel
                             control={

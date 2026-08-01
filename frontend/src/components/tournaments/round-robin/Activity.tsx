@@ -128,14 +128,16 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                 spacing={2}
                 sx={{
                     alignItems: 'center',
-                    py: 4
-                }}>
+                    py: 4,
+                }}
+            >
                 <CalendarMonth sx={{ fontSize: 60, color: 'text.secondary' }} />
                 <Typography
                     sx={{
                         textAlign: 'center',
-                        color: 'text.secondary'
-                    }}>
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('noGamesSubmitted')}
                 </Typography>
             </Stack>
@@ -146,34 +148,46 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
         <Stack spacing={3}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <Card sx={{ flex: 1, p: 2 }}>
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('gamesCompleted')}
                     </Typography>
                     <Typography variant='h4'>
                         {completedGames} / {totalPairings}
                     </Typography>
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('completePercent', { percent: completionRate })}
                     </Typography>
                 </Card>
 
                 {mostRecentDate && (
                     <Card sx={{ flex: 1, p: 2 }}>
-                        <Typography variant='body2' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('lastGameSubmitted')}
                         </Typography>
                         <Typography variant='h4'>
                             {t('lastGameTime', { days: daysSinceLastGame ?? 0 })}
                         </Typography>
-                        <Typography variant='body2' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {mostRecentDate.toLocaleDateString()}
                         </Typography>
                     </Card>
@@ -185,29 +199,49 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnDate')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnDate')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnRound')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnRound')}
+                                </Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnWhite')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnWhite')}
+                                </Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnBlack')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnBlack')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('columnResult')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnResult')}
+                                </Typography>
                             </TableCell>
                         </TableRow>
                     </TableHead>
@@ -239,9 +273,11 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                     <TableCell>
                                         <Stack>
                                             {showDateHeader && activity.date && (
-                                                <Typography sx={{
-                                                    fontWeight: 'bold'
-                                                }}>
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
                                                     {activity.date.toLocaleDateString(undefined, {
                                                         weekday: 'short',
                                                         month: 'short',
@@ -250,9 +286,12 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 </Typography>
                                             )}
                                             {activity.date && (
-                                                <Typography variant='body2' sx={{
-                                                    color: 'text.secondary'
-                                                }}>
+                                                <Typography
+                                                    variant='body2'
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                    }}
+                                                >
                                                     {activity.date.toLocaleTimeString(undefined, {
                                                         hour: 'numeric',
                                                         minute: '2-digit',
@@ -274,8 +313,9 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 variant='caption'
                                                 sx={{
                                                     color: 'text.secondary',
-                                                    ml: 1
-                                                }}>
+                                                    ml: 1,
+                                                }}
+                                            >
                                                 {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
@@ -290,8 +330,9 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 variant='caption'
                                                 sx={{
                                                     color: 'text.secondary',
-                                                    ml: 1
-                                                }}>
+                                                    ml: 1,
+                                                }}
+                                            >
                                                 {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
@@ -315,9 +356,12 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                         textAlign: 'center',
                     }}
                 >
-                    <Typography variant='body2' sx={{
-                        fontWeight: 'bold'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
                         {t('stalledWarning', { days: daysSinceLastGame ?? 0 })}
                     </Typography>
                 </Box>

@@ -17,11 +17,16 @@ const MoveNumber: React.FC<MoveNumberProps> = ({ ply }) => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     height: 1,
-                    position: 'relative'
-                }}>
-                <Typography sx={{
-                    color: 'text.secondary'
-                }}>{moveNumber}</Typography>
+                    position: 'relative',
+                }}
+            >
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {moveNumber}
+                </Typography>
                 <Divider orientation='vertical' sx={{ position: 'absolute', right: 0 }} />
             </Stack>
         </Grid>

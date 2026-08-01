@@ -25,9 +25,12 @@ function LoadMoreButton<T>({
 
     if (hasMore || Object.values(startKey || {}).length > 0) {
         return (
-            <Stack spacing={1} sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Button variant='contained' loading={request.isLoading()} onClick={onLoadMore}>
                     {t('loadMore')}
                 </Button>
@@ -38,26 +41,33 @@ function LoadMoreButton<T>({
     if (since) {
         const date = new Date(since);
         return (
-            <Stack spacing={1} sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <CheckCircleOutlinedIcon color='success' fontSize='large' />
 
-                <Stack sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography
                         sx={{
                             fontWeight: 'bold',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('allCaughtUp')}
                     </Typography>
                     <Typography
                         sx={{
                             color: 'text.secondary',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('seenAllSince', {
                             date: toDojoDateString(date, user?.timezoneOverride),
                         })}
@@ -72,26 +82,33 @@ function LoadMoreButton<T>({
     }
 
     return (
-        <Stack spacing={1} sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            spacing={1}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <CheckCircleOutlinedIcon color='success' fontSize='large' />
 
-            <Stack sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
                     sx={{
                         fontWeight: 'bold',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {t('noMorePosts')}
                 </Typography>
                 <Typography
                     sx={{
                         color: 'text.secondary',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {t('seenAllPosts')}
                 </Typography>
             </Stack>

@@ -152,19 +152,25 @@ export function EditTimelinEntryDialog({
                     />
                 </Box>
 
-                <Stack sx={{
-                    mt: 2
-                }}>
+                <Stack
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     {!isTimeOnly && (
-                        <Typography sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('totalCount', { totalCount, cohortCount })}
                         </Typography>
                     )}
-                    <Typography sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('totalTime', {
                             totalHours: Math.floor(totalTime / 60),
                             totalMinutes: totalTime % 60,

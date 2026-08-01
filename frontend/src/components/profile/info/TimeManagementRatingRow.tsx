@@ -59,15 +59,17 @@ export function TimeManagementRatingRow({
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        gap: 0.5
-                    }}>
+                        gap: 0.5,
+                    }}
+                >
                     <AccessTimeIcon sx={{ fontSize: 15, color: 'text.secondary' }} />
                     <Typography
                         variant='body2'
                         sx={{
                             color: 'text.secondary',
-                            fontWeight: 'bold'
-                        }}>
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Time Management
                     </Typography>
                     <Stack
@@ -75,21 +77,26 @@ export function TimeManagementRatingRow({
                         sx={{
                             alignItems: 'center',
                             gap: 0.5,
-                            ml: 'auto'
-                        }}>
+                            ml: 'auto',
+                        }}
+                    >
                         <TimeManagementDirectionIcon area={timeManagementRating.area} />
                         <Typography
                             variant='body2'
                             sx={{
                                 color: 'text.secondary',
-                                fontWeight: 'bold'
-                            }}>
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {timeManagementRating.currentRating}
                             {provisional && '?'}
                         </Typography>
-                        <Typography variant='body2' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {gameCountLabel(numGames)}
                         </Typography>
                     </Stack>

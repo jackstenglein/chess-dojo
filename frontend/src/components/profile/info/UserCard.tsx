@@ -140,28 +140,37 @@ export function UserCard({
                 <Stack
                     sx={{
                         alignItems: 'center',
-                        mb: -1
-                    }}>
+                        mb: -1,
+                    }}
+                >
                     <Avatar user={user} />
                     <Typography
                         variant='h4'
                         sx={{
                             fontWeight: 'bold',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {user.displayName}
                     </Typography>
 
-                    <Stack direction='row' spacing={1} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <CohortIcon
                             cohort={user.dojoCohort}
                             tooltip={t('memberOfCohort', { cohort: user.dojoCohort })}
                         />
-                        <Typography variant='h5' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='h5'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {user.dojoCohort}
                         </Typography>
                     </Stack>
@@ -175,8 +184,9 @@ export function UserCard({
                             alignItems: 'center',
                             justifyContent: 'center',
                             mt: 3,
-                            mb: 3
-                        }}>
+                            mb: 3,
+                        }}
+                    >
                         <CoachChip user={user} />
                         <InactiveChip user={user} />
                         <DiscordChip username={user.discordUsername} id={user.discordId} />

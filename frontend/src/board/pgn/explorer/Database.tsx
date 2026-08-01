@@ -249,8 +249,9 @@ function Database({
                                               height: 1,
                                               alignItems: 'center',
                                               justifyContent: 'center',
-                                              gap: 0.5
-                                          }}>
+                                              gap: 0.5,
+                                          }}
+                                      >
                                           {
                                               (params.row as LichessExplorerMove).performanceData
                                                   ?.performanceRating
@@ -318,9 +319,11 @@ function Database({
 
     if (type !== ExplorerDatabaseType.Lichess && isFreeTier) {
         return (
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <UpsellAlert>{t('upsellDojoDatabases')}</UpsellAlert>
             </Box>
         );
@@ -336,8 +339,9 @@ function Database({
                 sx={{
                     width: 1,
                     alignItems: 'center',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <Typography>{t('noGamesFound')}</Typography>
             </Stack>
         );
@@ -363,7 +367,7 @@ function Database({
             columnSpacing={1}
             rowSpacing={2}
             sx={{
-                mt: 2
+                mt: 2,
             }}
         >
             {type === ExplorerDatabaseType.Dojo && (
@@ -417,9 +421,13 @@ function Database({
             {type === ExplorerDatabaseType.Masters && timeControls && setTimeControls && (
                 <>
                     <Grid size={12}>
-                        <Stack direction='row' spacing={0.5} sx={{
-                            alignItems: 'center'
-                        }}>
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <MultipleSelectChip
                                 label={t('timeControlsLabel')}
                                 selected={timeControls}
@@ -466,8 +474,9 @@ function Database({
                                     height: 1,
                                     width: 1,
                                     alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <Typography>{t('noMovesPlayed')}</Typography>
                                 {type === ExplorerDatabaseType.Dojo &&
                                     cohortRange.length < dojoCohorts.length && (
@@ -512,8 +521,9 @@ function Database({
                             size={12}
                             sx={{
                                 display: 'flex',
-                                justifyContent: 'center'
-                            }}>
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Link
                                 href={`/games?type=position&fen=${fen}&masters=${type === ExplorerDatabaseType.Masters}`}
                                 target='_blank'

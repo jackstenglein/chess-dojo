@@ -168,17 +168,21 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                 sx={{
                                     gap: 2,
                                     flexWrap: 'wrap',
-                                    alignItems: 'center'
-                                }}>
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Select
                                     value={editor.type}
                                     onChange={(e) => editor.setType(e.target.value)}
                                     sx={{ flexGrow: 1 }}
                                 >
                                     <MenuItem value={EventType.Availability}>
-                                        <Stack direction='row' sx={{
-                                            alignItems: 'center'
-                                        }}>
+                                        <Stack
+                                            direction='row'
+                                            sx={{
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <Icon
                                                 name='meet'
                                                 color='book'
@@ -190,9 +194,12 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
 
                                     {(user.isAdmin || user.isCalendarAdmin) && (
                                         <MenuItem value={EventType.Dojo}>
-                                            <Stack direction='row' sx={{
-                                                alignItems: 'center'
-                                            }}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Icon
                                                     name='Dojo Events'
                                                     color='dojoOrange'
@@ -204,9 +211,12 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                     )}
                                     {user.isCoach && (
                                         <MenuItem value={EventType.Coaching}>
-                                            <Stack direction='row' sx={{
-                                                alignItems: 'center'
-                                            }}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Icon
                                                     name='Coaching Sessions'
                                                     color='coaching'
@@ -221,9 +231,12 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                             key={EventType.LectureTier}
                                             value={EventType.LectureTier}
                                         >
-                                            <Stack direction='row' sx={{
-                                                alignItems: 'center'
-                                            }}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <PresenterIcon
                                                     color='success'
                                                     sx={{
@@ -239,9 +252,12 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
                                             key={EventType.GameReviewTier}
                                             value={EventType.GameReviewTier}
                                         >
-                                            <Stack direction='row' sx={{
-                                                alignItems: 'center'
-                                            }}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Troubleshoot
                                                     color='info'
                                                     sx={{ mr: '0.4rem', verticalAlign: 'medium' }}

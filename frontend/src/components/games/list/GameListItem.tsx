@@ -71,8 +71,9 @@ export function IncompleteIcon() {
                     fontSize: '1.5rem',
                     fontWeight: 'bold',
                     lineHeight: 1,
-                    paddingTop: '0.4375rem'
-                }}>
+                    paddingTop: '0.4375rem',
+                }}
+            >
                 *
             </Typography>
         </Box>
@@ -92,8 +93,9 @@ export function WinIcon() {
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 +
             </Typography>
         </Box>
@@ -113,8 +115,9 @@ export function LoseIcon() {
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 –
             </Typography>
         </Box>
@@ -134,8 +137,9 @@ export function DrawIcon() {
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 =
             </Typography>
         </Box>
@@ -159,8 +163,9 @@ export function RenderGameResultStack({ result }: { result: string | undefined |
             spacing={0.25}
             sx={{
                 justifyContent: 'center',
-                height: '100%'
-            }}>
+                height: '100%',
+            }}
+        >
             <GameResultIcon result={result} asWhite />
             <GameResultIcon result={result} asWhite={false} />
         </Stack>
@@ -181,9 +186,12 @@ export function BlackIcon() {
 export function RenderRatingHeader({ white }: { white: boolean }) {
     const t = useTranslations('games.listItem');
     return (
-        <Stack direction='row' sx={{
-            columnGap: '0.125rem'
-        }}>
+        <Stack
+            direction='row'
+            sx={{
+                columnGap: '0.125rem',
+            }}
+        >
             {white ? <WhiteIcon /> : <BlackIcon />} {t('rating')}
         </Stack>
     );
@@ -217,20 +225,25 @@ export function RenderPlayers({
         <Stack
             sx={{
                 height: fullHeight ? 1 : undefined,
-                justifyContent: 'center'
-            }}>
+                justifyContent: 'center',
+            }}
+        >
             <Stack
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    columnGap: '0.25rem'
-                }}>
+                    columnGap: '0.25rem',
+                }}
+            >
                 <WhiteIcon />
                 <Typography variant='body2'>{white}</Typography>
                 {whiteElo && (
-                    <Typography variant='body2' sx={{
-                        overflow: 'hidden'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            overflow: 'hidden',
+                        }}
+                    >
                         {getPlayerRating(whiteElo, whiteProvisional)}
                     </Typography>
                 )}
@@ -239,8 +252,9 @@ export function RenderPlayers({
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    columnGap: '0.25rem'
-                }}>
+                    columnGap: '0.25rem',
+                }}
+            >
                 <BlackIcon />
                 <Typography variant='body2'>{black}</Typography>
                 {blackElo && (
@@ -248,8 +262,9 @@ export function RenderPlayers({
                         variant='body2'
                         sx={{
                             whiteSpace: 'nowrap',
-                            overflow: 'hidden'
-                        }}>
+                            overflow: 'hidden',
+                        }}
+                    >
                         {getPlayerRating(blackElo, blackProvisional)}
                     </Typography>
                 )}
@@ -270,8 +285,9 @@ export function RenderCohort({ cohort }: { cohort: string }) {
             sx={{
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: 1
-            }}>
+                height: 1,
+            }}
+        >
             <CohortIcon cohort={cohort} tooltip={cohort} size={28} />
             <Typography variant='caption' sx={{ fontSize: '0.6rem' }}>
                 {display === MastersCohort ? t('mastersDb') : display}
@@ -294,9 +310,14 @@ export function RenderOwner({
     }
 
     return (
-        <Stack direction='row' spacing={1} onClick={(e) => e.stopPropagation()} sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            direction='row'
+            spacing={1}
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             {avatarSize > 0 && (
                 <Avatar username={owner} displayName={ownerDisplayName} size={avatarSize} />
             )}
@@ -326,8 +347,9 @@ export function RenderTimeControl({ timeControl }: { timeControl?: string }) {
             sx={{
                 height: '100%',
                 display: 'flex',
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='body2'>{getTimeControl({ timeControl })}</Typography>
         </Box>
     );
@@ -411,8 +433,9 @@ export function GameCell({
             sx={{
                 height: 1,
                 justifyContent: 'center',
-                py: 1
-            }}>
+                py: 1,
+            }}
+        >
             <Grid container>
                 <Grid size={1}>
                     <RenderGameResultStack result={headers?.Result} />
@@ -424,8 +447,9 @@ export function GameCell({
                         sx={{
                             flexWrap: 'wrap',
                             justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
+                            alignItems: 'center',
+                        }}
+                    >
                         {RenderPlayers({
                             white: headers?.White,
                             whiteElo: headers?.WhiteElo,
@@ -444,25 +468,32 @@ export function GameCell({
 
                 <Grid size={1}></Grid>
                 <Grid size={11} sx={{ mt: 1 }}>
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {description}
                     </Typography>
                 </Grid>
 
                 <Grid size={1}></Grid>
                 <Grid size={11}>
-                    <Stack direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <CohortIcon cohort={cohort} tooltip={cohort} size={16} />
                         <Typography
                             variant='body2'
                             sx={{
                                 color: 'text.secondary',
-                                ml: 0.5
-                            }}>
+                                ml: 0.5,
+                            }}
+                        >
                             {cohort === MastersCohort ? t('mastersDb') : cohort}
                         </Typography>
 
@@ -472,8 +503,9 @@ export function GameCell({
                                     variant='body2'
                                     sx={{
                                         color: 'text.secondary',
-                                        mx: 0.5
-                                    }}>
+                                        mx: 0.5,
+                                    }}
+                                >
                                     •
                                 </Typography>
                                 {RenderOwner({ ownerDisplayName, owner, avatarSize: 0 })}

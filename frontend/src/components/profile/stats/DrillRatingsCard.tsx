@@ -22,21 +22,30 @@ export function DrillRatingsCard({ mateInOneRating }: DrillRatingsCardProps) {
                         />
                         Drill Ratings
                     </Typography>
-                    <Grid container sx={{
-                        justifyContent: 'center'
-                    }}>
+                    <Grid
+                        container
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Grid
                             size={{ xs: 12, sm: 4 }}
                             sx={{
                                 display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                            <Stack sx={{
-                                alignItems: 'center'
-                            }}>
-                                <Typography variant='body1' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='body1'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     Mate-in-One PR
                                 </Typography>
                                 <Typography

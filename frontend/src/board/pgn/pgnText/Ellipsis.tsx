@@ -34,8 +34,9 @@ export const Ellipsis = ({ ply, firstMove }: { ply: number; firstMove?: boolean 
                 <Typography
                     sx={{
                         color: 'text.secondary',
-                        pl: 1
-                    }}>
+                        pl: 1,
+                    }}
+                >
                     ...
                 </Typography>
             )}

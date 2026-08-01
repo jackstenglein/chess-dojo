@@ -72,8 +72,9 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                                 <Stack
                                     sx={{
                                         alignItems: 'center',
-                                        width: 1
-                                    }}>
+                                        width: 1,
+                                    }}
+                                >
                                     <Typography
                                         sx={{
                                             color: 'primary.main',
@@ -88,8 +89,9 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                                 spacing={1}
                                 sx={{
                                     justifyContent: 'space-between',
-                                    width: 1
-                                }}>
+                                    width: 1,
+                                }}
+                            >
                                 <Typography key={idx} variant='body2'>
                                     {getPgnName(header)}
                                 </Typography>
@@ -112,11 +114,14 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                     sx={{
                         px: 1,
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
-                    <Typography sx={{
-                        textAlign: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('unlockMoreGames', { count: hiddenCount })}
                     </Typography>
                     <Button variant='outlined' component={Link} href='/prices'>

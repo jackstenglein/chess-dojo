@@ -207,9 +207,12 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
 
     return (
         <CardContent sx={{ height: 1 }}>
-            <Stack ref={ref} sx={{
-                height: 1
-            }}>
+            <Stack
+                ref={ref}
+                sx={{
+                    height: 1,
+                }}
+            >
                 <MultipleSelectChip
                     label={t('cohortsLabel')}
                     selected={cohorts}
@@ -247,11 +250,16 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                     sx={{
                         alignItems: 'center',
                         mt: 1,
-                        mb: 1
-                    }}>
-                    <Stack direction='row' spacing={2} sx={{
-                        justifyContent: 'center'
-                    }}>
+                        mb: 1,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        spacing={2}
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography variant='body2'>
                             {t.rich('usersLine', {
                                 count: userCount,
@@ -260,7 +268,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                                         variant='body2'
                                         component='span'
                                         sx={{
-                                            color: 'text.secondary'
+                                            color: 'text.secondary',
                                         }}
                                     >
                                         {chunks}
@@ -276,7 +284,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                                         variant='body2'
                                         component='span'
                                         sx={{
-                                            color: 'text.secondary'
+                                            color: 'text.secondary',
                                         }}
                                     >
                                         {chunks}
@@ -289,8 +297,9 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                         variant='caption'
                         sx={{
                             color: 'text.secondary',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {maxCohort === Infinity
                             ? t('regressionCaptionPlus', { min: minCohort })
                             : t('regressionCaptionRange', { min: minCohort, max: maxCohort })}

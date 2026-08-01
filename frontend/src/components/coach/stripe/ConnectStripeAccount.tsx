@@ -28,9 +28,12 @@ const ConnectStripeAccount = () => {
             <Card variant='outlined'>
                 <CardHeader title={t('title')} />
                 <CardContent>
-                    <Stack spacing={2} sx={{
-                        alignItems: 'start'
-                    }}>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            alignItems: 'start',
+                        }}
+                    >
                         <Typography>{t('body')}</Typography>
 
                         <Button

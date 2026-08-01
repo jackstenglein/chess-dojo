@@ -165,9 +165,13 @@ export function SaveMaiaGameDialog({
             <RequestSnackbar request={request} />
 
             <DialogTitle>
-                <Stack direction='row' spacing={1} sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <SaveOutlined color='primary' />
                     <span>Save Game</span>
                 </Stack>
@@ -184,17 +188,24 @@ export function SaveMaiaGameDialog({
                             px: 1,
                             py: 0.75,
                             bgcolor: 'action.hover',
-                            borderRadius: 1
-                        }}>
+                            borderRadius: 1,
+                        }}
+                    >
                         <Stack>
-                            <Typography variant='body2' sx={{
-                                fontWeight: 600
-                            }}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    fontWeight: 600,
+                                }}
+                            >
                                 {whiteName}
                             </Typography>
-                            <Typography variant='caption' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 White
                             </Typography>
                         </Stack>
@@ -202,21 +213,30 @@ export function SaveMaiaGameDialog({
                             variant='h6'
                             sx={{
                                 fontWeight: 700,
-                                color: 'text.secondary'
-                            }}>
+                                color: 'text.secondary',
+                            }}
+                        >
                             {resultTag}
                         </Typography>
-                        <Stack sx={{
-                            alignItems: 'flex-end'
-                        }}>
-                            <Typography variant='body2' sx={{
-                                fontWeight: 600
-                            }}>
+                        <Stack
+                            sx={{
+                                alignItems: 'flex-end',
+                            }}
+                        >
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    fontWeight: 600,
+                                }}
+                            >
                                 {blackName}
                             </Typography>
-                            <Typography variant='caption' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 Black
                             </Typography>
                         </Stack>

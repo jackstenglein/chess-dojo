@@ -800,15 +800,17 @@ export function CustomEventRenderer({ event, timeFormat, ...props }: CustomEvent
                     overflow: 'hidden',
                     lineClamp: maxLines,
                     fontWeight: 'bold',
-                    lineHeight: 1.3
-                }}>
+                    lineHeight: 1.3,
+                }}
+            >
                 {event.title}
             </Typography>
             <Typography
                 sx={{
                     fontSize: 'inherit',
-                    color: 'inherit'
-                }}>
+                    color: 'inherit',
+                }}
+            >
                 {start} – {end}
             </Typography>
         </Stack>

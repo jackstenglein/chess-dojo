@@ -239,8 +239,9 @@ const SearchGames = ({
                 container
                 sx={{
                     rowGap: 1,
-                    columnGap: { md: 0, lg: 1 }
-                }}>
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <TextField
                         data-testid='player-min-elo'
@@ -312,8 +313,9 @@ const SearchGames = ({
                 container
                 sx={{
                     rowGap: 1,
-                    columnGap: { md: 0, lg: 1 }
-                }}>
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <TextField
                         data-testid='player-min-moves'
@@ -357,8 +359,9 @@ const SearchGames = ({
                 container
                 sx={{
                     rowGap: 1,
-                    columnGap: { md: 0, lg: 1 }
-                }}>
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
                         label={t('startDate')}
@@ -467,8 +470,9 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
                     sx={{
                         color: 'text.secondary',
                         mt: '0 !important',
-                        alignSelf: 'center'
-                    }}>
+                        alignSelf: 'center',
+                    }}
+                >
                     {t('freeTierPosition')}
                 </Typography>
             ) : (

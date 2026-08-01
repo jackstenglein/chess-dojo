@@ -121,29 +121,39 @@ export function SparringPositionPicker({ onSelect }: SparringPositionPickerProps
                     textTransform: 'none',
                 }}
             >
-                <Typography variant='subtitle2' sx={{
-                    fontWeight: 'bold'
-                }}>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
                     BROWSE SPARRING POSITIONS
                 </Typography>
             </Button>
 
             <Collapse in={open} timeout='auto' unmountOnExit>
-                <Stack spacing={1.5} sx={{
-                    mt: 1
-                }}>
+                <Stack
+                    spacing={1.5}
+                    sx={{
+                        mt: 1,
+                    }}
+                >
                     {request.isLoading() ? (
                         <Stack
                             direction='row'
                             spacing={1}
                             sx={{
                                 alignItems: 'center',
-                                py: 1
-                            }}>
+                                py: 1,
+                            }}
+                        >
                             <CircularProgress size={16} />
-                            <Typography variant='body2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 Loading positions…
                             </Typography>
                         </Stack>
@@ -223,16 +233,18 @@ export function SparringPositionPicker({ onSelect }: SparringPositionPickerProps
                                                                 spacing={0.25}
                                                                 sx={{
                                                                     px: 0.75,
-                                                                    py: 0.5
-                                                                }}>
+                                                                    py: 0.5,
+                                                                }}
+                                                            >
                                                                 <Tooltip title={pos.title}>
                                                                     <Typography
                                                                         variant='caption'
                                                                         noWrap
                                                                         sx={{
                                                                             fontWeight: 'bold',
-                                                                            display: 'block'
-                                                                        }}>
+                                                                            display: 'block',
+                                                                        }}
+                                                                    >
                                                                         {pos.title}
                                                                     </Typography>
                                                                 </Tooltip>
@@ -240,7 +252,7 @@ export function SparringPositionPicker({ onSelect }: SparringPositionPickerProps
                                                                     direction='row'
                                                                     spacing={0.5}
                                                                     sx={{
-                                                                        flexWrap: 'wrap'
+                                                                        flexWrap: 'wrap',
                                                                     }}
                                                                 >
                                                                     <Chip
@@ -282,12 +294,16 @@ export function SparringPositionPicker({ onSelect }: SparringPositionPickerProps
                                         spacing={1}
                                         sx={{
                                             alignItems: 'center',
-                                            justifyContent: 'space-between'
-                                        }}>
+                                            justifyContent: 'space-between',
+                                        }}
+                                    >
                                         <Stack spacing={0.25}>
-                                            <Typography variant='body2' sx={{
-                                                fontWeight: 'bold'
-                                            }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    fontWeight: 'bold',
+                                                }}
+                                            >
                                                 {selectedPosition.title}
                                             </Typography>
                                             <Typography
@@ -295,8 +311,9 @@ export function SparringPositionPicker({ onSelect }: SparringPositionPickerProps
                                                 sx={{
                                                     color: 'text.secondary',
                                                     fontFamily: 'monospace',
-                                                    fontSize: '0.65rem'
-                                                }}>
+                                                    fontSize: '0.65rem',
+                                                }}
+                                            >
                                                 {selectedPosition.fen.trim()}
                                             </Typography>
                                         </Stack>

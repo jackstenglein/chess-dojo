@@ -165,7 +165,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
             fullScreen
             open={true}
             slots={{
-                transition: Transition
+                transition: Transition,
             }}
         >
             <RequestSnackbar request={request} />
@@ -216,9 +216,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
 
                     {availability.description && (
                         <Stack>
-                            <Typography variant='h6' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name='notes'
                                     color='primary'
@@ -258,9 +261,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                             />
 
                             <Stack>
-                                <Typography variant='h6' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     <Icon
                                         name='participant'
                                         color='primary'
@@ -282,7 +288,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         direction='row'
                                         spacing={1}
                                         sx={{
-                                            alignItems: 'center'
+                                            alignItems: 'center',
                                         }}
                                     >
                                         <Avatar

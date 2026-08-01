@@ -18,8 +18,9 @@ export function ScoreboardToolbar() {
                     color: 'text.secondary',
                     ml: 0.5,
                     mt: 0.5,
-                    flexGrow: 1
-                }}>
+                    flexGrow: 1,
+                }}
+            >
                 {t('tip')}
             </Typography>
 

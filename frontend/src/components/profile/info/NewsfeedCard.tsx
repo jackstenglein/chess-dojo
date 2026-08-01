@@ -54,11 +54,16 @@ export function NewsfeedCard() {
                         direction='row'
                         sx={{
                             justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                        <Stack direction='row' spacing={1} sx={{
-                            alignItems: 'center'
-                        }}>
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Feed fontSize='small' color='primary' />
                             <Typography variant='h6'>{t('newsfeed')}</Typography>
                         </Stack>
@@ -93,8 +98,9 @@ export function NewsfeedCard() {
                             variant='body2'
                             sx={{
                                 color: 'text.secondary',
-                                textAlign: 'center'
-                            }}>
+                                textAlign: 'center',
+                            }}
+                        >
                             {t('noActivity')}
                         </Typography>
                     )}

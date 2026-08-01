@@ -21,9 +21,11 @@ export function Features() {
         >
             <Grid container spacing='2rem'>
                 <Grid size={{ xs: 12, md: 6 }}>
-                    <Stack sx={{
-                        alignItems: { xs: 'center', md: 'start' }
-                    }}>
+                    <Stack
+                        sx={{
+                            alignItems: { xs: 'center', md: 'start' },
+                        }}
+                    >
                         <Typography
                             sx={{
                                 fontSize: '3rem',

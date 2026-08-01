@@ -23,9 +23,13 @@ export function Crosstable({ tournament }: { tournament: RoundRobin }) {
 
     if (!tournament.players) {
         return (
-            <Typography sx={{
-                textAlign: 'center'
-            }}>{t('noData')}</Typography>
+            <Typography
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
+                {t('noData')}
+            </Typography>
         );
     }
 

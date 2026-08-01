@@ -114,8 +114,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                         display: 'inline',
                         fontSize: 'inherit',
                         lineHeight: 'inherit',
-                        fontWeight: 'inherit'
-                    }}>
+                        fontWeight: 'inherit',
+                    }}
+                >
                     {nagIcons[nag] ? nagIcons[nag] : n.label}
                 </Typography>
             </Tooltip>
@@ -165,11 +166,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                 sx={{
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    width: 1
-                }}>
-                <Stack direction='row' sx={{
-                    alignItems: 'center'
-                }}>
+                    width: 1,
+                }}
+            >
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     {prefixNags}
                     {text}
                     {suffixNags}
@@ -192,8 +197,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        gap: 1
-                    }}>
+                        gap: 1,
+                    }}
+                >
                     {slots?.moveButtonExtras && <slots.moveButtonExtras {...props} />}
                     {time && (
                         <Typography

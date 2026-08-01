@@ -15,9 +15,13 @@ export default function Page() {
         <Container maxWidth='md' sx={{ py: 5 }}>
             <Typography variant='h4'>{t('title')}</Typography>
 
-            <Typography component='div' variant='h6' sx={{
-                mt: 2
-            }}>
+            <Typography
+                component='div'
+                variant='h6'
+                sx={{
+                    mt: 2,
+                }}
+            >
                 {t('introParagraph')}
                 <ul>
                     <li>
@@ -59,9 +63,13 @@ export default function Page() {
                 </ul>
             </Typography>
 
-            <Typography component='div' variant='h6' sx={{
-                mt: 6
-            }}>
+            <Typography
+                component='div'
+                variant='h6'
+                sx={{
+                    mt: 6,
+                }}
+            >
                 {t('freeWaysIntro')}
                 <ul>
                     <li>{t('freeClipTwitch')}</li>
@@ -71,14 +79,21 @@ export default function Page() {
                 </ul>
             </Typography>
 
-            <Typography variant='h5' sx={{
-                mt: 6
-            }}>
+            <Typography
+                variant='h5'
+                sx={{
+                    mt: 6,
+                }}
+            >
                 {t('volunteeringHeading')}
             </Typography>
-            <Typography component='div' variant='h6' sx={{
-                mt: 1
-            }}>
+            <Typography
+                component='div'
+                variant='h6'
+                sx={{
+                    mt: 1,
+                }}
+            >
                 {t('volunteeringIntro')}
                 <ul>
                     <li>{t('volunteerAdmin')}</li>

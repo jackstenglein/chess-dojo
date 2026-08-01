@@ -58,8 +58,9 @@ export default function TrainingTipsDialog({ open, closeDialog }: TrainingTipsDi
                             gridTemplateRows: 'auto 1fr',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '2rem'
-                        }}>
+                            gap: '2rem',
+                        }}
+                    >
                         <TrainingTipsCard
                             name={t('playClassicalGames')}
                             href='/tournaments'
@@ -127,20 +128,25 @@ const TrainingTipsCard = ({ name, children, icon, href, onClick }: TrainingTipsC
                                 height: 1,
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                textAlign: 'center'
-                            }}>
+                                textAlign: 'center',
+                            }}
+                        >
                             <Icon sx={{ fontSize: '4rem', mb: 2 }} color='primary' />
-                            <Typography variant='h5' sx={{
-                                mb: 0.5
-                            }}>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    mb: 0.5,
+                                }}
+                            >
                                 {name}
                             </Typography>
                             <Typography
                                 variant='subtitle1'
                                 sx={{
                                     color: 'text.secondary',
-                                    lineHeight: '1.3'
-                                }}>
+                                    lineHeight: '1.3',
+                                }}
+                            >
                                 {children}
                             </Typography>
                         </Stack>

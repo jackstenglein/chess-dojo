@@ -29,8 +29,9 @@ function CompletedAfterPgnText() {
         <Stack
             sx={{
                 alignItems: 'center',
-                pb: 1
-            }}>
+                pb: 1,
+            }}
+        >
             <Divider sx={{ width: 1, mb: 2 }} />
             <Typography>{t('greatJob')}</Typography>
             <Typography sx={{ mt: 1 }}>

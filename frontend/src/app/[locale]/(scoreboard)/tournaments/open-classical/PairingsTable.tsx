@@ -17,8 +17,9 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
                 sx={{
                     alignItems: 'center',
                     justifyContent: 'center',
-                    height: 1
-                }}>
+                    height: 1,
+                }}
+            >
                 {t('noOpponent')}
             </Stack>
         );
@@ -29,15 +30,17 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
             sx={{
                 my: 1,
                 alignItems: 'center',
-                gap: 0.5
-            }}>
+                gap: 0.5,
+            }}
+        >
             <Link href={`/profile/${player.username}`}>{player.displayName}</Link>
             <Stack
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    gap: 1
-                }}>
+                    gap: 1,
+                }}
+            >
                 <SiLichess width={20} height={20} />
                 <Link
                     href={`https://lichess.org/@/${player.lichessUsername}`}
@@ -51,8 +54,9 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    gap: 1
-                }}>
+                    gap: 1,
+                }}
+            >
                 <DiscordIcon sx={{ color: '#5865f2' }} />
                 <Link
                     href={
@@ -109,8 +113,9 @@ export function getPairingTableColumns(
                             sx={{
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                height: 1
-                            }}>
+                                height: 1,
+                            }}
+                        >
                             {params.value}
                         </Stack>
                     );
@@ -122,8 +127,9 @@ export function getPairingTableColumns(
                         sx={{
                             alignItems: 'center',
                             justifyContent: 'center',
-                            height: 1
-                        }}>
+                            height: 1,
+                        }}
+                    >
                         <div>{params.value}</div>
                         <Tooltip title={t('unverifiedResultTooltip')}>
                             <Warning color='warning' fontSize='small' />
@@ -149,8 +155,9 @@ export function getPairingTableColumns(
                             sx={{
                                 height: 1,
                                 alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
+                                justifyContent: 'center',
+                            }}
+                        >
                             <a target='_blank' rel='noopener noreferrer' href={params.value}>
                                 <OpenInNew color='primary' fontSize='small' />
                             </a>

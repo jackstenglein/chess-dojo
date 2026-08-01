@@ -174,9 +174,12 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     getSubscriptionTier(user) === SubscriptionTier.Lecture) && (
                                     <ProfileTab
                                         label={
-                                            <Stack direction='row' sx={{
-                                                alignItems: 'center'
-                                            }}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 {t('tabLiveClasses')}
                                                 <Chip
                                                     label={t('newChip')}

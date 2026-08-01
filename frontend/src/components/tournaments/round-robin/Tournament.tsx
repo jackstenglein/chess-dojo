@@ -64,11 +64,15 @@ export function Tournament({
                             sx={{
                                 gap: 2,
                                 mt: -2,
-                                mb: 3
-                            }}>
-                            <Stack direction='row' sx={{
-                                gap: 1
-                            }}>
+                                mb: 3,
+                            }}
+                        >
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    gap: 1,
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     color='success'

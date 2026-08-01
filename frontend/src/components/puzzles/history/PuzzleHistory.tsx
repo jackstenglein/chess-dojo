@@ -159,8 +159,9 @@ function UserPuzzleHistory({ user }: { user: User }) {
                                                     direction='row'
                                                     sx={{
                                                         alignItems: 'center',
-                                                        gap: 1
-                                                    }}>
+                                                        gap: 1,
+                                                    }}
+                                                >
                                                     {h.result === 'win' ? (
                                                         <WinIcon />
                                                     ) : h.result === 'draw' ? (

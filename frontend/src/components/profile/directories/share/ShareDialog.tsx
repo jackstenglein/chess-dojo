@@ -273,9 +273,12 @@ function AddAccessSection({
                                     primary={
                                         <Stack>
                                             <span>{user.displayName}</span>
-                                            <Box component='span' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Box
+                                                component='span'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {user.dojoCohort}
                                             </Box>
                                         </Stack>
@@ -338,9 +341,12 @@ function CurrentAccessSection({
         <>
             <RequestSnackbar request={request} />
 
-            <Typography variant='h6' sx={{
-                mt: 3
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 {t('currentAccess')}
             </Typography>
 
@@ -410,8 +416,9 @@ function ListItemSecondary({ user }: { user: User }) {
             direction='row'
             sx={{
                 flexWrap: 'wrap',
-                columnGap: 1.5
-            }}>
+                columnGap: 1.5,
+            }}
+        >
             {chesscom && (
                 <span>
                     <SiChessdotcom style={{ color: '#81b64c', verticalAlign: 'middle' }} />{' '}

@@ -96,12 +96,17 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
 
     if (request.isLoading() && entries.length === 0) {
         return (
-            <Stack sx={{
-                mt: 2
-            }}>
-                <Typography variant='h5' sx={{
-                    alignSelf: 'start'
-                }}>
+            <Stack
+                sx={{
+                    mt: 2,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        alignSelf: 'start',
+                    }}
+                >
                     {t('timeline')}
                 </Typography>
                 <LoadingPage />
@@ -136,12 +141,19 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ user, timeline }) =
     );
 
     return (
-        <Stack spacing={2} sx={{
-            mt: 2
-        }}>
-            <Stack direction='row' spacing={2} sx={{
-                alignItems: 'center'
-            }}>
+        <Stack
+            spacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Typography variant='h5'>{t('timeline')}</Typography>
 
                 <ToggleButtonGroup size='small' value={view}>

@@ -69,8 +69,9 @@ const ControlButtons = () => {
             direction='row'
             sx={{
                 gap: { xs: 1.5, sm: 0 },
-                flexWrap: 'wrap'
-            }}>
+                flexWrap: 'wrap',
+            }}
+        >
             {goToEndBehavior !== GoToEndButtonBehavior.Hidden && (
                 <Tooltip title={t('firstMove')}>
                     <IconButton

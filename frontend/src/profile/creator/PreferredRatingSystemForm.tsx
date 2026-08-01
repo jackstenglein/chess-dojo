@@ -264,9 +264,12 @@ const PreferredRatingSystemForm: React.FC<ProfileCreatorFormProps> = ({
                 </Stack>
             )}
 
-            <Stack direction='row' sx={{
-                justifyContent: 'space-between'
-            }}>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
                     {tPreferred('back')}
                 </Button>

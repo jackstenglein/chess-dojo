@@ -137,12 +137,18 @@ const RegistrationPage = () => {
         <Container maxWidth='md' sx={{ pt: 5, pb: 10 }}>
             <RequestSnackbar request={request} />
 
-            <Stack spacing={4} sx={{
-                alignItems: 'center'
-            }}>
-                <Typography variant='h6' sx={{
-                    alignSelf: 'start'
-                }}>
+            <Stack
+                spacing={4}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    variant='h6'
+                    sx={{
+                        alignSelf: 'start',
+                    }}
+                >
                     {t('titleRegister')}
                 </Typography>
 
@@ -301,9 +307,11 @@ const RegistrationPage = () => {
                 <DialogTitle>{t('confirmationTitle')}</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>{t('confirmationPrompt')}</Typography>
-                    <Stack sx={{
-                        mt: 2
-                    }}>
+                    <Stack
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <FormControlLabel
                             control={
                                 <Checkbox

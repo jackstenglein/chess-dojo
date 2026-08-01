@@ -15,19 +15,22 @@ export const DojoAchievements = ({
         <Typography
             sx={{
                 textAlign: 'center',
-                mt: 4
-            }}>The Dojo has collectively achieved:
-                        <br />
+                mt: 4,
+            }}
+        >
+            The Dojo has collectively achieved:
+            <br />
             <br />
             <strong>{rating}</strong>rating points gained
-                        <br />
+            <br />
             <strong>{hours}</strong>training hours logged
-                        <br />
+            <br />
             <strong>{points}</strong>Dojo points earned
-                        <br />
+            <br />
             <strong>{graduations}</strong>graduations
-                        <br />
-            <br />Keep up the great work!
-                    </Typography>
+            <br />
+            <br />
+            Keep up the great work!
+        </Typography>
     );
 };

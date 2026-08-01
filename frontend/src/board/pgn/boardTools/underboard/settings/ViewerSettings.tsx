@@ -389,9 +389,12 @@ const ViewerSettings = ({
                 )}
 
                 {!enabledSettings && (
-                    <Typography variant='h6' sx={{
-                        mt: 1
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         {t('pgnTextSectionHeader')}
                     </Typography>
                 )}
@@ -458,9 +461,12 @@ const ViewerSettings = ({
                 )}
 
                 {!enabledSettings && (
-                    <Typography variant='h6' sx={{
-                        mt: 1
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         {t('engineSectionHeader')}
                     </Typography>
                 )}
@@ -502,9 +508,12 @@ const ViewerSettings = ({
                 )}
 
                 {!enabledSettings && (
-                    <Typography variant='h6' sx={{
-                        mt: 1
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         {t('soundsSectionHeader')}
                     </Typography>
                 )}

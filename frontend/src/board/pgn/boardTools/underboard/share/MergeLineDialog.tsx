@@ -162,8 +162,9 @@ export function MergeLineDialog({
                         direction='row'
                         sx={{
                             flexWrap: 'wrap',
-                            columnGap: 1
-                        }}>
+                            columnGap: 1,
+                        }}
+                    >
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -191,8 +192,9 @@ export function MergeLineDialog({
                             sx={{
                                 flexWrap: 'wrap',
                                 columnGap: 1,
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <FormControlLabel
                                 control={
                                     <Checkbox

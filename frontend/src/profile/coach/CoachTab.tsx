@@ -43,8 +43,9 @@ const CoachTab: React.FC<CoachTabProps> = ({ user }) => {
                             direction='row'
                             sx={{
                                 justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='h6'>{t('upcomingSessions')}</Typography>
                             <ToggleButtonGroup
                                 exclusive

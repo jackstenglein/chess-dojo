@@ -66,9 +66,11 @@ const CoachingList: React.FC<CoachingListProps> = ({ events, request }) => {
 
     if (events.length === 0) {
         return (
-            <Stack sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Typography>{t('noSessionsFound')}</Typography>
             </Stack>
         );

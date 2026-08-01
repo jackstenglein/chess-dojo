@@ -47,8 +47,9 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
             spacing={1}
             sx={{
                 alignItems: 'start',
-                width: 1
-            }}>
+                width: 1,
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <Avatar user={user} size={40} />

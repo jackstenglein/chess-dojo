@@ -37,8 +37,9 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                 spacing={3}
                 sx={{
                     justifyContent: 'center',
-                    flexWrap: 'wrap'
-                }}>
+                    flexWrap: 'wrap',
+                }}
+            >
                 {!hideInterval && (
                     <Grid
                         size={12}
@@ -72,8 +73,9 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                     spacing={3}
                     sx={{
                         justifyContent: 'center',
-                        flexWrap: { xs: 'wrap-reverse', md: 'wrap' }
-                    }}>
+                        flexWrap: { xs: 'wrap-reverse', md: 'wrap' },
+                    }}
+                >
                     <PriceMatrix
                         onSubscribe={onSubscribe}
                         request={request}
@@ -85,12 +87,18 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                     />
                 </Grid>
 
-                <Grid size={12} sx={{
-                    textAlign: 'center'
-                }}>
-                    <Typography variant='body2' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Grid
+                    size={12}
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('autoRenewNotice')}
                     </Typography>
 
@@ -99,8 +107,9 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                             variant='body2'
                             sx={{
                                 color: 'text.secondary',
-                                mt: 2
-                            }}>
+                                mt: 2,
+                            }}
+                        >
                             {t('annualBillingFootnote')}
                         </Typography>
                     )}

@@ -118,8 +118,9 @@ export default function Settings() {
                     <Stack
                         sx={{
                             rowGap: 2,
-                            pt: 1
-                        }}>
+                            pt: 1,
+                        }}
+                    >
                         <TextField
                             select
                             fullWidth
@@ -187,8 +188,9 @@ export default function Settings() {
                     <Stack
                         sx={{
                             rowGap: { xs: 2, sm: 1 },
-                            my: 3
-                        }}>
+                            my: 3,
+                        }}
+                    >
                         <FormControl disabled={!showEngineEval}>
                             <FormLabel>{t('primaryEvalTypeLabel')}</FormLabel>
                             <RadioGroup

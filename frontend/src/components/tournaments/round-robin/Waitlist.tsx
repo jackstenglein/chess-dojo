@@ -45,8 +45,9 @@ export function Waitlist({
                         sx={{
                             flexWrap: 'wrap',
                             gap: 2,
-                            alignItems: 'center'
-                        }}>
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography variant='h4'>{t('title')}</Typography>
 
                         <Chip

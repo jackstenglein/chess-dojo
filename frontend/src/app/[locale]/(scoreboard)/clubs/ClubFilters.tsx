@@ -87,8 +87,9 @@ export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) =
             sx={{
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                rowGap: 3
-            }}>
+                rowGap: 3,
+            }}
+        >
             <TextField
                 label={t('search')}
                 value={filters.search}
@@ -96,9 +97,13 @@ export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) =
                 sx={{ flexGrow: 1 }}
             />
 
-            <Stack direction='row' spacing={2} sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     select
                     label={t('sortBy')}

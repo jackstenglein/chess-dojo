@@ -596,13 +596,20 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
 
     return (
         <CardContent sx={{ height: 1 }}>
-            <Stack spacing={4} sx={{
-                height: 1
-            }}>
+            <Stack
+                spacing={4}
+                sx={{
+                    height: 1,
+                }}
+            >
                 <Stack>
-                    <Stack direction='row' spacing={0.5} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        spacing={0.5}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography variant='subtitle1'>{t('timeControlLabel')}</Typography>
 
                         {showEditor && (
@@ -621,15 +628,18 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                 </Stack>
 
                 {data.timeRatingEnabled && (
-                    <Stack sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography
                             variant='caption'
                             sx={{
                                 color: 'text.secondary',
-                                mb: 1
-                            }}>
+                                mb: 1,
+                            }}
+                        >
                             {t('timeManagementRatingLabel')}
                         </Typography>
                         <Stack direction='row' spacing={2}>
@@ -658,19 +668,26 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     </Stack>
                 )}
 
-                <Stack spacing={0.5} sx={{
-                    alignItems: 'center'
-                }}>
-                    <Typography variant='caption' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('remainingClockLabel')}
                     </Typography>
                     <Box
                         sx={{
                             width: 1,
-                            height: 300
-                        }}>
+                            height: 300,
+                        }}
+                    >
                         <Chart
                             options={{
                                 data: remainingPerMoveData,
@@ -733,20 +750,27 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     </Stack>
                 </Stack>
 
-                <Stack spacing={0.5} sx={{
-                    alignItems: 'center'
-                }}>
-                    <Typography variant='caption' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('timeUsedPerMoveLabel')}
                     </Typography>
                     <Box
                         sx={{
                             width: 1,
                             height: 20 * Math.ceil(chess.plyCount() / 2) + 10,
-                            minHeight: 70
-                        }}>
+                            minHeight: 70,
+                        }}
+                    >
                         <Chart
                             options={{
                                 data: data.usedPerMove,
@@ -760,19 +784,26 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     </Box>
                 </Stack>
 
-                <Stack spacing={0.5} sx={{
-                    alignItems: 'center'
-                }}>
-                    <Typography variant='caption' sx={{
-                        color: 'text.secondary'
-                    }}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('totalTimeUsedLabel')}
                     </Typography>
                     <Box
                         sx={{
                             width: 1,
-                            height: 120
-                        }}>
+                            height: 120,
+                        }}
+                    >
                         <Chart
                             options={{
                                 data: data.total,
@@ -826,16 +857,18 @@ function TimeRatingCard({
                     display: 'grid',
                     gridTemplateAreas: '". title ." " . rating icon"',
                     gridTemplateColumns: '1fr auto 1fr',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
                     component='div'
                     variant='caption'
                     color={titleColor}
                     sx={{
                         textAlign: 'center',
-                        gridArea: 'title'
-                    }}>
+                        gridArea: 'title',
+                    }}
+                >
                     {title}
                 </Typography>
 
@@ -845,8 +878,9 @@ function TimeRatingCard({
                     align='center'
                     sx={{
                         fontWeight: 'bold',
-                        gridArea: 'rating'
-                    }}>
+                        gridArea: 'rating',
+                    }}
+                >
                     {rating >= 0 ? rating : '?'}
                 </Typography>
 

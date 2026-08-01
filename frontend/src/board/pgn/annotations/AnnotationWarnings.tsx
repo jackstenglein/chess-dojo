@@ -118,8 +118,9 @@ const AnnotationWarnings = () => {
                                     sx={{
                                         mt: 0.5,
                                         alignItems: 'center',
-                                        flexWrap: 'wrap'
-                                    }}>
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
                                     <Typography>
                                         {t('annotationWarningsApplicableMovesLabel')}
                                     </Typography>

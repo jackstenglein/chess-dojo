@@ -62,8 +62,9 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                 rowGap: 2,
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                pt: 1
-            }}>
+                pt: 1,
+            }}
+        >
             <Grid
                 size={{
                     xs: 12,
@@ -71,8 +72,9 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                 }}
                 sx={{
                     display: 'flex',
-                    alignItems: 'end'
-                }}>
+                    alignItems: 'end',
+                }}
+            >
                 <Slider
                     value={typeof value === 'number' ? value : 0}
                     onChange={handleSliderChange}
@@ -89,17 +91,21 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                     sm: 'auto',
                 }}
             >
-                <Stack spacing={0.5} sx={{
-                    alignItems: 'start'
-                }}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     {suffix && (
                         <Typography
                             variant='subtitle2'
                             sx={{
                                 color: 'text.secondary',
                                 textAlign: 'center',
-                                width: 1
-                            }}>
+                                width: 1,
+                            }}
+                        >
                             {suffix}
                         </Typography>
                     )}

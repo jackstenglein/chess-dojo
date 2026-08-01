@@ -148,11 +148,15 @@ export function WorkGoalSettingsEditor({
                         container
                         sx={{
                             alignItems: 'baseline',
-                            rowGap: 2
-                        }}>
-                        <Grid size={12} sx={{
-                            mt: 1
-                        }}>
+                            rowGap: 2,
+                        }}
+                    >
+                        <Grid
+                            size={12}
+                            sx={{
+                                mt: 1,
+                            }}
+                        >
                             <FormLabel>{t('workGoalLabel')}</FormLabel>
                         </Grid>
 
@@ -167,9 +171,12 @@ export function WorkGoalSettingsEditor({
                                     </Grid>
 
                                     <Grid size={{ xs: 7.5, sm: 9 }}>
-                                        <Stack direction='row' sx={{
-                                            gap: { xs: 0.5, sm: 1 }
-                                        }}>
+                                        <Stack
+                                            direction='row'
+                                            sx={{
+                                                gap: { xs: 0.5, sm: 1 },
+                                            }}
+                                        >
                                             <TextField
                                                 label={tCommon('hours')}
                                                 value={time.hours}
@@ -190,9 +197,12 @@ export function WorkGoalSettingsEditor({
                             );
                         })}
 
-                        <Grid size={12} sx={{
-                            mt: 1
-                        }}>
+                        <Grid
+                            size={12}
+                            sx={{
+                                mt: 1,
+                            }}
+                        >
                             <Typography>
                                 {t('totalPerWeek', { time: formatTime(minutesPerWeek, t) })}
                             </Typography>

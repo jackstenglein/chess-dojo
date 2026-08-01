@@ -137,9 +137,11 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                     variant='body2'
                     sx={{
                         color: 'text.secondary',
-                        userSelect: 'none'
-                    }}>—
-                                    </Typography>
+                        userSelect: 'none',
+                    }}
+                >
+                    —
+                </Typography>
             );
         }
 
@@ -175,9 +177,13 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography sx={{
-                                    fontWeight: 'bold'
-                                }}>{t('heading')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('heading')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
                                 <Stack
@@ -185,12 +191,17 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                     sx={{
                                         alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Web fontSize='small' />
-                                    <Typography sx={{
-                                        fontWeight: 'bold'
-                                    }}>{t('site')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('site')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
@@ -199,12 +210,17 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                     sx={{
                                         alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Email fontSize='small' />
-                                    <Typography sx={{
-                                        fontWeight: 'bold'
-                                    }}>{t('email')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('email')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
@@ -213,12 +229,17 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                                     spacing={1}
                                     sx={{
                                         alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <DiscordIcon />
-                                    <Typography sx={{
-                                        fontWeight: 'bold'
-                                    }}>{t('discord')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('discord')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                         </TableRow>

@@ -24,8 +24,9 @@ export function TrainingPlanTab({ user }: { user: User }) {
             spacing={6}
             sx={{
                 alignItems: 'start',
-                mb: 6
-            }}>
+                mb: 6,
+            }}
+        >
             <RequestSnackbar request={trainingPlan.request} />
 
             <TrainingPlanContext value={trainingPlan}>

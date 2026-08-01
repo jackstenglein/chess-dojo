@@ -27,11 +27,15 @@ export function TournamentInfo({ tournament }: { tournament: RoundRobin }) {
             sx={{
                 flexWrap: 'wrap',
                 gap: 1,
-                alignItems: 'center'
-            }}>
-            <Typography variant='h4' sx={{
-                textAlign: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h4'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {tournament.name}
             </Typography>
 

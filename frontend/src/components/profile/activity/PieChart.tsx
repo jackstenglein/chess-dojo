@@ -35,11 +35,15 @@ const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getToolti
         <Stack
             sx={{
                 justifyContent: 'center',
-                alignItems: 'center'
-            }}>
-            <Typography variant='h6' sx={{
-                textAlign: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h6'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {title}
             </Typography>
             {renderTotal(totalScore)}
@@ -80,16 +84,25 @@ const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getToolti
                             justifyContent: 'center',
                             mt: 2,
                             flexWrap: 'wrap',
-                            rowGap: 1
-                        }}>
+                            rowGap: 1,
+                        }}
+                    >
                         {data.map((d) => (
-                            <Stack key={d.name} direction='row' sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                key={d.name}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <CircleIcon sx={{ color: d.color }} />
-                                <Typography sx={{
-                                    ml: '2px'
-                                }}>{d.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        ml: '2px',
+                                    }}
+                                >
+                                    {d.name}
+                                </Typography>
                             </Stack>
                         ))}
                     </Stack>

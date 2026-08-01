@@ -72,23 +72,30 @@ export function NewsfeedListPage() {
                         md: 5,
                     }}
                     sx={{
-                        display: { xs: 'none', md: 'initial' }
+                        display: { xs: 'none', md: 'initial' },
                     }}
                 >
-                    <Stack direction='row' sx={{
-                        height: 1
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            height: 1,
+                        }}
+                    >
                         <Divider orientation='vertical' flexItem sx={{ mr: 8 }} />
-                        <Stack spacing={3} sx={{
-                            width: 1
-                        }}>
+                        <Stack
+                            spacing={3}
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <Stack
                                 direction='row'
                                 sx={{
                                     flexWrap: 'wrap',
                                     justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}>
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography variant='h6'>{t('graduations')}</Typography>
 
                                 <Link href='/recent'>{t('viewAll')}</Link>

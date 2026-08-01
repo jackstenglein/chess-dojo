@@ -82,8 +82,9 @@ const NotificationButton = () => {
                             direction='row'
                             sx={{
                                 justifyContent: 'center',
-                                pb: 1
-                            }}>
+                                pb: 1,
+                            }}
+                        >
                             {clearRequest.isLoading() ? (
                                 <CircularProgress size={24} />
                             ) : (

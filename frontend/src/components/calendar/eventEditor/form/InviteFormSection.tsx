@@ -141,7 +141,7 @@ export function InviteFormSection({
                                         {params.slotProps.input.endAdornment}
                                     </Fragment>
                                 ),
-                            }
+                            },
                         }}
                     />
                 )}
@@ -181,9 +181,12 @@ export function InviteFormSection({
                                     primary={
                                         <Stack>
                                             <span>{user.displayName}</span>
-                                            <Box component='span' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Box
+                                                component='span'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {user.cohort}
                                             </Box>
                                         </Stack>
@@ -216,8 +219,9 @@ function ListItemSecondary({ user }: { user: SearchParticipant }) {
             direction='row'
             sx={{
                 flexWrap: 'wrap',
-                columnGap: 1.5
-            }}>
+                columnGap: 1.5,
+            }}
+        >
             {user.chesscom && (
                 <span>
                     <SiChessdotcom style={{ color: '#81b64c', verticalAlign: 'middle' }} />{' '}

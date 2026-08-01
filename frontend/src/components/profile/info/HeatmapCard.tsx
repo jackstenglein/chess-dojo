@@ -66,7 +66,7 @@ export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHist
                 slotProps={{
                     paper: {
                         elevation: 1,
-                    }
+                    },
                 }}
             >
                 <IconButton

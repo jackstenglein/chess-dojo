@@ -52,8 +52,9 @@ function StatLabel({ children }: { children: ReactNode }) {
             sx={{
                 fontSize: '1rem',
                 color: 'text.secondary',
-                textAlign: 'center'
-            }}>
+                textAlign: 'center',
+            }}
+        >
             {children}
         </Typography>
     );
@@ -81,9 +82,12 @@ function ChangeStat({ label, value }: { label: string; value: number }) {
     return (
         <Stack>
             <StatLabel>{label}</StatLabel>
-            <Stack direction='row' sx={{
-                alignItems: 'start'
-            }}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 {value >= 0 ? (
                     <ArrowUpwardIcon
                         sx={{
@@ -110,8 +114,9 @@ function ChangeStat({ label, value }: { label: string; value: number }) {
                         alignContent: 'center',
                         fontSize: '2.25rem',
                         lineHeight: 1,
-                        fontWeight: 'bold'
-                    }}>
+                        fontWeight: 'bold',
+                    }}
+                >
                     {Math.abs(value)}
                 </Typography>
             </Stack>
@@ -163,19 +168,24 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                     '"system-name blank"',
                     '"chart dojo"',
                     '"stats empty"',
-                ].join('\n')
-            }}>
+                ].join('\n'),
+            }}
+        >
             <Stack
                 direction='row'
                 sx={{
                     justifyContent: 'center',
                     alignItems: 'center',
                     columnGap: '2ch',
-                    gridArea: 'header'
-                }}>
-                <Typography variant='h5' sx={{
-                    lineHeight: 1
-                }}>
+                    gridArea: 'header',
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        lineHeight: 1,
+                    }}
+                >
                     {t.rich('header', {
                         displayName,
                         newCohort,
@@ -198,8 +208,9 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                 sx={{
                     alignContent: 'center',
                     justifyContent: 'space-around',
-                    gridArea: 'stats'
-                }}>
+                    gridArea: 'stats',
+                }}
+            >
                 <Stat label={t('start')} value={startRating} />
                 <ChangeStat label={t('progress')} value={ratingChange} />
                 <Stat label={t('graduation')} value={finalRating} />
@@ -209,8 +220,9 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                 spacing={1.5}
                 sx={{
                     gridArea: 'system-name',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <RatingSystemIcon system={preferredSystem} />
                 <Typography variant='h6' sx={{ mb: -1 }}>
                     {formatRatingSystem(preferredSystem, tRating)}
@@ -219,8 +231,9 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
             <Box
                 sx={{
                     display: 'grid',
-                    gridArea: 'chart'
-                }}>
+                    gridArea: 'chart',
+                }}
+            >
                 <Chart
                     options={{
                         data: historyData,
@@ -237,8 +250,9 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                 sx={{
                     alignContent: 'center',
                     justifyContent: 'center',
-                    gridArea: 'dojo'
-                }}>
+                    gridArea: 'dojo',
+                }}
+            >
                 <Stat label={t('dojoPoints')} value={Math.round(100 * score) / 100} />
                 <Stat label={t('dojoHours')} value={Math.round(10 * hours) / 10} />
                 <Stack
@@ -247,14 +261,16 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     <Box
                         sx={{
                             fontSize: '64px',
                             width: '64px',
-                            height: '64px'
-                        }}>
+                            height: '64px',
+                        }}
+                    >
                         <ChessDojoIcon fontSize='inherit' />
                     </Box>
                     <Typography variant='subtitle2'>{t('chessDojo')}</Typography>

@@ -326,9 +326,13 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
     };
 
     return (
-        <Grid container columnSpacing={1} sx={{
-            justifyContent: 'center'
-        }}>
+        <Grid
+            container
+            columnSpacing={1}
+            sx={{
+                justifyContent: 'center',
+            }}
+        >
             <Grid size={{ xs: 12, sm: 6 }}>
                 <MultipleSelectChip
                     selected={cohorts}
@@ -363,15 +367,19 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     variant='body2'
                     sx={{
                         color: 'text.secondary',
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     {t('clickDetails')}
                 </Typography>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }} sx={{
-                mt: 4
-            }}>
+            <Grid
+                size={{ xs: 12, sm: 6 }}
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <PieChart
                     title={
                         scoreChartCategory
@@ -380,9 +388,11 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     }
                     data={scoreChartData}
                     renderTotal={(score) => (
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='subtitle1'>
                                 {scoreChartCategory
                                     ? t('totalCategoryScore', {
@@ -404,9 +414,12 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                 />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }} sx={{
-                mt: 4
-            }}>
+            <Grid
+                size={{ xs: 12, sm: 6 }}
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <PieChart
                     title={
                         timeChartCategory
@@ -415,9 +428,11 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                     }
                     data={timeChartData}
                     renderTotal={(time) => (
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='subtitle1'>
                                 {timeChartCategory
                                     ? t('totalCategoryTime', { time: getTimeDisplay(time, t) })

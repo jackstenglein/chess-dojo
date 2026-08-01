@@ -242,11 +242,15 @@ export const ExtraSmallMenuUnauthenticated = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexGrow: 1,
-                height: 1
-            }}>
-            <Stack direction='row' sx={{
-                alignItems: 'center'
-            }}>
+                height: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Logo />
                 <Typography
                     component='a'
@@ -284,17 +288,25 @@ export const ExtraSmallMenuUnauthenticated = () => {
                     <ListItemIcon>
                         <LoginIcon />
                     </ListItemIcon>
-                    <Typography sx={{
-                        textAlign: 'center'
-                    }}>{t('signIn')}</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('signIn')}
+                    </Typography>
                 </MenuItem>
                 <MenuItem component='a' href='/signup'>
                     <ListItemIcon>
                         <SensorOccupiedIcon />
                     </ListItemIcon>
-                    <Typography sx={{
-                        textAlign: 'center'
-                    }}>{t('signUp')}</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('signUp')}
+                    </Typography>
                 </MenuItem>
 
                 {startItems.map((item) => [
@@ -305,9 +317,13 @@ export const ExtraSmallMenuUnauthenticated = () => {
                         href={item.href}
                     >
                         <ListItemIcon>{item.icon}</ListItemIcon>
-                        <Typography sx={{
-                            textAlign: 'center'
-                        }}>{item.name}</Typography>
+                        <Typography
+                            sx={{
+                                textAlign: 'center',
+                            }}
+                        >
+                            {item.name}
+                        </Typography>
                         {item.children &&
                             (openItems[item.id] ? (
                                 <ListItemIcon sx={{ position: 'absolute', right: 0 }}>
@@ -338,9 +354,13 @@ export const ExtraSmallMenuUnauthenticated = () => {
                                                 <ChevronRight />
                                             </ListItemIcon>
                                         )}
-                                        <Typography sx={{
-                                            textAlign: 'center'
-                                        }}>{child.name}</Typography>
+                                        <Typography
+                                            sx={{
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {child.name}
+                                        </Typography>
                                     </MenuItem>
                                 ))}
                             </List>

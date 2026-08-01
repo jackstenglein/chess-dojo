@@ -61,24 +61,34 @@ export function TimerButton() {
                             direction='row'
                             sx={{
                                 alignItems: 'center',
-                                gap: 3
-                            }}>
-                            <Typography variant='subtitle1' color='textSecondary' sx={{
-                                fontWeight: 'bold'
-                            }}>
+                                gap: 3,
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle1'
+                                color='textSecondary'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {task ? getTaskName(task) : t('workTimer')}
                             </Typography>
-                            <Typography sx={{
-                                fontWeight: 'bold'
-                            }}>{formatTime(timerSeconds)}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {formatTime(timerSeconds)}
+                            </Typography>
                         </Stack>
 
                         <Stack
                             direction='row'
                             sx={{
                                 gap: 2,
-                                mt: 1
-                            }}>
+                                mt: 1,
+                            }}
+                        >
                             {isRunning ? (
                                 <Button
                                     startIcon={<Pause />}
@@ -139,14 +149,16 @@ export function TimerMenuItem() {
                 sx={{
                     width: 1,
                     alignItems: 'center',
-                    gap: 1
-                }}>
+                    gap: 1,
+                }}
+            >
                 <Typography>{t('title')}</Typography>
                 <Typography
                     sx={{
                         fontWeight: 'bold',
-                        minWidth: '42px'
-                    }}>
+                        minWidth: '42px',
+                    }}
+                >
                     {formatTime(timerSeconds)}
                 </Typography>
                 <Tooltip title={t('reset')}>

@@ -38,8 +38,9 @@ export function ChatInput({ onSend }: { onSend: (message: string) => void }) {
                 display: 'flex',
                 justifyContent: 'center',
                 position: 'sticky',
-                bottom: 0
-            }}>
+                bottom: 0,
+            }}
+        >
             <Paper
                 elevation={3}
                 component='form'

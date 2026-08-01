@@ -77,12 +77,19 @@ export function DailyTrainingPlan() {
     };
 
     return (
-        <Stack data-testid='training-plan-today' spacing={2} sx={{
-            width: 1
-        }}>
-            <Stack direction='row' sx={{
-                alignItems: 'center'
-            }}>
+        <Stack
+            data-testid='training-plan-today'
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
@@ -99,8 +106,9 @@ export function DailyTrainingPlan() {
                     sx={{
                         fontWeight: 'bold',
                         ml: 0.5,
-                        mr: 2
-                    }}>
+                        mr: 2,
+                    }}
+                >
                     {t('today')}
                 </Typography>
 
@@ -168,9 +176,11 @@ function DailyTrainingPlanInternal({
     };
 
     return (
-        <Stack sx={{
-            width: 1
-        }}>
+        <Stack
+            sx={{
+                width: 1,
+            }}
+        >
             {taskDialogView && selectedTask && (
                 <TaskDialog
                     open
@@ -278,9 +288,12 @@ function DailyTrainingPlanItem({
                 >
                     <CardContent sx={{ height: 1 }}>
                         <Stack sx={{ height: 1 }}>
-                            <Stack spacing={1} sx={{
-                                alignItems: 'start'
-                            }}>
+                            <Stack
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'start',
+                                }}
+                            >
                                 <Chip
                                     variant='outlined'
                                     label={
@@ -292,9 +305,12 @@ function DailyTrainingPlanItem({
                                     size='small'
                                 />
 
-                                <Typography variant='h6' sx={{
-                                    fontWeight: 'bold'
-                                }}>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {taskTitle({
                                         task,
                                         cohort: user.dojoCohort,
@@ -314,8 +330,9 @@ function DailyTrainingPlanItem({
                                         WebkitLineClamp: 4,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                >
                                     <TaskDescription>
                                         {task.description.replaceAll('{{count}}', `${totalCount}`)}
                                     </TaskDescription>

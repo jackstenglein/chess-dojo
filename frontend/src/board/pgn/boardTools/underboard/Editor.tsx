@@ -61,8 +61,9 @@ const NagButton: React.FC<NagButtonProps> = ({ text, description, ...props }) =>
                     <Stack
                         sx={{
                             alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography
                             sx={{
                                 whiteSpace: 'nowrap',
@@ -204,16 +205,21 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                 sx={{
                     mt: move ? 2 : undefined,
                     pb: 2,
-                    height: { md: 1 }
-                }}>
+                    height: { md: 1 },
+                }}
+            >
                 {move && isMainline ? (
                     <ClockTextField move={move} />
                 ) : (
                     !move && (
                         <Stack>
-                            <Stack direction='row' spacing={0.5} sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={0.5}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography variant='subtitle1'>{t('timeControl')}</Typography>
 
                                 <Tooltip title={t('editTimeControl')}>
@@ -377,8 +383,9 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         gap: 1,
                         alignItems: 'center',
                         justifyContent: 'center',
-                        flexWrap: 'wrap'
-                    }}>
+                        flexWrap: 'wrap',
+                    }}
+                >
                     {!chess.disableNullMoves && (
                         <Tooltip title={nullMoveStatus.tooltip}>
                             <span>

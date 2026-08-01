@@ -424,20 +424,23 @@ function PriceCard({
                     spacing={3}
                     sx={{
                         alignItems: 'center',
-                        height: 1
-                    }}>
+                        height: 1,
+                    }}
+                >
                     <Stack
                         sx={{
                             alignItems: 'center',
-                            gap: 1
-                        }}>
+                            gap: 1,
+                        }}
+                    >
                         <Typography
                             variant='h6'
                             sx={{
                                 fontWeight: 'bold',
                                 color: 'text.secondary',
-                                textAlign: 'center'
-                            }}>
+                                textAlign: 'center',
+                            }}
+                        >
                             {name}
                         </Typography>
 
@@ -449,8 +452,9 @@ function PriceCard({
                                     sx={{
                                         color: 'text.secondary',
                                         textDecoration: 'line-through',
-                                        verticalAlign: 'middle'
-                                    }}>
+                                        verticalAlign: 'middle',
+                                    }}
+                                >
                                     {price.symbol}
                                     {Math.round(price.fullValue * 100) / 100}
                                 </Typography>
@@ -479,15 +483,19 @@ function PriceCard({
                             sx={{
                                 mt: -1,
                                 color: 'text.secondary',
-                                whiteSpace: 'pre'
-                            }}>
+                                whiteSpace: 'pre',
+                            }}
+                        >
                             {price.subtitle}
                         </Typography>
                     </Stack>
 
-                    <Stack spacing={1} sx={{
-                        flexGrow: 1
-                    }}>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {sellingPoints.map((sp) => (
                             <SellingPoint key={sp.description} {...sp} />
                         ))}

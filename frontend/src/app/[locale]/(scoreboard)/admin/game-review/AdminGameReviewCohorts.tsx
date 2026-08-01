@@ -286,19 +286,30 @@ export function AdminGameReviewCohorts() {
                 <Card variant='outlined'>
                     <CardHeader title='Unassigned Users' />
                     <CardContent>
-                        <Stack spacing={1} sx={{
-                            mt: 1
-                        }}>
+                        <Stack
+                            spacing={1}
+                            sx={{
+                                mt: 1,
+                            }}
+                        >
                             {unassignedUsers.map((m) => (
-                                <Stack key={m.username} direction='row' sx={{
-                                    alignItems: 'center'
-                                }}>
+                                <Stack
+                                    key={m.username}
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Avatar
                                         username={m.username}
                                         displayName={m.displayName}
                                         size={30}
                                     />
-                                    <Link href={`/profile/${m.username}`} target='_blank' sx={{ ml: 1 }}>
+                                    <Link
+                                        href={`/profile/${m.username}`}
+                                        target='_blank'
+                                        sx={{ ml: 1 }}
+                                    >
                                         {m.displayName}
                                     </Link>
                                     {m.dojoCohort && (
@@ -306,8 +317,9 @@ export function AdminGameReviewCohorts() {
                                             variant='body2'
                                             sx={{
                                                 color: 'text.secondary',
-                                                ml: 0.5
-                                            }}>
+                                                ml: 0.5,
+                                            }}
+                                        >
                                             ({m.dojoCohort})
                                         </Typography>
                                     )}
@@ -449,9 +461,12 @@ export function AdminGameReviewCohorts() {
                             <Typography variant='subtitle1' color='textSecondary'>
                                 Remove all members to delete this cohort
                             </Typography>
-                            <Stack spacing={1} sx={{
-                                mt: 1
-                            }}>
+                            <Stack
+                                spacing={1}
+                                sx={{
+                                    mt: 1,
+                                }}
+                            >
                                 {Object.values(grc.members)
                                     .sort((a, b) => {
                                         const [aVal] = getCohortRangeInt(a.dojoCohort);
@@ -462,9 +477,13 @@ export function AdminGameReviewCohorts() {
                                         return aVal - bVal;
                                     })
                                     .map((m) => (
-                                        <Stack key={m.username} direction='row' sx={{
-                                            alignItems: 'center'
-                                        }}>
+                                        <Stack
+                                            key={m.username}
+                                            direction='row'
+                                            sx={{
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <Avatar
                                                 username={m.username}
                                                 displayName={m.displayName}
@@ -482,8 +501,9 @@ export function AdminGameReviewCohorts() {
                                                     variant='body2'
                                                     sx={{
                                                         color: 'text.secondary',
-                                                        ml: 0.5
-                                                    }}>
+                                                        ml: 0.5,
+                                                    }}
+                                                >
                                                     ({m.dojoCohort})
                                                 </Typography>
                                             )}
@@ -510,8 +530,9 @@ export function AdminGameReviewCohorts() {
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        gap: 2
-                    }}>
+                        gap: 2,
+                    }}
+                >
                     <Button onClick={onSave} variant='contained' loading={saveRequest.isLoading()}>
                         Save
                     </Button>
@@ -556,9 +577,12 @@ export function AdminGameReviewCohorts() {
                                     ([cohort, users], groupIndex) => (
                                         <Stack key={cohort} spacing={1}>
                                             {groupIndex > 0 && <Divider />}
-                                            <Typography variant='subtitle2' sx={{
-                                                color: 'text.secondary'
-                                            }}>
+                                            <Typography
+                                                variant='subtitle2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {cohort}
                                             </Typography>
                                             {users.map(
@@ -568,8 +592,9 @@ export function AdminGameReviewCohorts() {
                                                         direction='row'
                                                         sx={{
                                                             alignItems: 'center',
-                                                            opacity: u.isGRMember ? 0.7 : 1
-                                                        }}>
+                                                            opacity: u.isGRMember ? 0.7 : 1,
+                                                        }}
+                                                    >
                                                         <Avatar
                                                             username={u.username}
                                                             displayName={u.displayName}

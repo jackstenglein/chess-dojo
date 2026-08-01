@@ -27,8 +27,9 @@ export default function Page() {
                 variant='h4'
                 sx={{
                     textAlign: 'center',
-                    mb: 2
-                }}>
+                    mb: 2,
+                }}
+            >
                 {t('heading')}
             </Typography>
 

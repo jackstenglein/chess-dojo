@@ -138,9 +138,13 @@ const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon 
     if (icon) return <>{type}</>;
 
     return (
-        <Typography sx={{
-            fontSize: '1.25rem'
-        }}>{type}</Typography>
+        <Typography
+            sx={{
+                fontSize: '1.25rem',
+            }}
+        >
+            {type}
+        </Typography>
     );
 };
 
@@ -231,8 +235,9 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
                         <Typography
                             sx={{
                                 ml: '0.375rem',
-                                fontWeight: '600'
-                            }}>
+                                fontWeight: '600',
+                            }}
+                        >
                             {reactors.length}
                         </Typography>
                     </Button>
@@ -246,8 +251,9 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
                         px: 1,
                         columnGap: 0.5,
                         flexWrap: 'wrap',
-                        maxWidth: 'calc(6 * 2.96875rem)'
-                    }}>
+                        maxWidth: 'calc(6 * 2.96875rem)',
+                    }}
+                >
                     {ReactionTypes.map((type) => (
                         <IconButton
                             key={type}

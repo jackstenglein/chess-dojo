@@ -77,12 +77,16 @@ const DetailsPage = () => {
                 direction='row'
                 sx={{
                     justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <Stack spacing={1}>
-                    <Typography variant='h4' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Typography
+                        variant='h4'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {t('title')}
                     </Typography>
                     <Stack direction='row' spacing={1}>
@@ -160,17 +164,21 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
     );
 
     return (
-        <Stack spacing={3} sx={{
-            mt: 4
-        }}>
+        <Stack
+            spacing={3}
+            sx={{
+                mt: 4,
+            }}
+        >
             {openClassical.acceptingRegistrations ? (
                 <Stack
                     spacing={2}
                     sx={{
                         mt: 4,
                         pb: 5,
-                        alignItems: 'start'
-                    }}>
+                        alignItems: 'start',
+                    }}
+                >
                     <Typography>
                         {registeredSection
                             ? t('registeredMessage', {
@@ -209,9 +217,13 @@ const Details: React.FC<DetailsProps> = ({ openClassical }) => {
                 <Typography>{t('previousResults', { name: openClassical.name })}</Typography>
             )}
 
-            <Stack direction='row' spacing={2} sx={{
-                width: 1
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    width: 1,
+                }}
+            >
                 <TextField
                     label={t('labelRegion')}
                     select

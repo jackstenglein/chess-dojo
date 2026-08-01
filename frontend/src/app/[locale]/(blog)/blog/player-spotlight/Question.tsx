@@ -7,8 +7,9 @@ export const Question = ({ children }: { children: ReactNode }) => {
             sx={{
                 fontWeight: 'bold',
                 mt: 3,
-                mb: 1
-            }}>
+                mb: 1,
+            }}
+        >
             {children}
         </Typography>
     );

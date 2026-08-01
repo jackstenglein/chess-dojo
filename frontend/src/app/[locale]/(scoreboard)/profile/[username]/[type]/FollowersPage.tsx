@@ -54,9 +54,12 @@ export function FollowersPage({
             <Stack>
                 <UserInfo user={user} linkUsername />
 
-                <Typography variant='h5' sx={{
-                    mt: 5
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 5,
+                    }}
+                >
                     {title}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />

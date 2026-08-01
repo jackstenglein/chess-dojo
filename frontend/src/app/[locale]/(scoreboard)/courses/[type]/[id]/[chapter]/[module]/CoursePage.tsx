@@ -105,22 +105,30 @@ export const CoursePage = ({
                     {t('anonymousWarning')}
                 </Alert>
             )}
-            <Grid container sx={{
-                rowGap: 2
-            }}>
+            <Grid
+                container
+                sx={{
+                    rowGap: 2,
+                }}
+            >
                 <Grid size={{ xs: 12, md: 9.5 }}>
                     <Stack>
                         <Typography variant='h4'>{course.name}</Typography>
-                        <Typography variant='h5' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='h5'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {course.cohortRange}
                         </Typography>
                         <Divider />
 
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <Module module={courseModule} />
                         </Box>
                     </Stack>
@@ -130,8 +138,9 @@ export const CoursePage = ({
                         sx={{
                             justifyContent: 'space-between',
                             mt: 4,
-                            px: { xs: 0, md: 4 }
-                        }}>
+                            px: { xs: 0, md: 4 },
+                        }}
+                    >
                         {prevModule && (
                             <Button
                                 variant='contained'

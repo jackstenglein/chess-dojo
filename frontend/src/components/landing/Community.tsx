@@ -18,8 +18,9 @@ export function Community() {
                             alignItems: { xs: 'center', md: 'start' },
                             gap: '1.5rem',
                             position: { xs: 'unset', md: 'sticky' },
-                            top: 'calc(var(--navbar-height) + 1rem)'
-                        }}>
+                            top: 'calc(var(--navbar-height) + 1rem)',
+                        }}
+                    >
                         <Typography
                             sx={{
                                 fontSize: '3rem',
@@ -55,9 +56,13 @@ export function Community() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Grid container spacing='2rem' sx={{
-                        justifyContent: { xs: 'center', md: 'start' }
-                    }}>
+                    <Grid
+                        container
+                        spacing='2rem'
+                        sx={{
+                            justifyContent: { xs: 'center', md: 'start' },
+                        }}
+                    >
                         {communityBulletPoints.map((bp) => (
                             <Grid size={{ xs: 11, md: 6 }} key={bp.key}>
                                 <BulletPoint
@@ -72,8 +77,9 @@ export function Community() {
                             sx={{
                                 display: 'flex',
                                 justifyContent: 'center',
-                                mt: 3
-                            }}>
+                                mt: 3,
+                            }}
+                        >
                             <JoinDojoButton />
                         </Grid>
                     </Grid>

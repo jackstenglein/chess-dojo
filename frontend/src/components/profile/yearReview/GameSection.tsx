@@ -96,22 +96,28 @@ const GameSection = ({ review }: SectionProps) => {
         <Stack
             sx={{
                 width: 1,
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
                 sx={{
                     fontWeight: '800',
                     fontSize: 'clamp(16px,3vw,32px)',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 {t('intro')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
                 <CardContent>
-                    <Grid container rowSpacing={2} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Grid
                             size={{
                                 xs: 12,
@@ -119,14 +125,20 @@ const GameSection = ({ review }: SectionProps) => {
                             }}
                             sx={{
                                 display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                            <Stack sx={{
-                                alignItems: 'center'
-                            }}>
-                                <Typography variant='caption' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('totalGames')}
                                 </Typography>
 
@@ -156,14 +168,20 @@ const GameSection = ({ review }: SectionProps) => {
                             }}
                             sx={{
                                 display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                            <Stack sx={{
-                                alignItems: 'center'
-                            }}>
-                                <Typography variant='caption' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('publishedGames')}
                                 </Typography>
 
@@ -187,19 +205,26 @@ const GameSection = ({ review }: SectionProps) => {
                         />
                     </Grid>
 
-                    <Stack spacing={4} sx={{
-                        mt: 4
-                    }}>
-                        <Stack spacing={0.5} sx={{
-                            alignItems: 'start'
-                        }}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byResult')}</Typography>
                             <Box
                                 sx={{
                                     width: 1,
                                     height: 400,
-                                    mt: 2
-                                }}>
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: resultData,
@@ -220,19 +245,26 @@ const GameSection = ({ review }: SectionProps) => {
                         </Stack>
                     </Stack>
 
-                    <Stack spacing={4} sx={{
-                        mt: 4
-                    }}>
-                        <Stack spacing={0.5} sx={{
-                            alignItems: 'start'
-                        }}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byMonth')}</Typography>
                             <Box
                                 sx={{
                                     width: 1,
                                     height: 400,
-                                    mt: 2
-                                }}>
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: monthData,

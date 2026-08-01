@@ -50,7 +50,7 @@ export function ReviewQueuePage() {
                         spacing={1}
                         onClick={(e) => e.stopPropagation()}
                         sx={{
-                            alignItems: 'center'
+                            alignItems: 'center',
                         }}
                     >
                         <Avatar
@@ -167,8 +167,9 @@ export function ReviewQueuePage() {
             <Typography
                 sx={{
                     color: 'text.secondary',
-                    mb: 3
-                }}>
+                    mb: 3,
+                }}
+            >
                 {t.rich('description', {
                     link: (chunks) => (
                         <Link

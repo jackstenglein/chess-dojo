@@ -100,9 +100,12 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
             <Accordion expanded={forceExpansion || expanded} onChange={(_, e) => setExpanded(e)}>
                 {!forceExpansion && (
                     <AccordionSummary forceExpansion={forceExpansion}>
-                        <Typography variant='h6' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='h6'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('filters')}
                         </Typography>
                     </AccordionSummary>
@@ -113,9 +116,12 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                         <TimezoneFilter filters={filters} />
 
                         <Stack>
-                            <Typography variant='h6' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name='liga'
                                     sx={{
@@ -142,9 +148,12 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                         </Stack>
 
                         <Stack>
-                            <Typography variant='h6' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name='tc'
                                     sx={{
@@ -171,9 +180,12 @@ export const TournamentCalendarFilters: React.FC<TournamentCalendarFiltersProps>
                         </Stack>
 
                         <Stack>
-                            <Typography variant='h6' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name={RequirementCategory.Endgame}
                                     sx={{

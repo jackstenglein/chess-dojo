@@ -55,8 +55,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                     sx={{
                         justifyContent: 'space-between',
                         height: 'calc(100vh - var(--navbar-height))',
-                        py: 4
-                    }}>
+                        py: 4,
+                    }}
+                >
                     <Stack>
                         <Stack
                             direction='row'
@@ -77,8 +78,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                                 fontSize: {
                                     xs: '15vw',
                                     sm: 'clamp(30px,7vw,8em)',
-                                }
-                            }}>
+                                },
+                            }}
+                        >
                             <Avatar
                                 username={username}
                                 displayName={review.displayName}
@@ -86,16 +88,20 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                                     xs: 'clamp(48px,7vw,96px)',
                                 }}
                             />
-                            <Stack spacing={0.5} sx={{
-                                alignItems: 'start'
-                            }}>
+                            <Stack
+                                spacing={0.5}
+                                sx={{
+                                    alignItems: 'start',
+                                }}
+                            >
                                 <Typography
                                     variant='h2'
                                     sx={{
                                         fontWeight: '800',
                                         color: 'dojoOrange.main',
-                                        fontSize: '0.55em'
-                                    }}>
+                                        fontSize: '0.55em',
+                                    }}
+                                >
                                     {review.displayName}
                                 </Typography>
                                 <Typography
@@ -103,8 +109,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                                     sx={{
                                         fontWeight: '800',
                                         color: 'text.secondary',
-                                        fontSize: '0.3em'
-                                    }}>
+                                        fontSize: '0.3em',
+                                    }}
+                                >
                                     {review.currentCohort}
                                 </Typography>
                             </Stack>
@@ -140,15 +147,17 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                     <Stack
                         sx={{
                             alignItems: 'center',
-                            mt: 5
-                        }}>
+                            mt: 5,
+                        }}
+                    >
                         <Typography
                             variant='h6'
                             sx={{
                                 fontWeight: '800',
                                 fontSize: 'clamp(24px,3vw,40px)',
-                                textAlign: 'center'
-                            }}>
+                                textAlign: 'center',
+                            }}
+                        >
                             {t('progressIntro')}
                         </Typography>
                     </Stack>
@@ -166,8 +175,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                     sx={{
                         maxWidth: 'md',
                         pb: 4,
-                        margin: 'auto'
-                    }}>
+                        margin: 'auto',
+                    }}
+                >
                     <RatingsSection review={review} />
                     <GraduationSection review={review} />
 
@@ -177,8 +187,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                             fontWeight: '800',
                             fontSize: 'clamp(16px,3vw,32px)',
                             textAlign: 'center',
-                            pt: 5
-                        }}>
+                            pt: 5,
+                        }}
+                    >
                         {t('sweatWork')}
                     </Typography>
                 </Stack>
@@ -194,8 +205,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                     sx={{
                         maxWidth: 'md',
                         pb: 4,
-                        margin: 'auto'
-                    }}>
+                        margin: 'auto',
+                    }}
+                >
                     <DojoPointSection review={review} />
                     <TimeSection review={review} />
                     <GameSection review={review} />
@@ -205,8 +217,9 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                         sx={{
                             fontWeight: '800',
                             fontSize: 'clamp(16px,3vw,32px)',
-                            textAlign: 'center'
-                        }}>
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('thankYou', { nextYear: parseInt(year) + 1 })}
                     </Typography>
                 </Stack>

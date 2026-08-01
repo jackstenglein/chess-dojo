@@ -36,8 +36,9 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                 sx={{
                     width: 1,
                     alignItems: 'center',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <Typography>{t('tablebaseAvailabilityMessage')}</Typography>
             </Stack>
         );
@@ -54,8 +55,9 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                 sx={{
                     width: 1,
                     alignItems: 'center',
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <Typography>{t('noTablebaseFound')}</Typography>
             </Stack>
         );
@@ -103,8 +105,9 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                     sx={{
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     {move.san}
 
                     <Stack direction='row' spacing={0.5}>
@@ -136,8 +139,9 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                 mt: 2,
                 borderRadius: '4px',
                 border: '1px solid',
-                borderColor: 'divider'
-            }}>
+                borderColor: 'divider',
+            }}
+        >
             {items}
         </Stack>
     );

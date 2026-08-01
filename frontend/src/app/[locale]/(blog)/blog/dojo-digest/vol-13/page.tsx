@@ -23,18 +23,25 @@ export default function DojoDigestVol13() {
                 subtitle='Dojo Digest Vol 13 • October 1, 2024'
             />
 
-            <Stack sx={{
-                mt: 3
-            }}>
-                <Typography variant='h5' sx={{
-                    mt: 2
-                }}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>Engines</strong> - Stockfish 17 (desktop version) and Stockfish 16
                     (mobile version) are now both available in our game annotator. Both engines run
                     locally in your browser, although we plan to add stronger, cloud-based engines
@@ -49,8 +56,9 @@ export default function DojoDigestVol13() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={stockfishImage}
                         alt=''
@@ -59,16 +67,19 @@ export default function DojoDigestVol13() {
                     <Typography
                         sx={{
                             textAlign: 'center',
-                            color: 'text.secondary'
-                        }}>
+                            color: 'text.secondary',
+                        }}
+                    >
                         In this example, the user did not originally have the move 1. Nf3 in their
                         analysis and added it by consulting the engine.{' '}
                     </Typography>
                 </Stack>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Activity Heatmap</strong> - We've added a new section to the profile
                     page. You can now see at a glance how active you've been over the past year. In
                     his recent graduation,{' '}
@@ -86,8 +97,9 @@ export default function DojoDigestVol13() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={activityHeatmapImage}
                         alt=''
@@ -96,15 +108,18 @@ export default function DojoDigestVol13() {
                     <Typography
                         sx={{
                             textAlign: 'center',
-                            color: 'text.secondary'
-                        }}>
+                            color: 'text.secondary',
+                        }}
+                    >
                         Covbob's activity heatmap. He's started a great streak!
                     </Typography>
                 </Stack>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>New Rating Translator</strong> - We've finally updated our rating
                     translator to account for the FIDE boost in March, Lichess inflation, and
                     general inconsistencies between the different rating systems. We believe the
@@ -141,9 +156,11 @@ export default function DojoDigestVol13() {
                     for more information.
                 </Typography>
 
-                <Typography sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Dojo Arenas</strong> - Way back at the beginning of the Dojo, the
                     senseis hosted a Twitch show called Friday Night Fights, where they commentated
                     live viewer games. IM David Pruess is now reinstating that tradition, along with
@@ -163,15 +180,20 @@ export default function DojoDigestVol13() {
                     .
                 </Typography>
 
-                <Typography variant='h5' sx={{
-                    mt: 4
-                }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Sensei Kostya continued his tour around Europe, playing in the 28th GHA
                     International Chess Festival in Italy. He had his best tournament in a while and
                     tied for first (second on tiebreaks) with a score of 6.5/9 and a performance
@@ -181,8 +203,9 @@ export default function DojoDigestVol13() {
                 <Stack
                     sx={{
                         mt: 2,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kostyaImage}
                         alt=''
@@ -191,15 +214,18 @@ export default function DojoDigestVol13() {
                     <Typography
                         sx={{
                             textAlign: 'center',
-                            color: 'text.secondary'
-                        }}>
+                            color: 'text.secondary',
+                        }}
+                    >
                         L-R: Kostya, GM Alsina Leal, FM Kalosha, Andrea Rebegianni
                     </Typography>
                 </Stack>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     From there, Kostya continued on to Budapest to watch the Olympiad. You can read
                     his takeaways from the Olympiad on{' '}
                     <Link
@@ -215,9 +241,11 @@ export default function DojoDigestVol13() {
                     !
                 </Typography>
 
-                <Typography sx={{
-                    mt: 2
-                }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         target='_blank'
                         href='https://www.chessdojo.club/blog/player-spotlight/lifecanbesonice?utm_source=newsletter&utm_medium=blog&utm_campaign=digest13'

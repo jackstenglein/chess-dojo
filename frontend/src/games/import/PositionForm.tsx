@@ -124,8 +124,9 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                     spacing={2}
                     sx={{
                         mt: 0.8,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Autocomplete
                         id={BlockBoardKeyboardShortcuts}
                         sx={{ width: 1 }}

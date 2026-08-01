@@ -40,8 +40,9 @@ export const ProgressText = ({
             sx={{
                 whiteSpace: 'no-wrap',
                 color: 'text.secondary',
-                fontWeight: 'bold'
-            }}>
+                fontWeight: 'bold',
+            }}
+        >
             {formattedLabel}
         </Typography>
     );

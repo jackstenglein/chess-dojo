@@ -80,8 +80,9 @@ export function ColorFormSection({ editor }: { editor: UseEventEditorResponse })
                         gap: 0.75,
                         py: 0.5,
                         px: 1,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     {options.map((option) => (
                         <Tooltip key={option} title={colorLabels[option]} disableInteractive>
                             <Box

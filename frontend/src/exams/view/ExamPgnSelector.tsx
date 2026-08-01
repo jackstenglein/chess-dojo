@@ -90,11 +90,15 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
             <Stack
                 sx={{
                     alignItems: 'center',
-                    mb: 3
-                }}>
-                <Typography variant='h6' sx={{
-                    color: 'text.secondary'
-                }}>
+                    mb: 3,
+                }}
+            >
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {cohortRange}: {name}
                 </Typography>
             </Stack>
@@ -103,8 +107,9 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
+                    justifyContent: 'center',
+                }}
+            >
                 <CountdownTimer {...countdown} />
                 {onPause && (
                     <Button variant='contained' onClick={onPause} loading={pauseLoading}>
@@ -125,8 +130,9 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                                 <Stack
                                     sx={{
                                         alignItems: 'center',
-                                        width: 1
-                                    }}>
+                                        width: 1,
+                                    }}
+                                >
                                     <Typography
                                         sx={{
                                             color: 'primary.main',
@@ -141,8 +147,9 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                                 spacing={1}
                                 sx={{
                                     justifyContent: 'space-between',
-                                    width: 1
-                                }}>
+                                    width: 1,
+                                }}
+                            >
                                 <Typography>
                                     {pgnNames?.[i] || t('problemFallback', { number: i + 1 })}
                                 </Typography>
@@ -158,9 +165,11 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
                                             <Warning color='warning' />
                                         </Tooltip>
                                     )}
-                                    <Typography sx={{
-                                        color: 'text.secondary'
-                                    }}>
+                                    <Typography
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
                                         {orientations[i] === 'white' ? t('white') : t('black')}
                                     </Typography>
                                 </Stack>
@@ -173,8 +182,9 @@ const ExamPgnSelector: React.FC<ExamPgnSelectorProps> = ({
             <Stack
                 sx={{
                     alignItems: 'center',
-                    mt: 3
-                }}>
+                    mt: 3,
+                }}
+            >
                 <Button
                     variant='contained'
                     onClick={() => setIsFinishEarly(true)}

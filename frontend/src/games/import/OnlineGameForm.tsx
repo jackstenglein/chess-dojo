@@ -418,11 +418,16 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
                     sx={{
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        justifyContent: 'space-between'
-                    }}>
-                    <Stack direction='row' spacing={1} sx={{
-                        alignItems: 'center'
-                    }}>
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {game.source === GameImportTypes.lichessGame ? (
                             <SiLichess />
                         ) : (
@@ -433,12 +438,19 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' spacing={1} sx={{
-                        alignItems: 'center'
-                    }}>
-                        <Typography variant='caption' sx={{
-                            color: 'text.secondary'
-                        }}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {game.rated ? t('gameCardRated') : t('gameCardCasual')}
                         </Typography>
                         {matchesCohort ? (
@@ -627,8 +639,9 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         sx={{
                             alignSelf: 'flex-end',
                             paddingRight: 1,
-                            paddingTop: 1
-                        }}>
+                            paddingTop: 1,
+                        }}
+                    >
                         <Button disabled={isImporting} onClick={onClose}>
                             {t('cancel')}
                         </Button>
@@ -642,16 +655,20 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                             spacing={1}
                             sx={{
                                 alignItems: 'center',
-                                mb: 2
-                            }}>
+                                mb: 2,
+                            }}
+                        >
                             <CohortIcon
                                 cohort={user.dojoCohort}
                                 tooltip={user.dojoCohort}
                                 size={28}
                             />
-                            <Typography variant='caption' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t.rich('cohortMinimumTimeControlHint', {
                                     cohort: user.dojoCohort,
                                     timeControl: getTimeControl(user.dojoCohort),
@@ -693,8 +710,9 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                 spacing={1}
                                 sx={{
                                     alignItems: 'center',
-                                    mb: 2
-                                }}>
+                                    mb: 2,
+                                }}
+                            >
                                 <Button
                                     size='small'
                                     startIcon={<FilterListIcon />}
@@ -740,8 +758,9 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     pt: 6,
-                                    pb: 4
-                                }}>
+                                    pb: 4,
+                                }}
+                            >
                                 <CircularProgress />
                             </Stack>
                         ) : processedGames.length === 0 ? (
@@ -749,8 +768,9 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                 variant='body2'
                                 sx={{
                                     color: 'text.secondary',
-                                    py: 2
-                                }}>
+                                    py: 2,
+                                }}
+                            >
                                 {hasActiveFilters || searchText.trim()
                                     ? t('noGamesMatchFilters')
                                     : t('noRecentGames')}
@@ -764,8 +784,9 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                     <Stack
                                         sx={{
                                             alignItems: 'center',
-                                            pt: 2
-                                        }}>
+                                            pt: 2,
+                                        }}
+                                    >
                                         <Pagination
                                             data-testid='online-games-pagination'
                                             count={pageCount}

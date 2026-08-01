@@ -46,22 +46,26 @@ const Result = () => {
     }
 
     return (
-        <Stack sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Divider sx={{ width: 1 }} />
             <Typography
                 sx={{
                     fontWeight: 'bold',
-                    mt: 1
-                }}>
+                    mt: 1,
+                }}
+            >
                 {title}
             </Typography>
             <Typography
                 sx={{
                     mb: 1,
-                    fontStyle: 'italic'
-                }}>
+                    fontStyle: 'italic',
+                }}
+            >
                 {description}
             </Typography>
         </Stack>

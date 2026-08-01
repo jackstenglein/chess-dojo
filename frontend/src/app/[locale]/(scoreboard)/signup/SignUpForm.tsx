@@ -89,8 +89,9 @@ export const SignUpForm = () => {
         <Stack
             sx={{
                 justifyContent: 'center',
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <ChessDojoIcon
@@ -107,8 +108,9 @@ export const SignUpForm = () => {
                 data-testid='title'
                 sx={{
                     textAlign: 'center',
-                    mb: 4
-                }}>
+                    mb: 4,
+                }}
+            >
                 {t('chessDojo')}
             </Typography>
 
@@ -116,8 +118,9 @@ export const SignUpForm = () => {
                 sx={{
                     width: { xs: 1, sm: 0.85 },
                     rowGap: 3,
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     fullWidth
                     id='name'

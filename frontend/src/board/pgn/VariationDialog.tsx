@@ -110,7 +110,7 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
                         margin: { sm: 0 },
                         pointerEvents: 'auto',
                     },
-                }
+                },
             }}
         >
             <DialogTitle>

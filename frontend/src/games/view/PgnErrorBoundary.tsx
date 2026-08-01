@@ -78,16 +78,23 @@ class PgnErrorBoundary extends Component<
                         </Stack>
                     )}
 
-                    <Typography variant='body1' color='error' sx={{
-                        whiteSpace: 'pre-line'
-                    }}>
+                    <Typography
+                        variant='body1'
+                        color='error'
+                        sx={{
+                            whiteSpace: 'pre-line',
+                        }}
+                    >
                         {this.state.error ? this.state.error.toString() : t('nullError')}
                         {this.state.info ? this.state.info.componentStack : t('noComponentStack')}
                     </Typography>
 
-                    <Typography variant='body1' sx={{
-                        whiteSpace: 'pre-line'
-                    }}>
+                    <Typography
+                        variant='body1'
+                        sx={{
+                            whiteSpace: 'pre-line',
+                        }}
+                    >
                         {`${t('rawPgnLabel')}
 
                         ${this.props.pgn}`}

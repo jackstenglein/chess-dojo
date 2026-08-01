@@ -144,7 +144,7 @@ export const FullTrainingPlanItem = ({
                 spacing={2}
                 data-testid={`${requirement.name.replaceAll(' ', '-')}-training-plan-entry`}
                 sx={{
-                    mt: 2
+                    mt: 2,
                 }}
             >
                 <Grid
@@ -153,8 +153,9 @@ export const FullTrainingPlanItem = ({
                         columnGap: 1,
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        position: 'relative'
-                    }}>
+                        position: 'relative',
+                    }}
+                >
                     <Grid
                         size={{ xs: 'grow', md: 9 }}
                         onClick={() =>
@@ -171,8 +172,9 @@ export const FullTrainingPlanItem = ({
                             rowGap: '0.25rem',
                             cursor: 'pointer',
                             position: 'relative',
-                            maxWidth: { sm: '75%' }
-                        }}>
+                            maxWidth: { sm: '75%' },
+                        }}
+                    >
                         {expired && (
                             <Tooltip title={t('renewTooltip')}>
                                 <Chip
@@ -202,8 +204,9 @@ export const FullTrainingPlanItem = ({
                                 flexWrap: 'wrap',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                columnGap: '1rem'
-                            }}>
+                                columnGap: '1rem',
+                            }}
+                        >
                             <Typography
                                 sx={{
                                     opacity: blocker.isBlocked ? 0.5 : 1,
@@ -217,7 +220,7 @@ export const FullTrainingPlanItem = ({
                                 <Box
                                     data-testid={`${requirement.name.replaceAll(' ', '-')}-progress-text`}
                                     sx={{
-                                        mr: 1
+                                        mr: 1,
                                     }}
                                 >
                                     <ProgressText
@@ -249,8 +252,9 @@ export const FullTrainingPlanItem = ({
                             direction='row'
                             sx={{
                                 alignItems: 'center',
-                                justifyContent: 'end'
-                            }}>
+                                justifyContent: 'end',
+                            }}
+                        >
                             {!blocker.isBlocked && (
                                 <Typography
                                     noWrap
@@ -259,8 +263,9 @@ export const FullTrainingPlanItem = ({
                                         textOverflow: 'unset',
                                         mr: 1,
                                         display: { xs: 'none', sm: 'initial' },
-                                        fontWeight: 'bold'
-                                    }}>
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {time}
                                 </Typography>
                             )}

@@ -105,8 +105,9 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
                 <Stack
                     sx={{
                         alignItems: 'center',
-                        mb: 3
-                    }}>
+                        mb: 3,
+                    }}
+                >
                     <UpsellAlert>{t('freeTierMessage')}</UpsellAlert>
                 </Stack>
             )}

@@ -24,8 +24,9 @@ export default function Slider({ min, max, label, value, setValue, valueLabel }:
             direction='row'
             sx={{
                 alignItems: 'center',
-                width: 1
-            }}>
+                width: 1,
+            }}
+        >
             <Typography sx={{ mr: 2 }}>{label}</Typography>
 
             <MuiSlider

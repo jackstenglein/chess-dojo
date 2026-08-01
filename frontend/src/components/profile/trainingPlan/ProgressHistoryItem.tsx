@@ -100,29 +100,38 @@ export const ProgressHistoryItem = memo(function ProgressHistoryItem({
                     width: 1,
                     alignItems: 'center',
                     flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                    rowGap: 2
-                }}>
+                    rowGap: 2,
+                }}
+            >
                 <Grid
                     container
                     sx={{
                         columnGap: 2,
                         rowGap: 3,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     {item.isNew && (
                         <Grid size={12}>
-                            <Stack direction='row' spacing={1} sx={{
-                                alignItems: 'center'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Chip
                                     label={t('newEntryLabel')}
                                     size='small'
                                     color='primary'
                                     variant='outlined'
                                 />
-                                <Typography variant='body2' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('fillInDetails')}
                                 </Typography>
                             </Stack>

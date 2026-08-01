@@ -120,14 +120,16 @@ export function FullTrainingPlanSection({
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         columnGap: 3,
-                        mr: 2
-                    }}>
+                        mr: 2,
+                    }}
+                >
                     <Grid size={{ xs: 'auto', sm: 5.5, lg: 5, xl: 3 }}>
                         <Typography
                             sx={{
                                 fontWeight: 'bold',
-                                whiteSpace: 'nowrap'
-                            }}>
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
                             <TrainingPlanIcon
                                 category={section.category}
                                 sx={{
@@ -151,8 +153,9 @@ export function FullTrainingPlanSection({
                         size={{ xs: 0, sm: 'grow' }}
                         sx={{
                             color: section.color,
-                            display: { xs: 'none', sm: 'initial' }
-                        }}>
+                            display: { xs: 'none', sm: 'initial' },
+                        }}
+                    >
                         {section.progressBar !== undefined && (
                             <ScoreboardProgress
                                 value={section.progressBar}
@@ -197,16 +200,18 @@ export function FullTrainingPlanSection({
                                 sx={{
                                     alignItems: 'center',
                                     mt: 6,
-                                    mb: 1
-                                }}>
+                                    mb: 1,
+                                }}
+                            >
                                 <Checklist color='primary' />
                                 <Typography
                                     variant='body1'
                                     sx={{
                                         fontWeight: 700,
                                         ml: 1,
-                                        flexGrow: 1
-                                    }}>
+                                        flexGrow: 1,
+                                    }}
+                                >
                                     {t('completedTasks')}
                                 </Typography>
                                 <Button onClick={() => setShowCompleted(false)}>
@@ -251,8 +256,9 @@ export function FullTrainingPlanSection({
                             spacing={2}
                             sx={{
                                 mt: 2,
-                                alignItems: 'center'
-                            }}>
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography>{t('unlockTasks', { count: hiddenTaskCount })}</Typography>
                             <Button variant='outlined' href='/prices'>
                                 {t('viewPrices')}

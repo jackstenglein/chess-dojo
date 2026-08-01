@@ -36,8 +36,9 @@ const BoardButtons = ({
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    position: 'relative'
-                }}>
+                    position: 'relative',
+                }}
+            >
                 <StartButtons />
                 <ControlButtons />
                 {game && isGameOwner ? (

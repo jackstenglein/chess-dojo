@@ -129,8 +129,9 @@ export const Line: React.FC<LineProps> = ({
                 display: 'block',
                 pl: `${lineInset}px`,
                 mt: 0.5,
-                position: 'relative'
-            }}>
+                position: 'relative',
+            }}
+        >
             <Divider
                 sx={{
                     borderWidth: `${borderWidth}px`,
@@ -238,11 +239,15 @@ const Lines: React.FC<LinesProps> = ({
             sx={{
                 display: 'block',
                 position: 'relative',
-                pl: depth > -1 ? `${2 * borderWidth}px` : 0
-            }}>
-            <Stack direction='row' sx={{
-                alignItems: expanded ? undefined : 'center'
-            }}>
+                pl: depth > -1 ? `${2 * borderWidth}px` : 0,
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: expanded ? undefined : 'center',
+                }}
+            >
                 {expanded ? (
                     <Tooltip key='collapse' title={t('collapseVariations')} followCursor>
                         <Divider
@@ -281,14 +286,16 @@ const Lines: React.FC<LinesProps> = ({
                                     ? {
                                           mt: '2px',
                                       }
-                                    : {})
-                            }}>
+                                    : {}),
+                            }}
+                        >
                             <Typography
                                 variant='caption'
                                 sx={{
                                     color: 'background.paper',
-                                    mx: '2px'
-                                }}>
+                                    mx: '2px',
+                                }}
+                            >
                                 +{lines.length}
                             </Typography>
                         </Box>

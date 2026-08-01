@@ -342,8 +342,9 @@ export function Heatmap({
 
                 '& .react-activity-calendar__footer': {
                     marginLeft: '0 !important',
-                }
-            }}>
+                },
+            }}
+        >
             <RequestSnackbar request={request} />
             <HeatmapOptions onPopOut={onPopOut} />
 
@@ -363,8 +364,9 @@ export function Heatmap({
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         mt: `${blockSize + (i === 0 ? WEEKDAY_LEGEND_TOP_MARGIN : 2 * BLOCK_SPACING)}px`,
-                                        height: `${blockSize}px`
-                                    }}>
+                                        height: `${blockSize}px`,
+                                    }}
+                                >
                                     <Typography variant='caption'>
                                         {weekdayLabels[(i * 2 + 1 + weekStartOn) % 7]}
                                     </Typography>
@@ -375,8 +377,9 @@ export function Heatmap({
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 mt: `${blockSize + 2 * BLOCK_SPACING + 7}px`,
-                                height: `${blockSize}px`
-                            }}>
+                                height: `${blockSize}px`,
+                            }}
+                        >
                             <Typography variant='caption'>{t('week')}</Typography>
                         </Stack>
                     </Stack>
@@ -427,8 +430,9 @@ export function Heatmap({
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     gap: '4px 16px',
-                    mt: 0.5
-                }}>
+                    mt: 0.5,
+                }}
+            >
                 <Typography sx={{ fontSize: '14px' }}>
                     {field === 'dojoPoints'
                         ? t('totalDojoPointsLine', {
@@ -445,8 +449,9 @@ export function Heatmap({
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        gap: '3px'
-                    }}>
+                        gap: '3px',
+                    }}
+                >
                     <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>{t('less')}</Typography>
 
                     {Array(MAX_LEVEL + 1)
@@ -498,8 +503,9 @@ export function Heatmap({
                             direction='row'
                             sx={{
                                 alignItems: 'center',
-                                gap: 1
-                            }}>
+                                gap: 1,
+                            }}
+                        >
                             <RestDayIcon size={18} />
                             <Typography>{t('clearRestDay')}</Typography>
                         </Stack>
@@ -510,8 +516,9 @@ export function Heatmap({
                             direction='row'
                             sx={{
                                 alignItems: 'center',
-                                gap: 1
-                            }}>
+                                gap: 1,
+                            }}
+                        >
                             <RestDayIcon size={18} />
                             <Typography>{t('restDay')}</Typography>
                         </Stack>
@@ -534,8 +541,9 @@ export function CategoryLegend() {
         <Stack
             sx={{
                 mt: 0.5,
-                alignItems: 'start'
-            }}>
+                alignItems: 'start',
+            }}
+        >
             <FormControlLabel
                 control={
                     <Checkbox
@@ -555,8 +563,9 @@ export function CategoryLegend() {
                         flexWrap: 'wrap',
                         columnGap: 1,
                         rowGap: 0.5,
-                        mt: 0.5
-                    }}>
+                        mt: 0.5,
+                    }}
+                >
                     {VALID_TOOLTIP_CATEGORIES.map((category) => {
                         const color = CategoryColors[category];
                         return (
@@ -565,8 +574,9 @@ export function CategoryLegend() {
                                 direction='row'
                                 sx={{
                                     alignItems: 'center',
-                                    gap: 0.5
-                                }}>
+                                    gap: 0.5,
+                                }}
+                            >
                                 <Box
                                     sx={{
                                         height: '12px',
@@ -593,9 +603,12 @@ export function CategoryLegend() {
                                         />
                                     </svg>
                                 )}
-                                <Typography variant='caption' sx={{
-                                    pt: '2px'
-                                }}>
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        pt: '2px',
+                                    }}
+                                >
                                     {category === RequirementCategory.NonDojo
                                         ? t('customTask')
                                         : tCategory.has(category)
@@ -610,12 +623,16 @@ export function CategoryLegend() {
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
@@ -624,12 +641,16 @@ export function CategoryLegend() {
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('restDay')}
                         </Typography>
                     </Stack>
@@ -953,9 +974,11 @@ function BlockTooltip({
         );
 
     return (
-        <Stack sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {field === 'dojoPoints'
                     ? t('dojoPointsOnDate', {
@@ -976,18 +999,23 @@ function BlockTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={activity.graduation} size={12} />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('graduatedFrom', { cohort: activity.graduation })}
                         </Typography>
                     </Stack>
@@ -1001,18 +1029,23 @@ function BlockTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
@@ -1025,18 +1058,23 @@ function BlockTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('restDay')}
                         </Typography>
                     </Stack>
@@ -1111,9 +1149,11 @@ function WeekSummaryTooltip({
     }
 
     return (
-        <Stack sx={{
-            alignItems: 'center'
-        }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {startDateStr} — {weekSummary.date}
             </Typography>
@@ -1125,14 +1165,16 @@ function WeekSummaryTooltip({
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     width: 1,
-                    columnGap: 1
-                }}>
+                    columnGap: 1,
+                }}
+            >
                 <Stack
                     direction='row'
                     sx={{
                         alignItems: 'center',
-                        columnGap: 0.5
-                    }}>
+                        columnGap: 0.5,
+                    }}
+                >
                     <Icon
                         width={12}
                         height={12}
@@ -1145,9 +1187,12 @@ function WeekSummaryTooltip({
                                   : 'error.main',
                         }}
                     />
-                    <Typography variant='caption' sx={{
-                        pt: '2px'
-                    }}>
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            pt: '2px',
+                        }}
+                    >
                         {metGoal
                             ? t('weeklyGoalMet')
                             : !inProgress
@@ -1156,9 +1201,12 @@ function WeekSummaryTooltip({
                     </Typography>
                 </Stack>
 
-                <Typography variant='caption' sx={{
-                    pt: '2px'
-                }}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
                     {formatTime(weekSummary.minutesSpent, tCommon)} /{' '}
                     {formatTime(goalMinutes, tCommon)}
                 </Typography>
@@ -1171,18 +1219,23 @@ function WeekSummaryTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={weekSummary.graduation} size={12} />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('graduatedFrom', { cohort: weekSummary.graduation })}
                         </Typography>
                     </Stack>
@@ -1196,18 +1249,23 @@ function WeekSummaryTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
@@ -1220,18 +1278,23 @@ function WeekSummaryTooltip({
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         columnGap: '1rem',
-                        width: 1
-                    }}>
+                        width: 1,
+                    }}
+                >
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            columnGap: 0.5
-                        }}>
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' sx={{
-                            pt: '2px'
-                        }}>
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
                             {t('restDay')}
                         </Typography>
                     </Stack>
@@ -1288,14 +1351,16 @@ function TooltipRow({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 columnGap: '1rem',
-                width: 1
-            }}>
+                width: 1,
+            }}
+        >
             <Stack
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    columnGap: 0.5
-                }}>
+                    columnGap: 0.5,
+                }}
+            >
                 <svg width='12' height='12'>
                     <g>
                         <rect
@@ -1314,18 +1379,24 @@ function TooltipRow({
                     </g>
                 </svg>
 
-                <Typography variant='caption' sx={{
-                    pt: '2px'
-                }}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
                     {tCategory.has(category)
                         ? tCategory(category as RequirementCategory)
                         : category}
                 </Typography>
             </Stack>
 
-            <Typography variant='caption' sx={{
-                pt: '2px'
-            }}>
+            <Typography
+                variant='caption'
+                sx={{
+                    pt: '2px',
+                }}
+            >
                 {field === 'dojoPoints'
                     ? t('tooltipRowDojoPoints', {
                           points: Math.round(10 * count) / 10,

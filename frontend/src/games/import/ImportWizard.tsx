@@ -160,24 +160,29 @@ const ImportSourceCard = ({
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 textAlign: 'center',
-                                opacity: !loading && disabled ? 0.8 : 1
-                            }}>
+                                opacity: !loading && disabled ? 0.8 : 1,
+                            }}
+                        >
                             {loading ? (
                                 <CircularProgress size='5rem' sx={{ mb: 2 }} />
                             ) : (
                                 <Icon sx={{ fontSize: '5rem', mb: 2 }} color='primary' />
                             )}
-                            <Typography variant='h5' sx={{
-                                mb: 0.5
-                            }}>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    mb: 0.5,
+                                }}
+                            >
                                 {name}
                             </Typography>
                             <Typography
                                 variant='subtitle1'
                                 sx={{
                                     color: 'text.secondary',
-                                    lineHeight: '1.3'
-                                }}>
+                                    lineHeight: '1.3',
+                                }}
+                            >
                                 {description}
                             </Typography>
                         </Stack>

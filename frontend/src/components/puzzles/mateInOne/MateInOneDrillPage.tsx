@@ -475,8 +475,9 @@ function ReadyScreen({
                     variant='body1'
                     sx={{
                         color: 'text.secondary',
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     Your best rating: {personalBest}
                 </Typography>
             )}
@@ -484,8 +485,9 @@ function ReadyScreen({
                 variant='body1'
                 sx={{
                     color: 'text.secondary',
-                    mb: 1
-                }}>
+                    mb: 1,
+                }}
+            >
                 You will see a list of pieces and their squares. Type the mating move in SAN
                 notation (e.g. "Qh7#" or just "Qh7") and press Enter.
             </Typography>
@@ -494,8 +496,9 @@ function ReadyScreen({
                 sx={{
                     color: 'warning.main',
                     mb: 1,
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 This drill is very hard. Your rating is computed after {PUZZLES_PER_BLOCK} problems;
                 you can pause between problems with the Pause button.
             </Typography>
@@ -503,8 +506,9 @@ function ReadyScreen({
                 variant='body1'
                 sx={{
                     color: 'text.secondary',
-                    mb: 4
-                }}>
+                    mb: 4,
+                }}
+            >
                 {armed
                     ? 'Ready? Hit GO! to start the timer.'
                     : 'No board is shown. Visualize the position and find the mate from memory!'}
@@ -582,8 +586,9 @@ function InProgressScreen({
                 variant='subtitle1'
                 sx={{
                     color: 'text.secondary',
-                    mb: 0.5
-                }}>
+                    mb: 0.5,
+                }}
+            >
                 Puzzle {puzzleNumberInBlock} / {PUZZLES_PER_BLOCK}
             </Typography>
 
@@ -591,8 +596,9 @@ function InProgressScreen({
                 variant='body2'
                 sx={{
                     color: 'text.secondary',
-                    mb: 2
-                }}>
+                    mb: 2,
+                }}
+            >
                 {puzzle.sideToMove} to move and mate in 1
             </Typography>
 
@@ -637,8 +643,9 @@ function InProgressScreen({
                 spacing={2}
                 sx={{
                     justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     inputRef={inputRef}
                     value={userInput}
@@ -681,15 +688,19 @@ function InProgressScreen({
             </Stack>
 
             {feedback && (
-                <Stack direction='row' sx={{
-                    justifyContent: 'center'
-                }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'center',
+                    }}
+                >
                     <Box
                         sx={{
                             width: { xs: 1, sm: 0.8, md: 0.75, lg: 0.75 },
                             aspectRatio: 1,
-                            mt: 3
-                        }}>
+                            mt: 3,
+                        }}
+                    >
                         <Board
                             config={{
                                 fen: puzzle.fenAfterSetup,
@@ -746,22 +757,28 @@ function PausedScreen({ elapsedMs, puzzlesAnswered, onResume, onEndSession }: Pa
                 variant='body1'
                 sx={{
                     color: 'text.secondary',
-                    mb: 1
-                }}>
+                    mb: 1,
+                }}
+            >
                 {display} elapsed · {puzzlesAnswered} / {PUZZLES_PER_BLOCK} puzzles answered
             </Typography>
             <Typography
                 variant='body2'
                 sx={{
                     color: 'text.secondary',
-                    mb: 4
-                }}>
+                    mb: 4,
+                }}
+            >
                 The timer is frozen. Resume to continue, or end the session. Your progress so far is
                 already saved.
             </Typography>
-            <Stack direction='row' spacing={2} sx={{
-                justifyContent: 'center'
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
                 <Button variant='contained' size='large' onClick={onResume} sx={{ px: 4 }}>
                     Resume
                 </Button>
@@ -827,8 +844,9 @@ function BlockCompleteScreen({
                     sx={{
                         alignItems: 'center',
                         justifyContent: 'center',
-                        mb: 1
-                    }}>
+                        mb: 1,
+                    }}
+                >
                     {ratingDiff > 0 ? (
                         <ArrowUpward color='success' sx={{ fontSize: '1.5rem' }} />
                     ) : (
@@ -854,8 +872,9 @@ function BlockCompleteScreen({
                     variant='body1'
                     sx={{
                         color: 'text.secondary',
-                        mb: 3
-                    }}>
+                        mb: 3,
+                    }}
+                >
                     Personal Best: {personalBest}
                 </Typography>
             )}
@@ -888,14 +907,16 @@ function BlockCompleteScreen({
                             px: 2,
                             py: 0.5,
                             borderBottom: '1px solid',
-                            borderColor: 'divider'
-                        }}>
+                            borderColor: 'divider',
+                        }}
+                    >
                         <Typography
                             sx={{
                                 fontWeight: 'bold',
                                 textAlign: 'left',
-                                flex: 1
-                            }}>
+                                flex: 1,
+                            }}
+                        >
                             {a.puzzleId}
                         </Typography>
                         <Typography
@@ -908,8 +929,9 @@ function BlockCompleteScreen({
                             sx={{
                                 color: 'text.secondary',
                                 width: { sm: 76 },
-                                textAlign: 'right'
-                            }}>
+                                textAlign: 'right',
+                            }}
+                        >
                             {(a.responseTimeMs / 1000).toFixed(1)}s
                         </Typography>
                     </Stack>
@@ -922,9 +944,13 @@ function BlockCompleteScreen({
                 </Typography>
             )}
 
-            <Stack direction='row' spacing={2} sx={{
-                justifyContent: 'center'
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
                 {submitFailed ? (
                     <Button variant='contained' size='large' onClick={onRetry} sx={{ px: 4 }}>
                         Retry save
@@ -978,19 +1004,32 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
                 px: 2,
                 py: 1,
                 borderBottom: '1px solid',
-                borderColor: 'divider'
-            }}>
-            <Stack direction='row' spacing={1} sx={{
-                alignItems: 'center'
-            }}>
+                borderColor: 'divider',
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Box sx={{ color: 'text.secondary', display: 'flex' }}>{icon}</Box>
-                <Typography sx={{
-                    color: 'text.secondary'
-                }}>{label}</Typography>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {label}
+                </Typography>
             </Stack>
-            <Typography sx={{
-                fontWeight: 'bold'
-            }}>{value}</Typography>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
         </Stack>
     );
 }

@@ -37,8 +37,9 @@ export const ListClubsPage = () => {
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     rowGap: 2,
-                    mb: 3
-                }}>
+                    mb: 3,
+                }}
+            >
                 <Typography variant='h5'>{t('title')}</Typography>
 
                 <Button variant='contained' onClick={onCreateClub}>

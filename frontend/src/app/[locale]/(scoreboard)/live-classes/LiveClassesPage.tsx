@@ -93,8 +93,9 @@ export default function LiveClassesPage() {
                 sx={{
                     fontWeight: 'bold',
                     mx: 'auto',
-                    textAlign: 'center'
-                }}>
+                    textAlign: 'center',
+                }}
+            >
                 {tPage('pageTitle')}
             </Typography>
 
@@ -111,8 +112,9 @@ export default function LiveClassesPage() {
                         variant='h5'
                         sx={{
                             mt: 4,
-                            fontWeight: 'bold'
-                        }}>
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Free Samples
                     </Typography>
 
@@ -129,13 +131,17 @@ export default function LiveClassesPage() {
                 variant='h5'
                 sx={{
                     mt: 4,
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 {tPage('lectureTierHeading')}
             </Typography>
-            <Typography variant='h6' sx={{
-                mt: 2
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    mt: 2,
+                }}
+            >
                 {tPage('lectureTierDescription')} {!isLiveClassUser && tPage('freeSamplePrompt')}
             </Typography>
 
@@ -155,9 +161,11 @@ export default function LiveClassesPage() {
                 {isLectureUser ? tPage('alreadySubscribed') : tPage('joinLectureTier')}
             </Button>
 
-            <Box sx={{
-                mt: 4
-            }}>
+            <Box
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <LiveClassesList
                     classes={lectureClasses}
                     onTagClick={() => null}
@@ -170,8 +178,9 @@ export default function LiveClassesPage() {
                 variant='h5'
                 sx={{
                     mt: 8,
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 {tPage('gameReviewHeading')}
             </Typography>
 
@@ -180,13 +189,16 @@ export default function LiveClassesPage() {
                 rowSpacing={2}
                 columnSpacing={4}
                 sx={{
-                    justifyContent: { xs: 'center', sm: 'flex-start' }
+                    justifyContent: { xs: 'center', sm: 'flex-start' },
                 }}
             >
                 <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant='h6' sx={{
-                        mt: 2
-                    }}>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         {tPage('gameReviewDescription')}
                     </Typography>
                     <Button
@@ -229,13 +241,17 @@ export default function LiveClassesPage() {
                 variant='h5'
                 sx={{
                     mt: 8,
-                    fontWeight: 'bold'
-                }}>
+                    fontWeight: 'bold',
+                }}
+            >
                 {tPage('recordingsHeading')}
             </Typography>
-            <Typography variant='h6' sx={{
-                mt: 2
-            }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    mt: 2,
+                }}
+            >
                 {isLiveClassUser
                     ? tPage.rich('recordingsLink', {
                           link: (chunks) => <Link href='/learn/live-classes'>{chunks}</Link>,
@@ -243,18 +259,27 @@ export default function LiveClassesPage() {
                     : tPage('recordingsAvailable')}
             </Typography>
 
-            <Typography variant='h4' sx={{
-                mt: 8
-            }}>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 8,
+                }}
+            >
                 {tPage('faqsHeading')}
             </Typography>
             {getLiveClassesFaq(t).items.map((item) => (
-                <Stack key={item.title} sx={{
-                    mt: 3
-                }}>
-                    <Typography variant='h5' sx={{
-                        fontWeight: 'bold'
-                    }}>
+                <Stack
+                    key={item.title}
+                    sx={{
+                        mt: 3,
+                    }}
+                >
+                    <Typography
+                        variant='h5'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
                         {item.title}
                     </Typography>
                     <Typography variant='h6'>{item.content}</Typography>

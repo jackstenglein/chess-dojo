@@ -494,9 +494,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 errors={errors}
                                 request={request}
                             />
-                            <Stack direction='row' spacing={2} sx={{
-                                justifyContent: 'flex-end'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSavePersonal}
@@ -532,9 +536,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 setEnableZenMode={setEnableZenMode}
                                 errors={errors}
                             />
-                            <Stack direction='row' spacing={2} sx={{
-                                justifyContent: 'flex-end'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSaveRatings}
@@ -563,9 +571,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 notificationSettings={notificationSettings}
                                 setNotificationSettings={setNotificationSettings}
                             />
-                            <Stack direction='row' spacing={2} sx={{
-                                justifyContent: 'flex-end'
-                            }}>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSaveNotifications}

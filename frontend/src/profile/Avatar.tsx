@@ -69,7 +69,7 @@ const Avatar: React.FC<AvatarProps> = ({
             src={url}
             {...avatarProps(displayName || '', size, fontSize, sx)}
             slotProps={{
-                img: { crossOrigin: 'anonymous' }
+                img: { crossOrigin: 'anonymous' },
             }}
         />
     );
@@ -109,7 +109,7 @@ export const ClubAvatar: React.FC<ClubAvatarProps> = ({ club, id, name, size, fo
             src={url}
             {...avatarProps(name || '', size, fontSize)}
             slotProps={{
-                img: { crossOrigin: 'anonymous' }
+                img: { crossOrigin: 'anonymous' },
             }}
         />
     );

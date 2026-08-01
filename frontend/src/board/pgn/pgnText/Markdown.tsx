@@ -115,14 +115,16 @@ const Markdown: React.FC<MarkdownProps> = ({ text, inline, move }) => {
                             sx={{
                                 width: 1,
                                 alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Box
                                 sx={{
                                     width: 0.95,
                                     aspectRatio: '1/1',
-                                    maxWidth: '300px'
-                                }}>
+                                    maxWidth: '300px',
+                                }}
+                            >
                                 <ChessContext.Provider value={{}}>
                                     <Board
                                         config={{
@@ -177,8 +179,9 @@ function Text(props: {
                 whiteSpace: 'pre-line',
                 fontSize: props.fontSize,
                 ...sx,
-                wordBreak: 'break-word'
-            }}>
+                wordBreak: 'break-word',
+            }}
+        >
             {props.children}
         </Typography>
     );

@@ -222,9 +222,13 @@ const PlayersTab: React.FC<PlayersTabProps> = ({ openClassical, onUpdate }) => {
 
     return (
         <Stack spacing={3}>
-            <Stack direction='row' spacing={2} sx={{
-                width: 1
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    width: 1,
+                }}
+            >
                 <TextField
                     label='Region'
                     select

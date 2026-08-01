@@ -258,8 +258,9 @@ const ProgressHistory = ({
                     direction='row'
                     sx={{
                         justifyContent: 'flex-start',
-                        mb: 3
-                    }}>
+                        mb: 3,
+                    }}
+                >
                     <Button
                         data-testid='task-history-add-new-button'
                         onClick={addItem}
@@ -294,9 +295,12 @@ const ProgressHistory = ({
 
             <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
                 {!isTimeOnly && (
-                    <Typography data-testid='total-count-summary' sx={{
-                        color: 'text.secondary'
-                    }}>
+                    <Typography
+                        data-testid='total-count-summary'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('totalCount', {
                             label: countLabel,
                             total: totalCount,
@@ -304,9 +308,11 @@ const ProgressHistory = ({
                         })}
                     </Typography>
                 )}
-                <Typography sx={{
-                    color: 'text.secondary'
-                }}>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('totalTime', {
                         totalHours: Math.floor(totalTime / 60),
                         totalMinutes: totalTime % 60,

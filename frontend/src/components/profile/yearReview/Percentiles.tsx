@@ -25,17 +25,27 @@ const Percentiles: React.FC<PercentilesProps> = ({
                 }}
                 sx={{
                     display: 'flex',
-                    justifyContent: 'center'
-                }}>
-                <Stack sx={{
-                    alignItems: 'center'
-                }}>
-                    <Stack spacing={0.5} direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
-                        <Typography variant='caption' sx={{
-                            color: 'text.secondary'
-                        }}>
+                    justifyContent: 'center',
+                }}
+            >
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Stack
+                        spacing={0.5}
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('percentile')}
                         </Typography>
                         <Tooltip title={t('percentileTooltip', { description })}>
@@ -66,17 +76,27 @@ const Percentiles: React.FC<PercentilesProps> = ({
                 }}
                 sx={{
                     display: 'flex',
-                    justifyContent: 'center'
-                }}>
-                <Stack sx={{
-                    alignItems: 'center'
-                }}>
-                    <Stack spacing={0.5} direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
-                        <Typography variant='caption' sx={{
-                            color: 'text.secondary'
-                        }}>
+                    justifyContent: 'center',
+                }}
+            >
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Stack
+                        spacing={0.5}
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('cohortPercentile')}
                         </Typography>
                         <Tooltip title={t('cohortPercentileTooltip', { cohort, description })}>

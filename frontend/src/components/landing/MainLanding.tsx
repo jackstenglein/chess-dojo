@@ -57,8 +57,9 @@ export function MainLanding() {
                             sx={{
                                 height: 1,
                                 justifyContent: 'start',
-                                alignItems: { xs: 'center', md: 'start' }
-                            }}>
+                                alignItems: { xs: 'center', md: 'start' },
+                            }}
+                        >
                             <Stack spacing={2}>
                                 <Typography
                                     variant='h2'
@@ -66,8 +67,9 @@ export function MainLanding() {
                                     sx={{
                                         textAlign: { xs: 'center', md: 'start' },
                                         fontFamily: (theme) => fontFamily(theme, anton),
-                                        fontWeight: '400'
-                                    }}>
+                                        fontWeight: '400',
+                                    }}
+                                >
                                     {t('hero.title')
                                         .split('\n')
                                         .map((line, i) => (
@@ -86,8 +88,9 @@ export function MainLanding() {
                                         fontWeight: 400,
                                         fontSize: '1.5rem',
                                         lineHeight: '2.125rem',
-                                        letterSpacing: 0
-                                    }}>
+                                        letterSpacing: 0,
+                                    }}
+                                >
                                     {t('hero.subtitle')}
                                 </Typography>
                             </Stack>
@@ -153,8 +156,9 @@ export function MainLanding() {
                 <Typography
                     sx={{
                         textAlign: 'center',
-                        fontSize: '1.5rem'
-                    }}>
+                        fontSize: '1.5rem',
+                    }}
+                >
                     {t.rich('hero.ratingPoints', {
                         strong: (chunks) => <strong>{chunks}</strong>,
                     })}

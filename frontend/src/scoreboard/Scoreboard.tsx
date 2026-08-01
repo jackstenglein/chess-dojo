@@ -85,9 +85,13 @@ function getDisplayNameColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
         minWidth: 250,
         renderCell: (params: GridRenderCellParams<ScoreboardRow, string>) => {
             return (
-                <Stack direction='row' spacing={1} sx={{
-                    alignItems: 'center'
-                }}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Avatar
                         username={params.row.username.replace('#pinned', '')}
                         displayName={params.value}
@@ -148,8 +152,9 @@ function getGraduatedColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
                         direction='row'
                         sx={{
                             alignItems: 'center',
-                            height: 1
-                        }}>
+                            height: 1,
+                        }}
+                    >
                         {graduationCohorts.map((c) => (
                             <CohortIcon key={c} cohort={c} size={32} />
                         ))}
@@ -258,9 +263,12 @@ function getDefaultColumnGroups(t: ScoreboardT): GridColumnGroupingModel {
             ],
             renderHeaderGroup: (params) => {
                 return (
-                    <Stack direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {params.groupId}
                         <Tooltip title={t('timeSpentTooltipDefault')}>
                             <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
@@ -281,9 +289,12 @@ function getSummaryColumnGroups(t: ScoreboardT): GridColumnGroupingModel {
             children: [{ field: 'totalDojoScore' }],
             renderHeaderGroup: (params) => {
                 return (
-                    <Stack direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {params.groupId}
                         <Tooltip title={t('timeSpentTooltipSummary')}>
                             <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />
@@ -304,9 +315,12 @@ function getSummaryColumnGroups(t: ScoreboardT): GridColumnGroupingModel {
             ],
             renderHeaderGroup: (params) => {
                 return (
-                    <Stack direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {params.groupId}
                         <Tooltip title={t('timeSpentTooltipSummary')}>
                             <HelpIcon sx={{ ml: 1, color: 'text.secondary' }} />

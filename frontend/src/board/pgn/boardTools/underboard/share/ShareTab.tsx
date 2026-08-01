@@ -350,8 +350,9 @@ export function ShareTab() {
                         gap: 1,
                         flexWrap: 'wrap',
                         mb: 2,
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     {game && (
                         <DirectoryCacheProvider>
                             <DirectorySelectButton
@@ -395,8 +396,9 @@ export function ShareTab() {
                     sx={{
                         flexWrap: 'wrap',
                         columnGap: 1,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <FormGroup>
                         <FormControlLabel
                             control={
@@ -539,8 +541,9 @@ export function ShareTab() {
                         gap: 1,
                         flexWrap: 'wrap',
                         mt: 2,
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     <CopyButton
                         name='pgn'
                         startIcon={<ContentPaste />}

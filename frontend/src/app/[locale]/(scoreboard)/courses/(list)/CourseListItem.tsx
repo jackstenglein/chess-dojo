@@ -164,14 +164,16 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     useFlexGap
                     sx={{
                         alignItems: 'baseline',
-                        flexWrap: 'wrap'
-                    }}>
+                        flexWrap: 'wrap',
+                    }}
+                >
                     <Typography
                         variant='h6'
                         sx={{
                             fontWeight: 700,
-                            color: 'text.primary'
-                        }}>
+                            color: 'text.primary',
+                        }}
+                    >
                         ${displayPrice(purchaseOption.currentPrice / 100)}
                     </Typography>
 
@@ -181,8 +183,9 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                                 variant='body2'
                                 sx={{
                                     color: 'text.secondary',
-                                    textDecoration: 'line-through'
-                                }}>
+                                    textDecoration: 'line-through',
+                                }}
+                            >
                                 ${displayPrice(purchaseOption.fullPrice / 100)}
                             </Typography>
                             <Chip
@@ -248,8 +251,9 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         gutterBottom
                         sx={{
                             fontWeight: 600,
-                            lineHeight: 1.3
-                        }}>
+                            lineHeight: 1.3,
+                        }}
+                    >
                         {course.name}
                     </Typography>
 
@@ -258,12 +262,16 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         spacing={0.75}
                         sx={{
                             alignItems: 'center',
-                            mb: 1.5
-                        }}>
+                            mb: 1.5,
+                        }}
+                    >
                         <PersonOutlinedIcon fontSize='small' color='action' />
-                        <Typography variant='body2' sx={{
-                            color: 'text.secondary'
-                        }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             <Link
                                 href={`/profile/${course.owner}`}
                                 onClick={(e) => e.stopPropagation()}
@@ -273,17 +281,22 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         </Typography>
                     </Stack>
 
-                    <Box sx={{
-                        mb: 2
-                    }}>{renderAccessStatus()}</Box>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
+                        {renderAccessStatus()}
+                    </Box>
 
                     <Stack
                         direction='row'
                         sx={{
                             flexWrap: 'wrap',
                             gap: 0.75,
-                            mb: 1.5
-                        }}>
+                            mb: 1.5,
+                        }}
+                    >
                         <Chip
                             size='small'
                             label={category}
@@ -313,8 +326,9 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                             WebkitLineClamp: 3,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            lineHeight: 1.5
-                        }}>
+                            lineHeight: 1.5,
+                        }}
+                    >
                         {course.description}
                     </Typography>
                 </CardContent>

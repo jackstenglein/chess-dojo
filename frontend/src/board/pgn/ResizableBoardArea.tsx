@@ -38,9 +38,11 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
     };
 
     return (
-        <Stack sx={{
-            width: `${resizeData.width}px`
-        }}>
+        <Stack
+            sx={{
+                width: `${resizeData.width}px`,
+            }}
+        >
             {showPlayerHeaders && <PlayerHeader type='header' />}
 
             <Board

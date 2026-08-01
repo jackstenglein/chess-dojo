@@ -55,11 +55,15 @@ const AdminPage = () => {
                 direction='row'
                 sx={{
                     alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-                <Typography variant='h4' sx={{
-                    mb: 2
-                }}>
+                    justifyContent: 'space-between',
+                }}
+            >
+                <Typography
+                    variant='h4'
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     Open Classical Admin
                 </Typography>
                 <CompleteTournament openClassical={request.data} onSuccess={request.onSuccess} />

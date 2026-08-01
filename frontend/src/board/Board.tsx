@@ -454,8 +454,9 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                 height: 1,
                 ...pieceSx,
                 ...getBoardSx(boardStyle),
-                ...coordinateSx
-            }}>
+                ...coordinateSx,
+            }}
+        >
             <div
                 data-testid='chessground-board'
                 ref={boardRef}

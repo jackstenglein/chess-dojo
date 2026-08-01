@@ -41,9 +41,12 @@ export function UnsavedGameBanner({ dismissable }: UnsavedGameBannerProps) {
                         </Box>
                     }
                 >
-                    <Stack direction='row' sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography>{t('analysisNotSaved')}</Typography>
                     </Stack>
                 </Alert>

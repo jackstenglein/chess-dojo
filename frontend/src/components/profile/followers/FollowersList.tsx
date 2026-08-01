@@ -111,13 +111,18 @@ const FollowerListItem: React.FC<FollowerListItemProps> = ({ entry, isFollowing,
             direction='row'
             sx={{
                 justifyContent: 'space-between',
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={unfollowRequest} />
 
-            <Stack direction='row' spacing={2} sx={{
-                alignItems: 'center'
-            }}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Avatar
                     username={isFollowing ? entry.poster : entry.follower}
                     displayName={isFollowing ? entry.posterDisplayName : entry.followerDisplayName}

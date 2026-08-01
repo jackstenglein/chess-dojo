@@ -70,9 +70,13 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             flex: 1,
             renderCell: (params: GridRenderCellParams<Graduation, string>) => {
                 return (
-                    <Stack direction='row' spacing={1} sx={{
-                        alignItems: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Avatar
                             username={params.row.username}
                             displayName={params.value}
@@ -102,9 +106,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                     .filter((cohort, i, array) => i === array.indexOf(cohort))
                     .slice(-3);
                 return (
-                    <Stack direction='row' sx={{
-                        justifyContent: 'center'
-                    }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         {graduationCohorts.map((c) => (
                             <CohortIcon key={c} cohort={c} size={32} />
                         ))}
@@ -127,8 +134,9 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                     <Stack
                         sx={{
                             height: '30px',
-                            justifyContent: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
                         {params.row.previousCohort}
                     </Stack>
                 );
@@ -149,8 +157,9 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                     <Stack
                         sx={{
                             height: '30px',
-                            justifyContent: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
                         {params.row.newCohort}
                     </Stack>
                 );
@@ -167,8 +176,9 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                 <Stack
                     sx={{
                         height: '30px',
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.formattedValue}
                 </Stack>
             ),
@@ -184,8 +194,9 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                 <Stack
                     sx={{
                         height: '30px',
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.value}
                 </Stack>
             ),
@@ -201,8 +212,9 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                 <Stack
                     sx={{
                         height: '30px',
-                        justifyContent: 'center'
-                    }}>
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.formattedValue}
                 </Stack>
             ),
@@ -218,8 +230,9 @@ function DetailPanelContent(params: GridRowParams<Graduation>) {
         <Typography
             sx={{
                 mx: 2,
-                my: 1
-            }}>
+                my: 1,
+            }}
+        >
             {params.row.comments}
         </Typography>
     );
@@ -263,8 +276,9 @@ const RecentGraduates = () => {
                     direction='row'
                     sx={{
                         justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography variant='h6'>{t('title')}</Typography>
                     <FormControl
                         data-testid='graduates-timeframe-select'

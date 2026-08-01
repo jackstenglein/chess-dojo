@@ -144,8 +144,9 @@ export function ChatPage() {
                     variant='h4'
                     sx={{
                         textAlign: 'center',
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     {t('title')}
                 </Typography>
                 <Typography
@@ -155,8 +156,9 @@ export function ChatPage() {
                         textAlign: 'center',
                         mb: 4,
                         maxWidth: 'sm',
-                        alignSelf: 'center'
-                    }}>
+                        alignSelf: 'center',
+                    }}
+                >
                     ⚠️ {t('betaWarning')}
                 </Typography>
 
@@ -198,9 +200,12 @@ export function ChatPage() {
                     {isThinking && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
                             <CircularProgress size={16} thickness={5} />
-                            <Typography variant='body2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t('thinking')}
                             </Typography>
                         </Box>

@@ -34,8 +34,9 @@ export const RatingsCard = ({ user }: { user: User }) => {
                     container
                     sx={{
                         rowGap: 1,
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     {systems.map((rs) => {
                         const currentRating = getSystemCurrentRating(user, rs);
                         if (currentRating <= 0) {
@@ -74,8 +75,9 @@ const RatingRow = ({
                 sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
+                    justifyContent: 'center',
+                }}
+            >
                 <RatingSystemIcon system={system} size='small' />
             </Grid>
             <Grid size={8}>
@@ -84,9 +86,13 @@ const RatingRow = ({
                 </Typography>
             </Grid>
             <Grid size={2}>
-                <Typography sx={{
-                    fontWeight: 'bold'
-                }}>{currentRating}</Typography>
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
+                    {currentRating}
+                </Typography>
             </Grid>
         </>
     );

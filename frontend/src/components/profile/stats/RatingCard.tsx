@@ -146,12 +146,18 @@ function RatingProfileLink({
         return null;
     }
     return (
-        <Stack direction='row' sx={{
-            alignItems: 'end'
-        }}>
-            <Typography variant='subtitle1' sx={{
-                color: 'text.secondary'
-            }}>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'end',
+            }}
+        >
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 {username}
             </Typography>
             <Link target='_blank' rel='noopener noreferrer' href={getMemberLink(system, username)}>
@@ -233,11 +239,16 @@ const RatingCard: React.FC<RatingCardProps> = ({
                     direction='row'
                     sx={{
                         justifyContent: 'space-between',
-                        mb: 2
-                    }}>
-                    <Stack direction='row' spacing={1.5} sx={{
-                        alignItems: 'center'
-                    }}>
+                        mb: 2,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        spacing={1.5}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <RatingSystemIcon system={system} />
 
                         <Stack>
@@ -262,25 +273,35 @@ const RatingCard: React.FC<RatingCardProps> = ({
                     container
                     sx={{
                         justifyContent: 'space-around',
-                        rowGap: 2
-                    }}>
+                        rowGap: 2,
+                    }}
+                >
                     <Grid
                         size={{ xs: 6, sm: 3, md: 'grow' }}
                         sx={{
                             display: 'flex',
-                            justifyContent: 'center'
-                        }}>
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
-                            <Typography variant='subtitle2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t('current')}
                             </Typography>
-                            <Stack direction='row' sx={{
-                                alignItems: 'end'
-                            }}>
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    alignItems: 'end',
+                                }}
+                            >
                                 <Typography
                                     sx={{
                                         fontSize: '2.25rem',
@@ -345,14 +366,20 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         size={{ xs: 6, sm: 3, md: 'grow' }}
                         sx={{
                             display: 'flex',
-                            justifyContent: 'center'
-                        }}>
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
-                            <Typography variant='subtitle2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t('start')}
                             </Typography>
 
@@ -372,20 +399,29 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         size={{ xs: 6, sm: 3, md: 'grow' }}
                         sx={{
                             display: 'flex',
-                            justifyContent: 'center'
-                        }}>
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
-                            <Typography variant='subtitle2' sx={{
-                                color: 'text.secondary'
-                            }}>
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t('change')}
                             </Typography>
 
-                            <Stack direction='row' sx={{
-                                alignItems: 'start'
-                            }}>
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    alignItems: 'start',
+                                }}
+                            >
                                 {ratingChange >= 0 ? (
                                     <ArrowUpwardIcon
                                         sx={{
@@ -425,19 +461,28 @@ const RatingCard: React.FC<RatingCardProps> = ({
                             size={{ xs: 6, sm: 3, md: 'grow' }}
                             sx={{
                                 display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                            <Stack sx={{
-                                alignItems: 'center'
-                            }}>
-                                <Typography variant='subtitle2' sx={{
-                                    color: 'text.secondary'
-                                }}>
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='subtitle2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('normalized')}
                                 </Typography>
-                                <Stack direction='row' sx={{
-                                    alignItems: 'end'
-                                }}>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'end',
+                                    }}
+                                >
                                     <Typography
                                         sx={{
                                             fontSize: '2.25rem',
@@ -465,17 +510,21 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         size={{ xs: 6, sm: 3, md: 'grow' }}
                         sx={{
                             display: 'flex',
-                            justifyContent: 'center'
-                        }}>
-                        <Stack sx={{
-                            alignItems: 'center'
-                        }}>
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography
                                 variant='subtitle2'
                                 sx={{
                                     color: 'text.secondary',
-                                    whiteSpace: 'nowrap'
-                                }}>
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
                                 {t('nextGraduation')}
                             </Typography>
 
@@ -497,8 +546,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                         <Box
                             sx={{
                                 height: 300,
-                                mt: 2
-                            }}>
+                                mt: 2,
+                            }}
+                        >
                             <Chart
                                 options={{
                                     data: historyData,
@@ -515,8 +565,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                             sx={{
                                 color: 'text.secondary',
                                 mt: 0.5,
-                                ml: 0.5
-                            }}>
+                                ml: 0.5,
+                            }}
+                        >
                             {t('graphsUpdatedNote')}
                         </Typography>
                     </Stack>

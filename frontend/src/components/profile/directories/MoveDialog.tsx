@@ -110,12 +110,20 @@ export const MoveDialog = ({
             <DialogContent data-testid='move-directory-form'>
                 {newDirectory ? (
                     <Stack>
-                        <Stack direction='row' spacing={1.5} sx={{
-                            alignItems: 'center'
-                        }}>
-                            <Typography sx={{
-                                color: 'text.secondary'
-                            }}>{t('from')}</Typography>
+                        <Stack
+                            direction='row'
+                            spacing={1.5}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
+                                {t('from')}
+                            </Typography>
                             <DirectoryBreadcrumbs
                                 owner={parent.owner}
                                 id={parent.id}
@@ -130,11 +138,16 @@ export const MoveDialog = ({
                             spacing={1.5}
                             sx={{
                                 alignItems: 'center',
-                                mb: 1
-                            }}>
-                            <Typography sx={{
-                                color: 'text.secondary'
-                            }}>{t('to')}</Typography>
+                                mb: 1,
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
+                                {t('to')}
+                            </Typography>
                             <DirectoryBreadcrumbs
                                 owner={newDirectoryOwner}
                                 id={newDirectoryId}
@@ -165,8 +178,9 @@ export const MoveDialog = ({
                             <Typography
                                 sx={{
                                     textAlign: 'center',
-                                    width: 1
-                                }}>
+                                    width: 1,
+                                }}
+                            >
                                 {t('folderEmpty')}
                             </Typography>
                         )}
