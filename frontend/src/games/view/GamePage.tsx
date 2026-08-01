@@ -149,6 +149,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         const update: UpdateGameRequest = {
             cohort: game.cohort,
             id: game.id,
+            updatedAt: game.updatedAt || game.createdAt || '',
             headers,
             unlisted: true,
             orientation,

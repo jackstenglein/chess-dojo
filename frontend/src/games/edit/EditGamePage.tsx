@@ -24,30 +24,31 @@ const EditGamePage = ({ cohort, id }: { cohort: string; id: string }) => {
     const request = useRequest<PreflightData>();
     const router = useRouter();
 
-    const onEdit = (remoteGame?: CreateGameRequest, headers?: GameHeader) => {
+    const onEdit = async (remoteGame?: CreateGameRequest, headers?: GameHeader) => {
         if (!cohort || !id || !remoteGame) {
             return;
         }
 
-        const req: UpdateGameRequest = {
-            ...remoteGame,
-            cohort,
-            id,
-            headers,
-        };
-
         request.onStart();
-        api.updateGame(cohort, id, req)
-            .then(() => {
-                trackEvent(EventType.UpdateGame, {
-                    method: req.type,
-                    dojo_cohort: cohort,
-                });
-                router.push(`/games/${cohort}/${id}?firstLoad=true`);
-            })
-            .catch((err) => {
-                request.onFailure(err);
+        try {
+            const current = (await api.getGame(cohort, id)).data;
+            const req: UpdateGameRequest = {
+                ...remoteGame,
+                cohort,
+                id,
+                headers,
+                updatedAt: current.updatedAt || current.createdAt || '',
+            };
+
+            await api.updateGame(cohort, id, req);
+            trackEvent(EventType.UpdateGame, {
+                method: req.type,
+                dojo_cohort: cohort,
             });
+            router.push(`/games/${cohort}/${id}?firstLoad=true`);
+        } catch (err) {
+            request.onFailure(err);
+        }
     };
 
     return (

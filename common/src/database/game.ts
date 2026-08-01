@@ -188,6 +188,12 @@ const updateGame = z.object({
     /** The id of the game to update. */
     id: z.string(),
 
+    /**
+     * The client's known updatedAt of the game. The update is rejected if this
+     * does not match the value currently stored in the database (optimistic concurrency).
+     */
+    updatedAt: z.string(),
+
     /** The eixsting timeline id of the game. */
     timelineId: z.string().optional(),
 

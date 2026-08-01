@@ -235,6 +235,7 @@ const SaveGameButton = ({
             type: newHeaders ? GameImportTypes.editor : undefined,
             cohort: game.cohort,
             id: game.id,
+            updatedAt: game.updatedAt || game.createdAt || '',
             orientation: newOrientation || orientation,
             timelineId: game.timelineId,
         };
