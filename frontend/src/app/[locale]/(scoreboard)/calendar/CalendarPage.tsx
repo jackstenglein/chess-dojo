@@ -381,6 +381,8 @@ export function processLiveClassEvent(
         rruleOptions.dtstart = toRRuleDate(new Date(event.startTime));
     }
 
+    const canMove = isOwner || Boolean(user?.isAdmin || user?.isCalendarAdmin);
+
     return {
         event_id: event.id,
         title: event.title,
@@ -393,7 +395,7 @@ export function processLiveClassEvent(
               : theme.palette.peacock.main,
         editable: isOwner,
         deletable: isOwner && Object.values(event.participants).length === 0,
-        draggable: isOwner,
+        draggable: canMove,
         isOwner,
         event,
         recurring: rruleOptions ? new RRule(rruleOptions) : undefined,

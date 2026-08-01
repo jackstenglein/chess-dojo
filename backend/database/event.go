@@ -287,6 +287,9 @@ type EventSetter interface {
 	// SetEvent inserts the provided Event into the database.
 	SetEvent(event *Event) error
 
+	// GetEvent returns the event object with the provided id.
+	GetEvent(id string) (*Event, error)
+
 	// RecordEventCreation saves statistics on the created event.
 	RecordEventCreation(event *Event) error
 }

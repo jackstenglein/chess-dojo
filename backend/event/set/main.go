@@ -291,7 +291,7 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	if err != nil {
 		return api.Failure(err)
 	}
-	if !user.IsAdmin {
+	if !user.GetIsCalendarAdmin() {
 		err := errors.New(403, "You do not have permission to create live class events", "")
 		return api.Failure(err)
 	}
@@ -324,12 +324,21 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 
 	if event.Id == "" {
 		event.Id = uuid.NewString()
+		event.Owner = user.Username
+		event.OwnerDisplayName = user.DisplayName
+		event.OwnerCohort = user.DojoCohort
+		event.OwnerPreviousCohort = user.PreviousCohort
+	} else {
+		existing, err := repository.GetEvent(event.Id)
+		if err != nil {
+			return api.Failure(err)
+		}
+		event.Owner = existing.Owner
+		event.OwnerDisplayName = existing.OwnerDisplayName
+		event.OwnerCohort = existing.OwnerCohort
+		event.OwnerPreviousCohort = existing.OwnerPreviousCohort
 	}
 
-	event.Owner = user.Username
-	event.OwnerDisplayName = user.DisplayName
-	event.OwnerCohort = user.DojoCohort
-	event.OwnerPreviousCohort = user.PreviousCohort
 	event.BookedStartTime = ""
 	event.Types = nil
 	event.BookedType = ""
