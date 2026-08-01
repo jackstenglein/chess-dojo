@@ -110,7 +110,7 @@
         "@eslint/js": "^9.39.2",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@next/eslint-plugin-next": "^16.2.7",
-        "@playwright/test": "^1.60.0",
+        "@playwright/test": "^1.62.0",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@types/deep-equal": "^1.0.4",
