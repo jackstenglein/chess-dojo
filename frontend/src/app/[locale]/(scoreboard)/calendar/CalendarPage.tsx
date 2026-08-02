@@ -10,11 +10,14 @@ import ProcessedEventViewer from '@/components/calendar/eventViewer/ProcessedEve
 import {
     CalendarFilters,
     Filters,
+    FiltersProvider,
     getHours,
     useFilters,
 } from '@/components/calendar/filters/CalendarFilters';
+import CalendarNavigationExtra from '@/components/calendar/filters/CalendarNavigationExtra';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import CalendarTutorial from '@/components/tutorial/CalendarTutorial';
+import { getConfig } from '@/config';
 import {
     AvailabilityType,
     CalendarSessionType,
@@ -26,10 +29,30 @@ import {
 import { ALL_COHORTS, isFree, TimeFormat, User } from '@/database/user';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { Scheduler } from '@jackstenglein/react-scheduler';
-import type { EventRendererProps, SchedulerRef } from '@jackstenglein/react-scheduler/types';
-import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Button, Container, Grid, Snackbar, Stack, Typography } from '@mui/material';
+import type {
+    EditorSlotProps,
+    EventRendererProps,
+    EventViewerActionsExtraSlotProps,
+    EventViewerExtraSlotProps,
+    ProcessedEvent,
+    SchedulerRef,
+} from '@jackstenglein/react-scheduler/types';
+import { Check, FilterList, Link } from '@mui/icons-material';
+import {
+    Box,
+    Button,
+    Container,
+    Grid,
+    IconButton,
+    Snackbar,
+    Stack,
+    SwipeableDrawer,
+    Theme,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import {
     de as dateFnsDe,
     enUS as dateFnsEnUS,
@@ -39,7 +62,7 @@ import {
     ptBR as dateFnsPtBR,
 } from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { RRule } from 'rrule';
 
 const SCHEDULER_LOCALES = {
@@ -59,6 +82,7 @@ function processAvailability(
     filters: Filters,
     event: Event,
     t: TranslateFn,
+    theme: Theme,
 ): ProcessedEvent | null {
     if (event.status === EventStatus.Canceled) {
         return null;
@@ -95,7 +119,7 @@ function processAvailability(
             title,
             start: new Date(event.bookedStartTime || event.startTime),
             end: new Date(event.endTime),
-            color: 'meet.main',
+            color: theme.palette.meet.main,
             isOwner,
             editable,
             deletable: false,
@@ -121,7 +145,7 @@ function processAvailability(
             title: title,
             start: new Date(event.startTime),
             end: new Date(event.endTime),
-            color: 'info.main',
+            color: theme.palette.info.main,
             draggable: true,
             isOwner: true,
             editable: true,
@@ -176,7 +200,7 @@ function processAvailability(
                 : t('bookableTitle', { name: event.ownerDisplayName })),
         start: new Date(event.startTime),
         end: new Date(event.endTime),
-        color: 'book.main',
+        color: theme.palette.book.main,
         editable: false,
         deletable: false,
         draggable: false,
@@ -189,6 +213,7 @@ function processDojoEvent(
     user: User | undefined,
     filters: Filters,
     event: Event,
+    theme: Theme,
 ): ProcessedEvent | null {
     if (
         filters.sessions[0] !== CalendarSessionType.AllSessions &&
@@ -209,11 +234,11 @@ function processDojoEvent(
     }
 
     const location = event.location.toLowerCase();
-    let color = 'dojoOrange.main';
+    let color = theme.palette.dojoOrange.main;
     if (location.includes('twitch')) {
-        color = 'twitch.main';
+        color = theme.palette.twitch.main;
     } else if (location.includes('youtube')) {
-        color = 'youtube.main';
+        color = theme.palette.youtube.main;
     }
 
     const rruleOptions = event.rrule ? RRule.parseString(event.rrule) : undefined;
@@ -240,6 +265,7 @@ function processLigaTournament(
     user: User | undefined,
     filters: Filters,
     event: Event,
+    theme: Theme,
 ): ProcessedEvent | null {
     if (!event.ligaTournament) {
         return null;
@@ -258,7 +284,7 @@ function processLigaTournament(
         title: event.title,
         start: new Date(event.startTime),
         end: new Date(event.endTime),
-        color: event.color || 'liga.main',
+        color: event.color || theme.palette.liga.main,
         editable: user?.isAdmin || user?.isCalendarAdmin,
         deletable: user?.isAdmin || user?.isCalendarAdmin,
         draggable: user?.isAdmin || user?.isCalendarAdmin,
@@ -271,6 +297,7 @@ export function processCoachingEvent(
     user: User | undefined,
     filters: Filters,
     event: Event,
+    theme: Theme,
 ): ProcessedEvent | null {
     if (
         filters.sessions[0] !== CalendarSessionType.AllSessions &&
@@ -312,7 +339,7 @@ export function processCoachingEvent(
         title: event.title,
         start: new Date(event.startTime),
         end: new Date(event.endTime),
-        color: event.color || 'coaching.main',
+        color: event.color || theme.palette.coaching.main,
         editable: isOwner,
         deletable: isOwner && Object.values(event.participants).length === 0,
         draggable: isOwner,
@@ -326,6 +353,7 @@ export function processLiveClassEvent(
     user: User | undefined,
     filters: Filters,
     event: Event,
+    theme: Theme,
 ): ProcessedEvent | null {
     const eventType = event.type as unknown as CalendarSessionType;
     if (
@@ -361,8 +389,8 @@ export function processLiveClassEvent(
         color: event.color
             ? event.color
             : event.type === EventType.LectureTier
-              ? 'sage.main'
-              : 'peacock.main',
+              ? theme.palette.sage.main
+              : theme.palette.peacock.main,
         editable: isOwner,
         deletable: isOwner && Object.values(event.participants).length === 0,
         draggable: isOwner,
@@ -377,6 +405,7 @@ export function getProcessedEvents(
     filters: Filters,
     events: Event[],
     t: TranslateFn,
+    theme: Theme,
 ): ProcessedEvent[] {
     const result: ProcessedEvent[] = [];
 
@@ -392,18 +421,18 @@ export function getProcessedEvents(
         }
 
         if (event.type === EventType.Availability) {
-            processedEvent = processAvailability(user, filters, event, t);
+            processedEvent = processAvailability(user, filters, event, t, theme);
         } else if (event.type === EventType.Dojo) {
-            processedEvent = processDojoEvent(user, filters, event);
+            processedEvent = processDojoEvent(user, filters, event, theme);
         } else if (event.type === EventType.LigaTournament) {
-            processedEvent = processLigaTournament(user, filters, event);
+            processedEvent = processLigaTournament(user, filters, event, theme);
         } else if (event.type === EventType.Coaching) {
-            processedEvent = processCoachingEvent(user, filters, event);
+            processedEvent = processCoachingEvent(user, filters, event, theme);
         } else if (
             event.type === EventType.LectureTier ||
             event.type === EventType.GameReviewTier
         ) {
-            processedEvent = processLiveClassEvent(user, filters, event);
+            processedEvent = processLiveClassEvent(user, filters, event, theme);
         }
 
         if (processedEvent !== null) {
@@ -414,7 +443,64 @@ export function getProcessedEvents(
     return result;
 }
 
+function FreeTierEditor(props: EditorSlotProps) {
+    return (
+        <UpsellDialog
+            open={true}
+            onClose={() => props.close()}
+            currentAction={RestrictedAction.AddCalendarEvents}
+        />
+    );
+}
+
+function DojoEventEditor(props: EditorSlotProps) {
+    return <EventEditor scheduler={props} />;
+}
+
+function CalendarEventViewerExtra({ event }: EventViewerExtraSlotProps) {
+    return <ProcessedEventViewer processedEvent={event} />;
+}
+
+function CalendarEventViewerActionsExtra({
+    event: processedEvent,
+}: EventViewerActionsExtraSlotProps) {
+    const { user } = useAuth();
+    const t = useTranslations('calendar');
+    const [isCopied, setIsCopied] = useState(false);
+
+    const event = processedEvent.event as Event;
+    if (event.type === EventType.Dojo || event.type === EventType.LigaTournament) {
+        return null;
+    }
+
+    let link = `${getConfig().baseUrl}/meeting/${event.id}`;
+    const isParticipant =
+        event.owner === user?.username || Boolean(event.participants[user?.username || '']);
+    if (
+        event.type === EventType.Availability &&
+        (Object.values(event.participants).length === 0 || !isParticipant)
+    ) {
+        link = `${getConfig().baseUrl}/calendar/availability/${event.id}`;
+    }
+
+    return (
+        <Tooltip title={t('copyLink')}>
+            <IconButton
+                color='inherit'
+                onClick={async () => {
+                    await navigator.clipboard.writeText(link);
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 2000);
+                }}
+            >
+                {isCopied ? <Check /> : <Link />}
+            </IconButton>
+        </Tooltip>
+    );
+}
+
 export default function CalendarPage() {
+    const theme = useTheme();
     const t = useTranslations('calendar');
     const locale = useLocale();
     const schedulerLocale =
@@ -423,22 +509,18 @@ export default function CalendarPage() {
     const api = useApi();
     const isFreeTier = useFreeTier();
     const [canceled, setCanceled] = useState(false);
+    const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
     const { events, putEvent, removeEvent, request } = useEvents();
 
     const filters = useFilters();
 
     const calendarRef = useRef<SchedulerRef>(null);
-    const view = calendarRef.current?.scheduler.view;
 
     const copyRequest = useRequest();
     const deleteRequest = useRequest<string>();
 
-    const [showFilters, setShowFilters] = useState(true);
-
-    const toggleFilters = () => {
-        setShowFilters(!showFilters);
-    };
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     const deleteAvailability = useCallback(
         async (id: string) => {
@@ -453,7 +535,7 @@ export default function CalendarPage() {
                 deleteRequest.onFailure(err);
             }
         },
-        [api, removeEvent, deleteRequest],
+        [api, removeEvent, deleteRequest, t],
     );
 
     const copyAvailability = useCallback(
@@ -467,7 +549,7 @@ export default function CalendarPage() {
                 let startIso = newEvent.start.toISOString();
                 let endIso = newEvent.end.toISOString();
 
-                if (view === 'month') {
+                if (calendarRef.current?.scheduler.view === 'month') {
                     // In month view, we force the time when dragging to be the same as the
                     // original event because the user can't drag to individual time slots
                     const originalStartIso = originalEvent.start.toISOString();
@@ -523,70 +605,15 @@ export default function CalendarPage() {
                 copyRequest.onFailure(err);
             }
         },
-        [copyRequest, api, view, putEvent],
+        [copyRequest, api, putEvent],
     );
 
     const processedEvents = useMemo(() => {
-        return getProcessedEvents(user, filters, events, t);
-    }, [user, filters, events, t]);
-
-    useEffect(() => {
-        calendarRef.current?.scheduler.handleState(processedEvents, 'events');
-    }, [processedEvents, calendarRef]);
-
-    useEffect(() => {
-        const timezone = filters.timezone === DefaultTimezone ? undefined : filters.timezone;
-        calendarRef.current?.scheduler.handleState(timezone, 'timeZone');
-    }, [calendarRef, filters.timezone]);
-
-    useEffect(() => {
-        calendarRef.current?.scheduler.handleState(filters.timeFormat, 'hourFormat');
-        calendarRef.current?.scheduler.handleState(
-            (props: EventRendererProps) =>
-                CustomEventRenderer({
-                    ...props,
-                    timeFormat: filters.timeFormat,
-                }),
-            'eventRenderer',
-        );
-    }, [calendarRef, filters.timeFormat]);
+        return getProcessedEvents(user, filters, events, t, theme);
+    }, [user, filters, events, t, theme]);
 
     const weekStartOn = filters.weekStartOn;
     const [minHour, maxHour] = getHours(filters.minHour, filters.maxHour);
-
-    useEffect(() => {
-        calendarRef.current?.scheduler.handleState(
-            {
-                weekDays: [0, 1, 2, 3, 4, 5, 6],
-                weekStartOn: weekStartOn,
-                startHour: minHour,
-                endHour: maxHour,
-                navigation: true,
-                step: 60,
-            },
-            'month',
-        );
-        calendarRef.current?.scheduler.handleState(
-            {
-                weekDays: [0, 1, 2, 3, 4, 5, 6],
-                weekStartOn: weekStartOn,
-                startHour: minHour,
-                endHour: maxHour,
-                step: 60,
-                navigation: true,
-            },
-            'week',
-        );
-        calendarRef.current?.scheduler.handleState(
-            {
-                startHour: minHour,
-                endHour: maxHour,
-                step: 60,
-                navigation: true,
-            },
-            'day',
-        );
-    }, [calendarRef, weekStartOn, minHour, maxHour]);
 
     return (
         <Container sx={{ py: 3 }} maxWidth={false}>
@@ -602,81 +629,127 @@ export default function CalendarPage() {
             />
 
             <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 2.5, xl: 2 }}>
-                    <Button
-                        onClick={toggleFilters}
-                        startIcon={showFilters ? <VisibilityOff /> : <Visibility />}
-                        sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+                <Grid
+                    size={{ md: filters.hidden ? 'auto' : 2.5, xl: filters.hidden ? 'auto' : 2 }}
+                    sx={{ display: { xs: 'none', md: 'block' } }}
+                >
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            position: 'sticky',
+                            top: 'calc(var(--navbar-height) + 16px)',
+                            maxHeight: 'calc(100vh - var(--navbar-height) - 32px)',
+                            overflow: 'auto',
+                            alignSelf: 'flex-start',
+                            pb: 2,
+                        }}
                     >
-                        {showFilters ? t('hideFilters') : t('showFilters')}
-                    </Button>
-                    {showFilters && <CalendarFilters filters={filters} />}
+                        <Box data-testid='calendar-filters-button'>
+                            <CalendarFilters filters={filters} />
+                        </Box>
+                    </Stack>
                 </Grid>
                 <Grid
                     size={{
                         xs: 12,
-                        md: showFilters ? 9.5 : 12,
-                        xl: showFilters ? 10 : 12,
+                        md: filters.hidden ? 'grow' : 9.5,
+                        xl: filters.hidden ? 'grow' : 10,
                     }}
                 >
-                    <Stack spacing={3}>
-                        <Scheduler
-                            ref={calendarRef}
-                            locale={schedulerLocale}
-                            agenda={false}
-                            month={{
-                                weekDays: [0, 1, 2, 3, 4, 5, 6],
-                                weekStartOn: weekStartOn,
-                                startHour: minHour,
-                                endHour: maxHour,
-                                navigation: true,
-                                step: 60,
-                            }}
-                            week={{
-                                weekDays: [0, 1, 2, 3, 4, 5, 6],
-                                weekStartOn: weekStartOn,
-                                startHour: minHour,
-                                endHour: maxHour,
-                                step: 60,
-                                navigation: true,
-                            }}
-                            day={{
-                                startHour: minHour,
-                                endHour: maxHour,
-                                step: 60,
-                                navigation: true,
-                            }}
-                            customEditor={(scheduler) =>
-                                isFreeTier ? (
-                                    <UpsellDialog
-                                        open={true}
-                                        onClose={() => scheduler.close()}
-                                        currentAction={RestrictedAction.AddCalendarEvents}
-                                    />
-                                ) : (
-                                    <EventEditor scheduler={scheduler} />
-                                )
-                            }
-                            onDelete={deleteAvailability}
-                            onEventDrop={copyAvailability}
-                            viewerExtraComponent={(_, event) => (
-                                <ProcessedEventViewer processedEvent={event} />
-                            )}
-                            events={processedEvents}
-                            timeZone={
-                                filters.timezone === DefaultTimezone ? undefined : filters.timezone
-                            }
-                            hourFormat={filters.timeFormat || TimeFormat.TwelveHour}
-                            eventRenderer={(props) =>
-                                CustomEventRenderer({
-                                    ...props,
-                                    timeFormat: filters.timeFormat,
-                                })
-                            }
-                        />
+                    <Stack spacing={2}>
+                        {!isMdUp && (
+                            <Button
+                                onClick={() => setMobileFiltersOpen(true)}
+                                startIcon={<FilterList />}
+                                variant='outlined'
+                                size='small'
+                                data-testid='calendar-filters-button'
+                                sx={{ alignSelf: 'flex-start' }}
+                            >
+                                {t('filtersTitle')}
+                            </Button>
+                        )}
+                        <FiltersProvider filters={filters}>
+                            <Scheduler
+                                stickyTop='var(--navbar-height)'
+                                ref={calendarRef}
+                                locale={schedulerLocale}
+                                agenda={false}
+                                month={{
+                                    weekDays: [0, 1, 2, 3, 4, 5, 6],
+                                    weekStartOn: weekStartOn,
+                                    startHour: minHour,
+                                    endHour: maxHour,
+                                    navigation: true,
+                                    step: 60,
+                                }}
+                                week={{
+                                    weekDays: [0, 1, 2, 3, 4, 5, 6],
+                                    weekStartOn: weekStartOn,
+                                    startHour: minHour,
+                                    endHour: maxHour,
+                                    step: 60,
+                                    navigation: true,
+                                }}
+                                day={{
+                                    startHour: minHour,
+                                    endHour: maxHour,
+                                    step: 60,
+                                    navigation: true,
+                                }}
+                                slots={{
+                                    editor: isFreeTier ? FreeTierEditor : DojoEventEditor,
+                                    eventViewerActionsExtra: CalendarEventViewerActionsExtra,
+                                    eventViewerExtra: CalendarEventViewerExtra,
+                                    navigationExtra: CalendarNavigationExtra,
+                                }}
+                                onDelete={deleteAvailability}
+                                onEventDrop={copyAvailability}
+                                events={processedEvents}
+                                timeZone={
+                                    filters.timezone === DefaultTimezone
+                                        ? undefined
+                                        : filters.timezone
+                                }
+                                hourFormat={filters.timeFormat || TimeFormat.TwelveHour}
+                            />
+                        </FiltersProvider>
                     </Stack>
                 </Grid>
             </Grid>
+
+            <SwipeableDrawer
+                anchor='bottom'
+                open={!isMdUp && mobileFiltersOpen}
+                onOpen={() => setMobileFiltersOpen(true)}
+                onClose={() => setMobileFiltersOpen(false)}
+                disableDiscovery
+                slotProps={{
+                    paper: {
+                        sx: {
+                            maxHeight: '85vh',
+                            borderTopLeftRadius: 12,
+                            borderTopRightRadius: 12,
+                        },
+                    },
+                }}
+            >
+                <Box
+                    sx={{
+                        width: 40,
+                        height: 4,
+                        bgcolor: 'divider',
+                        borderRadius: 2,
+                        alignSelf: 'center',
+                        mx: 'auto',
+                        mt: 1.5,
+                        mb: 1,
+                    }}
+                />
+                <Box sx={{ px: 2, pb: 3, overflow: 'auto' }}>
+                    <CalendarFilters filters={filters} />
+                </Box>
+            </SwipeableDrawer>
 
             <CalendarTutorial />
         </Container>

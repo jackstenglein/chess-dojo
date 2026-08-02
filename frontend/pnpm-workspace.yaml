@@ -1,0 +1,10 @@
+allowBuilds:
+  '@jackstenglein/chess-dojo-common@file:../common': true
+  '@mui/x-telemetry': true
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@jackstenglein/react-scheduler@5.0.6'

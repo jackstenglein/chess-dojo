@@ -110,12 +110,9 @@ func handlePairings(request SetPairingsRequest) api.Response {
 	return api.Success(openClassical)
 }
 
-const whiteTitleIndex = 2
-const whiteIndex = 3
-const whiteRatingIndex = 4
-const blackTitleIndex = 7
-const blackIndex = 8
-const blackRatingIndex = 9
+const whiteIndex = 4
+const blackIndex = 10
+const blackRatingIndex = 11
 const noOpponent = "No Opponent"
 
 func getPairings(request SetPairingsRequest, openClassical *database.OpenClassical) ([]database.OpenClassicalPairing, error) {

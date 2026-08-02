@@ -2,7 +2,7 @@ import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
 import { TimeFormat } from '@/database/user';
 import { MenuItem, Stack, TextField } from '@mui/material';
-import { TimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers-pro';
 import { useTranslations } from 'next-intl';
 import { Filters, WeekDays } from './CalendarFilters';
 import { TimezoneSelector } from './TimezoneSelector';
@@ -94,6 +94,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                         size: 'small',
                         helperText: minHourNum >= maxHourNum ? t('minHourError') : undefined,
                     },
+                    popper: { disablePortal: true },
                 }}
             />
             <TimePicker
@@ -108,6 +109,7 @@ const TimezoneFilter: React.FC<TimezoneFilterProps> = ({ filters }) => {
                         size: 'small',
                         helperText: maxHourNum <= minHourNum ? t('maxHourError') : undefined,
                     },
+                    popper: { disablePortal: true },
                 }}
             />
         </Stack>

@@ -7,10 +7,18 @@ import {
 } from '@/api/cache/chessdb';
 import { ChessDBService } from '@/api/chessdbService';
 import { useChess } from '@/board/pgn/PgnBoard';
-import { EventType } from '@jackstenglein/chess';
-import { validateFen } from 'chess.js';
+import { Chess, EventType } from '@jackstenglein/chess';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+function validateFen(fen: string): boolean {
+    try {
+        new Chess({ fen });
+        return true;
+    } catch (_err) {
+        return false;
+    }
+}
 
 export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; enablePv: boolean }) {
     const t = useTranslations('analysisBoard.engine');

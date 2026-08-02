@@ -6,12 +6,12 @@ export type { Event };
 
 export enum CalendarSessionType {
     AllSessions = 'ALL_SESSIONS',
-    Availabilities = 'AVAILABILITIES',
     Meetings = 'MEETINGS',
-    DojoEvents = 'DOJO_EVENTS',
-    CoachingSessions = 'COACHING_SESSIONS',
+    Availabilities = 'AVAILABILITIES',
     Lectures = 'LECTURE_TIER',
     GameReviews = 'GAME_REVIEW_TIER',
+    DojoEvents = 'DOJO_EVENTS',
+    CoachingSessions = 'COACHING_SESSIONS',
 }
 
 export enum TournamentType {

@@ -1,5 +1,5 @@
 import { Button, Popover, Stack } from '@mui/material';
-import { DateCalendar } from '@mui/x-date-pickers';
+import { DateCalendar } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';

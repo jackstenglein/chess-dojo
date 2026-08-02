@@ -296,10 +296,6 @@ func findRating(body []byte, regex *regexp.Regexp) (int, error) {
 	return rating, nil
 }
 
-func FetchFideRating(fideId string) (*database.Rating, error) {
-	return database.DynamoDB.GetFideRating(strings.TrimSpace(fideId))
-}
-
 func FetchUscfRating(uscfId string) (*database.Rating, error) {
 	resp, err := client.Get(fmt.Sprintf("https://ratings-api.uschess.org/api/v1/members/%s", uscfId))
 	if err != nil {
