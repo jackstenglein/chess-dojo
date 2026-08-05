@@ -196,12 +196,6 @@ func writeVEVENT(b *strings.Builder, event *database.Event, username string) {
 	if err != nil {
 		return
 	}
-	if event.BookedStartTime != "" {
-		duration, durErr := database.GetEventDuration(event)
-		if durErr == nil {
-			end = start.Add(duration)
-		}
-	}
 
 	b.WriteString("BEGIN:VEVENT\r\n")
 	b.WriteString("UID:")

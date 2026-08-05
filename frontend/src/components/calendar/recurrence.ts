@@ -7,7 +7,7 @@ import { toRRuleDate } from './displayDate';
 export type RecurrenceEditScope = 'this' | 'all';
 
 /**
- * True when the event's rrule includes a repeating FREQ rule.
+ * True when the event's rrule includes an RRULE option.
  */
 export function isRecurringEvent(event: Event): boolean {
     return Boolean(event.rrule?.includes('RRULE:'));
@@ -114,8 +114,7 @@ export function haveTimesChanged(
     newEnd: Date,
 ): boolean {
     return (
-        originalStart.getTime() !== newStart.getTime() ||
-        originalEnd.getTime() !== newEnd.getTime()
+        originalStart.getTime() !== newStart.getTime() || originalEnd.getTime() !== newEnd.getTime()
     );
 }
 

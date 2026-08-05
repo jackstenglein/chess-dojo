@@ -7,6 +7,4 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - '@jackstenglein/react-scheduler@5.0.6'
-patchedDependencies:
-  '@jackstenglein/react-scheduler@5.0.6': patches/@jackstenglein__react-scheduler@5.0.6.patch
+  - '@jackstenglein/react-scheduler@5.0.6 || 5.0.7'
