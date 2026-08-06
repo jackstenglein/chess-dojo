@@ -1,5 +1,6 @@
 import {
     Blog,
+    BlogCommentReactionType,
     CreateBlogCommentRequest,
     CreateBlogRequest,
     DeleteBlogCommentRequest,
@@ -126,10 +127,10 @@ export function deleteBlogComment(
 
 export function updateBlogCommentReaction(
     props: Pick<UpdateBlogCommentReactionRequest, 'owner' | 'id' | 'commentId'>,
-    reactionType: string,
+    reactionType: BlogCommentReactionType,
 ): Promise<AxiosResponse<Blog>> {
     return axiosService.put<Blog>(
-        `/blog/comments/reactions/${props.owner}/${props.id}`,
+        `/blog/comment-reactions/${props.owner}/${props.id}`,
         { commentId: props.commentId, reactionType },
         { functionName: 'updateBlogCommentReaction' },
     );

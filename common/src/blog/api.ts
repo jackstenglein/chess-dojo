@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+/** The allowed reaction types for blog comments. */
+export const BLOG_COMMENT_REACTION_TYPES = ['👍', '❤️', '😂', '🔥', '🎉'] as const;
+export const BlogCommentReactionTypeSchema = z.enum(BLOG_COMMENT_REACTION_TYPES);
+export type BlogCommentReactionType = z.infer<typeof BlogCommentReactionTypeSchema>;
+
 /** The username of the blog owner for the Chess Dojo blog. */
 export const DOJO_BLOG_OWNER = 'chessdojo';
 /** Verifies the shape of a Reaction on a comment or timeline entry. */
@@ -13,8 +18,11 @@ export const ReactionSchema = z.object({
     /** The time the reaction was last changed, in ISO 8601. */
     updatedAt: z.string(),
     /** The reaction types set by the user. */
-    types: z.array(z.string()).optional(),
+    types: z.array(BlogCommentReactionTypeSchema).optional(),
 });
+
+/** A reaction on a blog comment. */
+export type Reaction = z.infer<typeof ReactionSchema>;
 
 /** Verifies the shape of a Comment on a blog post. */
 export const CommentSchema = z.object({
@@ -38,9 +46,7 @@ export const CommentSchema = z.object({
     parentId: z.string().optional(),
     /** Reactions left by users on the comment, mapped by their usernames. */
     reactions: z.record(z.string(), ReactionSchema).nullish(),
-    
 });
-
 
 /** A comment on a blog post. */
 export type Comment = z.infer<typeof CommentSchema>;
@@ -209,8 +215,10 @@ export const updateBlogCommentReactionRequestSchema = z.object({
     /** The id of the comment to react to. */
     commentId: z.string().min(1),
     /** The type of reaction to toggle */
-    reactionType: z.string().min(1),
+    reactionType: BlogCommentReactionTypeSchema,
 });
 
 /** A request to update a reaction on a blog comment. */
-export type UpdateBlogCommentReactionRequest = z.infer<typeof updateBlogCommentReactionRequestSchema>;
+export type UpdateBlogCommentReactionRequest = z.infer<
+    typeof updateBlogCommentReactionRequestSchema
+>;

@@ -1,5 +1,5 @@
 import type { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CommentList from './CommentList';
 
@@ -290,6 +290,57 @@ describe('CommentList', () => {
             // Reply 1 still hidden since we haven't submitted yet
             expect(screen.queryByText('Reply 1')).not.toBeInTheDocument();
             expect(screen.getByText('Show 1 more reply')).toBeInTheDocument();
+        });
+    });
+
+    describe('Reactions', () => {
+        it('only shows reaction controls when a persistence callback is provided', () => {
+            const { unmount } = renderWithIntl(<CommentList comments={[makeComment()]} />);
+
+            expect(screen.queryByLabelText('Add reaction')).not.toBeInTheDocument();
+
+            unmount();
+            renderWithIntl(
+                <CommentList
+                    comments={[makeComment()]}
+                    onReact={vi.fn().mockResolvedValue(undefined)}
+                />,
+            );
+
+            expect(screen.getByLabelText('Add reaction')).toBeInTheDocument();
+        });
+
+        it('passes the selected reaction to the persistence callback', async () => {
+            const onReact = vi.fn().mockResolvedValue(undefined);
+            renderWithIntl(<CommentList comments={[makeComment()]} onReact={onReact} />);
+
+            fireEvent.click(screen.getByLabelText('Add reaction'));
+            fireEvent.click(screen.getByRole('button', { name: '👍' }));
+
+            await waitFor(() => expect(onReact).toHaveBeenCalledWith('c1', '👍'));
+        });
+
+        it('rolls back an optimistic reaction when persistence fails', async () => {
+            let rejectRequest: (reason: Error) => void = () => undefined;
+            const onReact = vi.fn(
+                () =>
+                    new Promise<void>((_resolve, reject) => {
+                        rejectRequest = reject;
+                    }),
+            );
+            renderWithIntl(<CommentList comments={[makeComment()]} onReact={onReact} />);
+
+            fireEvent.click(screen.getByLabelText('Add reaction'));
+            fireEvent.click(screen.getByRole('button', { name: '👍' }));
+
+            expect(screen.getByRole('button', { name: '👍 1' })).toBeInTheDocument();
+
+            act(() => rejectRequest(new Error('Unable to save reaction')));
+
+            await waitFor(() => {
+                expect(screen.queryByRole('button', { name: '👍 1' })).not.toBeInTheDocument();
+            });
+            expect(screen.getByText('Unable to save reaction')).toBeInTheDocument();
         });
     });
 });

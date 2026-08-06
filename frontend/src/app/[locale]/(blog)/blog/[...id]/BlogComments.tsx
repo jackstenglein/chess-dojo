@@ -10,7 +10,7 @@ import { useAuth } from '@/auth/Auth';
 import CommentEditor from '@/components/comments/CommentEditor';
 import CommentList from '@/components/comments/CommentList';
 import { Link } from '@/components/navigation/Link';
-import { Blog } from '@jackstenglein/chess-dojo-common/src/blog/api';
+import { Blog, BlogCommentReactionType } from '@jackstenglein/chess-dojo-common/src/blog/api';
 import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
 import { Divider, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -42,7 +42,7 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
         setComments(resp.data.comments ?? null);
     };
 
-    const handleReact = async (commentId: string, reactionType: string) => {
+    const handleReact = async (commentId: string, reactionType: BlogCommentReactionType) => {
         const resp = await updateBlogCommentReaction({ owner, id, commentId }, reactionType);
         setComments(resp.data.comments ?? null);
     };

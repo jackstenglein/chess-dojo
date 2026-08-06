@@ -8,7 +8,9 @@ export {
     UpdateItemBuilder,
     and,
     attributeExists,
+    attributeNotExists,
     dynamo,
     equal,
     getUser,
+    or,
 } from '../directoryService/database';

@@ -5,9 +5,9 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     Blog,
     BlogStatuses,
+    Comment,
     createBlogCommentRequestSchema,
 } from '@jackstenglein/chess-dojo-common/src/blog/api';
-import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuid } from 'uuid';
 import {
@@ -79,6 +79,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             content: request.content,
             createdAt: now,
             updatedAt: now,
+            reactions: {},
             ...(resolvedParentId && { parentId: resolvedParentId }),
         };
 
