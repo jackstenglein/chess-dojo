@@ -1753,7 +1753,9 @@
         "replyingTo": "In risposta a {name}",
         "writeReply": "Scrivi una risposta...",
         "postReply": "Pubblica risposta",
-        "edited": "(modificato)"
+        "edited": "(modificato)",
+        "addReaction": "Aggiungi reazione",
+        "reactedByOthers": "{names} e altri {count}"
     },
     "games": {
         "saveDialog": {

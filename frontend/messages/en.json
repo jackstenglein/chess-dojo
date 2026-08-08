@@ -1753,7 +1753,9 @@
         "replyingTo": "Replying to {name}",
         "writeReply": "Write a reply...",
         "postReply": "Post Reply",
-        "edited": "(edited)"
+        "edited": "(edited)",
+        "addReaction": "Add reaction",
+        "reactedByOthers": "{names} and {count} others"
     },
     "games": {
         "saveDialog": {
