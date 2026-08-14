@@ -2675,7 +2675,8 @@
             "noClubsFound": "Aucun club trouvé"
         },
         "chips": {
-            "memberCount": "{count, plural, =1 {# membre} other {# membres}}"
+            "memberCount": "{count, plural, =1 {# membre} other {# membres}}",
+            "mainClub": "Club principal"
         },
         "filters": {
             "search": "Rechercher...",
@@ -2720,6 +2721,8 @@
             "requestToJoinClub": "Demander à rejoindre le club",
             "joinClub": "Rejoindre le club",
             "joinedSnackbar": "Club rejoint",
+            "setMainClub": "Définir comme club principal",
+            "mainClubSnackbar": "Club principal mis à jour",
             "tabsAriaLabel": "onglets du profil",
             "tabs": {
                 "scoreboard": "Tableau de score",
@@ -3437,6 +3440,7 @@
             "chessDbColumnWinrate": "Taux de victoire",
             "chessDbColumnNote": "Remarque",
             "queueAnalysisButton": "Ajouter à la file d'analyse",
+            "analysisQueued": "Analyse ajoutée à la file d'attente. Revenez plus tard.",
             "positionNotInChessDb": "Position absente de ChessDB.",
             "chessCloudDatabaseLabel": "Chess Cloud Database",
             "tabDojo": "Dojo",
