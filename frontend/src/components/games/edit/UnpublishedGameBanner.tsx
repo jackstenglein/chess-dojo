@@ -49,9 +49,7 @@ function useUnpublishedGame() {
         };
 
         await updateGame(req).then((updated) => {
-            onUpdateGame?.(
-                updated ?? { ...game, unlisted: false, orientation: form.orientation },
-            );
+            onUpdateGame?.(updated ?? { ...game, unlisted: false, orientation: form.orientation });
             setShowDialog(false);
             setShowBanner(false);
         });
