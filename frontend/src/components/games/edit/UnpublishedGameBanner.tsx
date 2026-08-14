@@ -40,6 +40,7 @@ function useUnpublishedGame() {
         const req: UpdateGameRequest = {
             id: game.id,
             cohort: game.cohort,
+            updatedAt: game.updatedAt || game.createdAt || '',
             timelineId: game.timelineId,
             unlisted: false,
             pgnText: chess.renderPgn(),
@@ -47,8 +48,8 @@ function useUnpublishedGame() {
             orientation: form.orientation,
         };
 
-        await updateGame(req).then(() => {
-            onUpdateGame?.({ ...game, unlisted: false, orientation: form.orientation });
+        await updateGame(req).then((updated) => {
+            onUpdateGame?.(updated ?? { ...game, unlisted: false, orientation: form.orientation });
             setShowDialog(false);
             setShowBanner(false);
         });

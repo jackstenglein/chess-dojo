@@ -51,6 +51,7 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                 onDelete={user ? handleDelete : undefined}
                 threaded
                 onSubmitReply={user ? handleSubmitReply : undefined}
+                outlined
             />
             {user ? (
                 <CommentEditor<Blog, { owner: string; id: string }>

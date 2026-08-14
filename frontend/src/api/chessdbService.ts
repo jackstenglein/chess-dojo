@@ -67,7 +67,6 @@ export class ChessDBService {
             const responseData = response.data;
 
             if (responseData.status !== 'ok') {
-                void this.queueAnalysis(fen);
                 return { error: `Position evaluation not available: ${responseData.status}` };
             }
 
