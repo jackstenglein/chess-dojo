@@ -909,6 +909,7 @@
         "analysisBoard": "Scacchiera di analisi",
         "fullDatabase": "Database completo",
         "myGames": "Le mie partite",
+        "myFiles": "I miei file",
         "repertoireSpy": "Spia del repertorio",
         "calendar": "Calendario",
         "tournaments": "Tornei",
@@ -1620,9 +1621,9 @@
         "copyLink": "Copia link",
         "participants": "Partecipanti",
         "andMore": "... e altri {count}",
-        "filtersTitle": "Filtri",
-        "resetFilters": "Reimposta filtri",
-        "myDojoCalendar": "Il mio calendario Dojo",
+        "resetFilters": "Reimposta",
+        "cohortsSelected": "{count, plural, =1 {# selezionato} other {# selezionati}}",
+        "myDojoCalendar": "Calendari Dojo",
         "dojoLigaTournaments": "Tornei DojoLiga",
         "bookableMeetings": "Incontri prenotabili",
         "viewMeetings": "{count, plural, =1 {Visualizza # incontro imminente} other {Visualizza # incontri imminenti}}",
@@ -1656,6 +1657,16 @@
         "bookableTitle": "Prenotabile - {name}",
         "meetingCanceled": "Incontro annullato",
         "availabilityDeleted": "Disponibilità eliminata",
+        "share": "Iscriviti",
+        "shareMenuTitle": "Iscriviti in Google Calendar",
+        "shareGoogleIntro": "Segui questi passaggi per aggiungere il tuo calendario ChessDojo a Google Calendar. I tuoi filtri attuali verranno applicati al calendario.",
+        "shareGoogleStep1": "Copia il link del calendario qui sotto.",
+        "shareGoogleStep2": "Apri Google Calendar sul tuo computer.",
+        "shareGoogleStep3": "A sinistra, accanto a \"Altri calendari\", fai clic su Aggiungi (+).",
+        "shareGoogleStep4": "Seleziona \"Da URL\".",
+        "shareGoogleStep5": "Incolla il link e fai clic su \"Aggiungi calendario\".",
+        "copyIcsLink": "Copia link del calendario",
+        "icsLinkCopied": "Link copiato",
         "hideFilters": "Nascondi filtri",
         "showFilters": "Mostra filtri",
         "validationRequired": "Questo campo è obbligatorio",
@@ -2665,7 +2676,8 @@
             "noClubsFound": "Nessun club trovato"
         },
         "chips": {
-            "memberCount": "{count, plural, =1 {# membro} other {# membri}}"
+            "memberCount": "{count, plural, =1 {# membro} other {# membri}}",
+            "mainClub": "Club principale"
         },
         "filters": {
             "search": "Cerca...",
@@ -2710,6 +2722,8 @@
             "requestToJoinClub": "Richiedi di iscriverti al club",
             "joinClub": "Unisciti al club",
             "joinedSnackbar": "Ti sei unito al club",
+            "setMainClub": "Imposta come club principale",
+            "mainClubSnackbar": "Club principale aggiornato",
             "tabsAriaLabel": "schede del profilo",
             "tabs": {
                 "scoreboard": "Tabellone dei punteggi",
@@ -3427,6 +3441,7 @@
             "chessDbColumnWinrate": "Tasso di vittorie",
             "chessDbColumnNote": "Nota",
             "queueAnalysisButton": "Accoda analisi",
+            "analysisQueued": "Analisi aggiunta alla coda. Controlla di nuovo più tardi.",
             "positionNotInChessDb": "Posizione non presente in ChessDB.",
             "chessCloudDatabaseLabel": "Chess Cloud Database",
             "tabDojo": "Dojo",
@@ -4052,10 +4067,10 @@
     "eventLabels": {
         "session": {
             "ALL_SESSIONS": "Tutti gli eventi",
-            "AVAILABILITIES": "Disponibilità",
+            "AVAILABILITIES": "Incontri prenotabili",
             "COACHING_SESSIONS": "Sessioni di coaching",
-            "DOJO_EVENTS": "Eventi Dojo",
-            "MEETINGS": "Incontri",
+            "DOJO_EVENTS": "Stream ed eventi della community",
+            "MEETINGS": "I miei incontri prenotati",
             "LECTURE_TIER": "Workshop",
             "GAME_REVIEW_TIER": "Analisi di partite e profili"
         },

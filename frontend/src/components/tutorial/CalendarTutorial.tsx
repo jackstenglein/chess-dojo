@@ -15,12 +15,12 @@ const CalendarTutorial = () => {
             skipBeacon: true,
         },
         {
-            target: '[data-testid=timezone-selector]',
+            target: '[data-testid=calendar-settings-button]',
             title: t('timezoneTitle'),
             content: t('timezoneContent'),
         },
         {
-            target: '[data-testid=calendar-filters-selectors]',
+            target: '[data-testid=calendar-filters-button]',
             title: t('filtersTitle'),
             content: t('filtersContent'),
         },

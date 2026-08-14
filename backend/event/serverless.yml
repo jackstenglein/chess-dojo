@@ -205,6 +205,23 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  ics:
+    handler: ./ics
+    timeout: 20
+    events:
+      - httpApi:
+          path: /public/calendar/{username}/ics
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: ${param:EventsTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   set:
     handler: set/main.go
     events:

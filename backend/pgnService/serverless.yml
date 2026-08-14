@@ -123,6 +123,7 @@ functions:
 
   searchGames:
     handler: search/searchGames.handler
+    timeout: 20
     events:
       - httpApi:
           path: /game/search

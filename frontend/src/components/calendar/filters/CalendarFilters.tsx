@@ -11,7 +11,6 @@ import {
     PositionType,
     TimeControlType,
     TournamentType,
-    displayTimeControlType,
     getDisplaySessionString,
     getDisplayString,
 } from '@/database/event';
@@ -20,17 +19,18 @@ import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon from '@/style/Icon';
 import { DayHours } from '@jackstenglein/react-scheduler/types';
+import { Menu, MenuOpen } from '@mui/icons-material';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { Button, Stack, SvgIconOwnProps, Typography, useMediaQuery } from '@mui/material';
+import { Button, IconButton, Stack, SvgIconOwnProps, Tooltip, Typography } from '@mui/material';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
-import { Theme, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import TimezoneFilter from './TimezoneFilter';
+import { FilterToggleGroup } from './FilterToggleGroup';
 import { DefaultTimezone } from './TimezoneSelector';
 
 export type WeekDays = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -72,6 +72,9 @@ export const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export interface Filters {
+    hidden: boolean;
+    setHidden: (v: boolean) => void;
+
     timezone: string;
     setTimezone: React.Dispatch<React.SetStateAction<string>>;
 
@@ -106,6 +109,27 @@ export interface Filters {
     setTournamentPositions: (v: PositionType[]) => void;
 }
 
+const FiltersContext = createContext<Filters | null>(null);
+
+export function FiltersProvider({
+    filters,
+    children,
+}: {
+    filters: Filters;
+    children: React.ReactNode;
+}) {
+    return <FiltersContext.Provider value={filters}>{children}</FiltersContext.Provider>;
+}
+
+/** Shared filters from the nearest FiltersProvider (e.g. calendar page slots). */
+export function useFiltersContext(): Filters {
+    const filters = useContext(FiltersContext);
+    if (!filters) {
+        throw new Error('useFiltersContext must be used within a FiltersProvider');
+    }
+    return filters;
+}
+
 export function useFilters(): Filters {
     const { user, updateUser } = useAuth();
     const api = useApi();
@@ -116,6 +140,8 @@ export function useFilters(): Filters {
             setTimezone(user.timezoneOverride);
         }
     }, [user?.timezoneOverride, setTimezone]);
+
+    const [hidden, setHidden] = useLocalStorage('calendarFilters.hidden', false);
 
     const [timeFormat, setTimeFormat] = useState<TimeFormat>(
         user?.timeFormat || TimeFormat.TwelveHour,
@@ -184,6 +210,8 @@ export function useFilters(): Filters {
 
     const result = useMemo(
         () => ({
+            hidden,
+            setHidden,
             timezone,
             setTimezone,
             timeFormat,
@@ -208,6 +236,8 @@ export function useFilters(): Filters {
             setTournamentPositions,
         }),
         [
+            hidden,
+            setHidden,
             timezone,
             setTimezone,
             timeFormat,
@@ -265,7 +295,7 @@ function getSessionTypeColor(sessionType: CalendarSessionType): SvgIconOwnProps[
         case CalendarSessionType.AllSessions:
             return 'primary';
         case CalendarSessionType.Availabilities:
-            return 'info';
+            return 'book';
         case CalendarSessionType.CoachingSessions:
             return 'coaching';
         case CalendarSessionType.DojoEvents:
@@ -275,9 +305,31 @@ function getSessionTypeColor(sessionType: CalendarSessionType): SvgIconOwnProps[
         case CalendarSessionType.Lectures:
             return 'sage';
         case CalendarSessionType.GameReviews:
-            return 'info';
+            return 'peacock';
+        default:
+            return 'primary';
     }
-    return 'primary';
+}
+
+const SESSION_OPTIONS = Object.values(CalendarSessionType).filter(
+    (type) =>
+        type !== CalendarSessionType.AllSessions && type !== CalendarSessionType.CoachingSessions,
+);
+const AVAILABILITY_OPTIONS = Object.values(AvailabilityType).filter(
+    (type) => type !== AvailabilityType.AllTypes,
+);
+
+function areFiltersDefault(filters: Filters): boolean {
+    return (
+        filters.sessions.length === 1 &&
+        filters.sessions[0] === CalendarSessionType.AllSessions &&
+        filters.tournamentTimeControls.length === 1 &&
+        filters.tournamentTimeControls[0] === TimeControlType.AllTimeContols &&
+        filters.types.length === 1 &&
+        filters.types[0] === AvailabilityType.AllTypes &&
+        filters.cohorts.length === 1 &&
+        filters.cohorts[0] === ALL_COHORTS
+    );
 }
 
 interface CalendarFiltersProps {
@@ -288,11 +340,10 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
     const auth = useAuth();
     const t = useTranslations('calendar');
     const labelT = useTranslations('eventLabels');
-    const [expanded, setExpanded] = useState<string | boolean>(false);
-    const forceExpansion = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
+    const isAllCohorts = filters.cohorts.length === 1 && filters.cohorts[0] === ALL_COHORTS;
 
     const { events } = useEvents();
-    const filterTime = new Date(new Date().getTime()).toISOString();
+    const filterTime = new Date().toISOString();
     const meetingCount = events.filter((e: Event) => {
         if (Object.values(e.participants).length === 0) {
             return false;
@@ -302,27 +353,6 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
         }
         return e.status !== EventStatus.Canceled && e.endTime >= filterTime;
     }).length;
-
-    const handleChange =
-        (panel: string) => (_event: React.SyntheticEvent, newExpanded: boolean) => {
-            if (!forceExpansion) {
-                setExpanded(newExpanded ? panel : false);
-            }
-        };
-
-    const onChangeType = (newTypes: string[]) => {
-        const addedTypes = newTypes.filter(
-            (type) => !filters.types.includes(type as AvailabilityType),
-        );
-        let finalTypes = [];
-        if (addedTypes.includes(AvailabilityType.AllTypes)) {
-            finalTypes = [AvailabilityType.AllTypes];
-        } else {
-            finalTypes = newTypes.filter((type) => type !== AvailabilityType.AllTypes);
-        }
-
-        filters.setTypes(finalTypes as AvailabilityType[]);
-    };
 
     const onChangeCohort = (newCohorts: string[]) => {
         const addedCohorts = newCohorts.filter((c) => !filters.cohorts.includes(c));
@@ -336,35 +366,6 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
         filters.setCohorts(finalCohorts);
     };
 
-    const onChangeTournamentTimeControls = (tcTypes: string[]) => {
-        const addedTcTypes = tcTypes.filter(
-            (tc) => !filters.tournamentTimeControls.includes(tc as TimeControlType),
-        );
-
-        let finalTcTypes = [];
-        if (addedTcTypes.includes(TimeControlType.AllTimeContols)) {
-            finalTcTypes = [TimeControlType.AllTimeContols];
-        } else {
-            finalTcTypes = tcTypes.filter((tc) => tc !== TimeControlType.AllTimeContols);
-        }
-
-        filters.setTournamentTimeControls(finalTcTypes as TimeControlType[]);
-    };
-
-    const onChangeSessions = (sessionTypes: string[]) => {
-        const addedSessions = sessionTypes.filter(
-            (s) => !filters.sessions.includes(s as CalendarSessionType),
-        );
-
-        let finalSessions = [];
-        if (addedSessions.includes(CalendarSessionType.AllSessions)) {
-            finalSessions = [CalendarSessionType.AllSessions];
-        } else {
-            finalSessions = sessionTypes.filter((s) => s !== CalendarSessionType.AllSessions);
-        }
-        filters.setSessions(finalSessions as CalendarSessionType[]);
-    };
-
     const onReset = () => {
         filters.setSessions([CalendarSessionType.AllSessions]);
         filters.setTournamentTimeControls([TimeControlType.AllTimeContols]);
@@ -372,165 +373,134 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
         filters.setCohorts([ALL_COHORTS]);
     };
 
+    const filtersDefault = areFiltersDefault(filters);
+    const cohortSummary = isAllCohorts
+        ? ''
+        : t('cohortsSelected', { count: filters.cohorts.length });
+
+    if (filters.hidden) {
+        return (
+            <Tooltip title={t('showFilters')}>
+                <IconButton onClick={() => filters.setHidden(false)}>
+                    <Menu />
+                </IconButton>
+            </Tooltip>
+        );
+    }
+
     return (
-        <Stack data-testid='calendar-filters' spacing={{ xs: 3, sm: 4 }}>
+        <Stack data-testid='calendar-filters' spacing={2.5} sx={{ pr: 0.5 }}>
+            <Button
+                onClick={() => filters.setHidden(true)}
+                startIcon={<MenuOpen />}
+                size='small'
+                sx={{ alignSelf: 'flex-start' }}
+            >
+                {t('hideFilters')}
+            </Button>
+
+            <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                {!filtersDefault && (
+                    <Button
+                        size='small'
+                        onClick={onReset}
+                        startIcon={<Icon name='reset' fontSize='small' />}
+                    >
+                        {t('resetFilters')}
+                    </Button>
+                )}
+            </Stack>
+
             {meetingCount > 0 && (
-                <Link
+                <Button
+                    component={Link}
                     href='/meeting'
-                    sx={{
-                        alignSelf: 'center',
-                        my: 'calc(2 * var(--mui-spacing)) !important',
-                    }}
+                    variant='outlined'
+                    size='small'
+                    fullWidth
+                    sx={{ justifyContent: 'flex-start' }}
                 >
                     {t('viewMeetings', { count: meetingCount })}
-                </Link>
+                </Button>
             )}
 
-            <Accordion
-                expanded={forceExpansion || expanded === 'dojoCalendar'}
-                onChange={handleChange('dojoCalendar')}
-            >
-                {!forceExpansion && (
-                    <AccordionSummary
-                        aria-controls='dojocalendar-content'
-                        forceExpansion={forceExpansion}
+            <Stack data-testid='calendar-filters-selectors' spacing={2.5}>
+                <FilterToggleGroup
+                    title={t('myDojoCalendar')}
+                    titleIcon={<Icon name='eventCheck' color='primary' fontSize='small' />}
+                    selected={filters.sessions}
+                    allValue={CalendarSessionType.AllSessions}
+                    onChange={(next) => filters.setSessions(next as CalendarSessionType[])}
+                    data-testid='my-dojo-calendar'
+                    options={SESSION_OPTIONS.map((type) => ({
+                        value: type,
+                        label: getDisplaySessionString(type, labelT),
+                        color: getSessionTypeColor(type),
+                    }))}
+                />
+
+                <FilterToggleGroup
+                    title={t('bookableMeetings')}
+                    titleIcon={<Icon name='meet' color='book' fontSize='small' />}
+                    selected={filters.types}
+                    allValue={AvailabilityType.AllTypes}
+                    onChange={(next) => filters.setTypes(next as AvailabilityType[])}
+                    data-testid='bookable-meetings'
+                    options={AVAILABILITY_OPTIONS.map((type) => ({
+                        value: type,
+                        label: getDisplayString(type, labelT),
+                        color: 'book',
+                    }))}
+                />
+
+                <Stack>
+                    <Stack
+                        direction='row'
+                        alignItems='center'
+                        justifyContent='space-between'
+                        sx={{ cursor: 'pointer' }}
                     >
-                        <Typography variant='h6' color='text.secondary'>
-                            {t('filtersTitle')}
-                        </Typography>
-                    </AccordionSummary>
-                )}
-                <AccordionDetails sx={{ border: 'none' }}>
-                    <Stack sx={{ mt: 2, pb: 2 }} spacing={3}>
-                        <TimezoneFilter filters={filters} />
-
-                        <Button
-                            variant='outlined'
-                            onClick={onReset}
-                            sx={{ alignSelf: 'start' }}
-                            startIcon={<Icon name='reset' />}
+                        <Typography
+                            variant='subtitle2'
+                            color='text.secondary'
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
                         >
-                            {t('resetFilters')}
-                        </Button>
-
-                        <Stack data-testid='calendar-filters-selectors'>
-                            <Typography variant='h6' color='text.secondary'>
-                                <Icon
-                                    name='eventCheck'
-                                    color='primary'
-                                    sx={{
-                                        marginRight: '0.4rem',
-                                        verticalAlign: 'middle',
-                                    }}
-                                    fontSize='medium'
-                                />
-                                {t('myDojoCalendar')}
-                            </Typography>
-                            <MultipleSelectChip
-                                selected={filters.sessions}
-                                setSelected={onChangeSessions}
-                                options={Object.values(CalendarSessionType).map((type) => ({
-                                    value: type,
-                                    label: getDisplaySessionString(type, labelT),
-                                    icon: <Icon name={type} color={getSessionTypeColor(type)} />,
-                                }))}
-                                displayEmpty={t('none')}
-                                size='small'
-                                data-testid='my-dojo-calendar'
-                            />
-                        </Stack>
-
-                        <Stack>
-                            <Typography variant='h6' color='text.secondary'>
-                                <Icon
-                                    name='liga'
-                                    color='liga'
-                                    sx={{
-                                        marginRight: '0.4rem',
-                                        verticalAlign: 'middle',
-                                    }}
-                                    fontSize='medium'
-                                />
-                                {t('dojoLigaTournaments')}
-                            </Typography>
-                            <MultipleSelectChip
-                                selected={filters.tournamentTimeControls}
-                                setSelected={onChangeTournamentTimeControls}
-                                options={Object.values(TimeControlType).map((type) => ({
-                                    value: type,
-                                    label: displayTimeControlType(type, labelT),
-                                    icon: <Icon name={type} color='liga' />,
-                                }))}
-                                displayEmpty={t('none')}
-                                size='small'
-                                data-testid='dojoliga-tournaments'
-                            />
-                        </Stack>
-
-                        <Stack>
-                            <Typography variant='h6' color='text.secondary'>
-                                <Icon
-                                    name='meet'
-                                    color='book'
-                                    sx={{
-                                        marginRight: '0.4rem',
-                                        verticalAlign: 'middle',
-                                    }}
-                                    fontSize='medium'
-                                />
-                                {t('bookableMeetings')}
-                            </Typography>
-                            <MultipleSelectChip
-                                selected={filters.types}
-                                setSelected={onChangeType}
-                                options={Object.values(AvailabilityType).map((type) => ({
-                                    value: type,
-                                    label: getDisplayString(type, labelT),
-                                    icon: <Icon name={type} color='book' />,
-                                }))}
-                                displayEmpty={t('none')}
-                                size='small'
-                            />
-                        </Stack>
-
-                        <Stack>
-                            <Typography variant='h6' color='text.secondary'>
-                                <Icon
-                                    name='cohort'
-                                    color='book'
-                                    sx={{
-                                        marginRight: '0.4rem',
-                                        verticalAlign: 'middle',
-                                    }}
-                                    fontSize='medium'
-                                />
-                                {t('cohorts')}
-                            </Typography>
-                            <MultipleSelectChip
-                                data-testid='cohort-selector'
-                                selected={filters.cohorts}
-                                setSelected={onChangeCohort}
-                                options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
-                                    value: opt,
-                                    label: opt === ALL_COHORTS ? t('allCohorts') : opt,
-                                    icon: (
-                                        <CohortIcon
-                                            cohort={opt}
-                                            size={25}
-                                            sx={{ marginRight: '0.6rem' }}
-                                            tooltip=''
-                                            color='primary'
-                                        />
-                                    ),
-                                }))}
-                                displayEmpty={t('none')}
-                                sx={{ mb: 3, width: 1 }}
-                                size='small'
-                            />
-                        </Stack>
+                            <Icon name='cohort' color='book' fontSize='small' />
+                            {t('cohorts')}
+                            {cohortSummary && (
+                                <Typography
+                                    component='span'
+                                    variant='caption'
+                                    color='text.disabled'
+                                >
+                                    · {cohortSummary}
+                                </Typography>
+                            )}
+                        </Typography>
                     </Stack>
-                </AccordionDetails>
-            </Accordion>
+                    <MultipleSelectChip
+                        data-testid='cohort-selector'
+                        selected={filters.cohorts}
+                        setSelected={onChangeCohort}
+                        options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
+                            value: opt,
+                            label: opt === ALL_COHORTS ? t('allCohorts') : opt,
+                            icon: (
+                                <CohortIcon
+                                    cohort={opt}
+                                    size={25}
+                                    sx={{ marginRight: '0.6rem' }}
+                                    tooltip=''
+                                    color='primary'
+                                />
+                            ),
+                        }))}
+                        displayEmpty={t('none')}
+                        sx={{ mt: 1, width: 1 }}
+                        size='small'
+                    />
+                </Stack>
+            </Stack>
         </Stack>
     );
 };

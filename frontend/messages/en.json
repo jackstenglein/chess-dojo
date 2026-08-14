@@ -909,6 +909,7 @@
         "analysisBoard": "Analysis Board",
         "fullDatabase": "Full Database",
         "myGames": "My Games",
+        "myFiles": "My Files",
         "repertoireSpy": "Repertoire Spy",
         "calendar": "Calendar",
         "tournaments": "Tournaments",
@@ -1620,9 +1621,9 @@
         "copyLink": "Copy Link",
         "participants": "Participants",
         "andMore": "... and {count} more",
-        "filtersTitle": "Filters",
         "resetFilters": "Reset Filters",
-        "myDojoCalendar": "My Dojo Calendar",
+        "cohortsSelected": "{count, plural, =1 {# selected} other {# selected}}",
+        "myDojoCalendar": "Dojo Calendars",
         "dojoLigaTournaments": "DojoLiga Tournaments",
         "bookableMeetings": "Bookable Meetings",
         "viewMeetings": "{count, plural, =1 {View # upcoming meeting} other {View # upcoming meetings}}",
@@ -1656,6 +1657,16 @@
         "bookableTitle": "Bookable - {name}",
         "meetingCanceled": "Meeting canceled",
         "availabilityDeleted": "Availability deleted",
+        "share": "Subscribe",
+        "shareMenuTitle": "Subscribe in Google Calendar",
+        "shareGoogleIntro": "Follow these steps to add your ChessDojo calendar to Google Calendar. Your current filters will be applied to the calendar.",
+        "shareGoogleStep1": "Copy the calendar link below.",
+        "shareGoogleStep2": "Open Google Calendar on your computer.",
+        "shareGoogleStep3": "Next to \"Other calendars\" on the left, click Add (+).",
+        "shareGoogleStep4": "Select \"From URL\".",
+        "shareGoogleStep5": "Paste the link and click \"Add calendar\".",
+        "copyIcsLink": "Copy Calendar Link",
+        "icsLinkCopied": "Link copied",
         "hideFilters": "Hide Filters",
         "showFilters": "Show Filters",
         "validationRequired": "This field is required",
@@ -2665,7 +2676,8 @@
             "noClubsFound": "No clubs found"
         },
         "chips": {
-            "memberCount": "{count, plural, =1 {# member} other {# members}}"
+            "memberCount": "{count, plural, =1 {# member} other {# members}}",
+            "mainClub": "Main Club"
         },
         "filters": {
             "search": "Search...",
@@ -2710,6 +2722,8 @@
             "requestToJoinClub": "Request to Join Club",
             "joinClub": "Join Club",
             "joinedSnackbar": "Joined club",
+            "setMainClub": "Set as Main Club",
+            "mainClubSnackbar": "Main club updated",
             "tabsAriaLabel": "profile tabs",
             "tabs": {
                 "scoreboard": "Scoreboard",
@@ -3427,6 +3441,7 @@
             "chessDbColumnWinrate": "Winrate",
             "chessDbColumnNote": "Note",
             "queueAnalysisButton": "Queue Analysis",
+            "analysisQueued": "Analysis queued. Check back later.",
             "positionNotInChessDb": "Position not in ChessDB.",
             "chessCloudDatabaseLabel": "Chess Cloud Database",
             "tabDojo": "Dojo",
@@ -4052,10 +4067,10 @@
     "eventLabels": {
         "session": {
             "ALL_SESSIONS": "All Events",
-            "AVAILABILITIES": "Availabilities",
+            "AVAILABILITIES": "Bookable Meetings",
             "COACHING_SESSIONS": "Coaching Sessions",
-            "DOJO_EVENTS": "Dojo Events",
-            "MEETINGS": "Meetings",
+            "DOJO_EVENTS": "Streams & Community Events",
+            "MEETINGS": "My Booked Meetings",
             "LECTURE_TIER": "Workshops",
             "GAME_REVIEW_TIER": "Game & Profile Reviews"
         },
