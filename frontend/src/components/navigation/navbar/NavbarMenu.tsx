@@ -162,7 +162,7 @@ function allStartItems(
                     id: 'my-files',
                     name: t('myFiles'),
                     icon: <Folder />,
-                    href: '/profile?view-games',
+                    href: '/profile?view=games',
                 },
                 {
                     id: 'repertoire-spy',
