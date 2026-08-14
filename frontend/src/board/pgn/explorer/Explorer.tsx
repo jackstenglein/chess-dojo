@@ -78,6 +78,8 @@ const Explorer: React.FC<ExplorerProps> = ({ storageKey = explorerTabKey }) => {
         data: chessDbMoves,
         loading: chessDbLoading,
         error: chessDbError,
+        queueing: chessDbQueueing,
+        queued: chessDbQueued,
         queueAnalysis: chessDbRequestAnalysis,
     } = useChessDB({ enableMoves: true, enablePv: false });
 
@@ -147,6 +149,8 @@ const Explorer: React.FC<ExplorerProps> = ({ storageKey = explorerTabKey }) => {
                         moves={chessDbMoves}
                         loading={chessDbLoading}
                         error={chessDbError}
+                        queueing={chessDbQueueing}
+                        queued={chessDbQueued}
                         requestAnalysis={() => chessDbRequestAnalysis(fen)}
                     />
                 );

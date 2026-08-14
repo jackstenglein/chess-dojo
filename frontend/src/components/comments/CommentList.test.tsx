@@ -292,4 +292,64 @@ describe('CommentList', () => {
             expect(screen.getByText('Show 1 more reply')).toBeInTheDocument();
         });
     });
+
+    describe('Comment actions menu', () => {
+        it('shows edit and delete actions in an overflow menu for the comment owner', () => {
+            renderWithIntl(
+                <CommentList
+                    comments={[makeComment({ owner: mockUser.username })]}
+                    onEdit={vi.fn().mockResolvedValue(undefined)}
+                    onDelete={vi.fn().mockResolvedValue(undefined)}
+                />,
+            );
+
+            expect(screen.queryByRole('menuitem', { name: 'Edit' })).not.toBeInTheDocument();
+            fireEvent.click(screen.getByRole('button', { name: 'Edit / Delete' }));
+
+            expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument();
+            expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
+        });
+
+        it('starts editing and closes the overflow menu', () => {
+            renderWithIntl(
+                <CommentList
+                    comments={[makeComment({ owner: mockUser.username })]}
+                    onEdit={vi.fn().mockResolvedValue(undefined)}
+                />,
+            );
+
+            fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+            fireEvent.click(screen.getByRole('menuitem', { name: 'Edit' }));
+
+            expect(screen.getByRole('textbox')).toHaveValue('Test comment');
+            expect(screen.queryByRole('menuitem', { name: 'Edit' })).not.toBeInTheDocument();
+        });
+
+        it('opens the existing confirmation dialog from the delete action', () => {
+            renderWithIntl(
+                <CommentList
+                    comments={[makeComment({ owner: mockUser.username })]}
+                    onDelete={vi.fn().mockResolvedValue(undefined)}
+                />,
+            );
+
+            fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+            fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
+
+            expect(screen.getByRole('dialog', { name: 'Delete Comment' })).toBeInTheDocument();
+            expect(screen.queryByRole('menuitem', { name: 'Delete' })).not.toBeInTheDocument();
+        });
+
+        it('does not show comment actions to another user', () => {
+            renderWithIntl(
+                <CommentList
+                    comments={[makeComment()]}
+                    onEdit={vi.fn().mockResolvedValue(undefined)}
+                    onDelete={vi.fn().mockResolvedValue(undefined)}
+                />,
+            );
+
+            expect(screen.queryByRole('button', { name: 'Edit / Delete' })).not.toBeInTheDocument();
+        });
+    });
 });

@@ -27,6 +27,7 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [queueing, setQueueing] = useState(false);
+    const [queued, setQueued] = useState(false);
     const [pv, setPv] = useState<ChessDbPv | null>(null);
     const [pvLoading, setPvLoading] = useState(false);
 
@@ -36,9 +37,16 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
         async (fenString: string): Promise<void> => {
             if (!fenString.trim() || !validateFen(fenString)) return;
 
+            setQueueing(true);
+            setQueued(false);
+            setError(null);
+
             try {
-                setQueueing(true);
-                await chessDbService.queueAnalysis(fenString);
+                const result = await chessDbService.queueAnalysis(fenString);
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                setQueued(true);
             } catch (err) {
                 setError(err instanceof Error ? err.message : t('failedToQueueAnalysis'));
             } finally {
@@ -83,6 +91,7 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
 
     const fetchChessDBData = useCallback(
         async (fenString: string, enabled: boolean) => {
+            setQueued(false);
             if (!fenString.trim()) {
                 setData([]);
                 setError(null);
@@ -112,7 +121,6 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                     await setChessDbCacheEntry(fenString, { moves: chessDbMoves.data.moves });
                     setData(chessDbMoves.data.moves);
                 } else {
-                    await queueAnalysis(fenString);
                     throw new Error(chessDbMoves.error);
                 }
             } catch (err) {
@@ -122,7 +130,7 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
                 setLoading(false);
             }
         },
-        [queueAnalysis, chessDbService, t],
+        [chessDbService, t],
     );
 
     useEffect(() => {
@@ -148,6 +156,7 @@ export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; en
         loading,
         error,
         queueing,
+        queued,
         fetchChessDBData,
         queueAnalysis,
         pv,

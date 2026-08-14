@@ -25,6 +25,7 @@ import {
     ExpandLess,
     ExpandMore,
     Feed,
+    Folder,
     Forum,
     Groups,
     Help,
@@ -156,6 +157,12 @@ function allStartItems(
                     name: t('myGames'),
                     icon: <AccountCircle />,
                     href: '/profile?view=games&directory=mygames',
+                },
+                {
+                    id: 'my-files',
+                    name: t('myFiles'),
+                    icon: <Folder />,
+                    href: '/profile?view=games',
                 },
                 {
                     id: 'repertoire-spy',

@@ -18,10 +18,19 @@ interface ChessDBTabProps {
     moves: ChessDbMove[];
     loading: boolean;
     error: string | null;
-    requestAnalysis: (fen: string) => void;
+    queueing: boolean;
+    queued: boolean;
+    requestAnalysis: () => void;
 }
 
-export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTabProps) {
+export function ChessDBTab({
+    moves,
+    loading,
+    error,
+    queueing,
+    queued,
+    requestAnalysis,
+}: ChessDBTabProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
     const t = useTranslations('analysisBoard.explorer');
@@ -67,12 +76,21 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
 
     if (loading) return <LoadingPage />;
 
+    if (queued) {
+        return (
+            <Stack mt={2} spacing={1} alignItems='center'>
+                <Typography color='success.main'>{t('analysisQueued')}</Typography>
+            </Stack>
+        );
+    }
+
     if (error) {
         return (
             <Stack mt={2} spacing={1} alignItems='center'>
                 <Typography color='error'>{error}</Typography>
                 <Button
-                    onClick={() => requestAnalysis(chess?.fen() ?? '')}
+                    onClick={requestAnalysis}
+                    loading={queueing}
                     variant='outlined'
                     size='small'
                 >
@@ -87,7 +105,8 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
             <Stack mt={2} spacing={1} alignItems='center'>
                 <Typography>{t('positionNotInChessDb')}</Typography>
                 <Button
-                    onClick={() => requestAnalysis(chess?.fen() ?? '')}
+                    onClick={requestAnalysis}
+                    loading={queueing}
                     variant='outlined'
                     size='small'
                 >
