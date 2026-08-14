@@ -247,7 +247,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 </Menu>
             )}
 
-            <RequestSnackbar request={request} />
+            <RequestSnackbar request={request} onCloseError={() => request.onFailure(undefined)} />
         </Box>
     );
 };

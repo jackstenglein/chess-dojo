@@ -54,7 +54,8 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
         setOrientation(initialOrientation);
     }, [initialVisibility, initialOrientation, setVisibility, setOrientation]);
 
-    const headersChanged = Object.entries(game.headers).some(
+    const { White, Black, Date } = game.headers;
+    const headersChanged = Object.entries({ White, Black, Date }).some(
         ([name, value]) => value !== headers[name],
     );
 
