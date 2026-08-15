@@ -46,7 +46,7 @@
     ],
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.7.3",
-        "@dotenvx/dotenvx": "^1.71.0",
+        "@dotenvx/dotenvx": "^2.19.0",
         "@emotion/cache": "^11.13.5",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -109,7 +109,7 @@
     "devDependencies": {
         "@eslint/js": "^9.39.2",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@next/eslint-plugin-next": "^16.2.7",
+        "@next/eslint-plugin-next": "^16.2.12",
         "@playwright/test": "^1.62.0",
         "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.2",
