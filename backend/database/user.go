@@ -325,6 +325,8 @@ type User struct {
 
 	// The set of club ids the user is in
 	Clubs []string `dynamodbav:"clubs,stringset,omitempty" json:"clubs,omitempty"`
+	// The id of the club the user has designated as their main club. Empty if unset.
+	MainClubId string `dynamodbav:"mainClubId,omitempty" json:"mainClubId"`
 
 	// The username of the user's Lichess account that was banned for ToS violation,
 	// if they have been banned on Lichess.
@@ -891,6 +893,9 @@ type UserUpdate struct {
 
 	// Tracks which cohort version the user is currently on. Unset means 2024.
 	CohortVersion *string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
+	// The id of the club the user has designated as their main club.
+	// An empty string clears the designation.
+	MainClubId *string `dynamodbav:"mainClubId,omitempty" json:"mainClubId,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem

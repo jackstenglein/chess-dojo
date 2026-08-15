@@ -198,21 +198,14 @@ export default function AnalysisBoard() {
 
             <Dialog
                 data-testid='unsaved-analysis-nav-guard'
-                open={navGuard.active}
+                open={navGuard.active && !showSaveDialog}
                 onClose={navGuard.reject}
             >
                 <DialogTitle>{t('saveTitle')}</DialogTitle>
                 <DialogContent>{t('unsavedWarning')}</DialogContent>
                 <DialogActions>
                     <Button onClick={navGuard.reject}>{t('cancel')}</Button>
-                    <Button
-                        onClick={() => {
-                            navGuard.reject();
-                            setShowSaveDialog(true);
-                        }}
-                    >
-                        {t('save')}
-                    </Button>
+                    <Button onClick={() => setShowSaveDialog(true)}>{t('save')}</Button>
                     <Button color='error' onClick={navGuard.accept}>
                         {t('delete')}
                     </Button>
@@ -225,8 +218,11 @@ export default function AnalysisBoard() {
                     open={showSaveDialog}
                     title={t('saveAnalysis')}
                     loading={request.isLoading()}
-                    onSubmit={onSubmit}
-                    onClose={() => setShowSaveDialog(false)}
+                    onSubmit={(form) => onSubmit(form, navGuard.accept)}
+                    onClose={() => {
+                        navGuard.reject();
+                        setShowSaveDialog(false);
+                    }}
                     createGameRequest={stagedGame}
                 />
             )}

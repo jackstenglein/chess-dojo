@@ -7,6 +7,7 @@ import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline'
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplyIcon from '@mui/icons-material/Reply';
 import SaveIcon from '@mui/icons-material/Save';
 import SendIcon from '@mui/icons-material/Send';
@@ -18,6 +19,9 @@ import {
     DialogContentText,
     DialogTitle,
     IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
     Paper,
     Stack,
     TextField,
@@ -39,6 +43,7 @@ interface CommentListProps {
     onDelete?: (commentId: string) => Promise<void>;
     threaded?: boolean;
     onSubmitReply?: (parentId: string, content: string) => Promise<void>;
+    outlined?: boolean;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -49,6 +54,7 @@ const CommentList: React.FC<CommentListProps> = ({
     onDelete,
     threaded,
     onSubmitReply,
+    outlined,
 }) => {
     const t = useTranslations('comments');
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -123,6 +129,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 onReply={onSubmitReply ? handleReplyClick : undefined}
+                                outlined={outlined}
                             />
                             {replyingTo === thread.root.id && onSubmitReply && (
                                 <InlineReplyEditor
@@ -166,6 +173,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                         onEdit={onEdit}
                                         onDelete={onDelete}
                                         onReply={onSubmitReply ? handleReplyClick : undefined}
+                                        outlined={outlined}
                                     />
                                     {replyingTo === reply.id && onSubmitReply && (
                                         <InlineReplyEditor
@@ -205,6 +213,7 @@ const CommentList: React.FC<CommentListProps> = ({
                     comment={comment}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    outlined={outlined}
                 />
             ))}
         </Stack>
@@ -216,6 +225,7 @@ interface CommentListItemProps {
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
     onReply?: (parentCommentId: string) => void;
+    outlined?: boolean;
 }
 
 const CommentListItem: React.FC<CommentListItemProps> = ({
@@ -223,6 +233,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     onEdit,
     onDelete,
     onReply,
+    outlined,
 }) => {
     const t = useTranslations('comments');
     const { user } = useAuth();
@@ -231,6 +242,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const [expanded, setExpanded] = useState(false);
     const [isClamped, setIsClamped] = useState(false);
     const contentRef = useRef<HTMLElement>(null);
+    const [actionsAnchorEl, setActionsAnchorEl] = useState<HTMLElement | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const editRequest = useRequest();
     const deleteRequest = useRequest();
@@ -253,6 +265,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const timeFormat = user?.timeFormat;
 
     const canModify = (onEdit || onDelete) && (user?.username === comment.owner || user?.isAdmin);
+    const actionsLabel = [onEdit && t('edit'), onDelete && t('delete')].filter(Boolean).join(' / ');
+
+    const handleEditClick = () => {
+        setActionsAnchorEl(null);
+        setEditContent(comment.content);
+        setEditing(true);
+    };
+
+    const handleDeleteClick = () => {
+        setActionsAnchorEl(null);
+        deleteRequest.reset();
+        setDeleteDialogOpen(true);
+    };
 
     const handleSaveEdit = () => {
         const content = editContent.trim();
@@ -293,7 +318,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
             <Avatar username={comment.owner} displayName={comment.ownerDisplayName} size={40} />
 
             <Stack flexGrow={1} minWidth={0}>
-                <Paper elevation={2} sx={{ px: '12px', py: '8px', borderRadius: '6px' }}>
+                <Paper
+                    elevation={2}
+                    sx={{
+                        px: '12px',
+                        py: '8px',
+                        borderRadius: '6px',
+                        ...(outlined && {
+                            border: 1,
+                            borderColor: 'divider',
+                            boxShadow: 'none',
+                        }),
+                    }}
+                >
                     <Stack>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Link href={`/profile/${comment.owner}`}>
@@ -303,34 +340,20 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                             </Link>
 
                             {canModify && !editing && (
-                                <Stack direction='row' spacing={0.5}>
-                                    {onEdit && (
-                                        <Tooltip title={t('edit')}>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => {
-                                                    setEditContent(comment.content);
-                                                    setEditing(true);
-                                                }}
-                                            >
-                                                <EditIcon fontSize='small' />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                    {onDelete && (
-                                        <Tooltip title={t('delete')}>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => {
-                                                    deleteRequest.reset();
-                                                    setDeleteDialogOpen(true);
-                                                }}
-                                            >
-                                                <DeleteIcon fontSize='small' />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                </Stack>
+                                <IconButton
+                                    size='small'
+                                    aria-label={actionsLabel}
+                                    aria-controls={
+                                        actionsAnchorEl
+                                            ? `comment-actions-${comment.id}`
+                                            : undefined
+                                    }
+                                    aria-haspopup='menu'
+                                    aria-expanded={actionsAnchorEl ? 'true' : undefined}
+                                    onClick={(event) => setActionsAnchorEl(event.currentTarget)}
+                                >
+                                    <MoreVertIcon fontSize='small' />
+                                </IconButton>
                             )}
                         </Stack>
 
@@ -414,7 +437,13 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         )}
                     </Stack>
                 </Paper>
-                <Stack direction='row' alignItems='center' spacing={1}>
+                <Stack
+                    direction='row'
+                    alignItems='center'
+                    spacing={1}
+                    mt={outlined ? 0.25 : undefined}
+                    px={outlined ? 0.5 : undefined}
+                >
                     <Typography variant='caption' color='text.secondary'>
                         {toDojoDateString(createdAt, timezone)} •{' '}
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
@@ -422,6 +451,32 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                     </Typography>
                 </Stack>
             </Stack>
+
+            <Menu
+                id={`comment-actions-${comment.id}`}
+                anchorEl={actionsAnchorEl}
+                open={Boolean(actionsAnchorEl)}
+                onClose={() => setActionsAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                {onEdit && (
+                    <MenuItem onClick={handleEditClick}>
+                        <ListItemIcon>
+                            <EditIcon fontSize='small' />
+                        </ListItemIcon>
+                        {t('edit')}
+                    </MenuItem>
+                )}
+                {onDelete && (
+                    <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+                        <ListItemIcon>
+                            <DeleteIcon fontSize='small' color='error' />
+                        </ListItemIcon>
+                        {t('delete')}
+                    </MenuItem>
+                )}
+            </Menu>
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
                 <DialogTitle>{t('deleteComment')}</DialogTitle>

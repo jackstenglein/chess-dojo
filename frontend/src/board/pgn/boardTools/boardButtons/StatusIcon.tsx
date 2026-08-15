@@ -54,8 +54,13 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
-    const { setHasUnsavedGameChanges } = useGame();
+    const { onUpdateGame, setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
+    const updatedAtRef = useRef(game.updatedAt || game.createdAt || '');
+
+    useEffect(() => {
+        updatedAtRef.current = game.updatedAt || game.createdAt || '';
+    }, [game.updatedAt, game.createdAt]);
 
     const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
         if (pgnText !== initialPgn) {
@@ -63,8 +68,9 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             api.updateGame(cohort, id, {
                 type: GameImportTypes.editor,
                 pgnText,
+                updatedAt: updatedAtRef.current,
             })
-                .then(() => {
+                .then((resp) => {
                     trackEvent(EventType.UpdateGame, {
                         method: 'autosave',
                         dojo_cohort: cohort,
@@ -79,6 +85,9 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                             },
                         ]);
                     }
+
+                    updatedAtRef.current = resp.data.updatedAt || updatedAtRef.current;
+                    onUpdateGame?.(resp.data);
 
                     const date = new Date();
                     request.onSuccess(date);
@@ -238,7 +247,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 </Menu>
             )}
 
-            <RequestSnackbar request={request} />
+            <RequestSnackbar request={request} onCloseError={() => request.onFailure(undefined)} />
         </Box>
     );
 };
