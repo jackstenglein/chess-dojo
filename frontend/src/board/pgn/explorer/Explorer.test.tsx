@@ -37,6 +37,8 @@ vi.mock('@/stockfish/hooks/useChessDb', () => ({
         data: [],
         loading: false,
         error: null,
+        queueing: false,
+        queued: false,
         queueAnalysis: vi.fn(),
     }),
 }));

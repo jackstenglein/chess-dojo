@@ -5,6 +5,7 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GetClubResponse } from '@/api/clubApi';
 import { AuthStatus, useAuth, useFreeTier } from '@/auth/Auth';
 import { LocationChip } from '@/components/clubs/LocationChip';
+import { MainClubChip } from '@/components/clubs/MainClubChip';
 import { MemberCountChip } from '@/components/clubs/MemberCountChip';
 import { UrlChip } from '@/components/clubs/UrlChip';
 import { Link } from '@/components/navigation/Link';
@@ -43,6 +44,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
     const api = useApi();
     const request = useRequest<GetClubResponse>();
     const joinRequest = useRequest();
+    const mainClubRequest = useRequest();
     const { searchParams, setSearchParams } = useNextSearchParams({ view: 'scoreboard' });
     const [showJoinRequestDialog, setShowJoinRequestDialog] = useState(false);
     const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -79,6 +81,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
     const isOwner = Boolean(viewer?.username && club?.owner === viewer.username);
     const isMember = Boolean(viewer?.username && club?.members[viewer.username]);
     const hasSentJoinRequest = Boolean(viewer?.username && club?.joinRequests[viewer.username]);
+    const isMainClub = Boolean(club && viewer?.mainClubId === club.id);
 
     const onProcessRequest = (data: GetClubResponse, snackbarText: string) => {
         request.onSuccess({
@@ -111,6 +114,21 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
     const onLeaveClub = () => {
         setShowLeaveDialog(true);
     };
+    const onSetMainClub = () => {
+        if (!club) {
+            return;
+        }
+        mainClubRequest.onStart();
+        api.updateUser({ mainClubId: club.id })
+            .then(() => {
+                auth.updateUser({ mainClubId: club.id });
+                mainClubRequest.onSuccess();
+                setSnackbarText(t('mainClubSnackbar'));
+            })
+            .catch((err) => {
+                mainClubRequest.onFailure(err);
+            });
+    };
 
     const onLeaveClubConfirm = (club: ClubDetails) => {
         if (request.data) {
@@ -131,6 +149,7 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
         <Container maxWidth={false} sx={{ py: 4 }}>
             <RequestSnackbar request={request} />
             <RequestSnackbar request={joinRequest} />
+            <RequestSnackbar request={mainClubRequest} />
 
             <Snackbar
                 open={Boolean(snackbarText)}
@@ -162,38 +181,52 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                             <Typography variant='h4'>{club.name}</Typography>
                                         </Stack>
 
-                                        {auth.status === AuthStatus.Loading ? null : isOwner ? (
-                                            <Button
-                                                variant='contained'
-                                                onClick={() =>
-                                                    router.push(`/clubs/${club.id}/edit`)
-                                                }
-                                            >
-                                                {t('editSettings')}
-                                            </Button>
-                                        ) : isMember ? (
-                                            <Button
-                                                variant='contained'
-                                                color='error'
-                                                onClick={onLeaveClub}
-                                            >
-                                                {t('leaveClub')}
-                                            </Button>
-                                        ) : hasSentJoinRequest ? (
-                                            <Button variant='contained' disabled>
-                                                {t('joinRequestPending')}
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant='contained'
-                                                onClick={onJoinClub}
-                                                loading={joinRequest.isLoading()}
-                                            >
-                                                {club.approvalRequired
-                                                    ? t('requestToJoinClub')
-                                                    : t('joinClub')}
-                                            </Button>
-                                        )}
+                                        <Stack direction='row' spacing={1} alignItems='center'>
+                                            {isMember &&
+                                                (isMainClub ? (
+                                                    <MainClubChip />
+                                                ) : (
+                                                    <Button
+                                                        variant='outlined'
+                                                        onClick={onSetMainClub}
+                                                        loading={mainClubRequest.isLoading()}
+                                                    >
+                                                        {t('setMainClub')}
+                                                    </Button>
+                                                ))}
+                                            {auth.status === AuthStatus.Loading ? null : isOwner ? (
+                                                <Button
+                                                    variant='contained'
+                                                    onClick={() =>
+                                                        router.push(`/clubs/${club.id}/edit`)
+                                                    }
+                                                >
+                                                    {t('editSettings')}
+                                                </Button>
+                                            ) : isMember ? (
+                                                <Button
+                                                    variant='contained'
+                                                    color='error'
+                                                    onClick={onLeaveClub}
+                                                >
+                                                    {t('leaveClub')}
+                                                </Button>
+                                            ) : hasSentJoinRequest ? (
+                                                <Button variant='contained' disabled>
+                                                    {t('joinRequestPending')}
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant='contained'
+                                                    onClick={onJoinClub}
+                                                    loading={joinRequest.isLoading()}
+                                                >
+                                                    {club.approvalRequired
+                                                        ? t('requestToJoinClub')
+                                                        : t('joinClub')}
+                                                </Button>
+                                            )}
+                                        </Stack>
                                     </Stack>
 
                                     <Stack direction='row' spacing={1} alignItems='center'>
