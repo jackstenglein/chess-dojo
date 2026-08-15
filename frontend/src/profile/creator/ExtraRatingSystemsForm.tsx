@@ -102,14 +102,25 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
 
             <Typography>{tExtra('additionalRatings')}</Typography>
 
-            <Grid container columnSpacing={2} alignItems='center'>
+            <Grid
+                container
+                columnSpacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 {Object.values(RatingSystems).map((rs) => {
                     if (rs === user.ratingSystem) {
                         return null;
                     }
                     return (
                         <React.Fragment key={rs}>
-                            <Grid size={{ xs: 12, sm: 6 }} mb={4}>
+                            <Grid
+                                size={{ xs: 12, sm: 6 }}
+                                sx={{
+                                    mb: 4,
+                                }}
+                            >
                                 <TextField
                                     label={getUsernameLabel(rs, tRatings)}
                                     value={usernames[rs]}
@@ -119,7 +130,12 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                                 />
                             </Grid>
 
-                            <Grid size={{ xs: 12, sm: 6 }} mb={4}>
+                            <Grid
+                                size={{ xs: 12, sm: 6 }}
+                                sx={{
+                                    mb: 4,
+                                }}
+                            >
                                 <FormControlLabel
                                     control={
                                         <Checkbox
@@ -138,7 +154,12 @@ const ExtraRatingSystemsForm: React.FC<ProfileCreatorFormProps> = ({
                 })}
             </Grid>
 
-            <Stack direction='row' justifyContent='space-between'>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Button disabled={request.isLoading()} onClick={onPrevStep} variant='contained'>
                     {tExtra('back')}
                 </Button>

@@ -105,8 +105,17 @@ const Position = ({ position, orientation }: PositionProps) => {
             <CardHeader
                 sx={{ px: 1 }}
                 subheader={
-                    <Stack px={1}>
-                        <Stack direction='row' justifyContent='space-between'>
+                    <Stack
+                        sx={{
+                            px: 1,
+                        }}
+                    >
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                            }}
+                        >
                             <Typography variant='h6'> {position.title}</Typography>
                             <Tooltip title={timeControlName.toLowerCase().concat(' time control')}>
                                 <Typography>
@@ -123,8 +132,18 @@ const Position = ({ position, orientation }: PositionProps) => {
                             </Tooltip>
                         </Stack>
 
-                        <Stack direction='row' justifyContent='space-between'>
-                            <Typography variant='body1' color='text.secondary'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <Typography
+                                variant='body1'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {position.result
                                     ? t('toPlayAndResult', {
                                           color: turn,

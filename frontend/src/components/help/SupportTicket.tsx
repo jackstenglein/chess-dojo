@@ -57,7 +57,12 @@ const SupportTicket = () => {
         return (
             <Stack id='support-ticket'>
                 <Typography variant='h4'>{t('title')}</Typography>
-                <Typography color='text.secondary' mb={2}>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 2,
+                    }}
+                >
                     {t('patience')}
                     <br />
                     <br />
@@ -73,7 +78,12 @@ const SupportTicket = () => {
     return (
         <Stack id='support-ticket'>
             <Typography variant='h4'>{t('title')}</Typography>
-            <Typography color='text.secondary' mb={2}>
+            <Typography
+                sx={{
+                    color: 'text.secondary',
+                    mb: 2,
+                }}
+            >
                 {t('patience')}
             </Typography>
             <Grid container rowSpacing={2} columnSpacing={2}>
@@ -138,7 +148,13 @@ const SupportTicket = () => {
                     />
                 </Grid>
 
-                <Grid display='flex' justifyContent='center' size={12}>
+                <Grid
+                    size={12}
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                    }}
+                >
                     <Button
                         data-testid='support-ticket-submit'
                         variant='contained'

@@ -200,15 +200,30 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                 px: '6px',
             }}
         >
-            <Stack direction='row' spacing={1} justifyContent='space-between'>
-                <Stack direction='row' spacing={1} overflow='hidden' flexGrow={1}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                    }}
+                >
                     {playerResult && (
                         <>
                             <Typography
                                 variant='subtitle2'
-                                color='text.secondary'
-                                fontWeight='bold'
-                                whiteSpace='nowrap'
+                                sx={{
+                                    color: 'text.secondary',
+                                    fontWeight: 'bold',
+                                    whiteSpace: 'nowrap',
+                                }}
                             >
                                 {playerResult}
                             </Typography>
@@ -232,7 +247,13 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                     />
 
                     {playerElo && (
-                        <Typography variant='subtitle2' color='text.secondary' whiteSpace='nowrap'>
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'text.secondary',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
                             ({playerElo})
                         </Typography>
                     )}
@@ -244,9 +265,11 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                     <Tooltip title={ClockTypeDescriptions[clockCommand]}>
                         <Typography
                             variant='subtitle2'
-                            color='text.secondary'
-                            display='inline'
-                            whiteSpace='nowrap'
+                            sx={{
+                                color: 'text.secondary',
+                                display: 'inline',
+                                whiteSpace: 'nowrap',
+                            }}
                         >
                             {moveClockText}
                         </Typography>
@@ -274,22 +297,46 @@ function EmptyHeader({ type, light }: { type: string; light: boolean }) {
                 visibility: 'hidden',
             }}
         >
-            <Stack direction='row' spacing={1} justifyContent='space-between'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Stack direction='row' spacing={1}>
                     <>
-                        <Typography variant='subtitle2' color='text.secondary' fontWeight='bold'>
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'text.secondary',
+                                fontWeight: 'bold',
+                            }}
+                        >
                             1
                         </Typography>
                         <Divider flexItem orientation='vertical' />
                     </>
 
-                    <Typography variant='subtitle2' color='text.secondary' fontWeight='bold'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Test
                     </Typography>
                 </Stack>
 
                 <Tooltip title='Test'>
-                    <Typography variant='subtitle2' color='text.secondary' display='inline'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                            display: 'inline',
+                        }}
+                    >
                         1:30:00
                     </Typography>
                 </Tooltip>
@@ -339,7 +386,12 @@ const CapturedMaterial = ({
     }
 
     return (
-        <Stack direction='row' alignItems='center'>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             {pieceTypes.map((type) => (
                 <React.Fragment key={type}>
                     {Array.from(Array(capturedPieces[type])).map((_, i) => (
@@ -350,8 +402,13 @@ const CapturedMaterial = ({
             {displayedMaterialDiff && (
                 <Typography
                     variant='body2'
-                    color='text.secondary'
-                    sx={{ position: 'relative', top: '1px', ml: '2px', whiteSpace: 'nowrap' }}
+                    sx={{
+                        color: 'text.secondary',
+                        position: 'relative',
+                        top: '1px',
+                        ml: '2px',
+                        whiteSpace: 'nowrap',
+                    }}
                 >
                     {displayedMaterialDiff}
                 </Typography>

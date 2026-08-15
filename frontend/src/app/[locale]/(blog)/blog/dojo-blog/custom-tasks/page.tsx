@@ -19,38 +19,68 @@ export default function CustomTasks() {
         <Container>
             <Header title='Custom Tasks Are Here!' subtitle='Dojo Blog • February 14, 2025' />
 
-            <Stack mt={3}>
-                <Typography mt={2}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Huge update for the Dojo! It is now possible to add custom tasks to the Training
                     Program!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     This means students can now add any books, exercises, or tasks of their choice
                     to the relevant category (Games & Analysis, Tactics, Openings, Middlegames,
                     Endgames) and track their progress accordingly!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Additionally, you can now give your custom tasks goals, so that they track your
                     progress just like regular tasks in the program, rather than just tracking time.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     At the bottom of each category, there will be a button to add custom tasks. You
                     can also move your existing custom tasks from Non-Dojo to other categories, and
                     your heatmap and timeline will be updated to match. There is no need to manually
                     copy data between two custom tasks.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={customtask}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={createcustomtasks}
                         alt=''
@@ -58,12 +88,21 @@ export default function CustomTasks() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Any time logged on a custom task will also be tracked in one’s personal heatmap
                     & activity breakdown. Tasks can be broken down by chapters, games, exercises,
                     pages, time spent, or any other unit of choice.
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={heatmap}
                         alt=''
@@ -71,13 +110,21 @@ export default function CustomTasks() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     While senseis Jesse, David, and Kostya still urge users to trust the program,
                     there may be other books or tasks that a user would like to track, and we
                     respect that! (As long as it’s sweat work) 😉
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Next up, we are working voraciously towards an algorithm that will let users
                     break their plans up into weekly tasks. Stay tuned!
                 </Typography>

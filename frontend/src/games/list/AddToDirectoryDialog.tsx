@@ -143,7 +143,12 @@ export const AddToDirectoryDialog = ({
                                     ))}
                             </List>
                             {Object.values(directory.items).length === 0 && (
-                                <Typography textAlign='center' width={1}>
+                                <Typography
+                                    sx={{
+                                        textAlign: 'center',
+                                        width: 1,
+                                    }}
+                                >
                                     {t('folderEmpty')}
                                 </Typography>
                             )}

@@ -13,16 +13,34 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
 
     if (player.lichessUsername === 'No Opponent' || player.lichessUsername === '') {
         return (
-            <Stack alignItems='center' justifyContent='center' height={1}>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 1,
+                }}
+            >
                 {t('noOpponent')}
             </Stack>
         );
     }
 
     return (
-        <Stack my={1} alignItems='center' gap={0.5}>
+        <Stack
+            sx={{
+                my: 1,
+                alignItems: 'center',
+                gap: 0.5,
+            }}
+        >
             <Link href={`/profile/${player.username}`}>{player.displayName}</Link>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                }}
+            >
                 <SiLichess width={20} height={20} />
                 <Link
                     href={`https://lichess.org/@/${player.lichessUsername}`}
@@ -32,7 +50,13 @@ export function PlayerCell({ player }: { player: OpenClassicalPlayer }) {
                     {player.lichessUsername}
                 </Link>
             </Stack>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                }}
+            >
                 <DiscordIcon sx={{ color: '#5865f2' }} />
                 <Link
                     href={
@@ -85,7 +109,13 @@ export function getPairingTableColumns(
             renderCell: (params: GridRenderCellParams<OpenClassicalPairing, string>) => {
                 if (params.value === '*' || params.value === '' || params.row.verified) {
                     return (
-                        <Stack alignItems='center' justifyContent='center' height={1}>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                height: 1,
+                            }}
+                        >
                             {params.value}
                         </Stack>
                     );
@@ -93,10 +123,12 @@ export function getPairingTableColumns(
                 return (
                     <Stack
                         direction='row'
-                        alignItems='center'
-                        justifyContent='center'
                         spacing={1}
-                        height={1}
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: 1,
+                        }}
                     >
                         <div>{params.value}</div>
                         <Tooltip title={t('unverifiedResultTooltip')}>
@@ -119,7 +151,13 @@ export function getPairingTableColumns(
                         params.value.startsWith('https://www.chess.com/'))
                 ) {
                     return (
-                        <Stack height={1} alignItems='center' justifyContent='center'>
+                        <Stack
+                            sx={{
+                                height: 1,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <a target='_blank' rel='noopener noreferrer' href={params.value}>
                                 <OpenInNew color='primary' fontSize='small' />
                             </a>

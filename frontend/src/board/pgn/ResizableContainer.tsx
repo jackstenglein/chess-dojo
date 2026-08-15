@@ -98,14 +98,16 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     return (
         <Stack
             direction='row'
-            width={1}
-            maxWidth={1}
             spacing={{ xs: 0, sm: 0 }}
-            justifyContent='center'
-            px={{ xs: 0, sm: 0 }}
-            flexWrap='wrap'
-            rowGap={0.5}
-            columnGap={{ xs: 0.5, md: 1, lg: 1 }}
+            sx={{
+                width: 1,
+                maxWidth: 1,
+                justifyContent: 'center',
+                px: { xs: 0, sm: 0 },
+                flexWrap: 'wrap',
+                rowGap: 0.5,
+                columnGap: { xs: 0.5, md: 1, lg: 1 },
+            }}
         >
             <KeyboardHandler underboardRef={underboardRef} />
 

@@ -233,7 +233,12 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     <ModalTitle onClose={onClose}>
                         <Stack>
                             <Typography variant='h4'>{requirementName}</Typography>
-                            <Typography variant='h5' color='text.secondary'>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {tCategory.has(task.category)
                                     ? tCategory(task.category)
                                     : task.category}
@@ -241,7 +246,13 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         </Stack>
                     </ModalTitle>
 
-                    <Stack direction='row' gap={2} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            gap: 2,
+                            alignItems: 'center',
+                        }}
+                    >
                         {blocker.isBlocked ? (
                             <Tooltip title={blocker.reason}>
                                 <Chip icon={<Lock />} label={t('locked')} color='error' />
@@ -283,7 +294,14 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     </Stack>
 
                     {isRequirement(task) && (
-                        <Stack direction='row' spacing={2} flexWrap='wrap' rowGap={1}>
+                        <Stack
+                            direction='row'
+                            spacing={2}
+                            sx={{
+                                flexWrap: 'wrap',
+                                rowGap: 1,
+                            }}
+                        >
                             <DojoPointChip requirement={task} cohort={selectedCohort} />
                             <ExpirationChip requirement={task} progress={progress} />
                             <RepeatChip requirement={task} />
@@ -296,7 +314,12 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     </TaskDescription>
 
                     {isRequirement(task) && task.positions && (
-                        <Grid container gap={2}>
+                        <Grid
+                            container
+                            sx={{
+                                gap: 2,
+                            }}
+                        >
                             {task.positions.map((p) => (
                                 <Grid key={p.fen} size='auto'>
                                     <Position position={p} />

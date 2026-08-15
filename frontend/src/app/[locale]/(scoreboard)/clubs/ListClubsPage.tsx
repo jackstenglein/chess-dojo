@@ -32,11 +32,13 @@ export const ListClubsPage = () => {
         <Container sx={{ py: 4 }}>
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
-                rowGap={2}
-                mb={3}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    rowGap: 2,
+                    mb: 3,
+                }}
             >
                 <Typography variant='h5'>{t('title')}</Typography>
 

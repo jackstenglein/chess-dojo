@@ -65,7 +65,12 @@ export const SignInForm = () => {
     };
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <ChessDojoIcon
@@ -77,11 +82,24 @@ export const SignInForm = () => {
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
+            <Typography
+                variant='h4'
+                data-testid='title'
+                sx={{
+                    textAlign: 'center',
+                    mb: 4,
+                }}
+            >
                 {t('chessDojo')}
             </Typography>
 
-            <Stack width={{ xs: 1, sm: 0.85 }} rowGap={3} alignItems='center'>
+            <Stack
+                sx={{
+                    width: { xs: 1, sm: 0.85 },
+                    rowGap: 3,
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     fullWidth
                     id='email'
@@ -138,7 +156,14 @@ export const SignInForm = () => {
                     {t('signin.signIn')}
                 </Button>
 
-                <Stack direction='row' justifyContent='space-between' sx={{ width: 1, mt: -2 }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'space-between',
+                        width: 1,
+                        mt: -2,
+                    }}
+                >
                     <Button
                         data-testid='signup-button'
                         variant='text'

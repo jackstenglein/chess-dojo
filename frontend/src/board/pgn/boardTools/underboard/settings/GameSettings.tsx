@@ -68,7 +68,12 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
     };
 
     return (
-        <Stack spacing={5} mt={1}>
+        <Stack
+            spacing={5}
+            sx={{
+                mt: 1,
+            }}
+        >
             <AnnotationWarnings />
 
             <Stack spacing={3}>

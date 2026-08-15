@@ -58,7 +58,12 @@ export const ForgotPasswordForm = () => {
     };
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <ChessDojoIcon
@@ -70,16 +75,25 @@ export const ForgotPasswordForm = () => {
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
+            <Typography
+                variant='h4'
+                data-testid='title'
+                sx={{
+                    textAlign: 'center',
+                    mb: 4,
+                }}
+            >
                 {t('chessDojo')}
             </Typography>
 
             <Stack
                 direction='column'
-                justifyContent='center'
-                alignItems='center'
                 spacing={3}
-                paddingTop={1.5}
+                sx={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingTop: 1.5,
+                }}
             >
                 {step === ForgotPasswordStep.Start && (
                     <StartStep
@@ -133,8 +147,10 @@ const StartStep: React.FC<StartStepProps> = ({
                 variant='subtitle1'
                 component='div'
                 gutterBottom
-                textAlign='center'
                 data-testid='description'
+                sx={{
+                    textAlign: 'center',
+                }}
             >
                 {t('forgotPassword.startDescription')}
             </Typography>
@@ -261,8 +277,10 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({ email, onSuccess }) => {
                 variant='subtitle1'
                 component='div'
                 gutterBottom
-                textAlign='center'
                 data-testid='description'
+                sx={{
+                    textAlign: 'center',
+                }}
             >
                 {t('forgotPassword.confirmDescription')}
             </Typography>
@@ -336,8 +354,10 @@ const SuccessStep = () => {
                 variant='subtitle1'
                 component='div'
                 gutterBottom
-                textAlign='center'
                 data-testid='description'
+                sx={{
+                    textAlign: 'center',
+                }}
             >
                 {t('forgotPassword.successDescription')}
             </Typography>

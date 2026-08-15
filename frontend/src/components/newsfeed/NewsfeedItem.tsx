@@ -44,7 +44,14 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
                     <NewsfeedItemHeader entry={entry} />
                     <NewsfeedItemBody entry={entry} />
 
-                    <Stack direction='row' gap={1} mt={1} flexWrap='wrap'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            gap: 1,
+                            mt: 1,
+                            flexWrap: 'wrap',
+                        }}
+                    >
                         {isCurrentUser && onChangeActivity && (
                             <Tooltip title={t('editActivity')}>
                                 <IconButton color='primary' onClick={() => onChangeActivity(entry)}>
@@ -108,7 +115,12 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
 
             {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
                 <Stack direction='row' spacing={1}>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('dojoPoints')}
                     </Typography>
                     <Typography>
@@ -121,7 +133,12 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
 
             {entry.totalMinutesSpent > 0 && entry.minutesSpent > 0 && (
                 <Stack direction='row' spacing={1}>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('totalTime')}
                     </Typography>
                     <Typography>
@@ -142,7 +159,12 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
             )}
 
             {entry.notes && (
-                <Typography py={2} whiteSpace='pre-line'>
+                <Typography
+                    sx={{
+                        py: 2,
+                        whiteSpace: 'pre-line',
+                    }}
+                >
                     {entry.notes}
                 </Typography>
             )}

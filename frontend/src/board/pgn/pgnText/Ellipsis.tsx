@@ -31,7 +31,12 @@ export const Ellipsis = ({ ply, firstMove }: { ply: number; firstMove?: boolean 
                     ...
                 </Button>
             ) : (
-                <Typography color='text.secondary' pl={1}>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                        pl: 1,
+                    }}
+                >
                     ...
                 </Typography>
             )}

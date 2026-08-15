@@ -110,10 +110,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
         const displayNag = (
             <Tooltip key={nag} title={n.description} disableInteractive>
                 <Typography
-                    display='inline'
-                    fontSize='inherit'
-                    lineHeight='inherit'
-                    fontWeight='inherit'
+                    sx={{
+                        display: 'inline',
+                        fontSize: 'inherit',
+                        lineHeight: 'inherit',
+                        fontWeight: 'inherit',
+                    }}
                 >
                     {nagIcons[nag] ? nagIcons[nag] : n.label}
                 </Typography>
@@ -159,8 +161,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
             onContextMenu={onRightClick}
             {...longPress()}
         >
-            <Stack direction='row' alignItems='center' justifyContent='space-between' width={1}>
-                <Stack direction='row' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: 1,
+                }}
+            >
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     {prefixNags}
                     {text}
                     {suffixNags}
@@ -179,7 +193,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                     )}
                 </Stack>
 
-                <Stack direction='row' alignItems='center' gap={1}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: 1,
+                    }}
+                >
                     {slots?.moveButtonExtras && <slots.moveButtonExtras {...props} />}
                     {time && (
                         <Typography

@@ -96,22 +96,42 @@ export const ProgressHistoryItem = memo(function ProgressHistoryItem({
             <Stack
                 direction='row'
                 spacing={{ sm: 1 }}
-                width={1}
-                alignItems='center'
-                flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
-                rowGap={2}
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    rowGap: 2,
+                }}
             >
-                <Grid container columnGap={2} rowGap={3} alignItems='center'>
+                <Grid
+                    container
+                    sx={{
+                        columnGap: 2,
+                        rowGap: 3,
+                        alignItems: 'center',
+                    }}
+                >
                     {item.isNew && (
                         <Grid size={12}>
-                            <Stack direction='row' alignItems='center' spacing={1}>
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Chip
                                     label={t('newEntryLabel')}
                                     size='small'
                                     color='primary'
                                     variant='outlined'
                                 />
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('fillInDetails')}
                                 </Typography>
                             </Stack>

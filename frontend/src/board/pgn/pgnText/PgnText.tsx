@@ -97,7 +97,12 @@ const PgnText = () => {
     const light = useLightMode();
 
     return (
-        <Stack spacing={1} maxHeight={1}>
+        <Stack
+            spacing={1}
+            sx={{
+                maxHeight: 1,
+            }}
+        >
             <PgnTextBanners />
             <Card
                 data-testid='pgn-text'

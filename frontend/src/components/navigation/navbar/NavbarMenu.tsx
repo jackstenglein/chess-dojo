@@ -395,7 +395,13 @@ function NotificationsMenuItem(): JSX.Element {
                     <Notifications />
                 </Badge>
             </ListItemIcon>
-            <Typography textAlign='center'>{t('notifications')}</Typography>
+            <Typography
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
+                {t('notifications')}
+            </Typography>
         </MenuItem>
     );
 }
@@ -462,7 +468,13 @@ export const StartItem: React.FC<{ item: NavbarItem; meetingCount: number }> = (
                             target={child.target}
                         >
                             {child.icon && <ListItemIcon>{child.icon}</ListItemIcon>}
-                            <Typography textAlign='center'>{child.name}</Typography>
+                            <Typography
+                                sx={{
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {child.name}
+                            </Typography>
                         </MenuItem>
                     ))}
                 </Menu>
@@ -486,7 +498,11 @@ export const NavMenuItem: React.FC<{
                 href={item.href}
             >
                 <ListItemIcon>{item.icon}</ListItemIcon>
-                <Typography textAlign='center'>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     {item.name} {item.id === 'calendar' && meetingCount ? ` (${meetingCount})` : ''}
                 </Typography>
                 {item.children &&
@@ -519,7 +535,13 @@ export const NavMenuItem: React.FC<{
                                         <ChevronRight />
                                     </ListItemIcon>
                                 )}
-                                <Typography textAlign='center'>{child.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    {child.name}
+                                </Typography>
                             </MenuItem>
                         ))}
                     </List>
@@ -650,7 +672,12 @@ function useNavbarItems(meetingCount: number, handleClose: () => void) {
                 <ListItemIcon>
                     <Logout color='error' />
                 </ListItemIcon>
-                <Typography textAlign='center' color='error'>
+                <Typography
+                    color='error'
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     {t('signOut')}
                 </Typography>
             </MenuItem>,

@@ -96,20 +96,22 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
             classes={{
                 container: BlockBoardKeyboardShortcuts,
             }}
-            PaperProps={{
-                sx: {
-                    width: `${DIALOG_WIDTH}px`,
-                    position: {
-                        sm: 'absolute',
-                    },
-                    left: position?.x,
-                    top: position?.y,
-                    margin: { sm: 0 },
-                    pointerEvents: 'auto',
-                },
-            }}
             style={{ pointerEvents: 'none' }}
             hideBackdrop
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: `${DIALOG_WIDTH}px`,
+                        position: {
+                            sm: 'absolute',
+                        },
+                        left: position?.x,
+                        top: position?.y,
+                        margin: { sm: 0 },
+                        pointerEvents: 'auto',
+                    },
+                },
+            }}
         >
             <DialogTitle>
                 {t('variationDialogTitle')}
@@ -138,9 +140,11 @@ const VariationDialog: React.FC<VariationDialogProps> = ({ move, setMove }) => {
                                     <ListItemText
                                         slotProps={{
                                             primary: {
-                                                textOverflow: 'ellipsis',
-                                                overflow: 'hidden',
-                                                whiteSpace: 'nowrap',
+                                                sx: {
+                                                    textOverflow: 'ellipsis',
+                                                    overflow: 'hidden',
+                                                    whiteSpace: 'nowrap',
+                                                },
                                             },
                                         }}
                                     >

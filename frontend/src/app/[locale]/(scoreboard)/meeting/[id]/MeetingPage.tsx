@@ -273,7 +273,7 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
 
                             <Field
                                 title={t('description')}
-                                slotProps={{ body: { whiteSpace: 'pre-line' } }}
+                                slotProps={{ body: { sx: { whiteSpace: 'pre-line' } } }}
                                 body={meeting.description}
                             />
                             <Field title={t('location')} body={meeting.location || t('discord')} />
@@ -344,7 +344,13 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                     <Card variant='outlined'>
                         <CardHeader
                             title={
-                                <Stack direction='row' spacing={2} alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    spacing={2}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography variant='h5'>{t('participants')}</Typography>
                                     {isCoaching &&
                                         isOwner &&

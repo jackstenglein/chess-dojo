@@ -57,7 +57,13 @@ export function Tools() {
             <Stack>
                 <Typography variant='h6'>{t('solitaireChessTitle')}</Typography>
                 <Divider />
-                <Typography mt={1}>{t('solitaireChessDescription')}</Typography>
+                <Typography
+                    sx={{
+                        mt: 1,
+                    }}
+                >
+                    {t('solitaireChessDescription')}
+                </Typography>
 
                 <FormControl sx={{ mt: 2 }} disabled={solitaire?.enabled}>
                     <FormLabel>{t('playAsLabel')}</FormLabel>
@@ -116,7 +122,14 @@ export function Tools() {
                 />
 
                 {!solitaire?.enabled ? (
-                    <Stack direction='row' gap={1} flexWrap='wrap' mt={2}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            gap: 1,
+                            flexWrap: 'wrap',
+                            mt: 2,
+                        }}
+                    >
                         <Button onClick={() => solitaire?.start(null)}>
                             {t('startFromBeginningButton')}
                         </Button>

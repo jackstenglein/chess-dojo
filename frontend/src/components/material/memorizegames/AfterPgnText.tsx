@@ -26,7 +26,12 @@ function CompletedAfterPgnText() {
         totalMoves === 0 ? 0 : Math.round((100 * (white.correct + black.correct)) / totalMoves);
 
     return (
-        <Stack alignItems='center' sx={{ pb: 1 }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+                pb: 1,
+            }}
+        >
             <Divider sx={{ width: 1, mb: 2 }} />
             <Typography>{t('greatJob')}</Typography>
             <Typography sx={{ mt: 1 }}>

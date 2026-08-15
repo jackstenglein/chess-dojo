@@ -34,7 +34,13 @@ function getAllColumns(t: (key: string) => string): GridColDef<User>[] {
             valueGetter: (_value, row: User) => row.displayName,
             renderCell: (params: GridRenderCellParams<User, string>) => {
                 return (
-                    <Stack direction='row' spacing={1} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Avatar
                             username={params.row.username}
                             displayName={params.value}
@@ -233,7 +239,12 @@ export function SearchPage() {
             <Stack spacing={4}>
                 <ScoreboardViewSelector value='search' />
 
-                <Stack spacing={1} alignItems='start'>
+                <Stack
+                    spacing={1}
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     <TextField
                         data-testid='search-query'
                         label={t('searchQuery')}
@@ -245,7 +256,12 @@ export function SearchPage() {
                     />
 
                     <Stack>
-                        <Typography variant='subtitle1' color='text.secondary'>
+                        <Typography
+                            variant='subtitle1'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('helperText')}
                         </Typography>
                         <FormControl error={!!errors.fields}>

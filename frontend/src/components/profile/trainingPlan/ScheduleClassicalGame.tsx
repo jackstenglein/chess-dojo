@@ -66,7 +66,12 @@ export function ScheduleClassicalGameDaily() {
                     onClick={() => setTaskDialogView(TaskDialogView.Details)}
                 >
                     <CardContent sx={{ height: 1 }}>
-                        <Stack spacing={1} alignItems='start'>
+                        <Stack
+                            spacing={1}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Chip
                                 variant='outlined'
                                 label={tCategory(RequirementCategory.Games)}
@@ -74,14 +79,19 @@ export function ScheduleClassicalGameDaily() {
                                 size='small'
                             />
 
-                            <Typography variant='h6' fontWeight='bold'>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {t('title')}
                             </Typography>
                         </Stack>
 
                         <Box
-                            color='text.secondary'
                             sx={{
+                                color: 'text.secondary',
                                 mt: 1,
                                 lineClamp: 4,
                                 display: '-webkit-box',
@@ -141,7 +151,7 @@ export function ScheduleClassicalGameDaily() {
                                         ? () => setTaskDialogView(TaskDialogView.Progress)
                                         : undefined,
                                 },
-                                container: { mx: 0.5 },
+                                container: { sx: { mx: 0.5 } },
                             }}
                         />
                     </Tooltip>
@@ -168,20 +178,30 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
 
     const upcomingGames = getUpcomingGameSchedule(user?.gameSchedule);
     return (
-        <Stack spacing={2} mt={2}>
+        <Stack
+            spacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
             <Grid
                 container
-                columnGap={0.5}
-                alignItems='center'
-                justifyContent='space-between'
-                position='relative'
+                sx={{
+                    columnGap: 0.5,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    position: 'relative',
+                }}
             >
                 <Grid
                     size={9}
                     onClick={() => setTaskDialogView(TaskDialogView.Details)}
-                    sx={{ cursor: 'pointer', position: 'relative' }}
-                    display='flex'
-                    flexDirection='column'
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        cursor: 'pointer',
+                        position: 'relative',
+                    }}
                 >
                     {!hideChip && (
                         <Chip
@@ -206,7 +226,13 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                     </Typography>
                 </Grid>
                 <Grid size={{ xs: 2, sm: 'auto' }}>
-                    <Stack direction='row' alignItems='center' justifyContent='end'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'end',
+                        }}
+                    >
                         <Tooltip title={t('updateTooltip')}>
                             <Checkbox
                                 checked={upcomingGames.length > 0}
@@ -362,7 +388,11 @@ function ScheduleClassicalGameDialogDetails() {
         <Stack>
             <Typography>{t('detailsParagraph1')}</Typography>
 
-            <Typography mt={3}>
+            <Typography
+                sx={{
+                    mt: 3,
+                }}
+            >
                 {t.rich('detailsParagraph2', {
                     cohort: user?.dojoCohort ?? '',
                     minTimeControl,
@@ -433,9 +463,23 @@ function ScheduleClassicalGameDialogProgress({
     };
 
     return (
-        <Stack mt={0.75} alignItems='start' rowGap={3}>
+        <Stack
+            sx={{
+                mt: 0.75,
+                alignItems: 'start',
+                rowGap: 3,
+            }}
+        >
             {entries.map((entry, i) => (
-                <Stack key={i} direction='row' columnGap={2} width={1} alignItems='baseline'>
+                <Stack
+                    key={i}
+                    direction='row'
+                    sx={{
+                        columnGap: 2,
+                        width: 1,
+                        alignItems: 'baseline',
+                    }}
+                >
                     <DatePicker
                         label={tCommon('date')}
                         disablePast

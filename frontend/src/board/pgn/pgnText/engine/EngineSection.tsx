@@ -81,7 +81,12 @@ export default function EngineSection() {
             }}
         >
             <Stack sx={{ p: 1, containerType: 'inline-size' }}>
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Tooltip title={t('toggleEngineTooltip')} disableInteractive>
                         <Switch
                             checked={enabled}
@@ -94,7 +99,12 @@ export default function EngineSection() {
                     </Tooltip>
 
                     {enabled && !isGameOver && showEval && (
-                        <Stack sx={{ mr: 2 }} alignItems='center'>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                                mr: 2,
+                            }}
+                        >
                             <Typography variant='h5'>
                                 {showCloudEval
                                     ? formatLineEval({
@@ -115,7 +125,12 @@ export default function EngineSection() {
                         </Stack>
                     )}
                     <Stack sx={{ flexGrow: 1, lineHeight: '1.2', color: 'text.secondary' }}>
-                        <Stack direction='row' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='caption' sx={{ display: { '@288': 'none' } }}>
                                 {engineInfo.extraShortName}
                             </Typography>
@@ -207,7 +222,13 @@ export default function EngineSection() {
                                             }
                                             disableInteractive
                                         >
-                                            <Stack direction='row' alignItems='center' spacing={1}>
+                                            <Stack
+                                                direction='row'
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Cloud
                                                     sx={{
                                                         verticalAlign: 'middle',

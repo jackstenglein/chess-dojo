@@ -32,11 +32,14 @@ export function ChatInput({ onSend }: { onSend: (message: string) => void }) {
 
     return (
         <Box
-            py={2}
-            px={1}
-            display='flex'
-            justifyContent='center'
-            sx={{ position: 'sticky', bottom: 0 }}
+            sx={{
+                py: 2,
+                px: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                position: 'sticky',
+                bottom: 0,
+            }}
         >
             <Paper
                 elevation={3}

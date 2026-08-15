@@ -37,7 +37,13 @@ function StatusIcon({ status }: { status: boolean | 'active' | 'inactive' | 'pen
     }
 
     return (
-        <Stack direction='row' spacing={1} justifyContent='center'>
+        <Stack
+            direction='row'
+            spacing={1}
+            sx={{
+                justifyContent: 'center',
+            }}
+        >
             {icon}
             <Typography>{title}</Typography>
         </Stack>

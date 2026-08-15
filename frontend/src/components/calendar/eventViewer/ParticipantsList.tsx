@@ -26,7 +26,13 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
     return (
         <Stack spacing={1}>
             {!hideOwner && (
-                <Stack direction='row' spacing={1} alignItems='center'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Avatar username={event.owner} displayName={event.ownerDisplayName} size={25} />
                     <Link href={`/profile/${event.owner}`}>
                         <Typography variant='body1'>
@@ -40,7 +46,14 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
             {Object.values(event.participants)
                 .slice(0, maxItems ? maxItems - 1 : undefined)
                 .map((p) => (
-                    <Stack key={p.username} direction='row' spacing={1} alignItems='center'>
+                    <Stack
+                        key={p.username}
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Avatar username={p.username} displayName={p.displayName} size={25} />
                         <Link href={`/profile/${p.username}`}>
                             <Typography variant='body1'>

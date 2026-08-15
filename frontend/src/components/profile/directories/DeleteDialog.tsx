@@ -229,7 +229,13 @@ const DeleteDialogContentText = ({
 
     const richComponents = {
         error: (chunks: React.ReactNode) => (
-            <Typography component='strong' color='error' fontWeight='bold'>
+            <Typography
+                component='strong'
+                color='error'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
                 {chunks}
             </Typography>
         ),

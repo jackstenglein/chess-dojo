@@ -28,14 +28,25 @@ const InfoTab = () => {
     const t = useTranslations('tournaments.liga.info');
     return (
         <Stack spacing={2}>
-            <Typography variant='h5' textAlign='center' color='text.secondary'>
+            <Typography
+                variant='h5'
+                sx={{
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                }}
+            >
                 {t('welcome')}
                 <WavingHandIcon sx={{ verticalAlign: 'middle', ml: 1 }} color='dojoOrange' />
             </Typography>
 
             <Divider />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <MilitaryTechIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('infoHeader')}
             </Typography>
@@ -72,7 +83,12 @@ const InfoTab = () => {
                 </ListItem>
             </List>
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <HelpCenterIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('registrationHeader')}
             </Typography>
@@ -142,9 +158,20 @@ const InfoTab = () => {
 
             <Divider />
 
-            <Stack direction='row' gap={2} flexWrap='wrap'>
+            <Stack
+                direction='row'
+                sx={{
+                    gap: 2,
+                    flexWrap: 'wrap',
+                }}
+            >
                 <Stack spacing={2}>
-                    <Typography variant='h6' color='text.secondary'>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         <CalendarMonth sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                         {t('eventsHeader')}
                     </Typography>
@@ -179,7 +206,12 @@ const InfoTab = () => {
 
             <Divider />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('leaderboardHeader')}
             </Typography>
@@ -209,7 +241,12 @@ const InfoTab = () => {
 
             <Divider />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <NotInterestedIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('antiCheatHeader')}
             </Typography>

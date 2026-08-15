@@ -18,13 +18,26 @@ export default function TacticsTest() {
                 <Typography variant='h4'>
                     Dojo Tactics Tests – A New Way to Assess Your Skills
                 </Typography>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     Kostya Kavutskiy • May 15, 2024
                 </Typography>
             </Stack>
 
-            <Stack mt={3}>
-                <Typography mb={2}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     With our 3.0 launch, the Dojo has released a new training tool designed to test
                     tactical skill. Introducing the <a href='/tactics'>Dojo Tactics Tests</a>, an
                     attempt to improve on the most popular existing "tactics trainers" (Chess.com,
@@ -43,7 +56,11 @@ export default function TacticsTest() {
                     allowFullScreen
                 ></iframe>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     This is an exciting feature as we aim to 1) help players improve with a new and
                     useful way to work on tactics/calculation, and 2) allow players to assess their
                     skills in a reliable way (no more 2300+ puzzle ratings!). We’re starting with
@@ -52,7 +69,12 @@ export default function TacticsTest() {
                     rating for each category.
                 </Typography>
 
-                <Typography mt={2} component='div'>
+                <Typography
+                    component='div'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     More on that later! First here are the{' '}
                     <EmphasizeText>main issues</EmphasizeText> with typical online trainers that the
                     Dojo hopes to improve upon with our new Tactics Tests:
@@ -91,17 +113,32 @@ export default function TacticsTest() {
                     </ol>
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     The Dojo hopes to improve on the above issues with the new Tactics Tests, where
                     users are asked to input their own analysis of each problem, which is then
                     graded against the full solution. All of the test puzzles have been hand-picked
                     by a Sensei and have lightly-annotated solutions.
                 </Typography>
 
-                <Typography mt={3} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     How the Tests Work
                 </Typography>
-                <Typography mt={1} mb={1} component='div'>
+                <Typography
+                    component='div'
+                    sx={{
+                        mt: 1,
+                        mb: 1,
+                    }}
+                >
                     The tests are fairly straightforward:
                     <ul>
                         <li>
@@ -145,7 +182,11 @@ export default function TacticsTest() {
                     style={{ width: '100%', height: 'auto' }}
                 />
 
-                <Typography mt={1.5}>
+                <Typography
+                    sx={{
+                        mt: 1.5,
+                    }}
+                >
                     This is a sample puzzle you might be presented with for the 1500-2000 level.
                     It’s Black to play. You can either spend a few minutes and write down your
                     solution to see how you’d be graded, or if you’d like to try the sample for
@@ -153,16 +194,29 @@ export default function TacticsTest() {
                     Remember: if there are multiple defenses, you must include all key variations!
                 </Typography>
 
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Solution
                 </Typography>
-                <Typography mt={1}>
+                <Typography
+                    sx={{
+                        mt: 1,
+                    }}
+                >
                     <strong>1...Nxg4! 2.Nxg4</strong> (
                     <em>2.Qxg4 Rxe5-+ Black has won a healthy pawn.</em>){' '}
                     <strong>2…Bd6! 3.Qf3 Rg5 4.h3 f5-+</strong> Winning the piece back with
                     interest.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     If you only put down “1…Nxg4”, you would get 1 point for that move. If you put
                     “1…Nxg4 2.Qxg4 Rxe5”, you’d earn 3 points for the puzzle. To get full credit,
                     you’d need to input all of the moves bolded above, as well as the variation
@@ -171,17 +225,31 @@ export default function TacticsTest() {
                     their analytical skills. But there’s a second benefit to the tests as well...
                 </Typography>
 
-                <Typography mt={3} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     Scoring & Rating
                 </Typography>
-                <Typography mt={1}>
+                <Typography
+                    sx={{
+                        mt: 1,
+                    }}
+                >
                     Players will be scored based on how many points they earn on their completed
                     test. The results of each test will also provide players with a “skill rating,”
                     where they are rated based on how well they do compared to others. Our theory is
                     that as more players take the tests, it will give everyone who’s taken the test
                     a more accurate representation of their skill level compared to others.
                 </Typography>
-                <Typography mt={2} mb={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 2,
+                    }}
+                >
                     So for example, a player rated 2000 and higher should aim to score close to
                     90-100% on a 1500-2000 test. An 1800 should aim for 50-75%, and a 1600 should
                     aim for 25-50%.
@@ -195,27 +263,41 @@ export default function TacticsTest() {
                 />
                 <Typography
                     variant='body2'
-                    color='text.secondary'
-                    textAlign='center'
-                    mt={0.5}
-                    mb={2}
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                        mt: 0.5,
+                        mb: 2,
+                    }}
                 >
                     Data for the first 1500-2000 test. In this chart, the x-axis is the score on the
                     test and the y-axis is the calculated rating for the test. Different colors
                     represent different cohorts.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     We’ve launched a series of tests aimed at the 1500-2000 level and the 2000+
                     level. As we get feedback on the tests overall, we’ll roll out tests for players
                     rated between 1000-1500 and under 1000 as well.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     As mentioned, we will eventually be making positional tests, endgame tests, and
                     even some opening tests! Ultimately these will fit into one’s chess "profile,"
                     where you’ll be able to see all of your ELOs and "skill ratings" at a glance.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     We often talk about our students or fellow players in terms of their strengths
                     and weaknesses, but we rarely have a way to actually quantify or measure them.
                     Moreover, it’s very hard to tell if one is improving – yes if you gain 50 points
@@ -223,11 +305,19 @@ export default function TacticsTest() {
                     often few and far between. With these tests, we will hopefully give players a
                     clearer sense of what they need to work on and whether they are improving!
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Currently free users can access the first of several tests that are available
                     for their rating range. Training Program members get access to all tests.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Time to <Link href='/tactics'>get solving</Link>!
                 </Typography>
             </Stack>
@@ -237,7 +327,13 @@ export default function TacticsTest() {
 
 function EmphasizeText({ children }: { children: ReactNode }) {
     return (
-        <Typography component='span' color='error' fontWeight='bold'>
+        <Typography
+            component='span'
+            color='error'
+            sx={{
+                fontWeight: 'bold',
+            }}
+        >
             {children}
         </Typography>
     );

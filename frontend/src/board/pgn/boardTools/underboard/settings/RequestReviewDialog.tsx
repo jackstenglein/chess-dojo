@@ -136,7 +136,11 @@ const SubmitDialogContent: React.FC<{
         <>
             <DialogTitle>{t('submitGameForReviewDialogTitle')}</DialogTitle>
             <DialogContent>
-                <DialogContentText mb={3}>
+                <DialogContentText
+                    sx={{
+                        mb: 3,
+                    }}
+                >
                     {t.rich('submitReviewDescription', {
                         stream: (chunks) => (
                             <Link
@@ -212,7 +216,11 @@ const SubmitDialogContent: React.FC<{
                     />
                 </FormControl>
 
-                <Stack mt={5}>
+                <Stack
+                    sx={{
+                        mt: 5,
+                    }}
+                >
                     <Typography>
                         {t.rich('currentQueueLengthLabel', {
                             value: () =>
@@ -301,7 +309,11 @@ const CompletedDialogContent: React.FC<{ game: Game }> = ({ game }) => {
                     })}
                 </DialogContentText>
 
-                <Stack mt={3}>
+                <Stack
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Stack direction='row' spacing={1}>
                         <Typography>{t('reviewerLabel')}</Typography>
 
@@ -430,7 +442,11 @@ const PendingDialogContent: React.FC<{ game: Game }> = ({ game }) => {
                     })}
                 </DialogContentText>
 
-                <Stack mt={3}>
+                <Stack
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Typography>
                         {t('dateRequestedLabel', { date: dateStr, time: timeStr })}
                     </Typography>

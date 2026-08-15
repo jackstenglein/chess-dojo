@@ -28,7 +28,11 @@ export default async function Page(props: PageProps) {
 
     return (
         <Container>
-            <Box margin='auto'>
+            <Box
+                sx={{
+                    margin: 'auto',
+                }}
+            >
                 <GraduationCard graduation={gradSummary} />
             </Box>
         </Container>

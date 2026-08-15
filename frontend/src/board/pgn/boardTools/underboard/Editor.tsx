@@ -58,7 +58,12 @@ const NagButton: React.FC<NagButtonProps> = ({ text, description, ...props }) =>
                         width: 1,
                     }}
                 >
-                    <Stack alignItems='center' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography
                             sx={{
                                 whiteSpace: 'nowrap',
@@ -195,13 +200,26 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
 
     return (
         <CardContent sx={{ height: { md: 1 } }}>
-            <Stack spacing={3} mt={move ? 2 : undefined} pb={2} sx={{ height: { md: 1 } }}>
+            <Stack
+                spacing={3}
+                sx={{
+                    mt: move ? 2 : undefined,
+                    pb: 2,
+                    height: { md: 1 },
+                }}
+            >
                 {move && isMainline ? (
                     <ClockTextField move={move} />
                 ) : (
                     !move && (
                         <Stack>
-                            <Stack direction='row' alignItems='center' spacing={0.5}>
+                            <Stack
+                                direction='row'
+                                spacing={0.5}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography variant='subtitle1'>{t('timeControl')}</Typography>
 
                                 <Tooltip title={t('editTimeControl')}>
@@ -361,10 +379,12 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
 
                 <Stack
                     direction='row'
-                    gap={1}
-                    alignItems='center'
-                    justifyContent='center'
-                    flexWrap='wrap'
+                    sx={{
+                        gap: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                    }}
                 >
                     {!chess.disableNullMoves && (
                         <Tooltip title={nullMoveStatus.tooltip}>

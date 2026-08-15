@@ -248,12 +248,24 @@ function SquareColorDrill() {
 
     return (
         <Container maxWidth='sm' sx={{ py: 6, textAlign: 'center' }}>
-            <Typography variant='subtitle1' color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
                 {t('questionLabel', { number: questions.length + 1 })}
             </Typography>
 
             {questionsRemaining > 0 && (
-                <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 1,
+                    }}
+                >
                     {t('questionsRemaining', { count: questionsRemaining })}
                 </Typography>
             )}
@@ -284,7 +296,13 @@ function SquareColorDrill() {
                 </Typography>
             </Box>
 
-            <Stack direction='row' spacing={3} justifyContent='center'>
+            <Stack
+                direction='row'
+                spacing={3}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
                 <Button
                     variant='contained'
                     size='large'
@@ -359,19 +377,43 @@ function ReadyScreen({ onStart, personalBest }: { onStart: () => void; personalB
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 2 }}>
                 {t('title')}
             </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
                 {t('intro')}
             </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
                 {armed ? t('readyArmed') : t('readyUnarmed')}
             </Typography>
-            <Typography variant='body2' color='text.secondary' sx={{ mb: 4 }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 4,
+                }}
+            >
                 {t.rich('keyboardShortcuts', {
                     strong: (chunks) => <strong>{chunks}</strong>,
                 })}
             </Typography>
             {personalBest !== undefined && (
-                <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
+                <Typography
+                    variant='body1'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 2,
+                    }}
+                >
                     {t('bestRating', { personalBest })}
                 </Typography>
             )}
@@ -432,7 +474,13 @@ function CompleteScreen({
                         </Typography>
                     </Box>
                 ) : (
-                    <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                            mb: 1,
+                        }}
+                    >
                         {t('answerAtLeast', { count: MIN_QUESTIONS_FOR_RATING })}
                     </Typography>
                 )}
@@ -441,9 +489,11 @@ function CompleteScreen({
                     summary.rating !== personalBest && (
                         <Stack
                             direction='row'
-                            alignItems='center'
-                            justifyContent='center'
                             spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                         >
                             {summary.rating > personalBest ? (
                                 <ArrowUpward color='success' sx={{ fontSize: '1.5rem' }} />
@@ -469,7 +519,12 @@ function CompleteScreen({
                         </Typography>
                     )}
                 {personalBest !== undefined && (
-                    <Typography variant='body1' color='text.secondary'>
+                    <Typography
+                        variant='body1'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('personalBest', { personalBest })}
                     </Typography>
                 )}
@@ -500,15 +555,20 @@ function CompleteScreen({
                     <Stack
                         key={i}
                         direction='row'
-                        justifyContent='space-between'
                         sx={{
+                            justifyContent: 'space-between',
                             px: 2,
                             py: 0.5,
                             borderBottom: '1px solid',
                             borderColor: 'divider',
                         }}
                     >
-                        <Typography fontWeight='bold' sx={{ textAlign: 'left' }}>
+                        <Typography
+                            sx={{
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                            }}
+                        >
                             {q.square} ({getSquareColor(q.square)})
                         </Typography>
                         <Typography
@@ -518,8 +578,11 @@ function CompleteScreen({
                             {q.userAnswer === q.correctAnswer ? t('correct') : t('wrong')}
                         </Typography>
                         <Typography
-                            color='text.secondary'
-                            sx={{ width: { sm: 76 }, textAlign: 'right' }}
+                            sx={{
+                                color: 'text.secondary',
+                                width: { sm: 76 },
+                                textAlign: 'right',
+                            }}
                         >
                             {(q.responseTimeMs / 1000).toFixed(1)}s
                         </Typography>
@@ -545,20 +608,38 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
             sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 px: 2,
                 py: 1,
                 borderBottom: '1px solid',
                 borderColor: 'divider',
             }}
         >
-            <Stack direction='row' alignItems='center' spacing={1}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Box sx={{ color: 'text.secondary', display: 'flex' }}>{icon}</Box>
-                <Typography color='text.secondary'>{label}</Typography>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {label}
+                </Typography>
             </Stack>
-            <Typography fontWeight='bold'>{value}</Typography>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
         </Stack>
     );
 }

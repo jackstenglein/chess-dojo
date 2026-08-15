@@ -24,11 +24,24 @@ export default function DojoDigestVol18() {
                 subtitle='Dojo Digest 18 • March 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessable.com/mastering-time-in-chess/course/277570/'
                         target='_blank'
@@ -48,14 +61,23 @@ export default function DojoDigestVol18() {
                     (1250-1850 chess.com) and trains the most important skill for these cohorts to
                     master: how to use the free tempi your opponents give you.
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={masteringtime}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Also available on Chessable is{' '}
                     <Link
                         href='https://www.chessable.com/100-tactical-patterns-you-must-know/course/283143/'
@@ -67,31 +89,53 @@ export default function DojoDigestVol18() {
                     recommended for players rated 1400-2000 OTB.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong> Badges!</strong> Getting your rating up is not the only achievement in
                     chess. You can also earn ChessDojo badges for completing Polgar mates,
                     annotating games, graduating and more.
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={badges}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games – A ChessDojo Guide</strong> is finally coming
                     out on Kindle and the ChessDojo store! Keep an eye out for it's release in the
                     coming days.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The Dojo had a few famous guests on stream recently. We were joined by{' '}
                     <strong>13th World Chess Champion Garry Kasparov</strong> while covering the 5th
                     annual KCF University Cup! We were also joined by
                     <strong>Fabiano Caruana</strong> in our SoCal Fire Relief stream!
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kasparov}
                         alt=''
@@ -99,7 +143,11 @@ export default function DojoDigestVol18() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Patreon and DojoTalks - The Dojo is trying to be more consistent with our
                     podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/c/ChessDojo' target='_blank'>
@@ -109,17 +157,30 @@ export default function DojoDigestVol18() {
                     discuss the pod on our private Discord.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or European club team? Let
                     us know! We would like to bring your teammates to the Dojo and see you with them
                     on a customized scoreboard. We believe the Dojo is the place for teams to track
                     their progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The{' '}
                     <Link
                         href='https://www.chessdojo.club/profile/google_115015475367953308508'
@@ -134,7 +195,11 @@ export default function DojoDigestVol18() {
                     rating points, raising their rating from 1297 to 1558.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_100232598840877422187'
                         target='_blank'
@@ -143,7 +208,11 @@ export default function DojoDigestVol18() {
                     </Link>{' '}
                     beat their first titled player ever! Check out the game here.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_114391023466287136398'
                         target='_blank'
@@ -154,7 +223,11 @@ export default function DojoDigestVol18() {
                     father of a new baby girl!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_112287737382436689707'
                         target='_blank'
@@ -166,7 +239,11 @@ export default function DojoDigestVol18() {
                     Classical Tournament and gained over 150 Lichess classical Elo. They scored
                     9.5/11 in classical tournament games over the past month.{' '}
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/fc3f82c5-4cef-47f9-a2f1-47cd47078a35'
                         target='_blank'

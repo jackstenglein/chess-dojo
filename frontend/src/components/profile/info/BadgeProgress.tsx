@@ -11,7 +11,14 @@ export function BadgeProgress({ total, earned }: BadgeProgressProps) {
     const progress = total > 0 ? (earned / total) * 100 : 0;
     return (
         <Box sx={{ mb: 2, width: '100%' }}>
-            <Typography variant='body2' fontWeight='bold' textAlign='center' gutterBottom>
+            <Typography
+                variant='body2'
+                gutterBottom
+                sx={{
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                }}
+            >
                 {t('badgeProgress', {
                     earned,
                     total,

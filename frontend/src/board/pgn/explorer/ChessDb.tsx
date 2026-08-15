@@ -78,7 +78,7 @@ export function ChessDBTab({
 
     if (queued) {
         return (
-            <Stack mt={2} spacing={1} alignItems='center'>
+            <Stack spacing={1} sx={{ mt: 2, alignItems: 'center' }}>
                 <Typography color='success.main'>{t('analysisQueued')}</Typography>
             </Stack>
         );
@@ -86,7 +86,13 @@ export function ChessDBTab({
 
     if (error) {
         return (
-            <Stack mt={2} spacing={1} alignItems='center'>
+            <Stack
+                spacing={1}
+                sx={{
+                    mt: 2,
+                    alignItems: 'center',
+                }}
+            >
                 <Typography color='error'>{error}</Typography>
                 <Button
                     onClick={requestAnalysis}
@@ -102,7 +108,13 @@ export function ChessDBTab({
 
     if (moves.length === 0) {
         return (
-            <Stack mt={2} spacing={1} alignItems='center'>
+            <Stack
+                spacing={1}
+                sx={{
+                    mt: 2,
+                    alignItems: 'center',
+                }}
+            >
                 <Typography>{t('positionNotInChessDb')}</Typography>
                 <Button
                     onClick={requestAnalysis}
@@ -128,10 +140,28 @@ export function ChessDBTab({
     };
 
     return (
-        <Grid container columnSpacing={1} rowSpacing={2} mt={2}>
+        <Grid
+            container
+            columnSpacing={1}
+            rowSpacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
             <Grid size={12}>
-                <Stack direction='row' alignItems='center' spacing={0.5}>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                <Stack
+                    direction='row'
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('chessCloudDatabaseLabel')}
                     </Typography>
                     <Tooltip
