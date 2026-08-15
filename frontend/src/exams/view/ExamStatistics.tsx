@@ -10,9 +10,9 @@ import {
 import { Speed } from '@mui/icons-material';
 import { CardContent, Stack, Typography } from '@mui/material';
 import {
-    ChartContainer,
-    ChartDataProvider,
     ChartsClipPath,
+    ChartsContainer,
+    ChartsDataProvider,
     ChartsGrid,
     ChartsLegend,
     ChartsTooltip,
@@ -25,7 +25,7 @@ import {
     ScatterValueType,
     axisClasses,
     legendClasses,
-    lineElementClasses,
+    lineClasses,
 } from '@mui/x-charts';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -207,7 +207,12 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
 
     return (
         <CardContent sx={{ height: 1 }}>
-            <Stack ref={ref} height={1}>
+            <Stack
+                ref={ref}
+                sx={{
+                    height: 1,
+                }}
+            >
                 <MultipleSelectChip
                     label={t('cohortsLabel')}
                     selected={cohorts}
@@ -240,8 +245,21 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                     error={cohorts.length === 0}
                 />
 
-                <Stack alignItems='center' mt={1} mb={1} spacing={0.5}>
-                    <Stack direction='row' spacing={2} justifyContent='center'>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                        mt: 1,
+                        mb: 1,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        spacing={2}
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography variant='body2'>
                             {t.rich('usersLine', {
                                 count: userCount,
@@ -249,7 +267,9 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                                     <Typography
                                         variant='body2'
                                         component='span'
-                                        color='text.secondary'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
                                     >
                                         {chunks}
                                     </Typography>
@@ -263,7 +283,9 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                                     <Typography
                                         variant='body2'
                                         component='span'
-                                        color='text.secondary'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
                                     >
                                         {chunks}
                                     </Typography>
@@ -271,14 +293,20 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                             })}
                         </Typography>
                     </Stack>
-                    <Typography variant='caption' color='text.secondary' textAlign='center'>
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                            textAlign: 'center',
+                        }}
+                    >
                         {maxCohort === Infinity
                             ? t('regressionCaptionPlus', { min: minCohort })
                             : t('regressionCaptionRange', { min: minCohort, max: maxCohort })}
                     </Typography>
                 </Stack>
 
-                <ChartDataProvider>
+                <ChartsDataProvider>
                     <ChartsLegend
                         slotProps={{
                             legend: {
@@ -293,7 +321,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                             },
                         }}
                     />
-                    <ChartContainer
+                    <ChartsContainer
                         disableAxisListener
                         xAxis={[
                             {
@@ -315,7 +343,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                             [`& .${axisClasses.left} .${axisClasses.label}`]: {
                                 transform: 'translateX(-20px)',
                             },
-                            [`.${lineElementClasses.root}`]: {
+                            [`.${lineClasses.line}`]: {
                                 strokeWidth: 1,
                             },
                             '.MuiLineElement-series-best-fit': {
@@ -344,8 +372,8 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                         <ScatterPlot />
                         <ChartsTooltip trigger='item' />
                         <ChartsClipPath id='clip-path' />
-                    </ChartContainer>
-                </ChartDataProvider>
+                    </ChartsContainer>
+                </ChartsDataProvider>
             </Stack>
         </CardContent>
     );

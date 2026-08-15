@@ -87,8 +87,18 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
 
     return (
         <CardContent sx={{ height: 1, p: 0 }}>
-            <Stack height={1}>
-                <Stack flexGrow={1} sx={{ overflowY: 'auto', p: 2 }}>
+            <Stack
+                sx={{
+                    height: 1,
+                }}
+            >
+                <Stack
+                    sx={{
+                        flexGrow: 1,
+                        overflowY: 'auto',
+                        p: 2,
+                    }}
+                >
                     <Stack spacing={2}>
                         <SaveAllVariationsButton />
 
@@ -121,7 +131,13 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                         </Stack>
                     </Stack>
 
-                    <Stack spacing={4} mt={3} flexGrow={1}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 3,
+                            flexGrow: 1,
+                        }}
+                    >
                         <PositionCommentSortContext.Provider value={{ sortBy }}>
                             {fenSections.map((s) => (
                                 <CommentSection
@@ -214,8 +230,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ isReadonly, section, t 
     };
 
     return (
-        <Stack width={1} spacing={2}>
-            <Stack width={1} alignItems='start'>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Stack
+                sx={{
+                    width: 1,
+                    alignItems: 'start',
+                }}
+            >
                 <Button sx={{ textTransform: 'none', pb: 0 }} onClick={onClick}>
                     {move
                         ? `${move.ply % 2 ? `${Math.floor(move.ply / 2) + 1}.` : `${move.ply / 2}...`} ${move.san}`

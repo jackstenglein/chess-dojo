@@ -37,29 +37,53 @@ const TimeSection = ({ review }: SectionProps) => {
     const taskData = useMemo(() => getTaskData(t('title'), data), [data, t]);
 
     return (
-        <Stack width={1} alignItems='center'>
+        <Stack
+            sx={{
+                width: 1,
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
-                fontWeight='800'
-                fontSize='clamp(16px,3vw,32px)'
-                textAlign='center'
+                sx={{
+                    fontWeight: '800',
+                    fontSize: 'clamp(16px,3vw,32px)',
+                    textAlign: 'center',
+                }}
             >
                 {t('intro')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
                 <CardHeader title={t('title')} />
                 <CardContent>
-                    <Grid container alignItems='center' rowSpacing={2}>
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Grid
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 12,
                                 sm: 4,
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
-                            <Stack alignItems='center'>
-                                <Typography variant='caption' color='text.secondary'>
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('totalTime')}
                                 </Typography>
 
@@ -83,10 +107,26 @@ const TimeSection = ({ review }: SectionProps) => {
                         />
                     </Grid>
 
-                    <Stack mt={4} spacing={4}>
-                        <Stack alignItems='start' spacing={0.5}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byCategory')}</Typography>
-                            <Box width={1} height={300} mt={2}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 300,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: categoryData,
@@ -101,9 +141,20 @@ const TimeSection = ({ review }: SectionProps) => {
                             </Box>
                         </Stack>
 
-                        <Stack alignItems='start' spacing={0.5}>
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byMonth')}</Typography>
-                            <Box width={1} height={400} mt={2}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: monthData,
@@ -116,9 +167,20 @@ const TimeSection = ({ review }: SectionProps) => {
                         </Stack>
 
                         {taskData && (
-                            <Stack alignItems='start' spacing={0.5}>
+                            <Stack
+                                spacing={0.5}
+                                sx={{
+                                    alignItems: 'start',
+                                }}
+                            >
                                 <Typography>{t('top10Tasks')}</Typography>
-                                <Box width={1} height={400} mt={2}>
+                                <Box
+                                    sx={{
+                                        width: 1,
+                                        height: 400,
+                                        mt: 2,
+                                    }}
+                                >
                                     <Chart
                                         options={{
                                             data: taskData,

@@ -98,7 +98,12 @@ export function UnpublishedGameBanner({ dismissable }: UnpublishedGameBannerProp
                         </Box>
                     }
                 >
-                    <Stack direction='row' alignItems='center'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography variant='body1'>{t('notPublished')}</Typography>
                     </Stack>
                 </Alert>

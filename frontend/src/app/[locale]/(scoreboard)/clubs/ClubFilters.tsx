@@ -81,7 +81,15 @@ export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) =
     const t = useTranslations('clubs.filters');
     const tSort = useTranslations('clubs.filters.sortMethods');
     return (
-        <Stack direction='row' spacing={3} alignItems='center' flexWrap='wrap' rowGap={3}>
+        <Stack
+            direction='row'
+            spacing={3}
+            sx={{
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                rowGap: 3,
+            }}
+        >
             <TextField
                 label={t('search')}
                 value={filters.search}
@@ -89,7 +97,13 @@ export const ClubFilterEditor: React.FC<ClubFilterEditorProps> = ({ filters }) =
                 sx={{ flexGrow: 1 }}
             />
 
-            <Stack direction='row' spacing={2} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     select
                     label={t('sortBy')}

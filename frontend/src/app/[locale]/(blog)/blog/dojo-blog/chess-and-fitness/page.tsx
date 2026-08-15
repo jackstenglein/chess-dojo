@@ -26,18 +26,35 @@ export default function CustomTasks() {
                 allowFullScreen
             ></iframe>
 
-            <Stack mt={3}>
-                <Typography mt={3} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <strong>Why Chess Goals Are Harder Than Fitness Goals</strong>
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The New Year is a natural time for reflection. After weeks of eating too much,
                     relaxing, and spending time with friends and family, many of us feel the urge to
                     reset. We want to begin again. And for a lot of people, that reset involves two
                     familiar resolutions: getting fitter and getting better at chess.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     At first glance, fitness and chess improvement seem very similar. In both, we’re
                     flooded with information—training plans, influencers, systems, shortcuts, and
                     strong opinions coming from every direction. That overload can be paralyzing. It
@@ -45,15 +62,28 @@ export default function CustomTasks() {
                     behind structured training programs like the Dojo is simple: you don’t need the
                     perfect plan—you need a plan that you actually follow.
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     But despite these similarities, fitness and chess differ in one crucial
                     way.{' '}
                 </Typography>
 
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Fitness Is Easier to Measure
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Fitness feels obvious. You can measure your weight, your body fat percentage,
                     your lifts, your running times, and your endurance. Even if defining “fitness”
                     turns out to be more complicated than it first appears, progress is still
@@ -66,10 +96,19 @@ export default function CustomTasks() {
                     <br></br>
                     <br></br>Chess doesn’t work like that.
                 </Typography>
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Chess Improvement Is Slippery
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     In chess, we also talk about components—openings, middlegames, endgames,
                     tactics, calculation, intuition, memory—but measuring progress in any one area
                     is incredibly difficult. What does it even mean to say you’re “better at
@@ -81,11 +120,20 @@ export default function CustomTasks() {
                     late, unevenly, and sometimes only after long periods of frustration. That
                     slipperiness is one of the reasons chess is so beautiful—and so hard.
                 </Typography>
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     We Gravitate Toward What Feels Good
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     There’s another similarity between fitness and chess that can quietly sabotage
                     progress: we tend to do what we enjoy and avoid what we don’t. <br></br>
                     <br></br>At the gym, this looks like the runner who never lifts, or the lifter
@@ -98,10 +146,19 @@ export default function CustomTasks() {
                     program. Sometimes it has to be an honest voice in your own head saying, “You’re
                     avoiding the work you actually need.”
                 </Typography>
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Fitness Supports Chess More Than We Admit
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     It’s obvious that poor physical fitness affects chess performance, especially
                     over long games. When physical endurance drops, deep thinking disappears.
                     Players stop calculating and start making impulsive decisions. You can often see
@@ -114,10 +171,19 @@ export default function CustomTasks() {
                     physical fitness often leads directly to declining results, even when chess
                     understanding remains strong.
                 </Typography>
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Mental Fitness Is Harder to Feel
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Physical fitness gives immediate feedback. You feel stronger. You move better.
                     Life becomes easier. Mental fitness doesn’t offer the same clarity. You can’t
                     easily measure how “healthy” your thinking is. You only see indirect signs: how
@@ -125,10 +191,19 @@ export default function CustomTasks() {
                     <br></br> That makes chess goals harder to trust and harder to stick with.
                     Improvement is slower, feedback is fuzzier, and motivation is easier to lose.
                 </Typography>
-                <Typography mt={2} variant='h6'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     The Takeaway
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     If you’ve set New Year goals around fitness or chess—or both—understand this:
                     chess improvement demands more patience, more structure, and more trust in the
                     process than physical training does. You won’t always feel progress, but that

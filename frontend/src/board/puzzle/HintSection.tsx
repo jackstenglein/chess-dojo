@@ -27,10 +27,20 @@ const TurnPrompt = ({ chess, playBothSides }: { chess: Chess; playBothSides: boo
     const t = useTranslations('puzzles.hintSection');
     return (
         <Stack>
-            <Typography variant='h6' fontWeight='bold' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    fontWeight: 'bold',
+                    color: 'text.secondary',
+                }}
+            >
                 {t('yourTurn')}
             </Typography>
-            <Typography color='text.secondary'>
+            <Typography
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 {playBothSides
                     ? t('recallMove', { color: toColor(chess) })
                     : t('findBestMove', { color: toColor(chess) })}
@@ -57,7 +67,13 @@ const WaitingForMoveHint: React.FC<HintSectionProps> = ({
         <>
             <ChatBubble>{comment}</ChatBubble>
 
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
+            >
                 <TurnPrompt chess={chess} playBothSides={playBothSides} />
                 <Coach src={coachUrl} />
             </Stack>
@@ -93,7 +109,12 @@ const IncorrectMoveHint: React.FC<HintSectionProps> = ({
     return (
         <>
             <ChatBubble>{move?.commentAfter || t('incorrectRetry')}</ChatBubble>
-            <Stack direction='row' justifyContent='space-between'>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Button
                     variant='contained'
                     disableElevation
@@ -146,7 +167,13 @@ const CorrectMoveHint: React.FC<HintSectionProps> = ({
     return (
         <>
             <ChatBubble>{chatText}</ChatBubble>
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
+            >
                 {playBothSides ? (
                     <TurnPrompt chess={chess} playBothSides={true} />
                 ) : (
@@ -228,14 +255,30 @@ const CompleteHint: React.FC<HintSectionProps> = ({
 
     return (
         <>
-            <Stack flexGrow={1} spacing={1} sx={{ overflowY: 'hidden' }}>
+            <Stack
+                spacing={1}
+                sx={{
+                    flexGrow: 1,
+                    overflowY: 'hidden',
+                }}
+            >
                 <PgnText />
                 <BoardButtons />
             </Stack>
             <Stack>
                 <ChatBubble>{chatText}</ChatBubble>
-                <Stack direction='row' justifyContent='space-between'>
-                    <Stack flexGrow={1} spacing={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <Stack
+                        spacing={0.5}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         <Button
                             variant='contained'
                             disableElevation

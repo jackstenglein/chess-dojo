@@ -56,7 +56,13 @@ export default function RatingConversionsPage() {
                         {dojoCohorts.slice(0, dojoCohorts.length - 1).map((c, i) => (
                             <TableRow key={c}>
                                 <TableCell>
-                                    <Stack direction='row' spacing={2} alignItems='center'>
+                                    <Stack
+                                        direction='row'
+                                        spacing={2}
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <CohortIcon cohort={c} tooltip='' />
                                         <Typography variant='body2'>{c}</Typography>
                                     </Stack>
@@ -87,7 +93,13 @@ export default function RatingConversionsPage() {
                         ))}
                         <TableRow>
                             <TableCell>
-                                <Stack direction='row' spacing={2} alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    spacing={2}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <CohortIcon
                                         cohort={dojoCohorts[dojoCohorts.length - 1]}
                                         tooltip=''

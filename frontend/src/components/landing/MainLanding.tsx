@@ -53,18 +53,22 @@ export function MainLanding() {
                         }}
                     >
                         <Stack
-                            height={1}
-                            justifyContent='start'
-                            alignItems={{ xs: 'center', md: 'start' }}
                             spacing={6}
+                            sx={{
+                                height: 1,
+                                justifyContent: 'start',
+                                alignItems: { xs: 'center', md: 'start' },
+                            }}
                         >
                             <Stack spacing={2}>
                                 <Typography
                                     variant='h2'
-                                    textAlign={{ xs: 'center', md: 'start' }}
                                     data-testid='title'
-                                    fontFamily={(theme) => fontFamily(theme, anton)}
-                                    fontWeight='400'
+                                    sx={{
+                                        textAlign: { xs: 'center', md: 'start' },
+                                        fontFamily: (theme) => fontFamily(theme, anton),
+                                        fontWeight: '400',
+                                    }}
                                 >
                                     {t('hero.title')
                                         .split('\n')
@@ -77,9 +81,9 @@ export function MainLanding() {
                                 </Typography>
                                 <Typography
                                     variant='h5'
-                                    textAlign={{ xs: 'center', md: 'start' }}
                                     data-testid='subtitle'
                                     sx={{
+                                        textAlign: { xs: 'center', md: 'start' },
                                         fontFamily: (theme) => fontFamily(theme, barlow),
                                         fontWeight: 400,
                                         fontSize: '1.5rem',
@@ -149,7 +153,12 @@ export function MainLanding() {
                     py: { xs: 0.5, md: 0 },
                 }}
             >
-                <Typography sx={{ fontSize: '1.5rem' }} textAlign='center'>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                        fontSize: '1.5rem',
+                    }}
+                >
                     {t.rich('hero.ratingPoints', {
                         strong: (chunks) => <strong>{chunks}</strong>,
                     })}

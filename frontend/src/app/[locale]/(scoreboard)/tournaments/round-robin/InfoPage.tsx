@@ -1,7 +1,7 @@
 import TimeControlTable from '@/components/tournaments/round-robin/TimeControlTable';
 import { PawnIcon } from '@/style/ChessIcons';
 import Icon from '@/style/Icon';
-import { CalendarMonth, EmojiEvents, HelpOutline, MonetizationOn } from '@mui/icons-material';
+import { CalendarMonth, EmojiEvents, HelpOutlined, MonetizationOn } from '@mui/icons-material';
 import GroupIcon from '@mui/icons-material/Group';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
@@ -45,8 +45,13 @@ const FAQSection = () => {
 
     return (
         <Stack spacing={2}>
-            <Typography variant='h6' color='text.secondary'>
-                <HelpOutline sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
+                <HelpOutlined sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('faqHeader')}
             </Typography>
             <List>
@@ -68,14 +73,26 @@ export const InfoPage = () => {
 
     return (
         <Stack>
-            <Typography variant='h5' textAlign='center' color='text.secondary' sx={{ mt: 2 }}>
+            <Typography
+                variant='h5'
+                sx={{
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                    mt: 2,
+                }}
+            >
                 {t('welcome')}
                 <WavingHandIcon sx={{ verticalAlign: 'middle', ml: 1 }} color='dojoOrange' />
             </Typography>
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <MilitaryTechIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('overviewHeader')}
             </Typography>
@@ -108,7 +125,12 @@ export const InfoPage = () => {
             <TimeControlTable />
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <EmojiEvents sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('championsHeader')}
             </Typography>
@@ -117,7 +139,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <MonetizationOn sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('feeHeader')}
             </Typography>
@@ -151,7 +178,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('leaderboardHeader')}
             </Typography>
@@ -181,7 +213,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('tiebreaksHeader')}
             </Typography>
@@ -202,7 +239,12 @@ export const InfoPage = () => {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <NotInterestedIcon sx={{ verticalAlign: 'middle', mr: 1 }} color='dojoOrange' />
                 {t('antiCheatHeader')}
             </Typography>

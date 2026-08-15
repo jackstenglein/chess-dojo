@@ -37,7 +37,12 @@ export const TacticsInstructions: React.FC<InstructionsProps> = ({ length, timeL
     const t = useTranslations('exams.testInstructions');
     return (
         <>
-            <Typography variant='h4' mt={4}>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                }}
+            >
                 {t('heading')}
             </Typography>
             <Typography component='div'>
@@ -73,7 +78,12 @@ export const PolgarMateInstructions: React.FC<InstructionsProps> = ({
     const t = useTranslations('exams.testInstructions');
     return (
         <>
-            <Typography variant='h4' mt={4}>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                }}
+            >
                 {t('heading')}
             </Typography>
             <Typography component='div'>

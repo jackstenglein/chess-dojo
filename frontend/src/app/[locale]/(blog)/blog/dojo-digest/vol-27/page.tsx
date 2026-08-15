@@ -20,11 +20,24 @@ export default function DojoDigestVol27() {
                 subtitle='Dojo Digest 27 • December 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong> Live Class Tiers</strong> — You can now join one of two new live class
                     tiers: The Group Classes tier is $75/month and includes large, workshop-style
                     classes like Endgame Fundamentals and Calculation. The Game and Profile Review
@@ -42,7 +55,11 @@ export default function DojoDigestVol27() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games — A ChessDojo Guide</strong> is out on{' '}
                     <Link
                         href='https://www.amazon.com/dp/B0F1DB396G?ref=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&social_share=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&bestFormat=true'
@@ -66,7 +83,11 @@ export default function DojoDigestVol27() {
                     </Link>
                     !
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Patreon and DojoTalks</strong> — The Dojo is trying to be more
                     consistent with our podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/ChessDojo' target='_blank'>
@@ -75,11 +96,20 @@ export default function DojoDigestVol27() {
                     where you can get episodes early, vote on coming topics, suggest topics and
                     discuss the pod on our private Discord.
                 </Typography>
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href=' https://www.chessdojo.club/profile/google_109090545256129998922'
                         target='_blank'
@@ -90,7 +120,11 @@ export default function DojoDigestVol27() {
                     in which first 10 promote to next category), getting promotion to First
                     Regionals!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_113995833598420530152 '
                         target='_blank'
@@ -99,7 +133,11 @@ export default function DojoDigestVol27() {
                     </Link>{' '}
                     won the U2000 section of the Witney Chess Congress OTB November 8-9!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/a3f8db36-bd8b-4356-aa3f-b0442ec3d609 '
                         target='_blank'
@@ -109,7 +147,11 @@ export default function DojoDigestVol27() {
                     acheived their first podium finish tied for second place and first prize money
                     at the Tunnelvision 38 in Columbia, SC!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href=' https://www.chessdojo.club/profile/google_111932000290094578368'
                         target='_blank'

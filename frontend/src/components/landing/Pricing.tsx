@@ -19,14 +19,22 @@ export function Pricing() {
             background='linear-gradient(270deg, #141422 0%, #06060B 100%)'
             slotProps={{ image: { style: { opacity: 0.2 } } }}
         >
-            <Stack gap='1rem' alignItems='center'>
+            <Stack
+                sx={{
+                    gap: '1rem',
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
-                    sx={{ textTransform: 'uppercase', textAlign: 'center' }}
                     color='dojoOrange'
-                    fontWeight='600'
-                    fontSize='1.1875rem'
-                    lineHeight='1.1875rem'
-                    letterSpacing='11%'
+                    sx={{
+                        fontWeight: '600',
+                        fontSize: '1.1875rem',
+                        lineHeight: '1.1875rem',
+                        letterSpacing: '11%',
+                        textTransform: 'uppercase',
+                        textAlign: 'center',
+                    }}
                 >
                     {t('pricing.cta')}
                 </Typography>
@@ -46,7 +54,13 @@ export function Pricing() {
                 </Typography>
             </Stack>
 
-            <Stack mt='4.0625rem' gap='1.5rem' alignItems='center'>
+            <Stack
+                sx={{
+                    mt: '4.0625rem',
+                    gap: '1.5rem',
+                    alignItems: 'center',
+                }}
+            >
                 <MembershipSection />
                 <FreeSection />
             </Stack>
@@ -147,14 +161,22 @@ function MembershipSection() {
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                sx={{ mt: '3.75rem' }}
-                flexWrap='wrap'
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    mt: '3.75rem',
+                }}
             >
                 <JoinDojoButton />
 
-                <Stack direction='row' gap='0.5rem' display={{ xs: 'none', md: 'flex' }}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: '0.5rem',
+                        display: { xs: 'none', md: 'flex' },
+                    }}
+                >
                     <Button
                         variant={timeframe === 'yearly' ? 'contained' : 'outlined'}
                         sx={{
@@ -197,8 +219,8 @@ function FreeSection() {
 
     return (
         <Stack
-            width={{ xs: 1, md: 0.83 }}
             sx={{
+                width: { xs: 1, md: 0.83 },
                 padding: { xs: '1rem', md: '2rem 3.375rem' },
                 background: 'linear-gradient(180deg, #1B1B2C88 0%, #06060B88 100%)',
                 borderRadius: 1,
@@ -246,7 +268,9 @@ function FreeSection() {
                             }
                             slotProps={{
                                 root: {
-                                    gap: '0.5rem',
+                                    sx: {
+                                        gap: '0.5rem',
+                                    },
                                 },
                                 title: {
                                     sx: {

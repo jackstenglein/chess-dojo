@@ -75,11 +75,13 @@ export function ColorFormSection({ editor }: { editor: UseEventEditorResponse })
             <Menu anchorEl={anchorEl.current} open={open} onClose={() => setOpen(false)}>
                 <Stack
                     direction='row'
-                    flexWrap='wrap'
-                    gap={0.75}
-                    py={0.5}
-                    px={1}
-                    alignItems='center'
+                    sx={{
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                        py: 0.5,
+                        px: 1,
+                        alignItems: 'center',
+                    }}
                 >
                     {options.map((option) => (
                         <Tooltip key={option} title={colorLabels[option]} disableInteractive>

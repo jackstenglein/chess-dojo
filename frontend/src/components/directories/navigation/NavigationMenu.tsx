@@ -141,7 +141,12 @@ export const NavigationMenu = ({
 
     if (horizontal) {
         return (
-            <Stack direction='row' flexWrap='wrap'>
+            <Stack
+                direction='row'
+                sx={{
+                    flexWrap: 'wrap',
+                }}
+            >
                 <Tooltip title={t('home')} disableInteractive>
                     <IconButton
                         onClick={handleClick(HOME_DIRECTORY_ID)}

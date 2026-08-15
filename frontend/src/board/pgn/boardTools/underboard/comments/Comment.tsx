@@ -117,8 +117,9 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                 <Stack direction='row'>
                     <Tooltip title={t('collapseComment')}>
                         <Stack
-                            alignItems='center'
+                            onClick={() => setExpanded(false)}
                             sx={{
+                                alignItems: 'center',
                                 width: '20px',
                                 minWidth: '20px',
                                 maxWidth: '20px',
@@ -128,17 +129,26 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                                     borderColor: 'primary.main',
                                 },
                             }}
-                            onClick={() => setExpanded(false)}
                         >
                             <Divider orientation='vertical' />
                         </Stack>
                     </Tooltip>
-                    <Stack flexGrow={1} spacing={0.5}>
+                    <Stack
+                        spacing={0.5}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {renderContent ? (
                             renderContent
                         ) : comment.suggestedVariation ? (
                             <>
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('suggestedVariation')}
                                 </Typography>
                                 {suggestedVariation && (
@@ -257,7 +267,11 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                 move={move}
                 renderContent={
                     editValue === undefined ? undefined : (
-                        <Stack width={1}>
+                        <Stack
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <TextField
                                 id={BlockBoardKeyboardShortcuts}
                                 value={editValue}
@@ -364,20 +378,37 @@ const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
     }
 
     return (
-        <Stack direction='row' spacing={1.5} alignItems='center'>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Avatar
                 username={comment.owner.username}
                 displayName={comment.owner.displayName}
                 size={20}
             />
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Link href={`/profile/${comment.owner.username}`} sx={{ textDecoration: 'none' }}>
                     <Typography variant='subtitle1' sx={{ color: 'text.primary' }}>
                         {comment.owner.displayName} ({comment.owner.cohort})
                     </Typography>
                 </Link>
                 <CohortIcon cohort={comment.owner.previousCohort} size={20} />
-                <Typography variant='caption' color='text.secondary'>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     • {createdAtDate} {createdAtTime}
                 </Typography>
                 {updatedAtDate && (

@@ -109,12 +109,20 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
-                rowGap={2}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    rowGap: 2,
+                }}
             >
-                <Stack direction='row' spacing={2} alignItems='center'>
+                <Stack
+                    direction='row'
+                    spacing={2}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Avatar
                         username={joinRequest.username}
                         displayName={joinRequest.displayName}
@@ -125,14 +133,31 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
                         <Link href={`/profile/${joinRequest.username}`}>
                             {joinRequest.displayName}
                         </Link>
-                        <Typography color='text.secondary'>{joinRequest.cohort}</Typography>
-                        <Typography color='text.secondary' variant='body2'>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
+                            {joinRequest.cohort}
+                        </Typography>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {dateStr} • {timeStr}
                         </Typography>
                     </Stack>
                 </Stack>
 
-                <Stack direction='row' spacing={1} alignItems='center'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     {request.isLoading() ? (
                         <CircularProgress />
                     ) : (
@@ -165,7 +190,13 @@ const JoinRequest: React.FC<JoinRequestProps> = ({
                 </Stack>
             </Stack>
 
-            <Typography whiteSpace='pre-line'>{joinRequest.notes}</Typography>
+            <Typography
+                sx={{
+                    whiteSpace: 'pre-line',
+                }}
+            >
+                {joinRequest.notes}
+            </Typography>
 
             {divider && <Divider />}
         </Stack>

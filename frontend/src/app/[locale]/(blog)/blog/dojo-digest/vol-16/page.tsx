@@ -28,18 +28,35 @@ export default function DojoDigestVol16() {
                 subtitle='Dojo Digest Vol 16 • January 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>Free Month at the Dojo</strong> - Make your New Year’s resolution and
                     join the Dojo for the month of January at no cost! Use the code{' '}
                     <strong>NY25</strong> when signing up. The code only lasts until the 7th, so
                     don't wait!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>Merch Sale</strong> - Get 20% off anything in our{' '}
                     <Link href='https://www.chessdojo.shop/shop' target='_blank'>
                         shop
@@ -49,21 +66,35 @@ export default function DojoDigestVol16() {
                     season.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kostyamerch}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={jessemerch}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     How to Analyze Your Games – Our book has finally been released! You can order it{' '}
                     <Link href='https://amzn.to/40iwtHf' target='_blank'>
                         here.
@@ -77,18 +108,32 @@ export default function DojoDigestVol16() {
                         here.
                     </Link>{' '}
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={book}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography textAlign='center' color='text.secondary'>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                        color: 'text.secondary',
+                    }}
+                >
                     It’s a fattie that measures up to Silman’s Reassess Your Chess!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>ChessDojo Postmortem</strong> - See a review of your 2024 with the Dojo{' '}
                     <Link
                         href='https://www.chessdojo.club/profile/google_111981832898340390525/postmortem/2024'
@@ -98,7 +143,12 @@ export default function DojoDigestVol16() {
                     </Link>{' '}
                     Here are Sensei Kraai’s top ten tasks:
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={tasks}
                         alt=''
@@ -106,10 +156,19 @@ export default function DojoDigestVol16() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     And here his time spent by category. Is he skipping leg day?
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={timespent}
                         alt=''
@@ -117,7 +176,11 @@ export default function DojoDigestVol16() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Best Social Media Prize</strong> - Sebastian Bastoun (SBastoun) won our
                     first social media contest, winning a free year at the Dojo. Congratulations,
                     Sebastian! Check out his video{' '}
@@ -127,7 +190,11 @@ export default function DojoDigestVol16() {
                     We will be running more contests like this in the near future, so get those vids
                     ready.
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Round Robins</strong> - Our tournaments are now accepting registrations
                     again! We've migrated registration from Discord onto the site, so sign up{' '}
                     <Link href='https://www.chessdojo.club/tournaments/round-robin' target='_blank'>
@@ -141,14 +208,23 @@ export default function DojoDigestVol16() {
                     crosstable for the 16-1700 cohort.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={roundrobin}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Patreon and DojoTalks - The Dojo is trying to be more consistent with our
                     podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/c/ChessDojo' target='_blank'>
@@ -158,10 +234,19 @@ export default function DojoDigestVol16() {
                     discuss the pod on our private Discord.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The{' '}
                     <Link
                         href='https://www.chessdojo.club/clubs/cb7af173-8eea-4e28-8cdb-da76a7e9e00d'
@@ -176,14 +261,23 @@ export default function DojoDigestVol16() {
                     scoreboard where you can all follow a program? Get that team on the Dojo and win
                     some trophies.
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={pattersonclippers}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/fe9cec0a-adf7-4a5e-9d3a-f631137966be'
                         target='_blank'
@@ -193,7 +287,11 @@ export default function DojoDigestVol16() {
                     was the Chief Tournament Director for the Tulsa Holiday Open, which was the last
                     credit he needed to test for the USCF Local TD certification!
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_107238115453425042124'
                         target='_blank'
@@ -203,7 +301,12 @@ export default function DojoDigestVol16() {
                     recently got his 2nd ICCF Correspondence IM norm so he's officially qualified
                     for his ICCF IM title! Check out the "Dojo Effect" in his chess journey:{' '}
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={mattgraph}
                         alt=''

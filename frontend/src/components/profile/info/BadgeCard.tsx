@@ -124,10 +124,12 @@ export const BadgeCard = ({ user }: { user: User }) => {
             <Card>
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    px={2}
-                    pt={2}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        px: 2,
+                        pt: 2,
+                    }}
                 >
                     <CardHeader title={t('badgesCardTitle')} sx={{ p: 0 }} />
                     <Tooltip title={t('viewAllBadges')}>
@@ -139,11 +141,13 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 <CardContent sx={{ pt: 1, pb: 2, px: 2 }}>
                     <Stack
                         direction='row'
-                        columnGap={0.75}
-                        flexWrap='wrap'
-                        rowGap={1}
-                        alignItems='center'
-                        sx={{ p: 1 }}
+                        sx={{
+                            columnGap: 0.75,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                            alignItems: 'center',
+                            p: 1,
+                        }}
                     >
                         {badges.map((badge, idx) => (
                             <Box

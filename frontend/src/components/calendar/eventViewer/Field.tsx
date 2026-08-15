@@ -19,7 +19,12 @@ const Field: React.FC<FieldProps> = ({ title, body, showEmptyBody, iconName, slo
 
     return (
         <Stack>
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <Icon
                     name={iconName}
                     color='primary'

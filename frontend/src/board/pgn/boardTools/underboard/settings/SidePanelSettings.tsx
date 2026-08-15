@@ -29,9 +29,11 @@ export default function SidePanelSettings({ tabs }: SidePanelSettingsProps) {
                     key={tab}
                     data-testid={`side-panel-setting-${tab}`}
                     direction={{ xs: 'column', sm: 'row' }}
-                    alignItems={{ xs: 'stretch', sm: 'center' }}
-                    justifyContent='space-between'
                     spacing={1}
+                    sx={{
+                        alignItems: { xs: 'stretch', sm: 'center' },
+                        justifyContent: 'space-between',
+                    }}
                 >
                     <Typography>{SIDE_PANEL_TAB_LABELS[tab]}</Typography>
                     <ToggleButtonGroup

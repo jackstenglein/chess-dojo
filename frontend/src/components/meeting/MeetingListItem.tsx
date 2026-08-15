@@ -58,13 +58,24 @@ const MeetingListItem: React.FC<MeetingListItemProps> = ({ meeting }) => {
                     )}
 
                     {meeting.maxParticipants > 1 ? (
-                        <Typography variant='subtitle1' color='text.secondary'>
+                        <Typography
+                            variant='subtitle1'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('participantsCountFlat', {
                                 count: Object.values(meeting.participants).length + 1,
                             })}
                         </Typography>
                     ) : (
-                        <Stack direction='row' spacing={1} alignItems='center'>
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Avatar
                                 username={opponent.username}
                                 displayName={opponent.displayName}

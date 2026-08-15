@@ -39,9 +39,9 @@ function ClockDisplay({ ms, isActive, isLow, label }: ClockDisplayProps) {
     return (
         <Stack
             direction='row'
-            alignItems='center'
-            justifyContent='space-between'
             sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 px: 1.5,
                 py: 0.75,
                 borderRadius: 1.5,
@@ -54,16 +54,21 @@ function ClockDisplay({ ms, isActive, isLow, label }: ClockDisplayProps) {
             <Typography
                 variant='caption'
                 color={isActive ? (isLow ? 'white' : 'text.primary') : 'text.secondary'}
-                fontWeight={isActive ? 600 : 400}
+                sx={{
+                    fontWeight: isActive ? 600 : 400,
+                }}
             >
                 {label}
             </Typography>
             <Typography
                 variant='h6'
-                fontFamily='monospace'
-                fontWeight={700}
                 color={isActive ? (isLow ? 'white' : 'text.primary') : 'text.secondary'}
-                sx={{ letterSpacing: 1, lineHeight: 1 }}
+                sx={{
+                    fontFamily: 'monospace',
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    lineHeight: 1,
+                }}
             >
                 {isTimed ? formatClock(ms) : '—'}
             </Typography>
@@ -93,9 +98,9 @@ function ResultBanner({
     return (
         <Stack
             direction='row'
-            alignItems='center'
             spacing={1}
             sx={{
+                alignItems: 'center',
                 p: 1,
                 borderRadius: 1,
                 bgcolor: `${color}.main`,
@@ -109,7 +114,12 @@ function ResultBanner({
             ) : (
                 <SmartToy fontSize='small' />
             )}
-            <Typography variant='body2' fontWeight='bold'>
+            <Typography
+                variant='body2'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
                 {headline}
             </Typography>
         </Stack>
@@ -155,9 +165,22 @@ export function PlayBotControls({ game, maiaRating, onNewGame }: PlayBotControls
     return (
         <Stack spacing={1.5} sx={{ p: 1.5, height: '100%' }}>
             {/* Maia identity */}
-            <Stack direction='row' alignItems='center' spacing={1} flexWrap='wrap' gap={0.5}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 0.5,
+                }}
+            >
                 <SmartToy color='primary' fontSize='small' />
-                <Typography variant='subtitle2' fontWeight='bold'>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
                     Maia
                 </Typography>
                 <Chip label={maiaRating} size='small' color='primary' variant='outlined' />
@@ -187,7 +210,13 @@ export function PlayBotControls({ game, maiaRating, onNewGame }: PlayBotControls
             {gameOver ? (
                 <ResultBanner result={result} reason={reason} playerColor={playerColor} />
             ) : (
-                <Typography variant='caption' color='text.secondary' minHeight={18}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                        minHeight: 18,
+                    }}
+                >
                     {botThinking
                         ? 'Maia is thinking…'
                         : playerToMove

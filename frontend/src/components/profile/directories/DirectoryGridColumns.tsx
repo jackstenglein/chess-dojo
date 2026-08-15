@@ -61,7 +61,13 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                 }
 
                 return (
-                    <Stack sx={{ height: 1 }} alignItems='center' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: 1,
+                        }}
+                    >
                         <CohortIcon
                             cohort={item.metadata.cohort}
                             tooltip={item.metadata.cohort}
@@ -100,8 +106,8 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                             {item.metadata.description && (
                                 <Typography
                                     variant='caption'
-                                    color='text.secondary'
                                     sx={{
+                                        color: 'text.secondary',
                                         lineHeight: 'initial',
                                         whiteSpace: 'nowrap',
                                         textOverflow: 'ellipsis',
@@ -169,8 +175,10 @@ export function getPublicColumns(t: (key: string) => string): GridColDef<Directo
                     <Stack
                         direction='row'
                         spacing={1}
-                        alignItems='center'
                         onClick={(e) => e.stopPropagation()}
+                        sx={{
+                            alignItems: 'center',
+                        }}
                     >
                         <Avatar
                             username={item.metadata.owner}
@@ -238,7 +246,14 @@ export function getAdminColumns(t: (key: string) => string): GridColDef<Director
                 }
 
                 return (
-                    <Stack width={1} height={1} alignItems='center' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            width: 1,
+                            height: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Tooltip
                             title={
                                 isPublic

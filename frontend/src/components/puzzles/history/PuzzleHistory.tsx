@@ -155,7 +155,13 @@ function UserPuzzleHistory({ user }: { user: User }) {
                                                               : 'text.secondary',
                                                 }}
                                             >
-                                                <Stack direction='row' alignItems='center' gap={1}>
+                                                <Stack
+                                                    direction='row'
+                                                    sx={{
+                                                        alignItems: 'center',
+                                                        gap: 1,
+                                                    }}
+                                                >
                                                     {h.result === 'win' ? (
                                                         <WinIcon />
                                                     ) : h.result === 'draw' ? (

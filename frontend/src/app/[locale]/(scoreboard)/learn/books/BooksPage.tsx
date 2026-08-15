@@ -49,7 +49,13 @@ const Section: React.FC<SectionProps> = ({ section, cohort }) => {
 
     return (
         <Stack spacing={1}>
-            <Typography variant='subtitle1' fontWeight='bold' color='text.secondary'>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    fontWeight: 'bold',
+                    color: 'text.secondary',
+                }}
+            >
                 {section.title}
             </Typography>
 
@@ -89,7 +95,12 @@ export default function BooksPage() {
                 </Typography>
                 <Typography>{t('intro')}</Typography>
             </Stack>
-            <Stack mt={3} spacing={3}>
+            <Stack
+                spacing={3}
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <MultipleSelectChip
                     data-testid='cohort-selector'
                     selected={cohorts}
@@ -113,7 +124,13 @@ export default function BooksPage() {
                     error={cohorts.length === 0}
                 />
 
-                <Grid container rowGap={2} columnSpacing={2}>
+                <Grid
+                    container
+                    columnSpacing={2}
+                    sx={{
+                        rowGap: 2,
+                    }}
+                >
                     {(cohorts[0] === ALL_COHORTS ? dojoCohorts : cohorts).map((cohort) => (
                         <Grid
                             key={cohort}

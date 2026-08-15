@@ -471,19 +471,44 @@ function ReadyScreen({
                 Mate in One Visualization Drill
             </Typography>
             {personalBest !== undefined && (
-                <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
+                <Typography
+                    variant='body1'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 2,
+                    }}
+                >
                     Your best rating: {personalBest}
                 </Typography>
             )}
-            <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
                 You will see a list of pieces and their squares. Type the mating move in SAN
                 notation (e.g. "Qh7#" or just "Qh7") and press Enter.
             </Typography>
-            <Typography variant='body2' color='warning.main' sx={{ mb: 1, fontWeight: 'bold' }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'warning.main',
+                    mb: 1,
+                    fontWeight: 'bold',
+                }}
+            >
                 This drill is very hard. Your rating is computed after {PUZZLES_PER_BLOCK} problems;
                 you can pause between problems with the Pause button.
             </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ mb: 4 }}>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 4,
+                }}
+            >
                 {armed
                     ? 'Ready? Hit GO! to start the timer.'
                     : 'No board is shown. Visualize the position and find the mate from memory!'}
@@ -557,11 +582,23 @@ function InProgressScreen({
 
     return (
         <Container maxWidth='sm' sx={{ py: 4, textAlign: 'center' }}>
-            <Typography variant='subtitle1' color='text.secondary' sx={{ mb: 0.5 }}>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 0.5,
+                }}
+            >
                 Puzzle {puzzleNumberInBlock} / {PUZZLES_PER_BLOCK}
             </Typography>
 
-            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 2,
+                }}
+            >
                 {puzzle.sideToMove} to move and mate in 1
             </Typography>
 
@@ -601,7 +638,14 @@ function InProgressScreen({
                 )}
             </Box>
 
-            <Stack direction='row' spacing={2} justifyContent='center' alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
                 <TextField
                     inputRef={inputRef}
                     value={userInput}
@@ -644,10 +688,18 @@ function InProgressScreen({
             </Stack>
 
             {feedback && (
-                <Stack direction='row' justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'center',
+                    }}
+                >
                     <Box
-                        width={{ xs: 1, sm: 0.8, md: 0.75, lg: 0.75 }}
-                        sx={{ aspectRatio: 1, mt: 3 }}
+                        sx={{
+                            width: { xs: 1, sm: 0.8, md: 0.75, lg: 0.75 },
+                            aspectRatio: 1,
+                            mt: 3,
+                        }}
                     >
                         <Board
                             config={{
@@ -701,14 +753,32 @@ function PausedScreen({ elapsedMs, puzzlesAnswered, onResume, onEndSession }: Pa
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 3 }}>
                 Paused
             </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
                 {display} elapsed · {puzzlesAnswered} / {PUZZLES_PER_BLOCK} puzzles answered
             </Typography>
-            <Typography variant='body2' color='text.secondary' sx={{ mb: 4 }}>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 4,
+                }}
+            >
                 The timer is frozen. Resume to continue, or end the session. Your progress so far is
                 already saved.
             </Typography>
-            <Stack direction='row' spacing={2} justifyContent='center'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
                 <Button variant='contained' size='large' onClick={onResume} sx={{ px: 4 }}>
                     Resume
                 </Button>
@@ -770,10 +840,12 @@ function BlockCompleteScreen({
             {ratingDiff !== null && (
                 <Stack
                     direction='row'
-                    alignItems='center'
-                    justifyContent='center'
                     spacing={0.5}
-                    sx={{ mb: 1 }}
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1,
+                    }}
                 >
                     {ratingDiff > 0 ? (
                         <ArrowUpward color='success' sx={{ fontSize: '1.5rem' }} />
@@ -796,7 +868,13 @@ function BlockCompleteScreen({
                 </Typography>
             )}
             {personalBest !== undefined && (
-                <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
+                <Typography
+                    variant='body1'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 3,
+                    }}
+                >
                     Personal Best: {personalBest}
                 </Typography>
             )}
@@ -824,15 +902,21 @@ function BlockCompleteScreen({
                     <Stack
                         key={`${a.puzzleId}-${i}`}
                         direction='row'
-                        justifyContent='space-between'
                         sx={{
+                            justifyContent: 'space-between',
                             px: 2,
                             py: 0.5,
                             borderBottom: '1px solid',
                             borderColor: 'divider',
                         }}
                     >
-                        <Typography fontWeight='bold' sx={{ textAlign: 'left', flex: 1 }}>
+                        <Typography
+                            sx={{
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                                flex: 1,
+                            }}
+                        >
                             {a.puzzleId}
                         </Typography>
                         <Typography
@@ -842,8 +926,11 @@ function BlockCompleteScreen({
                             {a.isCorrect ? a.userMove : `${a.userMove} (${a.correctMove})`}
                         </Typography>
                         <Typography
-                            color='text.secondary'
-                            sx={{ width: { sm: 76 }, textAlign: 'right' }}
+                            sx={{
+                                color: 'text.secondary',
+                                width: { sm: 76 },
+                                textAlign: 'right',
+                            }}
                         >
                             {(a.responseTimeMs / 1000).toFixed(1)}s
                         </Typography>
@@ -857,7 +944,13 @@ function BlockCompleteScreen({
                 </Typography>
             )}
 
-            <Stack direction='row' spacing={2} justifyContent='center'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
                 {submitFailed ? (
                     <Button variant='contained' size='large' onClick={onRetry} sx={{ px: 4 }}>
                         Retry save
@@ -905,20 +998,38 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
             sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 px: 2,
                 py: 1,
                 borderBottom: '1px solid',
                 borderColor: 'divider',
             }}
         >
-            <Stack direction='row' alignItems='center' spacing={1}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Box sx={{ color: 'text.secondary', display: 'flex' }}>{icon}</Box>
-                <Typography color='text.secondary'>{label}</Typography>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {label}
+                </Typography>
             </Stack>
-            <Typography fontWeight='bold'>{value}</Typography>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
         </Stack>
     );
 }

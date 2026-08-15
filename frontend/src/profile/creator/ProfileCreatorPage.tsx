@@ -106,7 +106,11 @@ const ProfileCreatorPage = () => {
                     </Step>
                 ))}
             </Stepper>
-            <Box mt={5}>
+            <Box
+                sx={{
+                    mt: 5,
+                }}
+            >
                 <Form
                     user={user}
                     onNextStep={() => setActiveStep(activeStep + 1)}

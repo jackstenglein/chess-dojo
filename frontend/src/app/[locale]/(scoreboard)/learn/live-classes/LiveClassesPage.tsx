@@ -104,7 +104,15 @@ export function LiveClassesPage() {
                 }}
             />
 
-            <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center' sx={{ mt: 2 }}>
+            <Stack
+                direction='row'
+                sx={{
+                    flexWrap: 'wrap',
+                    gap: 1,
+                    alignItems: 'center',
+                    mt: 2,
+                }}
+            >
                 <Tooltip title={t('showAll')}>
                     <Chip
                         label={t('all')}
@@ -163,11 +171,13 @@ export function LiveClassesPage() {
 
             <Stack
                 direction='row'
-                alignItems='center'
-                justifyContent='space-between'
-                gap={1}
-                sx={{ mt: 2 }}
-                flexWrap='wrap'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    mt: 2,
+                }}
             >
                 <Select
                     size='small'
@@ -182,8 +192,19 @@ export function LiveClassesPage() {
                     ))}
                 </Select>
 
-                <Stack direction='row' alignItems='center' gap={1}>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: 1,
+                    }}
+                >
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('classCount', { count: filteredClasses.length })}
                     </Typography>
                     <ToggleButtonGroup
@@ -207,7 +228,12 @@ export function LiveClassesPage() {
                 </Stack>
             </Stack>
 
-            <Stack spacing={5} mt={5}>
+            <Stack
+                spacing={5}
+                sx={{
+                    mt: 5,
+                }}
+            >
                 {filteredClasses.length > 0 ? (
                     <LiveClassesList
                         classes={filteredClasses}
@@ -216,14 +242,22 @@ export function LiveClassesPage() {
                         variant={viewMode}
                     />
                 ) : hasFilter ? (
-                    <Stack alignItems='center'>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography sx={{ mt: 1 }}>{t('noClassesMatchFilters')}</Typography>
                         <Button variant='text' color='primary' onClick={onClearFilters}>
                             {t('clearFilters')}
                         </Button>
                     </Stack>
                 ) : (
-                    <Stack alignItems='center'>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography sx={{ mt: 1 }}>{t('noClasses')}</Typography>
                     </Stack>
                 )}

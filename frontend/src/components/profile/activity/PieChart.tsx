@@ -32,8 +32,18 @@ const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getToolti
     }, [data]);
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
-            <Typography variant='h6' textAlign='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h6'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {title}
             </Typography>
             {renderTotal(totalScore)}
@@ -70,15 +80,29 @@ const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getToolti
                     <Stack
                         direction='row'
                         spacing={2}
-                        justifyContent='center'
-                        mt={2}
-                        flexWrap='wrap'
-                        rowGap={1}
+                        sx={{
+                            justifyContent: 'center',
+                            mt: 2,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                        }}
                     >
                         {data.map((d) => (
-                            <Stack key={d.name} direction='row' alignItems='center'>
+                            <Stack
+                                key={d.name}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <CircleIcon sx={{ color: d.color }} />
-                                <Typography ml={'2px'}>{d.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        ml: '2px',
+                                    }}
+                                >
+                                    {d.name}
+                                </Typography>
                             </Stack>
                         ))}
                     </Stack>

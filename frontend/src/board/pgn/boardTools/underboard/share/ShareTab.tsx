@@ -344,7 +344,15 @@ export function ShareTab() {
                 <RequestSnackbar request={cloneRequest} />
                 <RequestSnackbar request={addToFolderRequest} showSuccess />
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mb={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     {game && (
                         <DirectoryCacheProvider>
                             <DirectorySelectButton
@@ -383,7 +391,14 @@ export function ShareTab() {
 
                 <Divider />
 
-                <Stack direction='row' flexWrap='wrap' columnGap={1} mt={2}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        columnGap: 1,
+                        mt: 2,
+                    }}
+                >
                     <FormGroup>
                         <FormControlLabel
                             control={
@@ -520,7 +535,15 @@ export function ShareTab() {
                     </FormGroup>
                 )}
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mt={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mt: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     <CopyButton
                         name='pgn'
                         startIcon={<ContentPaste />}

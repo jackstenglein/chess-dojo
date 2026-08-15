@@ -21,9 +21,21 @@ interface PlayBotAfterPgnProps {
 export function PlayBotAfterPgn({ game, view, maiaRating }: PlayBotAfterPgnProps) {
     if (view === 'setup') {
         return (
-            <Stack alignItems='center' spacing={0.5} py={1}>
+            <Stack
+                spacing={0.5}
+                sx={{
+                    alignItems: 'center',
+                    py: 1,
+                }}
+            >
                 <Divider sx={{ width: 1 }} />
-                <Typography variant='caption' color='text.disabled' pt={1}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.disabled',
+                        pt: 1,
+                    }}
+                >
                     Configure your game in the left panel, then click Play.
                 </Typography>
             </Stack>
@@ -34,17 +46,39 @@ export function PlayBotAfterPgn({ game, view, maiaRating }: PlayBotAfterPgnProps
     if (result !== null) return null;
 
     return (
-        <Stack py={1}>
+        <Stack
+            sx={{
+                py: 1,
+            }}
+        >
             <Divider sx={{ mb: 1 }} />
             {botThinking ? (
-                <Stack direction='row' alignItems='center' spacing={1} px={1}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                        px: 1,
+                    }}
+                >
                     <CircularProgress size={12} thickness={5} />
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         Maia {maiaRating} is thinking…
                     </Typography>
                 </Stack>
             ) : (
-                <Typography variant='caption' color='text.secondary' px={1}>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                        px: 1,
+                    }}
+                >
                     {playerToMove ? 'Your move' : 'Waiting for Maia…'}
                 </Typography>
             )}

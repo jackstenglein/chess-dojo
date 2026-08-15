@@ -57,14 +57,38 @@ export function TimerButton() {
                     transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     <Box sx={{ px: 2 }}>
-                        <Stack direction='row' alignItems='center' gap={3}>
-                            <Typography variant='subtitle1' fontWeight='bold' color='textSecondary'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 3,
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle1'
+                                color='textSecondary'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {task ? getTaskName(task) : t('workTimer')}
                             </Typography>
-                            <Typography fontWeight='bold'>{formatTime(timerSeconds)}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {formatTime(timerSeconds)}
+                            </Typography>
                         </Stack>
 
-                        <Stack direction='row' gap={2} mt={1}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                gap: 2,
+                                mt: 1,
+                            }}
+                        >
                             {isRunning ? (
                                 <Button
                                     startIcon={<Pause />}
@@ -120,9 +144,21 @@ export function TimerMenuItem() {
                 <TimerIcon color={isPaused ? 'warning' : isRunning ? 'secondary' : undefined} />
             </ListItemIcon>
 
-            <Stack width={1} direction='row' alignItems='center' gap={1}>
+            <Stack
+                direction='row'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    gap: 1,
+                }}
+            >
                 <Typography>{t('title')}</Typography>
-                <Typography fontWeight='bold' sx={{ minWidth: '42px' }}>
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                        minWidth: '42px',
+                    }}
+                >
                     {formatTime(timerSeconds)}
                 </Typography>
                 <Tooltip title={t('reset')}>

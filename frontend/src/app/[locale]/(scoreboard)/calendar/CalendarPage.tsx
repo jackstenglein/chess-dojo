@@ -791,9 +791,9 @@ export function CustomEventRenderer({ event, timeFormat, ...props }: CustomEvent
             {...props}
         >
             <Typography
-                fontSize='inherit'
-                color='inherit'
                 sx={{
+                    fontSize: 'inherit',
+                    color: 'inherit',
                     WebkitLineClamp: maxLines,
                     display: '-webkit-box',
                     WebkitBoxOrient: 'vertical',
@@ -805,7 +805,12 @@ export function CustomEventRenderer({ event, timeFormat, ...props }: CustomEvent
             >
                 {event.title}
             </Typography>
-            <Typography fontSize='inherit' color='inherit'>
+            <Typography
+                sx={{
+                    fontSize: 'inherit',
+                    color: 'inherit',
+                }}
+            >
                 {start} – {end}
             </Typography>
         </Stack>

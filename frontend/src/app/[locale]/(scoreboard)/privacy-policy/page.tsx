@@ -4,7 +4,11 @@ export default function Page() {
     return (
         <Container sx={{ py: 5 }}>
             <Typography variant='h3'>Privacy Policy</Typography>
-            <Typography my={3}>
+            <Typography
+                sx={{
+                    my: 3,
+                }}
+            >
                 This Privacy Policy outlines how ChessDojo collects, uses, and protects your
                 information. We know that in chess, information is power—but in privacy, less is
                 usually more. We’ve kept this straightforward so you can get back to your tactics.
@@ -12,7 +16,14 @@ export default function Page() {
 
             <Divider />
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 1. Information We Collect
             </Typography>
             <Typography>
@@ -37,7 +48,14 @@ export default function Page() {
                 </li>
             </ul>
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 2. How We Use Your Data
             </Typography>
             <Typography>We use your information to:</Typography>
@@ -50,7 +68,14 @@ export default function Page() {
                 </li>
             </ul>
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 3. Data Sharing & Third Parties
             </Typography>
             <Typography>
@@ -70,7 +95,14 @@ export default function Page() {
                 </li>
             </ul>
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 4. Cookies & Tracking
             </Typography>
             <Typography>
@@ -78,7 +110,14 @@ export default function Page() {
                 above.
             </Typography>
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 5. Community Visibility
             </Typography>
             <Typography>You remain in control of your social presence:</Typography>
@@ -93,7 +132,14 @@ export default function Page() {
                 </li>
             </ul>
 
-            <Typography variant='h4' mt={4} mb={3} fontWeight='bold'>
+            <Typography
+                variant='h4'
+                sx={{
+                    mt: 4,
+                    mb: 3,
+                    fontWeight: 'bold',
+                }}
+            >
                 6. Your Rights & Security
             </Typography>
             <Typography>
@@ -104,12 +150,22 @@ export default function Page() {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant='h6' fontWeight='bold' mb={1}>
+            <Typography
+                variant='h6'
+                sx={{
+                    fontWeight: 'bold',
+                    mb: 1,
+                }}
+            >
                 Contact Us
             </Typography>
             <Typography>Questions? Reach out to the Dojo team via our support email.</Typography>
 
-            <Typography mt={2}>
+            <Typography
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <b>Last Updated:</b> February 2026
             </Typography>
         </Container>

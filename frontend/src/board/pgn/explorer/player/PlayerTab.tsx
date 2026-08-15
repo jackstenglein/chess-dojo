@@ -49,7 +49,11 @@ export function PlayerTab({ fen }: { fen: string }) {
 
     if (isFreeTier) {
         return (
-            <Box mt={2}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <UpsellAlert>{t('upsellSearchByPlayer')}</UpsellAlert>
             </Box>
         );
@@ -94,7 +98,13 @@ export function PlayerTab({ fen }: { fen: string }) {
             </Accordion>
 
             {isLoading && (
-                <Stack direction='row' spacing={1} my={1}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        my: 1,
+                    }}
+                >
                     <Typography>{t('gamesLoadedCount', { count: indexedCount })}</Typography>
                     <CircularProgress size={20} />
                 </Stack>

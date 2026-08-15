@@ -34,7 +34,13 @@ export function NotificationsPage() {
         <Container sx={{ py: 4 }}>
             <RequestSnackbar request={clearRequest} />
 
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
                 <Typography variant='h4'>{t('title')}</Typography>
 
                 {notifications.length > 0 &&
@@ -51,7 +57,12 @@ export function NotificationsPage() {
                     ))}
             </Stack>
 
-            <Stack pt={3} spacing={2}>
+            <Stack
+                spacing={2}
+                sx={{
+                    pt: 3,
+                }}
+            >
                 {notifications.map((n) => (
                     <NotificationListItem key={n.id} notification={n} />
                 ))}

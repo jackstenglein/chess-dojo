@@ -129,7 +129,12 @@ const Editor: React.FC<EditorProps> = ({ openClassical, onSuccess }) => {
             <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth>
                 <DialogTitle>Edit Pairings</DialogTitle>
                 <DialogContent>
-                    <Stack pt={1} spacing={3}>
+                    <Stack
+                        spacing={3}
+                        sx={{
+                            pt: 1,
+                        }}
+                    >
                         <TextField
                             data-testid='region'
                             label='Region'

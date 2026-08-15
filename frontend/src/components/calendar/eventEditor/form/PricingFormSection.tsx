@@ -18,7 +18,12 @@ export function PricingFormSection({
             100,
     );
     return (
-        <Stack spacing={3} mt={2}>
+        <Stack
+            spacing={3}
+            sx={{
+                mt: 2,
+            }}
+        >
             <TextField
                 fullWidth
                 placeholder={t('fullPrice')}

@@ -143,7 +143,13 @@ export const ExamList: React.FC<ExamListProps> = ({ cohortRanges, examType }) =>
                 <Stack spacing={3}>
                     {ranges.map((range, i) => (
                         <Stack key={range.name}>
-                            <Stack spacing={1} direction='row' alignItems='center'>
+                            <Stack
+                                spacing={1}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Tooltip
                                     title={
                                         expanded[i]
@@ -318,8 +324,20 @@ export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
                     ) {
                         return (
                             <Tooltip title={t('tooltipExamLocked')}>
-                                <Stack direction='row' spacing={0.5} alignItems='center'>
-                                    <Link color='text.disabled'>{params.value}</Link>
+                                <Stack
+                                    direction='row'
+                                    spacing={0.5}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Link
+                                        sx={{
+                                            color: 'text.disabled',
+                                        }}
+                                    >
+                                        {params.value}
+                                    </Link>
                                     <Lock fontSize='small' />
                                 </Stack>
                             </Tooltip>
