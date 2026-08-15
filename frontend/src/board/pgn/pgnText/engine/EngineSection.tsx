@@ -12,8 +12,10 @@ import {
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
+import { Color } from '@jackstenglein/chess';
 import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { EvaluationSection } from './EvaluationSection';
@@ -21,6 +23,7 @@ import { formatLineEval } from './LineEval';
 import Settings from './Settings';
 
 export default function EngineSection() {
+    const t = useTranslations('analysisBoard.engine');
     const [engineName] = useLocalStorage(ENGINE_NAME.Key, ENGINE_NAME.Default);
     let engineInfo = engines.find((e) => e.name === engineName);
     if (!engineInfo) {
@@ -78,8 +81,13 @@ export default function EngineSection() {
             }}
         >
             <Stack sx={{ p: 1, containerType: 'inline-size' }}>
-                <Stack direction='row' alignItems='center'>
-                    <Tooltip title='Toggle Engine' disableInteractive>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Tooltip title={t('toggleEngineTooltip')} disableInteractive>
                         <Switch
                             checked={enabled}
                             onChange={(e) => {
@@ -91,21 +99,23 @@ export default function EngineSection() {
                     </Tooltip>
 
                     {enabled && !isGameOver && showEval && (
-                        <Stack sx={{ mr: 2 }} alignItems='center'>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                                mr: 2,
+                            }}
+                        >
                             <Typography variant='h5'>
                                 {showCloudEval
                                     ? formatLineEval({
                                           cp: normalizeChessDBScore(
                                               chessDbPv?.score,
-                                              chess?.turn() || 'w',
+                                              chess?.turn() || Color.white,
                                           ),
                                       })
                                     : formatLineEval(engineLines[0])}
                             </Typography>
-                            <Tooltip
-                                title="The engine's expected Win / Draw / Loss percentages"
-                                disableInteractive
-                            >
+                            <Tooltip title={t('wdlTooltip')} disableInteractive>
                                 <Typography variant='caption' sx={{ whiteSpace: 'nowrap' }}>
                                     {resultPercentages?.win ?? '?'} /{' '}
                                     {resultPercentages?.draw ?? '?'} /{' '}
@@ -115,7 +125,12 @@ export default function EngineSection() {
                         </Stack>
                     )}
                     <Stack sx={{ flexGrow: 1, lineHeight: '1.2', color: 'text.secondary' }}>
-                        <Stack direction='row' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='caption' sx={{ display: { '@288': 'none' } }}>
                                 {engineInfo.extraShortName}
                             </Typography>
@@ -126,7 +141,10 @@ export default function EngineSection() {
                                 {engineInfo.shortName}
                             </Typography>
 
-                            <Tooltip title={engineInfo.techDescription} disableInteractive>
+                            <Tooltip
+                                title={t(`engineTechDescription_${engineInfo.name}`)}
+                                disableInteractive
+                            >
                                 <Typography
                                     color='dojoOrange'
                                     variant='caption'
@@ -149,11 +167,11 @@ export default function EngineSection() {
                         {(function engineDescription() {
                             if (!enabled) {
                                 return (
-                                    <Typography variant='caption'>{engineInfo.location}</Typography>
+                                    <Typography variant='caption'>{t('engineLocation')}</Typography>
                                 );
                             }
                             if (isGameOver) {
-                                return <Typography variant='caption'>Game Over</Typography>;
+                                return <Typography variant='caption'>{t('gameOver')}</Typography>;
                             }
 
                             return (
@@ -165,10 +183,20 @@ export default function EngineSection() {
                                         }}
                                     >
                                         <Tooltip
-                                            title={`Local engine evaluation depth: ${engineLines[0].depth}`}
+                                            title={
+                                                <span translate='no' className='notranslate'>
+                                                    {t('localDepthTooltip', {
+                                                        depth: engineLines[0].depth,
+                                                    })}
+                                                </span>
+                                            }
                                         >
                                             <Typography variant='caption'>
-                                                Depth {engineLines[0].depth}
+                                                <span translate='no' className='notranslate'>
+                                                    {t('depthDisplay', {
+                                                        depth: engineLines[0].depth,
+                                                    })}
+                                                </span>
                                             </Typography>
                                         </Tooltip>
                                         <Typography
@@ -180,15 +208,27 @@ export default function EngineSection() {
                                         >
                                             {' • '}
                                         </Typography>
-                                        <NodesPerSecond nps={engineLines[0].nps} />
+                                        <NodesPerSecond nps={engineLines[0].nps} t={t} />
                                     </Box>
 
                                     {showCloudDepth && (
                                         <Tooltip
-                                            title={`Cloud DB evaluation depth: ${chessDbDepth}`}
+                                            title={
+                                                <span translate='no' className='notranslate'>
+                                                    {t('cloudDepthTooltip', {
+                                                        depth: chessDbDepth,
+                                                    })}
+                                                </span>
+                                            }
                                             disableInteractive
                                         >
-                                            <Stack direction='row' alignItems='center' spacing={1}>
+                                            <Stack
+                                                direction='row'
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Cloud
                                                     sx={{
                                                         verticalAlign: 'middle',
@@ -202,7 +242,9 @@ export default function EngineSection() {
                                                     variant='caption'
                                                     sx={{ color: 'text.secondary' }}
                                                 >
-                                                    Depth {chessDbDepth}
+                                                    <span translate='no' className='notranslate'>
+                                                        {t('depthDisplay', { depth: chessDbDepth })}
+                                                    </span>
                                                 </Typography>
                                             </Stack>
                                         </Tooltip>
@@ -232,7 +274,13 @@ export default function EngineSection() {
     );
 }
 
-function NodesPerSecond({ nps }: { nps?: number }) {
+function NodesPerSecond({
+    nps,
+    t,
+}: {
+    nps?: number;
+    t: ReturnType<typeof useTranslations<'analysisBoard.engine'>>;
+}) {
     if (!nps) return null;
 
     let text = '';
@@ -243,7 +291,7 @@ function NodesPerSecond({ nps }: { nps?: number }) {
     }
 
     return (
-        <Tooltip title='Nodes (positions searched) per second' disableInteractive>
+        <Tooltip title={t('npsTooltip')} disableInteractive>
             <Typography variant='caption'>{text}</Typography>
         </Tooltip>
     );

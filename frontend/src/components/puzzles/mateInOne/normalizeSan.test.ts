@@ -38,42 +38,46 @@ describe('normalizeSan', () => {
 
 describe('isCorrectAnswer', () => {
     it('accepts exact match', () => {
-        expect(isCorrectAnswer('Qh7', 'Qh7')).toBe(true);
+        expect(isCorrectAnswer('', 'Qh7', 'Qh7')).toBe(true);
     });
 
     it('accepts answer without checkmate annotation', () => {
-        expect(isCorrectAnswer('Qh7', 'Qh7#')).toBe(true);
+        expect(isCorrectAnswer('', 'Qh7', 'Qh7#')).toBe(true);
     });
 
     it('accepts answer without check annotation', () => {
-        expect(isCorrectAnswer('Nf3', 'Nf3+')).toBe(true);
+        expect(isCorrectAnswer('', 'Nf3', 'Nf3+')).toBe(true);
     });
 
     it('accepts promotion without equals sign', () => {
-        expect(isCorrectAnswer('a8Q', 'a8=Q')).toBe(true);
+        expect(isCorrectAnswer('', 'a8Q', 'a8=Q')).toBe(true);
     });
 
     it('rejects wrong move', () => {
-        expect(isCorrectAnswer('Qh6', 'Qh7#')).toBe(false);
+        expect(isCorrectAnswer('', 'Qh6', 'Qh7#')).toBe(false);
     });
 
     it('is case-insensitive', () => {
-        expect(isCorrectAnswer('qh7', 'Qh7#')).toBe(true);
+        expect(isCorrectAnswer('', 'qh7', 'Qh7#')).toBe(true);
     });
 
     it('accepts answer without capture notation', () => {
-        expect(isCorrectAnswer('Qh7', 'Qxh7')).toBe(true);
+        expect(isCorrectAnswer('', 'Qh7', 'Qxh7')).toBe(true);
     });
 
     it('accepts castling using zeroes', () => {
-        expect(isCorrectAnswer('0-0', 'O-O')).toBe(true);
+        expect(isCorrectAnswer('', '0-0', 'O-O')).toBe(true);
     });
 
     it('accepts castling without dashes', () => {
-        expect(isCorrectAnswer('OO', 'O-O')).toBe(true);
+        expect(isCorrectAnswer('', 'OO', 'O-O')).toBe(true);
     });
 
     it('rejects castling wrong way', () => {
-        expect(isCorrectAnswer('O-O-O', 'O-O')).toBe(false);
+        expect(isCorrectAnswer('', 'O-O-O', 'O-O')).toBe(false);
+    });
+
+    it('accepts another move that is checkmate', () => {
+        expect(isCorrectAnswer('8/8/pK6/8/k7/2Q5/1P6/3q4 w - - 0 1', 'Qa3', 'Qc4#')).toBe(true);
     });
 });

@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Button, Grid, InputBase, Slider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 
 interface InputSliderProps {
@@ -12,6 +13,7 @@ interface InputSliderProps {
 }
 
 export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderProps) => {
+    const t = useTranslations('profile.trainingPlan.inputSlider');
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
@@ -54,20 +56,24 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
     return (
         <Grid
             container
-            width={1}
-            columnGap={4}
-            rowGap={2}
-            alignItems='center'
-            justifyContent='space-between'
-            pt={1}
+            sx={{
+                width: 1,
+                columnGap: 4,
+                rowGap: 2,
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                pt: 1,
+            }}
         >
             <Grid
                 size={{
                     xs: 12,
                     sm: 'grow',
                 }}
-                display='flex'
-                alignItems='end'
+                sx={{
+                    display: 'flex',
+                    alignItems: 'end',
+                }}
             >
                 <Slider
                     value={typeof value === 'number' ? value : 0}
@@ -85,18 +91,25 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                     sm: 'auto',
                 }}
             >
-                <Stack alignItems='start' spacing={0.5}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     {suffix && (
                         <Typography
                             variant='subtitle2'
-                            color='text.secondary'
-                            textAlign='center'
-                            width={1}
+                            sx={{
+                                color: 'text.secondary',
+                                textAlign: 'center',
+                                width: 1,
+                            }}
                         >
                             {suffix}
                         </Typography>
                     )}
-                    <Stack direction='row' aria-label={suffix ?? 'Progress count'}>
+                    <Stack direction='row' aria-label={suffix ?? t('progressCount')}>
                         <Button
                             data-testid='task-updater-decrement'
                             onPointerDown={handleDecrement}
@@ -105,7 +118,7 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                             onPointerCancel={stopRepeating}
                             disabled={value <= min}
                             variant='outlined'
-                            aria-label='Decrement'
+                            aria-label={t('decrement')}
                             sx={{ px: 1.5, minWidth: 40, borderRadius: '4px 0 0 4px' }}
                         >
                             <RemoveIcon fontSize='small' />
@@ -119,7 +132,7 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                             inputProps={{
                                 step: 1,
                                 min: min,
-                                'aria-label': suffix ?? 'Count',
+                                'aria-label': suffix ?? t('count'),
                                 style: {
                                     textAlign: 'center',
                                     MozAppearance: 'textfield',
@@ -146,7 +159,7 @@ export const InputSlider = ({ value, setValue, max, min, suffix }: InputSliderPr
                             onPointerLeave={stopRepeating}
                             onPointerCancel={stopRepeating}
                             variant='outlined'
-                            aria-label='Increment'
+                            aria-label={t('increment')}
                             sx={{ px: 1.5, minWidth: 40, borderRadius: '0 4px 4px 0' }}
                         >
                             <AddIcon fontSize='small' />

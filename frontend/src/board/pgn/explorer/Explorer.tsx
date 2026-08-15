@@ -4,6 +4,7 @@ import { PersonSearch } from '@mui/icons-material';
 import CloudIcon from '@mui/icons-material/Cloud';
 import { TabContext } from '@mui/lab';
 import { Box, CardContent, Tab, Tabs } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SiLichess } from 'react-icons/si';
@@ -35,10 +36,15 @@ export enum ExplorerDatabaseType {
     ChessDB = 'chessdb',
 }
 
-const Explorer = () => {
-    const [tab, setTab] = useLocalStorage(explorerTabKey, ExplorerDatabaseType.Dojo);
+interface ExplorerProps {
+    storageKey?: string;
+}
+
+const Explorer: React.FC<ExplorerProps> = ({ storageKey = explorerTabKey }) => {
+    const [tab, setTab] = useLocalStorage(storageKey, ExplorerDatabaseType.Dojo);
     const searchParams = useSearchParams();
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.explorer');
 
     const hasSetTabFromParams = useRef(false);
     useEffect(() => {
@@ -72,6 +78,8 @@ const Explorer = () => {
         data: chessDbMoves,
         loading: chessDbLoading,
         error: chessDbError,
+        queueing: chessDbQueueing,
+        queued: chessDbQueued,
         queueAnalysis: chessDbRequestAnalysis,
     } = useChessDB({ enableMoves: true, enablePv: false });
 
@@ -141,6 +149,8 @@ const Explorer = () => {
                         moves={chessDbMoves}
                         loading={chessDbLoading}
                         error={chessDbError}
+                        queueing={chessDbQueueing}
+                        queued={chessDbQueued}
                         requestAnalysis={() => chessDbRequestAnalysis(fen)}
                     />
                 );
@@ -178,11 +188,11 @@ const Explorer = () => {
                     <Tabs
                         value={tab}
                         onChange={(_, val: ExplorerDatabaseType) => setTab(val)}
-                        aria-label='Position database type'
+                        aria-label={t('tabsAriaLabel')}
                         variant='scrollable'
                     >
                         <Tab
-                            label='Dojo'
+                            label={t('tabDojo')}
                             value={ExplorerDatabaseType.Dojo}
                             icon={<ChessDojoIcon />}
                             iconPosition='start'
@@ -190,7 +200,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-dojo'
                         />
                         <Tab
-                            label='Masters'
+                            label={t('tabMasters')}
                             value={ExplorerDatabaseType.Masters}
                             icon={<KingIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
@@ -198,7 +208,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-masters'
                         />
                         <Tab
-                            label='CloudDB'
+                            label={t('tabCloudDb')}
                             value={ExplorerDatabaseType.ChessDB}
                             icon={<CloudIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
@@ -206,7 +216,7 @@ const Explorer = () => {
                             data-cy='explorer-tab-button-chessdb'
                         />
                         <Tab
-                            label='Lichess'
+                            label={t('tabLichess')}
                             value={ExplorerDatabaseType.Lichess}
                             icon={<SiLichess />}
                             iconPosition='start'
@@ -214,7 +224,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-lichess'
                         />
                         <Tab
-                            label='Repertoire Spy'
+                            label={t('tabRepertoireSpy')}
                             value={ExplorerDatabaseType.Player}
                             icon={<PersonSearch />}
                             iconPosition='start'
@@ -222,7 +232,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-player'
                         />
                         <Tab
-                            label='Tablebase'
+                            label={t('tabTablebase')}
                             value={ExplorerDatabaseType.Tablebase}
                             icon={<RookIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'

@@ -1,8 +1,13 @@
-import useGame from '@/context/useGame';
+import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
+import useGame, { GameContext } from '@/context/useGame';
 import LoadingPage from '@/loading/LoadingPage';
-import { Chess, Move, Observer } from '@jackstenglein/chess';
-import { Box } from '@mui/material';
+import { Chess, Event, EventType, Move, Observer } from '@jackstenglein/chess';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { Color } from 'chessground/types';
+import { useTranslations } from 'next-intl';
+import { useNavigationGuard } from 'next-navigation-guard';
 import React, {
     createContext,
     forwardRef,
@@ -16,9 +21,15 @@ import React, {
     useState,
     type JSX,
 } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi, onMoveFunc } from '../Board';
 import ResizableContainer from './ResizableContainer';
-import { UnderboardTab } from './boardTools/underboard/underboardTabs';
+import {
+    getUnsavedSuggestedVariationRoots,
+    saveSuggestedVariation,
+} from './boardTools/underboard/comments/suggestVariation';
+import { AutoSaveVariations } from './boardTools/underboard/settings/ViewerSettings';
+import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { ButtonProps as MoveButtonProps } from './pgnText/MoveButton';
 import { CONTAINER_ID } from './resize';
 import {
@@ -86,6 +97,10 @@ export interface PgnBoardSlotProps {
 interface PgnBoardProps extends ChessConfig {
     underboardTabs: UnderboardTab[];
     initialUnderboardTab?: string;
+    rightTabs?: UnderboardTab[];
+    initialRightTab?: string;
+    tabStorageKeyPrefix?: string;
+    sidePanelTabs?: DefaultUnderboardTab[];
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
@@ -100,6 +115,10 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
         {
             underboardTabs,
             initialUnderboardTab,
+            rightTabs,
+            initialRightTab,
+            tabStorageKeyPrefix,
+            sidePanelTabs,
             pgn,
             fen,
             showPlayerHeaders = true,
@@ -117,16 +136,93 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
         },
         ref,
     ) => {
-        const { game } = useGame();
+        const t = useTranslations('games.unsavedNavigationGuard');
+        const gameContext = useGame();
+        const { game, onUpdateGame } = gameContext;
+        const { user } = useAuth();
+        const api = useApi();
+        const [autoSaveVariations] = useLocalStorage<boolean>(
+            AutoSaveVariations.key,
+            AutoSaveVariations.default,
+        );
+
+        const autoSaveRequest = useRequest();
         const [board, setBoard] = useState<BoardApi>();
         const [boardRef, setBoardRef] = useState<RefObject<HTMLDivElement | null>>();
 
         const disableNullMoves = disableNullMovesProp ?? !game;
         const [chess] = useState<Chess>(new Chess({ disableNullMoves }));
+        const [hasUnsavedGameChanges, setHasUnsavedGameChanges] = useState(false);
+        const [pendingGameNavigation, setPendingGameNavigation] = useState<{
+            cohort: string;
+            id: string;
+        }>();
         const [orientation, setOrientation] = useState(game?.orientation || startOrientation);
         const keydownMap = useRef<Record<string, boolean>>({});
         const solitaire = useSolitaireChess(chess, board);
         const addEngineMoveRef = useRef<(() => void) | null>(null);
+
+        const hasUnsavedSuggestedVariations = useCallback(() => {
+            if (!game || !user || game.owner === user.username) {
+                return false;
+            }
+            return getUnsavedSuggestedVariationRoots(user, chess).length > 0;
+        }, [chess, game, user]);
+
+        const hasUnsavedBoardChanges = useCallback(() => {
+            return hasUnsavedGameChanges || hasUnsavedSuggestedVariations();
+        }, [hasUnsavedGameChanges, hasUnsavedSuggestedVariations]);
+
+        const navGuard = useNavigationGuard({
+            enabled: hasUnsavedBoardChanges,
+        });
+
+        useEffect(() => {
+            const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+                if (hasUnsavedBoardChanges()) {
+                    e.preventDefault();
+                }
+            };
+
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+        }, [hasUnsavedBoardChanges]);
+
+        const rejectNavigation = useCallback(() => {
+            if (navGuard.active) {
+                navGuard.reject();
+            }
+            setPendingGameNavigation(undefined);
+        }, [navGuard]);
+
+        const acceptNavigation = useCallback(() => {
+            if (pendingGameNavigation) {
+                const { cohort, id } = pendingGameNavigation;
+                setPendingGameNavigation(undefined);
+                gameContext.onNavigateToGame?.(cohort, id);
+                return;
+            }
+
+            navGuard.accept();
+        }, [gameContext, navGuard, pendingGameNavigation]);
+
+        const guardedGameContext = useMemo(
+            () => ({
+                ...gameContext,
+                hasUnsavedGameChanges,
+                setHasUnsavedGameChanges,
+                onNavigateToGame: gameContext.onNavigateToGame
+                    ? (cohort: string, id: string) => {
+                          if (hasUnsavedBoardChanges()) {
+                              setPendingGameNavigation({ cohort, id });
+                              return;
+                          }
+                          gameContext.onNavigateToGame?.(cohort, id);
+                      }
+                    : undefined,
+            }),
+            [gameContext, hasUnsavedBoardChanges, hasUnsavedGameChanges],
+        );
 
         const toggleOrientation = useCallback(() => {
             if (board) {
@@ -207,6 +303,31 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             chess.disableNullMoves = disableNullMoves;
         }, [chess, disableNullMoves]);
 
+        useEffect(() => {
+            if (!chess || !autoSaveVariations || !user || !game || game.owner === user.username) {
+                return;
+            }
+
+            const observer = {
+                types: [EventType.NewVariation],
+                handler: (event: Event) => {
+                    if (event.type === EventType.NewVariation && event.move) {
+                        saveSuggestedVariation(user, game, api, chess, event.move)
+                            .then((response) => {
+                                if (response?.game) {
+                                    onUpdateGame?.(response.game);
+                                }
+                            })
+                            .catch((err) => {
+                                autoSaveRequest.onFailure(err);
+                            });
+                    }
+                },
+            };
+
+            chess.addObserver(observer);
+            return () => chess.removeObserver(observer);
+        }, [chess, autoSaveVariations, user, game, api, onUpdateGame]);
         useImperativeHandle(ref, (): PgnBoardApi => {
             return {
                 getPgn() {
@@ -242,19 +363,43 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
 
                 {(pgn || fen) && (
                     <ChessContext.Provider value={chessContext}>
-                        <ResizableContainer
-                            {...{
-                                underboardTabs,
-                                initialUnderboardTab,
-                                showPlayerHeaders,
-                                pgn,
-                                fen,
-                                startOrientation,
-                                onInitialize,
-                            }}
-                        />
+                        <RequestSnackbar request={autoSaveRequest} />
+                        <GameContext.Provider value={guardedGameContext}>
+                            <ResizableContainer
+                                {...{
+                                    underboardTabs,
+                                    initialUnderboardTab,
+                                    rightTabs,
+                                    initialRightTab,
+                                    tabStorageKeyPrefix,
+                                    sidePanelTabs,
+                                    showPlayerHeaders,
+                                    pgn,
+                                    fen,
+                                    startOrientation,
+                                    onInitialize,
+                                }}
+                            />
+                        </GameContext.Provider>
                     </ChessContext.Provider>
                 )}
+
+                <Dialog
+                    data-testid='unsaved-board-nav-guard'
+                    open={navGuard.active || Boolean(pendingGameNavigation)}
+                    onClose={rejectNavigation}
+                >
+                    <DialogTitle>{t('title')}</DialogTitle>
+                    <DialogContent>
+                        {hasUnsavedGameChanges ? t('gameWarning') : t('suggestedVariationWarning')}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={rejectNavigation}>{t('cancel')}</Button>
+                        <Button color='error' onClick={acceptNavigation}>
+                            {t('leave')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         );
     },

@@ -155,6 +155,45 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:TournamentsTableArn}
 
+  adminSetResult:
+    handler: admin/setResult.handler
+    events:
+      - httpApi:
+          path: /tournaments/round-robin/admin/set-result
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:GetItem
+        Resource: ${param:TournamentsTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  adminUpdatePlayer:
+    handler: admin/updatePlayer.handler
+    events:
+      - httpApi:
+          path: /tournaments/round-robin/admin/update-player
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:TournamentsTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   webhook:
     handler: stripeWebhook.handler
     events:

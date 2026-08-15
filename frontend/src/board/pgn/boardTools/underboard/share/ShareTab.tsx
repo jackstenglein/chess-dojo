@@ -22,7 +22,6 @@ import {
     OpenInNew,
     PictureAsPdf,
 } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     CardContent,
@@ -39,6 +38,7 @@ import {
     Typography,
 } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { BoardStyle, BoardStyleKey, PieceStyle, PieceStyleKey } from '../settings/ViewerSettings';
@@ -47,6 +47,7 @@ import { MergeLineDialog } from './MergeLineDialog';
 const config = getConfig();
 
 export function ShareTab() {
+    const t = useTranslations('analysisBoard.underboard.share');
     const { chess, board } = useChess();
     const { game } = useGame();
     const [copied, setCopied] = useState('');
@@ -116,7 +117,9 @@ export function ShareTab() {
                     },
                 ],
             });
-            addToFolderRequest.onSuccess(`Game added to ${resp.data.directory.name}`);
+            addToFolderRequest.onSuccess(
+                t('gameAddedToFolder', { name: resp.data.directory.name }),
+            );
             trackEvent(EventType.AddDirectoryItems, {
                 count: 1,
                 method: 'share_tab_add_to_folder',
@@ -341,18 +344,27 @@ export function ShareTab() {
                 <RequestSnackbar request={cloneRequest} />
                 <RequestSnackbar request={addToFolderRequest} showSuccess />
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mb={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     {game && (
                         <DirectoryCacheProvider>
                             <DirectorySelectButton
                                 request={addToFolderRequest}
                                 onSelect={onAddToFolder}
+                                slotProps={{ button: { children: t('addToFolder') } }}
                             />
                         </DirectoryCacheProvider>
                     )}
 
                     <CopyButton name='url' startIcon={<Link />} onClick={onCopyUrl} copied={copied}>
-                        Copy URL
+                        {t('copyUrl')}
                     </CopyButton>
 
                     <CopyButton
@@ -361,7 +373,7 @@ export function ShareTab() {
                         onClick={onCopyFen}
                         copied={copied}
                     >
-                        Copy FEN
+                        {t('copyFen')}
                     </CopyButton>
 
                     <Button
@@ -369,17 +381,24 @@ export function ShareTab() {
                         startIcon={<OpenInNew />}
                         onClick={onOpenBoardImage}
                     >
-                        Image
+                        {t('image')}
                     </Button>
 
                     <Button variant='contained' startIcon={<Download />} onClick={onDownloadGif}>
-                        Gif
+                        {t('gif')}
                     </Button>
                 </Stack>
 
                 <Divider />
 
-                <Stack direction='row' flexWrap='wrap' columnGap={1} mt={2}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        columnGap: 1,
+                        mt: 2,
+                    }}
+                >
                     <FormGroup>
                         <FormControlLabel
                             control={
@@ -388,7 +407,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipComments(!e.target.checked)}
                                 />
                             }
-                            label='Comments'
+                            label={t('shareComments')}
                         />
                         <FormControlLabel
                             control={
@@ -397,7 +416,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipNags(!e.target.checked)}
                                 />
                             }
-                            label='Glyphs (!, !?, etc)'
+                            label={t('shareGlyphs')}
                         />
                         <FormControlLabel
                             control={
@@ -406,7 +425,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipDrawables(!e.target.checked)}
                                 />
                             }
-                            label='Arrows/Highlights'
+                            label={t('shareArrowsHighlights')}
                         />
                     </FormGroup>
 
@@ -418,7 +437,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipVariations(!e.target.checked)}
                                 />
                             }
-                            label='Variations'
+                            label={t('shareVariations')}
                         />
                         <FormControlLabel
                             control={
@@ -427,7 +446,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipNullMoves(!e.target.checked)}
                                 />
                             }
-                            label='Null Moves'
+                            label={t('shareNullMoves')}
                         />
                     </FormGroup>
 
@@ -439,7 +458,7 @@ export function ShareTab() {
                                     onChange={(e) => setSkipHeader(!e.target.checked)}
                                 />
                             }
-                            label='Tags'
+                            label={t('shareTags')}
                         />
 
                         <FormControlLabel
@@ -449,14 +468,14 @@ export function ShareTab() {
                                     onChange={(e) => setSkipClocks(!e.target.checked)}
                                 />
                             }
-                            label='Clock Times'
+                            label={t('shareClockTimes')}
                         />
                     </FormGroup>
                 </Stack>
 
                 <FormGroup sx={{ mt: 2.5, mb: 1 }}>
                     <Typography variant='h6' color='textSecondary'>
-                        PDF Options
+                        {t('pdfOptions')}
                     </Typography>
 
                     <FormControlLabel
@@ -466,11 +485,11 @@ export function ShareTab() {
                                 onChange={(e) => setSkipQrCode(!e.target.checked)}
                             />
                         }
-                        label='Include QR Code to Game'
+                        label={t('includeQrCodeToGame')}
                     />
 
                     <FormControl sx={{ mt: 1.5, mb: 1 }}>
-                        <FormLabel>Diagrams</FormLabel>
+                        <FormLabel>{t('diagrams')}</FormLabel>
 
                         <RadioGroup
                             row
@@ -482,12 +501,14 @@ export function ShareTab() {
                             <FormControlLabel
                                 value='markedPositions'
                                 control={<Radio />}
-                                label='Marked Positions Only'
+                                label={t('markedPositionsOnly')}
                             />
                             <FormControlLabel
                                 value='numMoves'
                                 control={<Radio />}
-                                label={`Marked Positions + Every ${plyBetweenDiagrams / 2} Moves`}
+                                label={t('markedPositionsEveryNMoves', {
+                                    count: Math.floor(plyBetweenDiagrams / 2),
+                                })}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -495,7 +516,11 @@ export function ShareTab() {
 
                 {pdfDiagramMode === 'numMoves' && (
                     <FormGroup>
-                        <FormLabel>{plyBetweenDiagrams / 2} Moves Between Diagrams</FormLabel>
+                        <FormLabel>
+                            {t('nMovesBetweenDiagrams', {
+                                count: Math.floor(plyBetweenDiagrams / 2),
+                            })}
+                        </FormLabel>
                         <Slider
                             value={plyBetweenDiagrams}
                             onChange={(_, value) => setPlyBetweenDiagrams(value)}
@@ -510,28 +535,36 @@ export function ShareTab() {
                     </FormGroup>
                 )}
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mt={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mt: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     <CopyButton
                         name='pgn'
                         startIcon={<ContentPaste />}
                         onClick={onCopyPgn}
                         copied={copied}
                     >
-                        Copy PGN
+                        {t('copyPgn')}
                     </CopyButton>
 
                     <Button variant='contained' startIcon={<Download />} onClick={onDownloadPgn}>
-                        Download PGN
+                        {t('downloadPgn')}
                     </Button>
 
-                    <LoadingButton
+                    <Button
                         variant='contained'
                         startIcon={<PictureAsPdf />}
                         onClick={onDownloadPdf}
                         loading={pdfRequest.isLoading()}
                     >
-                        Download PDF
-                    </LoadingButton>
+                        {t('downloadPdf')}
+                    </Button>
 
                     <CopyButton
                         name='line'
@@ -539,30 +572,30 @@ export function ShareTab() {
                         onClick={onCopyLine}
                         copied={copied}
                     >
-                        Copy Current Line
+                        {t('copyCurrentLine')}
                     </CopyButton>
 
                     {user && (
                         <>
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 startIcon={<Merge />}
                                 onClick={() => setShowMergeDialog(true)}
                             >
-                                Merge Current Line
-                            </LoadingButton>
+                                {t('mergeCurrentLine')}
+                            </Button>
                             <MergeLineDialog
                                 open={showMergeDialog}
                                 onClose={() => setShowMergeDialog(false)}
                             />
 
-                            <LoadingButton
+                            <Button
                                 variant='contained'
                                 loading={cloneRequest.isLoading()}
                                 onClick={onCloneGame}
                             >
-                                Clone Game
-                            </LoadingButton>
+                                {t('cloneGame')}
+                            </Button>
                         </>
                     )}
                 </Stack>

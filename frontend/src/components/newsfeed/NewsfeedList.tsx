@@ -11,7 +11,8 @@ import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline
 import LoadingPage from '@/loading/LoadingPage';
 import Icon, { icons } from '@/style/Icon';
 import { Stack } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type FilterMap = Record<string, (entry: TimelineEntry) => boolean>;
 
@@ -44,13 +45,13 @@ export const Filters: FilterMap = {
         isGameAnalysisEntry(entry) && !isGameSubmissionEntry(entry),
     ...CategoryFilters,
 };
-export const FilterOptions = Object.keys(Filters).map((opt) => {
-    return {
-        value: opt,
-        label: opt,
-        icon: <Icon name={opt as keyof typeof icons} color='primary' />,
-    };
-});
+
+/** Static (untranslated) filter options - used by components that don't need i18n labels. */
+export const FilterOptions = Object.keys(Filters).map((opt) => ({
+    value: opt,
+    label: opt,
+    icon: <Icon name={opt as keyof typeof icons} color='primary' />,
+}));
 
 function useNewsfeedIds(initialNewsfeedIds: string[]): [string[], (v: string[]) => void] {
     const [newsfeedIds, setNewsfeedIds] = useState(initialNewsfeedIds);
@@ -109,6 +110,21 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
     newsfeedIdOptions,
     showAdditionalFilters,
 }) => {
+    const t = useTranslations('newsfeed');
+    const translatedFilterOptions = useMemo(
+        () =>
+            Object.keys(Filters).map((opt) => ({
+                value: opt,
+                label:
+                    opt === AllCategoriesFilterName
+                        ? t('allCategories')
+                        : opt === 'Annotations'
+                          ? t('annotations')
+                          : opt,
+                icon: <Icon name={opt as keyof typeof icons} color='primary' />,
+            })),
+        [t],
+    );
     const api = useApi();
     const request = useRequest<ListNewsfeedResponse>();
     const [newsfeedIds, setNewsfeedIds] = useNewsfeedIds(initialNewsfeedIds);
@@ -223,7 +239,7 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
                     selected={newsfeedIds}
                     setSelected={setNewsfeedIds}
                     options={newsfeedIdOptions}
-                    label='Show Posts From'
+                    label={t('showPostsFrom')}
                     error={newsfeedIds.length === 0}
                 />
             )}
@@ -232,8 +248,8 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
                 <MultipleSelectChip
                     selected={filters}
                     setSelected={setFiltersWrapper}
-                    options={FilterOptions}
-                    label='Categories'
+                    options={translatedFilterOptions}
+                    label={t('categories')}
                     error={filters.length === 0}
                 />
             )}

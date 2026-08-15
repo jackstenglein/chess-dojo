@@ -6,6 +6,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -15,6 +16,7 @@ import remarkGfm from 'remark-gfm';
  * @param message The message to render.
  */
 export function ChatMessage({ message }: { message: Message }) {
+    const t = useTranslations('help.chat');
     const isUser = message.role === 'user';
     const [copied, setCopied] = useState(false);
 
@@ -29,14 +31,16 @@ export function ChatMessage({ message }: { message: Message }) {
 
     return (
         <Box
-            alignSelf={isUser ? 'flex-end' : 'flex-start'}
-            bgcolor={isUser ? 'info.main' : 'divider'}
-            color={isUser ? 'info.contrastText' : 'text.primary'}
-            px={2}
-            py={1.5}
-            borderRadius={2}
-            maxWidth='80%'
-            sx={{ position: 'relative' }}
+            sx={{
+                alignSelf: isUser ? 'flex-end' : 'flex-start',
+                bgcolor: isUser ? 'info.main' : 'divider',
+                color: isUser ? 'info.contrastText' : 'text.primary',
+                px: 2,
+                py: 1.5,
+                borderRadius: 2,
+                maxWidth: '80%',
+                position: 'relative',
+            }}
         >
             {isUser ? (
                 message.content
@@ -50,7 +54,7 @@ export function ChatMessage({ message }: { message: Message }) {
                             right: 4,
                         }}
                     >
-                        <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'}>
+                        <Tooltip title={copied ? t('copied') : t('copyToClipboard')}>
                             <IconButton onClick={handleCopy} size='small'>
                                 {copied ? (
                                     <CheckIcon fontSize='inherit' />

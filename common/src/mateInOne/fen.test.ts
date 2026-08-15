@@ -30,9 +30,7 @@ describe('fenToPieceList', () => {
     it('only pawns remaining for one side', () => {
         // White has only pawns a2 b2, Black has king and queen
         const fen = '4k3/8/8/8/8/8/PP6/3QK3 w - - 0 1';
-        expect(fenToPieceList(fen)).toBe(
-            'White: Qd1, Ke1, pawns a2 b2\nBlack: Ke8',
-        );
+        expect(fenToPieceList(fen)).toBe('White: Qd1, Ke1, pawns a2 b2\nBlack: Ke8');
     });
 
     it('piece ordering - Q before R before B before N before K', () => {

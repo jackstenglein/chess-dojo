@@ -1,8 +1,8 @@
 import CircleIcon from '@mui/icons-material/Circle';
-import { Box, Container, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, type JSX, type ReactNode } from 'react';
 import { PieChart as ReactPieChart } from 'react-minimal-pie-chart';
-import Tooltip from 'react-tooltip';
 
 const defaultLabelStyle = {
     fontSize: '5px',
@@ -17,7 +17,6 @@ export interface PieChartData {
 }
 
 interface PieChartProps {
-    id: string;
     title: string;
     data: PieChartData[];
     renderTotal: (value: number) => JSX.Element;
@@ -25,67 +24,85 @@ interface PieChartProps {
     onClick: (event: React.MouseEvent, dataIndex: number) => void;
 }
 
-const PieChart: React.FC<PieChartProps> = ({
-    id,
-    title,
-    data,
-    renderTotal,
-    getTooltip,
-    onClick,
-}) => {
+const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getTooltip, onClick }) => {
+    const t = useTranslations('profile.activity');
     const [hovered, setHovered] = useState<number | null>(null);
     const totalScore = useMemo(() => {
         return data.reduce((sum, curr) => sum + curr.value, 0);
     }, [data]);
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
-            <Typography variant='h6' textAlign='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h6'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {title}
             </Typography>
             {renderTotal(totalScore)}
 
-            {data.length === 0 && <Typography>No data</Typography>}
+            {data.length === 0 && <Typography>{t('noData')}</Typography>}
 
             {data.length > 0 && (
                 <Container maxWidth='sm' sx={{ mt: 1 }}>
-                    <Box data-tip='' data-for={id}>
-                        <ReactPieChart
-                            label={({ dataEntry }) => `${Math.round(dataEntry.percentage)}%`}
-                            labelStyle={defaultLabelStyle}
-                            labelPosition={65}
-                            data={data}
-                            onMouseOver={(_, index) => {
-                                setHovered(index);
-                            }}
-                            onMouseOut={() => {
-                                setHovered(null);
-                            }}
-                            onClick={onClick}
-                        />
-                        <Tooltip
-                            id={id}
-                            getContent={() =>
-                                hovered === null ? undefined : (
-                                    <div style={{ whiteSpace: 'pre-line' }}>
-                                        {getTooltip(data[hovered])}
-                                    </div>
-                                )
-                            }
-                        />
-                    </Box>
+                    <Tooltip
+                        arrow
+                        followCursor
+                        title={
+                            <div style={{ whiteSpace: 'pre-line' }}>
+                                {hovered !== null ? getTooltip(data[hovered]) : null}
+                            </div>
+                        }
+                    >
+                        <Box>
+                            <ReactPieChart
+                                label={({ dataEntry }) => `${Math.round(dataEntry.percentage)}%`}
+                                labelStyle={defaultLabelStyle}
+                                labelPosition={65}
+                                data={data}
+                                onMouseOver={(_, index) => {
+                                    setHovered(index);
+                                }}
+                                onMouseOut={() => {
+                                    setHovered(null);
+                                }}
+                                onClick={onClick}
+                            />
+                        </Box>
+                    </Tooltip>
                     <Stack
                         direction='row'
                         spacing={2}
-                        justifyContent='center'
-                        mt={2}
-                        flexWrap='wrap'
-                        rowGap={1}
+                        sx={{
+                            justifyContent: 'center',
+                            mt: 2,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                        }}
                     >
                         {data.map((d) => (
-                            <Stack key={d.name} direction='row' alignItems='center'>
+                            <Stack
+                                key={d.name}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <CircleIcon sx={{ color: d.color }} />
-                                <Typography ml={'2px'}>{d.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        ml: '2px',
+                                    }}
+                                >
+                                    {d.name}
+                                </Typography>
                             </Stack>
                         ))}
                     </Stack>

@@ -48,6 +48,72 @@ export const RoundRobinSubmitGameSchema = z.object({
 /** A request to submit a game for a round robin. */
 export type RoundRobinSubmitGameRequest = z.infer<typeof RoundRobinSubmitGameSchema>;
 
+const roundRobinResult = z.union([z.literal('1-0'), z.literal('1/2-1/2'), z.literal('0-1')]);
+
+/** Verifies an admin request to set or clear a round robin pairing result. */
+export const RoundRobinAdminSetResultSchema = z
+    .object({
+        /** The cohort of the tournament. */
+        cohort: z.string(),
+
+        /** The startsAt field of the tournament. */
+        startsAt: z.string().regex(/^(ACTIVE|COMPLETE)/),
+
+        /** The 1-based round number containing the pairing. */
+        round: z.number().int().positive(),
+
+        /** The Dojo username of the player with white. */
+        white: z.string().min(1),
+
+        /** The Dojo username of the player with black. */
+        black: z.string().min(1),
+
+        /**
+         * The result to set. An empty string clears the result.
+         * When omitted and url is provided, the result is taken from the game PGN.
+         */
+        result: z.union([roundRobinResult, z.literal('')]).optional(),
+
+        /** Optional Lichess or Chess.com game URL. */
+        url: z.string().optional(),
+    })
+    .refine((data) => data.result !== undefined || data.url, {
+        message: 'Either result or url is required',
+    });
+
+/** An admin request to set or clear a round robin pairing result. */
+export type RoundRobinAdminSetResultRequest = z.infer<typeof RoundRobinAdminSetResultSchema>;
+
+/** Verifies an admin request to update a player's identity fields in a round robin. */
+export const RoundRobinAdminUpdatePlayerSchema = z.object({
+    /** The cohort of the tournament. */
+    cohort: z.string(),
+
+    /** The startsAt field of the tournament. */
+    startsAt: z.string().regex(/^(WAITING|ACTIVE|COMPLETE)/),
+
+    /** The Dojo username of the player to update. */
+    username: z.string().min(1),
+
+    /** The Dojo display name of the player. */
+    displayName: z.string().min(1),
+
+    /** The Lichess username of the player. */
+    lichessUsername: z.string().min(1),
+
+    /** The Chess.com username of the player. */
+    chesscomUsername: z.string().min(1),
+
+    /** The Discord username of the player. */
+    discordUsername: z.string().min(1),
+
+    /** The Discord id of the player. */
+    discordId: z.string().min(1),
+});
+
+/** An admin request to update a player's identity fields in a round robin. */
+export type RoundRobinAdminUpdatePlayerRequest = z.infer<typeof RoundRobinAdminUpdatePlayerSchema>;
+
 const roundRobinStatus = z.enum(['ACTIVE', 'WAITING', 'COMPLETE']);
 
 /** The status of a round robin tournament. */

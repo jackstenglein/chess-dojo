@@ -36,6 +36,7 @@ functions:
       frontendHost: ${file(../config-${sls:stage}.yml):frontendHost}
       discordAuth: ${file(../discord.yml):discordAuth}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      senseiDiscordIds: ${file(../config-${sls:stage}.yml):senseiDiscordIds}
       discordRoundRobinChannelId: ${file(../config-${sls:stage}.yml):discordRoundRobinChannelId}
       discordBlogChannelId: ${file(../config-${sls:stage}.yml):discordBlogChannelId}
       discordBlogRoleId: ${file(../config-${sls:stage}.yml):discordBlogRoleId}

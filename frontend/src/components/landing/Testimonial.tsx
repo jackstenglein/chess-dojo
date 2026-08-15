@@ -2,6 +2,7 @@ import CohortIcon from '@/scoreboard/CohortIcon';
 import { fontFamily } from '@/style/font';
 import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
 import { Grid, IconButton, Stack, Typography, useMediaQuery } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Children, ReactNode, useCallback, useEffect, useState } from 'react';
 import { BackgroundImageContainer } from './BackgroundImage';
@@ -9,9 +10,10 @@ import { anton, barlow, barlowCondensed } from './fonts';
 import { JoinDojoButton } from './JoinDojoButton';
 import quoteImage from './quote.webp';
 import backgroundImage from './testimonial-background.webp';
-import { TestimonialProps, testimonials } from './testimonials';
+import { testimonials } from './testimonials';
 
 export function TestimonialSection() {
+    const t = useTranslations('landing');
     const isSm = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
     return (
@@ -20,56 +22,107 @@ export function TestimonialSection() {
             background='linear-gradient(270deg, #141422 0%, #06060B 100%)'
             slotProps={{ image: { style: { opacity: 0.3 } } }}
         >
-            <Stack gap='1rem' alignItems='center'>
+            <Stack
+                sx={{
+                    gap: '1rem',
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
-                    textAlign='center'
-                    fontFamily={(theme) => fontFamily(theme, anton)}
-                    lineHeight='4.625rem'
-                    fontSize='3.75rem'
+                    sx={{
+                        textAlign: 'center',
+                        fontFamily: (theme) => fontFamily(theme, anton),
+                        lineHeight: '4.625rem',
+                        fontSize: '3.75rem',
+                    }}
                 >
-                    Our program has a proven
-                    <br />
-                    track record of success
+                    {t('testimonialSection.heading')
+                        .split('\n')
+                        .map((line, i) => (
+                            <span key={i}>
+                                {i > 0 && <br />}
+                                {line}
+                            </span>
+                        ))}
                 </Typography>
                 <Typography
-                    sx={{ textTransform: 'uppercase' }}
                     color='dojoOrange'
-                    fontWeight='600'
-                    fontSize='1.1875rem'
-                    lineHeight='2.125rem'
-                    letterSpacing='11%'
-                    textAlign='center'
+                    sx={{
+                        fontWeight: '600',
+                        fontSize: '1.1875rem',
+                        lineHeight: '2.125rem',
+                        letterSpacing: '11%',
+                        textAlign: 'center',
+                        textTransform: 'uppercase',
+                    }}
                 >
-                    Hear from our members
+                    {t('testimonialSection.subheading')}
                 </Typography>
             </Stack>
 
-            <Stack direction='row' mt='3.125rem'>
+            <Stack
+                direction='row'
+                sx={{
+                    mt: '3.125rem',
+                }}
+            >
                 {isSm ? (
                     <Carousel>
-                        {testimonials.map((t) => (
-                            <Testimonial key={t.name} {...t} />
+                        {testimonials.map((testimonial) => (
+                            <Testimonial
+                                key={testimonial.key}
+                                quote={t(`testimonials.${testimonial.key}.quote`)}
+                                name={t(`testimonials.${testimonial.key}.name`)}
+                                rating={t(`testimonials.${testimonial.key}.rating`)}
+                                cohort={testimonial.cohort}
+                            />
                         ))}
                     </Carousel>
                 ) : (
                     <Grid container spacing='2rem'>
-                        {testimonials.map((t) => (
-                            <Grid size={3} key={t.name} height={1}>
-                                <Testimonial {...t} />
+                        {testimonials.map((testimonial) => (
+                            <Grid
+                                size={3}
+                                key={testimonial.key}
+                                sx={{
+                                    height: 1,
+                                }}
+                            >
+                                <Testimonial
+                                    quote={t(`testimonials.${testimonial.key}.quote`)}
+                                    name={t(`testimonials.${testimonial.key}.name`)}
+                                    rating={t(`testimonials.${testimonial.key}.rating`)}
+                                    cohort={testimonial.cohort}
+                                />
                             </Grid>
                         ))}
                     </Grid>
                 )}
             </Stack>
 
-            <Stack alignItems='center' mt='3rem'>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                    mt: '3rem',
+                }}
+            >
                 <JoinDojoButton />
             </Stack>
         </BackgroundImageContainer>
     );
 }
 
-function Testimonial({ quote, name, rating, cohort }: TestimonialProps) {
+function Testimonial({
+    quote,
+    name,
+    rating,
+    cohort,
+}: {
+    quote: string;
+    name: string;
+    rating: string;
+    cohort: string;
+}) {
     return (
         <Stack
             sx={{
@@ -94,10 +147,19 @@ function Testimonial({ quote, name, rating, cohort }: TestimonialProps) {
                 {quote}
             </Typography>
 
-            <Stack direction='row' columnGap='0.625rem'>
+            <Stack
+                direction='row'
+                sx={{
+                    columnGap: '0.625rem',
+                }}
+            >
                 <CohortIcon cohort={cohort} tooltip='' />
 
-                <Stack gap={0.75}>
+                <Stack
+                    sx={{
+                        gap: 0.75,
+                    }}
+                >
                     <Typography
                         sx={{
                             fontFamily: (theme) => fontFamily(theme, barlowCondensed),
@@ -145,12 +207,23 @@ function Carousel({ children }: { children: ReactNode }) {
     return (
         <Stack>
             {Children.toArray(children)[index]}
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
                 <IconButton size='large' onClick={onPrev}>
                     <ChevronLeft fontSize='large' />
                 </IconButton>
 
-                <Stack direction='row' gap={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 0.5,
+                    }}
+                >
                     {Array.from({ length: count }).map((_, i) => (
                         <Circle
                             onClick={() => setIndex(i)}

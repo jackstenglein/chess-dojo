@@ -29,6 +29,9 @@ export enum ShortcutAction {
     /** Open the PGN tags tab. */
     OpenTags = 'OPEN_TAGS',
 
+    /** Open the PGN text tab, if present. */
+    OpenPgnText = 'OPEN_PGN_TEXT',
+
     /** Open the PGN editor tab, if present. */
     OpenEditor = 'OPEN_EDITOR',
 
@@ -94,6 +97,7 @@ export const ShortcutBindings = {
         [ShortcutAction.LastMoveVariation]: { modifier: '', key: '' },
         [ShortcutAction.OpenFiles]: { modifier: '', key: '' },
         [ShortcutAction.OpenTags]: { modifier: '', key: '' },
+        [ShortcutAction.OpenPgnText]: { modifier: '', key: '' },
         [ShortcutAction.OpenEditor]: { modifier: '', key: '' },
         [ShortcutAction.OpenComments]: { modifier: '', key: '' },
         [ShortcutAction.OpenDatabase]: { modifier: '', key: '' },

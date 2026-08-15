@@ -7,7 +7,6 @@ import { User, WorkGoalHistory, WorkGoalSettings } from '@/database/user';
 import CohortIcon, { cohortIcons } from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useLightMode } from '@/style/useLightMode';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import {
     calculateColor,
     calculateLevel,
@@ -30,6 +29,7 @@ import {
     Typography,
 } from '@mui/material';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -146,9 +146,6 @@ const WEEKDAY_LEGEND_TOP_MARGIN = 29;
 /** The space between adjacent blocks in the heatmap. */
 const BLOCK_SPACING = 4;
 
-/** Labels of the weekdays by their index. */
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
-
 /**
  * Renders the Heatmap, including the options and legend, for the given timeline entries.
  */
@@ -157,8 +154,8 @@ export function Heatmap({
     description,
     blockSize = MIN_BLOCK_SIZE,
     onPopOut,
-    minDate,
-    maxDate,
+    minDate: initialMinDate,
+    maxDate: initialMaxDate,
     workGoalHistory,
     slotProps,
 }: {
@@ -173,6 +170,8 @@ export function Heatmap({
         weekdayLabelPaper?: PaperProps;
     };
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const isLight = useLightMode();
     const { user: viewer } = useAuth();
     const api = useApi();
@@ -191,10 +190,21 @@ export function Heatmap({
     const { field, colorMode, maxPoints, maxMinutes, weekStartOn, weekEndOn } = useHeatmapOptions();
     const clamp = field === 'dojoPoints' ? maxPoints : maxMinutes;
     const theme = isLight ? LIGHT_THEME : DARK_THEME;
+    const weekdayLabels = useMemo(
+        () => [
+            t('weekdaySun'),
+            t('weekdayMon'),
+            t('weekdayTue'),
+            t('weekdayWed'),
+            t('weekdayThur'),
+            t('weekdayFri'),
+            t('weekdaySat'),
+        ],
+        [t],
+    );
 
-    if (!maxDate) {
-        maxDate = new Date().toISOString().split('T')[0];
-    }
+    const maxDate = initialMaxDate || new Date().toISOString().split('T')[0];
+    let minDate = initialMinDate;
     if (!minDate) {
         minDate = `${parseInt(maxDate.split('-')[0]) - 1}${maxDate.slice(4)}`;
         const d = new Date(minDate);
@@ -321,13 +331,15 @@ export function Heatmap({
 
     return (
         <Stack
-            maxWidth={1}
             sx={{
+                maxWidth: 1,
+
                 '& .react-activity-calendar__scroll-container': {
                     paddingTop: '1px',
                     paddingBottom: '10px',
                     overflow: 'visible !important',
                 },
+
                 '& .react-activity-calendar__footer': {
                     marginLeft: '0 !important',
                 },
@@ -349,26 +361,26 @@ export function Heatmap({
                                 <Stack
                                     key={i}
                                     sx={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         mt: `${blockSize + (i === 0 ? WEEKDAY_LEGEND_TOP_MARGIN : 2 * BLOCK_SPACING)}px`,
                                         height: `${blockSize}px`,
                                     }}
-                                    alignItems='center'
-                                    justifyContent='center'
                                 >
                                     <Typography variant='caption'>
-                                        {WEEKDAY_LABELS[(i * 2 + 1 + weekStartOn) % 7]}
+                                        {weekdayLabels[(i * 2 + 1 + weekStartOn) % 7]}
                                     </Typography>
                                 </Stack>
                             ))}
                         <Stack
                             sx={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 mt: `${blockSize + 2 * BLOCK_SPACING + 7}px`,
                                 height: `${blockSize}px`,
                             }}
-                            alignItems='center'
-                            justifyContent='center'
                         >
-                            <Typography variant='caption'>Week</Typography>
+                            <Typography variant='caption'>{t('week')}</Typography>
                         </Stack>
                     </Stack>
                 </Paper>
@@ -386,7 +398,7 @@ export function Heatmap({
                             <Block
                                 key={activity.date}
                                 block={block}
-                                activity={activity as Activity}
+                                activity={activity}
                                 field={field}
                                 baseColor={theme[0]}
                                 clamp={clamp}
@@ -413,20 +425,34 @@ export function Heatmap({
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
-                gap='4px 16px'
-                mt={0.5}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '4px 16px',
+                    mt: 0.5,
+                }}
             >
                 <Typography sx={{ fontSize: '14px' }}>
                     {field === 'dojoPoints'
-                        ? `${Math.round(10 * totalDojoPoints) / 10} Dojo points ${description}`
-                        : `${formatTime(totalMinutesSpent)} ${description}`}
+                        ? t('totalDojoPointsLine', {
+                              points: Math.round(10 * totalDojoPoints) / 10,
+                              description,
+                          })
+                        : t('totalMinutesLine', {
+                              time: formatTime(totalMinutesSpent, tCommon),
+                              description,
+                          })}
                 </Typography>
 
-                <Stack direction='row' alignItems='center' gap='3px'>
-                    <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>Less</Typography>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: '3px',
+                    }}
+                >
+                    <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>{t('less')}</Typography>
 
                     {Array(MAX_LEVEL + 1)
                         .fill(0)
@@ -453,7 +479,7 @@ export function Heatmap({
                             />
                         ))}
 
-                    <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>More</Typography>
+                    <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>{t('more')}</Typography>
                 </Stack>
             </Stack>
             <CategoryLegend />
@@ -473,16 +499,28 @@ export function Heatmap({
             >
                 {currentRestDayEntry ? (
                     <MenuItem onClick={() => void clearRestDay()} disabled={request.isLoading()}>
-                        <Stack direction='row' alignItems='center' gap={1}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
                             <RestDayIcon size={18} />
-                            <Typography>Clear Rest Day</Typography>
+                            <Typography>{t('clearRestDay')}</Typography>
                         </Stack>
                     </MenuItem>
                 ) : (
                     <MenuItem onClick={() => void saveRestDay()} disabled={request.isLoading()}>
-                        <Stack direction='row' alignItems='center' gap={1}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
                             <RestDayIcon size={18} />
-                            <Typography>Rest Day</Typography>
+                            <Typography>{t('restDay')}</Typography>
                         </Stack>
                     </MenuItem>
                 )}
@@ -495,10 +533,17 @@ export function Heatmap({
  * Renders the legend for the heatmap categories.
  */
 export function CategoryLegend() {
+    const t = useTranslations('profile.info.heatmap');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { colorMode, setColorMode } = useHeatmapOptions();
 
     return (
-        <Stack mt={0.5} alignItems='start'>
+        <Stack
+            sx={{
+                mt: 0.5,
+                alignItems: 'start',
+            }}
+        >
             <FormControlLabel
                 control={
                     <Checkbox
@@ -507,16 +552,31 @@ export function CategoryLegend() {
                         sx={{ '& .MuiSvgIcon-root': { fontSize: '1rem' } }}
                     />
                 }
-                label='Single Color Mode'
+                label={t('singleColorMode')}
                 slotProps={{ typography: { variant: 'caption' } }}
             />
 
             {colorMode !== 'monochrome' && (
-                <Stack direction='row' flexWrap='wrap' columnGap={1} rowGap={0.5} mt={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        columnGap: 1,
+                        rowGap: 0.5,
+                        mt: 0.5,
+                    }}
+                >
                     {VALID_TOOLTIP_CATEGORIES.map((category) => {
                         const color = CategoryColors[category];
                         return (
-                            <Stack key={category} direction='row' alignItems='center' gap={0.5}>
+                            <Stack
+                                key={category}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                }}
+                            >
                                 <Box
                                     sx={{
                                         height: '12px',
@@ -543,26 +603,55 @@ export function CategoryLegend() {
                                         />
                                     </svg>
                                 )}
-                                <Typography variant='caption' pt='2px'>
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        pt: '2px',
+                                    }}
+                                >
                                     {category === RequirementCategory.NonDojo
-                                        ? 'Custom Task'
-                                        : displayRequirementCategory(category)}
+                                        ? t('customTask')
+                                        : tCategory.has(category)
+                                          ? tCategory(category)
+                                          : category}
                                 </Typography>
                             </Stack>
                         );
                     })}
 
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Rest Day
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -638,7 +727,7 @@ function Block({
         color = calculateColor([baseColor, MONOCHROME_COLOR], level);
     } else {
         for (const category of Object.values(RequirementCategory)) {
-            const count = activity.categoryCounts?.[category as RequirementCategory];
+            const count = activity.categoryCounts?.[category];
             if (!count) {
                 continue;
             }
@@ -646,7 +735,7 @@ function Block({
             const currentCount = count[field].custom + count[field].trainingPlan;
             totalCount += currentCount;
             if (maxCount === undefined || currentCount > maxCount) {
-                maxCategory = category as RequirementCategory;
+                maxCategory = category;
                 maxCount = currentCount;
             }
         }
@@ -873,6 +962,8 @@ function BlockTooltip({
     activity: Activity | ExtendedBaseActivity;
     field: TimelineEntryField;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const categories = Object.entries(activity.categoryCounts ?? {})
         .filter((entry) => VALID_TOOLTIP_CATEGORIES.includes(entry[0] as RequirementCategory))
         .sort(
@@ -883,25 +974,49 @@ function BlockTooltip({
         );
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {field === 'dojoPoints'
-                    ? `${Math.round(10 * (activity.dojoPoints || 0)) / 10} Dojo point${activity.dojoPoints !== 1 ? 's' : ''} on ${activity.date}`
-                    : `${formatTime(activity.minutesSpent || 0)} on ${activity.date}`}
+                    ? t('dojoPointsOnDate', {
+                          points: Math.round(10 * (activity.dojoPoints || 0)) / 10,
+                          pluralCount: activity.dojoPoints || 0,
+                          date: activity.date,
+                      })
+                    : t('minutesOnDate', {
+                          time: formatTime(activity.minutesSpent || 0, tCommon),
+                          date: activity.date,
+                      })}
             </Typography>
             <Divider sx={{ width: 1 }} />
             {activity.graduation && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={activity.graduation} size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Graduated from {activity.graduation}
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('graduatedFrom', { cohort: activity.graduation })}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -910,15 +1025,28 @@ function BlockTooltip({
             {activity.gamePlayed && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -926,15 +1054,28 @@ function BlockTooltip({
             {activity.restDay && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Rest Day
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -985,6 +1126,8 @@ function WeekSummaryTooltip({
     goal: WorkGoalSettings;
     inProgress: boolean;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const startDate = new Date(weekSummary.date);
     startDate.setDate(startDate.getDate() - 6);
     const startDateStr = `${startDate.getUTCFullYear()}-${`${startDate.getUTCMonth() + 1}`.padStart(2, '0')}-${`${startDate.getUTCDate()}`.padStart(2, '0')}`;
@@ -1006,7 +1149,11 @@ function WeekSummaryTooltip({
     }
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {startDateStr} — {weekSummary.date}
             </Typography>
@@ -1014,12 +1161,20 @@ function WeekSummaryTooltip({
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                width={1}
-                columnGap={1}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: 1,
+                    columnGap: 1,
+                }}
             >
-                <Stack direction='row' alignItems='center' columnGap={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        columnGap: 0.5,
+                    }}
+                >
                     <Icon
                         width={12}
                         height={12}
@@ -1032,28 +1187,56 @@ function WeekSummaryTooltip({
                                   : 'error.main',
                         }}
                     />
-                    <Typography variant='caption' pt='2px'>
-                        {metGoal ? 'Met' : !inProgress ? 'Missed' : ''} Weekly Goal
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            pt: '2px',
+                        }}
+                    >
+                        {metGoal
+                            ? t('weeklyGoalMet')
+                            : !inProgress
+                              ? t('weeklyGoalMissed')
+                              : t('weeklyGoalInProgress')}
                     </Typography>
                 </Stack>
 
-                <Typography variant='caption' pt='2px'>
-                    {formatTime(weekSummary.minutesSpent)} / {formatTime(goalMinutes)}
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
+                    {formatTime(weekSummary.minutesSpent, tCommon)} /{' '}
+                    {formatTime(goalMinutes, tCommon)}
                 </Typography>
             </Stack>
 
             {weekSummary.graduation && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={weekSummary.graduation} size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Graduated from {weekSummary.graduation}
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('graduatedFrom', { cohort: weekSummary.graduation })}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -1062,15 +1245,28 @@ function WeekSummaryTooltip({
             {weekSummary.gamePlayed && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -1078,15 +1274,28 @@ function WeekSummaryTooltip({
             {weekSummary.restDay && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <RestDayIcon size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Rest Day
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -1132,15 +1341,26 @@ function TooltipRow({
     count: number;
     striped?: boolean;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
+    const tCategory = useTranslations('enums.requirementCategory');
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            columnGap='1rem'
-            width={1}
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                columnGap: '1rem',
+                width: 1,
+            }}
         >
-            <Stack direction='row' alignItems='center' columnGap={0.5}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    columnGap: 0.5,
+                }}
+            >
                 <svg width='12' height='12'>
                     <g>
                         <rect
@@ -1159,15 +1379,30 @@ function TooltipRow({
                     </g>
                 </svg>
 
-                <Typography variant='caption' pt='2px'>
-                    {displayRequirementCategory(category as RequirementCategory)}
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
+                    {tCategory.has(category)
+                        ? tCategory(category as RequirementCategory)
+                        : category}
                 </Typography>
             </Stack>
 
-            <Typography variant='caption' pt='2px'>
+            <Typography
+                variant='caption'
+                sx={{
+                    pt: '2px',
+                }}
+            >
                 {field === 'dojoPoints'
-                    ? `${Math.round(10 * count) / 10} Dojo point${count !== 1 ? 's' : ''}`
-                    : formatTime(count)}
+                    ? t('tooltipRowDojoPoints', {
+                          points: Math.round(10 * count) / 10,
+                          pluralCount: count,
+                      })
+                    : formatTime(count, tCommon)}
             </Typography>
         </Stack>
     );
@@ -1192,30 +1427,35 @@ function LegendTooltip({
     clamp: number;
     field: TimelineEntryField;
 }) {
-    let value = '';
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const minValue = Math.max(0, (clamp / (MAX_LEVEL - 1)) * (level - 1));
-    if (field === 'minutesSpent') {
-        value = formatTime(minValue);
-    } else {
-        value = `${Math.round(minValue * 100) / 100}`;
-    }
+    const baseValue =
+        field === 'minutesSpent'
+            ? formatTime(minValue, tCommon)
+            : `${Math.round(minValue * 100) / 100}`;
 
+    let value: string;
     if (level === 0) {
-        if (field === 'dojoPoints') {
-            value += ' Dojo points';
-        }
+        value =
+            field === 'dojoPoints' ? t('legendDojoPointsBase', { value: baseValue }) : baseValue;
     } else if (level < MAX_LEVEL) {
         const maxValue = (clamp / (MAX_LEVEL - 1)) * level;
-        if (field === 'minutesSpent') {
-            value += ` – ${formatTime(maxValue)}`;
-        } else {
-            value += ` – ${Math.round(maxValue * 100) / 100} Dojo points`;
-        }
+        value =
+            field === 'minutesSpent'
+                ? t('legendMinutesRange', {
+                      minValue: baseValue,
+                      maxValue: formatTime(maxValue, tCommon),
+                  })
+                : t('legendDojoPointsRange', {
+                      minValue: baseValue,
+                      maxValue: Math.round(maxValue * 100) / 100,
+                  });
     } else {
-        value += '+';
-        if (field === 'dojoPoints') {
-            value += ' Dojo points';
-        }
+        value =
+            field === 'dojoPoints'
+                ? t('legendDojoPointsMax', { value: baseValue })
+                : t('legendMinutesMax', { value: baseValue });
     }
 
     return (

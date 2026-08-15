@@ -8,6 +8,7 @@ import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ReactNode, useMemo } from 'react';
 import { AxisOptions, Chart, UserSerie } from 'react-charts';
 
@@ -47,10 +48,10 @@ function StatLabel({ children }: { children: ReactNode }) {
     return (
         <Typography
             component='span'
-            fontSize='1rem'
             variant='subtitle2'
-            color='text.secondary'
             sx={{
+                fontSize: '1rem',
+                color: 'text.secondary',
                 textAlign: 'center',
             }}
         >
@@ -81,7 +82,12 @@ function ChangeStat({ label, value }: { label: string; value: number }) {
     return (
         <Stack>
             <StatLabel>{label}</StatLabel>
-            <Stack direction='row' alignItems='start'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 {value >= 0 ? (
                     <ArrowUpwardIcon
                         sx={{
@@ -103,13 +109,13 @@ function ChangeStat({ label, value }: { label: string; value: number }) {
                 )}
 
                 <Typography
-                    alignContent='center'
+                    color={value >= 0 ? 'success.main' : 'error.main'}
                     sx={{
+                        alignContent: 'center',
                         fontSize: '2.25rem',
                         lineHeight: 1,
                         fontWeight: 'bold',
                     }}
-                    color={value >= 0 ? 'success.main' : 'error.main'}
                 >
                     {Math.abs(value)}
                 </Typography>
@@ -123,6 +129,8 @@ interface GraduationCardProps {
 }
 
 export default function GraduationCard({ graduation }: GraduationCardProps) {
+    const t = useTranslations('graduations.card');
+    const tRating = useTranslations('enums.ratingSystem');
     const {
         newCohort,
         ratingSystem: preferredSystem,
@@ -145,66 +153,87 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
 
     return (
         <Box
-            width='800px'
-            height='540px'
-            display='grid'
-            gap='0.5rem'
-            paddingY='32px'
-            paddingX='64px'
-            gridTemplateColumns='1fr auto auto'
-            gridTemplateRows='auto max-content auto'
-            gridTemplateAreas={[
-                '"header header"',
-                '"system-name blank"',
-                '"chart dojo"',
-                '"stats empty"',
-            ].join('\n')}
+            sx={{
+                width: '800px',
+                height: '540px',
+                display: 'grid',
+                gap: '0.5rem',
+                paddingY: '32px',
+                paddingX: '64px',
+                gridTemplateColumns: '1fr auto auto',
+                gridTemplateRows: 'auto max-content auto',
+
+                gridTemplateAreas: [
+                    '"header header"',
+                    '"system-name blank"',
+                    '"chart dojo"',
+                    '"stats empty"',
+                ].join('\n'),
+            }}
         >
             <Stack
                 direction='row'
-                justifyContent='center'
-                alignItems='center'
-                columnGap='2ch'
-                gridArea='header'
+                sx={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    columnGap: '2ch',
+                    gridArea: 'header',
+                }}
             >
-                <Stack direction='row' columnGap='1ch' flexWrap='wrap'>
-                    <Stack direction='row' columnGap='1ch' flexWrap='wrap'>
-                        <Typography lineHeight={1} variant='h5'>
-                            Congrats{' '}
-                        </Typography>
-                        <Typography lineHeight={1} variant='h5' color='dojoOrange.main'>
-                            {' '}
-                            {displayName}
-                        </Typography>
-                    </Stack>
-                    <Stack direction='row' columnGap='1ch' flexWrap='wrap'>
-                        <Typography lineHeight={1} variant='h5'>
-                            on graduating to
-                        </Typography>
-                        <Typography color='dojoOrange.main' lineHeight={1} variant='h5'>
-                            {newCohort}!
-                        </Typography>
-                    </Stack>
-                </Stack>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        lineHeight: 1,
+                    }}
+                >
+                    {t.rich('header', {
+                        displayName,
+                        newCohort,
+                        name: (chunks) => (
+                            <Box component='span' sx={{ color: 'dojoOrange.main' }}>
+                                {chunks}
+                            </Box>
+                        ),
+                        cohort: (chunks) => (
+                            <Box component='span' sx={{ color: 'dojoOrange.main' }}>
+                                {chunks}
+                            </Box>
+                        ),
+                    })}
+                </Typography>
                 <CohortIcon size={40} cohort={newCohort} skipCache />
             </Stack>
             <Stack
                 direction='row'
-                alignContent='center'
-                justifyContent='space-around'
-                gridArea='stats'
+                sx={{
+                    alignContent: 'center',
+                    justifyContent: 'space-around',
+                    gridArea: 'stats',
+                }}
             >
-                <Stat label='Start' value={startRating} />
-                <ChangeStat label='Progress' value={ratingChange} />
-                <Stat label='Graduation' value={finalRating} />
+                <Stat label={t('start')} value={startRating} />
+                <ChangeStat label={t('progress')} value={ratingChange} />
+                <Stat label={t('graduation')} value={finalRating} />
             </Stack>
-            <Stack direction='row' gridArea='system-name' spacing={1.5} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={1.5}
+                sx={{
+                    gridArea: 'system-name',
+                    alignItems: 'center',
+                }}
+            >
                 <RatingSystemIcon system={preferredSystem} />
                 <Typography variant='h6' sx={{ mb: -1 }}>
-                    {formatRatingSystem(preferredSystem)}
+                    {formatRatingSystem(preferredSystem, tRating)}
                 </Typography>
             </Stack>
-            <Box display='grid' gridArea='chart'>
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridArea: 'chart',
+                }}
+            >
                 <Chart
                     options={{
                         data: historyData,
@@ -216,20 +245,35 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                     }}
                 />
             </Box>
-            <Stack alignContent='center' justifyContent='center' gridArea='dojo' spacing={2}>
-                <Stat label='Dojo Points' value={Math.round(100 * score) / 100} />
-                <Stat label='Dojo Hours' value={Math.round(10 * hours) / 10} />
+            <Stack
+                spacing={2}
+                sx={{
+                    alignContent: 'center',
+                    justifyContent: 'center',
+                    gridArea: 'dojo',
+                }}
+            >
+                <Stat label={t('dojoPoints')} value={Math.round(100 * score) / 100} />
+                <Stat label={t('dojoHours')} value={Math.round(10 * hours) / 10} />
                 <Stack
-                    display='flex'
-                    alignItems='center'
-                    justifyContent='center'
                     spacing={1}
                     component='div'
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
                 >
-                    <Box fontSize='64px' width='64px' height='64px'>
+                    <Box
+                        sx={{
+                            fontSize: '64px',
+                            width: '64px',
+                            height: '64px',
+                        }}
+                    >
                         <ChessDojoIcon fontSize='inherit' />
                     </Box>
-                    <Typography variant='subtitle2'>ChessDojo</Typography>
+                    <Typography variant='subtitle2'>{t('chessDojo')}</Typography>
                 </Stack>
             </Stack>
         </Box>

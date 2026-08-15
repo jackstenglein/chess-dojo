@@ -44,6 +44,7 @@ import {
     GridRowModel,
     GridRowParams,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { useReconcile } from '../../Board';
 import { useChess } from '../PgnBoard';
@@ -72,7 +73,7 @@ const OpaqueTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 function defaultOnClickGame({ cohort, id }: GameInfo) {
-    const url = `/games/${cohort.replaceAll('+', '%2B')}/${id.replaceAll('?', '%3F')}`;
+    const url = `/games/${encodeURIComponent(cohort)}/${encodeURIComponent(id)}`;
     window.open(url, '_blank');
 }
 
@@ -108,6 +109,8 @@ function Database({
     const { chess } = useChess();
     const reconcile = useReconcile();
     const isFreeTier = useFreeTier();
+    const t = useTranslations('analysisBoard.explorer');
+    const translatedTimeControlOptions = useTranslatedMasterTimeControlOptions();
 
     const cohortRange = useMemo(() => {
         if (type === ExplorerDatabaseType.Dojo) {
@@ -175,7 +178,7 @@ function Database({
         return [
             {
                 field: 'san',
-                headerName: 'Move',
+                headerName: t('columnMove'),
                 align: 'left',
                 headerAlign: 'left',
                 minWidth: 55,
@@ -191,7 +194,7 @@ function Database({
             },
             {
                 field: 'games',
-                headerName: 'Games',
+                headerName: t('columnGames'),
                 align: 'left',
                 headerAlign: 'left',
                 valueGetter: (_value, row: ExplorerMove | LichessExplorerMove) => {
@@ -220,7 +223,7 @@ function Database({
                       {
                           type: 'number',
                           field: 'performanceData',
-                          headerName: 'Performance',
+                          headerName: t('columnPerformance'),
                           align: 'left',
                           headerAlign: 'left',
                           flex: 0.6,
@@ -242,10 +245,12 @@ function Database({
                                   >
                                       <Stack
                                           direction='row'
-                                          height={1}
-                                          alignItems='center'
-                                          justifyContent='center'
-                                          gap={0.5}
+                                          sx={{
+                                              height: 1,
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              gap: 0.5,
+                                          }}
                                       >
                                           {
                                               (params.row as LichessExplorerMove).performanceData
@@ -265,7 +270,7 @@ function Database({
                 : []),
             {
                 field: 'results',
-                headerName: 'Results',
+                headerName: t('columnResults'),
                 align: 'right',
                 headerAlign: 'left',
                 valueGetter: (_value, row: ExplorerMove | LichessExplorerMove) => {
@@ -310,15 +315,16 @@ function Database({
                 flex: 1,
             },
         ] as GridColDef[];
-    }, [totalGames, cohortRange, type]);
+    }, [totalGames, cohortRange, type, t]);
 
     if (type !== ExplorerDatabaseType.Lichess && isFreeTier) {
         return (
-            <Box mt={2}>
-                <UpsellAlert>
-                    Upgrade to a full account to search the Dojo databases by position and subscribe
-                    to positions.
-                </UpsellAlert>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
+                <UpsellAlert>{t('upsellDojoDatabases')}</UpsellAlert>
             </Box>
         );
     }
@@ -329,8 +335,14 @@ function Database({
 
     if (!position) {
         return (
-            <Stack width={1} alignItems='center' mt={2}>
-                <Typography>No games found in this position</Typography>
+            <Stack
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2,
+                }}
+            >
+                <Typography>{t('noGamesFound')}</Typography>
             </Stack>
         );
     }
@@ -354,7 +366,9 @@ function Database({
             container
             columnSpacing={1}
             rowSpacing={2}
-            mt={2}
+            sx={{
+                mt: 2,
+            }}
         >
             {type === ExplorerDatabaseType.Dojo && (
                 <>
@@ -367,7 +381,7 @@ function Database({
                         <TextField
                             select
                             fullWidth
-                            label='Min Cohort'
+                            label={t('minCohortLabel')}
                             value={minCohort}
                             onChange={(e) => setMinCohort?.(e.target.value)}
                         >
@@ -387,7 +401,7 @@ function Database({
                         <TextField
                             select
                             fullWidth
-                            label='Max Cohort'
+                            label={t('maxCohortLabel')}
                             value={maxCohort}
                             onChange={(e) => setMaxCohort?.(e.target.value)}
                         >
@@ -407,26 +421,29 @@ function Database({
             {type === ExplorerDatabaseType.Masters && timeControls && setTimeControls && (
                 <>
                     <Grid size={12}>
-                        <Stack direction='row' alignItems='center' spacing={0.5}>
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <MultipleSelectChip
-                                label='Time Controls'
+                                label={t('timeControlsLabel')}
                                 selected={timeControls}
                                 setSelected={setTimeControls}
-                                options={masterTimeControlOptions}
+                                options={translatedTimeControlOptions}
                                 sx={{ width: 1 }}
                                 size='small'
                                 error={timeControls.length === 0}
+                                noTranslate
                             />
                             <Tooltip
                                 title={
-                                    <span>
-                                        These time controls follow FIDE regulations:
-                                        <br />
-                                        Standard: &gt;=1 hr for all moves
-                                        <br />
-                                        Rapid: &gt;10 min for all moves
-                                        <br />
-                                        Blitz: &lt;=10 min for all moves
+                                    <span translate='no' className='notranslate'>
+                                        {t.rich('timeControlTooltip', {
+                                            br: () => <br />,
+                                        })}
                                     </span>
                                 }
                             >
@@ -452,11 +469,18 @@ function Database({
                     }
                     slots={{
                         noRowsOverlay: () => (
-                            <Stack height={1} width={1} alignItems='center' justifyContent='center'>
-                                <Typography>No moves played from this position.</Typography>
+                            <Stack
+                                sx={{
+                                    height: 1,
+                                    width: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Typography>{t('noMovesPlayed')}</Typography>
                                 {type === ExplorerDatabaseType.Dojo &&
                                     cohortRange.length < dojoCohorts.length && (
-                                        <Typography>Try expanding your cohort range.</Typography>
+                                        <Typography>{t('expandCohortRangeHint')}</Typography>
                                     )}
                             </Stack>
                         ),
@@ -493,14 +517,21 @@ function Database({
 
                     {(type === ExplorerDatabaseType.Dojo ||
                         type === ExplorerDatabaseType.Masters) && (
-                        <Grid display='flex' justifyContent='center' size={12}>
+                        <Grid
+                            size={12}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Link
                                 href={`/games?type=position&fen=${fen}&masters=${type === ExplorerDatabaseType.Masters}`}
                                 target='_blank'
                                 rel='noopener'
                             >
-                                View all {type === ExplorerDatabaseType.Dojo ? 'Dojo' : 'master'}{' '}
-                                games containing this position
+                                {type === ExplorerDatabaseType.Dojo
+                                    ? t('viewAllDojoGamesLink')
+                                    : t('viewAllMasterGamesLink')}
                             </Link>
                         </Grid>
                     )}
@@ -535,6 +566,26 @@ export const masterTimeControlOptions = [
     },
 ];
 
+/**
+ * Returns `masterTimeControlOptions` with `label` overridden by translated values
+ * for the current locale. Wire `value` and `icon` are unchanged.
+ */
+export function useTranslatedMasterTimeControlOptions() {
+    const t = useTranslations('analysisBoard.explorer');
+    return useMemo(() => {
+        const labels: Record<string, string> = {
+            standard: t('timeControlStandard'),
+            rapid: t('timeControlRapid'),
+            blitz: t('timeControlBlitz'),
+            unknown: t('timeControlUnknown'),
+        };
+        return masterTimeControlOptions.map((opt) => ({
+            ...opt,
+            label: labels[opt.value] ?? opt.label,
+        }));
+    }, [t]);
+}
+
 const resultKeys: (keyof ExplorerResult)[] = ['white', 'draws', 'black', 'analysis'];
 
 const resultGraphColors = {
@@ -557,6 +608,8 @@ interface ResultGraphProps {
 }
 
 const ResultGraph: React.FC<ResultGraphProps> = ({ totalGames, resultCount }) => {
+    const t = useTranslations('analysisBoard.explorer');
+
     if (totalGames === 0) {
         return null;
     }
@@ -588,7 +641,7 @@ const ResultGraph: React.FC<ResultGraphProps> = ({ totalGames, resultCount }) =>
                                     {k[0].toUpperCase()}
                                     {k.substring(1)}
                                     <br />
-                                    {count.toLocaleString()} Game{count !== 1 ? 's' : ''}
+                                    {t('gameCount', { count })}
                                     <br />
                                     {Math.round(percentage * 10) / 10}%
                                 </Box>

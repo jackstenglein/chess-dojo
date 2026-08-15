@@ -16,6 +16,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { countTotalGames } from './Stats';
 
 export interface GameActivity {
@@ -110,6 +111,7 @@ export function getActivitySummary(
  * @param tournament The tournament to render the activities list for.
  */
 export function Activity({ tournament }: { tournament: RoundRobin }) {
+    const t = useTranslations('tournaments.roundRobin.activity');
     const now = new Date();
     const {
         activities,
@@ -122,10 +124,21 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
 
     if (activities.length === 0) {
         return (
-            <Stack alignItems='center' spacing={2} py={4}>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                    py: 4,
+                }}
+            >
                 <CalendarMonth sx={{ fontSize: 60, color: 'text.secondary' }} />
-                <Typography textAlign='center' color='text.secondary'>
-                    No games submitted yet
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                        color: 'text.secondary',
+                    }}
+                >
+                    {t('noGamesSubmitted')}
                 </Typography>
             </Stack>
         );
@@ -135,30 +148,46 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
         <Stack spacing={3}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <Card sx={{ flex: 1, p: 2 }}>
-                    <Typography variant='body2' color='text.secondary'>
-                        Games Completed
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('gamesCompleted')}
                     </Typography>
                     <Typography variant='h4'>
                         {completedGames} / {totalPairings}
                     </Typography>
-                    <Typography variant='body2' color='text.secondary'>
-                        {completionRate}% complete
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('completePercent', { percent: completionRate })}
                     </Typography>
                 </Card>
 
                 {mostRecentDate && (
                     <Card sx={{ flex: 1, p: 2 }}>
-                        <Typography variant='body2' color='text.secondary'>
-                            Last Game Submitted
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
+                            {t('lastGameSubmitted')}
                         </Typography>
                         <Typography variant='h4'>
-                            {daysSinceLastGame === 0
-                                ? 'Today'
-                                : daysSinceLastGame === 1
-                                  ? '1 day ago'
-                                  : `${daysSinceLastGame} days ago`}
+                            {t('lastGameTime', { days: daysSinceLastGame ?? 0 })}
                         </Typography>
-                        <Typography variant='body2' color='text.secondary'>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {mostRecentDate.toLocaleDateString()}
                         </Typography>
                     </Card>
@@ -170,19 +199,49 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography fontWeight='bold'>Date</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnDate')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>Round</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnRound')}
+                                </Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography fontWeight='bold'>White</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnWhite')}
+                                </Typography>
                             </TableCell>
                             <TableCell>
-                                <Typography fontWeight='bold'>Black</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnBlack')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>Result</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnResult')}
+                                </Typography>
                             </TableCell>
                         </TableRow>
                     </TableHead>
@@ -214,7 +273,11 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                     <TableCell>
                                         <Stack>
                                             {showDateHeader && activity.date && (
-                                                <Typography fontWeight='bold'>
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
                                                     {activity.date.toLocaleDateString(undefined, {
                                                         weekday: 'short',
                                                         month: 'short',
@@ -223,7 +286,12 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                                 </Typography>
                                             )}
                                             {activity.date && (
-                                                <Typography variant='body2' color='text.secondary'>
+                                                <Typography
+                                                    variant='body2'
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                    }}
+                                                >
                                                     {activity.date.toLocaleTimeString(undefined, {
                                                         hour: 'numeric',
                                                         minute: '2-digit',
@@ -243,10 +311,12 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                             RoundRobinPlayerStatuses.WITHDRAWN && (
                                             <Typography
                                                 variant='caption'
-                                                color='text.secondary'
-                                                sx={{ ml: 1 }}
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                    ml: 1,
+                                                }}
                                             >
-                                                (Withdrawn)
+                                                {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
                                     </TableCell>
@@ -258,10 +328,12 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                                             RoundRobinPlayerStatuses.WITHDRAWN && (
                                             <Typography
                                                 variant='caption'
-                                                color='text.secondary'
-                                                sx={{ ml: 1 }}
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                    ml: 1,
+                                                }}
                                             >
-                                                (Withdrawn)
+                                                {t('withdrawnSuffix')}
                                             </Typography>
                                         )}
                                     </TableCell>
@@ -284,9 +356,13 @@ export function Activity({ tournament }: { tournament: RoundRobin }) {
                         textAlign: 'center',
                     }}
                 >
-                    <Typography variant='body2' fontWeight='bold'>
-                        ⚠️ Tournament may have stalled - No games submitted in {daysSinceLastGame}{' '}
-                        days
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {t('stalledWarning', { days: daysSinceLastGame ?? 0 })}
                     </Typography>
                 </Box>
             )}

@@ -44,6 +44,7 @@
         "awsS3Folder": "test"
     },
     {
+        "id": "8dd6ea5d-d4b3-4dca-80c3-614fda0ad6e7",
         "name": "Logical Chess Move by Move",
         "googleMeetNames": ["Logical Chess Move by Move | GM Jesse Kraai"],
         "googleMeetIds": [],
@@ -52,7 +53,7 @@
         "teacher": "GM Jesse Kraai",
         "description": "Irving Chernev's book Logical Chess Move by Move is a fantastic first book of strategy. In this class, GM Jesse Kraai goes through each game in detail, explaining the key ideas and concepts that led to the final result.",
         "imageUrl": "https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/logical-chess.webp",
-        "awsS3Folder": "test"
+        "awsS3Folder": "logical-chess"
     },
     {
         "name": "Calculation 1000+",

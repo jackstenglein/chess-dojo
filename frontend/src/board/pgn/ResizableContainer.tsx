@@ -7,8 +7,8 @@ import { onInitializeFunc } from '../Board';
 import KeyboardHandler from './KeyboardHandler';
 import ResizableBoardArea from './ResizableBoardArea';
 import Underboard, { UnderboardApi } from './boardTools/underboard/Underboard';
-import { UnderboardTab } from './boardTools/underboard/underboardTabs';
-import { ResizablePgnText } from './pgnText/PgnText';
+import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
+import { PgnTextBanners, ResizablePgnText } from './pgnText/PgnText';
 import { AreaSizes, getNewSizes, getSizes } from './resize';
 
 export const CONTAINER_ID = 'resize-container';
@@ -17,9 +17,21 @@ function getParentWidth() {
     return document.getElementById(CONTAINER_ID)?.getBoundingClientRect().width || 0;
 }
 
+function getPanelStorageKey(prefix: string | undefined, side: 'left' | 'right') {
+    return prefix ? `${prefix}.${side}.tab` : undefined;
+}
+
+function getExplorerStorageKey(prefix: string | undefined, side: 'left' | 'right') {
+    return prefix ? `${prefix}.${side}.explorerTab` : undefined;
+}
+
 interface ResizableContainerProps {
     underboardTabs: UnderboardTab[];
     initialUnderboardTab?: string;
+    rightTabs?: UnderboardTab[];
+    initialRightTab?: string;
+    tabStorageKeyPrefix?: string;
+    sidePanelTabs?: DefaultUnderboardTab[];
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
@@ -30,6 +42,10 @@ interface ResizableContainerProps {
 const ResizableContainer: React.FC<ResizableContainerProps> = ({
     underboardTabs,
     initialUnderboardTab,
+    rightTabs,
+    initialRightTab,
+    tabStorageKeyPrefix,
+    sidePanelTabs,
     showPlayerHeaders,
     pgn,
     fen,
@@ -82,14 +98,16 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     return (
         <Stack
             direction='row'
-            width={1}
-            maxWidth={1}
             spacing={{ xs: 0, sm: 0 }}
-            justifyContent='center'
-            px={{ xs: 0, sm: 0 }}
-            flexWrap='wrap'
-            rowGap={0.5}
-            columnGap={{ xs: 0.5, md: 1, lg: 1 }}
+            sx={{
+                width: 1,
+                maxWidth: 1,
+                justifyContent: 'center',
+                px: { xs: 0, sm: 0 },
+                flexWrap: 'wrap',
+                rowGap: 0.5,
+                columnGap: { xs: 0.5, md: 1, lg: 1 },
+            }}
         >
             <KeyboardHandler underboardRef={underboardRef} />
 
@@ -100,6 +118,9 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                     initialTab={initialUnderboardTab}
                     resizeData={sizes.underboard}
                     onResize={onResize('underboard')}
+                    storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'left')}
+                    explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'left')}
+                    sidePanelTabs={sidePanelTabs}
                 />
             )}
 
@@ -117,7 +138,21 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                 }}
             />
 
-            <ResizablePgnText resizeData={sizes.pgn} onResize={onResize('pgn')} />
+            {rightTabs ? (
+                <Underboard
+                    tabs={rightTabs}
+                    initialTab={initialRightTab}
+                    resizeData={sizes.pgn}
+                    onResize={onResize('pgn')}
+                    storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'right')}
+                    explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'right')}
+                    buttonTestIdPrefix='right-'
+                    header={<PgnTextBanners />}
+                    sidePanelTabs={sidePanelTabs}
+                />
+            ) : (
+                <ResizablePgnText resizeData={sizes.pgn} onResize={onResize('pgn')} />
+            )}
         </Stack>
     );
 };

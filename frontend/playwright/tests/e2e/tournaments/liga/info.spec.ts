@@ -8,15 +8,15 @@ test.describe('Info Tab', () => {
     });
 
     test('has tab selector', async ({ page }) => {
-        await page.getByTestId('tournaments-tab-list').getByText('Calendar').click();
+        await page.getByTestId('tournaments-tab-list').getByText('Leaderboard').click();
 
-        await expect(page).toHaveURL(/\/tournaments\/liga\?type=calendar/);
+        await expect(page).toHaveURL(/\/tournaments\/liga\?type=leaderboard/);
     });
 
     test('has correct content', async ({ page }) => {
         await expect(page.getByText('Welcome to the DojoLiga')).toBeVisible();
-        await expect(page.getByText('Registration Info')).toBeVisible();
-        await expect(page.getByText('Leaderboard Info')).toBeVisible();
+        await expect(page.getByText('Registration')).toBeVisible();
+        await expect(page.getByText('Event Scoring')).toBeVisible();
     });
 
     test('links to Lichess team', async ({ page }) => {

@@ -11,7 +11,6 @@ import {
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Help } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -27,6 +26,7 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { DirectoryCacheContextType } from './DirectoryCache';
 
@@ -54,6 +54,7 @@ export const UpdateDirectoryDialog = ({
     ) => void;
     onCancel: () => void;
 }) => {
+    const t = useTranslations('profile.directories');
     const [name, setName] = useState(initialName);
     const [visibility, setVisibility] = useState<DirectoryVisibilityType>(initialVisibility);
     const request = useRequest();
@@ -66,7 +67,7 @@ export const UpdateDirectoryDialog = ({
             <DialogContent data-testid='update-directory-form'>
                 <TextField
                     data-testid='update-directory-name'
-                    label='Name'
+                    label={t('name')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => {
@@ -76,15 +77,15 @@ export const UpdateDirectoryDialog = ({
                     }}
                     fullWidth
                     sx={{ mt: 0.75, mb: 3 }}
-                    helperText={`${name.trim().length} / 100 characters`}
+                    helperText={t('charactersCount', { count: name.trim().length })}
                     error={name.trim().length > 100}
                     autoFocus
                 />
 
                 <FormControl>
                     <FormLabel>
-                        Visibility{' '}
-                        <Tooltip title='Private folders are visible only to you. Public folders are visible on your profile to everyone. Unlisted games added to a public folder are also visible to everyone.'>
+                        {t('visibility')}{' '}
+                        <Tooltip title={t('visibilityTooltip')}>
                             <Help fontSize='inherit' sx={{ verticalAlign: 'middle' }} />
                         </Tooltip>
                     </FormLabel>
@@ -96,35 +97,31 @@ export const UpdateDirectoryDialog = ({
                         <FormControlLabel
                             value={DirectoryVisibility.PUBLIC}
                             control={<Radio />}
-                            label='Public'
+                            label={t('public')}
                             disabled={isFreeTier}
                         />
                         <FormControlLabel
                             value={DirectoryVisibility.PRIVATE}
                             control={<Radio />}
-                            label='Private'
+                            label={t('private')}
                             disabled={isFreeTier}
                         />
                     </RadioGroup>
-                    {isFreeTier && (
-                        <FormHelperText>
-                            Free-tier users cannot create private folders
-                        </FormHelperText>
-                    )}
+                    {isFreeTier && <FormHelperText>{t('freeTierPrivate')}</FormHelperText>}
                 </FormControl>
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onCancel}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
-                <LoadingButton
+                <Button
                     disabled={disabled}
                     loading={request.isLoading()}
                     onClick={() => onSave(name, visibility, disabled, request)}
                     data-testid='update-directory-save-button'
                 >
                     {saveLabel}
-                </LoadingButton>
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

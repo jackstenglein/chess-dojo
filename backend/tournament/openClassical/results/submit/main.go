@@ -14,19 +14,26 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
-var repository = database.DynamoDB
+var repository openClassicalRepository = database.DynamoDB
+var mediaStore database.MediaStore = database.S3
+
+type openClassicalRepository interface {
+	GetOpenClassical(startsAt string) (*database.OpenClassical, error)
+	UpdateOpenClassicalResult(update *database.OpenClassicalPairingUpdate) (*database.OpenClassical, error)
+}
 
 type SubmitResultsRequest struct {
-	Region          string `json:"region"`
-	Section         string `json:"section"`
-	Round           int    `json:"-"`
-	GameUrl         string `json:"gameUrl"`
-	White           string `json:"white"`
-	Black           string `json:"black"`
-	Result          string `json:"result"`
-	ReportOppponent bool   `json:"reportOpponent"`
-	Notes           string `json:"notes"`
-	Verified        bool   `json:"-"`
+	Region          string   `json:"region"`
+	Section         string   `json:"section"`
+	Round           int      `json:"-"`
+	GameUrl         string   `json:"gameUrl"`
+	White           string   `json:"white"`
+	Black           string   `json:"black"`
+	Result          string   `json:"result"`
+	ReportOppponent bool     `json:"reportOpponent"`
+	Notes           string   `json:"notes"`
+	ScreenshotsData []string `json:"screenshotsData,omitempty"`
+	Verified        bool     `json:"-"`
 }
 
 type LichessGameResponse struct {
@@ -89,6 +96,14 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
+	if len(request.ScreenshotsData) > 0 {
+		keys, err := uploadScreenshots(openClassical, update, request.ScreenshotsData)
+		if err != nil {
+			return api.Failure(err), nil
+		}
+		update.Pairing.Screenshots = keys
+	}
+
 	openClassical, err = repository.UpdateOpenClassicalResult(update)
 	if err != nil {
 		return api.Failure(err), nil
@@ -149,6 +164,34 @@ func getPairingUpdate(openClassical *database.OpenClassical, request *SubmitResu
 		}
 	}
 	return nil, errors.New(400, fmt.Sprintf("Invalid request: round %d does not contain a pairing for %s (white) vs %s (black)", roundIdx+1, request.White, request.Black), "")
+}
+
+func getScreenshotKey(openClassical *database.OpenClassical, update *database.OpenClassicalPairingUpdate, index int) string {
+	return fmt.Sprintf(
+		"/open-classical/%s/%s/%s/r%d/%s_%s_%d",
+		openClassical.StartMonth,
+		update.Region,
+		update.Section,
+		update.Round+1,
+		strings.ToLower(update.Pairing.White.LichessUsername),
+		strings.ToLower(update.Pairing.Black.LichessUsername),
+		index,
+	)
+}
+
+func uploadScreenshots(openClassical *database.OpenClassical, update *database.OpenClassicalPairingUpdate, screenshotsData []string) ([]string, error) {
+	keys := make([]string, 0, len(screenshotsData))
+	for i, data := range screenshotsData {
+		if strings.TrimSpace(data) == "" {
+			continue
+		}
+		key := getScreenshotKey(openClassical, update, i+1)
+		if err := mediaStore.UploadImage(key, data); err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
 }
 
 func getGameUrl(request *SubmitResultsRequest) error {

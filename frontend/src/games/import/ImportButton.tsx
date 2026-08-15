@@ -1,12 +1,16 @@
-import { LoadingButton } from '@mui/lab';
+import { Button } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export interface ImportButtonProps {
     onClick: () => void;
     loading: boolean;
 }
 
-export const ImportButton = ({ onClick, loading }: ImportButtonProps) => (
-    <LoadingButton data-testid='import-button' name='import' loading={loading} onClick={onClick}>
-        Import
-    </LoadingButton>
-);
+export const ImportButton = ({ onClick, loading }: ImportButtonProps) => {
+    const t = useTranslations('games.import.importButton');
+    return (
+        <Button data-testid='import-button' name='import' loading={loading} onClick={onClick}>
+            {t('label')}
+        </Button>
+    );
+};

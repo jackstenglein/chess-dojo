@@ -1,4 +1,5 @@
 import { MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export const DefaultTimezone = 'DEFAULT';
 
@@ -17,7 +18,7 @@ function getTimezoneOptions() {
 }
 
 export const TimezoneSelector = ({
-    label = 'Timezone',
+    label,
     value,
     onChange,
     textFieldProps,
@@ -27,20 +28,23 @@ export const TimezoneSelector = ({
     onChange: (value: string) => void;
     textFieldProps?: TextFieldProps;
 }) => {
+    const t = useTranslations('common');
     const timezoneOffset = new Date().getTimezoneOffset() / 60;
     const browserDefaultLabel =
         timezoneOffset > 0 ? `UTC-${timezoneOffset}` : `UTC+${Math.abs(timezoneOffset)}`;
 
     return (
         <TextField
-            label={label}
+            label={label ?? t('timezone')}
             select
             data-testid='timezone-selector'
             value={value}
             onChange={(e) => onChange(e.target.value)}
             {...textFieldProps}
         >
-            <MenuItem value={DefaultTimezone}>Browser Default ({browserDefaultLabel})</MenuItem>
+            <MenuItem value={DefaultTimezone}>
+                {t('browserDefault', { offset: browserDefaultLabel })}
+            </MenuItem>
             {getTimezoneOptions()}
         </TextField>
     );

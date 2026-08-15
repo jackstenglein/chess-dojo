@@ -124,6 +124,14 @@ functions:
         Resource: ${param:TournamentsTableArn}
       - Effect: Allow
         Action:
+          - s3:PutObject
+        Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${param:PicturesBucket}
+            - /open-classical/*
+      - Effect: Allow
+        Action:
           - s3:GetObject
         Resource: !Join
           - ''

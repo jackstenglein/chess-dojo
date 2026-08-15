@@ -15,7 +15,6 @@ import { useRouter } from '@/hooks/useRouter';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import Icon from '@/style/Icon';
-import { LoadingButton } from '@mui/lab';
 import {
     AppBar,
     Button,
@@ -33,8 +32,9 @@ import {
     Typography,
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
-import { TimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import Field from '../eventViewer/Field';
 import OwnerField from '../eventViewer/OwnerField';
@@ -53,6 +53,8 @@ interface AvailabilityBookerProps {
 }
 
 const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability }) => {
+    const t = useTranslations('calendar');
+    const labelT = useTranslations('eventLabels');
     const request = useRequest();
     const api = useApi();
     const cache = useCache();
@@ -86,19 +88,19 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
         const newErrors: Record<string, string> = {};
 
         if (selectedType === null) {
-            newErrors.type = 'You must select a meeting type';
+            newErrors.type = t('selectMeetingType');
         }
 
         let selectedTime: Date | undefined = undefined;
         if (startTime === null) {
-            newErrors.time = 'You must select a time';
+            newErrors.time = t('selectTime');
         } else {
             selectedTime = getTimeZonedDate(startTime.toJSDate(), timezone, 'forward');
             if (
                 selectedTime.toISOString() < availability.startTime ||
                 selectedTime.toISOString() > availability.endTime
             ) {
-                newErrors.time = `Must be between ${minStartStr} and ${maxStartStr}`;
+                newErrors.time = t('mustBeBetween', { start: minStartStr, end: maxStartStr });
             }
         }
 
@@ -162,14 +164,16 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
             data-testid='availability-booker'
             fullScreen
             open={true}
-            TransitionComponent={Transition}
+            slots={{
+                transition: Transition,
+            }}
         >
             <RequestSnackbar request={request} />
 
             <AppBar sx={{ position: 'relative' }}>
                 <Toolbar>
                     <Typography sx={{ ml: 2, flex: 1 }} variant='h6' component='div'>
-                        {isGroup ? 'Join Group Meeting' : 'Book Meeting'}
+                        {isGroup ? t('joinGroupMeeting') : t('bookMeeting')}
                     </Typography>
                     <Button
                         data-testid='cancel-button'
@@ -178,37 +182,46 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                         disabled={request.status === RequestStatus.Loading}
                         startIcon={<Icon name='cancel' />}
                     >
-                        Cancel
+                        {t('cancel')}
                     </Button>
-                    <LoadingButton
+                    <Button
                         data-testid='book-button'
                         color='success'
                         loading={request.status === RequestStatus.Loading}
                         onClick={confirmBooking}
                         startIcon={<Icon name='join' />}
                     >
-                        {isGroup ? 'Join' : 'Book'}
-                    </LoadingButton>
+                        {isGroup ? t('join') : t('book')}
+                    </Button>
                 </Toolbar>
             </AppBar>
             <DialogContent>
                 <Stack sx={{ pt: 2 }} spacing={3}>
                     <Field
                         iconName='clock'
-                        title={isGroup ? 'Time' : 'Available Start Times'}
-                        body={`${minStartDate} ${minStartStr} - ${maxStartStr}`}
+                        title={isGroup ? t('time') : t('availableStartTimes')}
+                        body={t('timeRange', {
+                            date: minStartDate,
+                            start: minStartStr,
+                            end: maxStartStr,
+                        })}
                     />
-                    <OwnerField title='Owner' event={availability} />
+                    <OwnerField title={t('owner')} event={availability} />
 
                     <Field
-                        title='Location'
-                        body={availability.location || 'Discord'}
+                        title={t('location')}
+                        body={availability.location || t('discord')}
                         iconName='location'
                     />
 
                     {availability.description && (
                         <Stack>
-                            <Typography variant='h6' color='text.secondary'>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name='notes'
                                     color='primary'
@@ -217,7 +230,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         verticalAlign: 'middle',
                                     }}
                                 />
-                                Description
+                                {t('description')}
                             </Typography>
                             <Typography variant='body1' style={{ whiteSpace: 'pre-line' }}>
                                 {availability.description}
@@ -229,26 +242,31 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                         <>
                             <Field
                                 iconName='meet'
-                                title='Meeting Types'
+                                title={t('meetingTypes')}
                                 body={availability.types
-                                    ?.map((t) => getDisplayString(t))
+                                    ?.map((type) => getDisplayString(type, labelT))
                                     .join(', ')}
                             />
 
                             <Field
                                 iconName='cohort'
-                                title='Cohorts'
+                                title={t('cohorts')}
                                 body={availability.cohorts.join(', ')}
                             />
 
                             <Field
                                 iconName='line'
-                                title='Max Participants'
+                                title={t('maxParticipants')}
                                 body={`${availability.maxParticipants}`}
                             />
 
                             <Stack>
-                                <Typography variant='h6' color='text.secondary'>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     <Icon
                                         name='participant'
                                         color='primary'
@@ -257,11 +275,11 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                             verticalAlign: 'middle',
                                         }}
                                     />
-                                    Current Participants
+                                    {t('currentParticipants')}
                                 </Typography>
 
                                 {Object.values(availability.participants).length === 0 && (
-                                    <Typography variant='body1'>None</Typography>
+                                    <Typography variant='body1'>{t('none')}</Typography>
                                 )}
 
                                 {Object.values(availability.participants).map((p) => (
@@ -269,7 +287,9 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         key={p.username}
                                         direction='row'
                                         spacing={1}
-                                        alignItems='center'
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
                                     >
                                         <Avatar
                                             username={p.username}
@@ -291,7 +311,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                     {!isGroup && (
                         <>
                             <FormControl error={!!errors.type}>
-                                <FormLabel>Meeting Type</FormLabel>
+                                <FormLabel>{t('meetingType')}</FormLabel>
                                 <RadioGroup
                                     name='radio-buttons-group'
                                     value={selectedType}
@@ -299,12 +319,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         setSelectedType(event.target.value as AvailabilityType)
                                     }
                                 >
-                                    {availability.types?.map((t) => (
+                                    {availability.types?.map((type) => (
                                         <FormControlLabel
-                                            key={t}
+                                            key={type}
                                             control={<Radio data-testid='meeting-type-radio' />}
-                                            value={t}
-                                            label={getDisplayString(t)}
+                                            value={type}
+                                            label={getDisplayString(type, labelT)}
                                         />
                                     ))}
                                 </RadioGroup>
@@ -312,7 +332,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                             </FormControl>
 
                             <TimePicker
-                                label='Start Time'
+                                label={t('startTime')}
                                 value={startTime}
                                 onChange={(value) => setStartTime(value)}
                                 slotProps={{
@@ -321,7 +341,10 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         error: !!errors.time,
                                         helperText:
                                             errors.time ||
-                                            `Must be between ${minStartStr} and ${maxStartStr}`,
+                                            t('mustBeBetween', {
+                                                start: minStartStr,
+                                                end: maxStartStr,
+                                            }),
                                     },
                                 }}
                                 minTime={DateTime.fromISO(availability.startTime)}

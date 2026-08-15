@@ -69,7 +69,6 @@ export interface TimelineEntry {
     reactions: Record<string, Reaction> | null;
 }
 
-
 /** Metadata for a graduation timeline entry. */
 export interface TimelineGraduationInfo {
     /** The comments left by the user when graduating. */

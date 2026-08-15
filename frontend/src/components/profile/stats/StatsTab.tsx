@@ -10,7 +10,9 @@ import {
 } from '@/database/user';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { DrillRatingsCard } from './DrillRatingsCard';
 import RatingCard from './RatingCard';
 import TacticsScoreCard from './TacticsScoreCard';
 
@@ -21,6 +23,7 @@ interface StatsTabProps {
 }
 
 const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
+    const t = useTranslations('profile.stats.tab');
     const api = useApi();
     const { user: viewer } = useAuth();
     const [hidden, setHidden] = useState(
@@ -49,7 +52,7 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                 ...(ratingsMap[targetSystem] as object),
                 currentRating: 0,
             };
-            await api.updateUser({ ratings: ratingsMap } as Partial<User>);
+            await api.updateUser({ ratings: ratingsMap });
 
             setCooldowns((prev) => ({ ...prev, [targetSystem]: REFRESH_COOLDOWN_SECONDS }));
             const intervalId = setInterval(() => {
@@ -71,9 +74,14 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
 
     if (hidden) {
         return (
-            <Stack spacing={2} alignItems='center'>
-                <Typography>Ratings are hidden in Zen Mode.</Typography>
-                <Button onClick={() => setHidden(false)}>View Anyway</Button>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography>{t('ratingsHidden')}</Typography>
+                <Button onClick={() => setHidden(false)}>{t('viewAnyway')}</Button>
             </Stack>
         );
     }
@@ -137,6 +145,8 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                     />
                 );
             })}
+
+            <DrillRatingsCard mateInOneRating={user.mateInOneRating} />
 
             <TacticsScoreCard user={user} />
         </Stack>

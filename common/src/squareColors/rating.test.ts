@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    SQUARE_COLOR_RATING_CONFIG,
     MIN_QUESTIONS_FOR_RATING,
+    SQUARE_COLOR_RATING_CONFIG,
     computeSquareColorRating,
 } from './rating';
 

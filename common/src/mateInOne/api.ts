@@ -29,7 +29,7 @@ export const submitMateInOneSessionSchema = z.object({
     /** The individual puzzle attempts. */
     attempts: z.array(mateInOneAttemptSchema),
     /** Optional client-generated timestamp to allow updating the same session record. */
-    createdAt: z.string().datetime().optional(),
+    createdAt: z.iso.datetime().optional(),
 });
 
 /** A request to submit a mate-in-one drill session. */
@@ -44,6 +44,8 @@ export interface MateInOneSessionResult extends SubmitMateInOneSessionRequest {
     username: string;
     /** The ISO 8601 timestamp when the session was created. */
     createdAt: string;
+    /** The server-computed rating for this block, present only on full 10-puzzle blocks. */
+    rating?: number;
 }
 
 /** A mate-in-one puzzle from the Lichess database. */
@@ -62,5 +64,11 @@ export interface GetMateInOnePuzzleResponse {
     puzzle: MateInOnePuzzle;
 }
 
-/** Response from submitting a mate-in-one session (empty for PR 1). */
-export type SubmitMateInOneSessionResponse = Record<string, never>;
+/** Response from submitting a mate-in-one session. */
+export interface SubmitMateInOneSessionResponse {
+    /**
+     * The server-computed rating for this 10-puzzle block. Omitted on partial-block
+     * (aborted) submissions where attempts.length < 10.
+     */
+    rating?: number;
+}

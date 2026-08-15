@@ -9,7 +9,6 @@ import {
 } from '@/database/requirement';
 import { User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { Checklist } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -22,6 +21,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import CustomTaskEditor from '../CustomTaskEditor';
 import { ScheduleClassicalGame } from '../ScheduleClassicalGame';
@@ -82,8 +82,16 @@ export function FullTrainingPlanSection({
     showCompleted,
     setShowCompleted,
 }: TrainingPlanSectionProps) {
+    const t = useTranslations('profile.trainingPlan.full');
+    const tCommon = useTranslations('profile.trainingPlan.common');
+    const tCategory = useTranslations('enums.requirementCategory');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
+    const preventCategoryTranslation =
+        section.category === RequirementCategory.Opening ||
+        section.category === RequirementCategory.Middlegames ||
+        section.category === RequirementCategory.Endgame ||
+        section.category === RequirementCategory.Graduation;
 
     const hiddenTaskCount = useMemo(() => {
         if (!isFreeTier) {
@@ -107,14 +115,21 @@ export function FullTrainingPlanSection({
             >
                 <Grid
                     container
-                    width={1}
-                    alignItems='center'
-                    justifyContent='space-between'
-                    sx={{ mr: 2 }}
-                    columnGap={3}
+                    sx={{
+                        width: 1,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        columnGap: 3,
+                        mr: 2,
+                    }}
                 >
                     <Grid size={{ xs: 'auto', sm: 5.5, lg: 5, xl: 3 }}>
-                        <Typography fontWeight='bold' sx={{ whiteSpace: 'nowrap' }}>
+                        <Typography
+                            sx={{
+                                fontWeight: 'bold',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
                             <TrainingPlanIcon
                                 category={section.category}
                                 sx={{
@@ -123,14 +138,23 @@ export function FullTrainingPlanSection({
                                     verticalAlign: 'middle',
                                 }}
                             />
-                            {displayRequirementCategory(section.category)}
+                            <span
+                                translate={preventCategoryTranslation ? 'no' : undefined}
+                                className={preventCategoryTranslation ? 'notranslate' : undefined}
+                            >
+                                {tCategory.has(section.category)
+                                    ? tCategory(section.category)
+                                    : section.category}
+                            </span>
                         </Typography>
                     </Grid>
 
                     <Grid
                         size={{ xs: 0, sm: 'grow' }}
-                        color={section.color}
-                        sx={{ display: { xs: 'none', sm: 'initial' } }}
+                        sx={{
+                            color: section.color,
+                            display: { xs: 'none', sm: 'initial' },
+                        }}
                     >
                         {section.progressBar !== undefined && (
                             <ScoreboardProgress
@@ -171,16 +195,28 @@ export function FullTrainingPlanSection({
                 {section.completedTasks.length > 0 &&
                     (showCompleted ? (
                         <>
-                            <Stack direction='row' alignItems='center' sx={{ mt: 6, mb: 1 }}>
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    mt: 6,
+                                    mb: 1,
+                                }}
+                            >
                                 <Checklist color='primary' />
                                 <Typography
                                     variant='body1'
-                                    fontWeight={700}
-                                    sx={{ ml: 1, flexGrow: 1 }}
+                                    sx={{
+                                        fontWeight: 700,
+                                        ml: 1,
+                                        flexGrow: 1,
+                                    }}
                                 >
-                                    Completed Tasks
+                                    {t('completedTasks')}
                                 </Typography>
-                                <Button onClick={() => setShowCompleted(false)}>Hide</Button>
+                                <Button onClick={() => setShowCompleted(false)}>
+                                    {tCommon('hide')}
+                                </Button>
                             </Stack>
 
                             <Divider sx={{ mb: 2 }} />
@@ -197,8 +233,7 @@ export function FullTrainingPlanSection({
                     ) : (
                         <>
                             <Button sx={{ my: 2 }} onClick={() => setShowCompleted(true)}>
-                                Show {section.completedTasks.length} completed task
-                                {section.completedTasks.length !== 1 && 's'}
+                                {t('showCompleted', { count: section.completedTasks.length })}
                             </Button>
                             <Divider />
                         </>
@@ -210,20 +245,23 @@ export function FullTrainingPlanSection({
                         onClick={() => setShowCustomTaskEditor(true)}
                         data-testid={`add-custom-task-button-${section.category.replaceAll(' ', '-')}`}
                     >
-                        Add Custom Task
+                        {t('addCustomTask')}
                     </Button>
                 )}
 
                 {isFreeTier &&
                     section.category !== RequirementCategory.NonDojo &&
                     hiddenTaskCount > 0 && (
-                        <Stack mt={2} spacing={2} alignItems='center'>
-                            <Typography>
-                                Unlock {hiddenTaskCount} more task
-                                {hiddenTaskCount > 1 ? 's' : ''} by upgrading to a full account
-                            </Typography>
+                        <Stack
+                            spacing={2}
+                            sx={{
+                                mt: 2,
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography>{t('unlockTasks', { count: hiddenTaskCount })}</Typography>
                             <Button variant='outlined' href='/prices'>
-                                View Prices
+                                {t('viewPrices')}
                             </Button>
                         </Stack>
                     )}

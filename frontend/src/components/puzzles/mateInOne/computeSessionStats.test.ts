@@ -1,5 +1,5 @@
 import { MateInOneAttempt } from '@jackstenglein/chess-dojo-common/src/mateInOne/api';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { computeSessionStats } from './mateInOneDrillUtils';
 
 function makeAttempt(overrides: Partial<MateInOneAttempt> = {}): MateInOneAttempt {
@@ -55,12 +55,8 @@ describe('computeSessionStats', () => {
         expect(result.avgResponseTimeMs).toBe(0);
     });
 
-    it('computes total time in seconds from session start', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2025-01-01T00:00:30Z'));
-        const sessionStart = new Date('2025-01-01T00:00:00Z').getTime();
-        const result = computeSessionStats([makeAttempt()], sessionStart);
+    it('rounds total time milliseconds to seconds', () => {
+        const result = computeSessionStats([makeAttempt()], 30_000);
         expect(result.totalTimeSeconds).toBe(30);
-        vi.useRealTimers();
     });
 });

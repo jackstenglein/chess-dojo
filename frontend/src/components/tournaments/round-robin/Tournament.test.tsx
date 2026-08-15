@@ -7,6 +7,25 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Tournament } from './Tournament';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const messages = require('../../../../messages/en.json') as Record<string, unknown>;
+
+function renderWithIntl(ui: React.ReactElement) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NextIntlClientProvider } = require('next-intl') as {
+        NextIntlClientProvider: React.FC<{
+            locale: string;
+            messages: Record<string, unknown>;
+            children: React.ReactNode;
+        }>;
+    };
+    return render(
+        <NextIntlClientProvider locale='en' messages={messages}>
+            {ui}
+        </NextIntlClientProvider>,
+    );
+}
+
 vi.mock('@/auth/Auth', () => ({
     useAuth: () => ({ user: undefined }),
 }));
@@ -107,7 +126,9 @@ describe('Tournament', () => {
     afterEach(cleanup);
 
     it('switches to the Activity tab and renders the Activity panel', () => {
-        render(<Tournament tournament={createTournament()} onUpdateTournaments={vi.fn()} />);
+        renderWithIntl(
+            <Tournament tournament={createTournament()} onUpdateTournaments={vi.fn()} />,
+        );
 
         expect(screen.getByText('Crosstable Panel')).toBeVisible();
         expect(screen.queryByText('Activity Panel')).not.toBeInTheDocument();

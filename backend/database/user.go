@@ -156,6 +156,12 @@ type Rating struct {
 
 	// Whether the user's rating is provisional
 	IsProvisional bool `dynamodbav:"isProvisional,omitempty" json:"isProvisional,omitempty"`
+
+	// The number of confirmed not-found responses for the username since the
+	// last successful fetch. Maintained by the ratings update pipeline for
+	// Chesscom and Lichess only; fetches are skipped once it reaches the
+	// threshold.
+	NotFoundCount int `dynamodbav:"notFoundCount,omitempty" json:"-"`
 }
 
 type RatingHistory struct {
@@ -319,6 +325,8 @@ type User struct {
 
 	// The set of club ids the user is in
 	Clubs []string `dynamodbav:"clubs,stringset,omitempty" json:"clubs,omitempty"`
+	// The id of the club the user has designated as their main club. Empty if unset.
+	MainClubId string `dynamodbav:"mainClubId,omitempty" json:"mainClubId"`
 
 	// The username of the user's Lichess account that was banned for ToS violation,
 	// if they have been banned on Lichess.
@@ -355,6 +363,9 @@ type User struct {
 	// The user's best-ever square color drill rating (0-1500).
 	SquareColorRating float32 `dynamodbav:"squareColorRating,omitempty" json:"squareColorRating,omitempty"`
 
+	// The user's best-ever mate-in-one drill block rating (0-2500).
+	MateInOneRating float32 `dynamodbav:"mateInOneRating,omitempty" json:"mateInOneRating,omitempty"`
+
 	// The id of the user's game review cohort, if they are a member of the Game & Profile Review tier.
 	GameReviewCohortId string `dynamodbav:"gameReviewCohortId,omitempty" json:"gameReviewCohortId,omitempty"`
 
@@ -370,6 +381,22 @@ type User struct {
 	// Tracks which milestone notifications have been sent for this user,
 	// preventing duplicate Discord DMs across batch runs. Ex: '85_2000-2100'
 	SentMilestoneNotifications []string `dynamodbav:"sentMilestoneNotifications,stringset,omitempty" json:"sentMilestoneNotifications,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
+
+	// The user's aggregate time management rating, computed from games in their mygames folder
+	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+}
+
+// TimeManagementRating holds the user's aggregate time management rating.
+type TimeManagementRating struct {
+	// The current aggregate rating
+	CurrentRating int `dynamodbav:"currentRating" json:"currentRating"`
+	// The number of games included in the aggregate
+	NumGames int `dynamodbav:"numGames" json:"numGames"`
+	// The average signed clock area. Positive means too fast, negative means too slow.
+	Area float64 `dynamodbav:"area,omitempty" json:"area,omitempty"`
 }
 
 type PuzzleThemeOverview struct {
@@ -428,6 +455,12 @@ type PaymentInfo struct {
 
 	// The username of the user who revoked the OVERRIDE access.
 	OverrideRevokedBy string `dynamodbav:"overrideRevokedBy,omitempty" json:"overrideRevokedBy,omitempty"`
+
+	// Stripe billing preserved while customerId is OVERRIDE (restored when override ends).
+	PreservedCustomerId         string `dynamodbav:"preservedCustomerId,omitempty" json:"preservedCustomerId,omitempty"`
+	PreservedSubscriptionId     string `dynamodbav:"preservedSubscriptionId,omitempty" json:"-"`
+	PreservedSubscriptionStatus string `dynamodbav:"preservedSubscriptionStatus,omitempty" json:"preservedSubscriptionStatus,omitempty"`
+	PreservedSubscriptionTier   string `dynamodbav:"preservedSubscriptionTier,omitempty" json:"preservedSubscriptionTier,omitempty"`
 }
 
 type WorkGoalSettings struct {
@@ -791,6 +824,9 @@ type UserUpdate struct {
 	// Non-Dojo tasks are not included.
 	MinutesSpent *map[string]int `dynamodbav:"minutesSpent,omitempty" json:"minutesSpent,omitempty"`
 
+	// The user's total dojo score, across all cohorts. Cannot be manually set by the user.
+	TotalDojoScore *float32 `dynamodbav:"totalDojoScore,omitempty" json:"-"`
+
 	// The user's profile picture as a base64 encoded string. This data gets saved to S3, not Dynamo.
 	ProfilePictureData *string `dynamodbav:"-" json:"profilePictureData,omitempty"`
 
@@ -854,6 +890,12 @@ type UserUpdate struct {
 
 	// The ID of the task associated with the timer, if any.
 	TimerTaskId *string `dynamodbav:"timerTaskId,omitempty" json:"timerTaskId,omitempty"`
+
+	// Tracks which cohort version the user is currently on. Unset means 2024.
+	CohortVersion *string `dynamodbav:"cohortVersion,omitempty" json:"cohortVersion,omitempty"`
+	// The id of the club the user has designated as their main club.
+	// An empty string clears the designation.
+	MainClubId *string `dynamodbav:"mainClubId,omitempty" json:"mainClubId,omitempty"`
 }
 
 // AutopickCohort sets the UserUpdate's dojoCohort field based on the values of the ratingSystem
@@ -1145,6 +1187,33 @@ func (repo *dynamoRepository) createDefaultDirectories(user *User) error {
 
 // UpdateUser applies the specified update to the user with the provided username.
 func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*User, error) {
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")),
+	)
+}
+
+// UpdateUserIfNotGameReview applies the specified update only if the user is not currently
+// an active Game & Profile Review subscriber.
+func (repo *dynamoRepository) UpdateUserIfNotGameReview(username string, update *UserUpdate) (*User, error) {
+	notSubscribed := expression.AttributeNotExists(expression.Name("subscriptionStatus")).
+		Or(expression.Name("subscriptionStatus").NotEqual(expression.Value(SubscriptionStatus_Subscribed)))
+	notGameReviewTier := expression.AttributeNotExists(expression.Name("subscriptionTier")).
+		Or(expression.Name("subscriptionTier").NotEqual(expression.Value(SubscriptionTier_GameReview)))
+
+	return repo.updateUser(
+		username,
+		update,
+		expression.AttributeExists(expression.Name("username")).And(notSubscribed.Or(notGameReviewTier)),
+	)
+}
+
+func (repo *dynamoRepository) updateUser(
+	username string,
+	update *UserUpdate,
+	condition expression.ConditionBuilder,
+) (*User, error) {
 	if username == "STATISTICS" {
 		return nil, errors.New(403, "Invalid request: cannot update username `STATISTICS`", "")
 	}
@@ -1164,7 +1233,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		builder = builder.Set(expression.Name(k), expression.Value(v))
 	}
 
-	expr, err := expression.NewBuilder().WithUpdate(builder).Build()
+	expr, err := expression.NewBuilder().WithUpdate(builder).WithCondition(condition).Build()
 	if err != nil {
 		return nil, errors.Wrap(500, "Temporary server error", "DynamoDB expression building error", err)
 	}
@@ -1178,7 +1247,7 @@ func (repo *dynamoRepository) UpdateUser(username string, update *UserUpdate) (*
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
-		ConditionExpression:       aws.String("attribute_exists(username)"),
+		ConditionExpression:       expr.Condition(),
 		TableName:                 aws.String(userTable),
 		ReturnValues:              aws.String("ALL_NEW"),
 	}
@@ -1368,6 +1437,23 @@ const ratingsProjection = "username, dojoCohort, subscriptionStatus, paymentInfo
 // startkey is an optional parameter that can be used to perform pagination.
 // The list of users and the next start key are returned.
 func (repo *dynamoRepository) ListUserRatings(cohort DojoCohort, startKey string) ([]*User, string, error) {
+	return repo.ListUserRatingsPage(cohort, startKey, 0)
+}
+
+// ListUserRatingsPage returns up to limit Users matching the provided cohort.
+// A limit of 0 means no limit (up to 1MB of data). Only the fields necessary
+// for the rating/statistics update are returned. startKey is an optional
+// parameter that can be used to perform pagination.
+func (repo *dynamoRepository) ListUserRatingsPage(cohort DojoCohort, startKey string, limit int64) ([]*User, string, error) {
+	var users []*User
+	lastKey, err := repo.query(listUserRatingsInput(cohort, limit), startKey, &users)
+	if err != nil {
+		return nil, "", err
+	}
+	return users, lastKey, nil
+}
+
+func listUserRatingsInput(cohort DojoCohort, limit int64) *dynamodb.QueryInput {
 	input := &dynamodb.QueryInput{
 		KeyConditionExpression: aws.String("#cohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
@@ -1380,13 +1466,10 @@ func (repo *dynamoRepository) ListUserRatings(cohort DojoCohort, startKey string
 		IndexName:            aws.String("CohortIdx"),
 		TableName:            aws.String(userTable),
 	}
-
-	var users []*User
-	lastKey, err := repo.query(input, startKey, &users)
-	if err != nil {
-		return nil, "", err
+	if limit > 0 {
+		input.SetLimit(limit)
 	}
-	return users, lastKey, nil
+	return input
 }
 
 func (repo *dynamoRepository) UpdateUserRatings(users []*User) error {
@@ -1417,7 +1500,25 @@ func (repo *dynamoRepository) UpdateUserRatings(users []*User) error {
 	output, err := repo.svc.BatchExecuteStatement(input)
 	log.Debugf("Batch execute statement output: %v", output)
 
-	return errors.Wrap(500, "Temporary server error", "Failed BatchExecuteStatement", err)
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed BatchExecuteStatement", err)
+	}
+	return batchStatementsError(output.Responses)
+}
+
+// batchStatementsError returns an error if any individual statement in a
+// BatchExecuteStatement response failed. DynamoDB can report overall success
+// while individual statements fail, so callers must inspect each response.
+func batchStatementsError(responses []*dynamodb.BatchStatementResponse) error {
+	for _, response := range responses {
+		if response.Error != nil {
+			return errors.New(500, "Temporary server error", fmt.Sprintf(
+				"PartiQL batch statement failed: %s: %s",
+				aws.StringValue(response.Error.Code), aws.StringValue(response.Error.Message),
+			))
+		}
+	}
+	return nil
 }
 
 const (

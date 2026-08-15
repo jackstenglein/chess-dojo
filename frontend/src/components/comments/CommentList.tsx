@@ -7,6 +7,7 @@ import { Comment } from '@jackstenglein/chess-dojo-common/src/database/timeline'
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplyIcon from '@mui/icons-material/Reply';
 import SaveIcon from '@mui/icons-material/Save';
 import SendIcon from '@mui/icons-material/Send';
@@ -18,12 +19,16 @@ import {
     DialogContentText,
     DialogTitle,
     IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
     Paper,
     Stack,
     TextField,
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { groupCommentsIntoThreads } from './threadComments';
 
@@ -38,6 +43,7 @@ interface CommentListProps {
     onDelete?: (commentId: string) => Promise<void>;
     threaded?: boolean;
     onSubmitReply?: (parentId: string, content: string) => Promise<void>;
+    outlined?: boolean;
 }
 
 const CommentList: React.FC<CommentListProps> = ({
@@ -48,7 +54,9 @@ const CommentList: React.FC<CommentListProps> = ({
     onDelete,
     threaded,
     onSubmitReply,
+    outlined,
 }) => {
+    const t = useTranslations('comments');
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
     const replyRequest = useRequest();
@@ -97,13 +105,19 @@ const CommentList: React.FC<CommentListProps> = ({
         const hiddenThreads = threads.length - displayThreads.length;
 
         return (
-            <Stack spacing={2} width={1} alignItems='start' mb={2}>
+            <Stack
+                spacing={2}
+                sx={{
+                    width: 1,
+                    alignItems: 'start',
+                    mb: 2,
+                }}
+            >
                 <RequestSnackbar request={replyRequest} />
 
                 {hiddenThreads > 0 && viewCommentsLink && (
                     <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
-                        View {hiddenThreads} earlier comment
-                        {hiddenThreads !== 1 ? 's' : ''}
+                        {t('viewEarlierComments', { count: hiddenThreads })}
                     </Link>
                 )}
 
@@ -116,12 +130,19 @@ const CommentList: React.FC<CommentListProps> = ({
                         isCollapsible && !isExpanded ? thread.replies.slice(-2) : thread.replies;
 
                     return (
-                        <Stack key={thread.root.id} spacing={1} width={1}>
+                        <Stack
+                            key={thread.root.id}
+                            spacing={1}
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <CommentListItem
                                 comment={thread.root}
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 onReply={onSubmitReply ? handleReplyClick : undefined}
+                                outlined={outlined}
                             />
                             {replyingTo === thread.root.id && onSubmitReply && (
                                 <InlineReplyEditor
@@ -142,8 +163,7 @@ const CommentList: React.FC<CommentListProps> = ({
                                         justifyContent: 'flex-start',
                                     }}
                                 >
-                                    Show {hiddenReplies.length} more{' '}
-                                    {hiddenReplies.length === 1 ? 'reply' : 'replies'}
+                                    {t('showMoreReplies', { count: hiddenReplies.length })}
                                 </Button>
                             )}
                             {isCollapsible && isExpanded && (
@@ -156,16 +176,24 @@ const CommentList: React.FC<CommentListProps> = ({
                                         justifyContent: 'flex-start',
                                     }}
                                 >
-                                    Hide replies
+                                    {t('hideReplies')}
                                 </Button>
                             )}
                             {visibleReplies.map((reply) => (
-                                <Stack key={reply.id} spacing={1} pl='52px' width={1}>
+                                <Stack
+                                    key={reply.id}
+                                    spacing={1}
+                                    sx={{
+                                        pl: '52px',
+                                        width: 1,
+                                    }}
+                                >
                                     <CommentListItem
                                         comment={reply}
                                         onEdit={onEdit}
                                         onDelete={onDelete}
                                         onReply={onSubmitReply ? handleReplyClick : undefined}
+                                        outlined={outlined}
                                     />
                                     {replyingTo === reply.id && onSubmitReply && (
                                         <InlineReplyEditor
@@ -192,10 +220,17 @@ const CommentList: React.FC<CommentListProps> = ({
     const hiddenComments = comments.length - displayComments.length;
 
     return (
-        <Stack spacing={2} width={1} alignItems='start' mb={2}>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+                alignItems: 'start',
+                mb: 2,
+            }}
+        >
             {hiddenComments > 0 && viewCommentsLink && (
                 <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
-                    View {hiddenComments} earlier comment{hiddenComments !== 1 ? 's' : ''}
+                    {t('viewEarlierComments', { count: hiddenComments })}
                 </Link>
             )}
 
@@ -205,6 +240,7 @@ const CommentList: React.FC<CommentListProps> = ({
                     comment={comment}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    outlined={outlined}
                 />
             ))}
         </Stack>
@@ -216,6 +252,7 @@ interface CommentListItemProps {
     onEdit?: (commentId: string, content: string) => Promise<void>;
     onDelete?: (commentId: string) => Promise<void>;
     onReply?: (parentCommentId: string) => void;
+    outlined?: boolean;
 }
 
 const CommentListItem: React.FC<CommentListItemProps> = ({
@@ -223,13 +260,16 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     onEdit,
     onDelete,
     onReply,
+    outlined,
 }) => {
+    const t = useTranslations('comments');
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
     const [expanded, setExpanded] = useState(false);
     const [isClamped, setIsClamped] = useState(false);
     const contentRef = useRef<HTMLElement>(null);
+    const [actionsAnchorEl, setActionsAnchorEl] = useState<HTMLElement | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const editRequest = useRequest();
     const deleteRequest = useRequest();
@@ -252,6 +292,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     const timeFormat = user?.timeFormat;
 
     const canModify = (onEdit || onDelete) && (user?.username === comment.owner || user?.isAdmin);
+    const actionsLabel = [onEdit && t('edit'), onDelete && t('delete')].filter(Boolean).join(' / ');
+
+    const handleEditClick = () => {
+        setActionsAnchorEl(null);
+        setEditContent(comment.content);
+        setEditing(true);
+    };
+
+    const handleDeleteClick = () => {
+        setActionsAnchorEl(null);
+        deleteRequest.reset();
+        setDeleteDialogOpen(true);
+    };
 
     const handleSaveEdit = () => {
         const content = editContent.trim();
@@ -285,51 +338,71 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     };
 
     return (
-        <Stack direction='row' spacing={1.5} width={1}>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                width: 1,
+            }}
+        >
             <RequestSnackbar request={editRequest} />
             <RequestSnackbar request={deleteRequest} />
 
             <Avatar username={comment.owner} displayName={comment.ownerDisplayName} size={40} />
 
-            <Stack flexGrow={1} minWidth={0}>
-                <Paper elevation={2} sx={{ px: '12px', py: '8px', borderRadius: '6px' }}>
+            <Stack
+                sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                }}
+            >
+                <Paper
+                    elevation={2}
+                    sx={{
+                        px: '12px',
+                        py: '8px',
+                        borderRadius: '6px',
+                        ...(outlined && {
+                            border: 1,
+                            borderColor: 'divider',
+                            boxShadow: 'none',
+                        }),
+                    }}
+                >
                     <Stack>
-                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}
+                        >
                             <Link href={`/profile/${comment.owner}`}>
-                                <Typography variant='subtitle1' color='text.secondary'>
+                                <Typography
+                                    variant='subtitle1'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {comment.ownerDisplayName} ({comment.ownerCohort})
                                 </Typography>
                             </Link>
 
                             {canModify && !editing && (
-                                <Stack direction='row' spacing={0.5}>
-                                    {onEdit && (
-                                        <Tooltip title='Edit'>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => {
-                                                    setEditContent(comment.content);
-                                                    setEditing(true);
-                                                }}
-                                            >
-                                                <EditIcon fontSize='small' />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                    {onDelete && (
-                                        <Tooltip title='Delete'>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => {
-                                                    deleteRequest.reset();
-                                                    setDeleteDialogOpen(true);
-                                                }}
-                                            >
-                                                <DeleteIcon fontSize='small' />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                </Stack>
+                                <IconButton
+                                    size='small'
+                                    aria-label={actionsLabel}
+                                    aria-controls={
+                                        actionsAnchorEl
+                                            ? `comment-actions-${comment.id}`
+                                            : undefined
+                                    }
+                                    aria-haspopup='menu'
+                                    aria-expanded={actionsAnchorEl ? 'true' : undefined}
+                                    onClick={(event) => setActionsAnchorEl(event.currentTarget)}
+                                >
+                                    <MoreVertIcon fontSize='small' />
+                                </IconButton>
                             )}
                         </Stack>
 
@@ -342,8 +415,14 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                     onChange={(e) => setEditContent(e.target.value)}
                                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                                 />
-                                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                                    <Tooltip title='Cancel'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        justifyContent: 'flex-end',
+                                    }}
+                                >
+                                    <Tooltip title={t('cancel')}>
                                         <IconButton
                                             size='small'
                                             onClick={() => setEditing(false)}
@@ -352,7 +431,7 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                             <CloseIcon fontSize='small' />
                                         </IconButton>
                                     </Tooltip>
-                                    <Tooltip title='Save'>
+                                    <Tooltip title={t('save')}>
                                         <IconButton
                                             size='small'
                                             color='primary'
@@ -394,14 +473,14 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                             alignSelf: 'flex-start',
                                         }}
                                     >
-                                        {expanded ? 'Show less' : 'Show more'}
+                                        {expanded ? t('showLess') : t('showMore')}
                                     </Button>
                                 )}
                             </>
                         )}
 
                         {onReply && user && !editing && (
-                            <Tooltip title='Reply'>
+                            <Tooltip title={t('reply')}>
                                 <IconButton
                                     size='small'
                                     onClick={() => onReply(comment.id)}
@@ -413,30 +492,67 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                         )}
                     </Stack>
                 </Paper>
-                <Stack direction='row' alignItems='center' spacing={1}>
-                    <Typography variant='caption' color='text.secondary'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                        mt: outlined ? 0.25 : undefined,
+                        px: outlined ? 0.5 : undefined,
+                    }}
+                >
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {toDojoDateString(createdAt, timezone)} •{' '}
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
-                        {isEdited && ' • (edited)'}
+                        {isEdited && ` • ${t('edited')}`}
                     </Typography>
                 </Stack>
             </Stack>
 
+            <Menu
+                id={`comment-actions-${comment.id}`}
+                anchorEl={actionsAnchorEl}
+                open={Boolean(actionsAnchorEl)}
+                onClose={() => setActionsAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                {onEdit && (
+                    <MenuItem onClick={handleEditClick}>
+                        <ListItemIcon>
+                            <EditIcon fontSize='small' />
+                        </ListItemIcon>
+                        {t('edit')}
+                    </MenuItem>
+                )}
+                {onDelete && (
+                    <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+                        <ListItemIcon>
+                            <DeleteIcon fontSize='small' color='error' />
+                        </ListItemIcon>
+                        {t('delete')}
+                    </MenuItem>
+                )}
+            </Menu>
+
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-                <DialogTitle>Delete Comment</DialogTitle>
+                <DialogTitle>{t('deleteComment')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete this comment? This action cannot be undone.
-                    </DialogContentText>
+                    <DialogContentText>{t('deleteConfirmation')}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>{t('cancel')}</Button>
                     <Button
                         color='error'
                         onClick={handleDelete}
                         disabled={deleteRequest.isLoading()}
                     >
-                        Delete
+                        {t('delete')}
                     </Button>
                 </DialogActions>
                 <RequestSnackbar request={deleteRequest} />
@@ -460,29 +576,53 @@ const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
     onCancel,
     isLoading,
 }) => {
+    const t = useTranslations('comments');
     const [content, setContent] = useState('');
 
     return (
-        <Stack pl='52px' spacing={0.5} width={1}>
-            <Stack direction='row' alignItems='center' spacing={1}>
-                <Typography variant='body2' color='text.secondary'>
-                    Replying to {parentName}
+        <Stack
+            spacing={0.5}
+            sx={{
+                pl: '52px',
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {t('replyingTo', { name: parentName })}
                 </Typography>
                 <IconButton size='small' onClick={onCancel} disabled={isLoading}>
                     <CloseIcon fontSize='small' />
                 </IconButton>
             </Stack>
-            <Stack direction='row' spacing={1} alignItems='start'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 <TextField
                     fullWidth
                     multiline
                     size='small'
-                    label='Write a reply...'
+                    label={t('writeReply')}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                 />
-                <Tooltip title='Post Reply'>
+                <Tooltip title={t('postReply')}>
                     <span>
                         <IconButton
                             color='primary'

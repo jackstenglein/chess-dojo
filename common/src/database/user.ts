@@ -1,4 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
+import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -32,6 +33,9 @@ export interface User {
     ratingSystem: RatingSystem;
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
+
+    /** The user's aggregate time management rating. */
+    timeManagementRating?: TimeManagementRating;
 
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
@@ -93,6 +97,8 @@ export interface User {
 
     /** The set of club ids the user is a member of. */
     clubs?: string[];
+    /** The id of the club the user has designated as their main club. Empty if unset. */
+    mainClubId?: string;
 
     /** A map from exam id to the user's summary for that exam. */
     exams: Record<string, UserExamSummary>;
@@ -124,6 +130,9 @@ export interface User {
     /** The user's best-ever square color drill rating (0-1500). */
     squareColorRating?: number;
 
+    /** The user's best-ever mate-in-one drill block rating (0-2500). */
+    mateInOneRating?: number;
+
     /** The user's firebase cloud messaging tokens. */
     firebaseTokens?: string[];
 
@@ -141,6 +150,9 @@ export interface User {
 
     /** Tracks which milestone notifications have been sent for this user. Ex: '85_2000-2100' */
     sentMilestoneNotifications?: string[];
+
+    /** Tracks which cohort version the user is currently on. Unset means 2024. */
+    cohortVersion?: string;
 }
 
 /**
@@ -265,6 +277,10 @@ export interface PaymentInfo {
     overrideRevokedAt?: string;
     /** The username of the user who revoked the OVERRIDE access. */
     overrideRevokedBy?: string;
+    /** Stripe customer id preserved while OVERRIDE is active (restored when override ends). */
+    preservedCustomerId?: string;
+    preservedSubscriptionStatus?: string;
+    preservedSubscriptionTier?: string;
 }
 
 export interface CoachInfo {

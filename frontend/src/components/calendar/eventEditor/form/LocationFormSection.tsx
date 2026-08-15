@@ -1,5 +1,6 @@
 import { LocationOn } from '@mui/icons-material';
 import { InputAdornment, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface LocationFormSectionProps {
     location: string;
@@ -16,11 +17,12 @@ const LocationFormSection: React.FC<LocationFormSectionProps> = ({
     required,
     error,
 }) => {
+    const t = useTranslations('calendar');
     return (
         <TextField
             data-testid='location-textfield'
             fullWidth
-            placeholder={`Location${required ? '' : ' (Optional)'}`}
+            placeholder={required ? t('location') : t('locationOptional')}
             variant='outlined'
             value={location}
             onChange={(event) => setLocation(event.target.value)}

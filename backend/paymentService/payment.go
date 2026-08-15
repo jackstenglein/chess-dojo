@@ -97,7 +97,7 @@ func PurchaseCourseUrl(user *database.User, course *database.Course, purchaseOpt
 		params.AddMetadata("username", user.Username)
 		params.PaymentIntentData.AddMetadata("username", user.Username)
 
-		if user.PaymentInfo.GetCustomerId() != "" {
+		if strings.HasPrefix(user.PaymentInfo.GetCustomerId(), "cus_") {
 			params.Customer = stripe.String(user.PaymentInfo.GetCustomerId())
 		}
 	}

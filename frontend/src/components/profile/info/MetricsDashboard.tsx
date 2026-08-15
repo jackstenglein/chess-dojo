@@ -9,6 +9,7 @@ import {
 import { calculateTacticsRating } from '@/exams/view/exam';
 import { Help } from '@mui/icons-material';
 import { Card, CardContent, Grid, Stack, SxProps, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface MetricsDashboardProps {
     user: User;
@@ -17,31 +18,52 @@ interface MetricsDashboardProps {
 
 const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
     const { requirements } = useRequirements(ALL_COHORTS, true);
+    const t = useTranslations('profile.info');
+    const tRating = useTranslations('enums.ratingSystem');
 
     return (
         <Card variant='outlined' sx={sx}>
             <CardContent>
                 <Typography variant='h6' sx={{ mb: 2 }}>
-                    Metrics
+                    {t('metrics')}
                 </Typography>
 
-                <Grid container justifyContent='center' rowGap={1} columnGap={1}>
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: 'center',
+                        rowGap: 1,
+                        columnGap: 1,
+                    }}
+                >
                     <Grid
-                        display='flex'
-                        justifyContent='center'
                         size={{
                             xs: 12,
                             sm: 4,
                             md: 3,
                         }}
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
                     >
-                        <Stack direction='row' alignItems='center'>
-                            <Typography>Tactics Rating</Typography>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography>{t('tacticsRating')}</Typography>
 
-                            <Tooltip title='For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.'>
+                            <Tooltip title={t('tacticsRatingTooltip')}>
                                 <Help fontSize='small' sx={{ color: 'text.secondary' }} />
                             </Tooltip>
-                            <Typography ml={1} fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    ml: 1,
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {Math.round(
                                     10 * calculateTacticsRating(user, requirements).overall,
                                 ) / 10}
@@ -59,18 +81,30 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                         return (
                             <Grid
                                 key={rs}
-                                display='flex'
-                                justifyContent='center'
                                 size={{
                                     xs: 12,
                                     sm: 4,
                                     md: 3,
                                 }}
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                }}
                             >
-                                <Stack direction='row' alignItems='center'>
-                                    <Typography>{formatRatingSystem(rs)}</Typography>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Typography>{formatRatingSystem(rs, tRating)}</Typography>
 
-                                    <Typography ml={1} fontWeight='bold'>
+                                    <Typography
+                                        sx={{
+                                            ml: 1,
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
                                         {currentRating}
                                     </Typography>
                                 </Stack>

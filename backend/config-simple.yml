@@ -16,3 +16,5 @@ cognitoUserPoolDomain: ''
 coaches: ''
 senseiDiscordIds: ''
 mongoUri: ''
+# Game search is unavailable on simple deployments ('unset' disables it).
+gameSearchEndpoint: unset

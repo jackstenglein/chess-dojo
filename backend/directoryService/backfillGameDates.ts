@@ -82,7 +82,9 @@ async function main() {
     let startKey: Record<string, AttributeValue> | undefined;
 
     do {
-        console.log(`Scanning directories... (processed: ${scannedDirectories}, updated items: ${updatedItems})`);
+        console.log(
+            `Scanning directories... (processed: ${scannedDirectories}, updated items: ${updatedItems})`,
+        );
 
         const scanOutput = await dynamo.send(
             new ScanCommand({
@@ -103,13 +105,14 @@ async function main() {
             // Collect game items that are missing the date field
             const needsDate: { key: string; cohort: string; id: string }[] = [];
             for (const [itemKey, item] of Object.entries(dir.items)) {
-                if (
-                    item.type !== DirectoryItemTypes.DIRECTORY &&
-                    !item.metadata.date
-                ) {
+                if (item.type !== DirectoryItemTypes.DIRECTORY && !item.metadata.date) {
                     const tokens = itemKey.split('/');
                     if (tokens.length >= 2) {
-                        needsDate.push({ key: itemKey, cohort: tokens[0], id: tokens.slice(1).join('/') });
+                        needsDate.push({
+                            key: itemKey,
+                            cohort: tokens[0],
+                            id: tokens.slice(1).join('/'),
+                        });
                     }
                 }
             }
@@ -149,7 +152,9 @@ async function main() {
         }
     } while (startKey);
 
-    console.log(`Done. Scanned ${scannedDirectories} directories, updated ${updatedItems} game items.`);
+    console.log(
+        `Done. Scanned ${scannedDirectories} directories, updated ${updatedItems} game items.`,
+    );
 }
 
 main().catch(console.error);

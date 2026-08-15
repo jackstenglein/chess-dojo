@@ -3,6 +3,7 @@ import { ALL_COHORTS } from '@/database/user';
 import { AllInclusive } from '@mui/icons-material';
 import { SvgIconProps, Tooltip, tooltipClasses } from '@mui/material';
 import { SxProps } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { CSSProperties } from 'react';
 
@@ -49,6 +50,8 @@ const CohortIcon: React.FC<CohortIconProps & SvgIconProps> = ({
     skipCache,
     ...svgProps
 }) => {
+    const t = useTranslations('scoreboard');
+
     if (!cohort) {
         return null;
     }
@@ -64,7 +67,7 @@ const CohortIcon: React.FC<CohortIconProps & SvgIconProps> = ({
 
     return (
         <Tooltip
-            title={tooltip !== undefined ? tooltip : `Graduated from ${cohort}`}
+            title={tooltip !== undefined ? tooltip : t('graduatedFrom', { cohort })}
             sx={{
                 [`& .${tooltipClasses.tooltip}`]: {
                     zIndex: 1301,

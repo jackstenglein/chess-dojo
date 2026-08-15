@@ -13,7 +13,6 @@ import {
     isRequirement,
 } from '@/database/requirement';
 import { TimeFormat } from '@/database/user';
-import { LoadingButton } from '@mui/lab';
 import {
     Alert,
     Button,
@@ -26,8 +25,9 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { InputSlider } from './InputSlider';
 import { TaskDialogView } from './TaskDialog';
@@ -51,6 +51,8 @@ export const ProgressUpdater = ({
     onClose,
     setView,
 }: ProgressUpdaterProps) => {
+    const t = useTranslations('profile.trainingPlan.progressUpdater');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     const api = useApi();
     const { entries, onNewEntry } = useTimelineContext();
@@ -96,12 +98,12 @@ export const ProgressUpdater = ({
         const errors: Record<string, string> = {};
         if (hours !== '') {
             if (!NUMBER_REGEX.test(hours)) {
-                errors.hours = 'Only numeric characters are accepted';
+                errors.hours = tCommon('mustBeNumeric');
             }
         }
         if (minutes !== '') {
             if (!NUMBER_REGEX.test(minutes)) {
-                errors.minutes = 'Only numeric characters are accepted';
+                errors.minutes = tCommon('mustBeNumeric');
             }
         }
         setErrors(errors);
@@ -148,6 +150,7 @@ export const ProgressUpdater = ({
                 setHours('');
                 setMinutes('');
                 request.reset();
+                // Only clear the timer when it was tracking this task or not specific to a task.
                 if (!timerTask || timerTask.id === requirement.id) {
                     onClearTimer();
                 }
@@ -179,13 +182,13 @@ export const ProgressUpdater = ({
                                     onChange={(event) => setMarkComplete(event.target.checked)}
                                 />
                             }
-                            label='Mark as Completed?'
+                            label={t('markComplete')}
                         />
                     )}
 
                     <TextField
-                        label='Comments'
-                        placeholder='Optional comments about your progress or the task itself. Visible to others on the newsfeed.'
+                        label={tCommon('comments')}
+                        placeholder={tCommon('commentsPlaceholder')}
                         multiline={true}
                         maxRows={3}
                         value={notes}
@@ -193,10 +196,16 @@ export const ProgressUpdater = ({
                     />
 
                     <Stack spacing={2}>
-                        <Grid container width={1} gap={2}>
+                        <Grid
+                            container
+                            sx={{
+                                width: 1,
+                                gap: 2,
+                            }}
+                        >
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <DateTimePicker
-                                    label='Date'
+                                    label={tCommon('date')}
                                     disableFuture
                                     value={date}
                                     onChange={setDate}
@@ -210,7 +219,7 @@ export const ProgressUpdater = ({
                             </Grid>
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <TextField
-                                    label='Hours'
+                                    label={tCommon('hours')}
                                     value={hours}
                                     slotProps={{
                                         htmlInput: {
@@ -226,7 +235,7 @@ export const ProgressUpdater = ({
                             </Grid>
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <TextField
-                                    label='Minutes'
+                                    label={tCommon('minutes')}
                                     value={minutes}
                                     slotProps={{
                                         htmlInput: {
@@ -242,12 +251,14 @@ export const ProgressUpdater = ({
                             </Grid>
                         </Grid>
                         <DialogContentText>
-                            Total Time: {`${Math.floor(totalTime / 60)}h ${totalTime % 60}m`}
+                            {t('totalTime', {
+                                hours: Math.floor(totalTime / 60),
+                                minutes: totalTime % 60,
+                            })}
                         </DialogContentText>
                         {addedTime > TIME_WARNING_THRESHOLD_MINS && (
                             <Alert severity='warning' variant='filled'>
-                                You're adding a lot of time! Please double-check your input before
-                                saving.
+                                {t('largeTimeWarning')}
                             </Alert>
                         )}
                     </Stack>
@@ -255,7 +266,7 @@ export const ProgressUpdater = ({
             </DialogContent>
             <DialogActions sx={{ flexWrap: 'wrap' }}>
                 <Button onClick={onClose} disabled={request.isLoading()}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
                 {setView && (
                     <>
@@ -263,24 +274,24 @@ export const ProgressUpdater = ({
                             onClick={() => setView(TaskDialogView.Details)}
                             disabled={request.isLoading()}
                         >
-                            Task Details
+                            {tCommon('taskDetails')}
                         </Button>
                         <Button
                             data-testid='task-updater-show-history-button'
                             onClick={() => setView(TaskDialogView.History)}
                             disabled={request.isLoading()}
                         >
-                            Show History
+                            {tCommon('showHistory')}
                         </Button>
                     </>
                 )}
-                <LoadingButton
+                <Button
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
                 >
-                    Update
-                </LoadingButton>
+                    {tCommon('update')}
+                </Button>
             </DialogActions>
 
             <RequestSnackbar request={request} />

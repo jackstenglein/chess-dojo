@@ -3,7 +3,8 @@ import { Chess, Event, EventType, Move, Pgn } from '@jackstenglein/chess';
 
 import { PlayerNameWithTitle } from '@/components/ui/PlayerNameWithTitle';
 import { Divider, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from './PgnBoard';
 import {
@@ -47,11 +48,6 @@ export function getInitialClock(pgn?: Pgn): string | undefined {
 
     return result;
 }
-
-export const ClockTypeDescriptions: Record<string, string> = {
-    emt: 'Elapsed Move Time. The time spent to play the current move. h:mm:ss',
-    clk: 'h:mm:ss. The time displayed on the clock after the current move was played.',
-};
 
 function getMoveClockText(
     clockCommand: 'emt' | 'clk',
@@ -106,6 +102,14 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
     const { chess, board } = useChess();
     const [, setForceRender] = useState(0);
     const light = useLightMode();
+    const t = useTranslations('analysisBoard.chrome');
+    const ClockTypeDescriptions = useMemo(
+        () => ({
+            emt: t('emtDescription'),
+            clk: t('clkDescription'),
+        }),
+        [t],
+    );
 
     useEffect(() => {
         if (chess) {
@@ -196,15 +200,30 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                 px: '6px',
             }}
         >
-            <Stack direction='row' spacing={1} justifyContent='space-between'>
-                <Stack direction='row' spacing={1} overflow='hidden' flexGrow={1}>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                    }}
+                >
                     {playerResult && (
                         <>
                             <Typography
                                 variant='subtitle2'
-                                color='text.secondary'
-                                fontWeight='bold'
-                                whiteSpace='nowrap'
+                                sx={{
+                                    color: 'text.secondary',
+                                    fontWeight: 'bold',
+                                    whiteSpace: 'nowrap',
+                                }}
                             >
                                 {playerResult}
                             </Typography>
@@ -228,7 +247,13 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                     />
 
                     {playerElo && (
-                        <Typography variant='subtitle2' color='text.secondary' whiteSpace='nowrap'>
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'text.secondary',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
                             ({playerElo})
                         </Typography>
                     )}
@@ -240,9 +265,11 @@ const PlayerHeader: React.FC<PlayerHeaderProps> = ({ type }) => {
                     <Tooltip title={ClockTypeDescriptions[clockCommand]}>
                         <Typography
                             variant='subtitle2'
-                            color='text.secondary'
-                            display='inline'
-                            whiteSpace='nowrap'
+                            sx={{
+                                color: 'text.secondary',
+                                display: 'inline',
+                                whiteSpace: 'nowrap',
+                            }}
                         >
                             {moveClockText}
                         </Typography>
@@ -270,22 +297,46 @@ function EmptyHeader({ type, light }: { type: string; light: boolean }) {
                 visibility: 'hidden',
             }}
         >
-            <Stack direction='row' spacing={1} justifyContent='space-between'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Stack direction='row' spacing={1}>
                     <>
-                        <Typography variant='subtitle2' color='text.secondary' fontWeight='bold'>
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'text.secondary',
+                                fontWeight: 'bold',
+                            }}
+                        >
                             1
                         </Typography>
                         <Divider flexItem orientation='vertical' />
                     </>
 
-                    <Typography variant='subtitle2' color='text.secondary' fontWeight='bold'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Test
                     </Typography>
                 </Stack>
 
                 <Tooltip title='Test'>
-                    <Typography variant='subtitle2' color='text.secondary' display='inline'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                            display: 'inline',
+                        }}
+                    >
                         1:30:00
                     </Typography>
                 </Tooltip>
@@ -335,7 +386,12 @@ const CapturedMaterial = ({
     }
 
     return (
-        <Stack direction='row' alignItems='center'>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             {pieceTypes.map((type) => (
                 <React.Fragment key={type}>
                     {Array.from(Array(capturedPieces[type])).map((_, i) => (
@@ -346,8 +402,13 @@ const CapturedMaterial = ({
             {displayedMaterialDiff && (
                 <Typography
                     variant='body2'
-                    color='text.secondary'
-                    sx={{ position: 'relative', top: '1px', ml: '2px', whiteSpace: 'nowrap' }}
+                    sx={{
+                        color: 'text.secondary',
+                        position: 'relative',
+                        top: '1px',
+                        ml: '2px',
+                        whiteSpace: 'nowrap',
+                    }}
                 >
                     {displayedMaterialDiff}
                 </Typography>

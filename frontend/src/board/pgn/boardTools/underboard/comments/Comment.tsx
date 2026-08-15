@@ -12,7 +12,6 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Move } from '@jackstenglein/chess';
 import { Edit, ExpandMore } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Collapse,
@@ -28,6 +27,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useState, type JSX } from 'react';
 import Replies from './Replies';
 import ReplyEditor from './ReplyEditor';
@@ -77,6 +77,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
     hideControls,
     isReadonly,
 }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const { chess } = useChess();
     const [expanded, setExpanded] = useState(true);
     const [isReplying, setIsReplying] = useState(false);
@@ -104,7 +105,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
         <Stack spacing={0.5}>
             <Stack direction='row' spacing={0.5}>
                 {!expanded && (
-                    <Tooltip title='Expand Comment'>
+                    <Tooltip title={t('expandComment')}>
                         <IconButton onClick={() => setExpanded(true)} size='small'>
                             <ExpandMore fontSize='small' sx={{ color: 'text.secondary' }} />
                         </IconButton>
@@ -114,10 +115,11 @@ const BaseComment: React.FC<BaseCommentProps> = ({
             </Stack>
             <Collapse in={expanded}>
                 <Stack direction='row'>
-                    <Tooltip title='Collapse Comment'>
+                    <Tooltip title={t('collapseComment')}>
                         <Stack
-                            alignItems='center'
+                            onClick={() => setExpanded(false)}
                             sx={{
+                                alignItems: 'center',
                                 width: '20px',
                                 minWidth: '20px',
                                 maxWidth: '20px',
@@ -127,24 +129,34 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                                     borderColor: 'primary.main',
                                 },
                             }}
-                            onClick={() => setExpanded(false)}
                         >
                             <Divider orientation='vertical' />
                         </Stack>
                     </Tooltip>
-                    <Stack flexGrow={1} spacing={0.5}>
+                    <Stack
+                        spacing={0.5}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {renderContent ? (
                             renderContent
                         ) : comment.suggestedVariation ? (
                             <>
-                                <Typography variant='body2' color='text.secondary'>
-                                    Suggested a variation:
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('suggestedVariation')}
                                 </Typography>
                                 {suggestedVariation && (
                                     <Lines
                                         lines={[suggestedVariation]}
                                         handleScroll={() => null}
                                         forceShowSuggestedVariations
+                                        showInlinePositionComments={false}
                                         slotProps={{
                                             moveButton: { hideSuggestedVariationOwner: true },
                                         }}
@@ -168,7 +180,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
                                         sx={{ textTransform: 'none', minWidth: 0 }}
                                         onClick={() => setIsReplying(true)}
                                     >
-                                        reply
+                                        {t('reply')}
                                     </Button>
                                     {renderControls}
                                 </Stack>
@@ -184,6 +196,7 @@ const BaseComment: React.FC<BaseCommentProps> = ({
 };
 
 const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const [editValue, setEditValue] = useState<string>();
     const [showDelete, setShowDelete] = useState(false);
     const api = useApi();
@@ -254,7 +267,11 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                 move={move}
                 renderContent={
                     editValue === undefined ? undefined : (
-                        <Stack width={1}>
+                        <Stack
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <TextField
                                 id={BlockBoardKeyboardShortcuts}
                                 value={editValue}
@@ -274,7 +291,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                 >
                                     cancel
                                 </Button>
-                                <LoadingButton
+                                <Button
                                     disabled={editValue.trim().length === 0}
                                     loading={request.isLoading()}
                                     size='small'
@@ -282,7 +299,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                     onClick={onSave}
                                 >
                                     save
-                                </LoadingButton>
+                                </Button>
                             </Stack>
                         </Stack>
                     )
@@ -296,7 +313,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                                     sx={{ textTransform: 'none', minWidth: 0 }}
                                     onClick={() => setEditValue(comment.content)}
                                 >
-                                    edit
+                                    {t('edit')}
                                 </Button>
                             )}
                             <Button
@@ -316,26 +333,23 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
                 open={showDelete}
                 onClose={deleteRequest.isLoading() ? undefined : () => setShowDelete(false)}
             >
-                <DialogTitle>Delete Comment?</DialogTitle>
+                <DialogTitle>{t('deleteCommentTitle')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete this comment? Any replies will also be
-                        deleted.
-                    </DialogContentText>
+                    <DialogContentText>{t('deleteCommentWarning')}</DialogContentText>
                     <DialogActions>
                         <Button
                             disabled={deleteRequest.isLoading()}
                             onClick={() => setShowDelete(false)}
                         >
-                            Cancel
+                            {t('cancel')}
                         </Button>
-                        <LoadingButton
+                        <Button
                             loading={deleteRequest.isLoading()}
                             color='error'
                             onClick={onDelete}
                         >
-                            Delete
-                        </LoadingButton>
+                            {t('delete')}
+                        </Button>
                     </DialogActions>
                 </DialogContent>
             </Dialog>
@@ -346,6 +360,7 @@ const EditableComment: React.FC<CommentProps> = ({ comment, move }) => {
 };
 
 const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const viewer = useAuth().user;
 
     const createdAt = new Date(comment.createdAt);
@@ -363,24 +378,41 @@ const CommentInfo: React.FC<Omit<CommentProps, 'move'>> = ({ comment }) => {
     }
 
     return (
-        <Stack direction='row' spacing={1.5} alignItems='center'>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Avatar
                 username={comment.owner.username}
                 displayName={comment.owner.displayName}
                 size={20}
             />
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Link href={`/profile/${comment.owner.username}`} sx={{ textDecoration: 'none' }}>
                     <Typography variant='subtitle1' sx={{ color: 'text.primary' }}>
                         {comment.owner.displayName} ({comment.owner.cohort})
                     </Typography>
                 </Link>
                 <CohortIcon cohort={comment.owner.previousCohort} size={20} />
-                <Typography variant='caption' color='text.secondary'>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     • {createdAtDate} {createdAtTime}
                 </Typography>
                 {updatedAtDate && (
-                    <Tooltip title={`Updated at ${updatedAtDate} • ${updatedAtTime}`}>
+                    <Tooltip title={t('updatedAt', { date: updatedAtDate, time: updatedAtTime })}>
                         <Edit sx={{ color: 'text.secondary', fontSize: '0.8rem' }} />
                     </Tooltip>
                 )}

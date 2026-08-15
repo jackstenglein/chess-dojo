@@ -8,7 +8,6 @@ import { MoveListItem } from '@/components/profile/directories/MoveDialog';
 import { GameInfo } from '@/database/game';
 import LoadingPage from '@/loading/LoadingPage';
 import { HOME_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -21,6 +20,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export const AddToDirectoryDialog = ({
@@ -32,6 +32,7 @@ export const AddToDirectoryDialog = ({
     open: boolean;
     onClose: () => void;
 }) => {
+    const t = useTranslations('games.list.addToDirectoryDialog');
     const { user } = useRequiredAuth();
     const [directoryId, setDirectoryId] = useState(HOME_DIRECTORY_ID);
     const { directory, request: directoryRequest } = useDirectory(user.username, directoryId);
@@ -74,7 +75,7 @@ export const AddToDirectoryDialog = ({
         }
 
         if (gamesToAdd.length === 0) {
-            request.onSuccess(`All games already present in ${directory?.name}`);
+            request.onSuccess(t('allAlreadyPresent', { directoryName: directory?.name ?? '' }));
             onClose();
             return;
         }
@@ -88,7 +89,10 @@ export const AddToDirectoryDialog = ({
             .then((resp) => {
                 cache.put(resp.data.directory);
                 request.onSuccess(
-                    `Game${games.length !== 1 ? 's' : ''} added to ${resp.data.directory.name}`,
+                    t('gamesAddedTo', {
+                        count: games.length,
+                        directoryName: resp.data.directory.name,
+                    }),
                 );
                 trackEvent(EventType.AddDirectoryItems, {
                     count: gamesToAdd.length,
@@ -109,8 +113,10 @@ export const AddToDirectoryDialog = ({
                 fullWidth
             >
                 <DialogTitle>
-                    Add {games?.length} Game{games?.length !== 1 && 's'} to{' '}
-                    {directory?.name ?? 'Folder'}?
+                    {t('dialogTitle', {
+                        count: games?.length ?? 0,
+                        directoryName: directory?.name ?? t('fallbackFolder'),
+                    })}
                 </DialogTitle>
                 <DialogContent>
                     {directory ? (
@@ -122,7 +128,7 @@ export const AddToDirectoryDialog = ({
                                 variant='h6'
                             />
 
-                            <Divider>Current Contents</Divider>
+                            <Divider>{t('currentContents')}</Divider>
 
                             <List>
                                 {Object.values(directory.items)
@@ -137,8 +143,13 @@ export const AddToDirectoryDialog = ({
                                     ))}
                             </List>
                             {Object.values(directory.items).length === 0 && (
-                                <Typography textAlign='center' width={1}>
-                                    This folder is empty
+                                <Typography
+                                    sx={{
+                                        textAlign: 'center',
+                                        width: 1,
+                                    }}
+                                >
+                                    {t('folderEmpty')}
                                 </Typography>
                             )}
                         </Stack>
@@ -148,21 +159,17 @@ export const AddToDirectoryDialog = ({
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
-                    <Tooltip
-                        title={
-                            alreadyExists ? 'These games are already added to this directory' : ''
-                        }
-                    >
+                    <Tooltip title={alreadyExists ? t('alreadyAddedTooltip') : ''}>
                         <div>
-                            <LoadingButton
+                            <Button
                                 disabled={alreadyExists}
                                 loading={request.isLoading()}
                                 onClick={onAdd}
                             >
-                                Add
-                            </LoadingButton>
+                                {t('addButton')}
+                            </Button>
                         </div>
                     </Tooltip>
                 </DialogActions>

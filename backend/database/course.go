@@ -73,6 +73,9 @@ type Course struct {
 
 	// The list of chapters included in the course.
 	Chapters []*Chapter `dynamodbav:"chapters" json:"chapters"`
+
+	// The thumbnail image of the course.
+	ImageUrl string `dynamodbav:"imageUrl,omitempty" json:"imageUrl,omitempty"`
 }
 
 // Represents a way to purchase a course.
@@ -217,7 +220,7 @@ func (repo *dynamoRepository) ListCourses(courseType, startKey string) ([]Course
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":type": {S: aws.String(courseType)},
 		},
-		IndexName: aws.String("SummaryIndex"),
+		IndexName: aws.String("SummaryIdx"),
 		TableName: aws.String(courseTable),
 	}
 	var courses []Course
@@ -231,7 +234,7 @@ func (repo *dynamoRepository) ListCourses(courseType, startKey string) ([]Course
 // ScanCourses returns a list of all courses.
 func (repo *dynamoRepository) ScanCourses(startKey string) ([]Course, string, error) {
 	input := &dynamodb.ScanInput{
-		IndexName: aws.String("SummaryIndex"),
+		IndexName: aws.String("SummaryIdx"),
 		TableName: aws.String(courseTable),
 	}
 	var courses []Course
