@@ -150,10 +150,8 @@ export const ProgressUpdater = ({
                 setHours('');
                 setMinutes('');
                 request.reset();
-                // Only clear the timer when it was tracking this task. Clearing when
-                // there is no timer previously issued a spurious user update that
-                // could race with the progress save and drop badge-relevant state.
-                if (timerTask?.id === requirement.id) {
+                // Only clear the timer when it was tracking this task or not specific to a task.
+                if (!timerTask || timerTask.id === requirement.id) {
                     onClearTimer();
                 }
             })

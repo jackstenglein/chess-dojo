@@ -3,7 +3,16 @@ import { Link } from '@/components/navigation/Link';
 import { ALL_COHORTS, User } from '@/database/user';
 import { calculateTacticsRating } from '@/exams/view/exam';
 import { ZoomOutMap } from '@mui/icons-material';
-import { Box, Card, CardContent, CardHeader, IconButton, Stack, Tooltip } from '@mui/material';
+import {
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
@@ -55,11 +64,8 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 break;
             case 'new_badge':
                 setPreviousEarnedBadges(result.allEarned);
-                // Defer opening so a concurrently-closing TaskDialog releases the
-                // MUI ModalManager before this award dialog mounts.
-                const badge = result.newBadge;
-                const timeoutId = window.setTimeout(() => setSelectedBadge(badge), 0);
-                return () => window.clearTimeout(timeoutId);
+                setSelectedBadge(result.newBadge);
+                break;
         }
     }, [
         earnedBadges,
@@ -118,22 +124,6 @@ export const BadgeCard = ({ user }: { user: User }) => {
         badges.push(<BadgeImage badge={badge} onClick={handleBadgeClick} />);
     }
 
-    const dialogs = (
-        <>
-            <BadgeDialog selectedBadge={selectedBadge} handleCloseDialog={handleCloseDialog} />
-
-            <BadgCabinetDialog
-                isOpen={isViewAllModalOpen}
-                onClose={() => setIsViewAllModalOpen(false)}
-                allBadges={allBadges}
-            />
-        </>
-    );
-
-    if (badges.length === 0) {
-        return dialogs;
-    }
-
     return (
         <>
             <Card>
@@ -175,11 +165,27 @@ export const BadgeCard = ({ user }: { user: User }) => {
                                 {badge}
                             </Box>
                         ))}
+                        {badges.length === 0 && (
+                            <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ textAlign: 'center', width: 1 }}
+                            >
+                                No badges earned yet. Complete tasks in your training plan to unlock
+                                badges.
+                            </Typography>
+                        )}
                     </Stack>
                 </CardContent>
             </Card>
 
-            {dialogs}
+            <BadgeDialog selectedBadge={selectedBadge} handleCloseDialog={handleCloseDialog} />
+
+            <BadgCabinetDialog
+                isOpen={isViewAllModalOpen}
+                onClose={() => setIsViewAllModalOpen(false)}
+                allBadges={allBadges}
+            />
         </>
     );
 };
