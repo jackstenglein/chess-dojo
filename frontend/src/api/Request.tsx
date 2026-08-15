@@ -110,6 +110,7 @@ interface RequestSnackbarProps<T> {
     showSuccess?: boolean;
     defaultErrorMessage?: string;
     defaultSuccessMessage?: string;
+    onCloseError?: () => void;
 }
 
 export function RequestSnackbar<T>({
@@ -118,6 +119,7 @@ export function RequestSnackbar<T>({
     showSuccess,
     defaultErrorMessage,
     defaultSuccessMessage,
+    onCloseError,
 }: RequestSnackbarProps<T>) {
     const displayError =
         (showError === undefined || showError) &&
@@ -161,6 +163,7 @@ export function RequestSnackbar<T>({
                     open={displayError}
                     autoHideDuration={6000}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    onClose={onCloseError}
                 >
                     <Alert variant='filled' severity='error' sx={{ width: '100%' }}>
                         {errorMessage}

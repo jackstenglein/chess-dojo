@@ -56,7 +56,13 @@ async function updateGame(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
     const request = parseEvent(event, UpdateGameSchema);
     const update = await getGameUpdate(request);
 
-    const result = await applyUpdate(userInfo.username, request.cohort, request.id, update);
+    const result = await applyUpdate(
+        userInfo.username,
+        request.cohort,
+        request.id,
+        update,
+        request.updatedAt,
+    );
     if (update.timelineId) {
         await createTimelineEntry(result.new);
     } else if (update.unlisted && request.timelineId) {
@@ -140,20 +146,25 @@ async function getGameUpdate(request: UpdateGameRequest): Promise<GameUpdate> {
  * @param cohort The cohort the Game is in.
  * @param id The id of the Game.
  * @param update The update to apply.
+ * @param expectedUpdatedAt The client's known updatedAt; must match the DB value if updating the PGN.
  * @returns The updated Game.
  */
-async function applyUpdate(
+export async function applyUpdate(
     owner: string,
     cohort: string,
     id: string,
     update: GameUpdate,
+    expectedUpdatedAt: string | undefined,
 ): Promise<{ old: Game; new: Game }> {
     const updateParams = getUpdateParams(update);
     updateParams.ExpressionAttributeNames['#owner'] = 'owner';
     updateParams.ExpressionAttributeValues[':owner'] = { S: owner };
+    if (expectedUpdatedAt) {
+        updateParams.ExpressionAttributeValues[':expectedUpdatedAt'] = { S: expectedUpdatedAt };
+    }
 
     const input = new UpdateItemCommand({
-        ConditionExpression: 'attribute_exists(id) AND #owner = :owner',
+        ConditionExpression: `attribute_exists(id) AND #owner = :owner${expectedUpdatedAt ? ' AND #updatedAt = :expectedUpdatedAt' : ''}`,
         Key: {
             cohort: { S: cohort },
             id: { S: id },
@@ -161,6 +172,7 @@ async function applyUpdate(
         TableName: gamesTable,
         ...updateParams,
         ReturnValues: 'ALL_OLD',
+        ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
     });
 
     try {
@@ -179,6 +191,18 @@ async function applyUpdate(
         }
     } catch (err) {
         if (err instanceof ConditionalCheckFailedException) {
+            if (err.Item) {
+                const existing = unmarshall(err.Item) as Game;
+                if (existing.owner === owner && existing.updatedAt !== expectedUpdatedAt) {
+                    throw new ApiError({
+                        statusCode: 409,
+                        publicMessage:
+                            'This game was modified in another tab or device. Please reload and try again.',
+                        privateMessage: `Stale updatedAt: client=${expectedUpdatedAt}, db=${existing.updatedAt}`,
+                        cause: err,
+                    });
+                }
+            }
             throw new ApiError({
                 statusCode: 400,
                 publicMessage:

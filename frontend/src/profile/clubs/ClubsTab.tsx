@@ -57,7 +57,11 @@ const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
             <RequestSnackbar request={request} />
 
             {displayedClubs.map((club) => (
-                <ListClubItem key={club.id} club={club} />
+                <ListClubItem
+                    key={club.id}
+                    club={club}
+                    isMainClub={isCurrentUser && club.id === viewer?.mainClubId}
+                />
             ))}
         </Stack>
     );
