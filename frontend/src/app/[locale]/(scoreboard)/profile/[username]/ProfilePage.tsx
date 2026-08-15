@@ -294,11 +294,9 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                     </Box>
                 )}
 
-                {isLarge && (
-                    <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
-                        <BadgeCard user={user} />
-                    </Box>
-                )}
+                <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
+                    <BadgeCard user={user} />
+                </Box>
 
                 {currentUserProfile && (
                     <Box sx={{ gridArea: 'newsfeed' }}>

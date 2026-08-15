@@ -150,6 +150,7 @@ export const ProgressUpdater = ({
                 setHours('');
                 setMinutes('');
                 request.reset();
+                // Only clear the timer when it was tracking this task or not specific to a task.
                 if (!timerTask || timerTask.id === requirement.id) {
                     onClearTimer();
                 }
