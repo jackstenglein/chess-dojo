@@ -20,16 +20,12 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
-    Menu,
-    MenuItem,
     Stack,
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
-import { SiChessdotcom } from 'react-icons/si';
+import { useState } from 'react';
 
 export function turnColor(fen: string): 'white' | 'black' {
     const turn = fen.split(' ')[1];
@@ -48,8 +44,6 @@ const Position = ({ position, orientation }: PositionProps) => {
     const t = useTranslations('profile.trainingPlan.position');
     const [copied, setCopied] = useState('');
     const lichessRequest = useRequest();
-    const playComputerAnchor = useRef<HTMLButtonElement>(null);
-    const [playComputerOpen, setPlayComputerOpen] = useState(false);
     const [videoOpen, setVideoOpen] = useState(false);
     const [playMaiaOpen, setPlayMaiaOpen] = useState(false);
 
@@ -60,8 +54,8 @@ const Position = ({ position, orientation }: PositionProps) => {
         }, 3000);
     };
 
-    const onCopyFen = (fen: string) => {
-        copy(fen);
+    const onCopyFen = async (fen: string) => {
+        await navigator.clipboard.writeText(fen);
         trackEvent(EventType.CopyFen, {
             position_fen: position.fen.trim(),
             position_name: position.title,
@@ -78,7 +72,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                 fen: position.fen.trim(),
                 name: position.title,
             })
-            .then((resp) => {
+            .then(async (resp) => {
                 trackEvent(EventType.CreateSparringLink, {
                     position_fen: position.fen.trim(),
                     position_name: position.title,
@@ -86,7 +80,7 @@ const Position = ({ position, orientation }: PositionProps) => {
                     clock_increment: position.incrementSeconds,
                 });
                 lichessRequest.onSuccess();
-                copy(resp.data.url);
+                await navigator.clipboard.writeText(resp.data.url);
                 onCopy('lichess');
             })
             .catch((err) => {
@@ -211,19 +205,9 @@ const Position = ({ position, orientation }: PositionProps) => {
                     </Button>
                 </Tooltip>
 
-                <Tooltip title={t('playComputerTooltip')}>
-                    <Button
-                        ref={playComputerAnchor}
-                        startIcon={<SiChessdotcom size={20} color='#81b64c' />}
-                        onClick={() => setPlayComputerOpen(true)}
-                    >
-                        {t('playComputerButton')}
-                    </Button>
-                </Tooltip>
-
                 <Tooltip title='Play this position against Maia, a neural network which is trained on human games'>
                     <Button
-                        startIcon={<SmartToy color='primary' />}
+                        startIcon={<SmartToy color='dojoOrange' />}
                         onClick={() => setPlayMaiaOpen(true)}
                     >
                         Play Bot
@@ -240,31 +224,6 @@ const Position = ({ position, orientation }: PositionProps) => {
                         </Button>
                     </Tooltip>
                 )}
-
-                <Menu
-                    open={playComputerOpen}
-                    onClose={() => setPlayComputerOpen(false)}
-                    anchorEl={playComputerAnchor.current}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                    <MenuItem
-                        component='a'
-                        href={`https://www.chess.com/practice/custom?fen=${position.fen}&is960=false`}
-                        target='_blank'
-                        rel='noopener'
-                    >
-                        {t('playAsWhite')}
-                    </MenuItem>
-                    <MenuItem
-                        component='a'
-                        href={`https://www.chess.com/practice/custom?fen=${position.fen}&is960=false&color=black`}
-                        target='_blank'
-                        rel='noopener'
-                    >
-                        {t('playAsBlack')}
-                    </MenuItem>
-                </Menu>
             </CardActions>
 
             <PlayMaiaDialog

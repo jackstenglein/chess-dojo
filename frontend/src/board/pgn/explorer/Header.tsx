@@ -25,7 +25,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { useApi } from '../../../api/Api';
@@ -48,8 +47,8 @@ const Header: React.FC<HeaderProps> = ({ fen, follower, minCohort, maxCohort, se
     const [showFollowDialog, setShowFollowDialog] = useState(false);
     const t = useTranslations('analysisBoard.explorer');
 
-    const onCopy = () => {
-        copy(fen);
+    const onCopy = async () => {
+        await navigator.clipboard.writeText(fen);
         setCopied('fen');
         setTimeout(() => {
             setCopied('');

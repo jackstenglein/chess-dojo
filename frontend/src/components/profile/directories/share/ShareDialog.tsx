@@ -32,7 +32,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
@@ -113,8 +112,8 @@ export const ShareDialog = ({
         return false;
     }, [newAccess, directory]);
 
-    const onCopyLink = () => {
-        copy(
+    const onCopyLink = async () => {
+        await navigator.clipboard.writeText(
             `${getConfig().baseUrl}/profile/${directory.owner}?view=games&directory=${directory.id}`,
         );
         setCopied(true);

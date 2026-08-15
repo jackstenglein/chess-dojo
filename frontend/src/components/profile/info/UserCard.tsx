@@ -17,7 +17,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Bio from './Bio';
@@ -85,8 +84,8 @@ export function UserCard({
             });
     };
 
-    const onCopyUrl = () => {
-        copy(`${BASE_URL}/profile/${user.username}`);
+    const onCopyUrl = async () => {
+        await navigator.clipboard.writeText(`${BASE_URL}/profile/${user.username}`);
         setCopied('url');
         setTimeout(() => setCopied(''), 3000);
     };

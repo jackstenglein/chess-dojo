@@ -5,7 +5,6 @@ import { Message } from '@jackstenglein/chess-dojo-common/src/chatBot/api';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Box, IconButton, Tooltip } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -20,9 +19,9 @@ export function ChatMessage({ message }: { message: Message }) {
     const isUser = message.role === 'user';
     const [copied, setCopied] = useState(false);
 
-    const handleCopy = () => {
+    const handleCopy = async () => {
         try {
-            copy(message.content);
+            await navigator.clipboard.writeText(message.content);
             setCopied(true);
         } catch (err) {
             logger.error?.('Failed to copy:', err);

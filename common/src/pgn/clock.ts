@@ -14,8 +14,8 @@ export function clockToSeconds(clk?: string): number | undefined {
 
     const tokens = clk.split(':');
     let hours = 0;
-    let minutes = 0;
-    let seconds = 0;
+    let minutes: number;
+    let seconds: number;
 
     if (tokens.length === 3) {
         hours = parseInt(tokens[0]);
