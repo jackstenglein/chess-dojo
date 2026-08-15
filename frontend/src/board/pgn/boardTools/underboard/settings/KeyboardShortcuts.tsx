@@ -567,26 +567,57 @@ const KeyboardShortcuts = ({
     return (
         <Stack>
             <Typography variant='h6'>{t('keyboardShortcutsTitle')}</Typography>
-            <Typography variant='subtitle2' color='text.secondary'>
+            <Typography
+                variant='subtitle2'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 {t('keyboardShortcutsDisabledNote')}
             </Typography>
 
-            <Grid container rowGap={2} columnSpacing={2} alignItems='center' mt={1.5}>
+            <Grid
+                container
+                columnSpacing={2}
+                sx={{
+                    rowGap: 2,
+                    alignItems: 'center',
+                    mt: 1.5,
+                }}
+            >
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={5}>
                     <Typography>{t('actionTableHeader')}</Typography>
                 </Grid>
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={3.5}>
-                    <Typography textAlign='center'>{t('modifierTableHeader')}</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('modifierTableHeader')}
+                    </Typography>
                 </Grid>
                 <Grid sx={{ borderBottom: 1, borderColor: 'divider' }} size={3.5}>
-                    <Typography textAlign='center'>{t('keyTableHeader')}</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('keyTableHeader')}
+                    </Typography>
                 </Grid>
                 {actions.map((a) => {
                     const binding = keyBindings[a] || ShortcutBindings.default[a];
                     return (
                         <Fragment key={a}>
                             <Grid size={5}>
-                                <Stack direction='row' spacing={1} alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography variant='body2'>
                                         {displayShortcutAction(a)}
                                     </Typography>
@@ -641,10 +672,14 @@ const KeyboardShortcuts = ({
             </Grid>
             <Dialog
                 open={!!editAction}
-                onClose={onCloseEditor}
+                onClose={(_event, reason) => {
+                    if (reason === 'escapeKeyDown') {
+                        return;
+                    }
+                    onCloseEditor();
+                }}
                 maxWidth='sm'
                 fullWidth
-                disableEscapeKeyDown
                 classes={{
                     container: BlockBoardKeyboardShortcuts,
                 }}

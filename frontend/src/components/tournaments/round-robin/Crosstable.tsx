@@ -22,7 +22,15 @@ export function Crosstable({ tournament }: { tournament: RoundRobin }) {
     const t = useTranslations('tournaments.roundRobin.crosstable');
 
     if (!tournament.players) {
-        return <Typography textAlign={'center'}>{t('noData')}</Typography>;
+        return (
+            <Typography
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
+                {t('noData')}
+            </Typography>
+        );
     }
 
     return (

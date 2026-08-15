@@ -13,10 +13,12 @@ import type { JSX } from 'react';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
+    slotProps: {
+        paper: {
+            style: {
+                maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+                width: 250,
+            },
         },
     },
 };
@@ -100,7 +102,12 @@ export default function MultipleSelectChip({
                             />
                         ))}
                         {selected.length === 0 && !!displayEmpty && (
-                            <Typography color='text.secondary' fontStyle='italic'>
+                            <Typography
+                                sx={{
+                                    color: 'text.secondary',
+                                    fontStyle: 'italic',
+                                }}
+                            >
                                 {displayEmpty}
                             </Typography>
                         )}

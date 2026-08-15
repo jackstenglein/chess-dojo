@@ -13,14 +13,22 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
     }
 
     return (
-        <Stack spacing={1.5} px={1} py={0.75}>
+        <Stack
+            spacing={1.5}
+            sx={{
+                px: 1,
+                py: 0.75,
+            }}
+        >
             {comments.map((comment) => (
                 <Stack
                     key={comment.id}
                     data-testid='inline-position-comment'
                     direction='row'
-                    alignItems='flex-start'
                     spacing={0.75}
+                    sx={{
+                        alignItems: 'flex-start',
+                    }}
                 >
                     <Tooltip title={`Comment by ${comment.owner.displayName}`}>
                         <span>
@@ -33,9 +41,13 @@ export default function InlinePositionComments({ comments, inline }: InlinePosit
                     </Tooltip>
                     <Typography
                         variant={inline ? 'caption' : 'body2'}
-                        color='text.secondary'
-                        whiteSpace='pre-line'
-                        sx={{ minWidth: 0, wordBreak: 'break-word', paddingTop: '2px' }}
+                        sx={{
+                            color: 'text.secondary',
+                            whiteSpace: 'pre-line',
+                            minWidth: 0,
+                            wordBreak: 'break-word',
+                            paddingTop: '2px',
+                        }}
                     >
                         {comment.content.trim()}
                     </Typography>

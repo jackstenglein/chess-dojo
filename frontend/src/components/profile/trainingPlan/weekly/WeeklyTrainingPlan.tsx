@@ -68,8 +68,19 @@ export function WeeklyTrainingPlan() {
     };
 
     return (
-        <Stack spacing={2} width={1}>
-            <Stack direction='row' alignItems='center' width={1}>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    width: 1,
+                }}
+            >
                 <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
@@ -81,7 +92,14 @@ export function WeeklyTrainingPlan() {
                     </IconButton>
                 </Tooltip>
 
-                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        fontWeight: 'bold',
+                        ml: 0.5,
+                        mr: 2,
+                    }}
+                >
                     {t('thisWeek')}
                 </Typography>
 
@@ -96,7 +114,12 @@ export function WeeklyTrainingPlan() {
             </Stack>
 
             <Collapse in={expanded}>
-                <Stack spacing={2} mb={1}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mb: 1,
+                    }}
+                >
                     <Tooltip title={t('activeOnlyTooltip')} placement='right'>
                         <FormControlLabel
                             control={
@@ -107,7 +130,12 @@ export function WeeklyTrainingPlan() {
                                 />
                             }
                             label={
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('activeOnlyLabel')}
                                 </Typography>
                             }
@@ -188,12 +216,18 @@ function WeeklyTrainingPlanDay({
     }, [user.customTasks, allRequirements, extraTaskIds]);
 
     return (
-        <Stack height={1}>
+        <Stack
+            sx={{
+                height: 1,
+            }}
+        >
             <Typography
                 variant='subtitle1'
-                fontWeight='bold'
                 color={todayIndex === dayIndex ? 'primary' : 'text.secondary'}
-                sx={{ ml: 0.25 }}
+                sx={{
+                    fontWeight: 'bold',
+                    ml: 0.25,
+                }}
             >
                 {t(days[dayIndex])}
             </Typography>
@@ -206,7 +240,13 @@ function WeeklyTrainingPlanDay({
                     borderLeft: dayIndex === 0 ? undefined : 'none',
                 }}
             >
-                <Stack spacing={1} py={1} px={0.5}>
+                <Stack
+                    spacing={1}
+                    sx={{
+                        py: 1,
+                        px: 0.5,
+                    }}
+                >
                     {suggestedTasks.map(
                         (t) =>
                             (t.goalMinutes > 0 ||
@@ -320,12 +360,28 @@ function WeeklyTrainingPlanItem({
                     },
                 }}
             >
-                <Stack spacing={3} width={1}>
-                    <Typography variant='body2' fontWeight='bold'>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        width: 1,
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
                         {taskTitle({ task, cohort: user.dojoCohort, goalMinutes, tCommon: tTime })}
                     </Typography>
 
-                    <Stack direction='row' flexWrap='wrap' gap={1}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 1,
+                        }}
+                    >
                         <Chip
                             label={
                                 tCategoryShort.has(task.category)

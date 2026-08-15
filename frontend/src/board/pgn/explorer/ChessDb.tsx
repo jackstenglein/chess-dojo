@@ -18,10 +18,19 @@ interface ChessDBTabProps {
     moves: ChessDbMove[];
     loading: boolean;
     error: string | null;
-    requestAnalysis: (fen: string) => void;
+    queueing: boolean;
+    queued: boolean;
+    requestAnalysis: () => void;
 }
 
-export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTabProps) {
+export function ChessDBTab({
+    moves,
+    loading,
+    error,
+    queueing,
+    queued,
+    requestAnalysis,
+}: ChessDBTabProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
     const t = useTranslations('analysisBoard.explorer');
@@ -67,12 +76,27 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
 
     if (loading) return <LoadingPage />;
 
+    if (queued) {
+        return (
+            <Stack spacing={1} sx={{ mt: 2, alignItems: 'center' }}>
+                <Typography color='success.main'>{t('analysisQueued')}</Typography>
+            </Stack>
+        );
+    }
+
     if (error) {
         return (
-            <Stack mt={2} spacing={1} alignItems='center'>
+            <Stack
+                spacing={1}
+                sx={{
+                    mt: 2,
+                    alignItems: 'center',
+                }}
+            >
                 <Typography color='error'>{error}</Typography>
                 <Button
-                    onClick={() => requestAnalysis(chess?.fen() ?? '')}
+                    onClick={requestAnalysis}
+                    loading={queueing}
                     variant='outlined'
                     size='small'
                 >
@@ -84,10 +108,17 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
 
     if (moves.length === 0) {
         return (
-            <Stack mt={2} spacing={1} alignItems='center'>
+            <Stack
+                spacing={1}
+                sx={{
+                    mt: 2,
+                    alignItems: 'center',
+                }}
+            >
                 <Typography>{t('positionNotInChessDb')}</Typography>
                 <Button
-                    onClick={() => requestAnalysis(chess?.fen() ?? '')}
+                    onClick={requestAnalysis}
+                    loading={queueing}
                     variant='outlined'
                     size='small'
                 >
@@ -109,10 +140,28 @@ export function ChessDBTab({ moves, loading, error, requestAnalysis }: ChessDBTa
     };
 
     return (
-        <Grid container columnSpacing={1} rowSpacing={2} mt={2}>
+        <Grid
+            container
+            columnSpacing={1}
+            rowSpacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
             <Grid size={12}>
-                <Stack direction='row' alignItems='center' spacing={0.5}>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                <Stack
+                    direction='row'
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('chessCloudDatabaseLabel')}
                     </Typography>
                     <Tooltip

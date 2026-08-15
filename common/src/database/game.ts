@@ -188,6 +188,19 @@ const updateGame = z.object({
     /** The id of the game to update. */
     id: z.string(),
 
+    /**
+     * The client's known updatedAt of the game. Required if the PGN is being updated. The
+     * update will be rejected if this does not match the value currently stored in the
+     * database (optimistic concurrency).
+     */
+    updatedAt: z.string().optional(),
+
+    /**
+     * If true, the update will be performed even if the updatedAt does not match the
+     * value currently stored in the database (optimistic concurrency).
+     */
+    forceUpdate: z.boolean().optional(),
+
     /** The eixsting timeline id of the game. */
     timelineId: z.string().optional(),
 
@@ -218,6 +231,9 @@ export const UpdateGameSchema = z
     ])
     .refine((val) => val.type || val.orientation || val.unlisted !== undefined, {
         message: 'At least one of type, orientation or unlisted is required',
+    })
+    .refine((val) => !val.type || val.updatedAt || val.forceUpdate, {
+        message: 'When updating the PGN, updatedAt is required (or set forceUpdate)',
     })
     .transform((val) => {
         val.id = atob(val.id);

@@ -308,7 +308,12 @@ export const BulkItemEditor = ({
 
     return (
         <Paper elevation={4} sx={{ borderRadius: '1.5rem', flexGrow: 1, py: 0.5, px: 1 }}>
-            <Stack direction='row' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Tooltip title={t('clearSelection')}>
                     <IconButton size='small' onClick={onClear}>
                         <Close />

@@ -21,43 +21,78 @@ export default function DojoDigestVol14() {
                 subtitle='Dojo Digest Vol 14 • November 1, 2024'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>File Sharing</strong> - Two months ago, we announced our file system for
                     organizing your games and repertoires. Today, we're releasing a major update,
                     which allows you to share public or private folders with other users. You can
                     add users as viewers, editors or admins.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={image}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
-                    <Typography textAlign='center' color='text.secondary'>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                        }}
+                    >
                         In this example, we are giving the user Jalp editor access to the White
                         Repertoire folder.
                     </Typography>
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Viewers can see all games and nested folders but cannot make any changes.
                     Editors can add games and remove games that they added, but cannot create nested
                     folders or remove games added by other users. Admins can do everything except
                     delete the folder.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     We see this as a great way for coaches and students to collaborate, and we're
                     excited to see what people do with it!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Engines</strong> - If you missed it last month, Stockfish 16 and 17 are
                     now available in the Dojo's game annotator. Since then, we've added some new
                     features:
@@ -85,18 +120,31 @@ export default function DojoDigestVol14() {
                     analysis.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or European club team? Let
                     us know! We would like to bring your teammates to the Dojo and see you with them
                     on a customized scoreboard. We believe the Dojo is the place for teams to track
                     their progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Coming Soon
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>THE WORLD CHAMPIONSHIP!</strong> The Dojo will do commentary for all
                     games. Tune in Nov 25 – Dec 15 on{' '}
                     <Link href='https://www.twitch.tv/chessdojo' target='_blank'>
@@ -109,7 +157,11 @@ export default function DojoDigestVol14() {
                     .
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <strong>Alex Sherzer Memorial</strong> - Alex was a good friend of Sensei Kraai
                     and loads of old champions are coming out to honor his memory Nov 1-3 in
                     Washington DC: GMs Patrick Wolff, Benjamin, Fishbein and IM Stuart Rachels. Will
@@ -117,11 +169,20 @@ export default function DojoDigestVol14() {
                     he needs to re-graduate back into the 2400+ cohort?
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_115587319098605190849?utm_source=newsletter&utm_medium=email&utm_campaign=digest14'
                         target='_blank'
@@ -132,7 +193,11 @@ export default function DojoDigestVol14() {
                     and two 2000+ players!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/255d01b5-2f0c-48d8-9ecc-4033cecd17a1?utm_source=newsletter&utm_medium=email&utm_campaign=digest14'
                         target='_blank'
@@ -143,7 +208,11 @@ export default function DojoDigestVol14() {
                     championship (domestic division II in Hungary)!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Our lead developer,{' '}
                     <Link
                         href='https://www.chessdojo.club/profile/google_112538452360881134254?utm_source=newsletter&utm_medium=email&utm_campaign=digest14'
@@ -155,7 +224,11 @@ export default function DojoDigestVol14() {
                     when he first joined the Dojo two years ago. Next up: focusing on OTB!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     The Dojo has crossed 2000 total graduations! Great job, everyone!
                 </Typography>
 

@@ -46,7 +46,12 @@ const MeetingViewer: React.FC<MeetingViewerProps> = ({ processedEvent }) => {
             )}
 
             <Stack spacing={0.5}>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     <Icon
                         name='participant'
                         color='primary'

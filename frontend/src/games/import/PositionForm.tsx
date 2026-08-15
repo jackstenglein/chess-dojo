@@ -120,7 +120,13 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
         <>
             <DialogTitle>{t('dialogTitle')}</DialogTitle>
             <DialogContent>
-                <Stack mt={0.8} spacing={2} alignItems='center'>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mt: 0.8,
+                        alignItems: 'center',
+                    }}
+                >
                     <Autocomplete
                         id={BlockBoardKeyboardShortcuts}
                         sx={{ width: 1 }}
@@ -135,7 +141,9 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                                 helperText={error}
                             />
                         )}
-                        isOptionEqualToValue={(a, b) => a.id === b.id}
+                        isOptionEqualToValue={(a, b) =>
+                            typeof a === 'string' || typeof b === 'string' ? a === b : a.id === b.id
+                        }
                         onChange={(_, value) => changeFen(value)}
                         inputValue={inputValue}
                         onInputChange={(_e, value) => {

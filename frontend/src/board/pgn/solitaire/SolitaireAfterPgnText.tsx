@@ -29,7 +29,13 @@ function CompletedAfterPgnText() {
     const blackPercentage = black.total === 0 ? 0 : Math.round((100 * black.correct) / black.total);
 
     return (
-        <Stack alignItems='center' sx={{ pb: 1, textAlign: 'center' }}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+                pb: 1,
+                textAlign: 'center',
+            }}
+        >
             <Divider sx={{ width: 1, mb: 2 }} />
             <Typography>{t('solitaireCompletionMessage')}</Typography>
             <Typography sx={{ mt: 1 }}>

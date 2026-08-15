@@ -43,13 +43,34 @@ const PurchaseOption: React.FC<PurchaseOptionProps> = ({ course, purchaseOption,
     return (
         <Card variant='outlined'>
             <CardContent>
-                <Stack alignItems='center' spacing={3}>
-                    <Stack alignItems='center'>
-                        <Typography variant='subtitle1' fontWeight='bold' color='text.secondary'>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant='subtitle1'
+                            sx={{
+                                fontWeight: 'bold',
+                                color: 'text.secondary',
+                            }}
+                        >
                             {name || course.name}
                         </Typography>
 
-                        <Stack direction='row' spacing={1} alignItems='baseline'>
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'baseline',
+                            }}
+                        >
                             <Typography
                                 variant='h6'
                                 sx={{
@@ -62,11 +83,22 @@ const PurchaseOption: React.FC<PurchaseOptionProps> = ({ course, purchaseOption,
 
                             {currentPrice > 0 && (
                                 <>
-                                    <Typography variant='h6' color='success.main'>
+                                    <Typography
+                                        variant='h6'
+                                        sx={{
+                                            color: 'success.main',
+                                        }}
+                                    >
                                         ${displayPrice(currentPrice / 100)}
                                     </Typography>
 
-                                    <Typography color='text.secondary'>(-{percentOff}%)</Typography>
+                                    <Typography
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
+                                        (-{percentOff}%)
+                                    </Typography>
                                 </>
                             )}
                         </Stack>

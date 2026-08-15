@@ -54,10 +54,20 @@ export function GraduationTask() {
                 >
                     <CardActionArea sx={{ flexGrow: 1 }} onClick={onOpen}>
                         <CardContent sx={{ height: 1 }}>
-                            <Stack spacing={1} alignItems='start'>
+                            <Stack
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'start',
+                                }}
+                            >
                                 <CohortIcon cohort={user.dojoCohort} tooltip='' size={24} />
 
-                                <Typography variant='h6' fontWeight='bold'>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {t('title', { cohort: user.dojoCohort })}
                                 </Typography>
                             </Stack>

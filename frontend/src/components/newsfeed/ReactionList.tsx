@@ -137,7 +137,15 @@ const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon 
 
     if (icon) return <>{type}</>;
 
-    return <Typography fontSize='1.25rem'>{type}</Typography>;
+    return (
+        <Typography
+            sx={{
+                fontSize: '1.25rem',
+            }}
+        >
+            {type}
+        </Typography>
+    );
 };
 
 interface ReactionListProps {
@@ -224,7 +232,12 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
                             <ReactionEmoji type={type} />
                         </Paper>
 
-                        <Typography ml='0.375rem' fontWeight='600'>
+                        <Typography
+                            sx={{
+                                ml: '0.375rem',
+                                fontWeight: '600',
+                            }}
+                        >
                             {reactors.length}
                         </Typography>
                     </Button>
@@ -233,11 +246,13 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
 
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <Stack
-                    px={1}
-                    columnGap={0.5}
                     direction='row'
-                    flexWrap='wrap'
-                    sx={{ maxWidth: 'calc(6 * 2.96875rem)' }}
+                    sx={{
+                        px: 1,
+                        columnGap: 0.5,
+                        flexWrap: 'wrap',
+                        maxWidth: 'calc(6 * 2.96875rem)',
+                    }}
                 >
                     {ReactionTypes.map((type) => (
                         <IconButton

@@ -122,8 +122,10 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                             <Box sx={{ flex: 1 }}>
                                 <Typography
                                     variant='h6'
-                                    fontWeight='bold'
                                     color={badge.isEarned ? 'text' : 'text.secondary'}
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
                                 >
                                     {badge.title}
                                 </Typography>
@@ -134,9 +136,11 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                     badge.level && (
                                         <Stack
                                             direction='row'
-                                            width={1}
-                                            gap={1}
-                                            alignItems='center'
+                                            sx={{
+                                                width: 1,
+                                                gap: 1,
+                                                alignItems: 'center',
+                                            }}
                                         >
                                             <LinearProgress
                                                 variant='determinate'
@@ -149,7 +153,12 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                                     filter: 'grayscale(20%) opacity(0.6)',
                                                 }}
                                             />
-                                            <Typography variant='body2' color='text.secondary'>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {badge.currentCount} / {badge.level}
                                             </Typography>
                                         </Stack>

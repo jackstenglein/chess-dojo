@@ -114,9 +114,20 @@ export function PersonalInfoEditor({
 
             <Stack>
                 <FormLabel sx={{ mb: 1 }}>{t('profilePicture')}</FormLabel>
-                <Stack direction='row' alignItems='center' spacing={3}>
+                <Stack
+                    direction='row'
+                    spacing={3}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Avatar user={user} size={150} url={profilePictureUrl} />
-                    <Stack spacing={2} alignItems='start'>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            alignItems: 'start',
+                        }}
+                    >
                         <Button component='label' variant='outlined' startIcon={<Upload />}>
                             {t('uploadPhoto')}
                             <input

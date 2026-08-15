@@ -45,10 +45,12 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
             <CardContent>
                 <Stack
                     direction='row'
-                    mb={2}
                     spacing={2}
-                    justifyContent='start'
-                    alignItems='center'
+                    sx={{
+                        mb: 2,
+                        justifyContent: 'start',
+                        alignItems: 'center',
+                    }}
                 >
                     <Typography variant='h6'>
                         <Icon
@@ -80,21 +82,39 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                     </Tooltip>
                 </Stack>
 
-                <Grid container rowGap={4} columnSpacing={2} justifyContent='center'>
+                <Grid
+                    container
+                    columnSpacing={2}
+                    sx={{
+                        rowGap: 4,
+                        justifyContent: 'center',
+                    }}
+                >
                     {tacticsRating.components.map((c) => (
                         <Grid
                             key={c.name}
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 6,
                                 sm: 3,
                                 md: 'grow',
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
                             <Tooltip title={c.description}>
-                                <Stack alignItems='center'>
-                                    <Typography variant='body1' color='text.secondary'>
+                                <Stack
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Typography
+                                        variant='body1'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
                                         <LinkIf to={c.link}>{c.name}</LinkIf>
                                     </Typography>
                                     <Typography
@@ -108,7 +128,12 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                                         {c.provisional && '?'}
                                     </Typography>
                                     {c.examCount !== undefined && c.rating > 0 && (
-                                        <Typography variant='body2' color='text.secondary'>
+                                        <Typography
+                                            variant='body2'
+                                            sx={{
+                                                color: 'text.secondary',
+                                            }}
+                                        >
                                             <Stack direction='row'>
                                                 {[...Array(c.examCount).keys()].map((idx) => (
                                                     <FiberManualRecord

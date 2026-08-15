@@ -86,7 +86,12 @@ function PuzzleSpecificSettings({
     const [incorrectSound, setIncorrectSound] = useLocalStorage(INCORRECT_SOUND_KEY, true);
 
     return (
-        <Stack spacing={3} mb={3}>
+        <Stack
+            spacing={3}
+            sx={{
+                mb: 3,
+            }}
+        >
             <Stack spacing={0.5}>
                 <Typography variant='h5'>{t('title')}</Typography>
 

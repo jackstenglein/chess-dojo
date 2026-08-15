@@ -14,7 +14,12 @@ export function Footer({
 }) {
     const t = useTranslations('blog.footer');
     return (
-        <Stack alignItems='center' mt={4}>
+        <Stack
+            sx={{
+                alignItems: 'center',
+                mt: 4,
+            }}
+        >
             <a
                 href={`https://www.chessdojo.club?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}`}
                 target='_blank'
@@ -23,10 +28,10 @@ export function Footer({
             >
                 <Stack
                     direction='row'
-                    justifyContent='center'
-                    alignItems='center'
-                    gap='30px'
                     sx={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '30px',
                         maxWidth: '400px',
                         backgroundColor: '#F4931E',
                         padding: '20px',
@@ -35,7 +40,13 @@ export function Footer({
                     }}
                 >
                     <Image src={logoBlack} alt='' width={80} height={80} />
-                    <Typography fontWeight='bold' textAlign='center' color='black'>
+                    <Typography
+                        color='black'
+                        sx={{
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('cta')}
                     </Typography>
                 </Stack>

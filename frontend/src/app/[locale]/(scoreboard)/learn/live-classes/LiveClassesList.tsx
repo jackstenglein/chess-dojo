@@ -45,7 +45,13 @@ export function LiveClassesList({
         useLiveClassPlayback();
 
     return (
-        <Grid container mt={1} spacing={3}>
+        <Grid
+            container
+            spacing={3}
+            sx={{
+                mt: 1,
+            }}
+        >
             {classes.map((c) => (
                 <Grid
                     key={c.name}
@@ -173,24 +179,60 @@ function LiveClassCard({
                         {c.name}
                     </Typography>
 
-                    <Stack direction='row' flexWrap='wrap' gap={2} sx={{ mb: 2 }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 2,
+                            mb: 2,
+                        }}
+                    >
                         {c.teacher && (
-                            <Stack direction='row' alignItems='center' spacing={0.75}>
+                            <Stack
+                                direction='row'
+                                spacing={0.75}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Person fontSize='small' color='action' />
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {c.teacher}
                                 </Typography>
                             </Stack>
                         )}
-                        <Stack direction='row' alignItems='center' spacing={0.75}>
+                        <Stack
+                            direction='row'
+                            spacing={0.75}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <ShowChart fontSize='small' color='action' />
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {c.cohortRange}
                             </Typography>
                         </Stack>
                     </Stack>
 
-                    <Stack direction='row' flexWrap='wrap' gap={0.75} sx={{ mb: 1.5 }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 0.75,
+                            mb: 1.5,
+                        }}
+                    >
                         {c.type === SubscriptionTier.GameReview ? (
                             <Tooltip title={t('showTagGameReview')}>
                                 <Chip
@@ -253,12 +295,13 @@ function LiveClassCard({
 
                     <Typography
                         variant='body2'
-                        color='text.secondary'
                         sx={{
+                            color: 'text.secondary',
                             display: '-webkit-box',
                             WebkitLineClamp: 6,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
+
                             ...(isList
                                 ? { flex: { sm: 1 }, WebkitLineClamp: { xs: 6, sm: 2 } }
                                 : {}),
@@ -268,7 +311,13 @@ function LiveClassCard({
                     </Typography>
 
                     {hasMultipleRecordings && (
-                        <Typography variant='subtitle2' color='primary.main' sx={{ mt: 2 }}>
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'primary.main',
+                                mt: 2,
+                            }}
+                        >
                             {t('card.recordingCount', { count: c.recordings.length })}
                         </Typography>
                     )}

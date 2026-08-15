@@ -52,7 +52,12 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
 
             {event.location && (
                 <Stack>
-                    <Typography variant='h6' color='text.secondary'>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         <Icon
                             name='location'
                             color='primary'
@@ -68,7 +73,12 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
 
             {event.description && (
                 <Stack>
-                    <Typography variant='h6' color='text.secondary'>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         <Icon
                             name='notes'
                             color='primary'
@@ -83,7 +93,12 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
             )}
 
             <Stack>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     <Icon
                         name={getLigaIconBasedOnTimeControl(ligaTournament.limitSeconds)}
                         color='primary'
@@ -98,7 +113,12 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
 
             {ligaTournament.numRounds && (
                 <Stack>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {ligaTournament.currentRound ? t('roundSingular') : t('roundPlural')}
                     </Typography>
                     <Typography variant='body1'>
@@ -111,7 +131,12 @@ const LigaTournamentViewer: React.FC<LigaTournamentViewerProps> = ({ processedEv
 
             {ligaTournament.fen && (
                 <Stack>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('positionLabel')}
                     </Typography>
                     <Box

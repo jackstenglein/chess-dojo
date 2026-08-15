@@ -22,8 +22,20 @@ export function TournamentInfo({ tournament }: { tournament: RoundRobin }) {
     const gamesPlayed = countCompletedGames(tournament);
 
     return (
-        <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center'>
-            <Typography variant='h4' textAlign='center'>
+        <Stack
+            direction='row'
+            sx={{
+                flexWrap: 'wrap',
+                gap: 1,
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h4'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {tournament.name}
             </Typography>
 

@@ -20,7 +20,13 @@ const ErrorDisplay = ({ error, info }: { error?: Error; info?: ErrorInfo }) => {
                 <Typography variant='h5'>{t('unknownError')}</Typography>
                 <Typography variant='h6'>{t('errorDescription')}</Typography>
 
-                <Typography variant='body1' color='error' whiteSpace='pre-line'>
+                <Typography
+                    variant='body1'
+                    color='error'
+                    sx={{
+                        whiteSpace: 'pre-line',
+                    }}
+                >
                     {error ? error.toString() : t('nullError')}
                     {info ? info.componentStack : t('noComponentStack')}
                 </Typography>

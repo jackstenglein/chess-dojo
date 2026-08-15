@@ -415,11 +415,19 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
                 <Stack
                     direction='row'
                     spacing={1}
-                    alignItems='center'
-                    flexWrap='wrap'
-                    justifyContent='space-between'
+                    sx={{
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' spacing={1}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {game.source === GameImportTypes.lichessGame ? (
                             <SiLichess />
                         ) : (
@@ -430,8 +438,19 @@ function GameCard({ game, onClick }: { game: OnlineGame; onClick: (game: OnlineG
                         </Typography>
                     </Stack>
 
-                    <Stack direction='row' alignItems='center' spacing={1}>
-                        <Typography variant='caption' color='text.secondary'>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {game.rated ? t('gameCardRated') : t('gameCardCasual')}
                         </Typography>
                         {matchesCohort ? (
@@ -615,11 +634,13 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                         sx={{ mt: 0.8 }}
                     />
                     <Stack
-                        alignSelf='flex-end'
                         direction='row'
                         spacing={1}
-                        paddingRight={1}
-                        paddingTop={1}
+                        sx={{
+                            alignSelf: 'flex-end',
+                            paddingRight: 1,
+                            paddingTop: 1,
+                        }}
                     >
                         <Button disabled={isImporting} onClick={onClose}>
                             {t('cancel')}
@@ -629,13 +650,25 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                     <OrDivider header={t('orDividerRecentGames')} />
 
                     {fetchGames && user?.dojoCohort && (
-                        <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 2 }}>
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                                mb: 2,
+                            }}
+                        >
                             <CohortIcon
                                 cohort={user.dojoCohort}
                                 tooltip={user.dojoCohort}
                                 size={28}
                             />
-                            <Typography variant='caption' color='text.secondary'>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t.rich('cohortMinimumTimeControlHint', {
                                     cohort: user.dojoCohort,
                                     timeControl: getTimeControl(user.dojoCohort),
@@ -672,7 +705,14 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                 sx={{ mb: 2 }}
                             />
 
-                            <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 2 }}>
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                    mb: 2,
+                                }}
+                            >
                                 <Button
                                     size='small'
                                     startIcon={<FilterListIcon />}
@@ -714,14 +754,23 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                     {fetchGames ? (
                         isFetchingGames ? (
                             <Stack
-                                sx={{ pt: 6, pb: 4 }}
-                                justifyContent='center'
-                                alignItems='center'
+                                sx={{
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    pt: 6,
+                                    pb: 4,
+                                }}
                             >
                                 <CircularProgress />
                             </Stack>
                         ) : processedGames.length === 0 ? (
-                            <Typography variant='body2' color='text.secondary' sx={{ py: 2 }}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                    py: 2,
+                                }}
+                            >
                                 {hasActiveFilters || searchText.trim()
                                     ? t('noGamesMatchFilters')
                                     : t('noRecentGames')}
@@ -732,7 +781,12 @@ export const OnlineGameForm = ({ loading, onSubmit, onClose }: ImportDialogProps
                                     <GameCard key={game.id} game={game} onClick={onClickGame} />
                                 ))}
                                 {pageCount > 1 && (
-                                    <Stack alignItems='center' sx={{ pt: 2 }}>
+                                    <Stack
+                                        sx={{
+                                            alignItems: 'center',
+                                            pt: 2,
+                                        }}
+                                    >
                                         <Pagination
                                             data-testid='online-games-pagination'
                                             count={pageCount}

@@ -42,7 +42,14 @@ function CommentEditor<T, CreateFunctionProps>(props: CommentEditorProps<T, Crea
     };
 
     return (
-        <Stack direction='row' spacing={1} alignItems='start' width={1}>
+        <Stack
+            direction='row'
+            spacing={1}
+            sx={{
+                alignItems: 'start',
+                width: 1,
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <Avatar user={user} size={40} />

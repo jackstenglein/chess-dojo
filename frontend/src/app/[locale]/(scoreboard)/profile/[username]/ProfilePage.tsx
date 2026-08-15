@@ -174,7 +174,12 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     getSubscriptionTier(user) === SubscriptionTier.Lecture) && (
                                     <ProfileTab
                                         label={
-                                            <Stack direction='row' alignItems='center'>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 {t('tabLiveClasses')}
                                                 <Chip
                                                     label={t('newChip')}
@@ -289,11 +294,9 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                     </Box>
                 )}
 
-                {isLarge && (
-                    <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
-                        <BadgeCard user={user} />
-                    </Box>
-                )}
+                <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
+                    <BadgeCard user={user} />
+                </Box>
 
                 {currentUserProfile && (
                     <Box sx={{ gridArea: 'newsfeed' }}>

@@ -60,8 +60,19 @@ export function Tournament({
                 {user &&
                     tournament.players[user.username]?.status ===
                         RoundRobinPlayerStatuses.ACTIVE && (
-                        <Stack sx={{ mt: -2, mb: 3 }} gap={2}>
-                            <Stack direction='row' gap={1}>
+                        <Stack
+                            sx={{
+                                gap: 2,
+                                mt: -2,
+                                mb: 3,
+                            }}
+                        >
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    gap: 1,
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     color='success'

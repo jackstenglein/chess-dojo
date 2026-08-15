@@ -51,6 +51,7 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                 onDelete={user ? handleDelete : undefined}
                 threaded
                 onSubmitReply={user ? handleSubmitReply : undefined}
+                outlined
             />
             {user ? (
                 <CommentEditor<Blog, { owner: string; id: string }>
@@ -59,7 +60,11 @@ export default function BlogComments({ comments: initialComments, owner, id }: B
                     onSuccess={(blog) => setComments(blog.comments ?? null)}
                 />
             ) : (
-                <Typography color='text.secondary'>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t.rich('signInToComment', {
                         link: (chunks) => <Link href='/signin'>{chunks}</Link>,
                     })}
