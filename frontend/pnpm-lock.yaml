@@ -175,7 +175,7 @@ importers:
         version: 2.8.1
       sharp:
         specifier: ^0.35.3
-        version: 0.35.3(@types/node@25.9.5)
+        version: 0.35.3(@types/node@26.1.2)
       use-long-press:
         specifier: ^3.3.0
         version: 3.3.0(react@19.2.8)
@@ -10247,7 +10247,7 @@ snapshots:
       '@img/sharp-win32-x64': 0.34.5
     optional: true
 
-  sharp@0.35.3(@types/node@25.9.5):
+  sharp@0.35.3(@types/node@26.1.2):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -10278,7 +10278,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.3
       '@img/sharp-win32-ia32': 0.35.3
       '@img/sharp-win32-x64': 0.35.3
-      '@types/node': 25.9.5
+      '@types/node': 26.1.2
 
   shebang-command@2.0.0:
     dependencies:
