@@ -5,16 +5,23 @@ import {
     GridToolbarDensitySelector,
     GridToolbarFilterButton,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 
 export function ScoreboardToolbar() {
+    const t = useTranslations('scoreboard');
+
     return (
         <GridToolbarContainer>
             <Typography
                 variant='caption'
-                color='text.secondary'
-                sx={{ ml: 0.5, mt: 0.5, flexGrow: 1 }}
+                sx={{
+                    color: 'text.secondary',
+                    ml: 0.5,
+                    mt: 0.5,
+                    flexGrow: 1,
+                }}
             >
-                Tip: hold shift while scrolling to scroll horizontally
+                {t('tip')}
             </Typography>
 
             <GridToolbarColumnsButton />

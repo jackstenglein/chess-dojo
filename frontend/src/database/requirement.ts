@@ -353,16 +353,19 @@ export function getTotalTime(cohort: string, progress?: RequirementProgress): nu
  * @param value The number of minutes to display.
  * @returns The user-facing display string.
  */
-export function formatTime(value: number): string {
+export function formatTime(
+    value: number,
+    t: (key: string, values?: Record<string, string | number>) => string,
+): string {
     const hours = Math.floor(value / 60);
     const minutes = Math.round(value % 60);
     if (hours === 0) {
-        return `${minutes}m`;
+        return t('timeMinutes', { minutes });
     }
     if (minutes === 0) {
-        return `${hours}h`;
+        return t('timeHours', { hours });
     }
-    return `${hours}h ${minutes}m`;
+    return t('timeHoursMinutes', { hours, minutes });
 }
 
 /**

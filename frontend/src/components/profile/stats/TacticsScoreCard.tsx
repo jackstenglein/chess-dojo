@@ -6,6 +6,7 @@ import { calculateTacticsRating } from '@/exams/view/exam';
 import Icon from '@/style/Icon';
 import { FiberManualRecord, FiberManualRecordOutlined } from '@mui/icons-material';
 import { Card, CardContent, Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
 interface TacticsScoreCardProps {
@@ -13,6 +14,7 @@ interface TacticsScoreCardProps {
 }
 
 const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
+    const t = useTranslations('profile.stats.tacticsCard');
     const { requirements } = useRequirements(ALL_COHORTS, true);
     const tacticsRating = calculateTacticsRating(user, requirements);
     const minCohort = parseInt(user.dojoCohort);
@@ -21,15 +23,34 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
 
     const isProvisional = tacticsRating.components.some((c) => c.rating < 0 || c.provisional);
 
+    function getTooltip(rating: number, isProvisional: boolean): string {
+        let tooltip = '';
+        if (rating < minCohort) {
+            tooltip = t('lowTooltip');
+        } else if (rating > maxCohort) {
+            tooltip = t('highTooltip');
+        } else {
+            tooltip = t('matchingTooltip');
+        }
+
+        if (isProvisional) {
+            tooltip += t('provisionalSuffix');
+        }
+
+        return tooltip;
+    }
+
     return (
         <Card variant='outlined'>
             <CardContent>
                 <Stack
                     direction='row'
-                    mb={2}
                     spacing={2}
-                    justifyContent='start'
-                    alignItems='center'
+                    sx={{
+                        mb: 2,
+                        justifyContent: 'start',
+                        alignItems: 'center',
+                    }}
                 >
                     <Typography variant='h6'>
                         <Icon
@@ -38,16 +59,9 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                             fontSize='large'
                             sx={{ marginRight: 1.5, verticalAlign: 'middle' }}
                         />
-                        Tactics Rating
+                        {t('tacticsRating')}
                     </Typography>
-                    <Tooltip
-                        title={getTooltip(
-                            tacticsRating.overall,
-                            minCohort,
-                            maxCohort,
-                            isProvisional,
-                        )}
-                    >
+                    <Tooltip title={getTooltip(tacticsRating.overall, isProvisional)}>
                         <Typography
                             variant='h6'
                             sx={{
@@ -68,21 +82,39 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                     </Tooltip>
                 </Stack>
 
-                <Grid container rowGap={4} columnSpacing={2} justifyContent='center'>
+                <Grid
+                    container
+                    columnSpacing={2}
+                    sx={{
+                        rowGap: 4,
+                        justifyContent: 'center',
+                    }}
+                >
                     {tacticsRating.components.map((c) => (
                         <Grid
                             key={c.name}
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 6,
                                 sm: 3,
                                 md: 'grow',
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
                             <Tooltip title={c.description}>
-                                <Stack alignItems='center'>
-                                    <Typography variant='body1' color='text.secondary'>
+                                <Stack
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Typography
+                                        variant='body1'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
                                         <LinkIf to={c.link}>{c.name}</LinkIf>
                                     </Typography>
                                     <Typography
@@ -96,7 +128,12 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                                         {c.provisional && '?'}
                                     </Typography>
                                     {c.examCount !== undefined && c.rating > 0 && (
-                                        <Typography variant='body2' color='text.secondary'>
+                                        <Typography
+                                            variant='body2'
+                                            sx={{
+                                                color: 'text.secondary',
+                                            }}
+                                        >
                                             <Stack direction='row'>
                                                 {[...Array(c.examCount).keys()].map((idx) => (
                                                     <FiberManualRecord
@@ -130,32 +167,6 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
 };
 
 export default TacticsScoreCard;
-
-function getTooltip(
-    rating: number,
-    minCohort: number,
-    maxCohort: number,
-    isProvisional: boolean,
-): string {
-    let tooltip = '';
-    if (rating < minCohort) {
-        tooltip =
-            'Your tactics rating is low for your cohort. It is calculated as the average of the below components.';
-    } else if (rating > maxCohort) {
-        tooltip =
-            'Your tactics rating is at the next level! It is calculated as the average of the below components.';
-    } else {
-        tooltip =
-            'Your tactics rating is even with your cohort. It is calculated as the average of the below components.';
-    }
-
-    if (isProvisional) {
-        tooltip +=
-            " Your rating is provisional because one or more components hasn't been started or could not be calculated.";
-    }
-
-    return tooltip;
-}
 
 const LinkIf = ({ to, children }: { to?: string; children: ReactNode }) => {
     return to ? <Link href={to}>{children}</Link> : children;

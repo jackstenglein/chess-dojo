@@ -1,7 +1,6 @@
 import { fontFamily } from '@/style/font';
 import { ArrowForward } from '@mui/icons-material';
 import { Stack, StackProps, Typography, TypographyProps } from '@mui/material';
-import { BulletPointData } from './bulletPoints';
 import { barlow, barlowCondensed } from './fonts';
 
 import type { JSX } from 'react';
@@ -10,7 +9,9 @@ function DefaultIcon() {
     return <ArrowForward color='darkBlue' />;
 }
 
-interface BulletPointProps extends BulletPointData {
+interface BulletPointProps {
+    title?: string;
+    description?: string;
     icon?: JSX.Element;
     slotProps?: {
         root?: StackProps;
@@ -25,13 +26,25 @@ export function BulletPoint({
     icon = <DefaultIcon />,
     slotProps,
 }: BulletPointProps) {
+    const { sx: rootSx, ...rootProps } = slotProps?.root ?? {};
+    const { sx: titleSx, ...titleProps } = slotProps?.title ?? {};
+    const { sx: descriptionSx, ...descriptionProps } = slotProps?.description ?? {};
+
     return (
-        <Stack direction='row' gap={1.5} {...slotProps?.root}>
+        <Stack
+            direction='row'
+            {...rootProps}
+            sx={{
+                gap: 1.5,
+                ...rootSx,
+            }}
+        >
             {icon}
 
-            <Stack gap={0.75}>
+            <Stack sx={{ gap: 0.75 }}>
                 {title && (
                     <Typography
+                        {...titleProps}
                         sx={{
                             textTransform: 'uppercase',
                             fontFamily: (theme) => fontFamily(theme, barlowCondensed),
@@ -39,8 +52,8 @@ export function BulletPoint({
                             fontSize: '1.375rem',
                             letterSpacing: '2%',
                             lineHeight: 1,
+                            ...titleSx,
                         }}
-                        {...slotProps?.title}
                     >
                         {title}
                     </Typography>
@@ -48,12 +61,13 @@ export function BulletPoint({
 
                 {description && (
                     <Typography
+                        {...descriptionProps}
                         sx={{
                             fontFamily: (theme) => fontFamily(theme, barlow),
                             fontSize: '1.1875rem',
                             lineHeight: '1.9375rem',
+                            ...descriptionSx,
                         }}
-                        {...slotProps?.description}
                     >
                         {description}
                     </Typography>

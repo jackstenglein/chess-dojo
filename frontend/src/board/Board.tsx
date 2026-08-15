@@ -448,7 +448,15 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     const coordinateSx = getCoordinateSx(coordinateSize);
 
     return (
-        <Box width={1} height={1} sx={{ ...pieceSx, ...getBoardSx(boardStyle), ...coordinateSx }}>
+        <Box
+            sx={{
+                width: 1,
+                height: 1,
+                ...pieceSx,
+                ...getBoardSx(boardStyle),
+                ...coordinateSx,
+            }}
+        >
             <div
                 data-testid='chessground-board'
                 ref={boardRef}

@@ -8,6 +8,7 @@ import {
 } from '@/database/user';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 export const RatingsCard = ({ user }: { user: User }) => {
     const { user: viewer } = useAuth();
@@ -29,7 +30,13 @@ export const RatingsCard = ({ user }: { user: User }) => {
     return (
         <Card>
             <CardContent>
-                <Grid container rowGap={1} alignItems='center'>
+                <Grid
+                    container
+                    sx={{
+                        rowGap: 1,
+                        alignItems: 'center',
+                    }}
+                >
                     {systems.map((rs) => {
                         const currentRating = getSystemCurrentRating(user, rs);
                         if (currentRating <= 0) {
@@ -60,18 +67,32 @@ const RatingRow = ({
     currentRating: number;
     name?: string;
 }) => {
+    const tRating = useTranslations('enums.ratingSystem');
     return (
         <>
-            <Grid display='flex' alignItems='center' justifyContent='center' size={2}>
+            <Grid
+                size={2}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
                 <RatingSystemIcon system={system} size='small' />
             </Grid>
             <Grid size={8}>
                 <Typography>
-                    {formatRatingSystem(system)} {isCustom(system) && name && ` (${name})`}
+                    {formatRatingSystem(system, tRating)} {isCustom(system) && name && ` (${name})`}
                 </Typography>
             </Grid>
             <Grid size={2}>
-                <Typography fontWeight='bold'>{currentRating}</Typography>
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
+                    {currentRating}
+                </Typography>
             </Grid>
         </>
     );

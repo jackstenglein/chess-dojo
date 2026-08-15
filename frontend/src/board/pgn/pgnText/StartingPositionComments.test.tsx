@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShowInlineCommentsInPgn } from '../boardTools/underboard/settings/ViewerSettings';
 import StartingPositionComments from './StartingPositionComments';
 
-const mockChessContext = vi.hoisted(() => ({ chess: undefined as unknown }));
+const mockChessContext: { chess?: Chess } = vi.hoisted(() => ({ chess: undefined }));
 
 vi.mock('../PgnBoard', () => ({
     useChess: () => ({ chess: mockChessContext.chess }),

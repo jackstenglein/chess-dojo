@@ -5,6 +5,7 @@ import {
     NotificationTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/notification';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface NotificationDescriptionProps {
     notification: Notification;
@@ -25,13 +26,25 @@ const DefaultNotificationDescription: React.FC<NotificationDescriptionProps> = (
     notification,
     menuItem,
 }) => {
+    const t = useTranslations('notifications');
     return (
         <Stack>
-            <Typography variant='subtitle1' fontWeight='bold' noWrap={menuItem}>
-                {getTitle(notification)}
+            <Typography
+                variant='subtitle1'
+                noWrap={menuItem}
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {getTitle(notification, t)}
             </Typography>
-            <Typography color='text.secondary' noWrap={menuItem}>
-                {getDescription(notification)}
+            <Typography
+                noWrap={menuItem}
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
+                {getDescription(notification, t)}
             </Typography>
         </Stack>
     );
@@ -41,12 +54,25 @@ const NewFollowerNotificationDescription: React.FC<NotificationDescriptionProps>
     notification,
     menuItem,
 }) => {
+    const t = useTranslations('notifications');
     return (
         <Stack>
-            <Typography variant='subtitle1' fontWeight='bold' noWrap={menuItem}>
-                {getTitle(notification)}
+            <Typography
+                variant='subtitle1'
+                noWrap={menuItem}
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {getTitle(notification, t)}
             </Typography>
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Avatar
                     username={notification.newFollowerMetadata?.username}
                     displayName={notification.newFollowerMetadata?.displayName}
@@ -54,10 +80,21 @@ const NewFollowerNotificationDescription: React.FC<NotificationDescriptionProps>
                 />
 
                 <Stack>
-                    <Typography color='text.secondary' noWrap={menuItem}>
+                    <Typography
+                        noWrap={menuItem}
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {notification.newFollowerMetadata?.displayName}
                     </Typography>
-                    <Typography variant='body2' color='text.secondary' noWrap={menuItem}>
+                    <Typography
+                        variant='body2'
+                        noWrap={menuItem}
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {notification.newFollowerMetadata?.cohort}
                     </Typography>
                 </Stack>

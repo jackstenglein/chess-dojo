@@ -11,6 +11,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useRequirements } from '../../api/cache/requirements';
 import { useFreeTier } from '../../auth/Auth';
@@ -28,6 +29,7 @@ interface PositionFormOption {
 }
 
 export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) => {
+    const t = useTranslations('games.import.positionForm');
     const [inputValue, setInputValue] = useState('');
     const [fen, setFen] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -95,7 +97,7 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
             });
         } catch (err) {
             logger.warn?.(`Invalid FEN: `, err);
-            setError('Invalid FEN');
+            setError(t('invalidFen'));
         }
     };
 
@@ -116,9 +118,15 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
 
     return (
         <>
-            <DialogTitle>Custom Position</DialogTitle>
+            <DialogTitle>{t('dialogTitle')}</DialogTitle>
             <DialogContent>
-                <Stack mt={0.8} spacing={2} alignItems='center'>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mt: 0.8,
+                        alignItems: 'center',
+                    }}
+                >
                     <Autocomplete
                         id={BlockBoardKeyboardShortcuts}
                         sx={{ width: 1 }}
@@ -128,12 +136,14 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label='Choose Position or Paste FEN'
+                                label={t('chooseFenLabel')}
                                 error={!!error}
                                 helperText={error}
                             />
                         )}
-                        isOptionEqualToValue={(a, b) => a.id === b.id}
+                        isOptionEqualToValue={(a, b) =>
+                            typeof a === 'string' || typeof b === 'string' ? a === b : a.id === b.id
+                        }
                         onChange={(_, value) => changeFen(value)}
                         inputValue={inputValue}
                         onInputChange={(_e, value) => {
@@ -151,7 +161,7 @@ export const PositionForm = ({ loading, onSubmit, onClose }: ImportDialogProps) 
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>{t('cancel')}</Button>
                 <ImportButton loading={loading} onClick={handleSubmit} />
             </DialogActions>
         </>

@@ -9,19 +9,21 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Field from './Field';
 import OwnerField from './OwnerField';
 
 export function LiveClassViewer({ processedEvent }: { processedEvent: ProcessedEvent }) {
+    const t = useTranslations('calendar');
     const event = processedEvent.event as Event;
 
     return (
         <Stack data-testid='live-class-viewer' sx={{ pt: 2 }} spacing={2}>
             <Typography>{event.title}</Typography>
 
-            <OwnerField title='Sensei' event={event} />
-            <Field title='Location' body={event.location} iconName='location' />
-            <Field title='Description' body={event.description} iconName='notes' />
+            <OwnerField title={t('sensei')} event={event} />
+            <Field title={t('location')} body={event.location} iconName='location' />
+            <Field title={t('description')} body={event.description} iconName='notes' />
 
             {event.type === EventType.GameReviewTier && <GameReviewActions event={event} />}
             {event.type === EventType.LectureTier && <LectureActions event={event} />}
@@ -31,6 +33,7 @@ export function LiveClassViewer({ processedEvent }: { processedEvent: ProcessedE
 
 /** Renders actions for GameReviewTier events */
 function GameReviewActions({ event }: { event: Event }) {
+    const t = useTranslations('calendar');
     const { user } = useAuth();
 
     if (isParticipant(user, event)) {
@@ -38,13 +41,13 @@ function GameReviewActions({ event }: { event: Event }) {
         return (
             <>
                 <Button variant='contained' href={`/meeting/${event.id}`}>
-                    View Details
+                    {t('viewDetails')}
                 </Button>
                 <Button variant='contained' href={event.location} target='_blank'>
-                    Join on Google Meet
+                    {t('joinOnGoogleMeet')}
                 </Button>
                 <Button variant='outlined' href='/learn/live-classes' LinkComponent={Link}>
-                    Watch Recordings
+                    {t('watchRecordings')}
                 </Button>
             </>
         );
@@ -55,7 +58,7 @@ function GameReviewActions({ event }: { event: Event }) {
         // recordings for this event.
         return (
             <Button variant='outlined' href='/learn/live-classes' LinkComponent={Link}>
-                Watch Recordings
+                {t('watchRecordings')}
             </Button>
         );
     }
@@ -65,19 +68,19 @@ function GameReviewActions({ event }: { event: Event }) {
     return (
         <UpsellButton
             buttonProps={{
-                children: 'Join Class',
+                children: t('joinClass'),
                 variant: 'contained',
             }}
             dialogProps={{
-                title: 'Upgrade to Access All Live Classes',
-                description: `Your current plan doesn't provide access to this class. Upgrade to:`,
-                postscript: `Your progress on your current training plan will carry over when you upgrade`,
-                currentAction: 'Attend weekly personalized game review classes',
+                title: t('upgradeGameReviewTitle'),
+                description: t('upgradeGameReviewDesc'),
+                postscript: t('upgradeGameReviewPostscript'),
+                currentAction: t('upgradeGameReviewAction'),
                 bulletPoints: [
-                    'Get direct feedback from a sensei',
-                    'Attend weekly live group classes on specialized topics',
-                    'Access recordings of all Game & Profile Review classes',
-                    'Get full access to the ChessDojo website',
+                    t('upgradeGameReviewBullet1'),
+                    t('upgradeGameReviewBullet2'),
+                    t('upgradeGameReviewBullet3'),
+                    t('upgradeGameReviewBullet4'),
                 ],
             }}
         />
@@ -86,18 +89,19 @@ function GameReviewActions({ event }: { event: Event }) {
 
 /** Renders actions for LectureTier events. */
 function LectureActions({ event }: { event: Event }) {
+    const t = useTranslations('calendar');
     const { user } = useAuth();
     if (isParticipant(user, event)) {
         return (
             <>
                 <Button variant='contained' href={`/meeting/${event.id}`}>
-                    View Details
+                    {t('viewDetails')}
                 </Button>
                 <Button variant='contained' href={event.location} target='_blank'>
-                    Join on Google Meet
+                    {t('joinOnGoogleMeet')}
                 </Button>
                 <Button variant='outlined' href='/learn/live-classes' LinkComponent={Link}>
-                    Watch Recordings
+                    {t('watchRecordings')}
                 </Button>
             </>
         );
@@ -108,18 +112,18 @@ function LectureActions({ event }: { event: Event }) {
     return (
         <UpsellButton
             buttonProps={{
-                children: 'Join Class',
+                children: t('joinClass'),
                 variant: 'contained',
             }}
             dialogProps={{
-                title: 'Upgrade to Access Workshop Classes',
-                description: `Your current plan doesn't provide access to this class. Upgrade to:`,
-                postscript: `Your progress on your current training plan will carry over when you upgrade.`,
-                currentAction: 'Attend weekly workshop classes on specialized topics',
+                title: t('upgradeLectureTitle'),
+                description: t('upgradeLectureDesc'),
+                postscript: t('upgradeLecturePostscript'),
+                currentAction: t('upgradeLectureAction'),
                 bulletPoints: [
-                    'Access structured homework assignments',
-                    'Access recordings of workshop classes',
-                    'Get full access to the ChessDojo website',
+                    t('upgradeLectureBullet1'),
+                    t('upgradeLectureBullet2'),
+                    t('upgradeLectureBullet3'),
                 ],
             }}
         />

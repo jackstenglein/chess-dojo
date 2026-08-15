@@ -1,3 +1,4 @@
+import { Close } from '@mui/icons-material';
 import {
     Button,
     Dialog,
@@ -7,9 +8,8 @@ import {
     DialogTitle,
     IconButton,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-import { Close } from '@mui/icons-material';
 import { EventType, trackEvent } from '../analytics/events';
 import { useApi } from '../api/Api';
 import { RequestSnackbar, useRequest } from '../api/Request';
@@ -29,6 +29,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
     onSuccess,
     children,
 }) => {
+    const t = useTranslations('meeting');
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const cancelRequest = useRequest();
     const api = useApi();
@@ -63,7 +64,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
                 <DialogTitle>
                     {dialogTitle}
                     <IconButton
-                        aria-label='close'
+                        aria-label={t('closeAriaLabel')}
                         onClick={() => setShowCancelDialog(false)}
                         sx={{
                             position: 'absolute',
@@ -80,7 +81,7 @@ const CancelMeetingButton: React.FC<React.PropsWithChildren<CancelMeetingButtonP
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onCancel} loading={cancelRequest.isLoading()}>
-                        Cancel Meeting
+                        {t('cancelMeetingButton')}
                     </Button>
                 </DialogActions>
             </Dialog>

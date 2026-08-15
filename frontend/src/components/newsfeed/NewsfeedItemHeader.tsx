@@ -7,6 +7,7 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { Box, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
 
 interface NewsfeedItemHeaderProps {
@@ -14,6 +15,7 @@ interface NewsfeedItemHeaderProps {
 }
 
 const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
 
     const timezone = user?.timezoneOverride;
@@ -38,13 +40,21 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            mb={2}
-            flexWrap='wrap'
-            rowGap={1}
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+                flexWrap: 'wrap',
+                rowGap: 1,
+            }}
         >
-            <Stack direction='row' spacing={2} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Avatar username={entry.owner} displayName={entry.ownerDisplayName} size={60} />
 
                 <Stack>
@@ -54,12 +64,19 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                             cohort={entry.graduationInfo?.newCohort || entry.cohort}
                             size={25}
                             sx={{ marginLeft: '0.6rem', verticalAlign: 'middle' }}
-                            tooltip={`Member of the ${entry.graduationInfo?.newCohort || entry.cohort} cohort`}
+                            tooltip={t('memberOfCohort', {
+                                cohort: entry.graduationInfo?.newCohort || entry.cohort,
+                            })}
                         />
                     </Typography>
 
-                    <Typography variant='body2' color='text.secondary'>
-                        {date} {displayYear} at {time}
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('dateTime', { date, year: displayYear, time })}
                     </Typography>
                 </Stack>
             </Stack>
@@ -69,15 +86,35 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                     <CohortIcon cohort={entry.cohort} size={50} />
                 </Box>
             ) : (
-                <Stack direction='row' spacing={1} alignItems='center'>
-                    <Stack alignItems='end'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Stack
+                        sx={{
+                            alignItems: 'end',
+                        }}
+                    >
                         <Typography sx={{ color: CategoryColors[category] }}>{category}</Typography>
                         {entry.isCustomRequirement && (
-                            <Typography variant='body2' color='text.secondary'>
-                                Custom Task
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
+                                {t('customTask')}
                             </Typography>
                         )}
-                        <Typography variant='body2' color='text.secondary'>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {entry.cohort}
                         </Typography>
                     </Stack>

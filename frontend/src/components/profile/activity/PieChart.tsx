@@ -1,5 +1,6 @@
 import CircleIcon from '@mui/icons-material/Circle';
 import { Box, Container, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, type JSX, type ReactNode } from 'react';
 import { PieChart as ReactPieChart } from 'react-minimal-pie-chart';
 
@@ -24,19 +25,30 @@ interface PieChartProps {
 }
 
 const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getTooltip, onClick }) => {
+    const t = useTranslations('profile.activity');
     const [hovered, setHovered] = useState<number | null>(null);
     const totalScore = useMemo(() => {
         return data.reduce((sum, curr) => sum + curr.value, 0);
     }, [data]);
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
-            <Typography variant='h6' textAlign='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h6'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {title}
             </Typography>
             {renderTotal(totalScore)}
 
-            {data.length === 0 && <Typography>No data</Typography>}
+            {data.length === 0 && <Typography>{t('noData')}</Typography>}
 
             {data.length > 0 && (
                 <Container maxWidth='sm' sx={{ mt: 1 }}>
@@ -68,15 +80,29 @@ const PieChart: React.FC<PieChartProps> = ({ title, data, renderTotal, getToolti
                     <Stack
                         direction='row'
                         spacing={2}
-                        justifyContent='center'
-                        mt={2}
-                        flexWrap='wrap'
-                        rowGap={1}
+                        sx={{
+                            justifyContent: 'center',
+                            mt: 2,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                        }}
                     >
                         {data.map((d) => (
-                            <Stack key={d.name} direction='row' alignItems='center'>
+                            <Stack
+                                key={d.name}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <CircleIcon sx={{ color: d.color }} />
-                                <Typography ml={'2px'}>{d.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        ml: '2px',
+                                    }}
+                                >
+                                    {d.name}
+                                </Typography>
                             </Stack>
                         ))}
                     </Stack>

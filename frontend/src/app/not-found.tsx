@@ -1,13 +1,18 @@
-import { Layout } from '@/legacy/Layout';
-import { Container, Typography } from '@mui/material';
+'use client';
 
+import NextError from 'next/error';
+
+// Root-level not-found is a self-contained document because the root
+// layout is a passthrough and does not render <html>/<body>. This page
+// fires for requests that fall outside the proxy matcher and therefore
+// never hit `[locale]/`, so we can't rely on the localized not-found
+// page or the NextIntlClientProvider tree.
 export default function NotFound() {
     return (
-        <Layout>
-            <Container maxWidth='md' sx={{ pt: 6, pb: 4 }}>
-                <Typography variant='h4'>404</Typography>
-                <Typography variant='h6'>Resource not found</Typography>
-            </Container>
-        </Layout>
+        <html lang='en'>
+            <body>
+                <NextError statusCode={404} />
+            </body>
+        </html>
     );
 }

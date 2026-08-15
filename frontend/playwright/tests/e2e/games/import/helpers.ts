@@ -10,7 +10,7 @@ export async function deleteCurrentGame(page: Page): Promise<void> {
     await page.getByTestId('underboard-button-settings').click();
     await page.getByTestId('delete-game-button').click();
     await page.getByTestId('delete-game-confirm-button').click();
-    await expect(page).toHaveURL('/profile');
+    await expect(page).toHaveURL(/\/profile(?:\?|$)/);
 }
 
 /**

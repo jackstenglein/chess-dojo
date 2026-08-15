@@ -6,6 +6,7 @@ import { useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { User } from '@/database/user';
+import { useTranslations } from 'next-intl';
 import { createContext, ReactNode, useEffect, useEffectEvent, useState } from 'react';
 
 /** Regex which matches the timer in the title of the page */
@@ -33,13 +34,14 @@ export const TimerContext = createContext<Timer>(null as unknown as Timer);
  * between different components.
  */
 export function TimerContextProvider({ children }: { children: ReactNode }) {
+    const t = useTranslations('timer');
     const { user, updateUser } = useAuth();
     const api = useApi();
     const [timerSeconds, setTimerSeconds] = useState(() => getTimerSeconds(user));
     const [showTask, setShowTask] = useState(false);
     const [initialized, setInitialized] = useState(false);
     const { requirement } = useRequirement(user?.timerTaskId);
-    const customTask = user?.customTasks?.find((t) => t.id === user.timerTaskId);
+    const customTask = user?.customTasks?.find((ct) => ct.id === user.timerTaskId);
 
     const [isRunning, setIsRunning] = useState(Boolean(user?.timerStartedAt));
     const isPaused = !isRunning && Boolean(user?.timerSeconds);
@@ -106,15 +108,15 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
     const getLabel = (taskId?: string) => {
         if (!user?.timerTaskId || taskId === user?.timerTaskId) {
             if (isRunning) {
-                return `Pause Timer (${formatTime(timerSeconds)})`;
+                return t('pauseTimer', { time: formatTime(timerSeconds) });
             }
             if (user?.timerSeconds) {
-                return `Resume Timer (${formatTime(timerSeconds)})`;
+                return t('resumeTimer', { time: formatTime(timerSeconds) });
             }
-            return 'Start Timer';
+            return t('startTimer');
         }
 
-        return `Clear and Restart Timer`;
+        return t('clearAndRestart');
     };
 
     const onToggle = (taskId?: string) => {

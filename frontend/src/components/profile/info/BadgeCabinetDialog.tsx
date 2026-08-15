@@ -13,6 +13,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Badge, BadgeCategory } from './badgeHandler';
 import { BadgeImage } from './BadgeImage';
@@ -25,7 +26,18 @@ interface BadgeCabinetDialogProps {
 }
 
 export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDialogProps) {
+    const tBadge = useTranslations('profile.info.badge');
+    const tInfo = useTranslations('profile.info');
     const [badgeCategory, setBadgeCategory] = useState(BadgeCategory.All);
+
+    const categoryLabels: Record<BadgeCategory, string> = {
+        [BadgeCategory.All]: tBadge('categoryAll'),
+        [BadgeCategory.Achieved]: tBadge('categoryAchieved'),
+        [BadgeCategory.Polgar]: tBadge('categoryPolgar'),
+        [BadgeCategory.Games]: tBadge('categoryGames'),
+        [BadgeCategory.Annotation]: tBadge('categoryAnnotation'),
+        [BadgeCategory.Graduation]: tBadge('categoryGraduation'),
+    };
 
     let displayedBadges = allBadges;
     if (badgeCategory === BadgeCategory.Achieved) {
@@ -44,9 +56,9 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                     position: 'relative',
                 }}
             >
-                All Badges
+                {tBadge('allBadges')}
                 <IconButton
-                    aria-label='close'
+                    aria-label={tInfo('close')}
                     onClick={onClose}
                     sx={{ position: 'absolute', right: 8, top: 8 }}
                 >
@@ -57,11 +69,11 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                 <FormControl sx={{ mb: 2 }}>
                     <Select
                         value={badgeCategory}
-                        onChange={(e) => setBadgeCategory(e.target.value as BadgeCategory)}
+                        onChange={(e) => setBadgeCategory(e.target.value)}
                     >
                         {Object.entries(BadgeCategory).map(([key, value]) => (
                             <MenuItem key={key} value={value}>
-                                {value}
+                                {categoryLabels[value]}
                             </MenuItem>
                         ))}
                     </Select>
@@ -110,8 +122,10 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                             <Box sx={{ flex: 1 }}>
                                 <Typography
                                     variant='h6'
-                                    fontWeight='bold'
                                     color={badge.isEarned ? 'text' : 'text.secondary'}
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
                                 >
                                     {badge.title}
                                 </Typography>
@@ -122,9 +136,11 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                     badge.level && (
                                         <Stack
                                             direction='row'
-                                            width={1}
-                                            gap={1}
-                                            alignItems='center'
+                                            sx={{
+                                                width: 1,
+                                                gap: 1,
+                                                alignItems: 'center',
+                                            }}
                                         >
                                             <LinearProgress
                                                 variant='determinate'
@@ -137,7 +153,12 @@ export function BadgCabinetDialog({ isOpen, onClose, allBadges }: BadgeCabinetDi
                                                     filter: 'grayscale(20%) opacity(0.6)',
                                                 }}
                                             />
-                                            <Typography variant='body2' color='text.secondary'>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {badge.currentCount} / {badge.level}
                                             </Typography>
                                         </Stack>

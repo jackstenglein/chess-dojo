@@ -2,6 +2,7 @@ import { useAuth } from '@/auth/Auth';
 import { TimelineProvider } from '@/components/profile/activity/useTimeline';
 import { TaskDialog, TaskDialogView } from '@/components/profile/trainingPlan/TaskDialog';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { Graduation, isGraduation } from '../database/graduation';
 import {
@@ -216,11 +217,15 @@ export function formatPercentComplete(value: number) {
     return `${Math.round(value)}%`;
 }
 
-export function getRatingSystem(row: ScoreboardRow) {
+export function getRatingSystem(
+    row: ScoreboardRow,
+    t: ReturnType<typeof useTranslations<'scoreboard'>>,
+    tRating: ReturnType<typeof useTranslations<'enums.ratingSystem'>>,
+) {
     if (isCustom(row.ratingSystem) && !isGraduation(row) && row.ratings[row.ratingSystem]?.name) {
-        return `Custom (${row.ratings[row.ratingSystem]?.name})`;
+        return t('customRating', { name: row.ratings[row.ratingSystem]?.name ?? '' });
     }
-    return formatRatingSystem(row.ratingSystem);
+    return formatRatingSystem(row.ratingSystem, tRating);
 }
 
 export function getStartRating(row: ScoreboardRow): number {

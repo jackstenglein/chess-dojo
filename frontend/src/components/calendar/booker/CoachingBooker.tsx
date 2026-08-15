@@ -1,7 +1,7 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, RequestStatus, useRequest } from '@/api/Request';
-import { displayPrice } from '@/app/(scoreboard)/courses/(list)/CourseListItem';
+import { displayPrice } from '@/app/[locale]/(scoreboard)/courses/(list)/CourseListItem';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
@@ -9,6 +9,7 @@ import { Event } from '@/database/event';
 import { TimeFormat, dojoCohorts } from '@/database/user';
 import Icon from '@/style/Icon';
 import { AppBar, Button, Dialog, DialogContent, Stack, Toolbar, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Field from '../eventViewer/Field';
 import OwnerField from '../eventViewer/OwnerField';
 import ParticipantsList from '../eventViewer/ParticipantsList';
@@ -19,6 +20,7 @@ interface CoachingBookerProps {
 }
 
 const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
+    const t = useTranslations('calendar');
     const user = useAuth().user;
     const request = useRequest();
     const api = useApi();
@@ -63,12 +65,14 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
             data-testid='availability-booker'
             fullScreen
             open={true}
-            TransitionComponent={Transition}
+            slots={{
+                transition: Transition,
+            }}
         >
             <AppBar sx={{ position: 'relative' }}>
                 <Toolbar>
                     <Typography sx={{ ml: 2, flex: 1 }} variant='h6' component='div'>
-                        Book Coaching Session
+                        {t('bookCoachingSession')}
                     </Typography>
                     <Button
                         data-testid='cancel-button'
@@ -78,7 +82,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         disabled={request.status === RequestStatus.Loading}
                         startIcon={<Icon name='cancel' />}
                     >
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button
                         data-testid='book-button'
@@ -88,7 +92,7 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         onClick={onBook}
                         startIcon={<Icon name='join' />}
                     >
-                        Book
+                        {t('book')}
                     </Button>
                 </Toolbar>
             </AppBar>
@@ -98,19 +102,34 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
 
                     <Field
                         iconName='clock'
-                        title='Time'
-                        body={`${startDate} ${startTimeStr} - ${endTimeStr}`}
+                        title={t('time')}
+                        body={t('timeRange', {
+                            date: startDate,
+                            start: startTimeStr,
+                            end: endTimeStr,
+                        })}
                     />
 
                     <Stack>
-                        <Typography variant='subtitle2' color='text.secondary'>
-                            Price
+                        <Typography
+                            variant='subtitle2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
+                            {t('price')}
                         </Typography>
                         {isParticipant ? (
-                            <Typography>Already Booked</Typography>
+                            <Typography>{t('alreadyBooked')}</Typography>
                         ) : (
                             <>
-                                <Stack direction='row' spacing={1} alignItems='baseline'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'baseline',
+                                    }}
+                                >
                                     <Typography
                                         variant='body1'
                                         sx={{
@@ -124,35 +143,48 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
 
                                     {percentOff > 0 && (
                                         <>
-                                            <Typography variant='body1' color='success.main'>
+                                            <Typography
+                                                variant='body1'
+                                                sx={{
+                                                    color: 'success.main',
+                                                }}
+                                            >
                                                 ${displayPrice(currentPrice / 100)}
                                             </Typography>
 
-                                            <Typography variant='body2' color='text.secondary'>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 (-{percentOff}%)
                                             </Typography>
                                         </>
                                     )}
                                 </Stack>
 
-                                <Typography variant='caption' color='text.secondary'>
-                                    Upon booking, you will have 30 minutes to complete payment
-                                    before losing your spot. Cancelations must be made more than 24
-                                    hours in advance to receive a refund.
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('bookingPolicy')}
                                 </Typography>
                             </>
                         )}
                     </Stack>
 
-                    <OwnerField title='Coach' event={event} />
-                    <Field title='Description' body={event.description} iconName='notes' />
+                    <OwnerField title={t('coach')} event={event} />
+                    <Field title={t('description')} body={event.description} iconName='notes' />
                     <Field
                         iconName='cohort'
-                        title='Cohorts'
+                        title={t('cohorts')}
                         body={
                             dojoCohorts.length === event.cohorts.length ||
                             event.cohorts.length === 0
-                                ? 'All Cohorts'
+                                ? t('allCohorts')
                                 : event.cohorts.join(', ')
                         }
                     />
@@ -160,14 +192,15 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         <Field
                             iconName='participant'
                             showEmptyBody
-                            title={`Participants (${Object.values(event.participants).length} / ${
-                                event.maxParticipants
-                            })`}
+                            title={t('participantsCount', {
+                                count: Object.values(event.participants).length,
+                                total: event.maxParticipants,
+                            })}
                             body={
                                 Object.values(event.participants).length === 0
-                                    ? 'No Participants Yet'
+                                    ? t('noParticipantsYet')
                                     : event.coaching.hideParticipants && !isParticipant
-                                      ? 'Participants hidden until after booking'
+                                      ? t('participantsHidden')
                                       : undefined
                             }
                         />

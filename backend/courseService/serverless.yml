@@ -155,7 +155,7 @@ resources:
             - true
             - false
         GlobalSecondaryIndexes:
-          - IndexName: SummaryIndex
+          - IndexName: SummaryIdx
             KeySchema:
               - AttributeName: type
                 KeyType: HASH
@@ -175,3 +175,4 @@ resources:
                 - purchaseOptions
                 - owner
                 - ownerDisplayName
+                - imageUrl

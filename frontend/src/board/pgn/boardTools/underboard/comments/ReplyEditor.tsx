@@ -5,6 +5,7 @@ import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import useGame from '@/context/useGame';
 import { PositionComment } from '@/database/game';
 import { Button, Stack, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface ReplyEditorProps {
@@ -18,6 +19,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
     const api = useApi();
     const { user } = useAuth();
     const { game, onUpdateGame } = useGame();
+    const t = useTranslations('analysisBoard.underboard.comments');
 
     if (!game || !onUpdateGame || !user) {
         return null;
@@ -70,11 +72,19 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
     };
 
     return (
-        <Stack width={1} pt={1}>
+        <Stack
+            sx={{
+                width: 1,
+                pt: 1,
+            }}
+        >
             <TextField
                 id={BlockBoardKeyboardShortcuts}
                 size='small'
-                placeholder={`Reply to ${parent.owner.displayName} (${parent.owner.cohort})`}
+                placeholder={t('replyPlaceholder', {
+                    displayName: parent.owner.displayName,
+                    cohort: parent.owner.cohort,
+                })}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={onKeyDown}
@@ -88,7 +98,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                     onClick={onCancel}
                     disabled={request.isLoading()}
                 >
-                    cancel
+                    {t('replyCancelButton')}
                 </Button>
                 <Button
                     disabled={value.trim().length === 0}
@@ -97,7 +107,7 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
                     sx={{ textTransform: 'none' }}
                     onClick={onReply}
                 >
-                    reply
+                    {t('replyPostButton')}
                 </Button>
             </Stack>
 

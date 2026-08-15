@@ -566,6 +566,36 @@ resources:
                 - unlisted
                 - review
 
+    GameSearchDomain:
+      Type: AWS::OpenSearchService::Domain
+      Condition: IsProd
+      DeletionPolicy: Retain
+      Properties:
+        DomainName: chess-dojo-game-search
+        EngineVersion: OpenSearch_2.19
+        ClusterConfig:
+          InstanceType: t3.small.search
+          InstanceCount: 2
+          ZoneAwarenessEnabled: true
+        EBSOptions:
+          EBSEnabled: true
+          VolumeType: gp3
+          VolumeSize: 10
+        NodeToNodeEncryptionOptions:
+          Enabled: true
+        EncryptionAtRestOptions:
+          Enabled: true
+        DomainEndpointOptions:
+          EnforceHTTPS: true
+        AccessPolicies:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Action: 'es:*'
+              Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/chess-dojo-game-search/*
+
     TournamentsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
@@ -731,6 +761,19 @@ resources:
             'chess-dojo-simple-${aws:accountId}-secrets',
           ]
 
+    # Staged FIDE players_list.zip (uploaded by GitHub Actions; Lambda cannot
+    # reach ratings.fide.com from AWS egress IPs).
+    FideRatingsBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        BucketName:
+          !If [
+            IsNotSimple,
+            'chess-dojo-${sls:stage}-fide-ratings',
+            'chess-dojo-simple-${aws:accountId}-fide-ratings',
+          ]
+
     ############# End S3 Resources ##############
 
     ############# Alert Resources ###############
@@ -788,11 +831,18 @@ resources:
       Value: !GetAtt GamesTable.Arn
     GamesTableStreamArn:
       Value: !GetAtt GamesTable.StreamArn
+    GameSearchEndpoint:
+      Value: !If
+        - IsProd
+        - !Join ['', ['https://', !GetAtt GameSearchDomain.DomainEndpoint]]
+        - ${file(../config-${sls:stage}.yml):gameSearchEndpoint}
     PicturesBucket:
       Value: !Ref PicturesBucket
     GameDatabaseBucket:
       Value: !Ref GameDatabaseBucket
     SecretsBucket:
       Value: !Ref SecretsBucket
+    FideRatingsBucket:
+      Value: !Ref FideRatingsBucket
     AlertNotificationsTopic:
       Value: !Ref AlertNotificationsTopic

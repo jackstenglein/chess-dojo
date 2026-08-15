@@ -3,7 +3,17 @@ import { Link } from '@/components/navigation/Link';
 import { ALL_COHORTS, User } from '@/database/user';
 import { calculateTacticsRating } from '@/exams/view/exam';
 import { ZoomOutMap } from '@mui/icons-material';
-import { Box, Card, CardContent, CardHeader, IconButton, Stack, Tooltip } from '@mui/material';
+import {
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
@@ -16,6 +26,7 @@ import { Badge, detectNewBadge, getBadges } from './badgeHandler';
 import { BadgeImage } from './BadgeImage';
 
 export const BadgeCard = ({ user }: { user: User }) => {
+    const t = useTranslations('profile.info.badge');
     const [selectedBadge, setSelectedBadge] = useState<Badge>();
     const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
     const { requirements, request: requirementsRequest } = useRequirements(ALL_COHORTS, true);
@@ -52,8 +63,8 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 setPreviousEarnedBadges(result.badges);
                 break;
             case 'new_badge':
-                setSelectedBadge(result.newBadge);
                 setPreviousEarnedBadges(result.allEarned);
+                setSelectedBadge(result.newBadge);
                 break;
         }
     }, [
@@ -67,8 +78,13 @@ export const BadgeCard = ({ user }: { user: User }) => {
     if (!user.createdAt || user.createdAt < '2025-12-31') {
         badges.push(
             <Link key='postmortem-2025' href={`/profile/${user.username}/postmortem/2025`}>
-                <Tooltip title='View my 2025 postmortem!'>
-                    <Image src={postmortem2025} alt='2025 postmortem' width={50} height={50} />
+                <Tooltip title={t('viewMyPostmortem', { year: 2025 })}>
+                    <Image
+                        src={postmortem2025}
+                        alt={t('postmortemAlt', { year: 2025 })}
+                        width={50}
+                        height={50}
+                    />
                 </Tooltip>
             </Link>,
         );
@@ -77,8 +93,13 @@ export const BadgeCard = ({ user }: { user: User }) => {
     if (!user.createdAt || user.createdAt < '2024-12') {
         badges.push(
             <Link key='postmortem-2024' href={`/profile/${user.username}/postmortem/2024`}>
-                <Tooltip title='View my 2024 postmortem!'>
-                    <Image src={postmortem2024} alt='2024 postmortem' width={50} height={50} />
+                <Tooltip title={t('viewMyPostmortem', { year: 2024 })}>
+                    <Image
+                        src={postmortem2024}
+                        alt={t('postmortemAlt', { year: 2024 })}
+                        width={50}
+                        height={50}
+                    />
                 </Tooltip>
             </Link>,
         );
@@ -87,8 +108,13 @@ export const BadgeCard = ({ user }: { user: User }) => {
     if (!user.createdAt || user.createdAt < '2023-12') {
         badges.push(
             <Link key='postmortem-2023' href={`/profile/${user.username}/postmortem/2023`}>
-                <Tooltip title='View my 2023 postmortem!'>
-                    <Image src={postmortem2023} alt='2023 postmortem' width={50} height={50} />
+                <Tooltip title={t('viewMyPostmortem', { year: 2023 })}>
+                    <Image
+                        src={postmortem2023}
+                        alt={t('postmortemAlt', { year: 2023 })}
+                        width={50}
+                        height={50}
+                    />
                 </Tooltip>
             </Link>,
         );
@@ -98,22 +124,20 @@ export const BadgeCard = ({ user }: { user: User }) => {
         badges.push(<BadgeImage badge={badge} onClick={handleBadgeClick} />);
     }
 
-    if (badges.length === 0) {
-        return null;
-    }
-
     return (
         <>
             <Card>
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    px={2}
-                    pt={2}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        px: 2,
+                        pt: 2,
+                    }}
                 >
-                    <CardHeader title='Badges' sx={{ p: 0 }} />
-                    <Tooltip title='View All Badges'>
+                    <CardHeader title={t('badgesCardTitle')} sx={{ p: 0 }} />
+                    <Tooltip title={t('viewAllBadges')}>
                         <IconButton color='primary' onClick={() => setIsViewAllModalOpen(true)}>
                             <ZoomOutMap />
                         </IconButton>
@@ -122,11 +146,13 @@ export const BadgeCard = ({ user }: { user: User }) => {
                 <CardContent sx={{ pt: 1, pb: 2, px: 2 }}>
                     <Stack
                         direction='row'
-                        columnGap={0.75}
-                        flexWrap='wrap'
-                        rowGap={1}
-                        alignItems='center'
-                        sx={{ p: 1 }}
+                        sx={{
+                            columnGap: 0.75,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                            alignItems: 'center',
+                            p: 1,
+                        }}
                     >
                         {badges.map((badge, idx) => (
                             <Box
@@ -143,6 +169,16 @@ export const BadgeCard = ({ user }: { user: User }) => {
                                 {badge}
                             </Box>
                         ))}
+                        {badges.length === 0 && (
+                            <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ textAlign: 'center', width: 1 }}
+                            >
+                                No badges earned yet. Complete tasks in your training plan to unlock
+                                badges.
+                            </Typography>
+                        )}
                     </Stack>
                 </CardContent>
             </Card>

@@ -20,6 +20,7 @@ import {
     Snackbar,
     Stack,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 const ONE_WEEK_MS = 1000 * 60 * 60 * 24 * 7;
@@ -31,6 +32,7 @@ const CURRENT_COHORT_VERSION = '2026';
  * displayed as tasks in the daily training plan view.
  */
 export function SwitchCohortPrompt() {
+    const t = useTranslations('profile.switchCohort');
     const { user } = useAuth();
     const api = useApi();
 
@@ -131,42 +133,45 @@ export function SwitchCohortPrompt() {
         );
     }
 
-    return (
-        <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            open={open}
-            onClose={handleClose}
-            autoHideDuration={7000}
-        >
-            <Alert
-                variant='filled'
-                severity='error'
-                action={
-                    <Stack direction='row'>
-                        <Button
-                            color='inherit'
-                            size='small'
-                            onClick={() => handleHideCohortPrompt()}
-                        >
-                            Hide for 1 month
-                        </Button>
-                        <Button
-                            color='inherit'
-                            size='small'
-                            onClick={handleSwitchCohorts}
-                            loading={request.isLoading()}
-                            sx={{ ml: 2, px: 3 }}
-                            endIcon={<NavigateNextIcon />}
-                        >
-                            Switch Cohorts
-                        </Button>
-                    </Stack>
-                }
-                sx={{ width: 1 }}
+    if (newCohort && open) {
+        return (
+            <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                open={open}
+                onClose={handleClose}
+                autoHideDuration={7000}
             >
-                Your rating has been less than your cohort's minimum rating for 90 days. We
-                recommend moving down to the {newCohort} cohort.
-            </Alert>
-        </Snackbar>
-    );
+                <Alert
+                    variant='filled'
+                    severity='error'
+                    action={
+                        <Stack direction='row'>
+                            <Button
+                                color='inherit'
+                                size='small'
+                                onClick={() => handleHideCohortPrompt()}
+                            >
+                                {t('hideForMonth')}
+                            </Button>
+                            <Button
+                                color='inherit'
+                                size='small'
+                                onClick={handleSwitchCohorts}
+                                loading={request.isLoading()}
+                                sx={{ ml: 2, px: 3 }}
+                                endIcon={<NavigateNextIcon />}
+                            >
+                                {t('switchCohorts')}
+                            </Button>
+                        </Stack>
+                    }
+                    sx={{ width: 1 }}
+                >
+                    {t('ratingBelowMinimum', { newCohort })}
+                </Alert>
+            </Snackbar>
+        );
+    }
+
+    return null;
 }

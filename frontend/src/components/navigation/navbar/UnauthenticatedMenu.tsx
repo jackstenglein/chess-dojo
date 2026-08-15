@@ -31,6 +31,7 @@ import {
     Typography,
     useMediaQuery,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useState, type JSX } from 'react';
 import { Logo, NavMenuItem, NavbarItem, StartItem } from './NavbarMenu';
 
@@ -44,14 +45,17 @@ const UnauthenticatedMenu = () => {
 
 export default UnauthenticatedMenu;
 
-function unauthenticatedStartItems(toggleExpansion: (item: string) => void): NavbarItem[] {
+function unauthenticatedStartItems(
+    toggleExpansion: (item: string) => void,
+    t: ReturnType<typeof useTranslations>,
+): NavbarItem[] {
     return [
         {
             id: 'live-classes',
             name: (
                 <>
-                    Live Classes{' '}
-                    <Chip label='NEW' color='success' size='small' sx={{ ml: 1 }} />{' '}
+                    {t('liveClasses')}{' '}
+                    <Chip label={t('new')} color='success' size='small' sx={{ ml: 1 }} />{' '}
                 </>
             ),
             icon: <PresenterIcon sx={{ fontSize: '24px' }} />,
@@ -59,38 +63,38 @@ function unauthenticatedStartItems(toggleExpansion: (item: string) => void): Nav
         },
         {
             id: 'tournaments',
-            name: 'Tournaments',
+            name: t('tournaments'),
             icon: <Tournaments />,
             href: '/tournaments',
         },
         {
             id: 'blog',
-            name: 'Blog',
+            name: t('blog'),
             icon: <Forum />,
             href: '/blog',
         },
         {
             id: 'shop',
-            name: 'Shop',
+            name: t('shop'),
             icon: <Sell />,
             onClick: () => toggleExpansion('shop'),
             children: [
                 {
                     id: 'courses',
-                    name: 'Courses',
+                    name: t('courses'),
                     icon: <ImportContacts />,
                     href: '/courses',
                 },
                 {
                     id: 'merch',
-                    name: 'Merch',
+                    name: t('merch'),
                     icon: <Storefront />,
                     href: 'https://www.chessdojo.shop/shop',
                     target: '_blank',
                 },
                 {
                     id: 'donate',
-                    name: 'Donate',
+                    name: t('donate'),
                     href: '/donate',
                     icon: <DonateIcon />,
                 },
@@ -101,13 +105,15 @@ function unauthenticatedStartItems(toggleExpansion: (item: string) => void): Nav
 
 function useNavbarItems(handleClose: () => void) {
     const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+    const t = useTranslations('navbar');
 
     const showAll = useMediaQuery('(min-width:1012px)');
     const hide2 = useMediaQuery('(min-width:840px)');
     const hide3 = useMediaQuery('(min-width:676px)');
 
-    const startItems = unauthenticatedStartItems((item: string) =>
-        setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+    const startItems = unauthenticatedStartItems(
+        (item: string) => setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+        t,
     );
 
     let startItemCount = 0;
@@ -144,6 +150,7 @@ function useNavbarItems(handleClose: () => void) {
 
 export const LargeMenuUnauthenticated = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const t = useTranslations('navbar');
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -178,7 +185,7 @@ export const LargeMenuUnauthenticated = () => {
 
                 {menuItems.length > 0 && (
                     <>
-                        <Tooltip title='More'>
+                        <Tooltip title={t('more')}>
                             <IconButton
                                 data-testid='navbar-more-button'
                                 onClick={handleOpen}
@@ -199,10 +206,10 @@ export const LargeMenuUnauthenticated = () => {
                 )}
 
                 <Button href='/signin' color='dojoOrange' sx={{ fontWeight: 'bold' }}>
-                    Sign In
+                    {t('signIn')}
                 </Button>
                 <Button href='/signup' color='dojoOrange' sx={{ fontWeight: 'bold' }}>
-                    Sign Up
+                    {t('signUp')}
                 </Button>
             </Stack>
         </>
@@ -212,9 +219,11 @@ export const LargeMenuUnauthenticated = () => {
 export const ExtraSmallMenuUnauthenticated = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+    const t = useTranslations('navbar');
 
-    const startItems = unauthenticatedStartItems((item: string) =>
-        setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+    const startItems = unauthenticatedStartItems(
+        (item: string) => setOpenItems((v) => ({ ...v, [item]: !(v[item] || false) })),
+        t,
     );
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -229,11 +238,19 @@ export const ExtraSmallMenuUnauthenticated = () => {
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            sx={{ flexGrow: 1, height: 1 }}
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexGrow: 1,
+                height: 1,
+            }}
         >
-            <Stack direction='row' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Logo />
                 <Typography
                     component='a'
@@ -253,7 +270,7 @@ export const ExtraSmallMenuUnauthenticated = () => {
             <IconButton
                 data-testid='navbar-more-button'
                 size='medium'
-                aria-label='navigation menu'
+                aria-label={t('navigationMenu')}
                 aria-controls='menu-appbar'
                 aria-haspopup='true'
                 onClick={handleOpen}
@@ -271,13 +288,25 @@ export const ExtraSmallMenuUnauthenticated = () => {
                     <ListItemIcon>
                         <LoginIcon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>Sign In</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('signIn')}
+                    </Typography>
                 </MenuItem>
                 <MenuItem component='a' href='/signup'>
                     <ListItemIcon>
                         <SensorOccupiedIcon />
                     </ListItemIcon>
-                    <Typography textAlign='center'>Sign Up</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('signUp')}
+                    </Typography>
                 </MenuItem>
 
                 {startItems.map((item) => [
@@ -288,7 +317,13 @@ export const ExtraSmallMenuUnauthenticated = () => {
                         href={item.href}
                     >
                         <ListItemIcon>{item.icon}</ListItemIcon>
-                        <Typography textAlign='center'>{item.name}</Typography>
+                        <Typography
+                            sx={{
+                                textAlign: 'center',
+                            }}
+                        >
+                            {item.name}
+                        </Typography>
                         {item.children &&
                             (openItems[item.id] ? (
                                 <ListItemIcon sx={{ position: 'absolute', right: 0 }}>
@@ -319,7 +354,13 @@ export const ExtraSmallMenuUnauthenticated = () => {
                                                 <ChevronRight />
                                             </ListItemIcon>
                                         )}
-                                        <Typography textAlign='center'>{child.name}</Typography>
+                                        <Typography
+                                            sx={{
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {child.name}
+                                        </Typography>
                                     </MenuItem>
                                 ))}
                             </List>

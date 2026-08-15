@@ -17,8 +17,15 @@ func main() {
 	lambda.Start(Handler)
 }
 
+type UserAdminView struct {
+	*database.User
+
+	Email    string `json:"email"`
+	WixEmail string `json:"wixEmail"`
+}
+
 type adminGetUserResponse struct {
-	User       *database.User `json:"user"`
+	User       *UserAdminView `json:"user"`
 	AdminHints adminHints     `json:"adminHints"`
 }
 
@@ -59,7 +66,7 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	resp := adminGetUserResponse{
-		User: user,
+		User: &UserAdminView{User: user, Email: user.Email, WixEmail: user.WixEmail},
 		AdminHints: adminHints{
 			BillingPath: billingPathHint(user),
 		},

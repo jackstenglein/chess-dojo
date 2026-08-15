@@ -2,6 +2,7 @@ import { useAuth } from '@/auth/Auth';
 import useGame from '@/context/useGame';
 import { CommentType, Event, EventType, Move } from '@jackstenglein/chess';
 import { Box, Collapse, Divider, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { getInlineCommentsForMove } from '../boardTools/underboard/comments/positionComments';
@@ -123,7 +124,14 @@ export const Line: React.FC<LineProps> = ({
     }
 
     return (
-        <Box display='block' pl={`${lineInset}px`} mt={0.5} position='relative'>
+        <Box
+            sx={{
+                display: 'block',
+                pl: `${lineInset}px`,
+                mt: 0.5,
+                position: 'relative',
+            }}
+        >
             <Divider
                 sx={{
                     borderWidth: `${borderWidth}px`,
@@ -156,7 +164,7 @@ interface LinesProps {
 
 const Lines: React.FC<LinesProps> = ({
     lines,
-    depth,
+    depth = 0,
     handleScroll,
     expandParent,
     forceShowSuggestedVariations,
@@ -164,6 +172,7 @@ const Lines: React.FC<LinesProps> = ({
     slotProps,
 }) => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.pgnText');
 
     const forceExpansion = useMemo(() => {
         const variation = chess?.currentMove()?.variation;
@@ -180,7 +189,6 @@ const Lines: React.FC<LinesProps> = ({
         return false;
     }, [chess, lines]);
 
-    depth = depth ?? 0;
     const [expanded, setExpanded] = useState(forceExpansion || depth < 3 || depth % 2 === 0);
     const expandRef = useRef<HTMLHRElement>(null);
 
@@ -228,15 +236,20 @@ const Lines: React.FC<LinesProps> = ({
     return (
         <Box
             ref={expandRef}
-            display='block'
-            position='relative'
             sx={{
+                display: 'block',
+                position: 'relative',
                 pl: depth > -1 ? `${2 * borderWidth}px` : 0,
             }}
         >
-            <Stack direction='row' alignItems={expanded ? undefined : 'center'}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: expanded ? undefined : 'center',
+                }}
+            >
                 {expanded ? (
-                    <Tooltip key='collapse' title='Collapse variations' followCursor>
+                    <Tooltip key='collapse' title={t('collapseVariations')} followCursor>
                         <Divider
                             component='div'
                             orientation='vertical'
@@ -254,11 +267,12 @@ const Lines: React.FC<LinesProps> = ({
                         />
                     </Tooltip>
                 ) : (
-                    <Tooltip key='expand' title='Expand variations'>
+                    <Tooltip key='expand' title={t('expandVariations')}>
                         <Box
-                            bgcolor='text.disabled'
-                            borderRadius='50%'
+                            onClick={() => setExpanded(true)}
                             sx={{
+                                bgcolor: 'text.disabled',
+                                borderRadius: '50%',
                                 minWidth: '20px',
                                 minHeight: '20px',
                                 display: 'flex',
@@ -267,18 +281,20 @@ const Lines: React.FC<LinesProps> = ({
                                 mb: '2px',
                                 cursor: 'pointer',
                                 aspectRatio: '1',
+
                                 ...(depth === 0
                                     ? {
                                           mt: '2px',
                                       }
                                     : {}),
                             }}
-                            onClick={() => setExpanded(true)}
                         >
                             <Typography
                                 variant='caption'
-                                color='background.paper'
-                                sx={{ mx: '2px' }}
+                                sx={{
+                                    color: 'background.paper',
+                                    mx: '2px',
+                                }}
                             >
                                 +{lines.length}
                             </Typography>

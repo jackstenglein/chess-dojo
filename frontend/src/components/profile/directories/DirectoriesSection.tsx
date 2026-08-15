@@ -38,6 +38,7 @@ import {
     GridToolbarFilterButton,
     useGridApiRef,
 } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddButton } from './AddButton';
@@ -46,7 +47,7 @@ import { BulkItemEditor } from './BulkItemEditor';
 import { ContextMenu } from './ContextMenu';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 import { useDirectory } from './DirectoryCache';
-import { adminColumns, DirectoryCreatedAt, publicColumns } from './DirectoryGridColumns';
+import { DirectoryCreatedAt, getAdminColumns, getPublicColumns } from './DirectoryGridColumns';
 import { ShareButton } from './share/ShareButton';
 import { StatsButton } from './stats/StatsButton';
 
@@ -103,6 +104,7 @@ const DirectorySection = ({
     sx,
 }: DirectoriesSectionProps) => {
     const api = useApi();
+    const tDir = useTranslations('profile.directories');
     const { searchParams, updateSearchParams } = useNextSearchParams({
         directory: 'home',
     });
@@ -241,7 +243,12 @@ const DirectorySection = ({
     const isAdmin = compareRoles(DirectoryAccessRole.Admin, accessRole);
 
     return (
-        <Stack direction={isMobile ? 'column' : 'row'} columnGap={2}>
+        <Stack
+            direction={isMobile ? 'column' : 'row'}
+            sx={{
+                columnGap: 2,
+            }}
+        >
             <NavigationMenu
                 namespace={namespace}
                 id={directoryId}
@@ -251,7 +258,14 @@ const DirectorySection = ({
                 horizontal={isMobile}
             />
 
-            <Stack spacing={2} alignItems='start' flexGrow={1} mt={isMobile ? 2 : 0}>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'start',
+                    flexGrow: 1,
+                    mt: isMobile ? 2 : 0,
+                }}
+            >
                 <DirectoryBreadcrumbs
                     owner={directoryOwner}
                     id={directoryId}
@@ -259,7 +273,15 @@ const DirectorySection = ({
                 />
 
                 {isEditor && (
-                    <Stack direction='row' alignItems='center' gap={2} width={1} flexWrap='wrap'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            gap: 2,
+                            width: 1,
+                            flexWrap: 'wrap',
+                        }}
+                    >
                         <AddButton directory={directory} accessRole={accessRole} />
                         <ShareButton directory={directory} accessRole={accessRole} />
                         <StatsButton directory={directory} />
@@ -281,7 +303,7 @@ const DirectorySection = ({
                     listViewColumn={listViewColDef}
                     listView={isMobile}
                     rows={rows}
-                    columns={isAdmin ? adminColumns : publicColumns}
+                    columns={isAdmin ? getAdminColumns(tDir) : getPublicColumns(tDir)}
                     columnVisibilityModel={columnVisibility}
                     onColumnVisibilityModelChange={(model) => setColumnVisibility(model)}
                     onColumnOrderChange={() => {
@@ -345,6 +367,7 @@ const DirectorySection = ({
 };
 
 function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
+    const t = useTranslations('profile.directories');
     if (params.row.type !== DirectoryItemTypes.DIRECTORY) {
         return (
             <GameCell
@@ -363,9 +386,21 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
     }
 
     return (
-        <Stack height={1} justifyContent='center' py={1}>
+        <Stack
+            sx={{
+                height: 1,
+                justifyContent: 'center',
+                py: 1,
+            }}
+        >
             <Grid container columnSpacing={0.5}>
-                <Grid size={1} display='flex' justifyContent='center'>
+                <Grid
+                    size={1}
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                    }}
+                >
                     <Badge
                         badgeContent={params.row.metadata.gameCount || 0}
                         color='secondary'
@@ -387,14 +422,25 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
                 <Grid size={11}>
                     <Stack
                         direction='row'
-                        flexWrap='wrap'
-                        justifyContent='space-between'
-                        alignItems='center'
+                        sx={{
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
                     >
-                        <Stack gap={0.25}>
+                        <Stack
+                            sx={{
+                                gap: 0.25,
+                            }}
+                        >
                             <Typography variant='body2'>{params.row.metadata.name}</Typography>
                             {params.row.metadata.description && (
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {params.row.metadata.description}
                                 </Typography>
                             )}
@@ -409,9 +455,20 @@ function ListViewCell(params: GridRenderCellParams<DirectoryItem>) {
                 </Grid>
 
                 <Grid size={1} />
-                <Grid size={11} mt={0.25}>
-                    <Typography variant='body2' color='text.secondary'>
-                        Created <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
+                <Grid
+                    size={11}
+                    sx={{
+                        mt: 0.25,
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('createdPrefix')}
+                        <DirectoryCreatedAt createdAt={params.row.metadata.createdAt} />
                     </Typography>
                 </Grid>
             </Grid>

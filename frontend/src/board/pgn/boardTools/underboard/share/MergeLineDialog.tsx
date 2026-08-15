@@ -26,13 +26,8 @@ import {
     TextField,
 } from '@mui/material';
 import { GridPaginationModel, GridRowSelectionModel } from '@mui/x-data-grid-pro';
-import { useCallback, useState } from 'react';
-
-const mergeTypeLabels = {
-    [PgnMergeTypes.MERGE]: 'Merge',
-    [PgnMergeTypes.DISCARD]: 'Ignore',
-    [PgnMergeTypes.OVERWRITE]: 'Overwrite',
-};
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
 
 export function MergeLineDialog({
     open,
@@ -43,11 +38,21 @@ export function MergeLineDialog({
     onClose: () => void;
     move?: Move;
 }) {
+    const t = useTranslations('analysisBoard.underboard.share');
     const { chess } = useChess();
     const { game } = useGame();
     const api = useApi();
     const { user } = useAuth();
     const request = useRequest<{ cohort: string; id: string }>();
+
+    const mergeTypeLabels = useMemo(
+        () => ({
+            [PgnMergeTypes.MERGE]: t('mergeOptionLabel'),
+            [PgnMergeTypes.DISCARD]: t('ignoreOptionLabel'),
+            [PgnMergeTypes.OVERWRITE]: t('overwriteOptionLabel'),
+        }),
+        [t],
+    );
 
     const { skipVariations, setSkipVariations, skipNullMoves, setSkipNullMoves } =
         usePgnExportOptions();
@@ -82,7 +87,7 @@ export function MergeLineDialog({
 
         const renderMove = move || chess.currentMove();
         if (!renderMove) {
-            request.onFailure({ message: 'Cannot merge line from start position' });
+            request.onFailure({ message: t('mergeLineError') });
             return;
         }
 
@@ -136,7 +141,7 @@ export function MergeLineDialog({
                 autoHideDuration={6000}
                 onClose={request.reset}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                message='Line merged into game'
+                message={t('mergeSuccessMessage')}
                 action={
                     <Button
                         onClick={onOpenGame}
@@ -144,16 +149,22 @@ export function MergeLineDialog({
                         size='small'
                         sx={{ fontWeight: 'bold' }}
                     >
-                        Open
+                        {t('openButton')}
                     </Button>
                 }
             />
 
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth='md'>
-                <DialogTitle>Merge Current Line into Game?</DialogTitle>
+                <DialogTitle>{t('mergeLineTitle')}</DialogTitle>
                 <DialogContent>
-                    <FormLabel>Export Options</FormLabel>
-                    <Stack direction='row' flexWrap='wrap' columnGap={1}>
+                    <FormLabel>{t('exportOptionsLabel')}</FormLabel>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            columnGap: 1,
+                        }}
+                    >
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -161,7 +172,7 @@ export function MergeLineDialog({
                                     onChange={(e) => setSkipVariations(!e.target.checked)}
                                 />
                             }
-                            label='Variations'
+                            label={t('mergeVariations')}
                         />
                         <FormControlLabel
                             control={
@@ -170,13 +181,20 @@ export function MergeLineDialog({
                                     onChange={(e) => setSkipNullMoves(!e.target.checked)}
                                 />
                             }
-                            label='Null Moves'
+                            label={t('mergeNullMoves')}
                         />
                     </Stack>
 
                     <FormGroup sx={{ mt: 2 }}>
-                        <FormLabel>Import Options</FormLabel>
-                        <Stack direction='row' flexWrap='wrap' columnGap={1} alignItems='center'>
+                        <FormLabel>{t('importOptionsLabel')}</FormLabel>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                flexWrap: 'wrap',
+                                columnGap: 1,
+                                alignItems: 'center',
+                            }}
+                        >
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -184,11 +202,11 @@ export function MergeLineDialog({
                                         onChange={(e) => setCiteSource(e.target.checked)}
                                     />
                                 }
-                                label='Cite Current Game'
+                                label={t('citeCurrentGame')}
                             />
 
                             <TextField
-                                label='Comments'
+                                label={t('mergeCommentsLabel')}
                                 select
                                 value={commentMergeType}
                                 onChange={(e) =>
@@ -205,26 +223,26 @@ export function MergeLineDialog({
                             >
                                 <MenuItem value={PgnMergeTypes.MERGE}>
                                     <ListItemText
-                                        primary='Merge'
-                                        secondary='Comments from this game will be added after conflicting comments in the existing game'
+                                        primary={t('mergeOptionLabel')}
+                                        secondary={t('mergeOptionSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.OVERWRITE}>
                                     <ListItemText
-                                        primary='Overwrite'
-                                        secondary='Comments from this game will overwrite conflicting comments in the existing game'
+                                        primary={t('overwriteOptionLabel')}
+                                        secondary={t('overwriteOptionSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.DISCARD}>
                                     <ListItemText
-                                        primary='Ignore'
-                                        secondary='Comments from this game will be ignored'
+                                        primary={t('ignoreOptionLabel')}
+                                        secondary={t('ignoreOptionSecondary')}
                                     />
                                 </MenuItem>
                             </TextField>
 
                             <TextField
-                                label='Glyphs'
+                                label={t('glyphsLabel')}
                                 select
                                 value={nagMergeType}
                                 onChange={(e) => setNagMergeType(e.target.value as PgnMergeType)}
@@ -239,26 +257,26 @@ export function MergeLineDialog({
                             >
                                 <MenuItem value={PgnMergeTypes.MERGE}>
                                     <ListItemText
-                                        primary='Merge'
-                                        secondary='Glyphs from this game will be added after glyphs in the existing game'
+                                        primary={t('mergeOptionLabel')}
+                                        secondary={t('glyphsMergeSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.OVERWRITE}>
                                     <ListItemText
-                                        primary='Overwrite'
-                                        secondary='Glyphs from this game will overwrite glyphs in the existing game'
+                                        primary={t('overwriteOptionLabel')}
+                                        secondary={t('glyphsOverwriteSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.DISCARD}>
                                     <ListItemText
-                                        primary='Ignore'
-                                        secondary='Glyphs from this game will be ignored'
+                                        primary={t('ignoreOptionLabel')}
+                                        secondary={t('glyphsIgnoreSecondary')}
                                     />
                                 </MenuItem>
                             </TextField>
 
                             <TextField
-                                label='Arrows/Highlights'
+                                label={t('arrowsHighlightsLabel')}
                                 select
                                 value={drawableMergeType}
                                 onChange={(e) =>
@@ -275,20 +293,20 @@ export function MergeLineDialog({
                             >
                                 <MenuItem value={PgnMergeTypes.MERGE}>
                                     <ListItemText
-                                        primary='Merge'
-                                        secondary='Arrows and highlights from this game will be added while keeping arrows and highlights in the existing game'
+                                        primary={t('mergeOptionLabel')}
+                                        secondary={t('arrowsMergeSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.OVERWRITE}>
                                     <ListItemText
-                                        primary='Overwrite'
-                                        secondary='Arrows and highlights from this game will replace the ones in the existing game'
+                                        primary={t('overwriteOptionLabel')}
+                                        secondary={t('arrowsOverwriteSecondary')}
                                     />
                                 </MenuItem>
                                 <MenuItem value={PgnMergeTypes.DISCARD}>
                                     <ListItemText
-                                        primary='Ignore'
-                                        secondary='Arrows and highlights from this game will be ignored'
+                                        primary={t('ignoreOptionLabel')}
+                                        secondary={t('arrowsIgnoreSecondary')}
                                     />
                                 </MenuItem>
                             </TextField>
@@ -296,7 +314,7 @@ export function MergeLineDialog({
                     </FormGroup>
 
                     <FormGroup sx={{ mt: 2 }}>
-                        <FormLabel>Select Game</FormLabel>
+                        <FormLabel>{t('selectGameLabel')}</FormLabel>
                         <GameTable
                             namespace='my-existing-games'
                             getRowId={getRowId}
@@ -315,14 +333,14 @@ export function MergeLineDialog({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} disabled={request.isLoading()}>
-                        Cancel
+                        {t('mergeCancelButton')}
                     </Button>
                     <Button
                         loading={request.isLoading()}
                         disabled={selectedRows.ids.size === 0}
                         onClick={onMergeLine}
                     >
-                        Merge Line into Game
+                        {t('mergeLineButton')}
                     </Button>
                 </DialogActions>
             </Dialog>

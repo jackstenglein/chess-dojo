@@ -76,7 +76,13 @@ function JsonNode({
             <Box sx={{ pl: 1.5, borderLeft: 1, borderColor: 'divider', mb: 0.5 }}>
                 <details open={!defaultCollapsed}>
                     <summary style={{ cursor: 'pointer', userSelect: 'none' }}>
-                        <Typography component='span' variant='body2' fontWeight={600}>
+                        <Typography
+                            component='span'
+                            variant='body2'
+                            sx={{
+                                fontWeight: 600,
+                            }}
+                        >
                             {name}
                         </Typography>
                     </summary>
@@ -104,7 +110,13 @@ function JsonNode({
 
     return (
         <Stack direction='row' spacing={1} sx={{ pl: 1.5, py: 0.15, flexWrap: 'wrap' }}>
-            <Typography variant='body2' color='text.secondary' component='span'>
+            <Typography
+                variant='body2'
+                component='span'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 {name}:
             </Typography>
             <Typography variant='body2' component='span' sx={{ wordBreak: 'break-word' }}>
@@ -193,6 +205,10 @@ export function ProfileAdminTab({
         : '';
 
     const onSubmitComplimentary = () => {
+        if (!user) {
+            return;
+        }
+
         let expiresAt = '';
         if (expiresLocal?.isValid) {
             expiresAt = expiresLocal.toUTC().toISO() ?? '';
@@ -207,7 +223,7 @@ export function ProfileAdminTab({
                 mutateRequest.onSuccess(r.data);
                 onProfileUserUpdated?.(r.data);
                 if (loadRequest.data) {
-                    loadRequest.onSuccess({ ...loadRequest.data, user: r.data });
+                    loadRequest.onSuccess({ ...loadRequest.data, user: { ...user, ...r.data } });
                 }
             })
             .catch((e: unknown) => mutateRequest.onFailure(e));
@@ -217,13 +233,16 @@ export function ProfileAdminTab({
         if (!window.confirm('Remove admin complimentary access for this user?')) {
             return;
         }
+        if (!user) {
+            return;
+        }
         mutateRequest.onStart();
         deleteAdminComplimentary(profileUsername)
             .then((r) => {
                 mutateRequest.onSuccess(r.data);
                 onProfileUserUpdated?.(r.data);
                 if (loadRequest.data) {
-                    loadRequest.onSuccess({ ...loadRequest.data, user: r.data });
+                    loadRequest.onSuccess({ ...loadRequest.data, user: { ...user, ...r.data } });
                 }
             })
             .catch((e: unknown) => mutateRequest.onFailure(e));
@@ -231,10 +250,16 @@ export function ProfileAdminTab({
 
     if (hidden) {
         return (
-            <Stack spacing={2} sx={{ py: 2 }} alignItems='start'>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'start',
+                    py: 2,
+                }}
+            >
                 <Typography>
-                    This page can contain sensitive information (e.g. user subscription tier). Make
-                    sure nobody else can see your screen before showing details.
+                    This page can contain sensitive information (e.g. user email and subscription
+                    tier). Make sure nobody else can see your screen before showing details.
                 </Typography>
                 <Button variant='contained' onClick={() => setHidden(false)}>
                     Show details
@@ -261,6 +286,9 @@ export function ProfileAdminTab({
             <Box>
                 <Typography variant='body2'>
                     Username: <strong>{profileUsername}</strong>
+                </Typography>
+                <Typography variant='body2'>
+                    Email: <strong>{user.email}</strong>
                 </Typography>
                 <Typography variant='body2'>
                     Subscription Status:{' '}
@@ -303,14 +331,25 @@ export function ProfileAdminTab({
                     </Typography>
                 )}
                 {(user.paymentInfo?.overrideRevokedAt || user.paymentInfo?.overrideRevokedBy) && (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         Last revoked {user.paymentInfo.overrideRevokedAt ?? '—'} by{' '}
                         {user.paymentInfo.overrideRevokedBy ?? '—'}
                     </Typography>
                 )}
             </Box>
 
-            <Stack direction='row' spacing={2} flexWrap='wrap'>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    flexWrap: 'wrap',
+                }}
+            >
                 <Button
                     variant='outlined'
                     href={`https://${region}.console.aws.amazon.com/dynamodbv2/home?region=${region}#edit-item?itemMode=2&pk=${profileUsername}&table=${usersTable}`}
@@ -344,7 +383,12 @@ export function ProfileAdminTab({
                         Open in Stripe
                     </Button>
                 ) : (
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         No Stripe customer id on file.
                     </Typography>
                 )}
@@ -353,17 +397,27 @@ export function ProfileAdminTab({
             <Divider />
 
             <Box>
-                <Typography variant='h6' mb={3}>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        mb: 3,
+                    }}
+                >
                     Complimentary access
                 </Typography>
-                <Stack spacing={2} maxWidth={480}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        maxWidth: 480,
+                    }}
+                >
                     <FormControl fullWidth>
                         <InputLabel id='admin-tier-label'>Tier</InputLabel>
                         <Select
                             labelId='admin-tier-label'
                             label='Tier'
                             value={tier}
-                            onChange={(e) => setTier(e.target.value as SubscriptionTier)}
+                            onChange={(e) => setTier(e.target.value)}
                         >
                             {PAID_TIER_OPTIONS.map((t) => (
                                 <MenuItem key={t} value={t}>

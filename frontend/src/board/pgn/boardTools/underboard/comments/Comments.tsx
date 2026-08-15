@@ -12,6 +12,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import Comment from './Comment';
@@ -52,6 +53,7 @@ type CommentsProps = CommentEditorProps & {
 };
 
 const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isReadonly }) => {
+    const t = useTranslations('analysisBoard.underboard.comments');
     const [view, setView] = useLocalStorage(CommentViewKey, View.FullGame);
     const [sortBy, setSortBy] = useLocalStorage(CommentSortByKey, SortBy.Newest);
     const { chess } = useChess();
@@ -85,8 +87,18 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
 
     return (
         <CardContent sx={{ height: 1, p: 0 }}>
-            <Stack height={1}>
-                <Stack flexGrow={1} sx={{ overflowY: 'auto', p: 2 }}>
+            <Stack
+                sx={{
+                    height: 1,
+                }}
+            >
+                <Stack
+                    sx={{
+                        flexGrow: 1,
+                        overflowY: 'auto',
+                        p: 2,
+                    }}
+                >
                     <Stack spacing={2}>
                         <SaveAllVariationsButton />
 
@@ -99,8 +111,10 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                                 fullWidth
                                 size='small'
                             >
-                                <MenuItem value={View.FullGame}>Entire Game</MenuItem>
-                                <MenuItem value={View.CurrentMove}>Current Position Only</MenuItem>
+                                <MenuItem value={View.FullGame}>{t('entireGame')}</MenuItem>
+                                <MenuItem value={View.CurrentMove}>
+                                    {t('currentPositionOnly')}
+                                </MenuItem>
                             </TextField>
 
                             <TextField
@@ -111,19 +125,26 @@ const Comments: React.FC<CommentsProps> = ({ focusEditor, setFocusEditor, isRead
                                 fullWidth
                                 size='small'
                             >
-                                <MenuItem value={SortBy.Newest}>Newest First</MenuItem>
-                                <MenuItem value={SortBy.Oldest}>Oldest First</MenuItem>
+                                <MenuItem value={SortBy.Newest}>{t('newestFirst')}</MenuItem>
+                                <MenuItem value={SortBy.Oldest}>{t('oldestFirst')}</MenuItem>
                             </TextField>
                         </Stack>
                     </Stack>
 
-                    <Stack spacing={4} mt={3} flexGrow={1}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 3,
+                            flexGrow: 1,
+                        }}
+                    >
                         <PositionCommentSortContext.Provider value={{ sortBy }}>
                             {fenSections.map((s) => (
                                 <CommentSection
                                     isReadonly={isReadonly}
                                     key={s.move?.fen || 'start'}
                                     section={s}
+                                    t={t}
                                 />
                             ))}
                         </PositionCommentSortContext.Provider>
@@ -195,9 +216,10 @@ function getFenSections(game: Game, chess: Chess, view: View, sort: SortBy) {
 interface CommentSectionProps {
     section: PositionCommentSection;
     isReadonly?: boolean;
+    t: ReturnType<typeof useTranslations<'analysisBoard.underboard.comments'>>;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ isReadonly, section }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ isReadonly, section, t }) => {
     const { chess } = useChess();
     const reconcile = useReconcile();
     const move = section.move;
@@ -208,19 +230,29 @@ const CommentSection: React.FC<CommentSectionProps> = ({ isReadonly, section }) 
     };
 
     return (
-        <Stack width={1} spacing={2}>
-            <Stack width={1} alignItems='start'>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Stack
+                sx={{
+                    width: 1,
+                    alignItems: 'start',
+                }}
+            >
                 <Button sx={{ textTransform: 'none', pb: 0 }} onClick={onClick}>
                     {move
                         ? `${move.ply % 2 ? `${Math.floor(move.ply / 2) + 1}.` : `${move.ply / 2}...`} ${move.san}`
-                        : 'Starting Position'}
+                        : t('startingPosition')}
                 </Button>
                 <Divider sx={{ width: 1 }} />
             </Stack>
             {section.comments.map((c) => (
                 <Comment isReadonly={isReadonly} key={c.id} comment={c} move={move} />
             ))}
-            {section.comments.length === 0 && <Typography>No comments</Typography>}
+            {section.comments.length === 0 && <Typography>{t('noComments')}</Typography>}
         </Stack>
     );
 };

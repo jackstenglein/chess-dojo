@@ -1,0 +1,46 @@
+# Deploys the DojoLiga service.
+
+service: chess-dojo-liga
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  calculateResults:
+    handler: calculateResults.handler
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *)
+    timeout: 180
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: ${param:TournamentsTableArn}
+
+  getLeaderboard:
+    handler: getLeaderboard.handler
+    events:
+      - httpApi:
+          path: /public/tournaments/liga/{month}
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:TournamentsTableArn}

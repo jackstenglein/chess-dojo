@@ -1,4 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
+import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -32,6 +33,9 @@ export interface User {
     ratingSystem: RatingSystem;
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
+
+    /** The user's aggregate time management rating. */
+    timeManagementRating?: TimeManagementRating;
 
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
@@ -93,6 +97,8 @@ export interface User {
 
     /** The set of club ids the user is a member of. */
     clubs?: string[];
+    /** The id of the club the user has designated as their main club. Empty if unset. */
+    mainClubId?: string;
 
     /** A map from exam id to the user's summary for that exam. */
     exams: Record<string, UserExamSummary>;

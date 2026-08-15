@@ -5,8 +5,9 @@ import { logger } from '@/logging/logger';
 import { Chess, FEN } from '@jackstenglein/chess';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TimeControl } from './PlayBotSetup';
-import { callMaiaApi, MaiaRating } from './maiaengine';
-import { getOpeningBookMove, OPENING_PLY_LIMIT } from './openingBook';
+import { BotMoveProvider, resolveBotMove } from './botMoveProvider';
+import { MaiaRating } from './maiaengine';
+import { OPENING_PLY_LIMIT } from './openingBook';
 
 export type PlayerColor = 'white' | 'black';
 
@@ -33,6 +34,7 @@ export interface StartOpts {
     maiaRating: MaiaRating;
     startFen?: string;
     timeControl: TimeControl;
+    botMoveProvider?: BotMoveProvider | null;
 }
 
 export interface ClockState {
@@ -118,6 +120,7 @@ export function useMaiaGame(): UseMaiaGameResult {
     const cancelBotRef = useRef(false);
     const moveStartRef = useRef(Date.now());
     const timeControlRef = useRef<TimeControl>(UNLIMITED_TC);
+    const botMoveProviderRef = useRef<BotMoveProvider | null>(null);
     // Track last tick timestamp for accurate countdown
     const clockTickRef = useRef<number>(Date.now());
     const clockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -234,19 +237,23 @@ export function useMaiaGame(): UseMaiaGameResult {
             const rating = maiaRatingRef.current;
             const plyCount = chess.plyCount();
 
-            // Opening book (Posira API) for the first OPENING_PLY_LIMIT half-moves.
-            // Falls back to Maia silently if no book move is found.
-            let bestMove: string | null = null;
+            const botMove = await resolveBotMove(
+                {
+                    fen,
+                    maiaRating: rating,
+                    plyCount,
+                },
+                {
+                    provider: botMoveProviderRef.current,
+                },
+            );
 
-            const bookMove = await getOpeningBookMove(fen, rating, plyCount);
-            if (bookMove) {
-                bestMove = bookMove.uci;
-            } else if (!cancelBotRef.current) {
-                const evalResult = await callMaiaApi(fen, rating);
+            if (botMove?.winProbability !== undefined) {
                 const isBlack = fen.split(' ')[1] === 'b';
-                setMaiaWinProb(isBlack ? 1 - evalResult.value : evalResult.value);
-                bestMove = evalResult.bestMove || null;
+                setMaiaWinProb(isBlack ? 1 - botMove.winProbability : botMove.winProbability);
             }
+
+            const bestMove = botMove?.uci ?? null;
 
             await new Promise<void>((res) => setTimeout(res, botDelay(plyCount)));
             if (cancelBotRef.current) return;
@@ -359,6 +366,7 @@ export function useMaiaGame(): UseMaiaGameResult {
             playerColorRef.current = opts.playerColor;
             setMaiaRating(opts.maiaRating);
             maiaRatingRef.current = opts.maiaRating;
+            botMoveProviderRef.current = opts.botMoveProvider ?? null;
             setStartFen(opts.startFen || FEN.start);
             setTimeControl(opts.timeControl);
             timeControlRef.current = opts.timeControl;
@@ -403,6 +411,7 @@ export function useMaiaGame(): UseMaiaGameResult {
     const resign = useCallback(() => {
         if (resultRef.current !== null) return;
         cancelBotRef.current = true;
+        botMoveProviderRef.current = null;
         if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
         clockIntervalRef.current = null;
         setBotThinking(false);

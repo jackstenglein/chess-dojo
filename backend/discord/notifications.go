@@ -397,6 +397,43 @@ func SendMilestoneNotificationToSenseis(user *database.User, percent int) error 
 	return stderrors.Join(errs...)
 }
 
+func SendGraduationAnnouncement(graduation *database.Graduation, user *database.User) error {
+	if graduationsChannelId == "" {
+		log.Infof("No graduation Discord channel configured; skipping announcement for %s", graduation.Username)
+		return nil
+	}
+
+	discordId := user.DiscordId
+	if discordId == "" && user.DiscordUsername != "" {
+		var err error
+		discordId, err = getDiscordIdByUser(nil, user)
+		if err != nil {
+			log.Errorf("Failed to get Discord ID for graduation announcement: %v", err)
+		}
+	}
+
+	_, err := SendMessageInChannel(graduationAnnouncementMessage(graduation, user, discordId), graduationsChannelId)
+	return err
+}
+
+func graduationAnnouncementMessage(graduation *database.Graduation, user *database.User, discordId string) string {
+	userRef := user.DisplayName
+	if userRef == "" {
+		userRef = graduation.Username
+	}
+	if discordId != "" {
+		userRef = fmt.Sprintf("<@%s>", discordId)
+	} else {
+		userRef = fmt.Sprintf("**%s**", userRef)
+	}
+
+	message := fmt.Sprintf("%s Congrats to %s, who just graduated to **%s**!", MessageEmojiDojo, userRef, graduation.NewCohort)
+	if frontendHost != "" {
+		message += fmt.Sprintf("\n%s [**View Profile**](<%s/profile/%s>)", MessageEmojiArrow, frontendHost, graduation.Username)
+	}
+	return message
+}
+
 func SendMessageInChannel(message string, channelId string) (string, error) {
 	discord, err := discordgo.New("Bot " + authToken)
 	if err != nil {

@@ -1,9 +1,11 @@
 {
     "name": "@jackstenglein/chess-dojo-common",
     "version": "1.0.0",
+    "packageManager": "pnpm@11.17.0",
     "description": "Common code shared between ChessDojo website, mobile app and backend",
     "main": "index.ts",
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "test": "vitest run",
         "lint": "eslint .",
         "format": "prettier src --write",
@@ -15,7 +17,7 @@
         "@jackstenglein/chess": "^2.2.21",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
-        "uuid": "^14.0.0",
+        "uuid": "^14.0.1",
         "zod": "^4.4.3"
     },
     "devDependencies": {
@@ -23,9 +25,9 @@
         "@types/uuid": "^11.0.0",
         "eslint": "^9.39.2",
         "jiti": "^2.7.0",
-        "prettier": "^3.8.3",
+        "prettier": "^3.9.5",
         "prettier-plugin-organize-imports": "^4.3.0",
-        "typescript-eslint": "^8.59.3",
-        "vitest": "^4.1.8"
+        "typescript-eslint": "^8.65.0",
+        "vitest": "^4.1.10"
     }
 }

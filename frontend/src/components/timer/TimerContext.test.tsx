@@ -8,8 +8,9 @@ import {
     RequirementStatus,
     ScoreboardDisplay,
 } from '@/database/requirement';
+import { renderWithIntl } from '@/i18n/intl.test';
 import { RatingSystem, User } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import { use } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TimerContext, TimerContextProvider } from './TimerContext';
@@ -113,7 +114,7 @@ function TimerConsumer({ taskId }: { taskId?: string }) {
 }
 
 function renderTimer(taskId?: string) {
-    return render(
+    return renderWithIntl(
         <TimerContextProvider>
             <TimerConsumer taskId={taskId} />
         </TimerContextProvider>,
@@ -142,7 +143,7 @@ describe('TimerContextProvider', () => {
 
     it('renders children without a provider while auth is loading', () => {
         authState.status = AuthStatus.Loading;
-        render(
+        renderWithIntl(
             <TimerContextProvider>
                 <div data-testid='child'>child</div>
             </TimerContextProvider>,
@@ -152,7 +153,7 @@ describe('TimerContextProvider', () => {
 
     it('renders children without a provider when there is no user', () => {
         authState.user = null;
-        render(
+        renderWithIntl(
             <TimerContextProvider>
                 <div data-testid='child'>child</div>
             </TimerContextProvider>,

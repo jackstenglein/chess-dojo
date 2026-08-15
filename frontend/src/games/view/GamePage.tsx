@@ -8,6 +8,7 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import { BoardApi } from '@/board/Board';
 import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard from '@/board/pgn/PgnBoard';
+import { useSidePanelTabs } from '@/board/pgn/sidePanelTabs';
 import { GameMoveButtonExtras } from '@/components/games/view/GameMoveButtonExtras';
 import { GameContext } from '@/context/useGame';
 import { Game } from '@/database/game';
@@ -24,6 +25,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Box } from '@mui/material';
 import { isAxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
@@ -33,6 +35,7 @@ import PgnErrorBoundary from './PgnErrorBoundary';
 const gameCache = new Map<string, Game>();
 
 const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id: string }) => {
+    const t = useTranslations('games.view.gamePage');
     const api = useApi();
     const request = useRequest<Game>();
     const featureRequest = useRequest();
@@ -88,6 +91,23 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         window.history.replaceState(null, '', newUrl);
     }, []);
 
+    // Use currentGame to keep the board visible while switching games
+    const game = currentGame ?? request.data;
+    const isOwner = game?.owner === user?.username;
+    const availableSidePanelTabs = [
+        ...(user ? [DefaultUnderboardTab.Directories] : []),
+        DefaultUnderboardTab.PgnText,
+        DefaultUnderboardTab.Tags,
+        ...(isOwner ? [DefaultUnderboardTab.Editor] : []),
+        DefaultUnderboardTab.Comments,
+        DefaultUnderboardTab.Explorer,
+        DefaultUnderboardTab.Clocks,
+        DefaultUnderboardTab.Tools,
+        DefaultUnderboardTab.Share,
+        DefaultUnderboardTab.Settings,
+    ];
+    const { leftTabs, rightTabs } = useSidePanelTabs(availableSidePanelTabs);
+
     if (status === AuthStatus.Loading) {
         return <LoadingPage />;
     }
@@ -129,6 +149,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         const update: UpdateGameRequest = {
             cohort: game.cohort,
             id: game.id,
+            updatedAt: game.updatedAt || game.createdAt || '',
             headers,
             unlisted: true,
             orientation,
@@ -176,9 +197,6 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         }
     };
 
-    // Use currentGame to keep the board visible while switching games
-    const game = currentGame ?? request.data;
-    const isOwner = game?.owner === user?.username;
     const showPreflight = isOwner && firstLoad && game !== undefined && isMissingData(game);
 
     return (
@@ -206,17 +224,10 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
                         key={`${game?.cohort}/${game?.id}`}
                         pgn={game?.pgn}
                         startOrientation={game?.orientation}
-                        underboardTabs={[
-                            ...(user ? [DefaultUnderboardTab.Directories] : []),
-                            DefaultUnderboardTab.Tags,
-                            ...(isOwner ? [DefaultUnderboardTab.Editor] : []),
-                            DefaultUnderboardTab.Comments,
-                            DefaultUnderboardTab.Explorer,
-                            DefaultUnderboardTab.Clocks,
-                            DefaultUnderboardTab.Tools,
-                            DefaultUnderboardTab.Share,
-                            DefaultUnderboardTab.Settings,
-                        ]}
+                        underboardTabs={leftTabs}
+                        rightTabs={rightTabs}
+                        tabStorageKeyPrefix='game'
+                        sidePanelTabs={availableSidePanelTabs}
                         allowMoveDeletion={game?.owner === user?.username}
                         allowDeleteBefore={game?.owner === user?.username}
                         showElapsedMoveTimes
@@ -237,7 +248,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
                     onSubmit={onSave}
                     onClose={() => updateSearchParams({ firstLoad: 'false' })}
                 >
-                    You can fill this data out now or later in settings.
+                    {t('preflightHint')}
                 </MissingGameDataPreflight>
             )}
         </Box>

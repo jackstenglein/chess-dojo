@@ -3,9 +3,8 @@ import { RequestSnackbar } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { NavigationMenu } from '@/components/directories/navigation/NavigationMenu';
 import { BulkGameEditor } from '@/components/games/list/BulkGameEditor';
-import GameTable from '@/components/games/list/GameTable';
+import GameTable, { getOpenGame } from '@/components/games/list/GameTable';
 import { ListItemContextMenu } from '@/components/games/list/ListItemContextMenu';
-import { GameInfo } from '@/database/game';
 import { RequirementCategory } from '@/database/requirement';
 import { useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { usePagination } from '@/hooks/usePagination';
@@ -14,7 +13,8 @@ import Icon from '@/style/Icon';
 import UpsellAlert from '@/upsell/UpsellAlert';
 import { ALL_MY_UPLOADS_DIRECTORY_ID } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { Button, Stack } from '@mui/material';
-import { GridPaginationModel, GridRowParams, GridRowSelectionModel } from '@mui/x-data-grid-pro';
+import { GridPaginationModel, GridRowSelectionModel } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { DirectoryBreadcrumbs } from './DirectoryBreadcrumbs';
 
@@ -39,6 +39,7 @@ export function AllUploadsSection({
     /** The namespace for the local storage data. */
     namespace: string;
 }) {
+    const t = useTranslations('profile.directories');
     const api = useApi();
     const { user: currentUser } = useAuth();
     const isFreeTier = useFreeTier();
@@ -57,19 +58,6 @@ export function AllUploadsSection({
     const pagination = usePagination(searchByOwner, 0, 10);
     const { request, data, pageSize, setPageSize, setGames } = pagination;
 
-    const onClickRow = (params: GridRowParams<GameInfo>, event: React.MouseEvent) => {
-        const url = `/games/${params.row.cohort.replaceAll(
-            '+',
-            '%2B',
-        )}/${params.row.id.replaceAll('?', '%3F')}`;
-
-        if (event.shiftKey) {
-            window.open(url, '_blank');
-        } else {
-            router.push(url);
-        }
-    };
-
     const onPaginationModelChange = (model: GridPaginationModel) => {
         if (model.pageSize !== pageSize) {
             setPageSize(model.pageSize);
@@ -81,7 +69,12 @@ export function AllUploadsSection({
     };
 
     return (
-        <Stack direction={isMobile ? 'column' : 'row'} columnGap={2}>
+        <Stack
+            direction={isMobile ? 'column' : 'row'}
+            sx={{
+                columnGap: 2,
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <NavigationMenu
@@ -93,7 +86,15 @@ export function AllUploadsSection({
                 horizontal={isMobile}
             />
 
-            <Stack spacing={2} alignItems='start' flexGrow={1} minWidth='0' mt={isMobile ? 2 : 0}>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'start',
+                    flexGrow: 1,
+                    minWidth: '0',
+                    mt: isMobile ? 2 : 0,
+                }}
+            >
                 <DirectoryBreadcrumbs
                     owner={username}
                     id={ALL_MY_UPLOADS_DIRECTORY_ID}
@@ -101,14 +102,22 @@ export function AllUploadsSection({
                 />
 
                 {currentUser?.username === username && (
-                    <Stack direction='row' alignItems='center' gap={2} width={1} flexWrap='wrap'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            gap: 2,
+                            width: 1,
+                            flexWrap: 'wrap',
+                        }}
+                    >
                         <Button
                             variant='contained'
                             onClick={onSubmit}
                             color='success'
                             startIcon={<Icon name={RequirementCategory.Games} />}
                         >
-                            Analyze a Game
+                            {t('analyzeGame')}
                         </Button>
                         <BulkGameEditor
                             games={[...rowSelectionModel.ids]
@@ -123,12 +132,13 @@ export function AllUploadsSection({
                 )}
 
                 {isFreeTier && currentUser?.username !== username && (
-                    <Stack alignItems='center' mb={5}>
-                        <UpsellAlert>
-                            To avoid unfair preparation against Dojo members, free-tier users cannot
-                            view games by a specific player. Upgrade your account to view the full
-                            Dojo Database.
-                        </UpsellAlert>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            mb: 5,
+                        }}
+                    >
+                        <UpsellAlert>{t('freeTierGamesRestriction')}</UpsellAlert>
                     </Stack>
                 )}
 
@@ -137,7 +147,7 @@ export function AllUploadsSection({
                         namespace='games-profile-tab'
                         pagination={pagination}
                         onPaginationModelChange={onPaginationModelChange}
-                        onRowClick={onClickRow}
+                        onRowClick={getOpenGame(router)}
                         contextMenu={contextMenu}
                         defaultVisibility={{
                             publishedAt: false,
