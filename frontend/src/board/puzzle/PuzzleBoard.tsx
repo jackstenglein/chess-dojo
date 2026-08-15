@@ -202,15 +202,21 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
             }
         >
             {board && chess && !hideHeader && (
-                <Typography variant='subtitle2' color='text.secondary' gridArea='header'>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        color: 'text.secondary',
+                        gridArea: 'header',
+                    }}
+                >
                     {chess.pgn.header.tags.White} vs {chess.pgn.header.tags.Black}
                 </Typography>
             )}
 
             <ChessContext.Provider value={{ chess, board }}>
                 <Box
-                    gridArea='board'
                     sx={{
+                        gridArea: 'board',
                         aspectRatio: 1,
                         width: 1,
                     }}
@@ -218,10 +224,12 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
                     <Board onInitialize={onRestart} onMove={onMove} />
                 </Box>
                 <Stack
-                    gridArea='coach'
-                    height={1}
-                    justifyContent={{ xs: 'start', sm: 'flex-end' }}
                     spacing={2}
+                    sx={{
+                        gridArea: 'coach',
+                        height: 1,
+                        justifyContent: { xs: 'start', sm: 'flex-end' },
+                    }}
                 >
                     <HintSection
                         status={status}

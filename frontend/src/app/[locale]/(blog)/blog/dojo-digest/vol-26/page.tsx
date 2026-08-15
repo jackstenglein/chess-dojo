@@ -20,11 +20,24 @@ export default function DojoDigestVol26() {
                 subtitle='Dojo Digest 26 • November 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The Dojo has been rocked by the news of Danya’s passing. The senseis all knew
                     him personally and almost every Dojoer had enjoyed his online content in some
                     form, whether it was commentary, humor, speedruns, or educational videos. We
@@ -38,7 +51,11 @@ export default function DojoDigestVol26() {
                     </Link>{' '}
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong> Revamped Checkmate Puzzles</strong> — We've updated our checkmate
                     puzzle interface to be more intuitive and user friendly! Check out the new
                     version{' '}
@@ -47,7 +64,11 @@ export default function DojoDigestVol26() {
                     </Link>{' '}
                     Soon we'll update the rest of our tactics tests as well.
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     New Dojo Tournaments — We now have rapid arenas on Friday nights and classical
                     arenas from Saturday to Sunday. Make sure to join our{' '}
                     <Link href='https://www.chess.com/club/chessdojo' target='_blank'>
@@ -56,7 +77,11 @@ export default function DojoDigestVol26() {
                     to participate in future events.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     David was voted Chess.com’s Creator of the Month! Here’s a great{' '}
                     <Link
                         href='https://www.chess.com/article/view/creator-of-the-month-im-david-pruess'
@@ -67,14 +92,22 @@ export default function DojoDigestVol26() {
                     with him where he talks Dojo and chess.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Need Help Using the Dojo's Site? We now offer weekly Zoom meeting Tuesdays at
                     1-2pm ET where new members can meet the senseis and ask questions about how to
                     use the site. If you're confused or lost on the site, this is a great
                     opportunity to get your questions answered!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games — A ChessDojo Guide</strong> is out on{' '}
                     <Link
                         href='https://www.amazon.com/dp/B0F1DB396G?ref=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&social_share=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&bestFormat=true'
@@ -98,7 +131,11 @@ export default function DojoDigestVol26() {
                     </Link>
                     !
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Patreon and DojoTalks</strong> — The Dojo is trying to be more
                     consistent with our podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/ChessDojo' target='_blank'>
@@ -107,10 +144,19 @@ export default function DojoDigestVol26() {
                     where you can get episodes early, vote on coming topics, suggest topics and
                     discuss the pod on our private Discord.
                 </Typography>
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/eb6a6360-f4ed-4866-bbc0-4310b8f800fd'
                         target='_blank'
@@ -127,7 +173,11 @@ export default function DojoDigestVol26() {
                     where he discusses his journey into chess as an older dude. The man is on a
                     mission!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/4dc67c7a-54da-4d16-88cb-d3c412154f5d'
                         target='_blank'
@@ -138,7 +188,11 @@ export default function DojoDigestVol26() {
                     of October in Casper, Wyoming and gained 139 USCF elo!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href=' https://www.chessdojo.club/profile/google_103371006521330447651'
                         target='_blank'
@@ -149,7 +203,11 @@ export default function DojoDigestVol26() {
                     Chess Tournament going 3/5! They also beat a 1700 FIDE at that same tournament.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href=' https://www.chessdojo.club/profile/google_103877160430184384995'
                         target='_blank'
@@ -159,7 +217,11 @@ export default function DojoDigestVol26() {
                     just crossed 2000 Chess.com rapid for the first time!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_114391023466287136398 '
                         target='_blank'

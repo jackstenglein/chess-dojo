@@ -40,7 +40,14 @@ export function Waitlist({
         <Card>
             <CardHeader
                 title={
-                    <Stack direction='row' flexWrap='wrap' gap={2} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 2,
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography variant='h4'>{t('title')}</Typography>
 
                         <Chip

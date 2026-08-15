@@ -158,7 +158,13 @@ export function MergeLineDialog({
                 <DialogTitle>{t('mergeLineTitle')}</DialogTitle>
                 <DialogContent>
                     <FormLabel>{t('exportOptionsLabel')}</FormLabel>
-                    <Stack direction='row' flexWrap='wrap' columnGap={1}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            columnGap: 1,
+                        }}
+                    >
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -181,7 +187,14 @@ export function MergeLineDialog({
 
                     <FormGroup sx={{ mt: 2 }}>
                         <FormLabel>{t('importOptionsLabel')}</FormLabel>
-                        <Stack direction='row' flexWrap='wrap' columnGap={1} alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                flexWrap: 'wrap',
+                                columnGap: 1,
+                                alignItems: 'center',
+                            }}
+                        >
                             <FormControlLabel
                                 control={
                                     <Checkbox

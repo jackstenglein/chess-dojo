@@ -32,7 +32,14 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
     return (
         <Container maxWidth='xl' sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
-            <Grid container spacing={3} justifyContent='center' flexWrap='wrap'>
+            <Grid
+                container
+                spacing={3}
+                sx={{
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                }}
+            >
                 {!hideInterval && (
                     <Grid
                         size={12}
@@ -64,8 +71,10 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                     size={12}
                     container
                     spacing={3}
-                    justifyContent='center'
-                    flexWrap={{ xs: 'wrap-reverse', md: 'wrap' }}
+                    sx={{
+                        justifyContent: 'center',
+                        flexWrap: { xs: 'wrap-reverse', md: 'wrap' },
+                    }}
                 >
                     <PriceMatrix
                         onSubscribe={onSubscribe}
@@ -78,13 +87,29 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                     />
                 </Grid>
 
-                <Grid textAlign='center' size={12}>
-                    <Typography variant='body2' color='text.secondary'>
+                <Grid
+                    size={12}
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('autoRenewNotice')}
                     </Typography>
 
                     {interval === 'year' && (
-                        <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                                mt: 2,
+                            }}
+                        >
                             {t('annualBillingFootnote')}
                         </Typography>
                     )}

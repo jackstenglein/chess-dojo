@@ -72,7 +72,12 @@ const ReplyEditor: React.FC<ReplyEditorProps> = ({ parent, onCancel }) => {
     };
 
     return (
-        <Stack width={1} pt={1}>
+        <Stack
+            sx={{
+                width: 1,
+                pt: 1,
+            }}
+        >
             <TextField
                 id={BlockBoardKeyboardShortcuts}
                 size='small'

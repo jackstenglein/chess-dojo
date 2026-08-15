@@ -309,7 +309,12 @@ const AuthenticatedHelp = () => {
                         <Stack>
                             <Typography variant='h4'>{t('pageTitle')}</Typography>
                             <Divider />
-                            <Typography variant='body1' mt={3}>
+                            <Typography
+                                variant='body1'
+                                sx={{
+                                    mt: 3,
+                                }}
+                            >
                                 {t.rich('pageDescription', {
                                     helpChatLink: (chunks) => (
                                         <strong>
@@ -375,7 +380,12 @@ const AuthenticatedHelp = () => {
                                 <Typography variant='h5'>{section.title}</Typography>
                                 <Divider />
 
-                                <Stack spacing={3} mt={3}>
+                                <Stack
+                                    spacing={3}
+                                    sx={{
+                                        mt: 3,
+                                    }}
+                                >
                                     {section.items.map((item) => (
                                         <HelpItem key={item.title} title={item.title}>
                                             {item.content}

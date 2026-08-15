@@ -166,22 +166,39 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
             />
 
             {club && (
-                <Stack alignItems='center' width={1}>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                        width: 1,
+                    }}
+                >
                     <TabContext value={searchParams.get('view') || 'scoreboard'}>
                         <Container>
                             <Stack spacing={4}>
                                 <Stack spacing={2}>
                                     <Stack
                                         direction='row'
-                                        justifyContent='space-between'
-                                        alignItems='center'
+                                        sx={{
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
                                     >
-                                        <Stack direction='row' alignItems='center' spacing={2}>
+                                        <Stack
+                                            direction='row'
+                                            spacing={2}
+                                            sx={{
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <ClubAvatar club={club} />
                                             <Typography variant='h4'>{club.name}</Typography>
                                         </Stack>
 
-                                        <Stack direction='row' spacing={1} alignItems='center'>
+                                        <Stack
+                                            direction='row'
+                                            spacing={1}
+                                            sx={{ alignItems: 'center' }}
+                                        >
                                             {isMember &&
                                                 (isMainClub ? (
                                                     <MainClubChip />
@@ -229,7 +246,13 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                         </Stack>
                                     </Stack>
 
-                                    <Stack direction='row' spacing={1} alignItems='center'>
+                                    <Stack
+                                        direction='row'
+                                        spacing={1}
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <MemberCountChip count={club.memberCount} />
                                         <LocationChip location={club.location} />
                                         <UrlChip url={club.externalUrl} />

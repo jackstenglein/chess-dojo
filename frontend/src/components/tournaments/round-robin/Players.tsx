@@ -64,25 +64,61 @@ export function Players({
                 <TableHead>
                     <TableRow>
                         <TableCell>
-                            <Typography fontWeight='bold'>{t('columnPlayer')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnPlayer')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>{t('columnLichess')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnLichess')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>{t('columnChesscom')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnChesscom')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>{t('columnDiscord')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnDiscord')}
+                            </Typography>
                         </TableCell>
                         {isTournament && (
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>{t('columnScore')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnScore')}
+                                </Typography>
                             </TableCell>
                         )}
                         {isAdmin && (
                             <TableCell align='center'>
-                                <Typography fontWeight='bold'>{t('columnActions')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('columnActions')}
+                                </Typography>
                             </TableCell>
                         )}
                     </TableRow>
@@ -91,7 +127,13 @@ export function Players({
                     {players.map((player) => (
                         <TableRow key={player.username}>
                             <TableCell>
-                                <Stack direction='row' alignItems='center' gap={1}>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 1,
+                                    }}
+                                >
                                     {isTournament &&
                                         tournament.winners?.includes(player.username) && (
                                             <Chip

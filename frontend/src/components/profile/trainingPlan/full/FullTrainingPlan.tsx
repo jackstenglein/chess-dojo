@@ -221,20 +221,37 @@ export function FullTrainingPlan({
     };
 
     return (
-        <Stack spacing={2} width={1}>
-            <Typography variant='h5' fontWeight='bold'>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Typography
+                variant='h5'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
                 {t('heading')}
             </Typography>
 
-            <Stack alignItems='start' width={1}>
+            <Stack
+                sx={{
+                    alignItems: 'start',
+                    width: 1,
+                }}
+            >
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    width={1}
-                    flexWrap='wrap'
-                    alignItems='end'
-                    mt={3}
-                    mb={expanded[sections[0].category] ? -2 : 0}
+                    sx={{
+                        justifyContent: 'space-between',
+                        width: 1,
+                        flexWrap: 'wrap',
+                        alignItems: 'end',
+                        mt: 3,
+                        mb: expanded[sections[0].category] ? -2 : 0,
+                    }}
                 >
                     <TextField
                         id='training-plan-cohort-select'
@@ -258,7 +275,14 @@ export function FullTrainingPlan({
                         ))}
                     </TextField>
 
-                    <Stack direction='row' spacing={1} justifyContent='end' alignItems='center'>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            justifyContent: 'end',
+                            alignItems: 'center',
+                        }}
+                    >
                         {isSmall ? (
                             <>
                                 <Tooltip

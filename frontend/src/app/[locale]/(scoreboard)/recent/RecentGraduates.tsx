@@ -70,7 +70,13 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             flex: 1,
             renderCell: (params: GridRenderCellParams<Graduation, string>) => {
                 return (
-                    <Stack direction='row' spacing={1} alignItems='center'>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Avatar
                             username={params.row.username}
                             displayName={params.value}
@@ -100,7 +106,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
                     .filter((cohort, i, array) => i === array.indexOf(cohort))
                     .slice(-3);
                 return (
-                    <Stack direction='row' justifyContent='center'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         {graduationCohorts.map((c) => (
                             <CohortIcon key={c} cohort={c} size={32} />
                         ))}
@@ -120,7 +131,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             },
             renderCell: (params: GridRenderCellParams<Graduation>) => {
                 return (
-                    <Stack height='30px' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            height: '30px',
+                            justifyContent: 'center',
+                        }}
+                    >
                         {params.row.previousCohort}
                     </Stack>
                 );
@@ -138,7 +154,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             },
             renderCell: (params: GridRenderCellParams<Graduation>) => {
                 return (
-                    <Stack height='30px' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            height: '30px',
+                            justifyContent: 'center',
+                        }}
+                    >
                         {params.row.newCohort}
                     </Stack>
                 );
@@ -152,7 +173,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             flex: 1,
             valueFormatter: (value) => Math.round(value * 100) / 100,
             renderCell: (params) => (
-                <Stack height='30px' justifyContent='center'>
+                <Stack
+                    sx={{
+                        height: '30px',
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.formattedValue}
                 </Stack>
             ),
@@ -165,7 +191,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             flex: 1,
             valueGetter: (_value, row) => row.gamesAnnotated ?? 0,
             renderCell: (params) => (
-                <Stack height='30px' justifyContent='center'>
+                <Stack
+                    sx={{
+                        height: '30px',
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.value}
                 </Stack>
             ),
@@ -178,7 +209,12 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             flex: 1,
             valueFormatter: (value) => new Date(value).toLocaleDateString(),
             renderCell: (params) => (
-                <Stack height='30px' justifyContent='center'>
+                <Stack
+                    sx={{
+                        height: '30px',
+                        justifyContent: 'center',
+                    }}
+                >
                     {params.formattedValue}
                 </Stack>
             ),
@@ -191,7 +227,12 @@ function DetailPanelContent(params: GridRowParams<Graduation>) {
         return '';
     }
     return (
-        <Typography mx={2} my={1}>
+        <Typography
+            sx={{
+                mx: 2,
+                my: 1,
+            }}
+        >
             {params.row.comments}
         </Typography>
     );
@@ -231,7 +272,13 @@ const RecentGraduates = () => {
         <Stack spacing={3}>
             <RequestSnackbar request={request} />
             <Stack>
-                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography variant='h6'>{t('title')}</Typography>
                     <FormControl
                         data-testid='graduates-timeframe-select'

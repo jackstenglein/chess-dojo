@@ -22,12 +22,26 @@ export default function DojoDigestVol9() {
                 hideDivider
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
 
-                <Typography mt={2} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 1,
+                    }}
+                >
                     <strong>Tactics Rating</strong> - May has been all about the development of our{' '}
                     <Link href='https://www.chessdojo.club/tests?utm_source=newsletter&utm_medium=email&utm_campaign=digest9'>
                         three trainers
@@ -41,14 +55,22 @@ export default function DojoDigestVol9() {
                     the positional tests after that.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>User Interface</strong> - You’ve probably noticed that the site looks
                     nicer and is easier to use. This is due to the hard work of Jack’s two new
                     helpers, NMP and Bestieboots. Every day brings a host of small improvements to
                     the site.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>June 1st</strong> - Is the last day to use the Dojo 3.0 promo code and
                     price! Use promo code DOJO30 for{' '}
                     <Link href='https://www.chessdojo.club/signup?utm_source=newsletter&utm_medium=email&utm_campaign=digest9'>
@@ -56,20 +78,32 @@ export default function DojoDigestVol9() {
                     </Link>
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>New Rating Conversion Table</strong> - We need a month on this doozy.
                     Now that the Candidates is over, Chessnumbers is going to do a deep dive for us.
                     We are hoping to get it done by July 1st, but still consider this task part of
                     Dojo 3.0.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games</strong> - It’s taken us far longer than
                     originally planned. Books are hard. But we are hoping to publish it soon, this
                     book we also think of as part of the Dojo 3.0 project.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Join the{' '}
                     <Link href='https://www.chessdojo.club/signup?utm_source=newsletter&utm_medium=email&utm_campaign=digest9'>
                         Training Program
@@ -77,11 +111,20 @@ export default function DojoDigestVol9() {
                     using the code DOJO30 and get 30% off your first month!
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_111679691028507818183?utm_source=newsletter&utm_medium=email&utm_campaign=digest9'>
                         IM Kostya
                     </Link>{' '}
@@ -89,7 +132,11 @@ export default function DojoDigestVol9() {
                     for 2nd place U2400!
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     Dojo regular{' '}
                     <Link href='https://www.chessdojo.club/profile/6f567fef-10c4-4d70-bee9-a407da5a1d13?utm_source=newsletter&utm_medium=email&utm_campaign=digest9'>
                         daprowl

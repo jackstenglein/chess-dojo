@@ -29,11 +29,24 @@ export default function DojoDigestVol23() {
         <Container>
             <Header title='100,000 YouTube Subscribers!' subtitle='Dojo Digest 22 • July 1, 2025' />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     {' '}
                     <strong> Training Program UI upgrade</strong> - The Dojo is always looking to
                     make the program easier and more fun to use. We’ve come a long way from an excel
@@ -42,14 +55,24 @@ export default function DojoDigestVol23() {
                     your sparring partner). Below is the weekly and monthly view of sensei Kraai’s
                     tasks:
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={UIUpgrade}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={UICalendar}
                         alt=''
@@ -57,14 +80,23 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Stats!</strong> - We now have a stats button in your games folder. This
                     will allow you to see your performance rating and your WDL breakbdown by
                     opponent cohort for the games in that folder. Soon we will have a time usage
                     rating for each dojoer. Below are sensei Kraai’s stats:
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kraaistats}
                         alt=''
@@ -72,7 +104,12 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kraaiperformance}
                         alt=''
@@ -80,7 +117,11 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Dojo at the Washington International</strong> - The Dojo had a great
                     event. In the first year of the Dojo, we launched a challenge called Ultimate
                     Sensei. Each sensei has a cadre of students and the quest was to raise their
@@ -93,7 +134,12 @@ export default function DojoDigestVol23() {
                     right before his battle with Max.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={chesslatte}
                         alt=''
@@ -101,7 +147,11 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Game Annotation Workshop</strong> - The game annotation workshop has
                     worked its way around the ladder, we are doing the 0-600 cohort now and will
                     start 400-700 on Sept 8th. Register{' '}
@@ -121,13 +171,21 @@ export default function DojoDigestVol23() {
                     next workshop for the next set of cohorts.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Dojoer Nate Ehrenberg also had a great event, going 8/9 and winning that section
                     handily. Sensei Kraai played a couple nice games and was tied for first at the
                     end of round seven – but then it fell apart.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games — A ChessDojo Guide</strong> is out on{' '}
                     <Link
                         href='https://www.amazon.com/dp/B0F1DB396G?ref=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&social_share=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&bestFormat=true'
@@ -151,7 +209,11 @@ export default function DojoDigestVol23() {
                     </Link>
                     !
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Patreon and DojoTalks</strong> — The Dojo is trying to be more
                     consistent with our podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/ChessDojo' target='_blank'>
@@ -160,10 +222,19 @@ export default function DojoDigestVol23() {
                     where you can get episodes early, vote on coming topics, suggest topics and
                     discuss the pod on our private Discord.
                 </Typography>
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/255d01b5-2f0c-48d8-9ecc-4033cecd17a1'>
                         Dandeer
                     </a>{' '}
@@ -178,21 +249,34 @@ export default function DojoDigestVol23() {
                     on to defeate a 1960 rated opponent in the final round!
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={dandeer}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_111431555372539094121'>
                         ysulaiman
                     </a>{' '}
                     played in his first FIDE rated OTB rapid tournament! He played against 5 FIDE
                     rated players and got a first rating of 1592!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/9ad63b1e-cd90-4cf4-91df-8dd8b96106ed'>
                         Adam Greener
                     </a>{' '}
@@ -204,7 +288,12 @@ export default function DojoDigestVol23() {
                     books on a weekly basis for about 18 months. mn1171 was visiting the UK from
                     Afghanistan and they met up for some games and general training!
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={sparring}
                         alt=''
@@ -212,7 +301,12 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={sparring2}
                         alt=''
@@ -220,7 +314,11 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_104186277850925094929'>
                         Alvin_Cruz
                     </a>{' '}
@@ -228,28 +326,46 @@ export default function DojoDigestVol23() {
                     training program and putting in the work!
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={books}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_103371006521330447651'>
                         Marcupial_misconduct
                     </a>{' '}
                     got their first ever smothered mate in an OTB game!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_107509909976314695585'>
                         Forky Chess
                     </a>{' '}
                     played black against an FM in an OTB classical game and won!
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={forky}
                         alt=''
@@ -257,7 +373,11 @@ export default function DojoDigestVol23() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_110990508000334256892'>
                         SOM_GOD
                     </a>{' '}
@@ -266,7 +386,12 @@ export default function DojoDigestVol23() {
                     the Dojo!
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={somgod}
                         alt=''

@@ -63,8 +63,10 @@ export const HeatmapCard = ({ workGoalHistory }: { workGoalHistory: WorkGoalHist
                 onClose={() => setIsModalOpen(false)}
                 maxWidth={false}
                 fullWidth
-                PaperProps={{
-                    elevation: 1,
+                slotProps={{
+                    paper: {
+                        elevation: 1,
+                    },
                 }}
             >
                 <IconButton

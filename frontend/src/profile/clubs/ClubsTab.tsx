@@ -33,7 +33,11 @@ const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
 
     if (displayedClubs.length === 0) {
         return (
-            <Stack alignItems='center'>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <RequestSnackbar request={request} />
 
                 {isCurrentUser ? (
@@ -46,7 +50,13 @@ const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
                         </Typography>
                     </>
                 ) : (
-                    <Typography textAlign='center'>{t('emptyOther')}</Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('emptyOther')}
+                    </Typography>
                 )}
             </Stack>
         );

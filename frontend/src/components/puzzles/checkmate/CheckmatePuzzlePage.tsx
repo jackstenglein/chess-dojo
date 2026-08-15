@@ -512,7 +512,12 @@ function CheckmatePuzzleUnderboard({
     return (
         <CardContent sx={{ minHeight: 1 }}>
             <Stack sx={{ minHeight: 1 }}>
-                <Stack direction='row' gap={1.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1.5,
+                    }}
+                >
                     <Box
                         sx={{
                             minHeight: 1,
@@ -526,7 +531,13 @@ function CheckmatePuzzleUnderboard({
                         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
                             {orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
                         </Typography>
-                        <Typography variant='subtitle1' color='text.secondary' fontWeight='bold'>
+                        <Typography
+                            variant='subtitle1'
+                            sx={{
+                                color: 'text.secondary',
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('mateIn', {
                                 count:
                                     puzzle?.themes
@@ -538,18 +549,31 @@ function CheckmatePuzzleUnderboard({
                 </Stack>
 
                 <Stack
-                    mt={4}
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap={2}
-                    rowGap={1}
-                    flexWrap='wrap'
+                    sx={{
+                        mt: 4,
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: 2,
+                        rowGap: 1,
+                        flexWrap: 'wrap',
+                    }}
                 >
                     {(showRating || !rated) && (
-                        <Stack direction='row' alignItems='center' gap={1.5}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1.5,
+                            }}
+                        >
                             <Timeline fontSize='large' />
-                            <Typography variant='h4' fontWeight='bold'>
+                            <Typography
+                                variant='h4'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {rated
                                     ? `${Math.round(displayedRating)}${ratingDeviation >= PROVISIONAL_PUZZLE_RATING_DEVIATION ? '?' : ''}`
                                     : t('unrated')}
@@ -563,7 +587,9 @@ function CheckmatePuzzleUnderboard({
                                               ? 'error'
                                               : 'textSecondary'
                                     }
-                                    fontWeight='bold'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
                                 >
                                     {ratingChange >= 0 && '+'}
                                     {ratingChange}
@@ -575,9 +601,11 @@ function CheckmatePuzzleUnderboard({
                     {showTimer && (
                         <Stack
                             direction='row'
-                            alignItems='center'
-                            gap={1.5}
-                            color={seconds >= 60 ? 'error.main' : 'text.secondary'}
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1.5,
+                                color: seconds >= 60 ? 'error.main' : 'text.secondary',
+                            }}
                         >
                             <AccessTime />
                             <Typography variant='h5'>{formatTime(60 - seconds)}</Typography>
@@ -586,9 +614,22 @@ function CheckmatePuzzleUnderboard({
                 </Stack>
 
                 {solitaire?.complete && showStreak && streak > 1 && (
-                    <Stack direction='row' alignItems='center' mt={1} gap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            mt: 1,
+                            gap: 0.5,
+                        }}
+                    >
                         <LocalFireDepartment color='dojoOrange' sx={{ fontSize: 30 }} />
-                        <Typography variant='h6' color='dojoOrange' fontWeight='bold'>
+                        <Typography
+                            variant='h6'
+                            color='dojoOrange'
+                            sx={{
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('streakRow', { streak })}
                         </Typography>
                     </Stack>
@@ -599,7 +640,11 @@ function CheckmatePuzzleUnderboard({
                 )}
 
                 {solitaire?.complete && puzzle && (
-                    <Stack mt={2}>
+                    <Stack
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <PuzzleDetailRow label={t('puzzleId')} value={puzzle.id} />
                         {showRating && (
                             <>
@@ -624,7 +669,13 @@ function CheckmatePuzzleUnderboard({
                         />
                         <PuzzleDetailRow label={t('targetTime')} value='01:00' />
                         <PuzzleDetailRow label={t('usedTime')} value={formatTime(seconds)} />
-                        <Typography variant='body2' mt={0.5} alignSelf='end'>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                mt: 0.5,
+                                alignSelf: 'end',
+                            }}
+                        >
                             <Link href='/puzzles/history'>{t('viewPuzzleHistory')}</Link>
                         </Typography>
                     </Stack>
@@ -638,9 +689,9 @@ function PuzzleDetailRow({ label, value }: { label: ReactNode; value: string | n
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
             sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 borderBottom: '1px solid',
                 borderColor: 'divider',
                 color: 'text.secondary',
@@ -648,7 +699,13 @@ function PuzzleDetailRow({ label, value }: { label: ReactNode; value: string | n
             }}
         >
             <Typography>{label}</Typography>
-            <Typography fontWeight='bold'>{value}</Typography>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
         </Stack>
     );
 }

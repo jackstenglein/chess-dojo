@@ -25,7 +25,11 @@ export default function DojoTalksTop2025() {
                 title='Universal Rating Converter for 2024'
                 subtitle='NoseKnowsAll • September 24, 2024'
             />
-            <Typography mb={3}>
+            <Typography
+                sx={{
+                    mb: 3,
+                }}
+            >
                 <strong>Have you ever wondered what your different OTB ratings would be?</strong>
             </Typography>
             <Typography>
@@ -40,7 +44,12 @@ export default function DojoTalksTop2025() {
                 should be largely ignored.
             </Typography>
             <br />
-            <Typography mt={3} variant='h5'>
+            <Typography
+                variant='h5'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <strong>The Universal Rating Converter</strong>
             </Typography>
             <Divider sx={{ mb: 2 }} />
@@ -74,7 +83,12 @@ export default function DojoTalksTop2025() {
                 hopefully I have covered the majority of them.
             </Typography>
             <br />
-            <Typography mt={3} variant='h5'>
+            <Typography
+                variant='h5'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <strong>Determining The Converted Ratings</strong>
             </Typography>
             <Divider sx={{ mb: 2 }} />
@@ -248,7 +262,12 @@ export default function DojoTalksTop2025() {
             </Typography>
 
             <br />
-            <Typography mt={3} variant='h5'>
+            <Typography
+                variant='h5'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 Interesting Conclusions
             </Typography>
             <Divider sx={{ mb: 2 }} />
@@ -324,7 +343,12 @@ export default function DojoTalksTop2025() {
                 </li>
             </ol>
 
-            <Typography mt={3} variant='h5'>
+            <Typography
+                variant='h5'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 Final Thoughts
             </Typography>
             <Divider sx={{ mb: 2 }} />

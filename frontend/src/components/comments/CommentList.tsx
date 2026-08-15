@@ -105,7 +105,14 @@ const CommentList: React.FC<CommentListProps> = ({
         const hiddenThreads = threads.length - displayThreads.length;
 
         return (
-            <Stack spacing={2} width={1} alignItems='start' mb={2}>
+            <Stack
+                spacing={2}
+                sx={{
+                    width: 1,
+                    alignItems: 'start',
+                    mb: 2,
+                }}
+            >
                 <RequestSnackbar request={replyRequest} />
 
                 {hiddenThreads > 0 && viewCommentsLink && (
@@ -123,7 +130,13 @@ const CommentList: React.FC<CommentListProps> = ({
                         isCollapsible && !isExpanded ? thread.replies.slice(-2) : thread.replies;
 
                     return (
-                        <Stack key={thread.root.id} spacing={1} width={1}>
+                        <Stack
+                            key={thread.root.id}
+                            spacing={1}
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <CommentListItem
                                 comment={thread.root}
                                 onEdit={onEdit}
@@ -167,7 +180,14 @@ const CommentList: React.FC<CommentListProps> = ({
                                 </Button>
                             )}
                             {visibleReplies.map((reply) => (
-                                <Stack key={reply.id} spacing={1} pl='52px' width={1}>
+                                <Stack
+                                    key={reply.id}
+                                    spacing={1}
+                                    sx={{
+                                        pl: '52px',
+                                        width: 1,
+                                    }}
+                                >
                                     <CommentListItem
                                         comment={reply}
                                         onEdit={onEdit}
@@ -200,7 +220,14 @@ const CommentList: React.FC<CommentListProps> = ({
     const hiddenComments = comments.length - displayComments.length;
 
     return (
-        <Stack spacing={2} width={1} alignItems='start' mb={2}>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+                alignItems: 'start',
+                mb: 2,
+            }}
+        >
             {hiddenComments > 0 && viewCommentsLink && (
                 <Link href={viewCommentsLink} sx={{ pl: '52px' }}>
                     {t('viewEarlierComments', { count: hiddenComments })}
@@ -311,13 +338,24 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
     };
 
     return (
-        <Stack direction='row' spacing={1.5} width={1}>
+        <Stack
+            direction='row'
+            spacing={1.5}
+            sx={{
+                width: 1,
+            }}
+        >
             <RequestSnackbar request={editRequest} />
             <RequestSnackbar request={deleteRequest} />
 
             <Avatar username={comment.owner} displayName={comment.ownerDisplayName} size={40} />
 
-            <Stack flexGrow={1} minWidth={0}>
+            <Stack
+                sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                }}
+            >
                 <Paper
                     elevation={2}
                     sx={{
@@ -332,9 +370,20 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                     }}
                 >
                     <Stack>
-                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}
+                        >
                             <Link href={`/profile/${comment.owner}`}>
-                                <Typography variant='subtitle1' color='text.secondary'>
+                                <Typography
+                                    variant='subtitle1'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {comment.ownerDisplayName} ({comment.ownerCohort})
                                 </Typography>
                             </Link>
@@ -366,7 +415,13 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                                     onChange={(e) => setEditContent(e.target.value)}
                                     slotProps={{ htmlInput: { maxLength: 10000 } }}
                                 />
-                                <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        justifyContent: 'flex-end',
+                                    }}
+                                >
                                     <Tooltip title={t('cancel')}>
                                         <IconButton
                                             size='small'
@@ -439,12 +494,19 @@ const CommentListItem: React.FC<CommentListItemProps> = ({
                 </Paper>
                 <Stack
                     direction='row'
-                    alignItems='center'
                     spacing={1}
-                    mt={outlined ? 0.25 : undefined}
-                    px={outlined ? 0.5 : undefined}
+                    sx={{
+                        alignItems: 'center',
+                        mt: outlined ? 0.25 : undefined,
+                        px: outlined ? 0.5 : undefined,
+                    }}
                 >
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {toDojoDateString(createdAt, timezone)} •{' '}
                         {toDojoTimeString(createdAt, timezone, timeFormat)}
                         {isEdited && ` • ${t('edited')}`}
@@ -518,16 +580,39 @@ const InlineReplyEditor: React.FC<InlineReplyEditorProps> = ({
     const [content, setContent] = useState('');
 
     return (
-        <Stack pl='52px' spacing={0.5} width={1}>
-            <Stack direction='row' alignItems='center' spacing={1}>
-                <Typography variant='body2' color='text.secondary'>
+        <Stack
+            spacing={0.5}
+            sx={{
+                pl: '52px',
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('replyingTo', { name: parentName })}
                 </Typography>
                 <IconButton size='small' onClick={onCancel} disabled={isLoading}>
                     <CloseIcon fontSize='small' />
                 </IconButton>
             </Stack>
-            <Stack direction='row' spacing={1} alignItems='start'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 <TextField
                     fullWidth
                     multiline

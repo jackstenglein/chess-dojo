@@ -18,7 +18,12 @@ export default function DojoDigestVol8() {
         <Container maxWidth='sm' sx={{ py: 5 }}>
             <Stack sx={{ mb: 3 }}>
                 <Typography variant='h4'>Welcome to Dojo 3.0!</Typography>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     Dojo Digest Vol 8 • May 1, 2024
                 </Typography>
             </Stack>
@@ -30,7 +35,11 @@ export default function DojoDigestVol8() {
                 priority
             />
 
-            <Stack mt={3}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <Typography component='div'>
                     We launched the training program 2 years ago with a Google doc and a couple of
                     paper clips. Since then, we&apos;ve made great technical improvements and
@@ -51,7 +60,12 @@ export default function DojoDigestVol8() {
                     out for yourself! Use code DOJO30 at checkout for 30% off your first month.
                 </Typography>
 
-                <Typography mt={2} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 1,
+                    }}
+                >
                     <strong>Tactics Tests</strong> - We&apos;ve developed a new style of tactics
                     test! In normal tactics trainers, you make your move and the computer plays a
                     single line for your opponent. This can lead to bad habits, as you don&apos;t
@@ -66,12 +80,23 @@ export default function DojoDigestVol8() {
                     style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                 />
 
-                <Typography variant='body2' color='text.secondary' textAlign='center' mb={2}>
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                        mb: 2,
+                    }}
+                >
                     In this example, we found the mainline but missed the opponent&apos;s defense
                     18...Rac8 and its refutation, leading to a score of 7/11.
                 </Typography>
 
-                <Typography mb={2}>
+                <Typography
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     All test problems are hand-picked by one of the Dojo senseis, and the solutions
                     are lightly annotated. After you&apos;ve completed a test, you can see how you
                     stack up against the rest of the Dojo or against just a few cohorts:
@@ -84,24 +109,34 @@ export default function DojoDigestVol8() {
                 />
                 <Typography
                     variant='body2'
-                    color='text.secondary'
-                    textAlign='center'
-                    mt={0.5}
-                    mb={2}
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                        mt: 0.5,
+                        mb: 2,
+                    }}
                 >
                     Data for the first 1500-2000 test. In this chart, the x-axis is the score on the
                     test and the y-axis is the calculated rating for the test. Different colors
                     represent different cohorts.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     The tests are available{' '}
                     <Link href='https://www.chessdojo.club/tactics'>here</Link> for 1500+, but we
                     plan to expand to all rating levels by the end of the month. Free users can
                     access the first test in their rating section as well.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Tactics Rating & Player Dashboard</strong> - We&apos;re using our new
                     tests, along with some other key metrics, to give everyone a Dojo Tactics
                     Rating. This will allow players to see how strong they are – tactically –
@@ -112,7 +147,11 @@ export default function DojoDigestVol8() {
                     dashboard, where you can see all key metrics at a glance.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>3.0 Training Program</strong> - We evaluated feedback from users,
                     performed statistical analysis (which tasks produce the strongest gains?),
                     argued amongst each other and used all this information to dial in the Training
@@ -121,7 +160,12 @@ export default function DojoDigestVol8() {
                     .
                 </Typography>
 
-                <Typography mt={4} component='div'>
+                <Typography
+                    component='div'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Revamped Game Editor & Database</strong> - Our{' '}
                     <Link href='https://www.chessdojo.club/games'>annotated games database</Link>{' '}
                     has improved tremendously since Dojo 2.0. Even old-timer Sensei Kraai prefers it
@@ -192,7 +236,11 @@ export default function DojoDigestVol8() {
                     </ul>
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Sensei Profile Review</strong> - The assumption of the Training Program
                     from the beginning was that if someone does all the requirements, they will make
                     it to the next level. The senseis will therefore start reviewing the profile of
@@ -200,7 +248,11 @@ export default function DojoDigestVol8() {
                     graduating.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Clubs</strong> - Clubs are a great way for Dojoers to meet others close
                     to them geographically or those with similar interests. The Dojo currently has
                     77 clubs and counting! Each club gets its own scoreboard, newsfeed and Discord
@@ -208,22 +260,39 @@ export default function DojoDigestVol8() {
                     join a club <Link href='https://www.chessdojo.club/clubs'>here</Link>.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Coming Soon</strong> - As if all that wasn&apos;t enough, we have more
                     great projects planned, including an opening trainer, the How to Analyze Your
                     Games book and a new rating conversion table. Keep an eye out for our Dojo
                     Digest next month!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Join the <Link href='https://www.chessdojo.club/signup'>Training Program</Link>{' '}
                     using the code DOJO30 and get 30% off your first month!
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_105393645715208125191'>
                         Sensei David
                     </Link>{' '}
@@ -237,7 +306,11 @@ export default function DojoDigestVol8() {
                     </Link>
                     .
                 </Typography>
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_114391023466287136398'>
                         NoseKnowsAll
                     </Link>{' '}
@@ -252,7 +325,11 @@ export default function DojoDigestVol8() {
                     </Link>
                     .
                 </Typography>
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_103711828705525689238'>
                         Alex
                     </Link>{' '}
@@ -268,7 +345,12 @@ export default function DojoDigestVol8() {
                     winning it anyway with 9.5/13!
                 </Typography>
 
-                <Typography textAlign='center' mt={4}>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                        mt: 4,
+                    }}
+                >
                     Over the past year of Dojo 2.0, we&apos;ve collectively achieved:
                     <br />
                     <br />

@@ -70,16 +70,36 @@ export function RepertoireSpyPlayControls({
     }, [defaultMaiaRating]);
 
     return (
-        <Stack spacing={1.5} mt={2}>
+        <Stack
+            spacing={1.5}
+            sx={{
+                mt: 2,
+            }}
+        >
             <Divider />
             <Stack spacing={0.5}>
-                <Typography variant='subtitle2' fontWeight='bold'>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
                     {t('playModeTitle')}
                 </Typography>
-                <Typography variant='caption' color='text.secondary'>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('playModeDescription')}
                 </Typography>
-                <Typography variant='caption' color='text.secondary'>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t('databasePlaysLabel', { color: databaseColor })}
                 </Typography>
             </Stack>

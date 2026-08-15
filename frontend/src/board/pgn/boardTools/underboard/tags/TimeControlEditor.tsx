@@ -203,16 +203,26 @@ export function TimeControlEditor({
         >
             <DialogTitle>{t('updateTimeControlTitle')}</DialogTitle>
             <DialogContent>
-                <Stack pt={1}>
+                <Stack
+                    sx={{
+                        pt: 1,
+                    }}
+                >
                     {timeControls.map((item, i) => (
                         <Stack
-                            mt={i ? 3 : undefined}
                             key={i}
                             direction='row'
-                            alignItems='center'
                             spacing={1}
+                            sx={{
+                                mt: i ? 3 : undefined,
+                                alignItems: 'center',
+                            }}
                         >
-                            <Stack flexGrow={1}>
+                            <Stack
+                                sx={{
+                                    flexGrow: 1,
+                                }}
+                            >
                                 <Typography variant='h6'>
                                     {t('timeControlNumber', { index: i + 1 })}
                                 </Typography>

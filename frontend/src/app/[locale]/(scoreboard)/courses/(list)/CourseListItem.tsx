@@ -7,9 +7,9 @@ import { getCohortRange } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedCourse } from '@/translation/useTranslatedCourse';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import {
@@ -138,7 +138,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     size='small'
                     color='success'
                     variant='outlined'
-                    icon={<CheckCircleOutlineIcon />}
+                    icon={<CheckCircleOutlinedIcon />}
                     label={t('purchased')}
                 />
             );
@@ -150,7 +150,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     size='small'
                     color='success'
                     variant='outlined'
-                    icon={<CheckCircleOutlineIcon />}
+                    icon={<CheckCircleOutlinedIcon />}
                     label={t('includedWithSubscription')}
                 />
             );
@@ -158,8 +158,22 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
 
         if (purchaseOption) {
             return (
-                <Stack direction='row' alignItems='baseline' spacing={1} flexWrap='wrap' useFlexGap>
-                    <Typography variant='h6' fontWeight={700} color='text.primary'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    useFlexGap
+                    sx={{
+                        alignItems: 'baseline',
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            fontWeight: 700,
+                            color: 'text.primary',
+                        }}
+                    >
                         ${displayPrice(purchaseOption.currentPrice / 100)}
                     </Typography>
 
@@ -167,8 +181,10 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         <>
                             <Typography
                                 variant='body2'
-                                color='text.secondary'
-                                sx={{ textDecoration: 'line-through' }}
+                                sx={{
+                                    color: 'text.secondary',
+                                    textDecoration: 'line-through',
+                                }}
                             >
                                 ${displayPrice(purchaseOption.fullPrice / 100)}
                             </Typography>
@@ -232,16 +248,30 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     <Typography
                         variant='h6'
                         component='h3'
-                        fontWeight={600}
                         gutterBottom
-                        sx={{ lineHeight: 1.3 }}
+                        sx={{
+                            fontWeight: 600,
+                            lineHeight: 1.3,
+                        }}
                     >
                         {course.name}
                     </Typography>
 
-                    <Stack direction='row' alignItems='center' spacing={0.75} mb={1.5}>
-                        <PersonOutlineIcon fontSize='small' color='action' />
-                        <Typography variant='body2' color='text.secondary'>
+                    <Stack
+                        direction='row'
+                        spacing={0.75}
+                        sx={{
+                            alignItems: 'center',
+                            mb: 1.5,
+                        }}
+                    >
+                        <PersonOutlinedIcon fontSize='small' color='action' />
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             <Link
                                 href={`/profile/${course.owner}`}
                                 onClick={(e) => e.stopPropagation()}
@@ -251,9 +281,22 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                         </Typography>
                     </Stack>
 
-                    <Box mb={2}>{renderAccessStatus()}</Box>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
+                        {renderAccessStatus()}
+                    </Box>
 
-                    <Stack direction='row' flexWrap='wrap' gap={0.75} mb={1.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 0.75,
+                            mb: 1.5,
+                        }}
+                    >
                         <Chip
                             size='small'
                             label={category}
@@ -276,8 +319,8 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
 
                     <Typography
                         variant='body2'
-                        color='text.secondary'
                         sx={{
+                            color: 'text.secondary',
                             flexGrow: 1,
                             display: '-webkit-box',
                             WebkitLineClamp: 3,

@@ -13,9 +13,19 @@ interface HeaderProps {
 export const Header = ({ title, subtitle, image, imageCaption, hideDivider }: HeaderProps) => {
     return (
         <div data-testid='blog-header'>
-            <Stack mb={3}>
+            <Stack
+                sx={{
+                    mb: 3,
+                }}
+            >
                 <Typography variant='h4'>{title}</Typography>
-                <Typography variant='h6' color='text.secondary' sx={{ mb: 1 }}>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 1,
+                    }}
+                >
                     {subtitle}
                 </Typography>
 
@@ -23,7 +33,11 @@ export const Header = ({ title, subtitle, image, imageCaption, hideDivider }: He
             </Stack>
 
             {image && (
-                <Stack alignItems='center'>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={image}
                         alt=''
@@ -31,7 +45,12 @@ export const Header = ({ title, subtitle, image, imageCaption, hideDivider }: He
                         priority
                     />
                     {imageCaption && (
-                        <Typography textAlign='center' color='text.secondary'>
+                        <Typography
+                            sx={{
+                                textAlign: 'center',
+                                color: 'text.secondary',
+                            }}
+                        >
                             {imageCaption}
                         </Typography>
                     )}

@@ -74,7 +74,12 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
 
     if (hidden) {
         return (
-            <Stack spacing={2} alignItems='center'>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Typography>{t('ratingsHidden')}</Typography>
                 <Button onClick={() => setHidden(false)}>{t('viewAnyway')}</Button>
             </Stack>

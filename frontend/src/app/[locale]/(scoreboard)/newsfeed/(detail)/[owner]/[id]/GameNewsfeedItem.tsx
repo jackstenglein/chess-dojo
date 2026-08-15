@@ -17,15 +17,28 @@ const GameNewsfeedItem: React.FC<GameNewsfeedItemProps> = ({ entry }) => {
 
     return (
         <Stack>
-            <Typography mt={1}>
+            <Typography
+                sx={{
+                    mt: 1,
+                }}
+            >
                 {t.rich('publishedAnalysis', {
                     link: (chunks: ReactNode) => <Link href={gameUrl}>{chunks}</Link>,
                 })}
             </Typography>
 
-            <Stack mt={2.5}>
+            <Stack
+                sx={{
+                    mt: 2.5,
+                }}
+            >
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('players')}
                     </Typography>{' '}
                     {headers?.White} {headers?.WhiteElo ? `(${headers.WhiteElo})` : ''} -{' '}
@@ -33,21 +46,36 @@ const GameNewsfeedItem: React.FC<GameNewsfeedItemProps> = ({ entry }) => {
                 </Typography>
                 {headers?.Date && (
                     <Typography>
-                        <Typography component='span' color='text.secondary'>
+                        <Typography
+                            component='span'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('date')}
                         </Typography>{' '}
                         {headers.Date}
                     </Typography>
                 )}
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('result')}
                     </Typography>{' '}
                     {headers?.Result}
                 </Typography>
                 {headers?.PlyCount && (
                     <Typography>
-                        <Typography component='span' color='text.secondary'>
+                        <Typography
+                            component='span'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {t('moves')}
                         </Typography>{' '}
                         {Math.ceil(parseInt(headers.PlyCount) / 2)}

@@ -23,7 +23,13 @@ export default function Page() {
             maxWidth='lg'
             sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
         >
-            <Typography variant='h4' textAlign='center' sx={{ mb: 2 }}>
+            <Typography
+                variant='h4'
+                sx={{
+                    textAlign: 'center',
+                    mb: 2,
+                }}
+            >
                 {t('heading')}
             </Typography>
 

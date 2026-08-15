@@ -38,7 +38,15 @@ export function Games({ tournament }: { tournament: RoundRobin }) {
     }
 
     if (games.length === 0) {
-        return <Typography textAlign='center'>{t('empty')}</Typography>;
+        return (
+            <Typography
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
+                {t('empty')}
+            </Typography>
+        );
     }
 
     return (

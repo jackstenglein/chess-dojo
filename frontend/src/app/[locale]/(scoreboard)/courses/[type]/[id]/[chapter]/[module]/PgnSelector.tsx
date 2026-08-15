@@ -69,7 +69,12 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                             onClick={() => setSelectedIndex(idx)}
                         >
                             <ListItemIcon sx={{ minWidth: '40px' }}>
-                                <Stack alignItems='center' width={1}>
+                                <Stack
+                                    sx={{
+                                        alignItems: 'center',
+                                        width: 1,
+                                    }}
+                                >
                                     <Typography
                                         sx={{
                                             color: 'primary.main',
@@ -81,9 +86,11 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
                             </ListItemIcon>
                             <Stack
                                 direction='row'
-                                justifyContent='space-between'
-                                width={1}
                                 spacing={1}
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    width: 1,
+                                }}
                             >
                                 <Typography key={idx} variant='body2'>
                                     {getPgnName(header)}
@@ -101,8 +108,20 @@ const PgnSelector: React.FC<PgnSelectorProps> = ({
             </List>
 
             {hiddenCount !== undefined && hiddenCount > 0 && (
-                <Stack data-testid='upsell-message' px={1} mt={2} spacing={2} alignItems='center'>
-                    <Typography textAlign='center'>
+                <Stack
+                    data-testid='upsell-message'
+                    spacing={2}
+                    sx={{
+                        px: 1,
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('unlockMoreGames', { count: hiddenCount })}
                     </Typography>
                     <Button variant='outlined' component={Link} href='/prices'>

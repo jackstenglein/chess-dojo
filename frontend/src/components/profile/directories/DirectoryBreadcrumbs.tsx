@@ -63,7 +63,13 @@ export const DirectoryBreadcrumbs = ({
     };
 
     return (
-        <Stack spacing={1} direction='row' alignItems='center'>
+        <Stack
+            spacing={1}
+            direction='row'
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             {hiddenBreadcrumbs > 0 && (
                 <>
                     <Tooltip title={t('showPath')}>

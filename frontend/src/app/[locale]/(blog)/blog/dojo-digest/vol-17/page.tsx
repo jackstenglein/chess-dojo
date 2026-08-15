@@ -24,18 +24,36 @@ export default function DojoDigestVol17() {
                 subtitle='Dojo Digest 17 • February 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>2024 was a great year for the Dojo</strong> - We introduced the Tactics
                     Trainer, the Heatmap, the Dojo Database and many other new features. But more
                     important than all that, we saw 81,000+ rating points gained and 1,900
                     graduations!
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={yearStats}
                         alt=''
@@ -43,7 +61,11 @@ export default function DojoDigestVol17() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Round Robin Tournaments</strong> – Our new tournaments have been a huge
                     success — most cohorts have more than one ongoing tournament. And now we're
                     opening them up to non-members! For just $2, you get a 9-round classical
@@ -58,14 +80,24 @@ export default function DojoDigestVol17() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Custom Tasks</strong> – You can now create custom tasks in any category
                     of the training plan, and it will show in that category on your activity
                     heatmap. Custom tasks also support arbitrary goals now and allow you to track
                     your progress just like the default tasks in the training plan.
                 </Typography>
 
-                <Stack mt={2} alignItems='center' spacing={1}>
+                <Stack
+                    spacing={1}
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={customTasks}
                         alt=''
@@ -76,7 +108,13 @@ export default function DojoDigestVol17() {
                     </Typography>
                 </Stack>
 
-                <Stack mt={3} alignItems='center' spacing={1}>
+                <Stack
+                    spacing={1}
+                    sx={{
+                        mt: 3,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={heatmap}
                         alt=''
@@ -87,7 +125,11 @@ export default function DojoDigestVol17() {
                     </Typography>
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games</strong> – Our book is out! You can get a copy{' '}
                     <Link
                         href='https://www.amazon.com/How-Analyze-Your-Games-ChessDojo/dp/B0DP2X1T9D'
@@ -99,7 +141,11 @@ export default function DojoDigestVol17() {
                     your copy!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Patreon and DojoTalks - The Dojo is trying to be more consistent with our
                     podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/c/ChessDojo' target='_blank'>
@@ -108,17 +154,30 @@ export default function DojoDigestVol17() {
                     where you can get episodes early, vote on coming topics, suggest topics and
                     discuss the pod on our private Discord.
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or European club team? Let
                     us know! We would like to bring your teammates to the Dojo and see you with them
                     on a customized scoreboard. We believe the Dojo is the place for teams to track
                     their progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The{' '}
                     <Link
                         href='/profile/fe9cec0a-adf7-4a5e-9d3a-f631137966be?utm_source=newsletter&utm_medium=blog&utm_campaign=digest17'
@@ -130,7 +189,11 @@ export default function DojoDigestVol17() {
                     Director!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='/profile/google_116100455602249006987?utm_source=newsletter&utm_medium=blog&utm_campaign=digest17'
                         target='_blank'
@@ -141,7 +204,11 @@ export default function DojoDigestVol17() {
                     trophy for second place! He also scored 3/4 for his first CFC tournament of the
                     year!
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='/profile/9ad63b1e-cd90-4cf4-91df-8dd8b96106ed?utm_source=newsletter&utm_medium=blog&utm_campaign=digest17'
                         target='_blank'
@@ -152,7 +219,11 @@ export default function DojoDigestVol17() {
                     1884! Keep an eye out for one of his games in a graduation show soon!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='/profile/36ccb6c6-9562-4b01-aa53-d342aeaac08c?utm_source=newsletter&utm_medium=blog&utm_campaign=digest17'
                         target='_blank'
@@ -161,7 +232,11 @@ export default function DojoDigestVol17() {
                     </Link>{' '}
                     got his first official FIDE standard rating of 1836!
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='/profile/google_105412173001395693513?utm_source=newsletter&utm_medium=blog&utm_campaign=digest17'
                         target='_blank'

@@ -53,7 +53,12 @@ function DiscordOAuthButton() {
     return (
         <>
             {mode === 'connect' ? (
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Button
                         variant='contained'
                         loading={request.isLoading()}
@@ -64,7 +69,12 @@ function DiscordOAuthButton() {
                     </Button>
                 </Stack>
             ) : (
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <DiscordIcon />
                     <Typography sx={{ ml: 1, mr: 2 }}>{user?.discordUsername}</Typography>
                     <Button

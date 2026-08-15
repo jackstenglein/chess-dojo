@@ -15,7 +15,12 @@ export default function DojoDigestVol10() {
         <Container maxWidth='sm' sx={{ py: 5 }}>
             <Stack sx={{ mb: 3 }}>
                 <Typography variant='h4'>The Dojo has a new Masters Database</Typography>
-                <Typography variant='h6' color='text.secondary'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     Dojo Digest Vol 10 • July 1, 2024
                 </Typography>
             </Stack>
@@ -27,11 +32,25 @@ export default function DojoDigestVol10() {
                 priority
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
-                <Typography mt={2} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 1,
+                    }}
+                >
                     <strong>Master's Database</strong> - We now have a database of master-level
                     games, filterable by time control! We currently have 250,000 games available and
                     are in the process of uploading another 5 million! The database will then be
@@ -40,20 +59,32 @@ export default function DojoDigestVol10() {
                     annotated games, the Lichess database and the new masters database.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Endgame Tests</strong> - In addition to our tactics tests, we now have
                     endgame tests for all rating groups. The endgame tests will soon be part of a
                     player's endgame rating on their profile, similar to the existing tactics
                     rating. You can take the new tests here.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Positional Tests</strong> - are coming soon. We are beta-testing them
                     now. The particular challenge is asking for an evaluation and then grading it.
                     No other website has ever done this!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>A Lesson from the Tests</strong> - The most common mistake we see across
                     the Dojo is players moving too fast. People generally move too fast out of
                     anxiety and exhaustion. While you might not feel exhausted in the same way as
@@ -64,10 +95,19 @@ export default function DojoDigestVol10() {
                     reflection and a judgement of our first instincts!
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_114391023466287136398?utm_source=newsletter&utm_medium=blog&utm_campaign=digest10'>
                         NoseKnowsAll
                     </Link>{' '}
@@ -77,7 +117,11 @@ export default function DojoDigestVol10() {
                     </Link>{' '}
                     and leave a comment!
                 </Typography>
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_115587319098605190849?utm_source=newsletter&utm_medium=blog&utm_campaign=digest10'>
                         Timpe
                     </Link>{' '}
@@ -88,7 +132,11 @@ export default function DojoDigestVol10() {
                     </Link>
                     .
                 </Typography>
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/4194f5e1-8fdf-4f00-9c25-102bc72b0a6b?utm_source=newsletter&utm_medium=blog&utm_campaign=digest10'>
                         Penrow
                     </Link>{' '}
@@ -96,7 +144,12 @@ export default function DojoDigestVol10() {
                     cohort!
                 </Typography>
 
-                <Typography textAlign='center' mt={4}>
+                <Typography
+                    sx={{
+                        textAlign: 'center',
+                        mt: 4,
+                    }}
+                >
                     Over the past year of Dojo 2.0, we&apos;ve collectively achieved:
                     <br />
                     <br />

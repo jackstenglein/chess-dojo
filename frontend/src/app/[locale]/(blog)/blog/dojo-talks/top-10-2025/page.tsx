@@ -12,7 +12,13 @@ export const metadata: Metadata = {
 };
 
 const SectionHeader = ({ children }: { children: ReactNode }) => (
-    <Typography variant='subtitle1' fontWeight='bold' sx={{ mt: 3 }}>
+    <Typography
+        variant='subtitle1'
+        sx={{
+            fontWeight: 'bold',
+            mt: 3,
+        }}
+    >
         {children}
     </Typography>
 );
@@ -29,7 +35,11 @@ export default function DojoTalksTop2025() {
                 subtitle='Jesse, Kostya, & David • June 7, 2024'
             />
 
-            <Typography mb={3}>
+            <Typography
+                sx={{
+                    mb: 3,
+                }}
+            >
                 GM Jesse Kraai, IM David Pruess, and IM Kostya Kavutskiy forecast who will be the
                 top 10 FIDE rated chess players in June 2025 in today's episode of Dojo Talks, the
                 ChessDojo podcast.
@@ -102,11 +112,24 @@ export default function DojoTalksTop2025() {
 
             <Divider sx={{ my: 6 }} />
 
-            <Typography fontWeight='bold' textAlign='center'>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                }}
+            >
                 Make sure to follow the DojoTalks podcast
             </Typography>
 
-            <Stack direction='row' justifyContent='center' alignItems='center' gap='20px' mt={2}>
+            <Stack
+                direction='row'
+                sx={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '20px',
+                    mt: 2,
+                }}
+            >
                 <a
                     href='https://www.youtube.com/chessdojo'
                     target='_blank'

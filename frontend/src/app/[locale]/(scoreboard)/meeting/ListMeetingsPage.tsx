@@ -44,7 +44,12 @@ export const ListMeetingsPage = () => {
         <Container maxWidth='md' sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
 
-            <Stack spacing={2} alignItems='start'>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'start',
+                }}
+            >
                 <Typography variant='h4'>{t('title')}</Typography>
 
                 {requestLoading && meetings.length === 0 && <CircularProgress />}
