@@ -194,7 +194,11 @@ export const ClubDetailsPage = ({ id }: { id: string }) => {
                                             <Typography variant='h4'>{club.name}</Typography>
                                         </Stack>
 
-                                        <Stack direction='row' spacing={1} alignItems='center'>
+                                        <Stack
+                                            direction='row'
+                                            spacing={1}
+                                            sx={{ alignItems: 'center' }}
+                                        >
                                             {isMember &&
                                                 (isMainClub ? (
                                                     <MainClubChip />
