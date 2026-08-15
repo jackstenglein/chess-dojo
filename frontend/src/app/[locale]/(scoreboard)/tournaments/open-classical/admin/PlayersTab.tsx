@@ -29,7 +29,7 @@ import {
 } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 
-declare module '@mui/x-data-grid' {
+declare module '@mui/x-data-grid-pro' {
     interface ToolbarPropsOverrides {
         region: string;
         ratingRange: string;
@@ -222,7 +222,13 @@ const PlayersTab: React.FC<PlayersTabProps> = ({ openClassical, onUpdate }) => {
 
     return (
         <Stack spacing={3}>
-            <Stack direction='row' width={1} spacing={2}>
+            <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                    width: 1,
+                }}
+            >
                 <TextField
                     label='Region'
                     select

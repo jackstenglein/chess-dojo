@@ -140,14 +140,24 @@ export function ChatPage() {
                     py: 2,
                 }}
             >
-                <Typography variant='h4' textAlign='center' mb={2}>
+                <Typography
+                    variant='h4'
+                    sx={{
+                        textAlign: 'center',
+                        mb: 2,
+                    }}
+                >
                     {t('title')}
                 </Typography>
                 <Typography
                     variant='body2'
-                    color='text.secondary'
-                    textAlign='center'
-                    sx={{ mb: 4, maxWidth: 'sm', alignSelf: 'center' }}
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                        mb: 4,
+                        maxWidth: 'sm',
+                        alignSelf: 'center',
+                    }}
                 >
                     ⚠️ {t('betaWarning')}
                 </Typography>
@@ -190,7 +200,12 @@ export function ChatPage() {
                     {isThinking && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
                             <CircularProgress size={16} thickness={5} />
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {t('thinking')}
                             </Typography>
                         </Box>

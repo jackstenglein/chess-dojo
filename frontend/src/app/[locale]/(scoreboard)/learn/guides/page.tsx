@@ -30,7 +30,12 @@ export default function Page() {
     const t = useTranslations('learn.guides');
     return (
         <Container sx={{ py: 3 }}>
-            <Stack spacing={5} mb={5}>
+            <Stack
+                spacing={5}
+                sx={{
+                    mb: 5,
+                }}
+            >
                 <Typography variant='h4'>{t('pageTitle')}</Typography>
                 <Stack>
                     <Accordion>

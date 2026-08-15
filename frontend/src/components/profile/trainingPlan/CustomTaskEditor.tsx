@@ -194,7 +194,12 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
 
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                <Stack gap={3} mt={2}>
+                <Stack
+                    sx={{
+                        gap: 3,
+                        mt: 2,
+                    }}
+                >
                     <TextField
                         label={t('category')}
                         required

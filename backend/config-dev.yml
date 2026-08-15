@@ -32,3 +32,8 @@ coaches: 'google_112538452360881134254'
 mongoUri: mongodb+srv://dev-chess-dojo.pqjx4ee.mongodb.net/?retryWrites=true&w=majority&appName=dev-chess-dojo
 meetRecordingsDriveFolder: '102cXp0zEAGaMMBC0hzNnxdB5PeStvYfX'
 finishedUploadsDriveFolder: '1mU7cW4z8UWm21c4lyRlf7E4_Lvk5BrXX'
+# The URL of the shared OpenSearch domain for game search. The domain is
+# created by the prod stack; replace 'unset' with its endpoint after the first
+# prod deploy (Console -> OpenSearch -> chess-dojo-game-search -> Domain
+# endpoint), prefixed with https://. 'unset' disables search.
+gameSearchEndpoint: https://search-chess-dojo-game-search-sedvk25stijjxunhbjwmgfq76a.us-east-1.es.amazonaws.com

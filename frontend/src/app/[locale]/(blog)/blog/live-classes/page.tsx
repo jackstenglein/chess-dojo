@@ -23,8 +23,17 @@ export default function Page() {
                 subtitle='November 24, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography variant='h6' textAlign='center'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h6'
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     ChessDojo's interactive group classes start January 1st. Join before December
                     2nd and get <strong>25% off</strong> with the code <strong>BLACKFRIDAY</strong>!
                 </Typography>
@@ -39,17 +48,25 @@ export default function Page() {
                     Join Group Classes
                 </Button>
 
-                <Typography variant='h5' textAlign='center' mt={6}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        textAlign: 'center',
+                        mt: 6,
+                    }}
+                >
                     Get master-level instruction from our senseis
                 </Typography>
 
                 <Stack
                     direction='row'
-                    mt={4}
-                    alignItems='center'
-                    justifyContent={{ xs: 'center', sm: 'start' }}
-                    gap={3}
-                    flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+                    sx={{
+                        mt: 4,
+                        alignItems: 'center',
+                        justifyContent: { xs: 'center', sm: 'start' },
+                        gap: 3,
+                        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    }}
                 >
                     <Image src={jesseImage} alt='Image of GM Jesse Kraai' width={160} />
 
@@ -57,7 +74,11 @@ export default function Page() {
                         <Typography variant='h6'>
                             Endgame Fundamentals with GM Jesse Kraai (0-1200)
                         </Typography>
-                        <Typography color='text.secondary'>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             The superpower of learning basic endgames as a beginner is that they
                             train you to <em>see</em> which squares are controlled. We call this
                             skill "grip" or "board vision." It's priority number one for anyone
@@ -73,11 +94,13 @@ export default function Page() {
 
                 <Stack
                     direction='row'
-                    mt={4}
-                    alignItems='center'
-                    justifyContent={{ xs: 'center', sm: 'start' }}
-                    gap={3}
-                    flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+                    sx={{
+                        mt: 4,
+                        alignItems: 'center',
+                        justifyContent: { xs: 'center', sm: 'start' },
+                        gap: 3,
+                        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    }}
                 >
                     <Image src={kostyaImage} alt='Image of IM Kostya Kavutskiy' width={160} />
 
@@ -85,7 +108,11 @@ export default function Page() {
                         <Typography variant='h6'>
                             Calculation with IM Kostya Kavutskiy (1000-1400)
                         </Typography>
-                        <Typography color='text.secondary'>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             A weekly class on calculation, focusing on various techniques and skills
                             within calculation. Students will be given weekly homework to work on
                             before the next class, and encouraged to form study groups to solve the
@@ -99,11 +126,13 @@ export default function Page() {
 
                 <Stack
                     direction='row'
-                    mt={4}
-                    alignItems='center'
-                    justifyContent={{ xs: 'center', sm: 'start' }}
-                    gap={3}
-                    flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+                    sx={{
+                        mt: 4,
+                        alignItems: 'center',
+                        justifyContent: { xs: 'center', sm: 'start' },
+                        gap: 3,
+                        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    }}
                 >
                     <Image src={davidImage} alt='Image of IM David Pruess' width={160} />
 
@@ -111,7 +140,11 @@ export default function Page() {
                         <Typography variant='h6'>
                             The Najdorf with IM David Pruess (two sections 1400-1800, 1800+)
                         </Typography>
-                        <Typography color='text.secondary'>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             The Najdorf Sicilian is the most unbalanced but objectively good
                             response to 1.e4, and unsurprisingly, one of the most popular of all
                             time. Wielded by the likes of Mikhail Tal, Bobby Fischer, Garry
@@ -129,13 +162,30 @@ export default function Page() {
                 </Stack>
 
                 <Paper elevation={6} sx={{ mt: 10, borderRadius: '20px', p: '16px' }}>
-                    <Grid container alignItems='center' flexWrap='wrap-reverse' rowGap={3}>
+                    <Grid
+                        container
+                        sx={{
+                            alignItems: 'center',
+                            flexWrap: 'wrap-reverse',
+                            rowGap: 3,
+                        }}
+                    >
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Stack>
-                                <Typography variant='h5' fontWeight='bold'>
+                                <Typography
+                                    variant='h5'
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     Game & Profile Reviews
                                 </Typography>
-                                <Typography variant='h6' mt={1}>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        mt: 1,
+                                    }}
+                                >
                                     Get personalized insights from a sensei based on your training
                                     habits and annotated games.
                                 </Typography>
@@ -170,10 +220,21 @@ export default function Page() {
                     View Full Class Calendar
                 </Link>
 
-                <Typography variant='h5' textAlign='center' sx={{ mb: 3 }}>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        textAlign: 'center',
+                        mb: 3,
+                    }}
+                >
                     Not interested in group classes?
                 </Typography>
-                <Typography variant='h6' textAlign='center'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     ChessDojo Core provides a full training plan, a game database and annotation
                     tool, self-paced opening courses, unlimited puzzles, and more. Use code{' '}
                     <strong>BLACKFRIDAY</strong> for <strong>25% off</strong> through December 2nd.
@@ -189,14 +250,30 @@ export default function Page() {
                     Join Now with 25% Off
                 </Button>
 
-                <Typography variant='h4' mt={10} textAlign={'center'}>
+                <Typography
+                    variant='h4'
+                    sx={{
+                        mt: 10,
+                        textAlign: 'center',
+                    }}
+                >
                     A Brief and Personal History of ChessDojo's Group Classes
                 </Typography>
-                <Typography variant='h6' color='text.secondary' textAlign='center'>
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                    }}
+                >
                     GM Jesse Kraai describes the story behind ChessDojo's new classes.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     When we started the Dojo Training Program using a Google Doc on May 1st 2022 we
                     felt strongly about the three principles we built it around:
                     <br />

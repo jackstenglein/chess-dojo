@@ -245,10 +245,12 @@ function Database({
                                   >
                                       <Stack
                                           direction='row'
-                                          height={1}
-                                          alignItems='center'
-                                          justifyContent='center'
-                                          gap={0.5}
+                                          sx={{
+                                              height: 1,
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              gap: 0.5,
+                                          }}
                                       >
                                           {
                                               (params.row as LichessExplorerMove).performanceData
@@ -317,7 +319,11 @@ function Database({
 
     if (type !== ExplorerDatabaseType.Lichess && isFreeTier) {
         return (
-            <Box mt={2}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <UpsellAlert>{t('upsellDojoDatabases')}</UpsellAlert>
             </Box>
         );
@@ -329,7 +335,13 @@ function Database({
 
     if (!position) {
         return (
-            <Stack width={1} alignItems='center' mt={2}>
+            <Stack
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2,
+                }}
+            >
                 <Typography>{t('noGamesFound')}</Typography>
             </Stack>
         );
@@ -354,7 +366,9 @@ function Database({
             container
             columnSpacing={1}
             rowSpacing={2}
-            mt={2}
+            sx={{
+                mt: 2,
+            }}
         >
             {type === ExplorerDatabaseType.Dojo && (
                 <>
@@ -407,7 +421,13 @@ function Database({
             {type === ExplorerDatabaseType.Masters && timeControls && setTimeControls && (
                 <>
                     <Grid size={12}>
-                        <Stack direction='row' alignItems='center' spacing={0.5}>
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <MultipleSelectChip
                                 label={t('timeControlsLabel')}
                                 selected={timeControls}
@@ -449,7 +469,14 @@ function Database({
                     }
                     slots={{
                         noRowsOverlay: () => (
-                            <Stack height={1} width={1} alignItems='center' justifyContent='center'>
+                            <Stack
+                                sx={{
+                                    height: 1,
+                                    width: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <Typography>{t('noMovesPlayed')}</Typography>
                                 {type === ExplorerDatabaseType.Dojo &&
                                     cohortRange.length < dojoCohorts.length && (
@@ -490,7 +517,13 @@ function Database({
 
                     {(type === ExplorerDatabaseType.Dojo ||
                         type === ExplorerDatabaseType.Masters) && (
-                        <Grid display='flex' justifyContent='center' size={12}>
+                        <Grid
+                            size={12}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Link
                                 href={`/games?type=position&fen=${fen}&masters=${type === ExplorerDatabaseType.Masters}`}
                                 target='_blank'

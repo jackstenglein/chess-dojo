@@ -31,14 +31,16 @@ export function ChatMessage({ message }: { message: Message }) {
 
     return (
         <Box
-            alignSelf={isUser ? 'flex-end' : 'flex-start'}
-            bgcolor={isUser ? 'info.main' : 'divider'}
-            color={isUser ? 'info.contrastText' : 'text.primary'}
-            px={2}
-            py={1.5}
-            borderRadius={2}
-            maxWidth='80%'
-            sx={{ position: 'relative' }}
+            sx={{
+                alignSelf: isUser ? 'flex-end' : 'flex-start',
+                bgcolor: isUser ? 'info.main' : 'divider',
+                color: isUser ? 'info.contrastText' : 'text.primary',
+                px: 2,
+                py: 1.5,
+                borderRadius: 2,
+                maxWidth: '80%',
+                position: 'relative',
+            }}
         >
             {isUser ? (
                 message.content

@@ -40,7 +40,13 @@ export function TimeControlDescription({ timeControls }: { timeControls: TimeCon
             : t('moveRangeOpen', { start: currentMove });
         items.push(
             <Typography key={i}>
-                <Typography variant='subtitle2' component='span' color='text.secondary'>
+                <Typography
+                    variant='subtitle2'
+                    component='span'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {moveLabel}
                 </Typography>{' '}
                 {formatTime(tc.seconds || 0)}{' '}

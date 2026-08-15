@@ -17,6 +17,7 @@ services:
       FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
       PicturesBucket: ${chess-dojo-scheduler.PicturesBucket}
       SecretsBucket: ${chess-dojo-scheduler.SecretsBucket}
+      FideRatingsBucket: ${chess-dojo-scheduler.FideRatingsBucket}
       AlertNotificationsTopic: ${chess-dojo-scheduler.AlertNotificationsTopic}
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
@@ -173,6 +174,8 @@ services:
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       TournamentsTableArn: ${chess-dojo-scheduler.TournamentsTableArn}
       GamesTableStreamArn: ${chess-dojo-scheduler.GamesTableStreamArn}
+      GameSearchEndpoint: ${chess-dojo-scheduler.GameSearchEndpoint}
+      AlertNotificationsTopic: ${chess-dojo-scheduler.AlertNotificationsTopic}
       NotificationsTableArn: ${chess-dojo-scheduler.NotificationsTableArn}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
       TimelineTableArn: ${chess-dojo-scheduler.TimelineTableArn}

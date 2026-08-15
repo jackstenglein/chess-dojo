@@ -26,7 +26,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useChess } from '../../../PgnBoard';
@@ -54,7 +54,8 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
         setOrientation(initialOrientation);
     }, [initialVisibility, initialOrientation, setVisibility, setOrientation]);
 
-    const headersChanged = Object.entries(game.headers).some(
+    const { White, Black, Date } = game.headers;
+    const headersChanged = Object.entries({ White, Black, Date }).some(
         ([name, value]) => value !== headers[name],
     );
 
@@ -67,7 +68,12 @@ const GameSettings: React.FC<GameSettingsProps> = ({ game, onSaveGame }) => {
     };
 
     return (
-        <Stack spacing={5} mt={1}>
+        <Stack
+            spacing={5}
+            sx={{
+                mt: 1,
+            }}
+        >
             <AnnotationWarnings />
 
             <Stack spacing={3}>
@@ -235,6 +241,7 @@ const SaveGameButton = ({
             type: newHeaders ? GameImportTypes.editor : undefined,
             cohort: game.cohort,
             id: game.id,
+            updatedAt: game.updatedAt || game.createdAt || '',
             orientation: newOrientation || orientation,
             timelineId: game.timelineId,
         };

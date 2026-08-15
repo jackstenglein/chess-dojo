@@ -28,13 +28,30 @@ const PurchaseCoursePage: React.FC<PurchaseCoursePageProps> = ({
         <Container maxWidth={false} sx={{ pt: 6, pb: 4 }}>
             <Stack>
                 <Typography variant='h4'>{course.name}</Typography>
-                <Typography variant='h5' color='text.secondary'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {course.cohortRange}
                 </Typography>
                 <Divider />
 
-                <Stack spacing={2} mt={2}>
-                    <Grid container rowSpacing={2} columnSpacing={4} alignItems='center'>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mt: 2,
+                    }}
+                >
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        columnSpacing={4}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <PurchaseMessage course={course} isFreeTier={isFreeTier} />
 
                         <Grid
@@ -48,7 +65,12 @@ const PurchaseCoursePage: React.FC<PurchaseCoursePageProps> = ({
                         >
                             <Stack spacing={2}>
                                 {course.description.split('\n\n').map((p, i) => (
-                                    <Typography key={i} mb={2}>
+                                    <Typography
+                                        key={i}
+                                        sx={{
+                                            mb: 2,
+                                        }}
+                                    >
                                         {p}
                                     </Typography>
                                 ))}
@@ -136,13 +158,15 @@ const PurchaseMessage: React.FC<PurchaseMessageProps> = ({ course, isFreeTier })
     return (
         <>
             <Grid
-                mb={2}
                 size={{
                     xs: 12,
                     sm: 12,
                     md: 12,
                     lg: 10,
                     xl: 7,
+                }}
+                sx={{
+                    mb: 2,
                 }}
             >
                 {content}

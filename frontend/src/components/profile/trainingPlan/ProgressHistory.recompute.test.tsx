@@ -208,7 +208,7 @@ vi.mock('@mui/material', () => {
     };
 });
 
-vi.mock('@mui/x-date-pickers', () => ({
+vi.mock('@mui/x-date-pickers-pro', () => ({
     DateTimePicker: ({
         label,
         value,

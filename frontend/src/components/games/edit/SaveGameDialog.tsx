@@ -28,7 +28,7 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
@@ -220,7 +220,12 @@ function SaveGameDialogBody({
                     {children ? children : <>{t('reviewFields')}</>}
                 </DialogContentText>
 
-                <Stack spacing={3} mt={3}>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Grid container columnSpacing={1} rowSpacing={2}>
                         <Grid
                             size={{

@@ -115,7 +115,12 @@ export default function Settings() {
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth='sm' fullWidth>
                 <DialogTitle>{t('engineSettingsDialogTitle')}</DialogTitle>
                 <DialogContent>
-                    <Stack rowGap={2} sx={{ pt: 1 }}>
+                    <Stack
+                        sx={{
+                            rowGap: 2,
+                            pt: 1,
+                        }}
+                    >
                         <TextField
                             select
                             fullWidth
@@ -180,7 +185,12 @@ export default function Settings() {
                         />
                     </Stack>
 
-                    <Stack rowGap={{ xs: 2, sm: 1 }} sx={{ my: 3 }}>
+                    <Stack
+                        sx={{
+                            rowGap: { xs: 2, sm: 1 },
+                            my: 3,
+                        }}
+                    >
                         <FormControl disabled={!showEngineEval}>
                             <FormLabel>{t('primaryEvalTypeLabel')}</FormLabel>
                             <RadioGroup

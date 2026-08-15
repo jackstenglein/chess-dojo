@@ -55,22 +55,48 @@ export function TimeManagementRatingRow({
     return (
         <Grid size={12}>
             <Tooltip title='Time Management Rating is calculated from the classical games in your My Games folder (and subfolders).'>
-                <Stack direction='row' alignItems='center' gap={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: 0.5,
+                    }}
+                >
                     <AccessTimeIcon sx={{ fontSize: 15, color: 'text.secondary' }} />
-                    <Typography variant='body2' color='text.secondary' sx={{ fontWeight: 'bold' }}>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                            fontWeight: 'bold',
+                        }}
+                    >
                         Time Management
                     </Typography>
-                    <Stack direction='row' alignItems='center' gap={0.5} sx={{ ml: 'auto' }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            gap: 0.5,
+                            ml: 'auto',
+                        }}
+                    >
                         <TimeManagementDirectionIcon area={timeManagementRating.area} />
                         <Typography
                             variant='body2'
-                            color='text.secondary'
-                            sx={{ fontWeight: 'bold' }}
+                            sx={{
+                                color: 'text.secondary',
+                                fontWeight: 'bold',
+                            }}
                         >
                             {timeManagementRating.currentRating}
                             {provisional && '?'}
                         </Typography>
-                        <Typography variant='body2' color='text.secondary'>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {gameCountLabel(numGames)}
                         </Typography>
                     </Stack>

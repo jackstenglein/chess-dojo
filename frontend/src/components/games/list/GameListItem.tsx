@@ -61,11 +61,11 @@ export function IncompleteIcon() {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Typography
-                color='text.secondary'
-                display='flex'
-                justifyContent='center'
-                alignItems='center'
                 sx={{
+                    color: 'text.secondary',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     height: '0.875rem',
                     width: '0.875rem',
                     fontSize: '1.5rem',
@@ -84,12 +84,12 @@ export function WinIcon() {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Typography
-                bgcolor='success.main'
-                color='success.contrastText'
-                display='flex'
-                justifyContent='center'
-                alignItems='center'
                 sx={{
+                    bgcolor: 'success.main',
+                    color: 'success.contrastText',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
@@ -106,12 +106,12 @@ export function LoseIcon() {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Typography
-                bgcolor='error.main'
-                color='success.contrastText'
-                display='flex'
-                justifyContent='center'
-                alignItems='center'
                 sx={{
+                    bgcolor: 'error.main',
+                    color: 'success.contrastText',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
@@ -128,12 +128,12 @@ export function DrawIcon() {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Typography
-                bgcolor='text.secondary'
-                color='success.contrastText'
-                display='flex'
-                justifyContent='center'
-                alignItems='center'
                 sx={{
+                    bgcolor: 'text.secondary',
+                    color: 'success.contrastText',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     borderRadius: 0.5,
                     height: '0.875rem',
                     width: '0.875rem',
@@ -159,7 +159,13 @@ interface RenderPlayersProps {
 
 export function RenderGameResultStack({ result }: { result: string | undefined | null }) {
     return (
-        <Stack justifyContent='center' height='100%' spacing={0.25}>
+        <Stack
+            spacing={0.25}
+            sx={{
+                justifyContent: 'center',
+                height: '100%',
+            }}
+        >
             <GameResultIcon result={result} asWhite />
             <GameResultIcon result={result} asWhite={false} />
         </Stack>
@@ -180,7 +186,12 @@ export function BlackIcon() {
 export function RenderRatingHeader({ white }: { white: boolean }) {
     const t = useTranslations('games.listItem');
     return (
-        <Stack direction='row' columnGap='0.125rem'>
+        <Stack
+            direction='row'
+            sx={{
+                columnGap: '0.125rem',
+            }}
+        >
             {white ? <WhiteIcon /> : <BlackIcon />} {t('rating')}
         </Stack>
     );
@@ -211,21 +222,49 @@ export function RenderPlayers({
     fullHeight,
 }: RenderPlayersProps) {
     return (
-        <Stack height={fullHeight ? 1 : undefined} justifyContent='center'>
-            <Stack direction='row' alignItems='center' columnGap='0.25rem'>
+        <Stack
+            sx={{
+                height: fullHeight ? 1 : undefined,
+                justifyContent: 'center',
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    columnGap: '0.25rem',
+                }}
+            >
                 <WhiteIcon />
                 <Typography variant='body2'>{white}</Typography>
                 {whiteElo && (
-                    <Typography variant='body2' overflow='hidden'>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            overflow: 'hidden',
+                        }}
+                    >
                         {getPlayerRating(whiteElo, whiteProvisional)}
                     </Typography>
                 )}
             </Stack>
-            <Stack direction='row' alignItems='center' columnGap='0.25rem'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    columnGap: '0.25rem',
+                }}
+            >
                 <BlackIcon />
                 <Typography variant='body2'>{black}</Typography>
                 {blackElo && (
-                    <Typography variant='body2' whiteSpace='nowrap' overflow='hidden'>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                        }}
+                    >
                         {getPlayerRating(blackElo, blackProvisional)}
                     </Typography>
                 )}
@@ -242,7 +281,13 @@ export function RenderCohort({ cohort }: { cohort: string }) {
     }
 
     return (
-        <Stack sx={{ height: 1 }} alignItems='center' justifyContent='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 1,
+            }}
+        >
             <CohortIcon cohort={cohort} tooltip={cohort} size={28} />
             <Typography variant='caption' sx={{ fontSize: '0.6rem' }}>
                 {display === MastersCohort ? t('mastersDb') : display}
@@ -265,7 +310,14 @@ export function RenderOwner({
     }
 
     return (
-        <Stack direction='row' spacing={1} alignItems='center' onClick={(e) => e.stopPropagation()}>
+        <Stack
+            direction='row'
+            spacing={1}
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             {avatarSize > 0 && (
                 <Avatar username={owner} displayName={ownerDisplayName} size={avatarSize} />
             )}
@@ -291,7 +343,13 @@ export function RenderTimeControl({ timeControl }: { timeControl?: string }) {
     }
 
     return (
-        <Box height='100%' display='flex' alignItems='center'>
+        <Box
+            sx={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='body2'>{getTimeControl({ timeControl })}</Typography>
         </Box>
     );
@@ -371,7 +429,13 @@ export function GameCell({
     }
 
     return (
-        <Stack height={1} justifyContent='center' py={1}>
+        <Stack
+            sx={{
+                height: 1,
+                justifyContent: 'center',
+                py: 1,
+            }}
+        >
             <Grid container>
                 <Grid size={1}>
                     <RenderGameResultStack result={headers?.Result} />
@@ -380,9 +444,11 @@ export function GameCell({
                 <Grid size={11}>
                     <Stack
                         direction='row'
-                        flexWrap='wrap'
-                        justifyContent='space-between'
-                        alignItems='center'
+                        sx={{
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
                     >
                         {RenderPlayers({
                             white: headers?.White,
@@ -402,22 +468,44 @@ export function GameCell({
 
                 <Grid size={1}></Grid>
                 <Grid size={11} sx={{ mt: 1 }}>
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {description}
                     </Typography>
                 </Grid>
 
                 <Grid size={1}></Grid>
                 <Grid size={11}>
-                    <Stack direction='row' alignItems='center'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <CohortIcon cohort={cohort} tooltip={cohort} size={16} />
-                        <Typography variant='body2' color='text.secondary' sx={{ ml: 0.5 }}>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                                ml: 0.5,
+                            }}
+                        >
                             {cohort === MastersCohort ? t('mastersDb') : cohort}
                         </Typography>
 
                         {cohort !== MastersCohort && ownerDisplayName && owner && (
                             <>
-                                <Typography variant='body2' sx={{ mx: 0.5 }} color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                        mx: 0.5,
+                                    }}
+                                >
                                     •
                                 </Typography>
                                 {RenderOwner({ ownerDisplayName, owner, avatarSize: 0 })}

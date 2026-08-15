@@ -48,8 +48,10 @@ export function ReviewQueuePage() {
                     <Stack
                         direction='row'
                         spacing={1}
-                        alignItems='center'
                         onClick={(e) => e.stopPropagation()}
+                        sx={{
+                            alignItems: 'center',
+                        }}
                     >
                         <Avatar
                             username={params.row.owner}
@@ -162,7 +164,12 @@ export function ReviewQueuePage() {
         <Container maxWidth='xl' sx={{ py: 5 }}>
             <RequestSnackbar request={request} />
 
-            <Typography color='text.secondary' mb={3}>
+            <Typography
+                sx={{
+                    color: 'text.secondary',
+                    mb: 3,
+                }}
+            >
                 {t.rich('description', {
                     link: (chunks) => (
                         <Link

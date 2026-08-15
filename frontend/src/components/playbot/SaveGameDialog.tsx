@@ -165,7 +165,13 @@ export function SaveMaiaGameDialog({
             <RequestSnackbar request={request} />
 
             <DialogTitle>
-                <Stack direction='row' alignItems='center' spacing={1}>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <SaveOutlined color='primary' />
                     <span>Save Game</span>
                 </Stack>
@@ -176,26 +182,61 @@ export function SaveMaiaGameDialog({
                     {/* Game summary */}
                     <Stack
                         direction='row'
-                        alignItems='center'
-                        justifyContent='space-between'
-                        sx={{ px: 1, py: 0.75, bgcolor: 'action.hover', borderRadius: 1 }}
+                        sx={{
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            px: 1,
+                            py: 0.75,
+                            bgcolor: 'action.hover',
+                            borderRadius: 1,
+                        }}
                     >
                         <Stack>
-                            <Typography variant='body2' fontWeight={600}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    fontWeight: 600,
+                                }}
+                            >
                                 {whiteName}
                             </Typography>
-                            <Typography variant='caption' color='text.secondary'>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 White
                             </Typography>
                         </Stack>
-                        <Typography variant='h6' fontWeight={700} color='text.secondary'>
+                        <Typography
+                            variant='h6'
+                            sx={{
+                                fontWeight: 700,
+                                color: 'text.secondary',
+                            }}
+                        >
                             {resultTag}
                         </Typography>
-                        <Stack alignItems='flex-end'>
-                            <Typography variant='body2' fontWeight={600}>
+                        <Stack
+                            sx={{
+                                alignItems: 'flex-end',
+                            }}
+                        >
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    fontWeight: 600,
+                                }}
+                            >
                                 {blackName}
                             </Typography>
-                            <Typography variant='caption' color='text.secondary'>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 Black
                             </Typography>
                         </Stack>

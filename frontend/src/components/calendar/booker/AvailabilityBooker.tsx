@@ -32,7 +32,7 @@ import {
     Typography,
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
-import { TimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
@@ -164,7 +164,9 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
             data-testid='availability-booker'
             fullScreen
             open={true}
-            TransitionComponent={Transition}
+            slots={{
+                transition: Transition,
+            }}
         >
             <RequestSnackbar request={request} />
 
@@ -214,7 +216,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
 
                     {availability.description && (
                         <Stack>
-                            <Typography variant='h6' color='text.secondary'>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 <Icon
                                     name='notes'
                                     color='primary'
@@ -254,7 +261,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                             />
 
                             <Stack>
-                                <Typography variant='h6' color='text.secondary'>
+                                <Typography
+                                    variant='h6'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     <Icon
                                         name='participant'
                                         color='primary'
@@ -275,7 +287,9 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                         key={p.username}
                                         direction='row'
                                         spacing={1}
-                                        alignItems='center'
+                                        sx={{
+                                            alignItems: 'center',
+                                        }}
                                     >
                                         <Avatar
                                             username={p.username}

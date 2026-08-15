@@ -1,18 +1,12 @@
 'use client';
 
 import { useEvents } from '@/api/cache/Cache';
-import { CustomEventRenderer } from '@/app/[locale]/(scoreboard)/calendar/CalendarPage';
-import ProcessedEventViewer from '@/components/calendar/eventViewer/ProcessedEventViewer';
 import { Filters, getHours, useFilters } from '@/components/calendar/filters/CalendarFilters';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import { Event, EventType, PositionType, TimeControlType, TournamentType } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
-import {
-    EventRendererProps,
-    ProcessedEvent,
-    SchedulerRef,
-} from '@jackstenglein/react-scheduler/types';
+import { ProcessedEvent, SchedulerRef } from '@jackstenglein/react-scheduler/types';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -109,14 +103,6 @@ const CalendarTab = () => {
 
     useEffect(() => {
         calendarRef.current?.scheduler.handleState(filters.timeFormat, 'hourFormat');
-        calendarRef.current?.scheduler.handleState(
-            (props: EventRendererProps) =>
-                CustomEventRenderer({
-                    ...props,
-                    timeFormat: filters.timeFormat,
-                }),
-            'eventRenderer',
-        );
     }, [calendarRef, filters.timeFormat]);
 
     const [minHour, maxHour] = getHours(filters.minHour, filters.maxHour);
@@ -197,15 +183,9 @@ const CalendarTab = () => {
                         step: 60,
                         navigation: true,
                     }}
-                    viewerExtraComponent={(_, event) => (
-                        <ProcessedEventViewer processedEvent={event} />
-                    )}
                     events={processedEvents}
                     timeZone={filters.timezone === DefaultTimezone ? undefined : filters.timezone}
                     hourFormat={filters.timeFormat || TimeFormat.TwelveHour}
-                    eventRenderer={(props) =>
-                        CustomEventRenderer({ ...props, timeFormat: filters.timeFormat })
-                    }
                 />
             </Grid>
         </Grid>

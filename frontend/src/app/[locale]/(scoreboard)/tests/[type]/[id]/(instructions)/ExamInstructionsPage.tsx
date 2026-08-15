@@ -58,7 +58,11 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
     return (
         <Container sx={{ py: 4 }} maxWidth={false}>
             <Container>
-                <Stack alignItems='start'>
+                <Stack
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     <Typography variant='h4'>{displayExamType(exam.type, tExams)}</Typography>
                     <Typography variant='h5'>
                         {exam.cohortRange} {exam.name}
@@ -70,7 +74,12 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
                         type={exam.type}
                     />
 
-                    <Typography variant='h4' mt={4}>
+                    <Typography
+                        variant='h4'
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
                         {t('exampleHeading')}
                     </Typography>
                     <Typography sx={{ mb: 3 }}>{t('sampleDescription')}</Typography>
@@ -95,13 +104,28 @@ function AuthExamInstructionPage({ user, type, id }: { user: User; type: ExamTyp
             )}
 
             <Container>
-                <Stack alignItems='start'>
-                    <Typography variant='h6' mt={6}>
+                <Stack
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            mt: 6,
+                        }}
+                    >
                         {t('startTestHeading')}
                     </Typography>
                     <Typography>{t('startTestBody')}</Typography>
 
-                    <Stack direction='row' spacing={2} mt={3}>
+                    <Stack
+                        direction='row'
+                        spacing={2}
+                        sx={{
+                            mt: 3,
+                        }}
+                    >
                         <Button
                             variant='contained'
                             component={Link}

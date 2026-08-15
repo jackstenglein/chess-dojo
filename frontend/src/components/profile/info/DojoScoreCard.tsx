@@ -57,13 +57,28 @@ const DojoScoreCardProgressBar: React.FC<DojoScoreCardProgressBarProps> = ({
     return (
         <Grid
             size={{ xs: 12 }}
-            display='flex'
-            justifyContent={{
-                xs: 'start',
+            sx={{
+                display: 'flex',
+
+                justifyContent: {
+                    xs: 'start',
+                },
             }}
         >
-            <Stack alignItems='start' width={{ xs: 1 }} color={color}>
-                <Typography variant='subtitle2' color='text.secondary' sx={{ mb: -0.5 }}>
+            <Stack
+                sx={{
+                    alignItems: 'start',
+                    width: { xs: 1 },
+                    color: color,
+                }}
+            >
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: -0.5,
+                    }}
+                >
                     {title}
                 </Typography>
                 <ScoreboardProgress
@@ -91,13 +106,28 @@ function ClassicalGamesProgressBar({
     return (
         <Grid
             size={{ xs: 12 }}
-            display='flex'
-            justifyContent={{
-                xs: 'start',
+            sx={{
+                display: 'flex',
+
+                justifyContent: {
+                    xs: 'start',
+                },
             }}
         >
-            <Stack alignItems='start' width={{ xs: 1 }} color={color}>
-                <Typography variant='subtitle2' color='text.secondary' sx={{ mb: -0.5 }}>
+            <Stack
+                sx={{
+                    alignItems: 'start',
+                    width: { xs: 1 },
+                    color: color,
+                }}
+            >
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: -0.5,
+                    }}
+                >
                     <CrossedSwordIcon
                         sx={{ fontSize: 'inherit', position: 'relative', top: '2px' }}
                     />{' '}
@@ -157,16 +187,35 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
             <CardContent>
-                <Grid container rowGap={2} columnSpacing={3} alignItems='center'>
+                <Grid
+                    container
+                    columnSpacing={3}
+                    sx={{
+                        rowGap: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     {showRatingProgress && (
                         <Grid size={12}>
-                            <Stack width={1}>
-                                <Stack direction='row' alignItems='center' gap={0.5}>
+                            <Stack
+                                sx={{
+                                    width: 1,
+                                }}
+                            >
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                    }}
+                                >
                                     <RatingSystemIcon system={user.ratingSystem} size='small' />
                                     <Typography
                                         variant='body2'
-                                        color='text.secondary'
-                                        sx={{ fontWeight: 'bold' }}
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontWeight: 'bold',
+                                        }}
                                     >
                                         {formatRatingSystem(user.ratingSystem, tRating)}
                                         {isCustom(user.ratingSystem) &&
@@ -175,7 +224,13 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                                     </Typography>
                                 </Stack>
 
-                                <Stack direction='row' alignItems='center' gap={0.5}>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                    }}
+                                >
                                     <ScoreboardProgress
                                         value={currentRating}
                                         min={minRatingBoundary}

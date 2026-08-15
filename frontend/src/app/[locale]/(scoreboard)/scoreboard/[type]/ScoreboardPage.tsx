@@ -102,7 +102,12 @@ function AuthScoreboardPage({ user, type }: { user: User; type?: string }) {
             <RequestSnackbar request={dataRequest} />
 
             {isFreeTier && (
-                <Stack alignItems='center' mb={3}>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                        mb: 3,
+                    }}
+                >
                     <UpsellAlert>{t('freeTierMessage')}</UpsellAlert>
                 </Stack>
             )}

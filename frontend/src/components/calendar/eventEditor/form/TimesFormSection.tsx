@@ -14,7 +14,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { Frequency, RRule } from 'rrule';
@@ -82,7 +82,12 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
 
     return (
         <Stack>
-            <Stack direction='row' alignItems='baseline'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'baseline',
+                }}
+            >
                 <DateTimePicker
                     value={start}
                     onChange={(value) => setStart(value)}
@@ -147,9 +152,11 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
 
                                 <Stack
                                     direction='row'
-                                    columnGap={1.5}
-                                    alignItems='center'
-                                    ml={-1.375}
+                                    sx={{
+                                        columnGap: 1.5,
+                                        alignItems: 'center',
+                                        ml: -1.375,
+                                    }}
                                 >
                                     <FormControlLabel
                                         value={RRuleEnds.Until}
@@ -181,9 +188,11 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
 
                                 <Stack
                                     direction='row'
-                                    columnGap={1.5}
-                                    alignItems='center'
-                                    ml={-1.375}
+                                    sx={{
+                                        columnGap: 1.5,
+                                        alignItems: 'center',
+                                        ml: -1.375,
+                                    }}
                                 >
                                     <FormControlLabel
                                         value={RRuleEnds.Count}

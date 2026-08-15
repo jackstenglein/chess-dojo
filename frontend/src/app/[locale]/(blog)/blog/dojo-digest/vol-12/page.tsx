@@ -24,12 +24,25 @@ export default function DojoDigestVol12() {
                 imageCaption='In this example, the user has created a White folder, which contains an e4 folder and two games.'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>Dojo File System</strong> - The Dojo has a new file system to help you
                     organize and manage your games! A new{' '}
                     <Link href='https://www.chessdojo.club/profile?view=games&utm_source=newsletter&utm_medium=email&utm_campaign=digest12'>
@@ -39,7 +52,11 @@ export default function DojoDigestVol12() {
                     where you can add games or nested folders.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Here are some of the important features of our file system:
                 </Typography>
                 <ul>
@@ -78,7 +95,11 @@ export default function DojoDigestVol12() {
                     </li>
                 </ul>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Dojo Arenas</strong> - Way back at the beginning of the Dojo, the
                     senseis hosted a Twitch show called Friday Night Fights, where they commentated
                     live viewer games. IM David Pruess is now reinstating that tradition, along with
@@ -92,7 +113,11 @@ export default function DojoDigestVol12() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Time to Do What</strong> - Sensei Kraai is almost done with a new
                     Chessable course featuring forty training positions from Dojo games in the
                     1000-1500 range, covering the most common opportunity at this level: your
@@ -100,18 +125,31 @@ export default function DojoDigestVol12() {
                     ist die Seele des Schaches (Time is the Soul of Chess)" – Siegbert Tarrasch
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or competitive club team?
                     Let us know! We’d like to bring your teammates to the Dojo and give you a
                     customized scoreboard. We believe the Dojo is the place for teams to track their
                     progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/90957cf2-7e8c-43a7-a4f3-f063f24e3781?utm_source=newsletter&utm_medium=email&utm_campaign=digest12'>
                         LifeCanBeSoNice
                     </Link>{' '}
@@ -123,7 +161,11 @@ export default function DojoDigestVol12() {
                     or on <Link href='https://www.youtube.com/watch?v=zuwepG2s5bM'>YouTube</Link>.
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_116965833709584043772?utm_source=newsletter&utm_medium=email&utm_campaign=digest12'>
                         Thorbiddles
                     </Link>{' '}
@@ -131,7 +173,11 @@ export default function DojoDigestVol12() {
                     2400! Next goal is 2000 USCF!
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/ed6d3ae0-2f6a-45d5-b986-94af72abe537?utm_source=newsletter&utm_medium=email&utm_campaign=digest12'>
                         Minh (Dial)
                     </Link>{' '}

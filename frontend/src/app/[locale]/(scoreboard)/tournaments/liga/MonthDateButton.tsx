@@ -1,7 +1,7 @@
 import NavigateBeforeRoundedIcon from '@mui/icons-material/NavigateBeforeRounded';
 import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
 import { Button, IconButton, IconButtonProps, Popover, Stack } from '@mui/material';
-import { DateCalendar } from '@mui/x-date-pickers';
+import { DateCalendar } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { MouseEvent, useState } from 'react';
@@ -68,7 +68,12 @@ const MonthDateButton = ({ selectedDate, onChange }: MonthDateButtonProps) => {
     };
 
     return (
-        <Stack direction='row' alignItems='center'>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <LocaleArrow
                 type='prev'
                 onClick={handlePrev}

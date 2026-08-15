@@ -57,7 +57,14 @@ const Header: React.FC<HeaderProps> = ({ fen, follower, minCohort, maxCohort, se
     };
 
     return (
-        <Stack direction='row' spacing={1} alignItems='center' mb={1}>
+        <Stack
+            direction='row'
+            spacing={1}
+            sx={{
+                alignItems: 'center',
+                mb: 1,
+            }}
+        >
             <TextField
                 size='small'
                 disabled
@@ -71,7 +78,12 @@ const Header: React.FC<HeaderProps> = ({ fen, follower, minCohort, maxCohort, se
                     },
                 }}
             />
-            <Stack direction='row' alignItems='center'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Tooltip title={t('copyFenTooltip')}>
                     <IconButton onClick={onCopy}>
                         {copied === 'fen' ? (
@@ -251,7 +263,13 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                                 />
                             }
                             label={
-                                <Stack direction='row' spacing={1} alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography>{t('enabledLabel')}</Typography>
                                     <Tooltip title={t('dojoEnabledTooltip')}>
                                         <HelpIcon
@@ -274,7 +292,13 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                                 />
                             }
                             label={
-                                <Stack direction='row' spacing={1} alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography>{t('ignoreVariationsLabel')}</Typography>
                                     <Tooltip title={t('ignoreVariationsTooltip')}>
                                         <HelpIcon
@@ -337,7 +361,13 @@ export const FollowDialog: React.FC<FollowDialogProps> = ({
                         />
                     }
                     label={
-                        <Stack direction='row' spacing={1} alignItems='center'>
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography>{t('enabledLabel')}</Typography>
                             <Tooltip title={t('mastersEnabledTooltip')}>
                                 <HelpIcon fontSize='small' sx={{ color: 'text.secondary' }} />

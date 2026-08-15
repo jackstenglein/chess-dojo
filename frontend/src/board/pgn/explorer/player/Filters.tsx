@@ -276,7 +276,12 @@ export function Filters({ filters }: { filters: EditableGameFilters }) {
     const t = useTranslations('analysisBoard.explorer.player');
     const range = `${filters.plyCount[0] / 2}${filters.plyCount[1] === MAX_PLY_COUNT ? '+' : ` - ${filters.plyCount[1] / 2}`}`;
     return (
-        <Stack spacing={2} mt={2}>
+        <Stack
+            spacing={2}
+            sx={{
+                mt: 2,
+            }}
+        >
             <FormControl>
                 <FormLabel>{t('colorLabel')}</FormLabel>
                 <RadioGroup

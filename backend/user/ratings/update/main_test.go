@@ -36,7 +36,8 @@ func TestUpdateRating_SkipsAtNotFoundThreshold(t *testing.T) {
 	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1200}}
 	rating := &database.Rating{Username: "gone", NotFoundCount: 3}
 
-	if updateRating(rating, database.Chesscom, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Chesscom, fetcher.fetch)
+	if changed {
 		t.Error("expected no update for suppressed rating")
 	}
 	if fetcher.calls != 0 {
@@ -48,7 +49,8 @@ func TestUpdateRating_IncrementsOnNotFound(t *testing.T) {
 	fetcher := &fakeFetcher{err: notFoundErr()}
 	rating := &database.Rating{Username: "gone", NotFoundCount: 1, CurrentRating: 900}
 
-	if !updateRating(rating, database.Chesscom, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Chesscom, fetcher.fetch)
+	if !changed {
 		t.Error("expected update=true so the increment persists")
 	}
 	if rating.NotFoundCount != 2 {
@@ -63,7 +65,8 @@ func TestUpdateRating_ResetsCounterOnSuccess(t *testing.T) {
 	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 900}}
 	rating := &database.Rating{Username: "back", NotFoundCount: 2, CurrentRating: 900, StartRating: 800}
 
-	if !updateRating(rating, database.Chesscom, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Chesscom, fetcher.fetch)
+	if !changed {
 		t.Error("expected update=true so the reset persists even with unchanged rating")
 	}
 	if rating.NotFoundCount != 0 {
@@ -75,7 +78,8 @@ func TestUpdateRating_OtherErrorLeavesCounter(t *testing.T) {
 	fetcher := &fakeFetcher{err: errors.New(500, "Temporary server error", "")}
 	rating := &database.Rating{Username: "flaky", NotFoundCount: 1}
 
-	if updateRating(rating, database.Chesscom, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Chesscom, fetcher.fetch)
+	if changed {
 		t.Error("expected no update on transient error")
 	}
 	if rating.NotFoundCount != 1 {
@@ -87,7 +91,8 @@ func TestUpdateRating_UntrackedSystemIgnoresNotFound(t *testing.T) {
 	fetcher := &fakeFetcher{err: notFoundErr()}
 	rating := &database.Rating{Username: "12345", NotFoundCount: 0}
 
-	if updateRating(rating, database.Uscf, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Uscf, fetcher.fetch)
+	if changed {
 		t.Error("expected no update for untracked system")
 	}
 	if rating.NotFoundCount != 0 {
@@ -99,7 +104,7 @@ func TestUpdateRating_UntrackedSystemNeverSkips(t *testing.T) {
 	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 2000}}
 	rating := &database.Rating{Username: "12345", NotFoundCount: 5}
 
-	updateRating(rating, database.Fide, fetcher.fetch)
+	_, _ = updateRating(rating, database.Fide, fetcher.fetch)
 	if fetcher.calls != 1 {
 		t.Errorf("expected FIDE fetch despite NotFoundCount, got %d calls", fetcher.calls)
 	}
@@ -109,7 +114,8 @@ func TestUpdateRating_ChangeDetectionStillWorks(t *testing.T) {
 	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1100, NumGames: 20}}
 	rating := &database.Rating{Username: "player", CurrentRating: 1000, StartRating: 950, NumGames: 15}
 
-	if !updateRating(rating, database.Chesscom, fetcher.fetch) {
+	changed, _ := updateRating(rating, database.Chesscom, fetcher.fetch)
+	if !changed {
 		t.Error("expected update for changed rating")
 	}
 	if rating.CurrentRating != 1100 || rating.NumGames != 20 {
@@ -137,12 +143,133 @@ func TestUpdateUser_EmptyHistorySliceDoesNotPanic(t *testing.T) {
 		},
 	}
 
-	if !updateUser(user, fetchFuncs, func(string) bool { return false }) {
+	if !updateUser(user, fetchFuncs, func(string) bool { return false }, true, newMonthlyStats(nil, nil)) {
 		t.Error("expected update from history append")
 	}
 	history := user.RatingHistories[database.Chesscom]
 	if len(history) != 1 || history[0].Rating != 1000 {
 		t.Errorf("expected one history entry with rating 1000, got %v", history)
+	}
+}
+
+func fideUser(name string) *database.User {
+	return &database.User{
+		Username: name,
+		Ratings: map[database.RatingSystem]*database.Rating{
+			database.Fide: {Username: name, CurrentRating: 1500, StartRating: 1400},
+		},
+	}
+}
+
+func TestUpdateUser_SkipsMonthlySystemsWhenNotIncluded(t *testing.T) {
+	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1600}}
+	user := fideUser("a")
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Fide: fetcher.fetch}
+
+	if updateUser(user, fetchFuncs, func(string) bool { return false }, false, newMonthlyStats(nil, nil)) {
+		t.Error("expected no update when monthly systems are skipped")
+	}
+	if fetcher.calls != 0 {
+		t.Errorf("expected no FIDE fetch, got %d calls", fetcher.calls)
+	}
+	if user.Ratings[database.Fide].CurrentRating != 1500 {
+		t.Error("stored rating must be untouched")
+	}
+}
+
+func TestUpdateUser_FetchesMonthlySystemsWhenIncluded(t *testing.T) {
+	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1600}}
+	user := fideUser("a")
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Fide: fetcher.fetch}
+	stats := newMonthlyStats(nil, nil)
+
+	if !updateUser(user, fetchFuncs, func(string) bool { return false }, true, stats) {
+		t.Error("expected update from changed FIDE rating")
+	}
+	if fetcher.calls != 1 {
+		t.Errorf("expected 1 FIDE fetch, got %d", fetcher.calls)
+	}
+	if stats.Attempts[database.Fide] != 1 || stats.Failures[database.Fide] != 0 {
+		t.Errorf("expected attempts=1 failures=0, got %+v", stats)
+	}
+}
+
+func TestUpdateUser_DailySystemsUnaffectedByGate(t *testing.T) {
+	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1600}}
+	user := chesscomUser("a", 0)
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Chesscom: fetcher.fetch}
+
+	if !updateUser(user, fetchFuncs, func(string) bool { return false }, false, newMonthlyStats(nil, nil)) {
+		t.Error("expected chess.com update even when monthly systems are skipped")
+	}
+	if fetcher.calls != 1 {
+		t.Errorf("expected 1 chess.com fetch, got %d", fetcher.calls)
+	}
+}
+
+func TestUpdateUser_MonthlyFailureIsCounted(t *testing.T) {
+	fetcher := &fakeFetcher{err: errors.New(500, "Temporary server error", "USCF down")}
+	user := &database.User{
+		Username: "a",
+		Ratings: map[database.RatingSystem]*database.Rating{
+			database.Uscf: {Username: "12345", CurrentRating: 1500},
+		},
+	}
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Uscf: fetcher.fetch}
+	stats := newMonthlyStats(nil, nil)
+
+	updateUser(user, fetchFuncs, func(string) bool { return false }, true, stats)
+	if stats.Attempts[database.Uscf] != 1 || stats.Failures[database.Uscf] != 1 {
+		t.Errorf("expected attempts=1 failures=1, got %+v", stats)
+	}
+}
+
+func TestUpdateUser_MonthlyNotFoundNotCountedAsFailure(t *testing.T) {
+	fetcher := &fakeFetcher{err: errors.New(404, "Invalid request: USCF member does not have a regular rating", "")}
+	user := &database.User{
+		Username: "a",
+		Ratings: map[database.RatingSystem]*database.Rating{
+			database.Uscf: {Username: "12345", CurrentRating: 1500},
+		},
+	}
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Uscf: fetcher.fetch}
+	stats := newMonthlyStats(nil, nil)
+
+	updateUser(user, fetchFuncs, func(string) bool { return false }, true, stats)
+	if stats.Attempts[database.Uscf] != 1 || stats.Failures[database.Uscf] != 0 {
+		t.Errorf("404 must count as attempt but not failure, got %+v", stats)
+	}
+}
+
+func TestUpdateUser_EmptyUsernameNotCounted(t *testing.T) {
+	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1600}}
+	user := &database.User{
+		Username: "a",
+		Ratings: map[database.RatingSystem]*database.Rating{
+			database.Fide: {Username: "   "},
+		},
+	}
+	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Fide: fetcher.fetch}
+	stats := newMonthlyStats(nil, nil)
+
+	updateUser(user, fetchFuncs, func(string) bool { return false }, true, stats)
+	if stats.Attempts[database.Fide] != 0 {
+		t.Errorf("empty username must not count as attempt, got %+v", stats)
+	}
+}
+
+func TestUpdateUser_MondayHistoryAppendsForSkippedMonthlySystem(t *testing.T) {
+	origNow := now
+	t.Cleanup(func() { now = origNow })
+	now = time.Date(2026, 1, 5, 0, 0, 0, 0, time.UTC) // a Monday
+
+	user := fideUser("a")
+	if !updateUser(user, map[database.RatingSystem]ratings.RatingFetchFunc{}, func(string) bool { return false }, false, newMonthlyStats(nil, nil)) {
+		t.Error("expected update from history append")
+	}
+	history := user.RatingHistories[database.Fide]
+	if len(history) != 1 || history[0].Rating != 1500 {
+		t.Errorf("expected history entry with stored rating 1500, got %v", history)
 	}
 }
 
@@ -193,8 +320,10 @@ func setupHandler(t *testing.T, repo *fakeRepo, inv *fakeInvoker, remaining ...t
 	t.Helper()
 
 	origRepo, origInvoker, origRemaining, origBulk, origChesscom := repository, invoker, remainingTime, fetchBulkLichess, fetchChesscom
+	origTimeNow, origBase := timeNow, baseFetchFuncs
 	t.Cleanup(func() {
 		repository, invoker, remainingTime, fetchBulkLichess, fetchChesscom = origRepo, origInvoker, origRemaining, origBulk, origChesscom
+		timeNow, baseFetchFuncs = origTimeNow, origBase
 	})
 
 	repository = repo
@@ -205,6 +334,8 @@ func setupHandler(t *testing.T, repo *fakeRepo, inv *fakeInvoker, remaining ...t
 	fetchChesscom = func(username string) (*database.Rating, error) {
 		return &database.Rating{CurrentRating: 1500, Deviation: 50, NumGames: 1}, nil
 	}
+	timeNow = func() time.Time { return time.Date(2026, 1, 6, 0, 0, 0, 0, time.UTC) } // Tuesday the 6th: not Monday, not day 2
+	baseFetchFuncs = map[database.RatingSystem]ratings.RatingFetchFunc{}
 	calls := 0
 	remainingTime = func(ctx context.Context) time.Duration {
 		i := calls
@@ -506,7 +637,7 @@ func TestUpdateUsers_LichessBulkFailureDoesNotIncrement(t *testing.T) {
 			database.Lichess: {Username: "a", NotFoundCount: 1},
 		},
 	}
-	_, completed, err := updateUsers("1000-1100", []*database.User{user}, func() bool { return false })
+	_, completed, err := updateUsers("1000-1100", []*database.User{user}, func() bool { return false }, false, newMonthlyStats(nil, nil))
 	if err != nil || !completed {
 		t.Fatalf("expected clean completion, got completed=%v err=%v", completed, err)
 	}
@@ -540,7 +671,7 @@ func TestUpdateUsers_LichessMissingFromSuccessfulBulkIncrements(t *testing.T) {
 			database.Lichess: {Username: "suppressed", NotFoundCount: 3},
 		},
 	}
-	_, completed, err := updateUsers("1000-1100", []*database.User{missing, suppressed}, func() bool { return false })
+	_, completed, err := updateUsers("1000-1100", []*database.User{missing, suppressed}, func() bool { return false }, false, newMonthlyStats(nil, nil))
 	if err != nil || !completed {
 		t.Fatalf("expected clean completion, got completed=%v err=%v", completed, err)
 	}
@@ -549,5 +680,168 @@ func TestUpdateUsers_LichessMissingFromSuccessfulBulkIncrements(t *testing.T) {
 	}
 	if len(requested) != 1 || requested[0] != "missing" {
 		t.Errorf("suppressed user must be excluded from bulk list, got %v", requested)
+	}
+}
+
+func TestMonthlyStats_ThresholdError(t *testing.T) {
+	cases := []struct {
+		name      string
+		attempts  int
+		failures  int
+		wantError bool
+	}{
+		{"no failures", 100, 0, false},
+		{"below min users", 20, 9, false},
+		{"min users but low rate", 100, 20, false},
+		{"exactly 25 percent is not over", 40, 10, false},
+		{"over threshold", 30, 10, true},
+		{"total outage", 12, 12, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			stats := newMonthlyStats(
+				map[database.RatingSystem]int{database.Uscf: tc.attempts},
+				map[database.RatingSystem]int{database.Uscf: tc.failures},
+			)
+			err := stats.thresholdError()
+			if (err != nil) != tc.wantError {
+				t.Errorf("attempts=%d failures=%d: got err=%v, wantError=%v", tc.attempts, tc.failures, err, tc.wantError)
+			}
+		})
+	}
+}
+
+func failingFideFuncs() map[database.RatingSystem]ratings.RatingFetchFunc {
+	return map[database.RatingSystem]ratings.RatingFetchFunc{
+		database.Fide: func(username string) (*database.Rating, error) {
+			return nil, errors.New(500, "Temporary server error", "FIDE table empty")
+		},
+	}
+}
+
+func fideUsers(n int) []*database.User {
+	users := make([]*database.User, 0, n)
+	for i := 0; i < n; i++ {
+		users = append(users, fideUser(fmt.Sprintf("user%02d", i)))
+	}
+	return users
+}
+
+func TestHandler_ForceMonthlyFetchesAndReturnsThresholdError(t *testing.T) {
+	repo := &fakeRepo{pages: map[string]page{"": {users: fideUsers(12)}}}
+	inv := &fakeInvoker{}
+	setupHandler(t, repo, inv, time.Hour)
+	baseFetchFuncs = failingFideFuncs()
+
+	_, err := Handler(context.Background(), scheduledEvent(t, RatingUpdateRequest{
+		Cohorts:      []database.DojoCohort{"1000-1100"},
+		ForceMonthly: true,
+	}))
+	if err == nil {
+		t.Fatal("expected threshold error: 12/12 FIDE fetches failed")
+	}
+	if len(inv.inputs) != 0 {
+		t.Error("threshold error must not spawn a continuation")
+	}
+}
+
+func TestHandler_NoThresholdErrorWithoutMonthly(t *testing.T) {
+	repo := &fakeRepo{pages: map[string]page{"": {users: fideUsers(12)}}}
+	inv := &fakeInvoker{}
+	setupHandler(t, repo, inv, time.Hour)
+	fideCalls := 0
+	baseFetchFuncs = map[database.RatingSystem]ratings.RatingFetchFunc{
+		database.Fide: func(username string) (*database.Rating, error) {
+			fideCalls++
+			return nil, errors.New(500, "Temporary server error", "should not be called")
+		},
+	}
+
+	_, err := Handler(context.Background(), scheduledEvent(t, RatingUpdateRequest{Cohorts: []database.DojoCohort{"1000-1100"}}))
+	if err != nil {
+		t.Fatalf("expected success on a non-monthly day, got %v", err)
+	}
+	if fideCalls != 0 {
+		t.Errorf("expected no FIDE fetches on a non-monthly day, got %d", fideCalls)
+	}
+}
+
+func TestHandler_Day2EnablesMonthly(t *testing.T) {
+	repo := &fakeRepo{pages: map[string]page{"": {users: fideUsers(1)}}}
+	inv := &fakeInvoker{}
+	setupHandler(t, repo, inv, time.Hour)
+	timeNow = func() time.Time { return time.Date(2026, 6, 2, 0, 0, 0, 0, time.UTC) } // Tuesday the 2nd
+	fideCalls := 0
+	baseFetchFuncs = map[database.RatingSystem]ratings.RatingFetchFunc{
+		database.Fide: func(username string) (*database.Rating, error) {
+			fideCalls++
+			return &database.Rating{CurrentRating: 1500}, nil
+		},
+	}
+
+	if _, err := Handler(context.Background(), scheduledEvent(t, RatingUpdateRequest{Cohorts: []database.DojoCohort{"1000-1100"}})); err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if fideCalls != 1 {
+		t.Errorf("expected 1 FIDE fetch on day 2, got %d", fideCalls)
+	}
+}
+
+func TestHandler_ContinuationCarriesMonthlyStateWithoutError(t *testing.T) {
+	repo := &fakeRepo{pages: map[string]page{
+		"":     {users: fideUsers(12), nextKey: "key2"},
+		"key2": {users: []*database.User{fideUser("last")}},
+	}}
+	inv := &fakeInvoker{}
+	// Plenty of time for all 12 users of chunk 1, out of time between chunks.
+	remaining := make([]time.Duration, 0, 14)
+	for i := 0; i < 12; i++ {
+		remaining = append(remaining, time.Hour)
+	}
+	remaining = append(remaining, time.Minute)
+	setupHandler(t, repo, inv, remaining...)
+	baseFetchFuncs = failingFideFuncs()
+
+	_, err := Handler(context.Background(), scheduledEvent(t, RatingUpdateRequest{
+		Cohorts:      []database.DojoCohort{"1000-1100"},
+		ForceMonthly: true,
+	}))
+	if err != nil {
+		t.Fatalf("continuation invocations must not return threshold errors, got %v", err)
+	}
+	if len(inv.inputs) != 1 {
+		t.Fatalf("expected one continuation, got %d", len(inv.inputs))
+	}
+	var cont events.CloudWatchEvent
+	if err := json.Unmarshal(inv.inputs[0].Payload, &cont); err != nil {
+		t.Fatal(err)
+	}
+	var req RatingUpdateRequest
+	if err := json.Unmarshal(cont.Detail, &req); err != nil {
+		t.Fatal(err)
+	}
+	if !req.ForceMonthly {
+		t.Error("continuation must carry ForceMonthly")
+	}
+	if req.MonthlyAttempts[database.Fide] != 12 || req.MonthlyFailures[database.Fide] != 12 {
+		t.Errorf("continuation must carry cumulative counts, got %+v", req)
+	}
+}
+
+func TestHandler_CumulativeCountsFromRequestFeedThreshold(t *testing.T) {
+	repo := &fakeRepo{pages: map[string]page{"": {users: []*database.User{fideUser("last")}}}}
+	inv := &fakeInvoker{}
+	setupHandler(t, repo, inv, time.Hour)
+	baseFetchFuncs = failingFideFuncs()
+
+	_, err := Handler(context.Background(), scheduledEvent(t, RatingUpdateRequest{
+		Cohorts:           []database.DojoCohort{"1000-1100"},
+		ForceMonthly:      true,
+		ContinuationCount: 1,
+		MonthlyAttempts:   map[database.RatingSystem]int{database.Fide: 11},
+		MonthlyFailures:   map[database.RatingSystem]int{database.Fide: 11},
+	}))
+	if err == nil {
+		t.Fatal("expected threshold error from cumulative 12/12 failures")
 	}
 }

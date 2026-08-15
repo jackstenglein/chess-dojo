@@ -87,6 +87,11 @@ export function FullTrainingPlanSection({
     const tCategory = useTranslations('enums.requirementCategory');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
+    const preventCategoryTranslation =
+        section.category === RequirementCategory.Opening ||
+        section.category === RequirementCategory.Middlegames ||
+        section.category === RequirementCategory.Endgame ||
+        section.category === RequirementCategory.Graduation;
 
     const hiddenTaskCount = useMemo(() => {
         if (!isFreeTier) {
@@ -110,14 +115,21 @@ export function FullTrainingPlanSection({
             >
                 <Grid
                     container
-                    width={1}
-                    alignItems='center'
-                    justifyContent='space-between'
-                    sx={{ mr: 2 }}
-                    columnGap={3}
+                    sx={{
+                        width: 1,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        columnGap: 3,
+                        mr: 2,
+                    }}
                 >
                     <Grid size={{ xs: 'auto', sm: 5.5, lg: 5, xl: 3 }}>
-                        <Typography fontWeight='bold' sx={{ whiteSpace: 'nowrap' }}>
+                        <Typography
+                            sx={{
+                                fontWeight: 'bold',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
                             <TrainingPlanIcon
                                 category={section.category}
                                 sx={{
@@ -126,16 +138,23 @@ export function FullTrainingPlanSection({
                                     verticalAlign: 'middle',
                                 }}
                             />
-                            {tCategory.has(section.category)
-                                ? tCategory(section.category)
-                                : section.category}
+                            <span
+                                translate={preventCategoryTranslation ? 'no' : undefined}
+                                className={preventCategoryTranslation ? 'notranslate' : undefined}
+                            >
+                                {tCategory.has(section.category)
+                                    ? tCategory(section.category)
+                                    : section.category}
+                            </span>
                         </Typography>
                     </Grid>
 
                     <Grid
                         size={{ xs: 0, sm: 'grow' }}
-                        color={section.color}
-                        sx={{ display: { xs: 'none', sm: 'initial' } }}
+                        sx={{
+                            color: section.color,
+                            display: { xs: 'none', sm: 'initial' },
+                        }}
                     >
                         {section.progressBar !== undefined && (
                             <ScoreboardProgress
@@ -176,12 +195,22 @@ export function FullTrainingPlanSection({
                 {section.completedTasks.length > 0 &&
                     (showCompleted ? (
                         <>
-                            <Stack direction='row' alignItems='center' sx={{ mt: 6, mb: 1 }}>
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    mt: 6,
+                                    mb: 1,
+                                }}
+                            >
                                 <Checklist color='primary' />
                                 <Typography
                                     variant='body1'
-                                    fontWeight={700}
-                                    sx={{ ml: 1, flexGrow: 1 }}
+                                    sx={{
+                                        fontWeight: 700,
+                                        ml: 1,
+                                        flexGrow: 1,
+                                    }}
                                 >
                                     {t('completedTasks')}
                                 </Typography>
@@ -223,7 +252,13 @@ export function FullTrainingPlanSection({
                 {isFreeTier &&
                     section.category !== RequirementCategory.NonDojo &&
                     hiddenTaskCount > 0 && (
-                        <Stack mt={2} spacing={2} alignItems='center'>
+                        <Stack
+                            spacing={2}
+                            sx={{
+                                mt: 2,
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography>{t('unlockTasks', { count: hiddenTaskCount })}</Typography>
                             <Button variant='outlined' href='/prices'>
                                 {t('viewPrices')}

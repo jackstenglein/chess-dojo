@@ -36,13 +36,18 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ user }) => {
     const paymentInfo = user.paymentInfo;
 
     return (
-        <Stack spacing={2} alignItems='start'>
+        <Stack
+            spacing={2}
+            sx={{
+                alignItems: 'start',
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <Stack
                 id='subscription'
-                width={1}
                 sx={{
+                    width: 1,
                     scrollMarginTop: 'calc(var(--navbar-height) + 8px)',
                 }}
             >

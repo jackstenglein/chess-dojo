@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -24,10 +25,14 @@ import (
 type Event events.CloudWatchEvent
 
 const (
-	chunkSize        = 50
-	flushSize        = 25
-	maxContinuations = 10
-	maxNotFoundCount = 3
+	chunkSize              = 50
+	flushSize              = 25
+	maxContinuations       = 10
+	maxNotFoundCount       = 3
+	monthlyFailureMinUsers = 10
+	// monthlyUpdateDay is the day of month on which monthly rating systems are
+	// fetched: the day after downloadFideRatings refreshes the FIDE table.
+	monthlyUpdateDay = 2
 	// checkpointBuffer is the remaining-time threshold below which the
 	// handler stops and re-invokes itself. Chosen together with the 700s
 	// UpdateRatingsTimeoutAlarm: normal runs end around 600s elapsed plus
@@ -48,6 +53,18 @@ var repository ratingsRepository = database.DynamoDB
 var invoker lambdaInvoker = lambdasvc.New(session.Must(session.NewSession()))
 var fetchBulkLichess = ratings.FetchBulkLichessRatings
 var fetchChesscom ratings.RatingFetchFunc = ratings.FetchChesscomRatingWithRetry
+var timeNow = time.Now
+var baseFetchFuncs = ratings.RatingFetchFuncs
+
+// monthlySystems only publish new ratings monthly (or slower) and are
+// fetched on monthlyUpdateDay instead of daily.
+var monthlySystems = map[database.RatingSystem]bool{
+	database.Fide: true,
+	database.Uscf: true,
+	database.Ecf:  true,
+	database.Knsb: true,
+	database.Acf:  true,
+}
 
 var remainingTime = func(ctx context.Context) time.Duration {
 	deadline, ok := ctx.Deadline()
@@ -64,9 +81,68 @@ var now = time.Now()
 type isBannedFunc func(username string) bool
 
 type RatingUpdateRequest struct {
-	Cohorts           []database.DojoCohort `json:"cohorts"`
-	StartKey          string                `json:"startKey,omitempty"`
-	ContinuationCount int                   `json:"continuationCount,omitempty"`
+	Cohorts           []database.DojoCohort         `json:"cohorts"`
+	StartKey          string                        `json:"startKey,omitempty"`
+	ContinuationCount int                           `json:"continuationCount,omitempty"`
+	ForceMonthly      bool                          `json:"forceMonthly,omitempty"`
+	MonthlyAttempts   map[database.RatingSystem]int `json:"monthlyAttempts,omitempty"`
+	MonthlyFailures   map[database.RatingSystem]int `json:"monthlyFailures,omitempty"`
+}
+
+// monthlyStats accumulates fetch attempts/failures per monthly system so the
+// handler can alarm on systemic outages that are otherwise only logged.
+type monthlyStats struct {
+	Attempts map[database.RatingSystem]int
+	Failures map[database.RatingSystem]int
+}
+
+func newMonthlyStats(attempts, failures map[database.RatingSystem]int) *monthlyStats {
+	s := &monthlyStats{
+		Attempts: map[database.RatingSystem]int{},
+		Failures: map[database.RatingSystem]int{},
+	}
+	for system, n := range attempts {
+		s.Attempts[system] = n
+	}
+	for system, n := range failures {
+		s.Failures[system] = n
+	}
+	return s
+}
+
+// record counts one fetch attempt. 404s do not count as failures: they
+// indicate a stale or invalid ID for one user (e.g. an expired USCF
+// membership), not a federation outage, and would otherwise accumulate as
+// permanent baseline noise toward the alarm threshold.
+func (s *monthlyStats) record(system database.RatingSystem, fetchErr error) {
+	s.Attempts[system]++
+	if fetchErr == nil {
+		return
+	}
+	var apiErr *errors.Error
+	if errors.As(fetchErr, &apiErr) && apiErr.Code == 404 {
+		return
+	}
+	s.Failures[system]++
+}
+
+// thresholdError reports systemic monthly-system outages. It must only be
+// called by the invocation that completes the request: returning an error
+// after scheduling a continuation would make the async retry spawn a
+// duplicate continuation chain.
+func (s *monthlyStats) thresholdError() error {
+	var failed []string
+	for system, failures := range s.Failures {
+		attempts := s.Attempts[system]
+		if failures >= monthlyFailureMinUsers && failures*4 > attempts {
+			failed = append(failed, fmt.Sprintf("%s (%d/%d failed)", system, failures, attempts))
+		}
+	}
+	if len(failed) == 0 {
+		return nil
+	}
+	sort.Strings(failed)
+	return errors.New(500, "Temporary server error", fmt.Sprintf("Monthly rating systems exceeded the failure threshold: %s", strings.Join(failed, ", ")))
 }
 
 // tracksNotFound reports whether not-found suppression applies to the system.
@@ -76,14 +152,14 @@ func tracksNotFound(system database.RatingSystem) bool {
 	return system == database.Chesscom || system == database.Lichess
 }
 
-func updateRating(rating *database.Rating, system database.RatingSystem, fetcher ratings.RatingFetchFunc) bool {
+func updateRating(rating *database.Rating, system database.RatingSystem, fetcher ratings.RatingFetchFunc) (bool, error) {
 	rating.Username = strings.TrimSpace(rating.Username)
 	if rating.Username == "" {
-		return false
+		return false, nil
 	}
 
 	if tracksNotFound(system) && rating.NotFoundCount >= maxNotFoundCount {
-		return false
+		return false, nil
 	}
 
 	data, err := fetcher(rating.Username)
@@ -91,10 +167,10 @@ func updateRating(rating *database.Rating, system database.RatingSystem, fetcher
 		if tracksNotFound(system) && errors.Is(err, ratings.ErrNotFound) {
 			rating.NotFoundCount++
 			log.Infof("%s username %q not found (count %d)", system, rating.Username, rating.NotFoundCount)
-			return true
+			return true, nil
 		}
 		log.Errorf("Failed to get %s rating for %q: %v", system, rating.Username, err)
-		return false
+		return false, err
 	}
 
 	shouldUpdate := rating.NotFoundCount != 0
@@ -113,15 +189,21 @@ func updateRating(rating *database.Rating, system database.RatingSystem, fetcher
 		shouldUpdate = true
 	}
 
-	return shouldUpdate
+	return shouldUpdate, nil
 }
 
-func updateUser(user *database.User, fetchFuncs map[database.RatingSystem]ratings.RatingFetchFunc, isBannedLichess isBannedFunc) bool {
+func updateUser(user *database.User, fetchFuncs map[database.RatingSystem]ratings.RatingFetchFunc, isBannedLichess isBannedFunc, includeMonthly bool, stats *monthlyStats) bool {
 	shouldUpdate := false
 
 	for system, rating := range user.Ratings {
 		if system != database.Custom && system != database.Custom2 && system != database.Custom3 {
-			shouldUpdate = updateRating(rating, system, fetchFuncs[system]) || shouldUpdate
+			if !monthlySystems[system] || includeMonthly {
+				changed, fetchErr := updateRating(rating, system, fetchFuncs[system])
+				shouldUpdate = changed || shouldUpdate
+				if monthlySystems[system] && rating.Username != "" {
+					stats.record(system, fetchErr)
+				}
+			}
 		}
 
 		if system == database.Lichess && isBannedLichess(rating.Username) {
@@ -187,8 +269,8 @@ func ratingFetchFuncs(lichessRatings map[string]ratings.LichessResponse, lichess
 		}, nil
 	}
 
-	funcs := make(map[database.RatingSystem]ratings.RatingFetchFunc, len(ratings.RatingFetchFuncs))
-	for system, fetch := range ratings.RatingFetchFuncs {
+	funcs := make(map[database.RatingSystem]ratings.RatingFetchFunc, len(baseFetchFuncs))
+	for system, fetch := range baseFetchFuncs {
 		funcs[system] = fetch
 	}
 	funcs[database.Chesscom] = fetchChesscom
@@ -227,7 +309,7 @@ func cursorForUser(cohort database.DojoCohort, user *database.User) string {
 // updateUsers processes users in order. It returns the cursor of the last
 // persisted user ("" if none), whether all users were processed, and any
 // write error. On a write error the checkpoint must not advance.
-func updateUsers(cohort database.DojoCohort, users []*database.User, outOfTime func() bool) (string, bool, error) {
+func updateUsers(cohort database.DojoCohort, users []*database.User, outOfTime func() bool, includeMonthly bool, stats *monthlyStats) (string, bool, error) {
 	if len(users) == 0 {
 		return "", true, nil
 	}
@@ -251,7 +333,7 @@ func updateUsers(cohort database.DojoCohort, users []*database.User, outOfTime f
 			return cursorForUser(cohort, users[i-1]), false, nil
 		}
 
-		if updateUser(user, fetchFuncs, isBannedLichess) {
+		if updateUser(user, fetchFuncs, isBannedLichess, includeMonthly, stats) {
 			queued = append(queued, user)
 			if len(queued) == flushSize {
 				if err := flush(queued); err != nil {
@@ -268,20 +350,15 @@ func updateUsers(cohort database.DojoCohort, users []*database.User, outOfTime f
 	return "", true, nil
 }
 
-// checkpoint asynchronously re-invokes this function to continue processing
-// from startKey. It fails loudly at the continuation cap.
-func checkpoint(event Event, cohorts []database.DojoCohort, startKey string, continuationCount int) error {
-	if continuationCount+1 > maxContinuations {
-		err := errors.New(500, "Temporary server error", fmt.Sprintf("updateRatings hit the continuation cap (%d) for cohorts %v without completing", maxContinuations, cohorts))
+// checkpoint asynchronously re-invokes this function with the given
+// continuation request. It fails loudly at the continuation cap.
+func checkpoint(event Event, req RatingUpdateRequest) error {
+	if req.ContinuationCount > maxContinuations {
+		err := errors.New(500, "Temporary server error", fmt.Sprintf("updateRatings hit the continuation cap (%d) for cohorts %v without completing", maxContinuations, req.Cohorts))
 		log.Error(err)
 		return err
 	}
 
-	req := RatingUpdateRequest{
-		Cohorts:           cohorts,
-		StartKey:          startKey,
-		ContinuationCount: continuationCount + 1,
-	}
 	detail, err := json.Marshal(req)
 	if err != nil {
 		return errors.Wrap(500, "Temporary server error", "Failed to marshal continuation request", err)
@@ -289,7 +366,7 @@ func checkpoint(event Event, cohorts []database.DojoCohort, startKey string, con
 
 	baseID := strings.Split(event.ID, "-cont")[0]
 	continuation := Event{
-		ID:         fmt.Sprintf("%s-cont%d", baseID, continuationCount+1),
+		ID:         fmt.Sprintf("%s-cont%d", baseID, req.ContinuationCount),
 		DetailType: event.DetailType,
 		Source:     event.Source,
 		Region:     event.Region,
@@ -312,14 +389,14 @@ func checkpoint(event Event, cohorts []database.DojoCohort, startKey string, con
 		return errors.New(500, "Temporary server error", fmt.Sprintf("Continuation invoke returned status %d", aws.Int64Value(output.StatusCode)))
 	}
 
-	log.Infof("Checkpointed: cohorts=%v startKey=%s continuation=%d", cohorts, startKey, continuationCount+1)
+	log.Infof("Checkpointed: cohorts=%v startKey=%s continuation=%d", req.Cohorts, req.StartKey, req.ContinuationCount)
 	return nil
 }
 
 func Handler(ctx context.Context, event Event) (Event, error) {
 	log.Infof("Event: %#v", event)
 	log.SetRequestId(event.ID)
-	now = time.Now()
+	now = timeNow()
 
 	var req RatingUpdateRequest
 	if err := json.Unmarshal(event.Detail, &req); err != nil {
@@ -329,6 +406,22 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 	log.Infof("Request: %+v", req)
 
 	outOfTime := func() bool { return remainingTime(ctx) < checkpointBuffer }
+	includeMonthly := now.Day() == monthlyUpdateDay || req.ForceMonthly
+	stats := newMonthlyStats(req.MonthlyAttempts, req.MonthlyFailures)
+
+	// continuation builds the checkpoint request, propagating the monthly
+	// state. ForceMonthly carries includeMonthly so a day-2 run that crosses
+	// midnight keeps fetching monthly systems in its continuations.
+	continuation := func(cohorts []database.DojoCohort, startKey string) RatingUpdateRequest {
+		return RatingUpdateRequest{
+			Cohorts:           cohorts,
+			StartKey:          startKey,
+			ContinuationCount: req.ContinuationCount + 1,
+			ForceMonthly:      includeMonthly,
+			MonthlyAttempts:   stats.Attempts,
+			MonthlyFailures:   stats.Failures,
+		}
+	}
 
 	for i, cohort := range req.Cohorts {
 		startKey := ""
@@ -343,7 +436,7 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 				return event, err
 			}
 
-			cursor, completed, err := updateUsers(cohort, users, outOfTime)
+			cursor, completed, err := updateUsers(cohort, users, outOfTime, includeMonthly, stats)
 			if err != nil {
 				return event, err
 			}
@@ -351,7 +444,7 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 				if cursor == "" {
 					cursor = startKey
 				}
-				return event, checkpoint(event, req.Cohorts[i:], cursor, req.ContinuationCount)
+				return event, checkpoint(event, continuation(req.Cohorts[i:], cursor))
 			}
 
 			log.Infof("Processed chunk: cohort=%s users=%d continuation=%d", cohort, len(users), req.ContinuationCount)
@@ -362,13 +455,13 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 			startKey = nextKey
 
 			if outOfTime() {
-				return event, checkpoint(event, req.Cohorts[i:], nextKey, req.ContinuationCount)
+				return event, checkpoint(event, continuation(req.Cohorts[i:], nextKey))
 			}
 		}
 		log.Infof("Cohort complete: cohort=%s continuation=%d", cohort, req.ContinuationCount)
 	}
 
-	return event, nil
+	return event, stats.thresholdError()
 }
 
 func main() {

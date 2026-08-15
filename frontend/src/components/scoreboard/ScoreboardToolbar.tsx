@@ -14,8 +14,12 @@ export function ScoreboardToolbar() {
         <GridToolbarContainer>
             <Typography
                 variant='caption'
-                color='text.secondary'
-                sx={{ ml: 0.5, mt: 0.5, flexGrow: 1 }}
+                sx={{
+                    color: 'text.secondary',
+                    ml: 0.5,
+                    mt: 0.5,
+                    flexGrow: 1,
+                }}
             >
                 {t('tip')}
             </Typography>

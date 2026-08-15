@@ -113,11 +113,13 @@ const AnnotationWarnings = () => {
 
                                 <Typography>{w.description}</Typography>
                                 <Stack
-                                    mt={0.5}
                                     direction='row'
                                     spacing={1}
-                                    alignItems='center'
-                                    flexWrap='wrap'
+                                    sx={{
+                                        mt: 0.5,
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                    }}
                                 >
                                     <Typography>
                                         {t('annotationWarningsApplicableMovesLabel')}

@@ -165,12 +165,28 @@ export const CreateClubPage = ({ id }: { id: string }) => {
         <Container sx={{ py: 4 }}>
             <RequestSnackbar request={saveRequest} />
             <Typography variant='h5'>{id ? t('editTitle') : t('createTitle')}</Typography>
-            <Stack spacing={3} mt={5}>
+            <Stack
+                spacing={3}
+                sx={{
+                    mt: 5,
+                }}
+            >
                 <Stack>
                     <FormLabel sx={{ mb: 1 }}>{t('logoLabel')}</FormLabel>
-                    <Stack direction='row' alignItems='center' spacing={3}>
+                    <Stack
+                        direction='row'
+                        spacing={3}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <ClubAvatar id={id} name={name} size={150} url={logoUrl} />
-                        <Stack spacing={2} alignItems='start'>
+                        <Stack
+                            spacing={2}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Button component='label' variant='outlined' startIcon={<Upload />}>
                                 {t('uploadPhoto')}
                                 <input

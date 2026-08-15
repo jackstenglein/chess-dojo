@@ -2,7 +2,7 @@ import { parsePgnDate, toPgnDate } from '@/api/gameApi';
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import { PgnDate } from '@jackstenglein/chess';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid-pro';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { TagRow } from './Tags';
 

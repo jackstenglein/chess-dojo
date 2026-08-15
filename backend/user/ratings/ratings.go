@@ -28,11 +28,17 @@ var chesscomHost = "https://api.chess.com"
 var lichessHost = "https://lichess.org"
 var sleepFunc = time.Sleep
 
+func ratingResponseErrorCode(status int) int {
+	if status == http.StatusNotFound {
+		return http.StatusNotFound
+	}
+	return http.StatusBadRequest
+}
+
 const chesscomUserAgent = "ChessDojo rating updater (https://www.chessdojo.club)"
 const maxChesscomAttempts = 3
 const maxRetryAfter = 10 * time.Second
 
-var fideRegexp, _ = regexp.Compile(`<p>(\d+)</p>\s*<p.*>STANDARD`)
 var acfRegexp, _ = regexp.Compile(`Current Rating:\s*</div>\s*<div id="stats-box-data-col">\s*[-\d]*\s*</div>\s*<div id="stats-box-data-col">\s*(\d+)`)
 
 type ChesscomResponse struct {
@@ -290,33 +296,6 @@ func findRating(body []byte, regex *regexp.Regexp) (int, error) {
 	return rating, nil
 }
 
-func FetchFideRating(fideId string) (*database.Rating, error) {
-	resp, err := client.Get(fmt.Sprintf("https://ratings.fide.com/profile/%s", fideId))
-	if err != nil {
-		err = errors.Wrap(500, "Temporary server error", "Failed to get Fide page", err)
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		err = errors.New(400, fmt.Sprintf("Invalid request: FIDE returned status `%d` for given ID", resp.StatusCode), "")
-		return nil, err
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		err = errors.Wrap(500, "Temporary server error", "Failed to read FIDE response", err)
-		return nil, err
-	}
-
-	rating, err := findRating(b, fideRegexp)
-	if err != nil {
-		log.Warnf("FIDE id %q: no rating found on website", fideId)
-		rating = 0
-	}
-	return &database.Rating{CurrentRating: rating}, nil
-}
-
 func FetchUscfRating(uscfId string) (*database.Rating, error) {
 	resp, err := client.Get(fmt.Sprintf("https://ratings-api.uschess.org/api/v1/members/%s", uscfId))
 	if err != nil {
@@ -325,7 +304,7 @@ func FetchUscfRating(uscfId string) (*database.Rating, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		err = errors.New(400, fmt.Sprintf("Invalid request: USCF returned status `%d` for given ID", resp.StatusCode), "")
+		err = errors.New(ratingResponseErrorCode(resp.StatusCode), fmt.Sprintf("Invalid request: USCF returned status `%d` for given ID", resp.StatusCode), "")
 		return nil, err
 	}
 
@@ -363,7 +342,7 @@ func FetchEcfRating(ecfId string) (*database.Rating, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		err = errors.New(400, fmt.Sprintf("Invalid request: ECF API returned status `%d`", resp.StatusCode), "")
+		err = errors.New(ratingResponseErrorCode(resp.StatusCode), fmt.Sprintf("Invalid request: ECF API returned status `%d`", resp.StatusCode), "")
 		return nil, err
 	}
 
@@ -436,7 +415,7 @@ func FetchAcfRating(acfId string) (*database.Rating, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		err = errors.New(400, fmt.Sprintf("Invalid request: ACF site returned status `%d`", resp.StatusCode), "")
+		err = errors.New(ratingResponseErrorCode(resp.StatusCode), fmt.Sprintf("Invalid request: ACF site returned status `%d`", resp.StatusCode), "")
 		return nil, err
 	}
 
@@ -485,7 +464,7 @@ func fetchKnsbListRating(knsbId string, listId int) (*database.Rating, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, errors.New(400, fmt.Sprintf("Invalid request: KNSB API returned status `%d`", resp.StatusCode), "")
+		return nil, errors.New(ratingResponseErrorCode(resp.StatusCode), fmt.Sprintf("Invalid request: KNSB API returned status `%d`", resp.StatusCode), "")
 	}
 
 	var r KnsbResponse

@@ -78,6 +78,8 @@ declare module '@mui/material/styles' {
         lavendar: Palette['primary'];
         grape: Palette['primary'];
         graphite: Palette['primary'];
+        twitch: Palette['primary'];
+        youtube: Palette['primary'];
     }
     interface PaletteOptions extends RequirementCategoryPalette {
         opening?: PaletteOptions['primary'];
@@ -109,6 +111,8 @@ declare module '@mui/material/styles' {
         lavendar: Palette['primary'];
         grape: Palette['primary'];
         graphite: Palette['primary'];
+        twitch: PaletteOptions['primary'];
+        youtube: PaletteOptions['primary'];
     }
 }
 
@@ -166,6 +170,7 @@ declare module '@mui/material' {
         twitch: true;
         darkBlue: true;
         sage: true;
+        peacock: true;
     }
 }
 
@@ -370,6 +375,12 @@ const theme = createTheme({
                         main: '#0b8043',
                     },
                     name: 'basil',
+                }),
+                twitch: defaultTheme.palette.augmentColor({
+                    color: {
+                        main: '#6441a5',
+                    },
+                    name: 'twitch',
                 }),
                 peacock: defaultTheme.palette.augmentColor({
                     color: {

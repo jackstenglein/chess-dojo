@@ -160,7 +160,13 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
         <Stack spacing={2.5}>
             {/* Rating */}
             <Stack spacing={0.75}>
-                <Typography variant='subtitle2' fontWeight='bold' color='text.secondary'>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                        color: 'text.secondary',
+                    }}
+                >
                     Sparring Bot Rating
                 </Typography>
 
@@ -168,7 +174,13 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                     <Select value={maiaRating} onChange={(e) => setMaiaRating(e.target.value)}>
                         {MAIA_RATINGS.map((r) => (
                             <MenuItem key={r} value={r}>
-                                <Stack direction='row' alignItems='center' spacing={1.5}>
+                                <Stack
+                                    direction='row'
+                                    spacing={1.5}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Chip
                                         label={r}
                                         size='small'
@@ -183,7 +195,12 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                         ))}
                     </Select>
                 </FormControl>
-                <Typography variant='caption' color='text.secondary'>
+                <Typography
+                    variant='caption'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     Powered by Maia3 Neural Net Engine Database
                 </Typography>
             </Stack>
@@ -192,9 +209,21 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
 
             {/* Time control */}
             <Stack spacing={1}>
-                <Stack direction='row' alignItems='center' spacing={0.5}>
+                <Stack
+                    direction='row'
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Timer sx={{ fontSize: 14, color: 'text.secondary' }} />
-                    <Typography variant='subtitle2' fontWeight='bold' color='text.secondary'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            fontWeight: 'bold',
+                            color: 'text.secondary',
+                        }}
+                    >
                         TIME CONTROL
                     </Typography>
                 </Stack>
@@ -252,7 +281,13 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
 
                 {/* Custom inputs */}
                 <Collapse in={selectedTime === 'custom'}>
-                    <Stack direction='row' spacing={1} mt={1.5}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            mt: 1.5,
+                        }}
+                    >
                         <TextField
                             size='small'
                             label='Minutes'
@@ -289,9 +324,11 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                     {selectedTime === 'custom' && customMinsNum <= 0 && (
                         <Typography
                             variant='caption'
-                            color='text.secondary'
-                            mt={0.5}
-                            display='block'
+                            sx={{
+                                color: 'text.secondary',
+                                mt: 0.5,
+                                display: 'block',
+                            }}
                         >
                             0 min → Unlimited
                         </Typography>
@@ -299,13 +336,32 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                 </Collapse>
 
                 {/* Category legend */}
-                <Stack direction='row' flexWrap='wrap' gap={1} mt={0.25}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        mt: 0.25,
+                    }}
+                >
                     {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-                        <Stack key={cat} direction='row' alignItems='center' spacing={0.4}>
+                        <Stack
+                            key={cat}
+                            direction='row'
+                            spacing={0.4}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Box
                                 sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }}
                             />
-                            <Typography variant='caption' color='text.secondary'>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 {cat}
                             </Typography>
                         </Stack>
@@ -317,7 +373,13 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
 
             {/* Color */}
             <Stack spacing={0.75}>
-                <Typography variant='subtitle2' fontWeight='bold' color='text.secondary'>
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        fontWeight: 'bold',
+                        color: 'text.secondary',
+                    }}
+                >
                     PLAY AS
                 </Typography>
                 <ToggleButtonGroup
@@ -389,7 +451,12 @@ export function PlayBotSetup({ onStart, initialRating = 1500 }: PlayBotSetupProp
                         textTransform: 'none',
                     }}
                 >
-                    <Typography variant='subtitle2' fontWeight='bold'>
+                    <Typography
+                        variant='subtitle2'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
                         CUSTOM POSITION (FEN)
                     </Typography>
                 </Button>

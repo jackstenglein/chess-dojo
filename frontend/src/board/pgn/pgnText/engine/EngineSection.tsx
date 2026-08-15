@@ -12,6 +12,7 @@ import {
 import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { useEval } from '@/stockfish/hooks/useEval';
 import Icon from '@/style/Icon';
+import { Color } from '@jackstenglein/chess';
 import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -80,7 +81,12 @@ export default function EngineSection() {
             }}
         >
             <Stack sx={{ p: 1, containerType: 'inline-size' }}>
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Tooltip title={t('toggleEngineTooltip')} disableInteractive>
                         <Switch
                             checked={enabled}
@@ -93,13 +99,18 @@ export default function EngineSection() {
                     </Tooltip>
 
                     {enabled && !isGameOver && showEval && (
-                        <Stack sx={{ mr: 2 }} alignItems='center'>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                                mr: 2,
+                            }}
+                        >
                             <Typography variant='h5'>
                                 {showCloudEval
                                     ? formatLineEval({
                                           cp: normalizeChessDBScore(
                                               chessDbPv?.score,
-                                              chess?.turn() || 'w',
+                                              chess?.turn() || Color.white,
                                           ),
                                       })
                                     : formatLineEval(engineLines[0])}
@@ -114,7 +125,12 @@ export default function EngineSection() {
                         </Stack>
                     )}
                     <Stack sx={{ flexGrow: 1, lineHeight: '1.2', color: 'text.secondary' }}>
-                        <Stack direction='row' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='caption' sx={{ display: { '@288': 'none' } }}>
                                 {engineInfo.extraShortName}
                             </Typography>
@@ -206,7 +222,13 @@ export default function EngineSection() {
                                             }
                                             disableInteractive
                                         >
-                                            <Stack direction='row' alignItems='center' spacing={1}>
+                                            <Stack
+                                                direction='row'
+                                                spacing={1}
+                                                sx={{
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 <Cloud
                                                     sx={{
                                                         verticalAlign: 'middle',

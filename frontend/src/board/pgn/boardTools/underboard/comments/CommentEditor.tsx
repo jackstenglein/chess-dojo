@@ -98,7 +98,14 @@ const CommentEditor: React.FC<CommentEditorProps> = ({ focusEditor, setFocusEdit
         : t('startingPosition');
 
     return (
-        <Stack spacing={1} direction='row' alignItems='end' px={2}>
+        <Stack
+            spacing={1}
+            direction='row'
+            sx={{
+                alignItems: 'end',
+                px: 2,
+            }}
+        >
             <TextField
                 inputRef={textFieldRef}
                 id={BlockBoardKeyboardShortcuts}

@@ -12,7 +12,15 @@ export default function GraduationLinkCardGrid({ graduations }: GraduationLinkCa
     graduations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return (
-        <Grid container p='16px' spacing={2} alignItems='center' justifyContent='center'>
+        <Grid
+            container
+            spacing={2}
+            sx={{
+                p: '16px',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
             {graduations.map((grad) => (
                 <Grid key={`${grad.username} ${grad.createdAt}`} size={{ xs: 8, md: 4, xl: 2 }}>
                     <GraduationLinkCard

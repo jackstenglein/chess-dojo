@@ -133,7 +133,13 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
     const renderCheckbox = (path?: string) => {
         if (!path) {
             return (
-                <Typography variant='body2' color='text.secondary' sx={{ userSelect: 'none' }}>
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                        userSelect: 'none',
+                    }}
+                >
                     —
                 </Typography>
             );
@@ -171,39 +177,69 @@ const NotificationSettingsEditor: React.FC<NotificationSettingsEditorProps> = ({
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Typography fontWeight='bold'>{t('heading')}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {t('heading')}
+                                </Typography>
                             </TableCell>
                             <TableCell align='center'>
                                 <Stack
                                     direction='row'
-                                    alignItems='center'
-                                    justifyContent='center'
                                     spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
                                 >
                                     <Web fontSize='small' />
-                                    <Typography fontWeight='bold'>{t('site')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('site')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
                                 <Stack
                                     direction='row'
-                                    alignItems='center'
-                                    justifyContent='center'
                                     spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
                                 >
                                     <Email fontSize='small' />
-                                    <Typography fontWeight='bold'>{t('email')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('email')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                             <TableCell align='center'>
                                 <Stack
                                     direction='row'
-                                    alignItems='center'
-                                    justifyContent='center'
                                     spacing={1}
+                                    sx={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
                                 >
                                     <DiscordIcon />
-                                    <Typography fontWeight='bold'>{t('discord')}</Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        {t('discord')}
+                                    </Typography>
                                 </Stack>
                             </TableCell>
                         </TableRow>

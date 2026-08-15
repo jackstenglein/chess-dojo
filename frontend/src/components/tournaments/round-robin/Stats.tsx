@@ -50,7 +50,12 @@ export function Stats({ tournament }: { tournament: RoundRobin }) {
                 </Typography>
             </Stack>
 
-            <Stack direction='row' gap={2}>
+            <Stack
+                direction='row'
+                sx={{
+                    gap: 2,
+                }}
+            >
                 <ToggleButtonGroup
                     value={viewMode}
                     exclusive
@@ -288,25 +293,47 @@ function ListView({
                 <TableHead>
                     <TableRow>
                         <TableCell>
-                            <Typography fontWeight='bold'>{t('columnPlayer')}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t('columnPlayer')}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {viewMode === 'count' ? t('columnTotalScore') : t('columnTotalPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {viewMode === 'count' ? t('columnWins') : t('columnWinsPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {viewMode === 'count' ? t('columnDraws') : t('columnDrawsPct')}
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
-                            <Typography fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {viewMode === 'count' ? t('columnLosses') : t('columnLossesPct')}
                             </Typography>
                         </TableCell>

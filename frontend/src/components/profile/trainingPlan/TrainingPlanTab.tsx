@@ -20,7 +20,13 @@ export function TrainingPlanTab({ user }: { user: User }) {
         setCohort(user.dojoCohort);
     }, [user.dojoCohort]);
     return (
-        <Stack alignItems='start' mb={6} spacing={6}>
+        <Stack
+            spacing={6}
+            sx={{
+                alignItems: 'start',
+                mb: 6,
+            }}
+        >
             <RequestSnackbar request={trainingPlan.request} />
 
             <TrainingPlanContext value={trainingPlan}>

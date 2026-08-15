@@ -69,7 +69,7 @@ export function LiveClassVideoPopup({
                 }}
             >
                 {url ? (
-                    <LiveClassVideoPlayer url={`${url}?autoplay=1`} />
+                    <LiveClassVideoPlayer url={url} />
                 ) : (
                     <CircularProgress size={32} sx={{ color: 'common.white' }} />
                 )}

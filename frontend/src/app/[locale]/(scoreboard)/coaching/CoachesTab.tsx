@@ -100,10 +100,12 @@ const CoachListItem: React.FC<{ coach: User }> = ({ coach }) => {
                     <Stack spacing={4}>
                         <Stack
                             direction='row'
-                            justifyContent='space-between'
-                            alignItems='start'
-                            flexWrap='wrap'
-                            rowGap={2}
+                            sx={{
+                                justifyContent: 'space-between',
+                                alignItems: 'start',
+                                flexWrap: 'wrap',
+                                rowGap: 2,
+                            }}
                         >
                             <UserInfo user={coach} />
 

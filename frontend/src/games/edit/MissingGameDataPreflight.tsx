@@ -20,7 +20,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -137,7 +137,12 @@ export const MissingGameDataPreflight = ({
             <DialogContent>
                 {children && <DialogContentText>{children}</DialogContentText>}
 
-                <Stack spacing={3} mt={3}>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Grid container columnSpacing={1} rowSpacing={2}>
                         <Grid
                             size={{

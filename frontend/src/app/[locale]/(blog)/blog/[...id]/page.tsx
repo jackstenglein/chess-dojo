@@ -48,7 +48,11 @@ export default async function BlogPage({ params }: PageProps<'/[locale]/blog/[..
     return (
         <Container>
             <Header title={blog.title} subtitle={blog.subtitle} />
-            <Stack mt={3}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <BlogMarkdown>{blog.content}</BlogMarkdown>
                 <Footer utmCampaign={`blog-${id}`} />
                 <BlogComments comments={blog.comments ?? null} owner={BLOG_OWNER} id={id} />

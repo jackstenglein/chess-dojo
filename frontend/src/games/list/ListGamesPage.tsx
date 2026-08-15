@@ -28,7 +28,9 @@ const ListGamesPage = () => {
     const isFreeTier = useFreeTier();
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [upsellAction, setUpsellAction] = useState('');
-    const type = useNextSearchParams().searchParams.get('type') || '';
+    const params = useNextSearchParams().searchParams;
+    const type = params.get('type') || '';
+    const player = params.get('white') || params.get('black') || '';
     const api = useApi();
     const [reviewQueueLabel, setReviewQueueLabel] = useState('');
     const contextMenu = useDataGridContextMenu();
@@ -63,7 +65,7 @@ const ListGamesPage = () => {
         return <LoadingPage />;
     }
 
-    if (isFreeTier && type === 'player') {
+    if (isFreeTier && type === 'games' && player) {
         return <UpsellPage redirectTo='/games' currentAction={RestrictedAction.SearchDatabase} />;
     }
     if (isFreeTier && type === 'position') {
@@ -76,7 +78,12 @@ const ListGamesPage = () => {
 
             {isFreeTier && (
                 <>
-                    <Stack alignItems='center' mb={5}>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            mb: 5,
+                        }}
+                    >
                         <UpsellAlert>{t('freeTierAlert')}</UpsellAlert>
                     </Stack>
                     <UpsellDialog
@@ -136,7 +143,12 @@ const ListGamesPage = () => {
 
                         <Stack spacing={0.5}>
                             <Stack direction='row' spacing={1}>
-                                <Typography variant='body2' alignSelf='start'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        alignSelf: 'start',
+                                    }}
+                                >
                                     <Link href='/games/review-queue'>
                                         <Icon
                                             name='line'
@@ -168,7 +180,9 @@ const ListGamesPage = () => {
                                 data-testid='download-database-button'
                                 id='download-full-database'
                                 variant='body2'
-                                alignSelf='start'
+                                sx={{
+                                    alignSelf: 'start',
+                                }}
                             >
                                 <Link
                                     href={

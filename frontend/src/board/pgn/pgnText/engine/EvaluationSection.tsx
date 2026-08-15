@@ -2,9 +2,9 @@ import { ChessDbPv } from '@/api/cache/chessdb';
 import { normalizeChessDBScore } from '@/api/chessdbService';
 import Board from '@/board/Board';
 import { CLOUD_EVAL_ENABLED, EngineInfo, LineEval } from '@/stockfish/engine/engine';
+import { Chess } from '@jackstenglein/chess';
 import CloudIcon from '@mui/icons-material/Cloud';
 import { List, Paper, Popper, Tooltip } from '@mui/material';
-import { Chess } from 'chess.js';
 import { Key } from 'chessground/types';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -168,7 +168,7 @@ function CloudEvalSection({
  * @returns converted Line eval
  */
 function chessDbPvToLineEval(pv: ChessDbPv, fen: string): LineEval {
-    const side = new Chess(fen).turn();
+    const side = new Chess({ fen }).turn();
     return {
         fen,
         depth: pv.depth,

@@ -25,14 +25,9 @@ const ListGamesTutorial = () => {
             content: t('publicContent'),
         },
         {
-            target: '#search-by-cohort',
-            title: t('searchCohortTitle'),
-            content: t('searchCohortContent'),
-        },
-        {
-            target: '#search-by-player',
-            title: t('searchPlayerTitle'),
-            content: t('searchPlayerContent'),
+            target: '#search-games',
+            title: t('searchGamesTitle'),
+            content: t('searchGamesContent'),
         },
         {
             target: '#download-full-database',

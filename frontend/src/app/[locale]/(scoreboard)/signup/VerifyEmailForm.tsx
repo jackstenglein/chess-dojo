@@ -90,7 +90,12 @@ export const VerifyEmailForm = ({
     };
 
     return (
-        <Stack justifyContent='center' alignItems='center'>
+        <Stack
+            sx={{
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
             <RequestSnackbar request={submitRequest} />
             <RequestSnackbar request={codeRequest} showSuccess />
 
@@ -103,17 +108,32 @@ export const VerifyEmailForm = ({
                 }}
             />
 
-            <Typography variant='h4' textAlign='center' data-testid='title' mb={4}>
+            <Typography
+                variant='h4'
+                data-testid='title'
+                sx={{
+                    textAlign: 'center',
+                    mb: 4,
+                }}
+            >
                 {t('chessDojo')}
             </Typography>
 
-            <Stack width={{ xs: 1, sm: 0.85 }} spacing={4} alignItems='center'>
+            <Stack
+                spacing={4}
+                sx={{
+                    width: { xs: 1, sm: 0.85 },
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
                     variant='body1'
                     component='div'
                     gutterBottom
-                    textAlign='center'
                     data-testid='description'
+                    sx={{
+                        textAlign: 'center',
+                    }}
                 >
                     {t('verify.description', { email })}
                 </Typography>

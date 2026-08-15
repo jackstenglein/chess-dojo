@@ -104,8 +104,6 @@ import {
     featureGame,
     getGame,
     listFeaturedGames,
-    listGamesByCohort,
-    listGamesByOpening,
     listGamesByOwner,
     listGamesByPosition,
     listGamesForReview,
@@ -300,12 +298,6 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             updateGame: (cohort: string, id: string, req: Partial<UpdateGameRequest>) =>
                 updateGame(idToken, cohort, id, req),
             deleteGames: (request: DeleteGamesRequest) => deleteGames(idToken, request),
-            listGamesByCohort: (
-                cohort: string,
-                startKey?: string,
-                startDate?: string,
-                endDate?: string,
-            ) => listGamesByCohort(idToken, cohort, startKey, startDate, endDate),
             listGamesByOwner: (
                 owner?: string,
                 startKey?: string,
@@ -314,12 +306,6 @@ export function ApiProvider({ children }: { children: ReactNode }) {
                 player?: string,
                 color?: string,
             ) => listGamesByOwner(idToken, owner, startKey, startDate, endDate, player, color),
-            listGamesByOpening: (
-                eco: string,
-                startKey?: string,
-                startDate?: string,
-                endDate?: string,
-            ) => listGamesByOpening(idToken, eco, startKey, startDate, endDate),
             listGamesByPosition: (fen: string, mastersOnly: boolean, startKey?: string) =>
                 listGamesByPosition(idToken, fen, mastersOnly, startKey),
             listFeaturedGames: (startKey?: string) => listFeaturedGames(idToken, startKey),

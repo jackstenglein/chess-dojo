@@ -114,9 +114,23 @@ const ClockEditor = ({
     }
 
     return (
-        <Grid container columnSpacing={1} rowGap={3} alignItems='baseline' pb={2}>
+        <Grid
+            container
+            columnSpacing={1}
+            sx={{
+                rowGap: 3,
+                alignItems: 'baseline',
+                pb: 2,
+            }}
+        >
             <Grid size={12}>
-                <Stack direction='row' alignItems='center' spacing={0.5}>
+                <Stack
+                    direction='row'
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography variant='subtitle1'>{t('timeControlLabel')}</Typography>
 
                     <Tooltip title={t('editTimeControlTooltip')}>
@@ -133,15 +147,31 @@ const ClockEditor = ({
                     timeControls={chess.header().tags.TimeControl?.items || []}
                 />
             </Grid>
-            <Grid pb={1} size={12}>
-                <Typography component='p' variant='caption' textAlign='center'>
+            <Grid
+                size={12}
+                sx={{
+                    pb: 1,
+                }}
+            >
+                <Typography
+                    component='p'
+                    variant='caption'
+                    sx={{
+                        textAlign: 'center',
+                    }}
+                >
                     {t('clockInstructionsLabel')}
                     <br />
                     {t('linesBlankLabel')}
                 </Typography>
             </Grid>
 
-            <Grid pb={1} size={12}>
+            <Grid
+                size={12}
+                sx={{
+                    pb: 1,
+                }}
+            >
                 <TextField
                     select
                     label={t('clockFormatLabel')}

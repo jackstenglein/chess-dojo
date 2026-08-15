@@ -1,13 +1,21 @@
 package ratings
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 )
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
 
 const chesscomStatsBody = `{"chess_rapid": {"last": {"rating": 1500, "rd": 50}, "record": {"win": 10, "loss": 5, "draw": 2}}}`
 
@@ -235,5 +243,37 @@ func TestFetchBulkLichessRatings_Success(t *testing.T) {
 	}
 	if r, ok := result["user1"]; !ok || r.Performances.Classical.Rating != 1800 {
 		t.Errorf("expected user1 with rating 1800, got %+v", result)
+	}
+}
+
+func TestMonthlyFetchers_PreservePlayerNotFoundStatus(t *testing.T) {
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+	client = http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
+			Body:       io.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})}
+
+	tests := []struct {
+		name  string
+		fetch func() error
+	}{
+		{"USCF", func() error { _, err := FetchUscfRating("123"); return err }},
+		{"ECF", func() error { _, err := FetchEcfRating("123"); return err }},
+		{"ACF", func() error { _, err := FetchAcfRating("123"); return err }},
+		{"KNSB player", func() error { _, err := fetchKnsbListRating("123", 1); return err }},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.fetch()
+			var apiErr *errors.Error
+			if !errors.As(err, &apiErr) || apiErr.Code != http.StatusNotFound {
+				t.Fatalf("expected API 404, got %v", err)
+			}
+		})
 	}
 }

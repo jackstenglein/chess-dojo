@@ -30,15 +30,23 @@ export const GraduationLinkCard = ({ graduation, to }: GraduationLinkCardProps) 
                 <CardActionArea component={Link} sx={{ height: 1 }} href={to}>
                     <CardContent>
                         <Stack
-                            height={1}
-                            justifyContent='center'
-                            alignItems='center'
-                            textAlign='center'
                             spacing={2}
+                            sx={{
+                                height: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                            }}
                         >
                             <CohortIcon cohort={newCohort} size={100} color='primary' />
                             <Typography variant='h5'>{displayName}</Typography>
-                            <Typography variant='subtitle1' color='text.secondary' lineHeight='1.3'>
+                            <Typography
+                                variant='subtitle1'
+                                sx={{
+                                    color: 'text.secondary',
+                                    lineHeight: '1.3',
+                                }}
+                            >
                                 <div>{t('graduatedTo', { cohort: newCohort })}</div>
                                 <div>
                                     {dateStr} • {timeStr}

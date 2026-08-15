@@ -21,7 +21,11 @@ export function Features() {
         >
             <Grid container spacing='2rem'>
                 <Grid size={{ xs: 12, md: 6 }}>
-                    <Stack alignItems={{ xs: 'center', md: 'start' }}>
+                    <Stack
+                        sx={{
+                            alignItems: { xs: 'center', md: 'start' },
+                        }}
+                    >
                         <Typography
                             sx={{
                                 fontSize: '3rem',
@@ -41,7 +45,7 @@ export function Features() {
                                     key={key}
                                     description={t(`trainingPlan.${key}`)}
                                     slotProps={{
-                                        description: { mt: '-0.25rem' },
+                                        description: { sx: { mt: '-0.25rem' } },
                                     }}
                                 />
                             ))}

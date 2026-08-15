@@ -28,23 +28,42 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                     {t('metrics')}
                 </Typography>
 
-                <Grid container justifyContent='center' rowGap={1} columnGap={1}>
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: 'center',
+                        rowGap: 1,
+                        columnGap: 1,
+                    }}
+                >
                     <Grid
-                        display='flex'
-                        justifyContent='center'
                         size={{
                             xs: 12,
                             sm: 4,
                             md: 3,
                         }}
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
                     >
-                        <Stack direction='row' alignItems='center'>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography>{t('tacticsRating')}</Typography>
 
                             <Tooltip title={t('tacticsRatingTooltip')}>
                                 <Help fontSize='small' sx={{ color: 'text.secondary' }} />
                             </Tooltip>
-                            <Typography ml={1} fontWeight='bold'>
+                            <Typography
+                                sx={{
+                                    ml: 1,
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {Math.round(
                                     10 * calculateTacticsRating(user, requirements).overall,
                                 ) / 10}
@@ -62,18 +81,30 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ user, sx }) => {
                         return (
                             <Grid
                                 key={rs}
-                                display='flex'
-                                justifyContent='center'
                                 size={{
                                     xs: 12,
                                     sm: 4,
                                     md: 3,
                                 }}
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                }}
                             >
-                                <Stack direction='row' alignItems='center'>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <Typography>{formatRatingSystem(rs, tRating)}</Typography>
 
-                                    <Typography ml={1} fontWeight='bold'>
+                                    <Typography
+                                        sx={{
+                                            ml: 1,
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
                                         {currentRating}
                                     </Typography>
                                 </Stack>
