@@ -146,9 +146,7 @@ export function PersonalAccessTokensEditor() {
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
+                sx={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}
             >
                 <Typography variant='h5'>
                     <KeyIcon
@@ -162,14 +160,14 @@ export function PersonalAccessTokensEditor() {
                 </Button>
             </Stack>
 
-            <Typography color='text.secondary'>
+            <Typography color='textSecondary'>
                 Personal access tokens allow third-party integrations, such as MCP servers, to
                 access the ChessDojo API on your behalf. Treat tokens like passwords and never share
                 them with anyone you don't trust.
             </Typography>
 
             {tokens.length === 0 ? (
-                <Typography color='text.secondary' fontStyle='italic'>
+                <Typography color='textSecondary' sx={{ fontStyle: 'italic' }}>
                     You have no personal access tokens.
                 </Typography>
             ) : (
@@ -190,7 +188,7 @@ export function PersonalAccessTokensEditor() {
                             <TableRow key={token.id}>
                                 <TableCell>{token.name}</TableCell>
                                 <TableCell>
-                                    <Typography variant='body2' fontFamily='monospace'>
+                                    <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
                                         {token.displayPrefix}…
                                     </Typography>
                                 </TableCell>
@@ -222,7 +220,12 @@ export function PersonalAccessTokensEditor() {
                     <>
                         <DialogTitle>Token Created</DialogTitle>
                         <DialogContent>
-                            <Stack spacing={2} mt={1}>
+                            <Stack
+                                spacing={2}
+                                sx={{
+                                    mt: 1,
+                                }}
+                            >
                                 <Alert severity='warning'>
                                     Copy your token now. For security reasons, it will never be
                                     shown again.
@@ -255,7 +258,12 @@ export function PersonalAccessTokensEditor() {
                         <DialogTitle>New Personal Access Token</DialogTitle>
                         <DialogContent>
                             <RequestSnackbar request={createRequest} />
-                            <Stack spacing={3} mt={1}>
+                            <Stack
+                                spacing={3}
+                                sx={{
+                                    mt: 1,
+                                }}
+                            >
                                 <TextField
                                     label='Name'
                                     placeholder='Eg: ChessAgine MCP'
