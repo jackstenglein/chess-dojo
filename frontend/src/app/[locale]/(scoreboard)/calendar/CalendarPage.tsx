@@ -1,8 +1,8 @@
 'use client';
 
 import { useApi } from '@/api/Api';
-import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useEvents } from '@/api/cache/Cache';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { getTimeZonedDate } from '@/components/calendar/displayDate';
 import { useRecurrenceEditPrompt } from '@/components/calendar/EditRecurrenceDialog';
@@ -33,9 +33,9 @@ import {
     Event,
     EventStatus,
     EventType,
+    getEventDurationMs,
     TimeControlType,
 } from '@/database/event';
-import { getEventDurationMs } from '@/database/event';
 import { ALL_COHORTS, isFree, TimeFormat, User } from '@/database/user';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { Scheduler } from '@jackstenglein/react-scheduler';
@@ -412,7 +412,10 @@ export function getProcessedEvents(
     for (const event of events) {
         let processedEvent: ProcessedEvent | null = null;
 
-        const startHour = getTimeZonedDate(getSeriesTimes(event).start, filters.timezone).getHours();
+        const startHour = getTimeZonedDate(
+            getSeriesTimes(event).start,
+            filters.timezone,
+        ).getHours();
         if (
             startHour < (filters?.minHour?.hour || 0) ||
             startHour > (filters?.maxHour?.hour || 24)
@@ -580,8 +583,11 @@ export default function CalendarPage() {
                     publicDiscordEventId = undefined;
                 }
 
-                const { startTime: _legacyStart, endTime: _legacyEnd, ...eventWithoutTimes } =
-                    dojoEvent ?? ({} as Event);
+                const {
+                    startTime: _legacyStart,
+                    endTime: _legacyEnd,
+                    ...eventWithoutTimes
+                } = dojoEvent ?? ({} as Event);
 
                 if (!dojoEvent || dojoEvent.type === EventType.Availability) {
                     copyRequest.onStart();
@@ -598,8 +604,7 @@ export default function CalendarPage() {
                     copyRequest.onSuccess();
                     return;
                 }
-                let durationMs =
-                    new Date(endIso).getTime() - new Date(startIso).getTime();
+                let durationMs = new Date(endIso).getTime() - new Date(startIso).getTime();
                 let rrule = dojoEvent.rrule ?? '';
 
                 const isRecurringEdit =

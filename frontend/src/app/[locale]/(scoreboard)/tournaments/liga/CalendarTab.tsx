@@ -3,8 +3,8 @@
 import { useEvents } from '@/api/cache/Cache';
 import { Filters, getHours, useFilters } from '@/components/calendar/filters/CalendarFilters';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
-import { Event, EventType, PositionType, TimeControlType, TournamentType } from '@/database/event';
 import { getSeriesTimes } from '@/components/calendar/recurrence';
+import { Event, EventType, PositionType, TimeControlType, TournamentType } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
 import { ProcessedEvent, SchedulerRef } from '@jackstenglein/react-scheduler/types';

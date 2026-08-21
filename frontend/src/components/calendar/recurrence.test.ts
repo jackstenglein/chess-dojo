@@ -1,5 +1,5 @@
 import { Event, EventStatus, EventType, getEventDurationMs } from '@/database/event';
-import { RRule, RRuleSet, rrulestr } from 'rrule';
+import { RRuleSet, rrulestr } from 'rrule';
 import { describe, expect, it, vi } from 'vitest';
 import {
     getProcessedRecurrence,
@@ -48,9 +48,7 @@ describe('recurrence helpers', () => {
         const start = new Date('2026-08-01T15:00:00.000Z');
         const end = new Date('2026-08-01T16:00:00.000Z');
         expect(haveTimesChanged(start, end, start, end)).toBe(false);
-        expect(
-            haveTimesChanged(start, end, new Date('2026-08-01T17:00:00.000Z'), end),
-        ).toBe(true);
+        expect(haveTimesChanged(start, end, new Date('2026-08-01T17:00:00.000Z'), end)).toBe(true);
     });
 
     it('isRecurringEvent requires an RRULE line', () => {

@@ -36,11 +36,7 @@ export function useRecurrenceEditPrompt() {
     }, []);
 
     const dialog = (
-        <Dialog
-            open={open}
-            onClose={() => close('cancel')}
-            data-testid='edit-recurrence-dialog'
-        >
+        <Dialog open={open} onClose={() => close('cancel')} data-testid='edit-recurrence-dialog'>
             <DialogTitle>{t('editRecurringTitle')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{t('editRecurringDescription')}</DialogContentText>

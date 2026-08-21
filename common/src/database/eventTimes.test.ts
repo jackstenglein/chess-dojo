@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    getEventDurationMs,
-    getEventEnd,
-    getEventStart,
-    getRRuleDtStart,
-} from './eventTimes';
+import { getEventDurationMs, getEventEnd, getEventStart, getRRuleDtStart } from './eventTimes';
 
 describe('eventTimes', () => {
     it('parses DTSTART from an rrule string', () => {

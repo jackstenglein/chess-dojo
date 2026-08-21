@@ -30,7 +30,9 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunct
             events
                 .filter((e) => predicate(e, viewer))
                 .sort((lhs, rhs) =>
-                    getEventStart(lhs).toISOString().localeCompare(getEventStart(rhs).toISOString()),
+                    getEventStart(lhs)
+                        .toISOString()
+                        .localeCompare(getEventStart(rhs).toISOString()),
                 ),
         [events, viewer, predicate],
     );

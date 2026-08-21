@@ -9,7 +9,13 @@ import {
     toDojoTimeString,
 } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
-import { AvailabilityType, Event, getDisplayString, getEventEnd, getEventStart } from '@/database/event';
+import {
+    AvailabilityType,
+    Event,
+    getDisplayString,
+    getEventEnd,
+    getEventStart,
+} from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import Avatar from '@/profile/Avatar';
@@ -98,7 +104,10 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
             newErrors.time = t('selectTime');
         } else {
             selectedTime = getTimeZonedDate(startTime.toJSDate(), timezone, 'forward');
-            if (selectedTime.toISOString() < minStartIso || selectedTime.toISOString() > maxStartIso) {
+            if (
+                selectedTime.toISOString() < minStartIso ||
+                selectedTime.toISOString() > maxStartIso
+            ) {
                 newErrors.time = t('mustBeBetween', { start: minStartStr, end: maxStartStr });
             }
         }
@@ -332,8 +341,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                             }),
                                     },
                                 }}
-                                minTime={DateTime.fromJSDate(getTimeZonedDate(minStartTime, timezone))}
-                                maxTime={DateTime.fromJSDate(getTimeZonedDate(maxStartTime, timezone))}
+                                minTime={DateTime.fromJSDate(
+                                    getTimeZonedDate(minStartTime, timezone),
+                                )}
+                                maxTime={DateTime.fromJSDate(
+                                    getTimeZonedDate(maxStartTime, timezone),
+                                )}
                                 ampm={timeFormat === TimeFormat.TwelveHour}
                             />
                         </>

@@ -11,7 +11,14 @@ import ParticipantsList from '@/components/calendar/eventViewer/ParticipantsList
 import { Link } from '@/components/navigation/Link';
 import { GameReviewCohortQueue } from '@/components/profile/liveClasses/GameReviewCohortQueue';
 import { getConfig } from '@/config';
-import { Event, EventStatus, EventType, getDisplayString, getEventEnd, getEventStart } from '@/database/event';
+import {
+    Event,
+    EventStatus,
+    EventType,
+    getDisplayString,
+    getEventEnd,
+    getEventStart,
+} from '@/database/event';
 import { dojoCohorts, User } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
@@ -170,11 +177,7 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
         user.timezoneOverride,
         user.timeFormat,
     );
-    const endTime = toDojoTimeString(
-        getEventEnd(meeting),
-        user.timezoneOverride,
-        user.timeFormat,
-    );
+    const endTime = toDojoTimeString(getEventEnd(meeting), user.timezoneOverride, user.timeFormat);
     const times = dates.map((d) => {
         const startDate = toDojoDateString(d, user.timezoneOverride);
         return `${startDate} ${startTime} — ${endTime}`;

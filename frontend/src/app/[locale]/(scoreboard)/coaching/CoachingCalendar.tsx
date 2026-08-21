@@ -14,8 +14,7 @@ import {
     moveAllOccurrences,
     moveSingleOccurrence,
 } from '@/components/calendar/recurrence';
-import { Event } from '@/database/event';
-import { getEventDurationMs } from '@/database/event';
+import { Event, getEventDurationMs } from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { Scheduler } from '@jackstenglein/react-scheduler';
 import {
@@ -152,8 +151,11 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
                     return;
                 }
 
-                const { startTime: _legacyStart, endTime: _legacyEnd, ...eventWithoutTimes } =
-                    event;
+                const {
+                    startTime: _legacyStart,
+                    endTime: _legacyEnd,
+                    ...eventWithoutTimes
+                } = event;
                 let durationMs = new Date(endIso).getTime() - new Date(startIso).getTime();
                 let rrule = event.rrule ?? '';
 
@@ -175,7 +177,11 @@ const CoachingCalendar: React.FC<CoachingCalendarProps> = ({
 
                     if (scope === 'this') {
                         durationMs = getEventDurationMs(event);
-                        rrule = moveSingleOccurrence(event, originalEvent.start, new Date(startIso));
+                        rrule = moveSingleOccurrence(
+                            event,
+                            originalEvent.start,
+                            new Date(startIso),
+                        );
                     } else {
                         rrule = moveAllOccurrences(rrule, new Date(startIso));
                     }
