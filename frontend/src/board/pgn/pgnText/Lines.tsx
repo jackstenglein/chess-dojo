@@ -124,7 +124,14 @@ export const Line: React.FC<LineProps> = ({
     }
 
     return (
-        <Box display='block' pl={`${lineInset}px`} mt={0.5} position='relative'>
+        <Box
+            sx={{
+                display: 'block',
+                pl: `${lineInset}px`,
+                mt: 0.5,
+                position: 'relative',
+            }}
+        >
             <Divider
                 sx={{
                     borderWidth: `${borderWidth}px`,
@@ -229,13 +236,18 @@ const Lines: React.FC<LinesProps> = ({
     return (
         <Box
             ref={expandRef}
-            display='block'
-            position='relative'
             sx={{
+                display: 'block',
+                position: 'relative',
                 pl: depth > -1 ? `${2 * borderWidth}px` : 0,
             }}
         >
-            <Stack direction='row' alignItems={expanded ? undefined : 'center'}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: expanded ? undefined : 'center',
+                }}
+            >
                 {expanded ? (
                     <Tooltip key='collapse' title={t('collapseVariations')} followCursor>
                         <Divider
@@ -257,9 +269,10 @@ const Lines: React.FC<LinesProps> = ({
                 ) : (
                     <Tooltip key='expand' title={t('expandVariations')}>
                         <Box
-                            bgcolor='text.disabled'
-                            borderRadius='50%'
+                            onClick={() => setExpanded(true)}
                             sx={{
+                                bgcolor: 'text.disabled',
+                                borderRadius: '50%',
                                 minWidth: '20px',
                                 minHeight: '20px',
                                 display: 'flex',
@@ -268,18 +281,20 @@ const Lines: React.FC<LinesProps> = ({
                                 mb: '2px',
                                 cursor: 'pointer',
                                 aspectRatio: '1',
+
                                 ...(depth === 0
                                     ? {
                                           mt: '2px',
                                       }
                                     : {}),
                             }}
-                            onClick={() => setExpanded(true)}
                         >
                             <Typography
                                 variant='caption'
-                                color='background.paper'
-                                sx={{ mx: '2px' }}
+                                sx={{
+                                    color: 'background.paper',
+                                    mx: '2px',
+                                }}
                             >
                                 +{lines.length}
                             </Typography>

@@ -56,7 +56,12 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
 
             {Boolean(event.invited?.length) && isOwner && (
                 <Stack>
-                    <Typography variant='h6' color='text.secondary'>
+                    <Typography
+                        variant='h6'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         <Icon
                             name='cohort'
                             color='primary'
@@ -66,7 +71,14 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
                         {t('invited')}
                     </Typography>
                     {event.invited?.map((invitee) => (
-                        <Stack key={invitee.username} direction='row' alignItems='center' gap={1}>
+                        <Stack
+                            key={invitee.username}
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
                             <Avatar
                                 username={invitee.username}
                                 displayName={invitee.displayName}

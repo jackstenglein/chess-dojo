@@ -60,7 +60,11 @@ export const LandingPage = () => {
                 src={background3}
                 background='linear-gradient(270deg, #141422 0%, #06060B 100%)'
             >
-                <Stack alignItems='center'>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography
                         sx={{
                             fontFamily: (theme) => fontFamily(theme, barlowCondensed),

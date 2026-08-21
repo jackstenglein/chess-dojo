@@ -51,8 +51,19 @@ const AdminPage = () => {
 
     return (
         <Container sx={{ py: 5 }}>
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                <Typography variant='h4' mb={2}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
+            >
+                <Typography
+                    variant='h4'
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     Open Classical Admin
                 </Typography>
                 <CompleteTournament openClassical={request.data} onSuccess={request.onSuccess} />

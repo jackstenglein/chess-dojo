@@ -68,8 +68,12 @@ export function FilterToggleGroup({
         <Stack spacing={0.5} data-testid={dataTestId}>
             <Typography
                 variant='subtitle2'
-                color='text.secondary'
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
+                sx={{
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                }}
             >
                 {titleIcon}
                 {title}
@@ -115,8 +119,10 @@ export function FilterToggleGroup({
                             <Stack
                                 direction='row'
                                 spacing={1}
-                                alignItems='center'
-                                sx={{ py: 0.25 }}
+                                sx={{
+                                    alignItems: 'center',
+                                    py: 0.25,
+                                }}
                             >
                                 {option.icon}
                                 <Typography variant='body2'>{option.label}</Typography>

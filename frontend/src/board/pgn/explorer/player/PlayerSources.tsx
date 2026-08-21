@@ -60,9 +60,21 @@ export function PlayerSources({
     };
 
     return (
-        <Stack mt={1} spacing={1}>
+        <Stack
+            spacing={1}
+            sx={{
+                mt: 1,
+            }}
+        >
             {sources.map((source, i) => (
-                <Stack key={i} direction='row' spacing={1} alignItems='start'>
+                <Stack
+                    key={i}
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     <ToggleButtonGroup
                         value={source.type}
                         exclusive

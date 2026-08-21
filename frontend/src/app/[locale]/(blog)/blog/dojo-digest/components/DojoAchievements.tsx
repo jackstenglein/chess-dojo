@@ -12,17 +12,22 @@ export const DojoAchievements = ({
     graduations: string;
 }) => {
     return (
-        <Typography textAlign='center' mt={4}>
+        <Typography
+            sx={{
+                textAlign: 'center',
+                mt: 4,
+            }}
+        >
             The Dojo has collectively achieved:
             <br />
             <br />
-            <strong>{rating}</strong> rating points gained
+            <strong>{rating}</strong>rating points gained
             <br />
-            <strong>{hours}</strong> training hours logged
+            <strong>{hours}</strong>training hours logged
             <br />
-            <strong>{points}</strong> Dojo points earned
+            <strong>{points}</strong>Dojo points earned
             <br />
-            <strong>{graduations}</strong> graduations
+            <strong>{graduations}</strong>graduations
             <br />
             <br />
             Keep up the great work!

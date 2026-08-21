@@ -235,7 +235,13 @@ const SearchGames = ({
                 label={t('ignoreColors')}
             />
 
-            <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
+            <Grid
+                container
+                sx={{
+                    rowGap: 1,
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <TextField
                         data-testid='player-min-elo'
@@ -303,7 +309,13 @@ const SearchGames = ({
                 onChange={(e) => setOpening(e.target.value)}
             />
 
-            <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
+            <Grid
+                container
+                sx={{
+                    rowGap: 1,
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <TextField
                         data-testid='player-min-moves'
@@ -343,7 +355,13 @@ const SearchGames = ({
                 </Select>
             </FormControl>
 
-            <Grid container rowGap={1} columnGap={{ md: 0, lg: 1 }}>
+            <Grid
+                container
+                sx={{
+                    rowGap: 1,
+                    columnGap: { md: 0, lg: 1 },
+                }}
+            >
                 <Grid size={{ xs: 12, lg: 'grow' }}>
                     <DatePicker
                         label={t('startDate')}
@@ -449,8 +467,11 @@ const SearchByPosition: React.FC<SearchByPositionProps> = ({
             {isFreeTier ? (
                 <Typography
                     variant='caption'
-                    color='text.secondary'
-                    sx={{ mt: '0 !important', alignSelf: 'center' }}
+                    sx={{
+                        color: 'text.secondary',
+                        mt: '0 !important',
+                        alignSelf: 'center',
+                    }}
                 >
                     {t('freeTierPosition')}
                 </Typography>

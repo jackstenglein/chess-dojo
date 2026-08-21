@@ -22,7 +22,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -55,8 +54,8 @@ export function ListFollowedPositionsPage() {
         return <RequestSnackbar request={request} />;
     }
 
-    const onCopy = (name: string, value: string) => {
-        copy(value);
+    const onCopy = async (name: string, value: string) => {
+        await navigator.clipboard.writeText(value);
         setCopied(name);
         setTimeout(() => {
             setCopied('');

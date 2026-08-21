@@ -69,7 +69,12 @@ export function AllUploadsSection({
     };
 
     return (
-        <Stack direction={isMobile ? 'column' : 'row'} columnGap={2}>
+        <Stack
+            direction={isMobile ? 'column' : 'row'}
+            sx={{
+                columnGap: 2,
+            }}
+        >
             <RequestSnackbar request={request} />
 
             <NavigationMenu
@@ -81,7 +86,15 @@ export function AllUploadsSection({
                 horizontal={isMobile}
             />
 
-            <Stack spacing={2} alignItems='start' flexGrow={1} minWidth='0' mt={isMobile ? 2 : 0}>
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: 'start',
+                    flexGrow: 1,
+                    minWidth: '0',
+                    mt: isMobile ? 2 : 0,
+                }}
+            >
                 <DirectoryBreadcrumbs
                     owner={username}
                     id={ALL_MY_UPLOADS_DIRECTORY_ID}
@@ -89,7 +102,15 @@ export function AllUploadsSection({
                 />
 
                 {currentUser?.username === username && (
-                    <Stack direction='row' alignItems='center' gap={2} width={1} flexWrap='wrap'>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            gap: 2,
+                            width: 1,
+                            flexWrap: 'wrap',
+                        }}
+                    >
                         <Button
                             variant='contained'
                             onClick={onSubmit}
@@ -111,7 +132,12 @@ export function AllUploadsSection({
                 )}
 
                 {isFreeTier && currentUser?.username !== username && (
-                    <Stack alignItems='center' mb={5}>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            mb: 5,
+                        }}
+                    >
                         <UpsellAlert>{t('freeTierGamesRestriction')}</UpsellAlert>
                     </Stack>
                 )}

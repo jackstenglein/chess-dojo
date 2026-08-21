@@ -27,7 +27,13 @@ const NUM_ROUNDS = 7;
 
 function getByeElement(t: StandingsT) {
     return (
-        <Stack height={1} alignItems='center' justifyContent='center'>
+        <Stack
+            sx={{
+                height: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
             <Tooltip title={t('byeTooltip')}>
                 <Typography>{t('byeText')}</Typography>
             </Tooltip>
@@ -61,7 +67,13 @@ function getRoundColumns(rounds: number, t: StandingsT): GridColDef<StandingsTab
                         return getByeElement(t);
                     }
                     return (
-                        <Stack height={1} alignItems='center' justifyContent='center'>
+                        <Stack
+                            sx={{
+                                height: 1,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Tooltip title={t('playerWithdrawnTooltip')}>
                                 <Typography>-</Typography>
                             </Tooltip>
@@ -79,7 +91,13 @@ function getRoundColumns(rounds: number, t: StandingsT): GridColDef<StandingsTab
                 const opponent = params.api.getAllRowIds().indexOf(round.opponent) + 1;
 
                 return (
-                    <Stack height={1} alignItems='center' justifyContent='center'>
+                    <Stack
+                        sx={{
+                            height: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Tooltip title={getResultDescription(result, opponent, t)}>
                             <Typography>
                                 {result}
@@ -140,7 +158,12 @@ function getStandingsTableColumns(t: StandingsT): GridColDef<StandingsTableRow>[
             width: 50,
             renderCell(params) {
                 return (
-                    <Stack height={1} justifyContent='center'>
+                    <Stack
+                        sx={{
+                            height: 1,
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography>{params.value}</Typography>
                     </Stack>
                 );
@@ -164,7 +187,12 @@ function getStandingsTableColumns(t: StandingsT): GridColDef<StandingsTableRow>[
             headerAlign: 'center',
             renderCell(params) {
                 return (
-                    <Stack height={1} justifyContent='center'>
+                    <Stack
+                        sx={{
+                            height: 1,
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography>{params.value}</Typography>
                     </Stack>
                 );

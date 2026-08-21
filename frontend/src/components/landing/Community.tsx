@@ -15,11 +15,11 @@ export function Community() {
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Stack
                         sx={{
+                            alignItems: { xs: 'center', md: 'start' },
                             gap: '1.5rem',
                             position: { xs: 'unset', md: 'sticky' },
                             top: 'calc(var(--navbar-height) + 1rem)',
                         }}
-                        alignItems={{ xs: 'center', md: 'start' }}
                     >
                         <Typography
                             sx={{
@@ -56,7 +56,13 @@ export function Community() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Grid container spacing='2rem' justifyContent={{ xs: 'center', md: 'start' }}>
+                    <Grid
+                        container
+                        spacing='2rem'
+                        sx={{
+                            justifyContent: { xs: 'center', md: 'start' },
+                        }}
+                    >
                         {communityBulletPoints.map((bp) => (
                             <Grid size={{ xs: 11, md: 6 }} key={bp.key}>
                                 <BulletPoint
@@ -66,7 +72,14 @@ export function Community() {
                             </Grid>
                         ))}
 
-                        <Grid size={12} display='flex' justifyContent='center' mt={3}>
+                        <Grid
+                            size={12}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                mt: 3,
+                            }}
+                        >
                             <JoinDojoButton />
                         </Grid>
                     </Grid>

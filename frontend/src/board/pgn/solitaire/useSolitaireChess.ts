@@ -201,7 +201,7 @@ export function useSolitaireChess(
                 },
                 drawable: {
                     autoShapes: [{ orig: move.to, customSvg: { html: incorrectMoveGlyphHtml } }],
-                    eraseOnClick: false,
+                    eraseOnMovablePieceClick: false,
                 },
             });
             setTimeout(() => {

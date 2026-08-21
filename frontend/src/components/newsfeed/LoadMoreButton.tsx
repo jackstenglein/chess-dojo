@@ -1,7 +1,7 @@
 import { Request } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString } from '@/components/calendar/displayDate';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import { Button, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -25,7 +25,12 @@ function LoadMoreButton<T>({
 
     if (hasMore || Object.values(startKey || {}).length > 0) {
         return (
-            <Stack alignItems='center' spacing={1}>
+            <Stack
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Button variant='contained' loading={request.isLoading()} onClick={onLoadMore}>
                     {t('loadMore')}
                 </Button>
@@ -36,14 +41,33 @@ function LoadMoreButton<T>({
     if (since) {
         const date = new Date(since);
         return (
-            <Stack alignItems='center' spacing={1}>
-                <CheckCircleOutlineIcon color='success' fontSize='large' />
+            <Stack
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <CheckCircleOutlinedIcon color='success' fontSize='large' />
 
-                <Stack alignItems='center'>
-                    <Typography fontWeight='bold' textAlign='center'>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('allCaughtUp')}
                     </Typography>
-                    <Typography color='text.secondary' textAlign='center'>
+                    <Typography
+                        sx={{
+                            color: 'text.secondary',
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('seenAllSince', {
                             date: toDojoDateString(date, user?.timezoneOverride),
                         })}
@@ -58,14 +82,33 @@ function LoadMoreButton<T>({
     }
 
     return (
-        <Stack alignItems='center' spacing={1}>
-            <CheckCircleOutlineIcon color='success' fontSize='large' />
+        <Stack
+            spacing={1}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
+            <CheckCircleOutlinedIcon color='success' fontSize='large' />
 
-            <Stack alignItems='center'>
-                <Typography fontWeight='bold' textAlign='center'>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                    }}
+                >
                     {t('noMorePosts')}
                 </Typography>
-                <Typography color='text.secondary' textAlign='center'>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                    }}
+                >
                     {t('seenAllPosts')}
                 </Typography>
             </Stack>

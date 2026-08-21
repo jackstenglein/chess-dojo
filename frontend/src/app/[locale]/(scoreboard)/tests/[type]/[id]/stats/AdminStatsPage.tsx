@@ -43,7 +43,11 @@ function AuthAdminStatsPage({ type, id }: { type: ExamType; id: string }) {
     }
 
     return (
-        <Box height='calc(100vh - var(--navbar-height))'>
+        <Box
+            sx={{
+                height: 'calc(100vh - var(--navbar-height))',
+            }}
+        >
             <ExamStatistics exam={exam} />
         </Box>
     );

@@ -37,7 +37,6 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -131,8 +130,8 @@ export function ShareTab() {
         }
     };
 
-    const onCopy = (name: string, value: string) => {
-        copy(value);
+    const onCopy = async (name: string, value: string) => {
+        await navigator.clipboard.writeText(value);
         setCopied(name);
         setTimeout(() => {
             setCopied('');
@@ -140,11 +139,11 @@ export function ShareTab() {
     };
 
     const onCopyUrl = () => {
-        onCopy('url', window.location.href);
+        void onCopy('url', window.location.href);
     };
 
     const onCopyFen = () => {
-        onCopy('fen', chess?.fen() || '');
+        void onCopy('fen', chess?.fen() || '');
     };
 
     const onOpenBoardImage = () => {
@@ -239,7 +238,7 @@ export function ShareTab() {
     };
 
     const onCopyPgn = () => {
-        onCopy('pgn', renderPgn());
+        void onCopy('pgn', renderPgn());
     };
 
     const onDownloadPgn = () => {
@@ -305,7 +304,7 @@ export function ShareTab() {
     };
 
     const onCopyLine = () => {
-        onCopy('line', renderLine());
+        void onCopy('line', renderLine());
     };
 
     const onCloneGame = () => {
@@ -344,7 +343,15 @@ export function ShareTab() {
                 <RequestSnackbar request={cloneRequest} />
                 <RequestSnackbar request={addToFolderRequest} showSuccess />
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mb={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     {game && (
                         <DirectoryCacheProvider>
                             <DirectorySelectButton
@@ -383,7 +390,14 @@ export function ShareTab() {
 
                 <Divider />
 
-                <Stack direction='row' flexWrap='wrap' columnGap={1} mt={2}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        columnGap: 1,
+                        mt: 2,
+                    }}
+                >
                     <FormGroup>
                         <FormControlLabel
                             control={
@@ -520,7 +534,15 @@ export function ShareTab() {
                     </FormGroup>
                 )}
 
-                <Stack direction='row' gap={1} flexWrap='wrap' mt={2} justifyContent='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        mt: 2,
+                        justifyContent: 'center',
+                    }}
+                >
                     <CopyButton
                         name='pgn'
                         startIcon={<ContentPaste />}

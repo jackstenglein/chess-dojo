@@ -68,19 +68,33 @@ export function NewsfeedListPage() {
                 </Grid>
 
                 <Grid
-                    display={{ xs: 'none', md: 'initial' }}
                     size={{
                         md: 5,
                     }}
+                    sx={{
+                        display: { xs: 'none', md: 'initial' },
+                    }}
                 >
-                    <Stack direction='row' height={1}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            height: 1,
+                        }}
+                    >
                         <Divider orientation='vertical' flexItem sx={{ mr: 8 }} />
-                        <Stack spacing={3} width={1}>
+                        <Stack
+                            spacing={3}
+                            sx={{
+                                width: 1,
+                            }}
+                        >
                             <Stack
                                 direction='row'
-                                flexWrap='wrap'
-                                justifyContent='space-between'
-                                alignItems='center'
+                                sx={{
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
                             >
                                 <Typography variant='h6'>{t('graduations')}</Typography>
 

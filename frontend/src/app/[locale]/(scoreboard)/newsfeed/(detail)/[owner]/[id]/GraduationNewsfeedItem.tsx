@@ -19,7 +19,11 @@ const GraduationNewsfeedItem: React.FC<GraduationNewsfeedItemProps> = ({ entry }
     if (!entry.graduationInfo) {
         return (
             <Stack>
-                <Typography color='text.secondary'>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {t.rich('graduatedFrom', {
                         ...richTags,
                         cohort: entry.cohort,
@@ -31,7 +35,11 @@ const GraduationNewsfeedItem: React.FC<GraduationNewsfeedItemProps> = ({ entry }
 
     return (
         <Stack>
-            <Typography color='text.secondary'>
+            <Typography
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 {t.rich('graduated', {
                     ...richTags,
                     oldCohort: entry.cohort,
@@ -39,28 +47,53 @@ const GraduationNewsfeedItem: React.FC<GraduationNewsfeedItemProps> = ({ entry }
                 })}
             </Typography>
 
-            <Stack mt={1} mb={2}>
+            <Stack
+                sx={{
+                    mt: 1,
+                    mb: 2,
+                }}
+            >
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('dojoScore')}
                     </Typography>{' '}
                     {Math.round(100 * entry.graduationInfo.dojoScore) / 100}
                 </Typography>
 
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('dojoTime')}
                     </Typography>{' '}
                     {formatTime(entry.graduationInfo.dojoMinutes || 0, tCommon)}
                 </Typography>
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('nonDojoTime')}
                     </Typography>{' '}
                     {formatTime(entry.graduationInfo.nonDojoMinutes || 0, tCommon)}
                 </Typography>
                 <Typography>
-                    <Typography component='span' color='text.secondary'>
+                    <Typography
+                        component='span'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
                         {t('gamesAnnotated')}
                     </Typography>{' '}
                     {entry.graduationInfo.gamesAnnotated ?? 0}
@@ -68,7 +101,13 @@ const GraduationNewsfeedItem: React.FC<GraduationNewsfeedItemProps> = ({ entry }
             </Stack>
 
             {entry.graduationInfo.comments && (
-                <Typography whiteSpace='pre-line'>{entry.graduationInfo.comments}</Typography>
+                <Typography
+                    sx={{
+                        whiteSpace: 'pre-line',
+                    }}
+                >
+                    {entry.graduationInfo.comments}
+                </Typography>
             )}
         </Stack>
     );

@@ -1,10 +1,10 @@
 import { Chess, Move, SQUARES, type Square } from '@jackstenglein/chess';
+import { Chessground } from '@lichess-org/chessground';
+import { Api as BoardApi } from '@lichess-org/chessground/api';
+import { Config } from '@lichess-org/chessground/config';
+import { DrawShape } from '@lichess-org/chessground/draw';
+import { Color, Key } from '@lichess-org/chessground/types';
 import { Box, Button, Dialog, DialogContent, Stack } from '@mui/material';
-import { Chessground } from 'chessground';
-import { Api as BoardApi } from 'chessground/api';
-import { Config } from 'chessground/config';
-import { DrawShape } from 'chessground/draw';
-import { Color, Key } from 'chessground/types';
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
@@ -147,7 +147,7 @@ export function reconcile(
         drawable: {
             shapes: toShapes(chess),
             autoShapes: toAutoShapes(chess, showGlyphs),
-            eraseOnClick: false,
+            eraseOnMovablePieceClick: false,
         },
     });
     if (currentMove && playSound) {
@@ -358,7 +358,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
                     shapes: config?.drawable?.shapes || toShapes(chess),
                     autoShapes: toAutoShapes(chess, showGlyphs),
                     onChange: config?.drawable?.onChange || defaultOnDrawableChange(chess),
-                    eraseOnClick: false,
+                    eraseOnMovablePieceClick: false,
                 },
                 addPieceZIndex:
                     pieceStyle === PieceStyle.ThreeD || pieceStyle === PieceStyle.ThreeDRedBlue,
@@ -439,7 +439,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             drawable: {
                 shapes: toShapes(chess),
                 autoShapes: toAutoShapes(chess, showGlyphs),
-                eraseOnClick: false,
+                eraseOnMovablePieceClick: false,
             },
         });
     }, [board, chess, showGlyphs]);
@@ -448,7 +448,15 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     const coordinateSx = getCoordinateSx(coordinateSize);
 
     return (
-        <Box width={1} height={1} sx={{ ...pieceSx, ...getBoardSx(boardStyle), ...coordinateSx }}>
+        <Box
+            sx={{
+                width: 1,
+                height: 1,
+                ...pieceSx,
+                ...getBoardSx(boardStyle),
+                ...coordinateSx,
+            }}
+        >
             <div
                 data-testid='chessground-board'
                 ref={boardRef}

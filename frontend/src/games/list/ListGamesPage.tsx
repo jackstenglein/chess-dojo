@@ -78,7 +78,12 @@ const ListGamesPage = () => {
 
             {isFreeTier && (
                 <>
-                    <Stack alignItems='center' mb={5}>
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            mb: 5,
+                        }}
+                    >
                         <UpsellAlert>{t('freeTierAlert')}</UpsellAlert>
                     </Stack>
                     <UpsellDialog
@@ -138,7 +143,12 @@ const ListGamesPage = () => {
 
                         <Stack spacing={0.5}>
                             <Stack direction='row' spacing={1}>
-                                <Typography variant='body2' alignSelf='start'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        alignSelf: 'start',
+                                    }}
+                                >
                                     <Link href='/games/review-queue'>
                                         <Icon
                                             name='line'
@@ -170,7 +180,9 @@ const ListGamesPage = () => {
                                 data-testid='download-database-button'
                                 id='download-full-database'
                                 variant='body2'
-                                alignSelf='start'
+                                sx={{
+                                    alignSelf: 'start',
+                                }}
                             >
                                 <Link
                                     href={

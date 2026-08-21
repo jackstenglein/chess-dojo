@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { LogLevel } from './logging/logLevel';
 
 export const MUI_LICENSE_KEY =
-    '24a7fa97376749c937d182874ff9e0bcTz0xMjMxMjIsRT0xNzk3MjA2Mzk5MDAwLFM9cHJvLExNPXN1YnNjcmlwdGlvbixQVj1RMy0yMDI0LEtWPTI=';
+    '88cd3224ebe6fef491d55087683d3ab3Tz0xMjMxMjIsRT0xNzk3MjkyNzk5MDAwLFM9cHJvLExNPWFubnVhbCxQVj1RMS0yMDI2LFE9MSxBVD1tdWx0aSxLVj0y';
 
 export const EnvSchema = z.object({
     auth: z.object({

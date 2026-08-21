@@ -7,6 +7,7 @@ import { useCache } from '@/api/cache/Cache';
 import { DefaultTimezone } from '@/components/calendar/filters/TimezoneSelector';
 import { Link } from '@/components/navigation/Link';
 import NotificationSettingsEditor from '@/components/profile/edit/NotificationSettingsEditor';
+import { PersonalAccessTokensEditor } from '@/components/profile/edit/PersonalAccessTokensEditor';
 import { PersonalInfoEditor } from '@/components/profile/edit/PersonalInfoEditor';
 import { RatingEditor, RatingsEditor } from '@/components/profile/edit/RatingsEditor';
 import { ResetProgressButton } from '@/components/profile/edit/ResetProgressButton';
@@ -23,6 +24,7 @@ import { useRouter } from '@/hooks/useRouter';
 import { DEFAULT_LOCALE, setLocaleCookie } from '@/i18n/locales';
 import { logger } from '@/logging/logger';
 import InfoIcon from '@mui/icons-material/Info';
+import KeyIcon from '@mui/icons-material/Key';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -445,6 +447,16 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                     />
                                     {t('sidebarSubscription')}
                                 </Link>
+                                <Link href='#pat' onClick={scrollToId('pat')}>
+                                    <KeyIcon
+                                        fontSize='small'
+                                        sx={{
+                                            verticalAlign: 'middle',
+                                            marginRight: '0.2em',
+                                        }}
+                                    />
+                                    Access Tokens
+                                </Link>
                                 <Link href='#danger' onClick={scrollToId('danger')}>
                                     <WarningIcon
                                         fontSize='small'
@@ -494,7 +506,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 errors={errors}
                                 request={request}
                             />
-                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSavePersonal}
@@ -530,7 +548,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 setEnableZenMode={setEnableZenMode}
                                 errors={errors}
                             />
-                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSaveRatings}
@@ -559,7 +583,13 @@ export function ProfileEditorPage({ user }: { user: User }) {
                                 notificationSettings={notificationSettings}
                                 setNotificationSettings={setNotificationSettings}
                             />
-                            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                            <Stack
+                                direction='row'
+                                spacing={2}
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Button
                                     variant='contained'
                                     onClick={onSaveNotifications}
@@ -584,6 +614,8 @@ export function ProfileEditorPage({ user }: { user: User }) {
                         </Stack>
 
                         <SubscriptionManager user={user} />
+
+                        <PersonalAccessTokensEditor />
 
                         <Stack spacing={2}>
                             <Stack

@@ -32,7 +32,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
@@ -113,8 +112,8 @@ export const ShareDialog = ({
         return false;
     }, [newAccess, directory]);
 
-    const onCopyLink = () => {
-        copy(
+    const onCopyLink = async () => {
+        await navigator.clipboard.writeText(
             `${getConfig().baseUrl}/profile/${directory.owner}?view=games&directory=${directory.id}`,
         );
         setCopied(true);
@@ -247,9 +246,9 @@ function AddAccessSection({
                 filterSelectedOptions
                 onInputChange={(_event, newInputValue) => setInputValue(newInputValue)}
                 renderInput={(params) => <TextField {...params} label={t('addPeople')} />}
-                renderTags={(users, getTagProps) =>
+                renderValue={(users, getItemProps) =>
                     users.map((user, index) => {
-                        const { key, ...tagProps } = getTagProps({ index });
+                        const { key, ...tagProps } = getItemProps({ index });
                         return (
                             <Chip
                                 key={key}
@@ -273,7 +272,12 @@ function AddAccessSection({
                                     primary={
                                         <Stack>
                                             <span>{user.displayName}</span>
-                                            <Box component='span' color='text.secondary'>
+                                            <Box
+                                                component='span'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {user.dojoCohort}
                                             </Box>
                                         </Stack>
@@ -336,7 +340,12 @@ function CurrentAccessSection({
         <>
             <RequestSnackbar request={request} />
 
-            <Typography variant='h6' mt={3}>
+            <Typography
+                variant='h6'
+                sx={{
+                    mt: 3,
+                }}
+            >
                 {t('currentAccess')}
             </Typography>
 
@@ -402,7 +411,13 @@ function ListItemSecondary({ user }: { user: User }) {
     const lichess = user.ratings[RatingSystem.Lichess]?.username;
 
     return (
-        <Stack direction='row' flexWrap='wrap' columnGap={1.5}>
+        <Stack
+            direction='row'
+            sx={{
+                flexWrap: 'wrap',
+                columnGap: 1.5,
+            }}
+        >
             {chesscom && (
                 <span>
                     <SiChessdotcom style={{ color: '#81b64c', verticalAlign: 'middle' }} />{' '}

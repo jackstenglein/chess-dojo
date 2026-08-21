@@ -124,13 +124,23 @@ export function EditBlogPage({ id }: { id?: string }) {
     return (
         <Container sx={{ py: 5 }}>
             <Stack spacing={3}>
-                <Stack direction='row' alignItems='center' gap={2}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: 2,
+                    }}
+                >
                     <Typography variant='h5'>
                         {isCreate ? 'Create blog post' : 'Edit blog post'}
                     </Typography>
                 </Stack>
 
-                <Typography color='text.secondary'>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {isCreate ? 'Create a new blog post.' : 'Update the blog post.'} Use the Write
                     tab to edit markdown and the Preview tab to see how it will look when published.
                 </Typography>
@@ -211,7 +221,13 @@ export function EditBlogPage({ id }: { id?: string }) {
                     date={date?.toISODate() ?? ''}
                 />
 
-                <Stack direction='row' gap={2} justifyContent='flex-end'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        gap: 2,
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Button component={Link} href='/admin/blog' variant='outlined'>
                         Cancel
                     </Button>

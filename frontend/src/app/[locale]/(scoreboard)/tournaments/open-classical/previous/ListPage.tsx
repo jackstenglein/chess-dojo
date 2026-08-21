@@ -43,11 +43,22 @@ const ListPage = () => {
     return (
         <Container sx={{ py: 5 }} maxWidth='md'>
             <RequestSnackbar request={request} />
-            <Typography variant='h4' gutterBottom textAlign='center'>
+            <Typography
+                variant='h4'
+                gutterBottom
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {t('heading')}
             </Typography>
 
-            <Stack spacing={3} mt={4}>
+            <Stack
+                spacing={3}
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <Card
                     sx={{
                         border: '2px solid #F7941F',
@@ -66,12 +77,23 @@ const ListPage = () => {
                             <Typography variant='h6' component='div'>
                                 {t('currentTournament')}
                             </Typography>
-                            <Box display='flex' alignItems='center' mt={1}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mt: 1,
+                                }}
+                            >
                                 <AccessTimeIcon
                                     fontSize='small'
                                     sx={{ mr: 1, color: 'text.secondary' }}
                                 />
-                                <Typography variant='body2' color='text.secondary'>
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('ongoingNow')}
                                 </Typography>
                             </Box>

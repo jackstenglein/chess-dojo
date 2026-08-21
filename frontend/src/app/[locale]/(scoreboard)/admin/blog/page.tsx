@@ -82,12 +82,20 @@ export default function AdminBlogListPage() {
             <Stack spacing={3}>
                 <Stack
                     direction='row'
-                    alignItems='center'
-                    justifyContent='space-between'
-                    flexWrap='wrap'
-                    gap={2}
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' gap={2}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            gap: 2,
+                        }}
+                    >
                         <IconButton component={Link} href='/admin' sx={{ display: 'flex' }}>
                             <ArrowBackIcon />
                         </IconButton>
@@ -110,7 +118,13 @@ export default function AdminBlogListPage() {
                         {error?.message ?? 'Failed to load blog posts'}
                     </Typography>
                 ) : blogs.length === 0 ? (
-                    <Typography color='text.secondary'>No blog posts yet.</Typography>
+                    <Typography
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        No blog posts yet.
+                    </Typography>
                 ) : (
                     <>
                         <Stack spacing={2}>
@@ -124,10 +138,12 @@ export default function AdminBlogListPage() {
                                         <CardContent>
                                             <Stack
                                                 direction='row'
-                                                justifyContent='space-between'
-                                                alignItems='flex-start'
-                                                flexWrap='wrap'
-                                                gap={1}
+                                                sx={{
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'flex-start',
+                                                    flexWrap: 'wrap',
+                                                    gap: 1,
+                                                }}
                                             >
                                                 <Stack sx={{ py: 0.5 }}>
                                                     <Typography variant='h6' component='h2'>
@@ -135,7 +151,9 @@ export default function AdminBlogListPage() {
                                                     </Typography>
                                                     <Typography
                                                         variant='body2'
-                                                        color='text.secondary'
+                                                        sx={{
+                                                            color: 'text.secondary',
+                                                        }}
                                                     >
                                                         {blog.subtitle} • {blog.date}
                                                     </Typography>

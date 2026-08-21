@@ -220,7 +220,12 @@ function SaveGameDialogBody({
                     {children ? children : <>{t('reviewFields')}</>}
                 </DialogContentText>
 
-                <Stack spacing={3} mt={3}>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Grid container columnSpacing={1} rowSpacing={2}>
                         <Grid
                             size={{

@@ -13,7 +13,11 @@ export default function DojoTalksTop2025() {
         <Container maxWidth='sm' sx={{ py: 5 }}>
             <Header title='Dojo at the Olympiad!' subtitle='September 12, 2024' />
 
-            <Typography mb={3}>
+            <Typography
+                sx={{
+                    mb: 3,
+                }}
+            >
                 Jan, known in the Dojo as{' '}
                 <Link href='https://www.chessdojo.club/profile/90957cf2-7e8c-43a7-a4f3-f063f24e3781?utm_source=playerspotlight&utm_medium=blog&utm_campaign=lifecanbesonice'>
                     LifeCanBeSoNice

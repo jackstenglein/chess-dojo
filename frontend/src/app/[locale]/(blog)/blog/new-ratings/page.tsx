@@ -17,7 +17,11 @@ export default function NewRatings() {
                 subtitle='Jesse Kraai • September 15, 2024'
             />
 
-            <Stack mt={3}>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
                 <iframe
                     width='560'
                     height='315'
@@ -29,7 +33,11 @@ export default function NewRatings() {
                     allowFullScreen
                 ></iframe>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     One of the first and essential building stones of the Dojo Training Program was
                     the creation of a universal rating system. It was a bit like creating a
                     universal currency from about eight national currencies. Obviously some of these
@@ -39,7 +47,11 @@ export default function NewRatings() {
                     And it was this action which forced us to reevaluate our exchange rates.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Let me describe what happened. When I was a kid (in the last millennium), you
                     had to have a rating of 2200 to get a Fide rating. But then, partly out of
                     democratic impulse, Fide gradually lowered its floor to 1000. The problem with
@@ -51,7 +63,11 @@ export default function NewRatings() {
                     an inflationary impulse in the first place.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Their controversial solution is the following formula: (0.4) x (2000-rating). So
                     if you are 2000+ you get nothing, whereas if you are 1000 you get catapulted to
                     1400. This is how we end up with the new floor (1400). It's controversial as it
@@ -59,20 +75,32 @@ export default function NewRatings() {
                     especially at the top. Will Magnus eventually be 3100 now?
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     For the Dojo rating system it's a real problem. We based our rating system on
                     the currency of Fide to begin with, but now our cohorts from 1000-2000 can't use
                     Fide as its base currency anymore because that 1000 point range has been
                     compressed to a 600 point range (1400-2000).
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     So, what we've done (potentially as a temporary measure) is to base the currency
                     of the u/2000 cohorts on chess.com ratings. If the Fide ratings eventually sort
                     themselves by points trickling up the ladder, we may switch back to using Fide.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     We knew about this Fide problem when we decided to redo the translator. We did
                     not realize however how severe the inflation problem with Lichess had become.
                     Lichess gives every player who shows up on their site an initial rating of 1500
@@ -81,7 +109,11 @@ export default function NewRatings() {
                     be taking place inside the Dojo are associated with this Lichess inflation.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     This is all a layman's conversation about this difficult topic. You can delve
                     deeper into the details on our{' '}
                     <Link
@@ -97,7 +129,11 @@ export default function NewRatings() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     The Dojo heartily thanks Michael Franco, AKA{' '}
                     <Link
                         target='_blank'

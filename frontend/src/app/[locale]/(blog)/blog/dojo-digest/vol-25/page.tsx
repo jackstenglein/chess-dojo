@@ -23,11 +23,24 @@ export default function DojoDigestVol25() {
                 subtitle='Dojo Digest 25 • October 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     {' '}
                     <strong> David at CoachChamps</strong> — David has joined a host of top coaches
                     and personalities including Levy, Neiksans, Dina and more, to see who can prove
@@ -43,7 +56,11 @@ export default function DojoDigestVol25() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Solitaire Chess (Guess the Move)</strong> — Dojo has a great new feature
                     that you can use to memorize classic games (a training plan task in all cohorts)
                     or to play guess the move. Guess the move is a great way to immerse yourself in
@@ -51,7 +68,12 @@ export default function DojoDigestVol25() {
                     feature, open any game and look for the tools (wrench and hammer) icon.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={solitairechess}
                         alt=''
@@ -59,7 +81,11 @@ export default function DojoDigestVol25() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Kraai on the Perpetual pod</strong> — Ben Johnson had Jesse on to talk
                     about his first place finish at the US Senior Open and all things Dojo. Check it
                     out{' '}
@@ -72,7 +98,11 @@ export default function DojoDigestVol25() {
                     .
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Spacebar Analysis</strong> — You will often hear masters talk about
                     “hitting spacebar.” Hitting the spacebar on your keyboard is the shortcut
                     Chessbase created for an instant engine analysis of the position on the board.
@@ -81,7 +111,11 @@ export default function DojoDigestVol25() {
                     the top engine move.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Dojo in Samarkand</strong> — Well, we weren’t actually there, but it
                     felt like it with the live feed of the games. The Dojo pioneered engine-less
                     commentary, and we are proud to keep it up. In addition to sharing a sense of
@@ -93,7 +127,11 @@ export default function DojoDigestVol25() {
                     tournament.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>How to Analyze Your Games — A ChessDojo Guide</strong> is out on{' '}
                     <Link
                         href='https://www.amazon.com/dp/B0F1DB396G?ref=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&social_share=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&bestFormat=true'
@@ -117,7 +155,11 @@ export default function DojoDigestVol25() {
                     </Link>
                     !
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Patreon and DojoTalks</strong> — The Dojo is trying to be more
                     consistent with our podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/ChessDojo' target='_blank'>
@@ -126,17 +168,30 @@ export default function DojoDigestVol25() {
                     where you can get episodes early, vote on coming topics, suggest topics and
                     discuss the pod on our private Discord.
                 </Typography>
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_104186277850925094929'>
                         Alvin_Cruz
                     </a>{' '}
                     went on a 24-game no loss streak with 22 wins and 2 draws in classical format!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/google_110999236586145026586'>
                         Chahat
                     </a>{' '}
@@ -150,13 +205,22 @@ export default function DojoDigestVol25() {
                     ! They had a long term goal for nearly 2.5 years, but jumped from the 1600s to
                     2000 this year alone following the Dojo training plan!
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/2539684b-b267-476d-8119-21355a37bc9d'>
                         MrHence
                     </a>{' '}
                     beat an IM in a blitz game! Check out the game:
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={mrhence}
                         alt=''
@@ -164,7 +228,11 @@ export default function DojoDigestVol25() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <a href='https://www.chessdojo.club/profile/b32a7e2f-b677-4c92-a80e-c4ee3bce9058'>
                         Sarciness
                     </a>{' '}

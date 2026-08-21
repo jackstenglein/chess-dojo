@@ -24,11 +24,24 @@ export default function DojoDigestVol19() {
                 subtitle='Dojo Digest 19 • April 1, 2025'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Updates
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>ChessDojo Champions' Circuit</strong> — Dojo tournaments now have
                     prizes! The winners of both the{' '}
                     <Link href='https://www.chessdojo.club/tournaments/round-robin' target='_blank'>
@@ -46,7 +59,11 @@ export default function DojoDigestVol19() {
                     remain anonymous) for making this possible!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     A Professional Modern Repertoire Against the Caro-Kann — Part modern repertoire
                     against the Caro-Kann, part treatise on positional chess, this course by David
                     Pruess covers playing the d4 v. c6 pawn structure, and playing with the bishop
@@ -55,7 +72,11 @@ export default function DojoDigestVol19() {
                     free, while non-members can purchase it for just $15. Get it here.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Weekly Planner — We've streamlined our training plan to make it as simple as
                     possible for you to focus on your chess studies. Our new UI allows you to set
                     your weekly study goal, and then our algorithm suggests which tasks you should
@@ -63,14 +84,24 @@ export default function DojoDigestVol19() {
                     should study. Fretting over the what and how costs not only energy but
                     encourages putting the work off. Below you can see what the new UI looks like:
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={weeklyplanner}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
                 </Stack>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={heatmap}
                         alt=''
@@ -78,14 +109,22 @@ export default function DojoDigestVol19() {
                     />
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Dojo 4.0 — Coming up May 1st! Every year, we carefully review all of the
                     material in our training plan, taking into account feedback, new courses/books,
                     and the availaibilty of material. There will also be some new functionality on
                     our website. Keep a look out for the announcement next month!
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     How to Analyze Your Games – A ChessDojo Guide is out on{' '}
                     <Link
                         href='https://www.amazon.com/dp/B0F1DB396G?ref=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31&ref_=cm_sw_r_ffobk_cp_ud_dp_28S42XTYCZ2PRHKFJN31'
@@ -103,7 +142,11 @@ export default function DojoDigestVol19() {
                     ! Keep an eye out for it's release on ForwardChess soon.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Patreon and DojoTalks - The Dojo is trying to be more consistent with our
                     podcast, but we need your help! Head over to our{' '}
                     <Link href='https://www.patreon.com/c/ChessDojo' target='_blank'>
@@ -113,17 +156,30 @@ export default function DojoDigestVol19() {
                     discuss the pod on our private Discord.
                 </Typography>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <strong>Teams</strong> - Are you part of a scholastic or European club team? Let
                     us know! We would like to bring your teammates to the Dojo and see you with them
                     on a customized scoreboard. We believe the Dojo is the place for teams to track
                     their progress, be competitive with one another and challenge other teams.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_115165946308482592969'
                         target='_blank'
@@ -134,7 +190,12 @@ export default function DojoDigestVol19() {
                     well. He managed to score 5/8 playing on boards 1, 2, 3, 4, 5 (twice), and 6
                     (twice) with a performance rating of ~2000 gaining 21 DWZ elo!
                 </Typography>
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={tibi}
                         alt=''
@@ -142,7 +203,11 @@ export default function DojoDigestVol19() {
                     />
                 </Stack>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_116077411244047661116'
                         target='_blank'
@@ -153,7 +218,11 @@ export default function DojoDigestVol19() {
                     also hosted the first ever training camp for adult improvers in his country with
                     24 participants. They even had someone fly in from England to attend!
                 </Typography>
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_113473432129623975319'
                         target='_blank'
@@ -164,7 +233,11 @@ export default function DojoDigestVol19() {
                     a score of 4.5/5, and with that came a huge rating increase!
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Link
                         href='https://www.chessdojo.club/profile/google_100752533272043304112'
                         target='_blank'

@@ -17,7 +17,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import copy from 'copy-to-clipboard';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Bio from './Bio';
@@ -85,8 +84,8 @@ export function UserCard({
             });
     };
 
-    const onCopyUrl = () => {
-        copy(`${BASE_URL}/profile/${user.username}`);
+    const onCopyUrl = async () => {
+        await navigator.clipboard.writeText(`${BASE_URL}/profile/${user.username}`);
         setCopied('url');
         setTimeout(() => setCopied(''), 3000);
     };
@@ -137,31 +136,55 @@ export function UserCard({
             </Stack>
 
             <CardContent>
-                <Stack alignItems='center' mb={-1}>
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                        mb: -1,
+                    }}
+                >
                     <Avatar user={user} />
-                    <Typography variant='h4' fontWeight='bold' textAlign='center'>
+                    <Typography
+                        variant='h4'
+                        sx={{
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                        }}
+                    >
                         {user.displayName}
                     </Typography>
 
-                    <Stack direction='row' alignItems='center' spacing={1}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <CohortIcon
                             cohort={user.dojoCohort}
                             tooltip={t('memberOfCohort', { cohort: user.dojoCohort })}
                         />
-                        <Typography variant='h5' color='text.secondary'>
+                        <Typography
+                            variant='h5'
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
                             {user.dojoCohort}
                         </Typography>
                     </Stack>
 
                     <Stack
                         direction='row'
-                        flexWrap='wrap'
-                        rowGap={1}
-                        columnGap={1}
-                        alignItems='center'
-                        justifyContent='center'
-                        mt={3}
-                        mb={3}
+                        sx={{
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                            columnGap: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mt: 3,
+                            mb: 3,
+                        }}
                     >
                         <CoachChip user={user} />
                         <InactiveChip user={user} />

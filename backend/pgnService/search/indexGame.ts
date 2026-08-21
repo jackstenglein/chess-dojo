@@ -6,6 +6,7 @@ import { DynamoDBRecord, DynamoDBStreamHandler } from 'aws-lambda';
 import { Game } from '../game/types';
 import { gamesIndex, getClient, isSearchEnabled } from './client';
 import { buildSearchDocument, documentId } from './document';
+import { ensureGamesIndexOnce } from './mapping';
 
 /** An OpenSearch bulk response containing document-level failures. */
 export class BulkIndexError extends Error {
@@ -79,7 +80,12 @@ export const handler: DynamoDBStreamHandler = async (event) => {
         return { batchItemFailures: [] };
     }
 
-    const response = await getClient().bulk({ body: operations });
+    const client = getClient();
+    // Create with the explicit mapping if missing; fail closed if an
+    // existing index was auto-created with incompatible dynamic types.
+    await ensureGamesIndexOnce(client, gamesIndex());
+
+    const response = await client.bulk({ body: operations });
 
     const failedIds = new Set<string>();
     if (response.body.errors) {

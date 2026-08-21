@@ -150,6 +150,7 @@ export const ProgressUpdater = ({
                 setHours('');
                 setMinutes('');
                 request.reset();
+                // Only clear the timer when it was tracking this task or not specific to a task.
                 if (!timerTask || timerTask.id === requirement.id) {
                     onClearTimer();
                 }
@@ -195,7 +196,13 @@ export const ProgressUpdater = ({
                     />
 
                     <Stack spacing={2}>
-                        <Grid container width={1} gap={2}>
+                        <Grid
+                            container
+                            sx={{
+                                width: 1,
+                                gap: 2,
+                            }}
+                        >
                             <Grid size={{ xs: 12, sm: 'grow' }}>
                                 <DateTimePicker
                                     label={tCommon('date')}

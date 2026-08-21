@@ -13,7 +13,12 @@ interface OwnerFieldProps {
 const OwnerField: React.FC<OwnerFieldProps> = ({ title, event }) => {
     return (
         <Stack>
-            <Typography variant='h6' color='text.secondary'>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
                 <Icon
                     name='player'
                     color='primary'
@@ -21,7 +26,13 @@ const OwnerField: React.FC<OwnerFieldProps> = ({ title, event }) => {
                 />
                 {title}
             </Typography>
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Avatar username={event.owner} displayName={event.ownerDisplayName} size={25} />
                 <Link href={`/profile/${event.owner}`}>
                     <Typography variant='body1'>

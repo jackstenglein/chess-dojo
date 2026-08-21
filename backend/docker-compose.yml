@@ -8,6 +8,7 @@ services:
       - discovery.type=single-node
       - DISABLE_INSTALL_DEMO_CONFIG=true
       - DISABLE_SECURITY_PLUGIN=true
+      - action.auto_create_index=false
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - '9200:9200'

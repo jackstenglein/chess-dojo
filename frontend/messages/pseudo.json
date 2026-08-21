@@ -909,6 +909,7 @@
         "analysisBoard": "[T] Analysis Board",
         "fullDatabase": "[T] Full Database",
         "myGames": "[T] My Games",
+        "myFiles": "[T] My Files",
         "repertoireSpy": "[T] Repertoire Spy",
         "calendar": "[T] Calendar",
         "tournaments": "[T] Tournaments",
@@ -2679,7 +2680,8 @@
             "noClubsFound": "[T] No clubs found"
         },
         "chips": {
-            "memberCount": "[T] {count, plural, =1 {# member} other {# members}}"
+            "memberCount": "[T] {count, plural, =1 {# member} other {# members}}",
+            "mainClub": "[T] Main Club"
         },
         "filters": {
             "search": "[T] Search...",
@@ -2724,6 +2726,8 @@
             "requestToJoinClub": "[T] Request to Join Club",
             "joinClub": "[T] Join Club",
             "joinedSnackbar": "[T] Joined club",
+            "setMainClub": "[T] Set as Main Club",
+            "mainClubSnackbar": "[T] Main club updated",
             "tabsAriaLabel": "[T] profile tabs",
             "tabs": {
                 "scoreboard": "[T] Scoreboard",
@@ -3441,6 +3445,7 @@
             "chessDbColumnWinrate": "[T] Winrate",
             "chessDbColumnNote": "[T] Note",
             "queueAnalysisButton": "[T] Queue Analysis",
+            "analysisQueued": "[T] Analysis queued. Check back later.",
             "positionNotInChessDb": "[T] Position not in ChessDB.",
             "chessCloudDatabaseLabel": "[T] Chess Cloud Database",
             "tabDojo": "[T] Dojo",

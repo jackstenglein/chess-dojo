@@ -97,6 +97,8 @@ export interface User {
 
     /** The set of club ids the user is a member of. */
     clubs?: string[];
+    /** The id of the club the user has designated as their main club. Empty if unset. */
+    mainClubId?: string;
 
     /** A map from exam id to the user's summary for that exam. */
     exams: Record<string, UserExamSummary>;

@@ -18,7 +18,12 @@ const RatingsSection = ({ review }: SectionProps) => {
         : undefined;
 
     const bold = (chunks: ReactNode) => (
-        <Typography component='span' fontWeight='800'>
+        <Typography
+            component='span'
+            sx={{
+                fontWeight: '800',
+            }}
+        >
             {chunks}
         </Typography>
     );
@@ -49,19 +54,31 @@ const RatingsSection = ({ review }: SectionProps) => {
     }
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
-                fontWeight='800'
-                fontSize='clamp(16px,3vw,32px)'
-                textAlign='center'
+                sx={{
+                    fontWeight: '800',
+                    fontSize: 'clamp(16px,3vw,32px)',
+                    textAlign: 'center',
+                }}
             >
                 {t('intro')}
             </Typography>
 
             {preferred ? (
                 <>
-                    <Typography my={5} fontSize='clamp(16px,18px,30px)' textAlign='center'>
+                    <Typography
+                        sx={{
+                            my: 5,
+                            fontSize: 'clamp(16px,18px,30px)',
+                            textAlign: 'center',
+                        }}
+                    >
                         {getDescription(preferred[0] as RatingSystem, preferred[1])}
                     </Typography>
 
@@ -73,11 +90,22 @@ const RatingsSection = ({ review }: SectionProps) => {
                         period={review.period}
                     />
 
-                    <Typography my={5} fontSize='clamp(16px,18px,30px)' textAlign='center'>
+                    <Typography
+                        sx={{
+                            my: 5,
+                            fontSize: 'clamp(16px,18px,30px)',
+                            textAlign: 'center',
+                        }}
+                    >
                         {t('otherRatingsIntro')}
                     </Typography>
 
-                    <Stack width={1} spacing={5}>
+                    <Stack
+                        spacing={5}
+                        sx={{
+                            width: 1,
+                        }}
+                    >
                         {Object.entries(review.ratings || {}).map(([system, data]) => {
                             if (system === preferred[0]) {
                                 return null;
@@ -96,7 +124,13 @@ const RatingsSection = ({ review }: SectionProps) => {
                     </Stack>
                 </>
             ) : (
-                <Typography my={5} fontSize='clamp(16px,18px,30px)' textAlign='center'>
+                <Typography
+                    sx={{
+                        my: 5,
+                        fontSize: 'clamp(16px,18px,30px)',
+                        textAlign: 'center',
+                    }}
+                >
                     {t('noRatings')}
                 </Typography>
             )}

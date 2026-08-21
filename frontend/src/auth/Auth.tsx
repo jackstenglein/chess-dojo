@@ -218,11 +218,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void getCurrentUser();
     }, [getCurrentUser]);
 
-    const updateUser = (update: Partial<User>) => {
-        if (user) {
-            setUser({ ...user, ...update });
-        }
-    };
+    // Functional update so rapid successive callers (e.g. progress save then timer
+    // clear) cannot clobber each other via a stale `user` closure.
+    const updateUser = useCallback((update: Partial<User>) => {
+        setUser((prev) => (prev ? { ...prev, ...update } : prev));
+    }, []);
 
     const signin = (email: string, password: string) => {
         return new Promise<void>((resolve, reject) => {

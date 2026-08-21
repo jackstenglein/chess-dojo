@@ -93,28 +93,52 @@ const GameSection = ({ review }: SectionProps) => {
     }, [data, t]);
 
     return (
-        <Stack width={1} alignItems='center'>
+        <Stack
+            sx={{
+                width: 1,
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
-                fontWeight='800'
-                fontSize='clamp(16px,3vw,32px)'
-                textAlign='center'
+                sx={{
+                    fontWeight: '800',
+                    fontSize: 'clamp(16px,3vw,32px)',
+                    textAlign: 'center',
+                }}
             >
                 {t('intro')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
                 <CardContent>
-                    <Grid container alignItems='center' rowSpacing={2}>
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Grid
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 12,
                                 sm: 4,
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
-                            <Stack alignItems='center'>
-                                <Typography variant='caption' color='text.secondary'>
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('totalGames')}
                                 </Typography>
 
@@ -138,15 +162,26 @@ const GameSection = ({ review }: SectionProps) => {
                         />
 
                         <Grid
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 12,
                                 sm: 4,
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
-                            <Stack alignItems='center'>
-                                <Typography variant='caption' color='text.secondary'>
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
                                     {t('publishedGames')}
                                 </Typography>
 
@@ -170,10 +205,26 @@ const GameSection = ({ review }: SectionProps) => {
                         />
                     </Grid>
 
-                    <Stack mt={4} spacing={4}>
-                        <Stack alignItems='start' spacing={0.5}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byResult')}</Typography>
-                            <Box width={1} height={400} mt={2}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: resultData,
@@ -194,10 +245,26 @@ const GameSection = ({ review }: SectionProps) => {
                         </Stack>
                     </Stack>
 
-                    <Stack mt={4} spacing={4}>
-                        <Stack alignItems='start' spacing={0.5}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
                             <Typography>{t('byMonth')}</Typography>
-                            <Box width={1} height={400} mt={2}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: monthData,

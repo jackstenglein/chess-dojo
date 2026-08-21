@@ -1,6 +1,6 @@
-@import '../../node_modules/chessground/assets/chessground.base.css';
-@import '../../node_modules/chessground/assets/chessground.brown.css';
-@import '../../node_modules/chessground/assets/chessground.cburnett.css';
+@import '../../node_modules/@lichess-org/chessground/assets/chessground.base.css';
+@import '../../node_modules/@lichess-org/chessground/assets/chessground.brown.css';
+@import '../../node_modules/@lichess-org/chessground/assets/chessground.cburnett.css';
 
 .cg-wrap coords {
     font-size: var(--coordinate-font-size, 9px);

@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage: [dev, prod]
+        stage: [dev]
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -52,28 +52,32 @@ jobs:
       - name: Upload to S3 if newer
         id: upload
         env:
-          STAGE: ${{ matrix.stage }}
           FIDE_LAST_MODIFIED_UNIX: ${{ steps.download.outputs.fide_last_modified_unix }}
         run: |
           set -euo pipefail
-          BUCKET="chess-dojo-${STAGE}-fide-ratings"
           EXISTING=$(aws s3api head-object \
-            --bucket "$BUCKET" \
+            --bucket "chess-dojo-prod-fide-ratings" \
             --key "$OBJECT_KEY" \
             --query 'Metadata.fide-last-modified-unix' \
             --output text 2>/dev/null || true)
           if [ "$EXISTING" = "$FIDE_LAST_MODIFIED_UNIX" ]; then
-            echo "S3 already has this Last-Modified; skipping upload"
+            echo "Prod S3 already has this Last-Modified; skipping upload"
             echo "uploaded=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # put-object --metadata uses key=value shorthand; unix timestamps avoid
           # commas/spaces that break HTTP-date values in that format.
           aws s3api put-object \
-            --bucket "$BUCKET" \
+            --bucket "chess-dojo-prod-fide-ratings" \
+            --key "$OBJECT_KEY" \
+            --body players_list.zip \
+            --content-type application/zip \
+            --metadata "fide-last-modified-unix=${FIDE_LAST_MODIFIED_UNIX}"
+          aws s3api put-object \
+            --bucket "chess-dojo-dev-fide-ratings" \
             --key "$OBJECT_KEY" \
             --body players_list.zip \
             --content-type application/zip \
             --metadata "fide-last-modified-unix=${FIDE_LAST_MODIFIED_UNIX}"
           echo "uploaded=true" >> "$GITHUB_OUTPUT"
-          echo "Uploaded to s3://${BUCKET}/${OBJECT_KEY}"
+          echo "Uploaded to s3://chess-dojo-prod-fide-ratings/${OBJECT_KEY}"

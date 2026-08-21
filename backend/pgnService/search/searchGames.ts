@@ -228,6 +228,7 @@ export function buildSearchQuery(request: SearchGamesRequest): object {
             },
         };
     }
+    console.debug('Built search query: %j', { bool: { filter } });
     return { bool: { filter } };
 }
 
@@ -262,32 +263,32 @@ function toGameInfo(doc: SearchDocument): object {
  * result, cohort and date filters.
  */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-    console.log('Event: %j', event);
-
-    if (!isSearchEnabled()) {
-        // Simple deployments have no search domain.
-        return errToApiGatewayProxyResultV2(
-            new ApiError({
-                statusCode: 503,
-                publicMessage: 'Game search is not available on this deployment',
-            }),
-        );
-    }
-
-    const parsed = requestSchema.safeParse(event.queryStringParameters ?? {});
-    if (!parsed.success) {
-        return errToApiGatewayProxyResultV2(
-            new ApiError({
-                statusCode: 400,
-                publicMessage: `Invalid request: ${parsed.error.issues
-                    .map((i) => `${i.path.join('.')}: ${i.message}`)
-                    .join(', ')}`,
-            }),
-        );
-    }
-    const request = parsed.data;
-
     try {
+        console.log('Event: %j', event);
+
+        if (!isSearchEnabled()) {
+            // Simple deployments have no search domain.
+            return errToApiGatewayProxyResultV2(
+                new ApiError({
+                    statusCode: 503,
+                    publicMessage: 'Game search is not available on this deployment',
+                }),
+            );
+        }
+
+        const parsed = requestSchema.safeParse(event.queryStringParameters ?? {});
+        if (!parsed.success) {
+            return errToApiGatewayProxyResultV2(
+                new ApiError({
+                    statusCode: 400,
+                    publicMessage: `Invalid request: ${parsed.error.issues
+                        .map((i) => `${i.path.join('.')}: ${i.message}`)
+                        .join(', ')}`,
+                }),
+            );
+        }
+        const request = parsed.data;
+
         const response = await getClient().search({
             index: gamesIndex(),
             body: {
@@ -297,6 +298,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 size: PAGE_SIZE,
             },
         });
+        console.debug('Search response: %j', response);
 
         const hits = response.body.hits;
         const games = hits.hits
@@ -313,7 +315,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             body: JSON.stringify({ games, lastEvaluatedKey }),
         };
     } catch (err) {
-        console.error('Failed to search games for request %j:', request, err);
+        console.error('Failed to search games:', err);
         return errToApiGatewayProxyResultV2(
             new ApiError({
                 statusCode: 500,

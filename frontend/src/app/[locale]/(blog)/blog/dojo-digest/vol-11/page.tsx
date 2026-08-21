@@ -27,29 +27,57 @@ export default function DojoDigestVol11() {
                 imageCaption='Jesse vs GM Larray Christiansen'
             />
 
-            <Stack mt={3}>
-                <Typography mt={2} variant='h5'>
+            <Stack
+                sx={{
+                    mt: 3,
+                }}
+            >
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     Site Updates
                 </Typography>
 
-                <Typography mt={2} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 1,
+                    }}
+                >
                     <strong>Tablebase</strong> - The Dojo database now supports tablebase, which
                     solves all seven-piece (or less) endgames. It’s an incredibly powerful tool that
                     allows for easy navigation of complex endgames.
                 </Typography>
 
-                <Typography mt={2}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <strong>Coming Soon</strong> - We will soon add the ability to organize your
                     games into folders. Imagine a cross between Lichess Studies and Google Drive.
                     Reach out to us on Discord if you'd like to be part of our beta testing group
                     for this feature.
                 </Typography>
 
-                <Typography mt={4} variant='h5'>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     Achievements
                 </Typography>
 
-                <Typography mt={2} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        mb: 1,
+                    }}
+                >
                     <strong>Kraai scores clear second at US Senior</strong> -{' '}
                     <Link href='https://www.chessdojo.club/profile/google_108763076343237273295?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Sensei Kraai
@@ -59,29 +87,54 @@ export default function DojoDigestVol11() {
                     Dude is almost ready to graduate back into 2400+.
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kaidanovImage}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
-                    <Typography textAlign='center' color='text.secondary'>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                        }}
+                    >
                         A difficult position from GM Gregory Kaidanov vs Kraai
                     </Typography>
                 </Stack>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={kostyaImage}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
-                    <Typography textAlign='center' color='text.secondary'>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                        }}
+                    >
                         Kostya and Jesse in the round 6 post-game interview
                     </Typography>
                 </Stack>
 
-                <Typography mt={3} mb={1}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                        mb: 1,
+                    }}
+                >
                     Sensei Kraai played many fighting games and will review them all according to
                     the Dojo program. Below is his favorite game, against GM Julio Becerra in the
                     final round. Kraai had practiced the line several times in sparring against
@@ -97,7 +150,11 @@ export default function DojoDigestVol11() {
                     />
                 </Box>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_111679691028507818183?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Sensei Kostya
                     </Link>{' '}
@@ -105,19 +162,33 @@ export default function DojoDigestVol11() {
                     (5.0/9) and the Valencia Open (6.0/9).
                 </Typography>
 
-                <Stack mt={2} alignItems='center'>
+                <Stack
+                    sx={{
+                        mt: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     <Image
                         src={anandImage}
                         alt=''
                         style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
                     />
-                    <Typography textAlign='center' color='text.secondary'>
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                        }}
+                    >
                         Kostya with five-time World Champion Viswanathan Anand at the 2024 Porticcio
                         Open
                     </Typography>
                 </Stack>
 
-                <Typography mt={4}>
+                <Typography
+                    sx={{
+                        mt: 4,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/c2a3b42d-0024-488d-84d2-25cf4baab352?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Doozre
                     </Link>{' '}
@@ -125,7 +196,11 @@ export default function DojoDigestVol11() {
                     player and gained 81 rating points!
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/8353ba12-b330-4eda-af52-b3765fa1caf5?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Gaspard28
                     </Link>{' '}
@@ -133,14 +208,22 @@ export default function DojoDigestVol11() {
                     achieved an all-time high rating of 1886 USCF.
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_103194376898623452790?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Big Dave
                     </Link>{' '}
                     (1800-1900 cohort) drew a GM in a 90+30 OTB game.
                 </Typography>
 
-                <Typography mt={3}>
+                <Typography
+                    sx={{
+                        mt: 3,
+                    }}
+                >
                     <Link href='https://www.chessdojo.club/profile/google_115587319098605190849?utm_source=newsletter&utm_medium=email&utm_campaign=digest11'>
                         Timpe
                     </Link>{' '}

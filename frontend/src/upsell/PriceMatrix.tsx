@@ -420,13 +420,26 @@ function PriceCard({
     return (
         <Card variant='outlined' sx={{ height: 1 }}>
             <CardContent sx={{ height: 1 }}>
-                <Stack alignItems='center' spacing={3} height={1}>
-                    <Stack alignItems='center' gap={1}>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        alignItems: 'center',
+                        height: 1,
+                    }}
+                >
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            gap: 1,
+                        }}
+                    >
                         <Typography
                             variant='h6'
-                            fontWeight='bold'
-                            color='text.secondary'
-                            textAlign='center'
+                            sx={{
+                                fontWeight: 'bold',
+                                color: 'text.secondary',
+                                textAlign: 'center',
+                            }}
                         >
                             {name}
                         </Typography>
@@ -436,8 +449,11 @@ function PriceCard({
                                 <Typography
                                     variant='h5'
                                     component='span'
-                                    sx={{ textDecoration: 'line-through', verticalAlign: 'middle' }}
-                                    color='text.secondary'
+                                    sx={{
+                                        color: 'text.secondary',
+                                        textDecoration: 'line-through',
+                                        verticalAlign: 'middle',
+                                    }}
                                 >
                                     {price.symbol}
                                     {Math.round(price.fullValue * 100) / 100}
@@ -462,12 +478,24 @@ function PriceCard({
                             )}
                         </Typography>
 
-                        <Typography variant='h6' mt={-1} color='text.secondary' whiteSpace='pre'>
+                        <Typography
+                            variant='h6'
+                            sx={{
+                                mt: -1,
+                                color: 'text.secondary',
+                                whiteSpace: 'pre',
+                            }}
+                        >
                             {price.subtitle}
                         </Typography>
                     </Stack>
 
-                    <Stack spacing={1} flexGrow={1}>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {sellingPoints.map((sp) => (
                             <SellingPoint key={sp.description} {...sp} />
                         ))}
