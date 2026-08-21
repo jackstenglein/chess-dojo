@@ -3,7 +3,7 @@ import { AvailabilityType, Event, EventType, Participant } from '@/database/even
 import { dojoCohorts } from '@/database/user';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useState } from 'react';
-import { Frequency, RRule, RRuleSet, rrulestr } from 'rrule';
+import { Frequency, Options, RRule, RRuleSet, rrulestr } from 'rrule';
 
 /**
  * Returns true if the provided object is a valid date.
@@ -34,11 +34,7 @@ export type EditableEventType =
     | EventType.LectureTier
     | EventType.GameReviewTier;
 
-function getInitialRRuleOptions(rrule: string | undefined): Partial<{
-    freq: Frequency;
-    until: Date;
-    count: number;
-}> {
+function getInitialRRuleOptions(rrule: string | undefined): Partial<Options> {
     if (!rrule) {
         return {};
     }
