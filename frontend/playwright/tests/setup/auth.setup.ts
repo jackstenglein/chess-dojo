@@ -35,7 +35,6 @@ setup('authenticate', async ({ page }) => {
     await page.waitForURL((url) => !url.pathname.includes('signin'), { timeout: 30000 });
 
     // Navigate to profile to verify authentication
-    await page.goto('/profile');
     await expect(page).toHaveURL(/\/profile(?:\?|$)/, { timeout: 15000 });
 
     console.debug('Authentication successful, saving storage state');
