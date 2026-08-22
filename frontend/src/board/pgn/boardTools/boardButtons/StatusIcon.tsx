@@ -54,13 +54,8 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
-    const { onUpdateGame, setHasUnsavedGameChanges } = useGame();
+    const { updatedAtRef, setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
-    const updatedAtRef = useRef(game.updatedAt || game.createdAt || '');
-
-    useEffect(() => {
-        updatedAtRef.current = game.updatedAt || game.createdAt || '';
-    }, [game.updatedAt, game.createdAt]);
 
     const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
         if (pgnText !== initialPgn) {
@@ -68,7 +63,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             api.updateGame(cohort, id, {
                 type: GameImportTypes.editor,
                 pgnText,
-                updatedAt: updatedAtRef.current,
+                updatedAt: updatedAtRef?.current,
             })
                 .then((resp) => {
                     trackEvent(EventType.UpdateGame, {
@@ -86,9 +81,9 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                         ]);
                     }
 
-                    updatedAtRef.current = resp.data.updatedAt || updatedAtRef.current;
-                    onUpdateGame?.(resp.data);
-
+                    if (updatedAtRef && resp.data.updatedAt) {
+                        updatedAtRef.current = resp.data.updatedAt;
+                    }
                     const date = new Date();
                     request.onSuccess(date);
                     setInitialPgn(pgnText);

@@ -29,6 +29,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers-pro';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import useGame from 'src/context/useGame';
 import { useChess } from '../../../PgnBoard';
 import AnnotationWarnings from '../../../annotations/AnnotationWarnings';
 import RequestReviewDialog from './RequestReviewDialog';
@@ -212,6 +213,7 @@ const SaveGameButton = ({
     const request = useRequest();
     const [showPreflight, setShowPreflight] = useState<boolean>(false);
     const loading = request.isLoading();
+    const { updatedAtRef } = useGame();
 
     const isPublishing = (game.unlisted ?? false) && !unlisted;
     const needsPreflight = !unlisted && isMissingData({ ...game, headers });
@@ -241,7 +243,7 @@ const SaveGameButton = ({
             type: newHeaders ? GameImportTypes.editor : undefined,
             cohort: game.cohort,
             id: game.id,
-            updatedAt: game.updatedAt || game.createdAt || '',
+            updatedAt: updatedAtRef?.current || game.updatedAt || game.createdAt || '',
             orientation: newOrientation || orientation,
             timelineId: game.timelineId,
         };
