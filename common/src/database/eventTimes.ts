@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 /**
  * Parses the DTSTART value from an RRULE string.
  * Supports `DTSTART:YYYYMMDDTHHMMSSZ` and `DTSTART;...:YYYYMMDDTHHMMSS`.
@@ -20,7 +22,7 @@ export function getRRuleDtStart(rrule: string): Date | undefined {
     return new Date(Date.UTC(year, month, day, hour, minute, second));
 }
 
-export type EventTimes = {
+export interface EventTimes {
     /** @deprecated Prefer rrule DTSTART. Still read when present for legacy events. */
     startTime?: string;
     /** @deprecated Prefer durationMs. Still read when present for legacy events. */
@@ -29,7 +31,7 @@ export type EventTimes = {
     durationMs?: number;
     /** Recurrence rule string, including DTSTART for new events. */
     rrule?: string;
-};
+}
 
 /**
  * Returns the series start for an event.
