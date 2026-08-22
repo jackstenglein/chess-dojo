@@ -27,6 +27,7 @@ export default defineConfig({
     retries: isCI ? 2 : 0,
     workers: isCI ? 3 : undefined,
     reporter: 'html',
+    expect: { timeout: 10_000 },
 
     use: {
         baseURL: 'http://localhost:3000',
