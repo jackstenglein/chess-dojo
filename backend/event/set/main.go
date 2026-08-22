@@ -291,10 +291,6 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	if err != nil {
 		return api.Failure(err)
 	}
-	if !user.GetIsCalendarAdmin() {
-		err := errors.New(403, "You do not have permission to create live class events", "")
-		return api.Failure(err)
-	}
 
 	if strings.TrimSpace(event.Title) == "" {
 		err := errors.New(400, "Invalid request: title is required", "")
@@ -323,6 +319,11 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	}
 
 	if event.Id == "" {
+		if !user.GetIsCalendarAdmin() {
+			err := errors.New(403, "You do not have permission to create live class events", "")
+			return api.Failure(err)
+		}
+
 		event.Id = uuid.NewString()
 		event.Owner = user.Username
 		event.OwnerDisplayName = user.DisplayName
@@ -333,6 +334,12 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 		if err != nil {
 			return api.Failure(err)
 		}
+
+		if event.Owner != user.Username && !user.GetIsCalendarAdmin() {
+			err := errors.New(403, "You do not have permission to edit this live class", "")
+			return api.Failure(err)
+		}
+
 		event.Owner = existing.Owner
 		event.OwnerDisplayName = existing.OwnerDisplayName
 		event.OwnerCohort = existing.OwnerCohort

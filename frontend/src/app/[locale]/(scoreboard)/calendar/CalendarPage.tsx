@@ -366,18 +366,6 @@ export function processLiveClassEvent(
     }
 
     const isOwner = event.owner === user?.username;
-    if (
-        user &&
-        !isOwner &&
-        !user.isAdmin &&
-        !user.isCalendarAdmin &&
-        event.cohorts &&
-        event.cohorts.length > 0 &&
-        event.cohorts.every((c) => c !== user.dojoCohort)
-    ) {
-        return null;
-    }
-
     const canMove = isOwner || Boolean(user?.isAdmin || user?.isCalendarAdmin);
     const { start, end } = getSeriesTimes(event);
 
