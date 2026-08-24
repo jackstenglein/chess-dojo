@@ -3,6 +3,7 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { isMissingData, parsePgnDate, toPgnDate } from '@/api/gameApi';
 import { useFreeTier } from '@/auth/Auth';
+import useGame from '@/context/useGame';
 import { Game, PgnHeaders } from '@/database/game';
 import { MissingGameDataPreflight } from '@/games/edit/MissingGameDataPreflight';
 import DeleteGameButton from '@/games/view/DeleteGameButton';
@@ -29,7 +30,6 @@ import {
 import { DatePicker } from '@mui/x-date-pickers-pro';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import useGame from '@/context/useGame';
 import { useChess } from '../../../PgnBoard';
 import AnnotationWarnings from '../../../annotations/AnnotationWarnings';
 import RequestReviewDialog from './RequestReviewDialog';
