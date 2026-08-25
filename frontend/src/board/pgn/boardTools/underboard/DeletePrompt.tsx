@@ -255,7 +255,7 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
     const [deleteAction, setDeleteAction] = useState<DeleteAction>();
     const reconcile = useReconcile();
 
-    const onDelete = (move: Move | null, type: 'before' | 'after') => {
+    const onDelete = (move: Move | null, type: 'before' | 'after', allowSyncBackend: boolean = true) => {
         if (!move || !chess) {
             return;
         }
@@ -267,11 +267,14 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
 
         if (user && game && isSuggestedVariation(move)) {
             rootToSync = getSuggestedVariationRoot(user, move);
-            shouldSyncBackend = true;
             if (type === 'before') {
                 rootSurvived = false;
             } else {
                 rootSurvived = rootToSync !== move;
+            }
+
+            if (allowSyncBackend || !rootSurvived) {
+                shouldSyncBackend = true;
             }
         }
 
