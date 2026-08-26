@@ -291,10 +291,6 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	if err != nil {
 		return api.Failure(err)
 	}
-	if !user.IsAdmin {
-		err := errors.New(403, "You do not have permission to create live class events", "")
-		return api.Failure(err)
-	}
 
 	if strings.TrimSpace(event.Title) == "" {
 		err := errors.New(400, "Invalid request: title is required", "")
@@ -323,13 +319,33 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	}
 
 	if event.Id == "" {
+		if !user.GetIsCalendarAdmin() {
+			err := errors.New(403, "You do not have permission to create live class events", "")
+			return api.Failure(err)
+		}
+
 		event.Id = uuid.NewString()
+		event.Owner = user.Username
+		event.OwnerDisplayName = user.DisplayName
+		event.OwnerCohort = user.DojoCohort
+		event.OwnerPreviousCohort = user.PreviousCohort
+	} else {
+		existing, err := repository.GetEvent(event.Id)
+		if err != nil {
+			return api.Failure(err)
+		}
+
+		if event.Owner != user.Username && !user.GetIsCalendarAdmin() {
+			err := errors.New(403, "You do not have permission to edit this live class", "")
+			return api.Failure(err)
+		}
+
+		event.Owner = existing.Owner
+		event.OwnerDisplayName = existing.OwnerDisplayName
+		event.OwnerCohort = existing.OwnerCohort
+		event.OwnerPreviousCohort = existing.OwnerPreviousCohort
 	}
 
-	event.Owner = user.Username
-	event.OwnerDisplayName = user.DisplayName
-	event.OwnerCohort = user.DojoCohort
-	event.OwnerPreviousCohort = user.PreviousCohort
 	event.BookedStartTime = ""
 	event.Types = nil
 	event.BookedType = ""
@@ -370,20 +386,17 @@ func checkCohorts(cohorts []database.DojoCohort) error {
 }
 
 func checkTimes(event *database.Event) error {
-	if event.StartTime >= event.EndTime {
-		return errors.New(400, "Invalid request: startTime must be less than endTime", "")
+	if err := database.ValidateEventTimes(event); err != nil {
+		return err
 	}
 
-	if _, err := time.Parse(time.RFC3339, event.StartTime); err != nil {
-		return errors.Wrap(400, "Invalid request: startTime must be RFC3339 format", "", err)
-	}
-
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
-	if err != nil {
-		return errors.Wrap(400, "Invalid request: endTime must be RFC3339 format", "", err)
-	}
-
-	if event.RRule == "" {
+	// Non-recurring events (no RRULE FREQ) expire 48h after they end.
+	// DTSTART-only rrules still count as non-recurring.
+	if event.RRule == "" || !strings.Contains(event.RRule, "RRULE:") {
+		endTime, err := database.GetEventEnd(event)
+		if err != nil {
+			return err
+		}
 		expirationTime := endTime.Add(48 * time.Hour)
 		event.ExpirationTime = expirationTime.Unix()
 	}

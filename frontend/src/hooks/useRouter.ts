@@ -46,6 +46,12 @@ export const pagesWithVideos = [
 
     // Basic Board Visualization
     /^\/courses\/WORKSHOP\/6746ee1a-d029-4ff0-89e2-962a5c64a6b6/,
+
+    // Endgame Fundamentals
+    /^\/courses\/WORKSHOP\/7ab589de-becd-4450-932e-dfc8a1f45a1b/,
+
+    // Logical Chess Move by Move
+    /^\/courses\/WORKSHOP\/d461daae-a554-460a-83e5-54d53b93c4de/,
 ];
 
 /**

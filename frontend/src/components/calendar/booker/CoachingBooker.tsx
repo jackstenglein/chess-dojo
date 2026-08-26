@@ -5,7 +5,7 @@ import { displayPrice } from '@/app/[locale]/(scoreboard)/courses/(list)/CourseL
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
-import { Event } from '@/database/event';
+import { Event, getEventEnd, getEventStart } from '@/database/event';
 import { TimeFormat, dojoCohorts } from '@/database/user';
 import Icon from '@/style/Icon';
 import { AppBar, Button, Dialog, DialogContent, Stack, Toolbar, Typography } from '@mui/material';
@@ -35,8 +35,8 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
     const percentOff =
         currentPrice > 0 ? Math.round(((fullPrice - currentPrice) / fullPrice) * 100) : 0;
 
-    const startTime = new Date(event.startTime);
-    const endTime = new Date(event.endTime);
+    const startTime = getEventStart(event);
+    const endTime = getEventEnd(event);
 
     const timezone = user?.timezoneOverride;
     const timeFormat = user?.timeFormat || TimeFormat.TwelveHour;

@@ -56,7 +56,7 @@
         "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
         "@jackstenglein/pgn-parser": "^2.0.13",
-        "@jackstenglein/react-scheduler": "^5.0.6",
+        "@jackstenglein/react-scheduler": "^5.0.7",
         "@lichess-org/chessground": "^10.1.1",
         "@mui/icons-material": "^9.2.0",
         "@mui/lab": "^9.0.0-beta.8",

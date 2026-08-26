@@ -2,7 +2,7 @@
 
 import { useEvents } from '@/api/cache/Cache';
 import { useAuth } from '@/auth/Auth';
-import { Event } from '@/database/event';
+import { Event, getEventStart } from '@/database/event';
 import { User } from '@/database/user';
 import { CalendarToday, FormatListBulleted } from '@mui/icons-material';
 import { Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
@@ -29,7 +29,11 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ header, filterFunct
         () =>
             events
                 .filter((e) => predicate(e, viewer))
-                .sort((lhs, rhs) => lhs.startTime.localeCompare(rhs.startTime)),
+                .sort((lhs, rhs) =>
+                    getEventStart(lhs)
+                        .toISOString()
+                        .localeCompare(getEventStart(rhs).toISOString()),
+                ),
         [events, viewer, predicate],
     );
     const [view, setView] = useState('list');

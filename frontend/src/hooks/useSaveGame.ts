@@ -31,7 +31,7 @@ export default function useSaveGame(): UseSaveGameFields {
         STAGED_CREATE_GAME_KEY,
         null,
     );
-    const { game } = useGame();
+    const { game, updatedAtRef } = useGame();
     const router = useRouter();
 
     const createGame = async (createReq: CreateGameRequest, onNavigate?: () => void) => {
@@ -60,7 +60,12 @@ export default function useSaveGame(): UseSaveGameFields {
         try {
             const response = await api.updateGame(game.cohort, game.id, {
                 ...updateReq,
-                updatedAt: updateReq.updatedAt || game.updatedAt || game.createdAt || '',
+                updatedAt:
+                    updatedAtRef?.current ||
+                    updateReq.updatedAt ||
+                    game.updatedAt ||
+                    game.createdAt ||
+                    '',
             });
             request.onSuccess();
             return response.data;

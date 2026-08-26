@@ -49,6 +49,7 @@ function CourseThumbnail({ course, categoryColor }: { course: Course; categoryCo
                     src={course.imageUrl}
                     alt=''
                     style={{ aspectRatio: '16 / 9', width: '100%', objectFit: 'cover' }}
+                    crossOrigin='anonymous'
                 />
             </Box>
         );
@@ -174,7 +175,12 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                             color: 'text.primary',
                         }}
                     >
-                        ${displayPrice(purchaseOption.currentPrice / 100)}
+                        $
+                        {displayPrice(
+                            (purchaseOption.currentPrice > 0
+                                ? purchaseOption.currentPrice
+                                : purchaseOption.fullPrice) / 100,
+                        )}
                     </Typography>
 
                     {percentOff > 0 && (

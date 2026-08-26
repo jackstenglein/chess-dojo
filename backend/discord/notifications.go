@@ -4,7 +4,6 @@ import (
 	stderrors "errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -117,13 +116,13 @@ func SendAvailabilityNotification(event *database.Event) (string, error) {
 		return "", errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
 	}
 
-	startTime, err := time.Parse(time.RFC3339, event.StartTime)
+	startTime, err := database.GetEventStart(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: availability.startTime cannot be parsed", "", err)
+		return "", err
 	}
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
+	endTime, err := database.GetEventEnd(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: availability.endTime cannot be parsed", "", err)
+		return "", err
 	}
 
 	var sb strings.Builder
@@ -212,13 +211,13 @@ func SendCoachingNotification(event *database.Event) (string, error) {
 		return "", errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
 	}
 
-	startTime, err := time.Parse(time.RFC3339, event.StartTime)
+	startTime, err := database.GetEventStart(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: event.startTime cannot be parsed", "", err)
+		return "", err
 	}
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
+	endTime, err := database.GetEventEnd(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: event.endTime cannot be parsed", "", err)
+		return "", err
 	}
 
 	var sb strings.Builder

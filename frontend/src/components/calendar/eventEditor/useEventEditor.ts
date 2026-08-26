@@ -3,7 +3,7 @@ import { AvailabilityType, Event, EventType, Participant } from '@/database/even
 import { dojoCohorts } from '@/database/user';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useState } from 'react';
-import { Frequency, RRule } from 'rrule';
+import { Frequency, Options, RRule, RRuleSet, rrulestr } from 'rrule';
 
 /**
  * Returns true if the provided object is a valid date.
@@ -33,6 +33,22 @@ export type EditableEventType =
     | EventType.Dojo
     | EventType.LectureTier
     | EventType.GameReviewTier;
+
+function getInitialRRuleOptions(rrule: string | undefined): Partial<Options> {
+    if (!rrule) {
+        return {};
+    }
+
+    try {
+        const parsed = rrulestr(rrule, { forceset: true });
+        if (parsed instanceof RRuleSet) {
+            return parsed.rrules()[0]?.origOptions ?? {};
+        }
+        return parsed.origOptions;
+    } catch {
+        return RRule.parseString(rrule);
+    }
+}
 
 export interface UseEventEditorResponse {
     /** The type of the Event. */
@@ -341,7 +357,7 @@ export default function useEventEditor(
         initialEvent?.hideFromPublicDiscord || false,
     );
 
-    const options = initialEvent?.rrule ? RRule.parseString(initialEvent.rrule) : {};
+    const options = getInitialRRuleOptions(initialEvent?.rrule);
     const [rruleOptions, setRRuleOptions] = useState<RRuleOptions>({
         freq: options.freq,
         ends: options.count ? RRuleEnds.Count : options.until ? RRuleEnds.Until : RRuleEnds.Never,

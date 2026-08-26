@@ -3,6 +3,7 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { isMissingData, parsePgnDate, toPgnDate } from '@/api/gameApi';
 import { useFreeTier } from '@/auth/Auth';
+import useGame from '@/context/useGame';
 import { Game, PgnHeaders } from '@/database/game';
 import { MissingGameDataPreflight } from '@/games/edit/MissingGameDataPreflight';
 import DeleteGameButton from '@/games/view/DeleteGameButton';
@@ -212,6 +213,7 @@ const SaveGameButton = ({
     const request = useRequest();
     const [showPreflight, setShowPreflight] = useState<boolean>(false);
     const loading = request.isLoading();
+    const { updatedAtRef } = useGame();
 
     const isPublishing = (game.unlisted ?? false) && !unlisted;
     const needsPreflight = !unlisted && isMissingData({ ...game, headers });
@@ -241,7 +243,7 @@ const SaveGameButton = ({
             type: newHeaders ? GameImportTypes.editor : undefined,
             cohort: game.cohort,
             id: game.id,
-            updatedAt: game.updatedAt || game.createdAt || '',
+            updatedAt: updatedAtRef?.current || game.updatedAt || game.createdAt || '',
             orientation: newOrientation || orientation,
             timelineId: game.timelineId,
         };

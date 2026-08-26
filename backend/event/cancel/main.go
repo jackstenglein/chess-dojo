@@ -131,9 +131,8 @@ func leaveCoachingSession(username string, event *database.Event) (*database.Eve
 	}
 
 	now := time.Now()
-	eventStart, err := time.Parse(time.RFC3339, event.StartTime)
+	eventStart, err := database.GetEventStart(event)
 	if err != nil {
-		err = errors.Wrap(400, "Invalid request: event does not have a valid start time", "time.Parse failure", err)
 		return nil, err
 	}
 	cancelationTime := eventStart.Add(-23 * time.Hour).Add(-55 * time.Minute)

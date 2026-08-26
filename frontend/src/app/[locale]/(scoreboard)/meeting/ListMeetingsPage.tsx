@@ -5,7 +5,7 @@ import { useEvents } from '@/api/cache/Cache';
 import { useAuth } from '@/auth/Auth';
 import MeetingListItem from '@/components/meeting/MeetingListItem';
 import { Link } from '@/components/navigation/Link';
-import { Event } from '@/database/event';
+import { Event, getEventEnd, getEventStart } from '@/database/event';
 import LoadingPage from '@/loading/LoadingPage';
 import { Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -30,12 +30,14 @@ export const ListMeetingsPage = () => {
         if (e.owner !== user.username && !e.participants[user.username]) {
             return false;
         }
-        return e.endTime >= filterTime;
+        return getEventEnd(e).toISOString() >= filterTime;
     };
 
     const meetings: Event[] = events.filter(meetingFilter);
     meetings.sort((lhs, rhs) =>
-        (lhs.bookedStartTime || lhs.startTime).localeCompare(rhs.bookedStartTime || rhs.startTime),
+        (lhs.bookedStartTime || getEventStart(lhs).toISOString()).localeCompare(
+            rhs.bookedStartTime || getEventStart(rhs).toISOString(),
+        ),
     );
 
     const requestLoading = request.isLoading() || !request.isSent();

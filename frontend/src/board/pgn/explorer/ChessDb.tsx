@@ -79,7 +79,13 @@ export function ChessDBTab({
     if (queued) {
         return (
             <Stack spacing={1} sx={{ mt: 2, alignItems: 'center' }}>
-                <Typography color='success.main'>{t('analysisQueued')}</Typography>
+                <Typography
+                    sx={{
+                        color: 'success.main',
+                    }}
+                >
+                    {t('analysisQueued')}
+                </Typography>
             </Stack>
         );
     }

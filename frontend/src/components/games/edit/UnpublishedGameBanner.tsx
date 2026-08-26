@@ -21,7 +21,7 @@ function useUnpublishedGame() {
     const isFreeTier = useFreeTier();
     const [showDialog, setShowDialog] = useState(false);
     const [showBanner, setShowBanner] = useState(true);
-    const { game, onUpdateGame } = useGame();
+    const { game, onUpdateGame, updatedAtRef } = useGame();
     const { chess } = useChess();
     const { updateGame, request } = useSaveGame();
 
@@ -40,7 +40,7 @@ function useUnpublishedGame() {
         const req: UpdateGameRequest = {
             id: game.id,
             cohort: game.cohort,
-            updatedAt: game.updatedAt || game.createdAt || '',
+            updatedAt: updatedAtRef?.current || game.updatedAt || game.createdAt || '',
             timelineId: game.timelineId,
             unlisted: false,
             pgnText: chess.renderPgn(),
@@ -48,8 +48,11 @@ function useUnpublishedGame() {
             orientation: form.orientation,
         };
 
-        await updateGame(req).then((updated) => {
-            onUpdateGame?.(updated ?? { ...game, unlisted: false, orientation: form.orientation });
+        await updateGame(req).then((resp) => {
+            if (updatedAtRef && resp?.updatedAt) {
+                updatedAtRef.current = resp.updatedAt;
+            }
+            onUpdateGame?.({ ...game, unlisted: false, orientation: form.orientation });
             setShowDialog(false);
             setShowBanner(false);
         });

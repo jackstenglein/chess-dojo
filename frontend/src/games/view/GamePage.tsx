@@ -27,7 +27,7 @@ import { Box } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useTranslations } from 'next-intl';
 import { notFound } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
 import PgnErrorBoundary from './PgnErrorBoundary';
 
@@ -50,6 +50,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
     const [currentCohort, setCurrentCohort] = useState(initialCohort);
     const [currentId, setCurrentId] = useState(initialId);
     const [currentGame, setCurrentGame] = useState<Game | undefined>();
+    const updatedAtRef = useRef<string>(undefined);
 
     const cohort = currentCohort;
     const id = currentId;
@@ -60,6 +61,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
             const cached = gameCache.get(`${cohort}/${id}`);
             if (cached) {
                 setCurrentGame(cached);
+                updatedAtRef.current = cached.updatedAt || '';
                 return;
             }
             reset();
@@ -75,6 +77,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
                     mergeSuggestedVariations(game);
                     gameCache.set(`${cohort}/${id}`, game);
                     setCurrentGame(game);
+                    updatedAtRef.current = game.updatedAt;
                     request.onSuccess(game);
                 })
                 .catch((err) => {
@@ -149,7 +152,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         const update: UpdateGameRequest = {
             cohort: game.cohort,
             id: game.id,
-            updatedAt: game.updatedAt || game.createdAt || '',
+            updatedAt: updatedAtRef.current || game.updatedAt || game.createdAt,
             headers,
             unlisted: true,
             orientation,
@@ -218,6 +221,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
                         onUpdateGame,
                         isOwner,
                         onNavigateToGame,
+                        updatedAtRef,
                     }}
                 >
                     <PgnBoard

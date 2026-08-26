@@ -12,8 +12,12 @@ export interface Event {
     ownerCohort: string;
     ownerPreviousCohort: string;
     title: string;
-    startTime: string;
-    endTime: string;
+    /** @deprecated Prefer rrule DTSTART when present. */
+    startTime?: string;
+    /** @deprecated Prefer durationMs when present. */
+    endTime?: string;
+    /** Duration of each occurrence in milliseconds. */
+    durationMs?: number;
     bookedStartTime: string;
     types: AvailabilityType[];
     bookedType: AvailabilityType;
