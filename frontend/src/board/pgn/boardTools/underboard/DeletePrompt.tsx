@@ -255,11 +255,7 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
     const [deleteAction, setDeleteAction] = useState<DeleteAction>();
     const reconcile = useReconcile();
 
-    const onDelete = (
-        move: Move | null,
-        type: 'before' | 'after',
-        allowSyncBackend: boolean = true,
-    ) => {
+    const onDelete = (move: Move | null, type: 'before' | 'after', allowSyncBackend = true) => {
         if (!move || !chess) {
             return;
         }
