@@ -1,8 +1,6 @@
 package discord
 
 import (
-	"time"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
@@ -18,13 +16,13 @@ func SetEvent(event *database.Event) (string, string, error) {
 		return "", "", errors.New(400, "Invalid request: event.title cannot be empty", "")
 	}
 
-	startTime, err := time.Parse(time.RFC3339, event.StartTime)
+	startTime, err := database.GetEventStart(event)
 	if err != nil {
-		return "", "", errors.Wrap(400, "Invalid request: availability.startTime cannot be parsed", "", err)
+		return "", "", err
 	}
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
+	endTime, err := database.GetEventEnd(event)
 	if err != nil {
-		return "", "", errors.Wrap(400, "Invalid request: availability.endTime cannot be parsed", "", err)
+		return "", "", err
 	}
 
 	discord, err := discordgo.New("Bot " + authToken)

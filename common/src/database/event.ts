@@ -18,8 +18,24 @@ export interface Event {
     ownerCohort: string;
     ownerPreviousCohort?: string;
     title: string;
-    startTime: string;
-    endTime: string;
+    /**
+     * @deprecated Prefer rrule DTSTART. Still read when present for legacy events;
+     * new events should omit this and set rrule (+ durationMs) instead.
+     * For availabilities, this was the earliest that the owner is willing to start.
+     */
+    startTime?: string;
+    /**
+     * @deprecated Prefer durationMs. Still read when present for legacy events;
+     * new events should omit this and set durationMs instead.
+     * For availabilities, this was the latest that the owner is willing to start.
+     */
+    endTime?: string;
+    /**
+     * Duration of each occurrence in milliseconds.
+     * Required for new events that omit startTime/endTime.
+     * For availabilities, this is the length of the bookable start window.
+     */
+    durationMs?: number;
     types?: AvailabilityType[];
     bookedStartTime?: string;
     bookedType?: AvailabilityType;
@@ -51,7 +67,11 @@ export interface Event {
     /** Messages on the meeting. */
     messages?: Comment[];
 
-    /** The recurrence rule of the event, as a string. */
+    /**
+     * The recurrence rule of the event, as a string.
+     * For new Dojo/Coaching/Lecture/GameReview events this always includes DTSTART
+     * (even when the event does not repeat).
+     */
     rrule?: string;
 
     /** The color of the event. */

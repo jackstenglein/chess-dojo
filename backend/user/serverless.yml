@@ -167,6 +167,12 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /pat/user/progress/v3
+          method: post
+          authorizer:
+            type: request
+            id: ${param:patAuthorizer}
     environment:
       discordAuth: ${file(../discord.yml):discordAuth}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
@@ -241,6 +247,12 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /pat/user
+          method: get
+          authorizer:
+            type: request
+            id: ${param:patAuthorizer}
       - httpApi:
           path: /public/user/{username}
           method: get

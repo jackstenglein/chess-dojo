@@ -13,6 +13,7 @@ import {
     TournamentType,
     getDisplaySessionString,
     getDisplayString,
+    getEventEnd,
 } from '@/database/event';
 import { ALL_COHORTS, TimeFormat, compareCohorts, dojoCohorts } from '@/database/user';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
@@ -351,7 +352,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({ filters }) => 
         if (e.owner !== auth.user?.username && !e.participants[auth.user?.username || '']) {
             return false;
         }
-        return e.status !== EventStatus.Canceled && e.endTime >= filterTime;
+        return e.status !== EventStatus.Canceled && getEventEnd(e).toISOString() >= filterTime;
     }).length;
 
     const onChangeCohort = (newCohorts: string[]) => {

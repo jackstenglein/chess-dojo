@@ -54,6 +54,15 @@ interface TaskDialogProps {
     cohort: string;
 }
 
+function getRequirementName(task: Requirement | CustomTask, cohort: string) {
+    const totalCount = task.counts[cohort] ?? task.counts[ALL_COHORTS] ?? 0;
+    let name = task.name.replaceAll('{{count}}', `${totalCount}`);
+    if (task.scoreboardDisplay === ScoreboardDisplay.Checkbox && totalCount > 1) {
+        name += ` (${totalCount})`;
+    }
+    return name;
+}
+
 export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskDialogProps) {
     const [view, setView] = useState(initialView);
     const task = useTranslatedRequirement(rawTask) ?? rawTask;
@@ -94,13 +103,8 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
         selectedCohort = user.dojoCohort;
     }
 
-    const totalCount = task.counts[selectedCohort] || 0;
+    const requirementName = getRequirementName(task, selectedCohort);
     const isNonDojo = task.scoreboardDisplay === ScoreboardDisplay.NonDojo;
-
-    let requirementName = task.name.replaceAll('{{count}}', `${totalCount}`);
-    if (task.scoreboardDisplay === ScoreboardDisplay.Checkbox && totalCount > 1) {
-        requirementName += ` (${totalCount})`;
-    }
 
     let dialogTitle = '';
     if (view === TaskDialogView.History) {
@@ -186,6 +190,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
             acc[r.id] = r;
             return acc;
         }, {});
+
         for (const blockerId of task.blockers) {
             const blocker = requirementMap[blockerId];
             if (
@@ -197,13 +202,13 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     isBlocked: true,
                     reason: t('taskLockedUntil', {
                         category: blocker.category,
-                        name: blocker.name,
+                        name: getRequirementName(blocker, selectedCohort),
                     }),
                 };
             }
         }
         return { isBlocked: false };
-    }, [task, requirements, selectedCohort, user, timeline]);
+    }, [task, requirements, selectedCohort, user, timeline, t]);
 
     if (!selectedCohort) {
         return null;
@@ -211,14 +216,11 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
 
     const progress = user?.progress[task.id];
 
-    const totalCount = task.counts[selectedCohort] || task.counts[ALL_COHORTS];
+    const totalCount = task.counts[selectedCohort] || task.counts[ALL_COHORTS] || 0;
     const currentCount = progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
     const isCompleted = currentCount >= totalCount;
 
-    let requirementName = task.name.replaceAll('{{count}}', `${totalCount}`);
-    if (task.scoreboardDisplay === ScoreboardDisplay.Checkbox && totalCount > 1) {
-        requirementName += ` (${totalCount})`;
-    }
+    const requirementName = getRequirementName(task, selectedCohort);
 
     let description =
         isRequirement(task) && isFreeTier
@@ -305,13 +307,13 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                             <DojoPointChip requirement={task} cohort={selectedCohort} />
                             <ExpirationChip requirement={task} progress={progress} />
                             <RepeatChip requirement={task} />
-                            {task.blockers && <BlockerChips requirement={task} />}
+                            {task.blockers && (
+                                <BlockerChips requirement={task} cohort={selectedCohort} />
+                            )}
                         </Stack>
                     )}
 
-                    <TaskDescription>
-                        {description.replaceAll('{{count}}', `${totalCount}`)}
-                    </TaskDescription>
+                    <TaskDescription>{description}</TaskDescription>
 
                     {isRequirement(task) && task.positions && (
                         <Grid
@@ -521,7 +523,7 @@ const RepeatChip = ({ requirement }: { requirement: Requirement }) => {
     );
 };
 
-const BlockerChips = ({ requirement }: { requirement: Requirement }) => {
+const BlockerChips = ({ requirement, cohort }: { requirement: Requirement; cohort: string }) => {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const requirementMap = useMemo(() => {
@@ -543,15 +545,17 @@ const BlockerChips = ({ requirement }: { requirement: Requirement }) => {
                     return null;
                 }
 
+                const blockerName = getRequirementName(blocker, cohort);
+
                 return (
                     <Tooltip
                         key={id}
                         title={t('blockerTooltip', {
                             category: blocker.category,
-                            name: blocker.name,
+                            name: blockerName,
                         })}
                     >
-                        <Chip color='secondary' icon={<Lock />} label={blocker.name} />
+                        <Chip color='secondary' icon={<Lock />} label={blockerName} />
                     </Tooltip>
                 );
             })}

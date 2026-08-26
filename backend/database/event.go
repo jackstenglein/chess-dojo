@@ -131,13 +131,19 @@ type Event struct {
 	// The title of the event.
 	Title string `dynamodbav:"title" json:"title"`
 
-	// The time the event starts, in full ISO-8601 format. For availabilities,
-	// this is the earliest that the owner is willing to start their game/meeting.
-	StartTime string `dynamodbav:"startTime" json:"startTime"`
+	// Deprecated: prefer RRule DTSTART. Still read when present for legacy events;
+	// new events should omit this and set RRule (+ DurationMs).
+	// For availabilities, this was the earliest that the owner is willing to start their game/meeting.
+	StartTime string `dynamodbav:"startTime,omitempty" json:"startTime,omitempty"`
 
-	// The time the event ends, in full ISO-8601 format. For availabilities,
-	// this is the latest that the owner is willing to start their game/meeting.
-	EndTime string `dynamodbav:"endTime" json:"endTime"`
+	// Deprecated: prefer DurationMs. Still read when present for legacy events;
+	// new events should omit this and set DurationMs.
+	// For availabilities, this was the latest that the owner is willing to start their game/meeting.
+	EndTime string `dynamodbav:"endTime,omitempty" json:"endTime,omitempty"`
+
+	// Duration of each occurrence in milliseconds. Required for new events that omit StartTime/EndTime.
+	// For availabilities, this is the length of the bookable start window.
+	DurationMs int64 `dynamodbav:"durationMs,omitempty" json:"durationMs,omitempty"`
 
 	// The booked time chosen for 1 on 1 events. This field is unused if the
 	// event is an admin event
@@ -208,6 +214,8 @@ type Event struct {
 	Messages []Comment `dynamodbav:"messages,omitempty" json:"messages,omitempty"`
 
 	// The recurrence rule of the event, if set.
+	// For new Dojo/Coaching/Lecture/GameReview events this always includes DTSTART
+	// (even when the event does not repeat).
 	RRule string `dynamodbav:"rrule,omitempty" json:"rrule,omitempty"`
 
 	// The color of the event.
@@ -286,6 +294,9 @@ type EventSetter interface {
 
 	// SetEvent inserts the provided Event into the database.
 	SetEvent(event *Event) error
+
+	// GetEvent returns the event object with the provided id.
+	GetEvent(id string) (*Event, error)
 
 	// RecordEventCreation saves statistics on the created event.
 	RecordEventCreation(event *Event) error

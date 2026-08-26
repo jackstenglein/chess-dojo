@@ -3,6 +3,12 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useCache } from '@/api/cache/Cache';
 import { useRequiredAuth } from '@/auth/Auth';
+import { useRecurrenceEditPrompt } from '@/components/calendar/EditRecurrenceDialog';
+import {
+    haveTimesChanged,
+    isRecurringEvent,
+    moveSingleOccurrence,
+} from '@/components/calendar/recurrence';
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
 import {
     AvailabilityType,
@@ -10,6 +16,9 @@ import {
     EventType,
     getDefaultNumberOfParticipants,
     getDisplayString,
+    getEventDurationMs,
+    getEventEnd,
+    getEventStart,
 } from '@/database/event';
 import { User } from '@/database/user';
 import Icon from '@/style/Icon';
@@ -34,6 +43,7 @@ import { TransitionProps } from '@mui/material/transitions';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { forwardRef, JSX } from 'react';
+import { RRuleSet, rrulestr } from 'rrule';
 import { validateEventEditor } from './eventValidation';
 import CohortsFormSection from './form/CohortsFormSection';
 import { ColorFormSection } from './form/ColorFormSection';
@@ -46,8 +56,54 @@ import TimesFormSection from './form/TimesFormSection';
 import useEventEditor, {
     EditableEventType,
     getMinEnd,
+    RRuleEnds,
     UseEventEditorResponse,
 } from './useEventEditor';
+
+function haveRecurrenceOptionsChanged(
+    original: Event | undefined,
+    editor: UseEventEditorResponse,
+): boolean {
+    if (!original?.rrule) {
+        return Boolean(editor.rruleOptions.freq);
+    }
+
+    try {
+        const parsed = rrulestr(original.rrule, { forceset: true });
+        const options =
+            parsed instanceof RRuleSet
+                ? (parsed.rrules()[0]?.origOptions ?? {})
+                : parsed.origOptions;
+        const originalEnds = options.count
+            ? RRuleEnds.Count
+            : options.until
+              ? RRuleEnds.Until
+              : RRuleEnds.Never;
+
+        if (options.freq !== editor.rruleOptions.freq) {
+            return true;
+        }
+        if (originalEnds !== editor.rruleOptions.ends) {
+            return true;
+        }
+        if (
+            editor.rruleOptions.ends === RRuleEnds.Count &&
+            (options.count ?? undefined) !== editor.rruleOptions.count
+        ) {
+            return true;
+        }
+        if (editor.rruleOptions.ends === RRuleEnds.Until) {
+            const originalUntil = options.until?.getTime();
+            const editorUntil = editor.rruleOptions.until?.toJSDate().getTime();
+            if (originalUntil !== editorUntil) {
+                return true;
+            }
+        }
+        return false;
+    } catch {
+        return true;
+    }
+}
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -74,6 +130,8 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
 
     const cache = useCache();
     const request = useRequest();
+    const { prompt: promptRecurrenceEdit, dialog: recurrenceEditDialog } =
+        useRecurrenceEditPrompt();
 
     const editor = useEventEditor(defaultStart, defaultEnd, originalEvent?.event as Event);
     const formConfigs = getFormConfigs(t, labelT);
@@ -85,10 +143,45 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
             return;
         }
 
+        const originalDojoEvent = originalEvent?.event as Event | undefined;
+        const timesChanged = haveTimesChanged(
+            defaultStart,
+            defaultEnd,
+            getEventStart(event),
+            getEventEnd(event),
+        );
+        const isRecurringEdit =
+            Boolean(originalDojoEvent && isRecurringEvent(originalDojoEvent)) &&
+            Boolean(originalDojoEvent?.id) &&
+            timesChanged &&
+            !haveRecurrenceOptionsChanged(originalDojoEvent, editor);
+
+        let eventToSave = event;
+        if (isRecurringEdit && originalDojoEvent) {
+            const scope = await promptRecurrenceEdit();
+            if (scope === 'cancel') {
+                return;
+            }
+
+            if (scope === 'this') {
+                const { startTime: _s, endTime: _e, ...rest } = event;
+                eventToSave = {
+                    ...rest,
+                    durationMs: getEventDurationMs(originalDojoEvent),
+                    rrule: moveSingleOccurrence(
+                        originalDojoEvent,
+                        defaultStart,
+                        getEventStart(event),
+                    ),
+                };
+            }
+            // scope === 'all' keeps the validated event (new times + rebuilt rrule)
+        }
+
         request.onStart();
         try {
             scheduler.loading(true);
-            const response = await api.setEvent(event);
+            const response = await api.setEvent(eventToSave);
             const newEvent = response.data;
 
             trackEvent(AnalyticsEventType.SetAvailability, {
@@ -117,6 +210,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ scheduler }) => {
             slots={{ transition: Transition }}
         >
             <RequestSnackbar request={request} />
+            {recurrenceEditDialog}
 
             <AppBar sx={{ position: 'relative' }}>
                 <Toolbar sx={{ gap: 1 }}>

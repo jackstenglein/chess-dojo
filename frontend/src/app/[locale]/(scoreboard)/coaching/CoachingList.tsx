@@ -7,7 +7,7 @@ import Field from '@/components/calendar/eventViewer/Field';
 import OwnerField from '@/components/calendar/eventViewer/OwnerField';
 import PriceField from '@/components/calendar/eventViewer/PriceField';
 import { Link } from '@/components/navigation/Link';
-import { Event, EventStatus, EventType } from '@/database/event';
+import { Event, EventStatus, EventType, getEventStart } from '@/database/event';
 import { User, dojoCohorts, isFree } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
@@ -19,7 +19,7 @@ export function displayEvent(event: Event, viewer?: User): boolean {
         return false;
     }
 
-    if (event.startTime <= new Date().toISOString()) {
+    if (getEventStart(event).toISOString() <= new Date().toISOString()) {
         return false;
     }
 
@@ -120,7 +120,7 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
             });
     };
 
-    const start = new Date(event.startTime);
+    const start = getEventStart(event);
 
     return (
         <Card variant='outlined'>

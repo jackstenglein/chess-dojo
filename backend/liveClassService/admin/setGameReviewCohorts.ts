@@ -389,9 +389,6 @@ async function createEvent({
         });
     }
 
-    const endTime = new Date(options.dtstart);
-    endTime.setHours(endTime.getHours() + 1);
-
     const event: Event = {
         id: uuidv4(),
         type: EventType.GameReviewTier,
@@ -399,8 +396,7 @@ async function createEvent({
         ownerDisplayName: 'Admin',
         ownerCohort: '2400+',
         title,
-        startTime: options.dtstart.toISOString(),
-        endTime: endTime.toISOString(),
+        durationMs: 60 * 60 * 1000,
         rrule,
         cohorts: [],
         status: EventStatus.Scheduled,

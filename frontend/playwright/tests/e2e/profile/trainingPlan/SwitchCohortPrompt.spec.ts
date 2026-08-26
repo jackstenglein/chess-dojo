@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { User } from 'src/database/user';
 import { getEnv } from '../../../../lib/env';
 
 /** Minimal user fields required for the training plan profile view. */
@@ -183,29 +184,27 @@ test.describe('SwitchCohortPrompt', () => {
         test('hide for 1 week updates notification settings and closes the dialog', async ({
             page,
         }) => {
-            let putBody: Record<string, unknown> | undefined;
-            await mockUserRoute(page, createSwitchCohortUser(), {
-                onPut: (body) => {
-                    putBody = body;
-                },
-            });
+            let newUser: User | undefined;
+            await mockUserRoute(page, createSwitchCohortUser());
             await page.goto('/profile?view=progress');
-            await page.waitForLoadState('networkidle');
 
-            const responsePromise = page.waitForResponse((response) => {
-                return response.url().includes('/user') && response.request().method() === 'PUT';
+            const responsePromise = page.waitForResponse(async (response) => {
+                if (response.url().includes('/user') && response.request().method() === 'PUT') {
+                    newUser = (await response.json()) as User;
+                    return Boolean(
+                        newUser?.notificationSettings?.siteNotificationSettings
+                            ?.hideCohortPromptUntil,
+                    );
+                }
+                return false;
             });
             const dialog = page.getByRole('dialog', { name: 'New Cohorts Released' });
             await dialog.getByRole('button', { name: 'Hide for 1 week' }).click();
             await responsePromise;
 
             await expect(dialog).not.toBeVisible();
-            const hideUntil = (
-                putBody?.notificationSettings as {
-                    siteNotificationSettings?: { hideCohortPromptUntil?: string };
-                }
-            )?.siteNotificationSettings?.hideCohortPromptUntil;
-            expect(hideUntil).toBeTruthy();
+            const hideUntil =
+                newUser?.notificationSettings?.siteNotificationSettings?.hideCohortPromptUntil;
             expect(Date.parse(hideUntil ?? '')).toBeGreaterThan(Date.now());
         });
     });
@@ -236,7 +235,6 @@ test.describe('SwitchCohortPrompt', () => {
                 },
             });
             await page.goto('/profile?view=progress');
-            await page.waitForLoadState('networkidle');
 
             const responsePromise = page.waitForResponse((response) => {
                 return response.url().includes('/user') && response.request().method() === 'PUT';

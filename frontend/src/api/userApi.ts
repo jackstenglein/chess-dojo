@@ -1,3 +1,4 @@
+import { CreatePatRequest, CreatePatResponse, ListPatsResponse } from '@/database/pat';
 import { RequirementProgress } from '@/database/requirement';
 import { DiscordAuthRequest } from '@jackstenglein/chess-dojo-common/src/auth/discord';
 import { AxiosResponse } from 'axios';
@@ -155,6 +156,28 @@ export interface UserApiContextType {
     discordAuth: (
         request: DiscordAuthRequest,
     ) => Promise<AxiosResponse<Partial<Pick<User, 'discordUsername' | 'discordId'>>>>;
+
+    /**
+     * Creates a new personal access token for the current signed-in user.
+     * @param request The token creation request.
+     * @returns An AxiosResponse containing the token metadata and the raw token value.
+     */
+    createPersonalAccessToken: (
+        request: CreatePatRequest,
+    ) => Promise<AxiosResponse<CreatePatResponse>>;
+
+    /**
+     * Lists the personal access tokens of the current signed-in user.
+     * @returns An AxiosResponse containing the list of tokens (metadata only).
+     */
+    listPersonalAccessTokens: () => Promise<AxiosResponse<ListPatsResponse>>;
+
+    /**
+     * Deletes the personal access token with the given id.
+     * @param id The id of the token to delete.
+     * @returns An empty AxiosResponse.
+     */
+    deletePersonalAccessToken: (id: string) => Promise<AxiosResponse>;
 }
 
 /**
@@ -605,4 +628,42 @@ export function discordAuth(idToken: string, request: DiscordAuthRequest) {
             functionName: 'discordAuth',
         },
     );
+}
+
+/**
+ * Creates a new personal access token for the current signed-in user.
+ * @param idToken The id token of the current signed-in user.
+ * @param request The token creation request.
+ * @returns An AxiosResponse containing the token metadata and the raw token value.
+ */
+export function createPersonalAccessToken(idToken: string, request: CreatePatRequest) {
+    return axiosService.post<CreatePatResponse>(`/user/pat`, request, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'createPersonalAccessToken',
+    });
+}
+
+/**
+ * Lists the personal access tokens of the current signed-in user.
+ * @param idToken The id token of the current signed-in user.
+ * @returns An AxiosResponse containing the list of tokens (metadata only).
+ */
+export function listPersonalAccessTokens(idToken: string) {
+    return axiosService.get<ListPatsResponse>(`/user/pat`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'listPersonalAccessTokens',
+    });
+}
+
+/**
+ * Deletes the personal access token with the given id.
+ * @param idToken The id token of the current signed-in user.
+ * @param id The id of the token to delete.
+ * @returns An empty AxiosResponse.
+ */
+export function deletePersonalAccessToken(idToken: string, id: string) {
+    return axiosService.delete(`/user/pat/${encodeURIComponent(id)}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'deletePersonalAccessToken',
+    });
 }

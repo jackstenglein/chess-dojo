@@ -9,7 +9,13 @@ import {
     toDojoTimeString,
 } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
-import { AvailabilityType, Event, getDisplayString } from '@/database/event';
+import {
+    AvailabilityType,
+    Event,
+    getDisplayString,
+    getEventEnd,
+    getEventStart,
+} from '@/database/event';
 import { TimeFormat } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import Avatar from '@/profile/Avatar';
@@ -71,14 +77,16 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
     useEffect(() => {
         if (availability) {
             setStartTime(
-                DateTime.fromJSDate(getTimeZonedDate(new Date(availability.startTime), timezone)),
+                DateTime.fromJSDate(getTimeZonedDate(getEventStart(availability), timezone)),
             );
         }
     }, [availability, setStartTime, timezone]);
 
     const isGroup = availability.maxParticipants > 1;
-    const minStartTime = new Date(availability.startTime);
-    const maxStartTime = new Date(availability.endTime);
+    const minStartTime = getEventStart(availability);
+    const maxStartTime = getEventEnd(availability);
+    const minStartIso = minStartTime.toISOString();
+    const maxStartIso = maxStartTime.toISOString();
 
     const minStartDate = toDojoDateString(minStartTime, timezone);
     const minStartStr = toDojoTimeString(minStartTime, timezone, timeFormat);
@@ -97,8 +105,8 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
         } else {
             selectedTime = getTimeZonedDate(startTime.toJSDate(), timezone, 'forward');
             if (
-                selectedTime.toISOString() < availability.startTime ||
-                selectedTime.toISOString() > availability.endTime
+                selectedTime.toISOString() < minStartIso ||
+                selectedTime.toISOString() > maxStartIso
             ) {
                 newErrors.time = t('mustBeBetween', { start: minStartStr, end: maxStartStr });
             }
@@ -347,8 +355,12 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                                             }),
                                     },
                                 }}
-                                minTime={DateTime.fromISO(availability.startTime)}
-                                maxTime={DateTime.fromISO(availability.endTime)}
+                                minTime={DateTime.fromJSDate(
+                                    getTimeZonedDate(minStartTime, timezone),
+                                )}
+                                maxTime={DateTime.fromJSDate(
+                                    getTimeZonedDate(maxStartTime, timezone),
+                                )}
                                 ampm={timeFormat === TimeFormat.TwelveHour}
                             />
                         </>

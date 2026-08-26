@@ -11,7 +11,14 @@ import ParticipantsList from '@/components/calendar/eventViewer/ParticipantsList
 import { Link } from '@/components/navigation/Link';
 import { GameReviewCohortQueue } from '@/components/profile/liveClasses/GameReviewCohortQueue';
 import { getConfig } from '@/config';
-import { Event, EventStatus, EventType, getDisplayString } from '@/database/event';
+import {
+    Event,
+    EventStatus,
+    EventType,
+    getDisplayString,
+    getEventEnd,
+    getEventStart,
+} from '@/database/event';
 import { dojoCohorts, User } from '@/database/user';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
@@ -60,7 +67,8 @@ function getCancelDialog(
     } else if (isCoaching) {
         const now = new Date().getTime();
         const cancelationTime =
-            new Date(meeting.bookedStartTime || meeting.startTime).getTime() - CANCELATION_DEADLINE;
+            new Date(meeting.bookedStartTime || getEventStart(meeting).toISOString()).getTime() -
+            CANCELATION_DEADLINE;
         if (now >= cancelationTime) {
             return [
                 t('leaveCoachingWithin24hButton'),
@@ -161,19 +169,15 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
             dates = rrule.all();
         }
     } else {
-        dates.push(new Date(meeting.bookedStartTime || meeting.startTime));
+        dates.push(new Date(meeting.bookedStartTime || getEventStart(meeting).toISOString()));
     }
 
     const startTime = toDojoTimeString(
-        new Date(meeting.startTime),
+        getEventStart(meeting),
         user.timezoneOverride,
         user.timeFormat,
     );
-    const endTime = toDojoTimeString(
-        new Date(meeting.endTime),
-        user.timezoneOverride,
-        user.timeFormat,
-    );
+    const endTime = toDojoTimeString(getEventEnd(meeting), user.timezoneOverride, user.timeFormat);
     const times = dates.map((d) => {
         const startDate = toDojoDateString(d, user.timezoneOverride);
         return `${startDate} ${startTime} — ${endTime}`;
