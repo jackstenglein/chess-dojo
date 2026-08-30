@@ -111,7 +111,7 @@ async function mockUserRoute(
     await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }
 
-test.describe('SwitchCohortPrompt', () => {
+test.describe.skip('SwitchCohortPrompt - skipped until new cohorts are released', () => {
     test.afterEach(async ({ page }) => {
         await page.unrouteAll();
     });
