@@ -233,36 +233,28 @@ type CourseLister interface {
 	ScanCourses(startKey string, publishedOnly bool) ([]Course, string, error)
 }
 
-func courseSummaryProjection() (string, map[string]*string) {
-	return "#type, id, #name, description, whatsIncluded, color, cohorts, cohortRange, includedWithSubscription, availableForFreeUsers, purchaseOptions, #owner, ownerDisplayName, stripeId, imageUrl, videoUrl, #status",
-		map[string]*string{
-			"#type":   aws.String("type"),
-			"#name":   aws.String("name"),
-			"#owner":  aws.String("owner"),
-			"#status": aws.String("status"),
-		}
-}
-
 func applyPublishedOnlyFilter(names map[string]*string, values map[string]*dynamodb.AttributeValue) (string, map[string]*string, map[string]*dynamodb.AttributeValue) {
 	values[":published"] = &dynamodb.AttributeValue{S: aws.String(string(CourseStatusPublished))}
+	names["#status"] = aws.String("status")
 	return "attribute_not_exists(#status) OR #status = :published", names, values
 }
 
 // ListCourses returns a list of courses with the provided type.
 func (repo *dynamoRepository) ListCourses(courseType, startKey string, publishedOnly bool) ([]Course, string, error) {
-	proj, names := courseSummaryProjection()
 	values := map[string]*dynamodb.AttributeValue{
 		":type": {S: aws.String(courseType)},
 	}
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression:    aws.String("#type = :type"),
-		ExpressionAttributeNames:  names,
+		KeyConditionExpression: aws.String("#type = :type"),
+		ExpressionAttributeNames: map[string]*string{
+			"#type": aws.String("type"),
+		},
 		ExpressionAttributeValues: values,
-		ProjectionExpression:      aws.String(proj),
+		IndexName:                 aws.String("SummaryIndex"),
 		TableName:                 aws.String(courseTable),
 	}
 	if publishedOnly {
-		filter, filterNames, filterValues := applyPublishedOnlyFilter(names, values)
+		filter, filterNames, filterValues := applyPublishedOnlyFilter(input.ExpressionAttributeNames, values)
 		input.FilterExpression = aws.String(filter)
 		input.ExpressionAttributeNames = filterNames
 		input.ExpressionAttributeValues = filterValues
@@ -277,14 +269,12 @@ func (repo *dynamoRepository) ListCourses(courseType, startKey string, published
 
 // ScanCourses returns a list of all courses.
 func (repo *dynamoRepository) ScanCourses(startKey string, publishedOnly bool) ([]Course, string, error) {
-	proj, names := courseSummaryProjection()
 	input := &dynamodb.ScanInput{
-		ExpressionAttributeNames: names,
-		ProjectionExpression:     aws.String(proj),
-		TableName:                aws.String(courseTable),
+		IndexName: aws.String("SummaryIndex"),
+		TableName: aws.String(courseTable),
 	}
 	if publishedOnly {
-		filter, filterNames, filterValues := applyPublishedOnlyFilter(names, map[string]*dynamodb.AttributeValue{})
+		filter, filterNames, filterValues := applyPublishedOnlyFilter(map[string]*string{}, map[string]*dynamodb.AttributeValue{})
 		input.FilterExpression = aws.String(filter)
 		input.ExpressionAttributeNames = filterNames
 		input.ExpressionAttributeValues = filterValues
