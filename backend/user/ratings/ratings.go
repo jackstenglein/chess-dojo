@@ -82,6 +82,10 @@ type CfcResponse struct {
 	} `json:"player"`
 }
 
+type DwzResponse struct {
+	Rating int `json:"rating"`
+}
+
 type KnsbResponse struct {
 	Rating   int `json:"rating"`
 	NumGames int `json:"num_played"`
@@ -376,7 +380,7 @@ func FetchCfcRating(cfcId string) (*database.Rating, error) {
 }
 
 func FetchDwzRating(dwzId string) (*database.Rating, error) {
-	resp, err := client.Get(fmt.Sprintf("https://www.schachbund.de/php/dewis/spieler.php?pkz=%s", dwzId))
+	resp, err := client.Get(fmt.Sprintf("https://schachde-apps.liga.nu/dsbwertungsportal/rs/dwz/dwzliste/persons/%s", dwzId))
 	if err != nil {
 		err = errors.Wrap(500, "Temporary server error", "Failed call to DWZ API", err)
 		return nil, err
@@ -387,25 +391,12 @@ func FetchDwzRating(dwzId string) (*database.Rating, error) {
 		return nil, err
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		err = errors.Wrap(500, "Temporary server error", "Failed to read DWZ response", err)
+	var r DwzResponse
+	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		err = errors.Wrap(500, "Temporary server error", "Failed to parse DWZ API response", err)
 		return nil, err
 	}
-
-	const ratingIndex = 13
-	tokens := strings.Split(string(b), "|")
-	if ratingIndex >= len(tokens) {
-		err = errors.New(400, "Invalid request: DWZ API did not return a rating", fmt.Sprintf("ratingIndex out of bounds for tokens %v", tokens))
-		return nil, err
-	}
-
-	rating, err := strconv.Atoi(tokens[ratingIndex])
-	if err != nil {
-		return nil, errors.Wrap(400, fmt.Sprintf("Invalid request: DWZ API returned rating `%s` which cannot be converted to integer", tokens[14]), "", err)
-	}
-	return &database.Rating{CurrentRating: rating}, nil
+	return &database.Rating{CurrentRating: r.Rating}, nil
 }
 
 func FetchAcfRating(acfId string) (*database.Rating, error) {
