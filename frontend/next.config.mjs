@@ -183,6 +183,11 @@ const pagesWithVideosRaw = [
 
     // Logical Chess Move by Move
     '/courses/WORKSHOP/d461daae-a554-460a-83e5-54d53b93c4de/:path*',
+
+    // Calculation Training
+    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2',
+    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/0/0',
+    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/:chapter/1',
 ];
 
 // Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',

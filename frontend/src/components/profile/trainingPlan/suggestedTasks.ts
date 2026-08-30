@@ -102,6 +102,8 @@ const INELIGIBLE_SUGGESTED_TASKS = [
     'd1688281-2bf0-4a70-9b0d-1f1484a0b9e5', // Dojo middlegame lecture
     '27d02505-64d7-4075-af02-769a54ca40df', // Dojo endgame lecture
     '7ceed525-82fd-4f2a-adbb-f6cbd7300979', // Dojo opening lecture
+    'fdf5870c-ad68-4e1f-b078-0519036ea97a', // Peer reviews
+    'e794313b-bfa2-43e8-b36d-80859ac3cd25', // Sensei reviews
 ];
 
 /**
