@@ -117,7 +117,7 @@ export function CourseContentPreview({ course }: { course: Course }) {
  * @param moduleIndex The index of the module to select.
  * @returns The selected chapter and module.
  */
-function resolveModule(
+export function resolveModule(
     chapters: Course['chapters'],
     chapterIndex: number,
     moduleIndex: number,

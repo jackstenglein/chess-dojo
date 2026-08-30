@@ -130,11 +130,15 @@ export function cohortRangeFromCohorts(cohorts: string[]): string {
         return first;
     }
     const min = first.split('-')[0];
-    const max = last.endsWith('+') ? last : last.split('-')[1] || last;
+    if (last.endsWith('+')) {
+        return `${min}+`;
+    }
+
+    const max = last.split('-')[1] || last;
     return `${min}-${max}`;
 }
 
-export function resolveCohorts(cohorts: string[]): string[] {
+function resolveCohorts(cohorts: string[]): string[] {
     if (cohorts.includes(ALL_COHORTS)) {
         return [...dojoCohorts];
     }
@@ -193,11 +197,11 @@ export function publishValidationError(course: Course): string | undefined {
             return 'Sale price must be less than the full price if set';
         }
     }
-    if (course.chapters?.length ?? 0 === 0) {
+    if ((course.chapters?.length ?? 0) === 0) {
         return 'Add at least one chapter to publish';
     }
     for (const chapter of course.chapters ?? []) {
-        if (chapter.modules?.length ?? 0 === 0) {
+        if ((chapter.modules?.length ?? 0) === 0) {
             return 'Add at least one module to each chapter to publish';
         }
         for (const mod of chapter.modules ?? []) {

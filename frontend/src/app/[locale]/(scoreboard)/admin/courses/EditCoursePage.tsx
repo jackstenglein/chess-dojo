@@ -33,7 +33,12 @@ import {
 import { useEffect, useState } from 'react';
 import { ContentEditor } from './ContentEditor';
 import { CourseContentPreview } from './CourseContentPreview';
-import { emptyCourse, prepareCourseForSave, publishValidationError } from './courseEditor';
+import {
+    cohortRangeFromCohorts,
+    emptyCourse,
+    prepareCourseForSave,
+    publishValidationError,
+} from './courseEditor';
 import { PurchaseOptionsEditor } from './PurchaseOptionsEditor';
 
 export function EditCoursePage({ type, id }: { type?: string; id?: string }) {
@@ -239,7 +244,13 @@ export function EditCoursePage({ type, id }: { type?: string; id?: string }) {
                             multiple
                             label='Cohorts'
                             selected={course.cohorts}
-                            setSelected={(cohorts) => setCourse({ ...course, cohorts })}
+                            setSelected={(cohorts) =>
+                                setCourse({
+                                    ...course,
+                                    cohorts,
+                                    cohortRange: cohortRangeFromCohorts(cohorts),
+                                })
+                            }
                         />
                         <TextField
                             label='Thumbnail image URL'
