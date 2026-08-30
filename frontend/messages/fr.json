@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "Pourquoi est-ce que je ne me trouve pas sur le tableau de score ?",
             "cantFindSelfContent": "Le tableau de score n'affiche que les utilisateurs ayant mis à jour leur progression au cours du dernier mois. Si tu ne te trouves pas, mets à jour ta progression sur l'un des objectifs du programme.",
             "findDwzTitle": "Comment trouver mon identifiant DWZ ?",
-            "findDwzContent": "L'identifiant DWZ n'est pas le même que ton ZPS-Nr. Tu peux trouver l'identifiant DWZ en te rendant sur ta page de joueur et en copiant l'identifiant depuis l'URL. Par exemple, la page de Vincent Keymer se trouve à l'adresse https://www.schachbund.de/spieler/10283283.html, donc son identifiant DWZ est 10283283."
+            "findDwzContent": "L'identifiant DWZ n'est pas le même que ton ZPS-Nr ou code ID. Tu peux trouver l'identifiant DWZ en te rendant sur ta page de joueur et en copiant l'identifiant depuis l'URL. Par exemple, la page de Vincent Keymer se trouve à l'adresse https://www.schachbund.de/dwz-spieler/NU4168433.html, donc son identifiant DWZ est NU4168433."
         },
         "scheduling": {
             "title": "Planification",

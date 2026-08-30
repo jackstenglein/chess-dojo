@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "Why can't I find myself on the scoreboard?",
             "cantFindSelfContent": "The scoreboard only displays users who have updated their progress in the last month. If you cannot find yourself, update your progress on one of the program requirements.",
             "findDwzTitle": "How do I find my DWZ ID?",
-            "findDwzContent": "The DWZ ID is not the same as your ZPS-Nr. The DWZ ID can be found by going to your player page and copying the ID from the URL. For example, Vincent Keymer's page is located at https://www.schachbund.de/spieler/10283283.html, so his DWZ ID is 10283283."
+            "findDwzContent": "The DWZ ID is not the same as your ZPS-Nr or ID code. The DWZ ID can be found by going to your player page and copying the ID from the URL. For example, Vincent Keymer's page is located at https://www.schachbund.de/dwz-spieler/NU4168433.html, so his DWZ ID is NU4168433."
         },
         "scheduling": {
             "title": "Scheduling",

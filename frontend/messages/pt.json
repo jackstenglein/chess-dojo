@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "Por que não me encontro no placar?",
             "cantFindSelfContent": "O placar mostra apenas usuários que atualizaram seu progresso no último mês. Se você não se encontrar, atualize seu progresso em um dos requisitos do programa.",
             "findDwzTitle": "Como encontro meu ID de DWZ?",
-            "findDwzContent": "O ID de DWZ não é o mesmo que o seu ZPS-Nr. Você encontra o ID de DWZ acessando sua página de jogador e copiando o ID da URL. Por exemplo, a página de Vincent Keymer fica em https://www.schachbund.de/spieler/10283283.html, então o ID de DWZ dele é 10283283."
+            "findDwzContent": "O ID de DWZ não é o mesmo que o seu ZPS-Nr ou código de ID. Você encontra o ID de DWZ acessando sua página de jogador e copiando o ID da URL. Por exemplo, a página de Vincent Keymer fica em https://www.schachbund.de/dwz-spieler/NU4168433.html, então o ID de DWZ dele é NU4168433."
         },
         "scheduling": {
             "title": "Agendamento",

@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "Warum finde ich mich nicht auf der Rangliste?",
             "cantFindSelfContent": "Die Bestenliste zeigt nur Nutzer an, die ihren Fortschritt im letzten Monat aktualisiert haben. Wenn du dich nicht finden kannst, aktualisiere deinen Fortschritt bei einer der Programmvorgaben.",
             "findDwzTitle": "Wie finde ich meine DWZ-ID?",
-            "findDwzContent": "Die DWZ-ID ist nicht dasselbe wie deine ZPS-Nr. Die DWZ-ID findest du, indem du auf deine Spielerseite gehst und die ID aus der URL kopierst. Zum Beispiel befindet sich Vincent Keymers Seite auf https://www.schachbund.de/spieler/10283283.html, also ist seine DWZ-ID 10283283."
+            "findDwzContent": "Die DWZ-ID ist nicht dasselbe wie deine ZPS-Nr oder dein ID-Code. Die DWZ-ID findest du, indem du auf deine Spielerseite gehst und die ID aus der URL kopierst. Zum Beispiel befindet sich Vincent Keymers Seite auf https://www.schachbund.de/dwz-spieler/NU4168433.html, also ist seine DWZ-ID NU4168433."
         },
         "scheduling": {
             "title": "Planung",

@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "¿Por qué no aparezco en la tabla de clasificación?",
             "cantFindSelfContent": "La tabla de clasificación solo muestra a los usuarios que han actualizado su progreso en el último mes. Si no apareces, actualiza tu progreso en uno de los requisitos del programa.",
             "findDwzTitle": "¿Cómo encuentro mi ID de DWZ?",
-            "findDwzContent": "El ID de DWZ no es lo mismo que tu ZPS-Nr. Puedes encontrar el ID de DWZ entrando en tu página de jugador y copiando el ID de la URL. Por ejemplo, la página de Vincent Keymer está en https://www.schachbund.de/spieler/10283283.html, así que su ID de DWZ es 10283283."
+            "findDwzContent": "El ID de DWZ no es lo mismo que tu ZPS-Nr o código de ID. Puedes encontrar el ID de DWZ entrando en tu página de jugador y copiando el ID de la URL. Por ejemplo, la página de Vincent Keymer está en https://www.schachbund.de/dwz-spieler/NU4168433.html, así que su ID de DWZ es NU4168433."
         },
         "scheduling": {
             "title": "Programación",

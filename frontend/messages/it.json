@@ -1165,7 +1165,7 @@
             "cantFindSelfTitle": "Perché non riesco a trovarmi sul tabellone dei punteggi?",
             "cantFindSelfContent": "Il tabellone dei punteggi mostra solo gli utenti che hanno aggiornato i propri progressi nell'ultimo mese. Se non riesci a trovarti, aggiorna i tuoi progressi su uno degli obiettivi del programma.",
             "findDwzTitle": "Come trovo il mio ID DWZ?",
-            "findDwzContent": "L'ID DWZ non è la stessa cosa del tuo ZPS-Nr. L'ID DWZ si trova andando sulla tua pagina giocatore e copiando l'ID dall'URL. Ad esempio, la pagina di Vincent Keymer si trova su https://www.schachbund.de/spieler/10283283.html, quindi il suo ID DWZ è 10283283."
+            "findDwzContent": "L'ID DWZ non è la stessa cosa del tuo ZPS-Nr o codice ID. L'ID DWZ si trova andando sulla tua pagina giocatore e copiando l'ID dall'URL. Ad esempio, la pagina di Vincent Keymer si trova su https://www.schachbund.de/dwz-spieler/NU4168433.html, quindi il suo ID DWZ è NU4168433."
         },
         "scheduling": {
             "title": "Pianificazione",
