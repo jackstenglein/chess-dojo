@@ -86,6 +86,16 @@ export interface Course {
      * as published for courses created before this field existed.
      */
     status?: CourseStatus;
+
+    /**
+     * Whether to hide the chapter indices in the table of contents.
+     */
+    hideChapterIndices?: boolean;
+
+    /**
+     * Whether to hide the module indices in the table of contents.
+     */
+    hideModuleIndices?: boolean;
 }
 
 export enum CourseStatus {

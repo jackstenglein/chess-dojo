@@ -1,6 +1,17 @@
 import { Link } from '@/components/navigation/Link';
 import { Chapter, Course } from '@/database/course';
-import { Box, Card, CardContent } from '@mui/material';
+import {
+    Card,
+    CardContent,
+    List,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    ListSubheader,
+    Stack,
+    Typography,
+} from '@mui/material';
+import { Fragment } from 'react/jsx-runtime';
 
 interface ChapterContentsProps {
     type: string;
@@ -10,6 +21,7 @@ interface ChapterContentsProps {
     selectedChapter?: number;
     selectedModule?: number;
     onSelect?: (chapterIndex: number, moduleIndex: number) => void;
+    hideIndices?: boolean;
 }
 
 const ChapterContents = ({
@@ -20,39 +32,46 @@ const ChapterContents = ({
     selectedChapter,
     selectedModule,
     onSelect,
+    hideIndices,
 }: ChapterContentsProps) => {
     return (
-        <ol>
+        <List component='div' disablePadding sx={{ width: 1 }}>
             {chapter.modules.map((m, idx) => {
                 const selected = selectedChapter === index && selectedModule === idx;
                 const label = m.name || `Module ${idx + 1}`;
-                if (onSelect) {
-                    return (
-                        <li key={m.id || idx}>
-                            <Box
-                                component='button'
-                                type='button'
-                                onClick={() => onSelect(index, idx)}
-                                sx={{
-                                    all: 'unset',
-                                    cursor: 'pointer',
-                                    fontWeight: selected ? 700 : undefined,
-                                    color: selected ? 'primary.main' : 'inherit',
-                                    '&:hover': { textDecoration: 'underline' },
-                                }}
-                            >
-                                {label}
-                            </Box>
-                        </li>
-                    );
-                }
                 return (
-                    <Link key={m.name || idx} href={`/courses/${type}/${id}/${index}/${idx}`}>
-                        <li>{m.name}</li>
-                    </Link>
+                    <ListItemButton
+                        key={m.id || idx}
+                        component={onSelect ? 'button' : Link}
+                        onClick={onSelect ? () => onSelect(index, idx) : undefined}
+                        href={onSelect ? undefined : `/courses/${type}/${id}/${index}/${idx}`}
+                        selected={selected}
+                        disableGutters
+                        sx={{ width: 1 }}
+                    >
+                        <ListItemIcon sx={{ minWidth: '40px' }}>
+                            {!hideIndices && (
+                                <Stack
+                                    sx={{
+                                        alignItems: 'center',
+                                        width: 1,
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            color: 'primary.main',
+                                        }}
+                                    >
+                                        {idx + 1}
+                                    </Typography>
+                                </Stack>
+                            )}
+                        </ListItemIcon>
+                        <ListItemText primary={label} />
+                    </ListItemButton>
                 );
             })}
-        </ol>
+        </List>
     );
 };
 
@@ -72,17 +91,12 @@ const Contents = ({ course, selectedChapter, selectedModule, onSelect }: Content
         <Card variant='outlined'>
             <CardContent>
                 {course.chapters.length > 1 && (
-                    <ol style={{ paddingLeft: '16px' }}>
+                    <List component='nav' disablePadding sx={{ width: 1 }}>
                         {course.chapters.map((c, idx) => (
-                            <li key={idx}>
-                                <Box
-                                    component='span'
-                                    sx={{
-                                        fontWeight: selectedChapter === idx ? 600 : undefined,
-                                    }}
-                                >
-                                    {c.name}
-                                </Box>
+                            <Fragment key={idx}>
+                                <ListSubheader disableGutters>
+                                    {!course.hideChapterIndices && <>{idx + 1}.</>} {c.name}
+                                </ListSubheader>
                                 <ChapterContents
                                     type={course.type}
                                     id={course.id}
@@ -91,10 +105,11 @@ const Contents = ({ course, selectedChapter, selectedModule, onSelect }: Content
                                     selectedChapter={selectedChapter}
                                     selectedModule={selectedModule}
                                     onSelect={onSelect}
+                                    hideIndices={course.hideModuleIndices}
                                 />
-                            </li>
+                            </Fragment>
                         ))}
-                    </ol>
+                    </List>
                 )}
 
                 {course.chapters.length === 1 && (

@@ -31,7 +31,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ChaptersEditor } from './ChaptersEditor';
+import { ContentEditor } from './ContentEditor';
 import { CourseContentPreview } from './CourseContentPreview';
 import { emptyCourse, prepareCourseForSave, publishValidationError } from './courseEditor';
 import { PurchaseOptionsEditor } from './PurchaseOptionsEditor';
@@ -309,9 +309,9 @@ export function EditCoursePage({ type, id }: { type?: string; id?: string }) {
                 )}
 
                 {tab === 1 && (
-                    <ChaptersEditor
-                        chapters={course.chapters ?? []}
-                        onChange={(chapters) => setCourse({ ...course, chapters })}
+                    <ContentEditor
+                        course={course}
+                        onChange={(newCourse) => setCourse({ ...course, ...newCourse })}
                     />
                 )}
 

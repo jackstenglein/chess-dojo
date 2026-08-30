@@ -1,4 +1,4 @@
-import { Chapter, Coach, coaches, CourseModule, CourseModuleType } from '@/database/course';
+import { Chapter, Coach, coaches, Course, CourseModule, CourseModuleType } from '@/database/course';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,7 +8,9 @@ import {
     AccordionDetails,
     AccordionSummary,
     Button,
+    Checkbox,
     FormControl,
+    FormControlLabel,
     IconButton,
     InputLabel,
     MenuItem,
@@ -27,18 +29,41 @@ import {
     replaceItem,
 } from './courseEditor';
 
-export function ChaptersEditor({
-    chapters,
+export function ContentEditor({
+    course,
     onChange,
 }: {
-    chapters: Chapter[];
-    onChange: (chapters: Chapter[]) => void;
+    course: Course;
+    onChange: (update: Partial<Course>) => void;
 }) {
+    const chapters = course.chapters ?? [];
+
     return (
         <Stack spacing={2}>
+            <FormControlLabel
+                label='Show chapter indices in table of contents'
+                control={
+                    <Checkbox
+                        checked={!course.hideChapterIndices}
+                        onChange={(e) => onChange({ hideChapterIndices: !e.target.checked })}
+                    />
+                }
+            />
+            <FormControlLabel
+                label='Show module indices in table of contents'
+                control={
+                    <Checkbox
+                        checked={!course.hideModuleIndices}
+                        onChange={(e) => onChange({ hideModuleIndices: !e.target.checked })}
+                    />
+                }
+            />
+
             <Stack direction='row' sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant='h6'>Chapters</Typography>
-                <Button onClick={() => onChange([...chapters, emptyChapter()])}>Add chapter</Button>
+                <Button onClick={() => onChange({ chapters: [...chapters, emptyChapter()] })}>
+                    Add chapter
+                </Button>
             </Stack>
             {chapters.length === 0 && (
                 <Typography sx={{ color: 'text.secondary' }}>
@@ -49,8 +74,13 @@ export function ChaptersEditor({
                 <Accordion key={index} defaultExpanded={index === 0} variant='outlined'>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Typography sx={{ fontWeight: 600 }}>
-                            Chapter {index + 1}
-                            {chapter.name ? `: ${chapter.name}` : ''}
+                            {!course.hideChapterIndices && (
+                                <>
+                                    Chapter {index + 1}
+                                    {': '}
+                                </>
+                            )}
+                            {chapter.name || 'Unnamed Chapter'}
                         </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -58,9 +88,13 @@ export function ChaptersEditor({
                             chapter={chapter}
                             index={index}
                             total={chapters.length}
-                            onChange={(next) => onChange(replaceItem(chapters, index, next))}
-                            onMove={(delta) => onChange(moveItem(chapters, index, delta))}
-                            onRemove={() => onChange(removeItem(chapters, index))}
+                            onChange={(next) =>
+                                onChange({ chapters: replaceItem(chapters, index, next) })
+                            }
+                            onMove={(delta) =>
+                                onChange({ chapters: moveItem(chapters, index, delta) })
+                            }
+                            onRemove={() => onChange({ chapters: removeItem(chapters, index) })}
                         />
                     </AccordionDetails>
                 </Accordion>

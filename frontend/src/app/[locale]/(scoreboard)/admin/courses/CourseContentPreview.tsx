@@ -3,7 +3,7 @@ import { getAdjacentModule } from '@/app/[locale]/(scoreboard)/courses/[type]/[i
 import Module from '@/app/[locale]/(scoreboard)/courses/[type]/[id]/[chapter]/[module]/Module';
 import { Course, CourseModule } from '@/database/course';
 import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 export function CourseContentPreview({ course }: { course: Course }) {
     const [chapterIndex, setChapterIndex] = useState(0);
@@ -17,21 +17,6 @@ export function CourseContentPreview({ course }: { course: Course }) {
         setModuleIndex(nextModule);
     };
 
-    const prevModule = useMemo(
-        () =>
-            selection
-                ? getAdjacentModule(selection.chapterIndex, selection.moduleIndex, chapters, -1)
-                : undefined,
-        [selection, chapters],
-    );
-    const nextModule = useMemo(
-        () =>
-            selection
-                ? getAdjacentModule(selection.chapterIndex, selection.moduleIndex, chapters, 1)
-                : undefined,
-        [selection, chapters],
-    );
-
     if (!selection) {
         return (
             <Typography sx={{ color: 'text.secondary', py: 4 }}>
@@ -39,6 +24,19 @@ export function CourseContentPreview({ course }: { course: Course }) {
             </Typography>
         );
     }
+
+    const prevModule = getAdjacentModule(
+        selection.chapterIndex,
+        selection.moduleIndex,
+        chapters,
+        -1,
+    );
+    const nextModule = getAdjacentModule(
+        selection.chapterIndex,
+        selection.moduleIndex,
+        chapters,
+        1,
+    );
 
     const {
         module: courseModule,
