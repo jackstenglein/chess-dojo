@@ -45,12 +45,23 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	info := api.GetUserInfo(event)
 	if info.Username == "" {
+		if !course.IsPublished() {
+			return api.Failure(errors.New(404, "Invalid request: course not found", "")), nil
+		}
 		return checkAnonymousAccess(event, course)
 	}
 
 	caller, err := repository.GetUser(info.Username)
 	if err != nil {
 		return api.Failure(err), nil
+	}
+
+	if caller.IsAdmin {
+		return accessGranted(course)
+	}
+
+	if !course.IsPublished() {
+		return api.Failure(errors.New(404, "Invalid request: course not found", "")), nil
 	}
 
 	// The caller must subscribe to access the course
@@ -85,8 +96,8 @@ func checkAnonymousAccess(event api.Request, course *database.Course) (api.Respo
 		return accessDenied(course)
 	}
 
-	courseIds := strings.Split(checkoutSession.Metadata["courseIds"], ",")
-	for _, id := range courseIds {
+	courseIds := strings.SplitSeq(checkoutSession.Metadata["courseIds"], ",")
+	for id := range courseIds {
 		if id == course.Id {
 			return accessGranted(course)
 		}

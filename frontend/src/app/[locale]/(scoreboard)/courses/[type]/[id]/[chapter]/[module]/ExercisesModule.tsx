@@ -19,7 +19,7 @@ function getCompleted(user: User | undefined, module: CourseModule): boolean[] {
         exercises = userExercises;
     }
 
-    return module.pgns.map((_: string, idx: number) => {
+    return (module.pgns ?? []).map((_: string, idx: number) => {
         if (exercises[idx]) {
             return true;
         }
@@ -27,7 +27,7 @@ function getCompleted(user: User | undefined, module: CourseModule): boolean[] {
     });
 }
 
-const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
+const ExercisesModule = ({ module, preview }: ModuleProps) => {
     const t = useTranslations('courses.exercises');
     const { user } = useAuth();
     const [completed, setCompleted] = useState(getCompleted(user, module));
@@ -43,7 +43,7 @@ const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
         ];
         setCompleted(newCompleted);
 
-        if (module.id && user) {
+        if (!preview && module.id && user) {
             request.onStart();
             api.updateUser({
                 openingProgress: {
@@ -60,7 +60,7 @@ const ExercisesModule: React.FC<ModuleProps> = ({ module }) => {
                     request.onFailure(err);
                 });
         }
-    }, [api, completed, module.id, request, selectedIndex, user]);
+    }, [api, completed, module.id, preview, request, selectedIndex, user]);
 
     if (!module.pgns || module.pgns.length < 1) {
         return null;

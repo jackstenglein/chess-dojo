@@ -38,6 +38,14 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
+	if !course.IsPublished() {
+		return api.Failure(errors.New(404, "Invalid request: course not found", "")), nil
+	}
+
+	if len(course.PurchaseOptions) == 0 {
+		return api.Failure(errors.New(400, "Invalid request: course has no purchase options", "")), nil
+	}
+
 	purchaseOption := course.PurchaseOptions[0]
 	selectedPurchaseOption := event.QueryStringParameters["purchaseOption"]
 	if len(course.PurchaseOptions) > 1 && selectedPurchaseOption != "" {

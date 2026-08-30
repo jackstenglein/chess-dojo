@@ -19,6 +19,28 @@ import Contents from './Contents';
 import Module from './Module';
 import PurchaseCoursePage from './PurchaseCoursePage';
 
+function AdminEditBar({ type, id, padded }: { type: string; id: string; padded?: boolean }) {
+    const button = (
+        <Button
+            component={Link}
+            href={`/admin/courses/${type}/${id}`}
+            variant='outlined'
+            size='small'
+            sx={{ mb: 2 }}
+        >
+            Edit course
+        </Button>
+    );
+    if (padded) {
+        return (
+            <Container maxWidth='lg' sx={{ pt: 2 }}>
+                {button}
+            </Container>
+        );
+    }
+    return button;
+}
+
 export const CoursePage = ({
     params,
 }: {
@@ -75,7 +97,12 @@ export const CoursePage = ({
     if (isBlocked) {
         // Pass rawCourse so PurchaseCoursePage runs useTranslatedCourse once
         // rather than translating an already-translated Course.
-        return <PurchaseCoursePage course={rawCourse} isFreeTier={isFreeTier} />;
+        return (
+            <>
+                {auth.user?.isAdmin && <AdminEditBar type={params.type} id={params.id} padded />}
+                <PurchaseCoursePage course={rawCourse} isFreeTier={isFreeTier} />
+            </>
+        );
     }
 
     if (!request.isSent() || request.isLoading()) {
@@ -91,6 +118,7 @@ export const CoursePage = ({
 
     return (
         <Container maxWidth={false} sx={{ pt: 6, pb: 4 }}>
+            {auth.user?.isAdmin && <AdminEditBar type={course.type} id={course.id} />}
             {anonymousUser && (
                 <Alert
                     severity='warning'

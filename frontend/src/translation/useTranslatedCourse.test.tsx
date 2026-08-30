@@ -41,8 +41,6 @@ const course: Course = {
     chapters: [
         {
             name: 'Basic Positions',
-            thumbnailFen: '8/8/8/8/8/8/8/8',
-            thumbnailOrientation: 'white',
             modules: [
                 {
                     id: 'm1',
@@ -120,8 +118,6 @@ describe('useTranslatedCourse', () => {
                 firstChapter,
                 {
                     name: 'Advanced Positions',
-                    thumbnailFen: '8/8/8/8/8/8/8/8',
-                    thumbnailOrientation: 'white',
                     modules: [],
                 },
             ],

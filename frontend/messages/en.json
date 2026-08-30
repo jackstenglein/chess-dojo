@@ -2158,6 +2158,8 @@
         },
         "purchase": {
             "whatsIncluded": "What's Included:",
+            "aboutThisCourse": "About this course",
+            "introVideo": "Course introduction",
             "subscribersOnly": "This course is only available to subscribers",
             "alsoUnlockBySubscribing": "You can also unlock this and all other opening courses by subscribing to the Training Program",
             "viewPrices": "View Prices",

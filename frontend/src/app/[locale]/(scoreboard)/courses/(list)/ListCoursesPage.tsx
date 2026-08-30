@@ -3,7 +3,7 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
-import { Course, CourseType } from '@/database/course';
+import { Course, CourseType, isCoursePublished } from '@/database/course';
 import { getCohortRange } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { Container, Divider, Grid, Stack, Typography } from '@mui/material';
@@ -35,6 +35,10 @@ const ListCoursesPage = () => {
 
     const courses =
         request.data?.filter((course) => {
+            if (!isCoursePublished(course) && !user?.isAdmin) {
+                return false;
+            }
+
             const isPurchased = user?.purchasedCourses
                 ? user.purchasedCourses[course.id]
                 : getCheckoutSessionId(course.id) !== '';
@@ -57,7 +61,11 @@ const ListCoursesPage = () => {
             return true;
         }) ?? [];
 
-    const workshops = request.data?.filter((course) => course.type === CourseType.Workshop) ?? [];
+    const workshops =
+        request.data?.filter(
+            (course) =>
+                course.type === CourseType.Workshop && (isCoursePublished(course) || user?.isAdmin),
+        ) ?? [];
 
     const noItems = !courses.length;
 

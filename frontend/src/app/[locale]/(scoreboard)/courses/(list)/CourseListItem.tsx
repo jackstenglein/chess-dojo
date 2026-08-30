@@ -1,5 +1,6 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import { Course, CoursePurchaseOption } from '@/database/course';
 import { RequirementCategory } from '@/database/requirement';
@@ -77,7 +78,9 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
     const t = useTranslations('courses.listItem');
     const api = useApi();
     const request = useRequest();
-    const isAccessible = isPurchased || (course.includedWithSubscription && !isFreeTier);
+    const { user } = useAuth();
+    const isAccessible =
+        user?.isAdmin || isPurchased || (course.includedWithSubscription && !isFreeTier);
     const router = useRouter();
 
     if (!preview && filters) {
@@ -96,20 +99,20 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
     }
 
     let purchaseOption: CoursePurchaseOption | null = null;
-
+    let percentOff = 0;
     for (const option of course.purchaseOptions || []) {
         if (!purchaseOption || option.currentPrice < purchaseOption.currentPrice) {
             purchaseOption = option;
+            if (option.currentPrice > 0) {
+                percentOff = Math.round(
+                    ((purchaseOption.fullPrice - purchaseOption.currentPrice) /
+                        purchaseOption.fullPrice) *
+                        100,
+                );
+            }
         }
     }
-
-    let percentOff = 0;
-    if (purchaseOption && purchaseOption.currentPrice > 0) {
-        percentOff = Math.round(
-            ((purchaseOption.fullPrice - purchaseOption.currentPrice) / purchaseOption.fullPrice) *
-                100,
-        );
-    }
+    const canPurchase = !isAccessible && purchaseOption;
 
     const category = course.type[0] + course.type.substring(1).toLowerCase();
     const categoryColor = getCategoryColor(category);
@@ -340,28 +343,41 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                 </CardContent>
             </CardActionArea>
 
-            {!isAccessible && purchaseOption && (
+            {(user?.isAdmin || canPurchase) && (
                 <>
                     <Divider />
-                    <CardActions sx={{ p: 2 }}>
-                        <Button
-                            size='medium'
-                            loading={request.isLoading()}
-                            onClick={
-                                preview
-                                    ? undefined
-                                    : (e) => {
-                                          e.preventDefault();
-                                          onBuy();
-                                      }
-                            }
-                            color='success'
-                            fullWidth
-                            variant='contained'
-                            startIcon={<ShoppingCartIcon />}
-                        >
-                            {t('buy')}
-                        </Button>
+                    <CardActions sx={{ p: 2, gap: 1 }}>
+                        {user?.isAdmin ? (
+                            <Button
+                                size='medium'
+                                component={Link}
+                                href={`/admin/courses/${course.type}/${course.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                fullWidth
+                                variant='outlined'
+                            >
+                                Edit
+                            </Button>
+                        ) : (
+                            <Button
+                                size='medium'
+                                loading={request.isLoading()}
+                                onClick={
+                                    preview
+                                        ? undefined
+                                        : (e) => {
+                                              e.preventDefault();
+                                              onBuy();
+                                          }
+                                }
+                                color='success'
+                                fullWidth
+                                variant='contained'
+                                startIcon={<ShoppingCartIcon />}
+                            >
+                                {t('buy')}
+                            </Button>
+                        )}
                         <RequestSnackbar request={request} />
                     </CardActions>
                 </>

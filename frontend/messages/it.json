@@ -2158,6 +2158,8 @@
         },
         "purchase": {
             "whatsIncluded": "Cosa è incluso:",
+            "aboutThisCourse": "Informazioni su questo corso",
+            "introVideo": "Introduzione al corso",
             "subscribersOnly": "Questo corso è disponibile solo per gli abbonati",
             "alsoUnlockBySubscribing": "Puoi anche sbloccare questo e tutti gli altri corsi di apertura abbonandoti al programma di allenamento",
             "viewPrices": "Vedi i prezzi",

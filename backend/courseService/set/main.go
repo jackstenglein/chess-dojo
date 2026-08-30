@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
@@ -13,7 +14,10 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
-var repository database.CourseSetter = database.DynamoDB
+var repository interface {
+	database.CourseSetter
+	database.CourseGetter
+} = database.DynamoDB
 
 func main() {
 	lambda.Start(handler)
@@ -33,10 +37,12 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	if err != nil {
 		return api.Failure(err), nil
 	}
-	if !user.IsCoach {
-		return api.Failure(errors.New(403, "Invalid request: user is not a coach", "")), nil
+
+	isAdmin := user.IsAdmin
+	if !isAdmin && !user.IsCoach {
+		return api.Failure(errors.New(403, "Invalid request: user is not a coach or admin", "")), nil
 	}
-	if user.CoachInfo == nil || user.CoachInfo.StripeId == "" {
+	if !isAdmin && (user.CoachInfo == nil || user.CoachInfo.StripeId == "") {
 		return api.Failure(errors.New(400, "Invalid request: user must complete Stripe onboarding first", "")), nil
 	}
 
@@ -46,21 +52,33 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
-	if err := checkCourse(user, course); err != nil {
+	if err := checkCourse(course); err != nil {
 		return api.Failure(err), nil
 	}
 
-	setDefaults(user, course)
-
-	if err := repository.SetCourse(course); err != nil {
+	if err := setDefaults(user, course, isAdmin); err != nil {
 		return api.Failure(err), nil
+	}
+
+	var saveErr error
+	if isAdmin {
+		saveErr = repository.AdminSetCourse(course)
+	} else {
+		saveErr = repository.SetCourse(course)
+	}
+	if saveErr != nil {
+		return api.Failure(saveErr), nil
 	}
 	return api.Success(course), nil
 }
 
-func checkCourse(user *database.User, course *database.Course) error {
+func checkCourse(course *database.Course) error {
 	if course.Type == "" {
-		return errors.New(403, fmt.Sprintf("Invalid course type: `%s`", course.Type), "")
+		return errors.New(400, fmt.Sprintf("Invalid course type: `%s`", course.Type), "")
+	}
+
+	if course.Status != "" && course.Status != database.CourseStatusDraft && course.Status != database.CourseStatusPublished {
+		return errors.New(400, fmt.Sprintf("Invalid course status: `%s`", course.Status), "")
 	}
 
 	if course.Name == "" {
@@ -111,31 +129,52 @@ func checkCourse(user *database.User, course *database.Course) error {
 	return nil
 }
 
-func setDefaults(user *database.User, course *database.Course) {
+func setDefaults(user *database.User, course *database.Course, isAdmin bool) error {
 	if course.Id == "" {
 		course.Id = uuid.NewString()
 	}
 
-	course.Owner = user.Username
+	var existing *database.Course
+	if fetched, err := repository.GetCourse(string(course.Type), course.Id); err == nil {
+		existing = fetched
+	}
 
+	if existing != nil {
+		if existing.Owner != "" && (course.Owner == "" || !isAdmin) {
+			course.Owner = existing.Owner
+		}
+		if course.OwnerDisplayName == "" {
+			course.OwnerDisplayName = existing.OwnerDisplayName
+		}
+		if course.StripeId == "" {
+			course.StripeId = existing.StripeId
+		}
+	}
+
+	if course.Owner == "" {
+		course.Owner = user.Username
+	}
 	if course.OwnerDisplayName == "" {
 		course.OwnerDisplayName = user.DisplayName
 	}
+	if course.StripeId == "" && user.CoachInfo != nil {
+		course.StripeId = user.CoachInfo.StripeId
+	}
+	if course.Status == "" {
+		course.Status = database.CourseStatusDraft
+	}
+	if course.Color == "" {
+		course.Color = database.CourseColor_None
+	}
 
-	course.StripeId = user.CoachInfo.StripeId
-
-	for _, option := range course.PurchaseOptions {
+	for i, option := range course.PurchaseOptions {
 		if len(option.CourseIds) > 0 {
-			found := false
-			for _, id := range option.CourseIds {
-				if id == course.Id {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(option.CourseIds, course.Id)
 			if !found {
-				option.CourseIds = append(option.CourseIds, course.Id)
+				course.PurchaseOptions[i].CourseIds = append(option.CourseIds, course.Id)
 			}
 		}
 	}
+
+	return nil
 }
