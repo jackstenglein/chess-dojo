@@ -55,7 +55,7 @@ export const pagesWithVideos = [
     /^\/courses\/WORKSHOP\/d461daae-a554-460a-83e5-54d53b93c4de/,
 
     // Calculation Training
-    /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/,
+    /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2$/,
     /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2\/0\/0/,
     /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2\/.+\/1/,
 ];
