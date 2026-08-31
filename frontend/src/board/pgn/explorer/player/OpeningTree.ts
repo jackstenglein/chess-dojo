@@ -43,6 +43,11 @@ export class OpeningTree {
     /** A set of the most recent game URLs matching the filters. */
     private mostRecentGames: Set<string> | undefined;
 
+    /** Cache for getPosition results, keyed by normalized FEN. */
+    private positionCache = new Map<string, PositionData>();
+    /** Cache for getGames results, keyed by normalized FEN. */
+    private gamesCache = new Map<string, GameData[]>();
+
     constructor(positionData?: Map<string, PositionData>, gameData?: Map<string, GameData>) {
         this.positionData = new Map<string, PositionData>(positionData);
         this.gameData = new Map<string, GameData>(gameData);
@@ -77,6 +82,7 @@ export class OpeningTree {
         }
 
         this.filters = filters;
+        this.invalidateCaches();
         if (this.filters.downloadLimit === MAX_DOWNLOAD_LIMIT) {
             this.mostRecentGames = undefined;
             return;
@@ -102,9 +108,16 @@ export class OpeningTree {
         this.mostRecentGames = new Set(matchingGames.slice(0, this.filters?.downloadLimit));
     }
 
+    /** Invalidates the position and games caches. */
+    private invalidateCaches() {
+        this.positionCache.clear();
+        this.gamesCache.clear();
+    }
+
     /** Adds the given game to the game data map. */
     setGame(game: GameData) {
         this.gameData.set(game.url, game);
+        this.invalidateCaches();
     }
 
     /**
@@ -128,6 +141,12 @@ export class OpeningTree {
         }
 
         this.setFiltersIfNecessary(filters);
+
+        const cached = this.gamesCache.get(fen);
+        if (cached) {
+            return cached;
+        }
+
         const result = [];
         for (const url of position.games) {
             const game = this.getGame(url);
@@ -139,9 +158,11 @@ export class OpeningTree {
                 result.push(game);
             }
         }
-        return result.sort((lhs, rhs) =>
+        const sorted = result.sort((lhs, rhs) =>
             (rhs.headers.Date ?? '').localeCompare(lhs.headers.Date ?? ''),
         );
+        this.gamesCache.set(fen, sorted);
+        return sorted;
     }
 
     /** Returns the number of games indexed by this opening tree. */
@@ -157,6 +178,7 @@ export class OpeningTree {
     setPosition(fen: string, position: PositionData) {
         fen = normalizeFen(fen);
         this.positionData.set(fen, position);
+        this.invalidateCaches();
     }
 
     /**
@@ -175,6 +197,11 @@ export class OpeningTree {
         }
 
         this.setFiltersIfNecessary(filters);
+
+        const cached = this.positionCache.get(fen);
+        if (cached) {
+            return cached;
+        }
 
         let white = 0;
         let black = 0;
@@ -387,6 +414,7 @@ export class OpeningTree {
             };
         }
 
+        this.positionCache.set(fen, result);
         return result;
     }
 
@@ -397,6 +425,7 @@ export class OpeningTree {
      */
     mergePosition(fen: string, position: PositionData) {
         fen = normalizeFen(fen);
+        this.invalidateCaches();
         const existingPosition = this.positionData.get(fen);
         if (!existingPosition) {
             this.positionData.set(fen, position);
