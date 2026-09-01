@@ -78,8 +78,8 @@ importers:
         specifier: ^14.27.0
         version: 14.27.0
       glicko2:
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.2.2
+        version: 1.2.2
       happy-dom:
         specifier: ^19.0.2
         version: 19.0.2
@@ -2101,8 +2101,8 @@ packages:
     resolution: {integrity: sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==}
     engines: {node: '>=10'}
 
-  glicko2@1.2.1:
-    resolution: {integrity: sha512-llKC0G0hRybX9fmDnx2u2tA9TZSg0OWM2q+AKApN4ofO8QTxFVESxvkLVulpo29fBd7yOBekgey2zkFOMMo6ng==}
+  glicko2@1.2.2:
+    resolution: {integrity: sha512-XtNQRKn8cbaT5zCOUGGTjFEGXLDaSPbO9skq8LO4Dr6KeC5+3IEJdW6apCeKRcEw9eDdp2voujtzrWQTrGnZ/Q==}
 
   glob-all@3.3.1:
     resolution: {integrity: sha512-Y+ESjdI7ZgMwfzanHZYQ87C59jOO0i+Hd+QYtVt9PhLi6d8wlOpzQnfBxWUlaTuAoR3TkybLqqbIoWveU4Ji7Q==}
@@ -6489,7 +6489,7 @@ snapshots:
 
   get-stream@6.0.1: {}
 
-  glicko2@1.2.1: {}
+  glicko2@1.2.2: {}
 
   glob-all@3.3.1:
     dependencies:
