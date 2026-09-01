@@ -117,7 +117,7 @@
         "@types/luxon": "^3.7.5",
         "@types/node": "^26.1.2",
         "@types/uuid": "^10.0.0",
-        "@vitejs/plugin-react": "^6.0.4",
+        "@vitejs/plugin-react": "^6.1.1",
         "command-line-args": "^6.0.2",
         "command-line-usage": "^7.0.4",
         "dotenv": "^17.4.2",
