@@ -46,7 +46,7 @@
     ],
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.7.3",
-        "@dotenvx/dotenvx": "^2.19.0",
+        "@dotenvx/dotenvx": "^2.22.0",
         "@emotion/cache": "^11.13.5",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
