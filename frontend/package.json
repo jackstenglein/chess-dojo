@@ -70,7 +70,7 @@
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
         "async-mutex": "^0.5.0",
-        "aws-amplify": "^6.17.0",
+        "aws-amplify": "^6.20.0",
         "axios": "^1.19.0",
         "bad-words": "^4.0.0",
         "comlink": "^4.4.2",
