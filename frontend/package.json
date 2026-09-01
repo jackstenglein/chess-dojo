@@ -71,7 +71,7 @@
         "@types/react-dom": "^19.2.3",
         "async-mutex": "^0.5.0",
         "aws-amplify": "^6.20.0",
-        "axios": "^1.19.0",
+        "axios": "^1.20.0",
         "bad-words": "^4.0.0",
         "comlink": "^4.4.2",
         "date-fns": "^4.1.0",
