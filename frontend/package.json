@@ -50,7 +50,7 @@
         "@emotion/cache": "^11.13.5",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@formatjs/icu-messageformat-parser": "3.5.15",
+        "@formatjs/icu-messageformat-parser": "3.5.17",
         "@fortawesome/free-brands-svg-icons": "^6.7.2",
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@jackstenglein/chess": "^2.2.21",
