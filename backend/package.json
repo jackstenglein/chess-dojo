@@ -30,7 +30,7 @@
         "@aws-sdk/lib-storage": "^3.1098.0",
         "@aws-sdk/s3-request-presigner": "^3.1098.0",
         "@aws-sdk/util-dynamodb": "^3.996.7",
-        "@googleapis/drive": "^20.2.0",
+        "@googleapis/drive": "^21.0.0",
         "@googleapis/youtube": "^33.0.0",
         "@jackstenglein/chess": "^2.2.21",
         "@jackstenglein/chess-dojo-common": "file:../common",
