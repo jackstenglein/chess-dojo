@@ -449,6 +449,9 @@ func (repo *dynamoRepository) ListGamesByCohort(cohort, startDate, endDate, star
 		":memorizeGames": {
 			S: aws.String("games_to_memorize"),
 		},
+		":gamesToStudy": {
+			S: aws.String("games_to_study"),
+		},
 		":unlisted": {
 			BOOL: aws.Bool(true),
 		},
@@ -458,7 +461,7 @@ func (repo *dynamoRepository) ListGamesByCohort(cohort, startDate, endDate, star
 
 	input := &dynamodb.QueryInput{
 		KeyConditionExpression:    aws.String(keyConditionExpression),
-		FilterExpression:          aws.String("#owner <> :modelGames AND #owner <> :memorizeGames AND (attribute_not_exists(unlisted) OR #unlisted <> :unlisted)"),
+		FilterExpression:          aws.String("#owner <> :modelGames AND #owner <> :memorizeGames AND #owner <> :gamesToStudy AND (attribute_not_exists(unlisted) OR #unlisted <> :unlisted)"),
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
 		ProjectionExpression:      aws.String("#cohort,#id,#white,#black,#date,#createdAt,#updatedAt,#publishedAt,#owner,#ownerDisplayName,#headers"),

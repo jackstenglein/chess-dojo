@@ -924,6 +924,7 @@
         "books": "Livres",
         "sparringPositions": "Positions de sparring",
         "modelAnnotations": "Annotations modèles",
+        "gamesToStudy": "Parties à étudier",
         "gamesToMemorize": "Parties à mémoriser",
         "guides": "Guides",
         "ratingConversions": "Conversions de classement",
@@ -2862,6 +2863,12 @@
         "modelGames": {
             "selectGame": "Sélectionner une partie",
             "cohortLabel": "Cohorte",
+            "noGamesForCohort": "Aucune partie trouvée pour la cohorte {cohort}"
+        },
+        "gamesToStudy": {
+            "selectGame": "Sélectionner une partie",
+            "cohortLabel": "Cohorte",
+            "noGames": "Aucune partie disponible pour le moment.",
             "noGamesForCohort": "Aucune partie trouvée pour la cohorte {cohort}"
         },
         "sparring": {

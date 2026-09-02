@@ -924,6 +924,7 @@
         "books": "[T] Books",
         "sparringPositions": "[T] Sparring Positions",
         "modelAnnotations": "[T] Model Annotations",
+        "gamesToStudy": "[T] Games to Study",
         "gamesToMemorize": "[T] Games to Memorize",
         "guides": "[T] Guides",
         "ratingConversions": "[T] Rating Conversions",
@@ -2862,6 +2863,12 @@
         "modelGames": {
             "selectGame": "[T] Select Game",
             "cohortLabel": "[T] Cohort",
+            "noGamesForCohort": "[T] No games found for cohort {cohort}"
+        },
+        "gamesToStudy": {
+            "selectGame": "[T] Select Game",
+            "cohortLabel": "[T] Cohort",
+            "noGames": "[T] No games available yet.",
             "noGamesForCohort": "[T] No games found for cohort {cohort}"
         },
         "sparring": {
