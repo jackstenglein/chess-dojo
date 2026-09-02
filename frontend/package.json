@@ -135,7 +135,7 @@
         "typedoc": "^0.28.19",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.54.0",
-        "use-intl": "^4.13.4",
+        "use-intl": "^4.14.1",
         "vite": "^8.2.2",
         "vitest": "^4.0.18",
         "zod-validation-error": "^5.0.0"
