@@ -74,7 +74,7 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
  * @param request The update request.
  * @returns The updated directory.
  */
-async function updateDirectory(
+export async function updateDirectory(
     request: UpdateDirectoryRequestV2,
 ): Promise<{ directory: Directory; parent?: Directory }> {
     try {

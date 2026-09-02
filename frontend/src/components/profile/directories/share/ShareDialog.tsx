@@ -6,13 +6,19 @@ import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
 import {
     Directory,
+    DIRECTORY_SUBSCRIPTION_TIERS,
     DirectoryAccessRole,
+    DirectoryVisibility,
+    isDefaultDirectory,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { Check, Link } from '@mui/icons-material';
 import {
+    Alert,
     Autocomplete,
     Box,
     Button,
+    Checkbox,
     Chip,
     debounce,
     Dialog,
@@ -20,6 +26,8 @@ import {
     DialogContent,
     DialogTitle,
     Divider,
+    FormControlLabel,
+    FormGroup,
     IconButton,
     List,
     ListItem,
@@ -72,6 +80,12 @@ export const ShareDialog = ({
     onClose: () => void;
 }) => {
     const t = useTranslations('profile.directories');
+    const tSubscription = useTranslations('profile.subscription');
+    const tierLabels = {
+        [SubscriptionTier.Basic]: tSubscription('tierCore'),
+        [SubscriptionTier.Lecture]: tSubscription('tierLecture'),
+        [SubscriptionTier.GameReview]: tSubscription('tierGameReview'),
+    } satisfies Record<(typeof DIRECTORY_SUBSCRIPTION_TIERS)[number], string>;
     const api = useApi();
     const [copied, setCopied] = useState(false);
     const [addedUsers, setAddedUsers] = useState<User[]>([]);
@@ -79,6 +93,7 @@ export const ShareDialog = ({
     const [editAccess, setEditAccess] = useState<Record<string, RemovableDirectoryAccessRole>>(
         directory.access || {},
     );
+    const [subscriptionTiers, setSubscriptionTiers] = useState(directory.subscriptionTiers ?? []);
 
     const request = useRequest();
     const { put: putDirectory } = useDirectoryCache();
@@ -101,6 +116,13 @@ export const ShareDialog = ({
     }, [editAccess, addedRole, addedUsers]);
 
     const changesMade = useMemo(() => {
+        const storedTiers = directory.subscriptionTiers ?? [];
+        if (
+            subscriptionTiers.length !== storedTiers.length ||
+            subscriptionTiers.some((tier) => !storedTiers.includes(tier))
+        ) {
+            return true;
+        }
         if (Object.keys(newAccess).length !== Object.keys(directory.access || {}).length) {
             return true;
         }
@@ -110,7 +132,7 @@ export const ShareDialog = ({
             }
         }
         return false;
-    }, [newAccess, directory]);
+    }, [newAccess, directory, subscriptionTiers]);
 
     const onCopyLink = async () => {
         await navigator.clipboard.writeText(
@@ -127,11 +149,15 @@ export const ShareDialog = ({
             owner: directory.owner,
             id: directory.id,
             access: newAccess,
+            subscriptionTiers,
         })
             .then((resp) => {
                 onClose();
                 request.onSuccess();
-                putDirectory(resp.data);
+                putDirectory(resp.data.directory);
+                if (resp.data.parent) {
+                    putDirectory(resp.data.parent);
+                }
             })
             .catch((err) => {
                 request.onFailure(err);
@@ -150,6 +176,41 @@ export const ShareDialog = ({
                     setRole={setAddedRole}
                     currentAccess={directory.access || {}}
                 />
+
+                {!isDefaultDirectory(directory.id) && (
+                    <Box sx={{ mt: 3 }}>
+                        <Typography variant='h6'>{t('subscriptionTiers')}</Typography>
+                        <Typography color='text.secondary' variant='body2'>
+                            {t('subscriptionTiersDescription')}
+                        </Typography>
+                        <FormGroup sx={{ mt: 1 }}>
+                            {DIRECTORY_SUBSCRIPTION_TIERS.map((tier) => (
+                                <FormControlLabel
+                                    key={tier}
+                                    control={
+                                        <Checkbox
+                                            checked={subscriptionTiers.includes(tier)}
+                                            onChange={(_, checked) =>
+                                                setSubscriptionTiers((current) =>
+                                                    checked
+                                                        ? [...current, tier]
+                                                        : current.filter((value) => value !== tier),
+                                                )
+                                            }
+                                        />
+                                    }
+                                    label={tierLabels[tier]}
+                                />
+                            ))}
+                        </FormGroup>
+                        {directory.visibility === DirectoryVisibility.PUBLIC &&
+                            subscriptionTiers.length > 0 && (
+                                <Alert severity='info' sx={{ mt: 1 }}>
+                                    {t('subscriptionTiersPrivateWarning')}
+                                </Alert>
+                            )}
+                    </Box>
+                )}
 
                 <CurrentAccessSection
                     owner={directory.owner}

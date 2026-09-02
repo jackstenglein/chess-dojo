@@ -53,6 +53,10 @@ functions:
           - dynamodb:GetItem
           - dynamodb:PutItem
         Resource: !GetAtt DirectoriesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
   getStats:
     handler: stats.handlerV2
@@ -68,6 +72,10 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: !GetAtt DirectoriesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
   listBreadcrumbs:
     handler: listBreadcrumbs.handler
@@ -83,6 +91,10 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: !GetAtt DirectoriesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
   updateV2:
     handler: update.handlerV2
@@ -256,6 +268,10 @@ functions:
           - dynamodb:BatchGetItem
           - dynamodb:GetItem
         Resource: !GetAtt DirectoriesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
       - Effect: Allow
         Action:
           - s3:PutObject

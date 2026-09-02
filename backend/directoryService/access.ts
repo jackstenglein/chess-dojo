@@ -2,56 +2,63 @@ import {
     compareRoles,
     Directory,
     DirectoryAccessRole,
+    DirectoryVisibility,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import {
+    getSubscriptionTier,
+    SubscriptionTier,
+} from '@jackstenglein/chess-dojo-common/src/database/user';
 import { NIL as uuidNil } from 'uuid';
+import { getUser } from './database';
 import { fetchDirectory } from './get';
 
-/**
- * Returns true if the provided username has the provided access role (or higher) on the given directory.
- * Recursively checks parent directories until the given user is found.
- * @param owner The owner of the directory to check.
- * @param id The id of the directory to check.
- * @param username The username of the user to check.
- * @param role The role of the user to check.
- * @param directory The initial directory to check. If undefined, it will be fetched.
- * @param skipRecursion Whether to skip recursion and only check access for the given directory.
- * @returns True if the provided username has the provided access role or higher.
- */
-export async function checkAccess(params: {
+export interface DirectoryAccessParams {
     owner: string;
     id: string;
     username: string;
-    role: DirectoryAccessRole;
     directory?: Directory;
     skipRecursion?: boolean;
-}): Promise<boolean> {
+    subscriptionTier?: SubscriptionTier;
+}
+
+/** Returns the effective subscription tier for the given username. */
+export async function fetchSubscriptionTier(username: string): Promise<SubscriptionTier> {
+    return getSubscriptionTier(await getUser(username));
+}
+
+/** Returns true when the directory is public or the user has Viewer access. */
+export async function canViewDirectory(params: DirectoryAccessParams): Promise<boolean> {
+    const directory = params.directory ?? (await fetchDirectory(params.owner, params.id));
+    if (!directory) {
+        return false;
+    }
+    if (directory.visibility === DirectoryVisibility.PUBLIC) {
+        return true;
+    }
+    return checkAccess({
+        ...params,
+        directory,
+        role: DirectoryAccessRole.Viewer,
+    });
+}
+
+/** Returns true if the user has the provided access role or higher. */
+export async function checkAccess(
+    params: DirectoryAccessParams & { role: DirectoryAccessRole },
+): Promise<boolean> {
     const currRole = await getAccessRole(params);
     return compareRoles(params.role, currRole);
 }
 
-/**
- * Gets the access role for the provided username on the given directory. Recursively checks parent
- * directories until the given user is found.
- * @param owner The owner of the directory to check.
- * @param id The id of the directory to check.
- * @param username The username of the user to check.
- * @param directory The initial directory to check. If undefined, it will be fetched.
- * @param skipRecursion Whether to skip recursion and only check access for the given directory.
- * @returns The access role of the provided username for the given directory.
- */
+/** Gets the user's direct, inherited, or tier-based role for a directory. */
 export async function getAccessRole({
     owner,
     id,
     username,
     directory,
     skipRecursion,
-}: {
-    owner: string;
-    id: string;
-    username: string;
-    directory?: Directory;
-    skipRecursion?: boolean;
-}): Promise<DirectoryAccessRole | undefined> {
+    subscriptionTier,
+}: DirectoryAccessParams): Promise<DirectoryAccessRole | undefined> {
     if (username === owner) {
         return DirectoryAccessRole.Owner;
     }
@@ -62,11 +69,26 @@ export async function getAccessRole({
     }
 
     if (directory.access?.[username] !== undefined) {
-        return directory.access?.[username];
+        return directory.access[username];
     }
 
     if (!skipRecursion && directory.parent !== uuidNil) {
-        return getAccessRole({ owner, id: directory.parent, username });
+        const inheritedRole = await getAccessRole({
+            owner,
+            id: directory.parent,
+            username,
+            subscriptionTier,
+        });
+        if (inheritedRole !== undefined) {
+            return inheritedRole;
+        }
+    }
+
+    if (
+        subscriptionTier &&
+        directory.subscriptionTiers?.some((tier) => tier === subscriptionTier)
+    ) {
+        return DirectoryAccessRole.Viewer;
     }
 
     return undefined;

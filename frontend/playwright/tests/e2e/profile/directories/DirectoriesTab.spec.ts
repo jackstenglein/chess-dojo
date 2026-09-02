@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../../../../lib/env';
 import { interceptApi } from '../../../../lib/helpers';
 
+const testDirectoryId = '2bca0358-bbfc-46f0-b28d-e850ded0ba5c';
+
 function mockHomeWithTestDir() {
     return {
         body: {
@@ -13,9 +15,9 @@ function mockHomeWithTestDir() {
                 name: 'Home',
                 visibility: 'PUBLIC',
                 items: {
-                    '2bca0358-bbfc-46f0-b28d-e850ded0ba5c': {
+                    [testDirectoryId]: {
                         type: 'DIRECTORY',
-                        id: '2bca0358-bbfc-46f0-b28d-e850ded0ba5c',
+                        id: testDirectoryId,
                         metadata: {
                             createdAt: '2024-08-02T17:36:22.690Z',
                             updatedAt: '2024-08-02T17:36:22.690Z',
@@ -24,7 +26,7 @@ function mockHomeWithTestDir() {
                         },
                     },
                 },
-                itemIds: ['2bca0358-bbfc-46f0-b28d-e850ded0ba5c'],
+                itemIds: [testDirectoryId],
                 createdAt: '2024-07-27T16:59:32.621Z',
                 updatedAt: '2024-08-07T02:24:57.001Z',
             },
@@ -195,5 +197,81 @@ test.describe('Directories', () => {
         await expect(
             page.getByTestId('directories-data-grid').getByText(name).last(),
         ).not.toBeAttached();
+    });
+
+    test('shares a private viewer link with exact subscription tiers', async ({ page }) => {
+        const username = getEnv('username');
+        const child = {
+            owner: username,
+            id: testDirectoryId,
+            parent: 'home',
+            name: 'Test',
+            visibility: 'PUBLIC',
+            access: {},
+            items: {},
+            itemIds: [],
+            createdAt: '2024-08-02T17:36:22.690Z',
+            updatedAt: '2024-08-02T17:36:22.690Z',
+        };
+        await interceptApi(page, 'GET', `/directory/${username}/home/v2`, mockHomeWithTestDir());
+        await interceptApi(page, 'GET', `/directory/${username}/${testDirectoryId}/v2`, {
+            body: { directory: child, accessRole: 'OWNER' },
+        });
+        await page.route(
+            `${getEnv('apiBaseUrl')}/directory/${username}/${testDirectoryId}/breadcrumbs*`,
+            async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        [`${username}/${testDirectoryId}`]: child,
+                        [`${username}/home`]: mockHomeWithTestDir().body.directory,
+                    }),
+                });
+            },
+        );
+        await interceptApi(page, 'POST', '/public/users', {
+            body: [{ username, displayName: 'Test Owner', dojoCohort: '1000-1099' }],
+        });
+
+        let requestBody: unknown;
+        await page.route(
+            `${getEnv('apiBaseUrl')}/directory/${username}/${testDirectoryId}/share`,
+            async (route) => {
+                requestBody = route.request().postDataJSON();
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        directory: {
+                            ...child,
+                            visibility: 'PRIVATE',
+                            subscriptionTiers: ['BASIC', 'GAME_REVIEW'],
+                        },
+                    }),
+                });
+            },
+        );
+
+        await page.goto('/profile?view=games');
+        await page.getByTestId('directories-data-grid').getByText('Test').last().click();
+        await page.getByRole('button', { name: 'Share', exact: true }).click();
+        await page.getByRole('checkbox', { name: 'Core' }).check();
+        await page.getByRole('checkbox', { name: 'Game & Profile Review' }).check();
+
+        await expect(page.getByText('Saving will make this public folder private.')).toBeVisible();
+        await page.getByRole('button', { name: 'Save' }).click();
+
+        await expect
+            .poll(() => requestBody)
+            .toEqual({
+                access: {},
+                subscriptionTiers: ['BASIC', 'GAME_REVIEW'],
+            });
+
+        await page.getByRole('button', { name: 'Share', exact: true }).click();
+        await expect(page.getByRole('checkbox', { name: 'Core' })).toBeChecked();
+        await expect(page.getByRole('checkbox', { name: 'Game & Profile Review' })).toBeChecked();
+        await expect(page.getByRole('checkbox', { name: 'Workshops Tier' })).not.toBeChecked();
     });
 });
