@@ -398,7 +398,11 @@
             "updateTitle": "Atualizar {name}?",
             "totalCount": "Quantidade total: {totalCount}. Coorte atual: {cohortCount}",
             "totalTime": "Tempo total: {totalHours}h {totalMinutes}m. Coorte atual: {cohortHours}h {cohortMinutes}m",
-            "restDayCleared": "Dia de descanso removido"
+            "restDayCleared": "Dia de descanso removido",
+            "deletedTaskTitle": "Excluir entrada de atividade?",
+            "deletedTaskDescription": "Esta entrada faz referência a uma tarefa personalizada que foi excluída. Deseja removê-la da sua linha do tempo de atividade?",
+            "deleteEntry": "Excluir",
+            "entryDeleted": "Entrada de atividade excluída"
         },
         "info": {
             "type": "Tipo",

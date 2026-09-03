@@ -398,7 +398,11 @@
             "updateTitle": "Update {name}?",
             "totalCount": "Total Count: {totalCount}. Current Cohort: {cohortCount}",
             "totalTime": "Total Time: {totalHours}h {totalMinutes}m. Current Cohort: {cohortHours}h {cohortMinutes}m",
-            "restDayCleared": "Rest day cleared"
+            "restDayCleared": "Rest day cleared",
+            "deletedTaskTitle": "Delete activity entry?",
+            "deletedTaskDescription": "This entry references a custom task that has been deleted. Would you like to remove it from your activity timeline?",
+            "deleteEntry": "Delete",
+            "entryDeleted": "Activity entry deleted"
         },
         "info": {
             "type": "Type",

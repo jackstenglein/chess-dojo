@@ -398,7 +398,11 @@
             "updateTitle": "Mettre à jour {name} ?",
             "totalCount": "Nombre total : {totalCount}. Cohorte actuelle : {cohortCount}",
             "totalTime": "Temps total : {totalHours} h {totalMinutes} min. Cohorte actuelle : {cohortHours} h {cohortMinutes} min",
-            "restDayCleared": "Jour de repos supprimé"
+            "restDayCleared": "Jour de repos supprimé",
+            "deletedTaskTitle": "Supprimer l'entrée d'activité ?",
+            "deletedTaskDescription": "Cette entrée fait référence à une tâche personnalisée qui a été supprimée. Veux-tu la retirer de ta chronologie d'activité ?",
+            "deleteEntry": "Supprimer",
+            "entryDeleted": "Entrée d'activité supprimée"
         },
         "info": {
             "type": "Type",
