@@ -41,6 +41,9 @@ export function RequireProfile() {
     }, [request, api, status, updateUser, user]);
 
     useEffect(() => {
+        // ProfileEditorPage delays language navigation until every edited section is clean.
+        if (pathname === '/profile/edit') return;
+
         const preferred = user?.language;
         if (!preferred) return;
         // Persist the cross-device preference into the cookie so the
