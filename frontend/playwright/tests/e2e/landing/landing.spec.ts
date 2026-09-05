@@ -9,10 +9,12 @@ test.describe('Landing Page (unauthenticated)', () => {
     });
 
     test('has correct content', async ({ page }) => {
-        await expect(page.getByTestId('title')).toContainText('Got Mated?');
-        await expect(page.getByTestId('title')).toContainText('Time to join ChessDojo!');
+        await expect(page.getByTestId('eyebrow')).toContainText(
+            'Got Mated? Time to join ChessDojo',
+        );
+        await expect(page.getByTestId('title')).toContainText('Your personal training program');
         await expect(page.getByTestId('subtitle')).toContainText(
-            'A chess training plan for every level and a community to do it with.',
+            'ChessDojo provides a training plan tailored to your skill level and a community to train with',
         );
         await expect(page.locator('img').first()).toBeVisible();
     });

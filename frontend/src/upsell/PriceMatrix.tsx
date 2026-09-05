@@ -2,8 +2,11 @@
 
 import { Link } from '@/components/navigation/Link';
 import { CalendarSessionType } from '@/database/event';
+import { PresenterIcon } from '@/style/PresenterIcon';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { PersonOutlined, School, Troubleshoot } from '@mui/icons-material';
 import {
+    Box,
     Button,
     ButtonProps,
     Card,
@@ -11,13 +14,83 @@ import {
     Grid,
     GridProps,
     Stack,
+    Theme,
     Typography,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { JSX, useSyncExternalStore } from 'react';
+import { JSX, ReactNode, useSyncExternalStore } from 'react';
 import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
 import { getCurrency } from './locales';
+
+type PriceCardAccent = 'free' | 'core' | 'workshops' | 'review';
+
+function accentColor(accent: PriceCardAccent): string {
+    switch (accent) {
+        case 'free':
+            return '#55b080';
+        case 'core':
+            return 'rgba(24, 117, 238, 1)';
+        case 'workshops':
+            return '#F7941F';
+        case 'review':
+            return '#e7ba51';
+    }
+}
+
+function cardAccentSx(theme: Theme, accent: PriceCardAccent) {
+    const color = accentColor(accent);
+    const isDark = theme.palette.mode === 'dark';
+    const wash = alpha(color, isDark ? 0.14 : 0.08);
+    const line = alpha(color, isDark ? 0.16 : 0.14);
+
+    let backgroundImage = 'none';
+    let backgroundSize = 'unset';
+
+    if (accent === 'free') {
+        backgroundImage = [
+            `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
+            `repeating-linear-gradient(0deg, transparent, transparent 10px, ${line} 10px, ${line} 11px)`,
+        ].join(', ');
+    } else if (accent === 'core') {
+        backgroundImage = [
+            `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
+            `repeating-linear-gradient(0deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
+            `repeating-linear-gradient(90deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
+        ].join(', ');
+    } else if (accent === 'workshops') {
+        backgroundImage = [
+            `linear-gradient(180deg, ${alpha(color, isDark ? 0.22 : 0.14)} 0%, transparent 48%)`,
+            `repeating-linear-gradient(-38deg, transparent, transparent 8px, ${line} 8px, ${line} 9px)`,
+        ].join(', ');
+    } else if (accent === 'review') {
+        backgroundImage = [
+            `radial-gradient(120% 70% at 50% -8%, ${alpha(color, isDark ? 0.34 : 0.22)} 0%, transparent 58%)`,
+            `radial-gradient(${alpha(color, isDark ? 0.32 : 0.22)} 1.15px, transparent 1.2px)`,
+        ].join(', ');
+        backgroundSize = 'auto, 15px 15px';
+    }
+
+    return {
+        height: 1,
+        position: 'relative',
+        overflow: 'hidden',
+        bgcolor: wash,
+        backgroundImage,
+        backgroundSize,
+        borderColor: alpha(color, isDark ? 0.48 : 0.36),
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            bgcolor: color,
+        },
+    };
+}
 
 export const priceDataByCurrency: Record<
     string,
@@ -145,6 +218,8 @@ function PriceMatrix({
             {onFreeTier && tiers.includes(SubscriptionTier.Free) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        accent='free'
+                        icon={<PersonOutlined fontSize='small' />}
                         name={t('freeTierName')}
                         price={{
                             value: 0,
@@ -189,6 +264,8 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Basic) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        accent='core'
+                        icon={<School fontSize='small' />}
                         name={t('coreTierName')}
                         price={{
                             fullValue:
@@ -249,6 +326,8 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Lecture) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        accent='workshops'
+                        icon={<PresenterIcon fontSize='small' />}
                         name={t('lecturesTierName')}
                         price={{
                             value: priceData[SubscriptionTier.Lecture][interval],
@@ -322,6 +401,8 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.GameReview) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        accent='review'
+                        icon={<Troubleshoot fontSize='small' />}
                         name={t('gameReviewTierName')}
                         price={{
                             value: priceData[SubscriptionTier.GameReview][interval],
@@ -396,6 +477,8 @@ function PriceMatrix({
 export default PriceMatrix;
 
 function PriceCard({
+    accent,
+    icon,
     name,
     price,
     sellingPoints,
@@ -403,6 +486,8 @@ function PriceCard({
     beforeButton,
     isCurrentTier,
 }: {
+    accent: PriceCardAccent;
+    icon: ReactNode;
     name: string;
     price: {
         fullValue?: number;
@@ -417,9 +502,10 @@ function PriceCard({
     isCurrentTier: boolean;
 }) {
     const t = useTranslations('upsell.priceMatrix');
+    const theme = useTheme();
     return (
-        <Card variant='outlined' sx={{ height: 1 }}>
-            <CardContent sx={{ height: 1 }}>
+        <Card variant='outlined' sx={cardAccentSx(theme, accent)}>
+            <CardContent sx={{ height: 1, pt: 3 }}>
                 <Stack
                     spacing={3}
                     sx={{
@@ -433,16 +519,44 @@ function PriceCard({
                             gap: 1,
                         }}
                     >
-                        <Typography
-                            variant='h6'
+                        <Stack
+                            direction='row'
+                            spacing={1}
                             sx={{
-                                fontWeight: 'bold',
-                                color: 'text.secondary',
-                                textAlign: 'center',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}
                         >
-                            {name}
-                        </Typography>
+                            <Box
+                                aria-hidden
+                                sx={(theme) => ({
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 36,
+                                    height: 36,
+                                    flexShrink: 0,
+                                    borderRadius: '50%',
+                                    color: accentColor(accent),
+                                    bgcolor: alpha(
+                                        accentColor(accent),
+                                        theme.palette.mode === 'dark' ? 0.22 : 0.16,
+                                    ),
+                                })}
+                            >
+                                {icon}
+                            </Box>
+                            <Typography
+                                variant='h6'
+                                sx={{
+                                    fontWeight: 'bold',
+                                    color: 'text.secondary',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {name}
+                            </Typography>
+                        </Stack>
 
                         <Typography variant='h4'>
                             {price.fullValue && (

@@ -952,21 +952,66 @@
         "signUp": "Registrieren",
         "joinTheDojo": "Tritt dem Dojo bei",
         "hero": {
+            "eyebrow": "Mattgesetzt? Dann wird es Zeit, ChessDojo beizutreten.",
             "title": "Mattgesetzt worden?\nWird Zeit für ChessDojo!",
             "subtitle": "Ein Schachtrainingsplan für jede Spielstärke, plus die passende Community dazu.",
             "exploreProgram": "Erkunde das Programm",
-            "ratingPoints": "Seit seinem Start im Jahr 2022 haben ChessDojo-Mitglieder mehr als <strong>186,000</strong> Ratingpunkte gewonnen."
+            "imageAlt": "Bild von ChessDojo-Senseis",
+            "stats": {
+                "ratingPoints": {
+                    "value": "Mehr als 200.000",
+                    "label": "Wertungspunkte erhalten"
+                },
+                "graduations": {
+                    "value": "Mehr als 4.700",
+                    "label": "Abschlussfeiern"
+                },
+                "hours": {
+                    "value": "99.800+",
+                    "label": "Erfasste Trainingsstunden"
+                }
+            }
         },
         "features": {
-            "heading": "ChessDojo kann dich von 0-2400+ mit unserem innovativen Trainingsplan und Funktionen bringen"
+            "heading": "ChessDojo kann dich von 0-2400+ mit unserem innovativen Trainingsplan und Funktionen bringen",
+            "subheading": "Tägliche Aufgaben, sorgfältig ausgewähltes Material und Fortschritte, die mehr sind als nur Bewertungen.",
+            "imageAlt": "Der ChessDojo-Trainingsplan mit täglichen Aufgaben und Fortschrittsanzeige",
+            "tiles": {
+                "dailyTasks": {
+                    "title": "Tägliche und wöchentliche Aufgaben",
+                    "description": "Der Dojo-Algorithmus sagt dir, woran du heute und diese Woche arbeiten solltest."
+                },
+                "progressTracking": {
+                    "title": "Fortschritt, nicht nur Bewertung",
+                    "description": "Erfasse Trainingsstunden, Spiele und Meilensteine – nicht nur deine Wertung."
+                },
+                "openingSpy": {
+                    "title": "Eröffnungsrepertoire Spion",
+                    "description": "Bereite deine Eröffnungsschläge gegen die Spieler vor, gegen die du tatsächlich antreten wirst."
+                },
+                "annotatedGames": {
+                    "title": "Kommentierte Spiele",
+                    "description": "Eine umfangreiche Datenbank mit Spielen und Anmerkungen von Dojo-Mitgliedern."
+                }
+            }
         },
         "testimonialSection": {
             "heading": "Unser Programm hat eine bewährte Erfolgsgeschichte",
-            "subheading": "Höre von unseren Mitgliedern"
+            "subheading": "Höre von unseren Mitgliedern",
+            "previous": "Vorherige Kundenmeinung",
+            "next": "Nächste Kundenmeinung",
+            "goTo": "Kundenmeinung anzeigen {index}"
         },
         "communitySection": {
             "heading": "Du brauchst nicht allein besser zu werden",
-            "description": "Wenn du ChessDojo beitrittst, wirst du Teil einer florierenden Gemeinschaft von Schachverbessern vom Anfänger bis zum Großmeister"
+            "description": "Wenn du ChessDojo beitrittst, wirst du Teil einer florierenden Gemeinschaft von Schachverbessern vom Anfänger bis zum Großmeister",
+            "imageAlt": "ChessDojo-Trainingsgemeinschaft"
+        },
+        "liveClasses": {
+            "eyebrow": "Live-Kurse",
+            "heading": "Lerne live mit den Senseis.",
+            "subheading": "Wöchentliche Workshops zu Berechnung, Endspielen und Eröffnungen sowie kleinere Seminare zur Partien- und Profilanalyse.",
+            "viewAll": "Alle Kurse anzeigen"
         },
         "pricing": {
             "cta": "Werde heute besser beim Schach",
@@ -988,24 +1033,55 @@
             "jesse": {
                 "title": "Großmeister",
                 "name": "Jesse Kraai",
+                "quote": "He became a GM in 2007 by consistently examining his games.",
                 "bio": "GM Kraai spielt und unterrichtet Schach bereits seit tief im letzten Jahrtausend. Er wurde 2007 GM, indem er seine Partien konsequent analysierte - ein Grundpfeiler des ChessDojo Training Program. Er hat an sieben US Championships teilgenommen und erzielte 2024 einen klaren zweiten Platz bei den US Senior Closed. Wenn er nicht gerade Schach spielt, kümmert er sich um zwei kleine Kinder und findet Zeit zum Gewichtheben."
             },
             "kostya": {
                 "title": "Internationaler Meister",
                 "name": "Kostya Kavutskiy",
+                "quote": "A coach for the United States at World Youth and Pan-American Championships.",
                 "bio": "Kostya verdiente den IM-Titel im Alter von 24 Jahren und unterrichtet seit mehr als 15 Jahren Schach auf allen Stufen und in allen Altersgruppen. Er war zuvor Trainer für die Vereinigten Staaten bei mehreren World Youth & Pan-American Championships, wobei mehrere seiner Schüler Goldmedaillen gewonnen haben. Kostya ist auch ein veröffentlichter Autor und hat mehrere beliebte Kurse für Chess.com, Chessable und andere Seiten entwickelt."
             },
             "david": {
                 "title": "Internationaler Meister",
                 "name": "David Pruess",
+                "quote": "He helped design the Training Program to cross the 2500 barrier.",
                 "bio": "David ist ein Schach-Maximalist und schreckt nie davor zurück, den Weg zu gehen, den er für am prinzipiertesten hält. Mit diesem verrückten Ansatz erreichte er 2003 den Titel eines International Master und 2006 gewann er das renommierte Samford Chess Fellowship. Er hat alle drei Großmeister-Normen und muss nur noch die 2500 überschreiten, um Großmeister zu werden. David half bei der Entwicklung des ChessDojo Training Program mit dem Traum, diese schwierige 2500er-Grenze mit dessen Anleitung und Struktur zu überwinden."
+            }
+        },
+        "faq": {
+            "title": "Häufig gestellte Fragen",
+            "longGames": {
+                "title": "Muss ich lange Spiele spielen?",
+                "content": "Ja. Man braucht den Wettkampfdruck des langen Nachdenkens in einer klassischen Partie, um seine Fähigkeiten zu verbessern, und man braucht diese Partie auch, um sie anschließend zu analysieren. Blitz- und Schnellschach bieten keine Partie, die man so eingehend analysieren kann."
+            },
+            "startFree": {
+                "title": "Kann ich kostenlos anfangen?",
+                "content": "Ja. Die kostenlose Mitgliedschaft beinhaltet grundlegende Trainingspläne und eine eingeschränkte Spieledatenbank. Sie können jederzeit upgraden, um das vollständige Programm, die Community und alle Kurse freizuschalten."
+            },
+            "cohorts": {
+                "title": "Wie funktionieren Kohorten?",
+                "content": "Du wirst mit Spielern deiner Wertungsklasse in eine Gruppe eingeteilt. Deine Trainingsgruppe besteht aus den Spielern, mit denen du trainierst, lernst und denen du dich – hauptsächlich über Discord – unterstellst. Du kannst das Trainingstempo selbst bestimmen; du schließt es ab, sobald deine Wertungsklasse die nächste Schwelle erreicht hat."
+            },
+            "cancel": {
+                "title": "Wie kann ich kündigen?",
+                "content": "Sie können Ihr Abonnement jederzeit nach dem Einloggen im Profil-Editor kündigen. Der Zugriff bleibt bis zum Ende des Abrechnungszeitraums bestehen."
             }
         },
         "footer": {
             "chessDojo": "ChessDojo",
+            "product": "Produkt",
+            "company": "Unternehmen",
+            "features": "Merkmale",
+            "liveClasses": "Live-Kurse",
+            "pricing": "Preisgestaltung",
+            "senseis": "Senseis",
             "blog": "Blog",
+            "help": "Helfen",
             "contactUs": "Kontaktiere uns",
-            "donate": "Spenden zum Dojo"
+            "donate": "Spenden zum Dojo",
+            "privacy": "Datenschutz",
+            "signIn": "Anmelden"
         },
         "trainingPlan": {
             "dailyTasks": "Erhalte tägliche und wöchentliche Aufgaben mit dem intelligenten Dojo-Algorithmus",

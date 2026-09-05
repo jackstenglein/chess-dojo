@@ -952,21 +952,66 @@
         "signUp": "Regístrate",
         "joinTheDojo": "Únete al Dojo",
         "hero": {
+            "eyebrow": "¿Te han dado jaque mate? Es hora de unirte a ChessDojo.",
             "title": "¿Te dieron mate?\n¡Es hora de unirte a ChessDojo!",
             "subtitle": "Un plan de entrenamiento de ajedrez para cada nivel y una comunidad con la que seguirlo.",
             "exploreProgram": "Explora el programa",
-            "ratingPoints": "Desde su lanzamiento en 2022, los miembros de ChessDojo han ganado más de <strong>186.000</strong> puntos de rating."
+            "imageAlt": "Imagen de senseis de ChessDojo",
+            "stats": {
+                "ratingPoints": {
+                    "value": "Más de 200.000",
+                    "label": "Puntos de clasificación obtenidos"
+                },
+                "graduations": {
+                    "value": "Más de 4700",
+                    "label": "Graduaciones"
+                },
+                "hours": {
+                    "value": "Más de 99.800",
+                    "label": "Horas de entrenamiento registradas"
+                }
+            }
         },
         "features": {
-            "heading": "ChessDojo puede llevarte de 0 a 2400+ con nuestro innovador plan de entrenamiento y nuestras funciones"
+            "heading": "ChessDojo puede llevarte de 0 a 2400+ con nuestro innovador plan de entrenamiento y nuestras funciones",
+            "subheading": "Tareas diarias, material cuidadosamente seleccionado y un progreso que va más allá de la mera calificación.",
+            "imageAlt": "El plan de entrenamiento de ChessDojo muestra las tareas diarias y el seguimiento del progreso.",
+            "tiles": {
+                "dailyTasks": {
+                    "title": "Tareas diarias y semanales",
+                    "description": "El algoritmo de Dojo te indica en qué debes trabajar hoy y esta semana."
+                },
+                "progressTracking": {
+                    "title": "Progreso, no solo calificación",
+                    "description": "Registra las horas de entrenamiento, los partidos y los logros, no solo tu puntuación."
+                },
+                "openingSpy": {
+                    "title": "Espía del repertorio de apertura",
+                    "description": "Prepara tus aperturas contra los jugadores a los que te enfrentarás realmente."
+                },
+                "annotatedGames": {
+                    "title": "Juegos comentados",
+                    "description": "Una extensa base de datos de juegos con notas de los miembros del Dojo."
+                }
+            }
         },
         "testimonialSection": {
             "heading": "Nuestro programa tiene un historial\nde éxito demostrado",
-            "subheading": "Lo que dicen nuestros miembros"
+            "subheading": "Lo que dicen nuestros miembros",
+            "previous": "Testimonio anterior",
+            "next": "Siguiente testimonio",
+            "goTo": "Mostrar testimonio {index}"
         },
         "communitySection": {
             "heading": "No tienes que mejorar solo",
-            "description": "Al unirte a ChessDojo, pasas a formar parte de una comunidad vibrante de jugadores que buscan mejorar, desde principiantes hasta Grandes Maestros"
+            "description": "Al unirte a ChessDojo, pasas a formar parte de una comunidad vibrante de jugadores que buscan mejorar, desde principiantes hasta Grandes Maestros",
+            "imageAlt": "Comunidad de entrenamiento de ChessDojo"
+        },
+        "liveClasses": {
+            "eyebrow": "Clases en vivo",
+            "heading": "Aprende en vivo con los senseis.",
+            "subheading": "Talleres semanales sobre cálculo, finales y aperturas, además de seminarios más breves de revisión de partidas y perfiles.",
+            "viewAll": "Ver todas las clases"
         },
         "pricing": {
             "cta": "Empieza a mejorar tu ajedrez hoy mismo",
@@ -988,24 +1033,55 @@
             "jesse": {
                 "title": "Grandmaster",
                 "name": "Jesse Kraai",
+                "quote": "He became a GM in 2007 by consistently examining his games.",
                 "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things."
             },
             "kostya": {
                 "title": "International Master",
                 "name": "Kostya Kavutskiy",
+                "quote": "A coach for the United States at World Youth and Pan-American Championships.",
                 "bio": "Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites."
             },
             "david": {
                 "title": "International Master",
                 "name": "David Pruess",
+                "quote": "He helped design the Training Program to cross the 2500 barrier.",
                 "bio": "David is a chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure."
+            }
+        },
+        "faq": {
+            "title": "Preguntas frecuentes",
+            "longGames": {
+                "title": "¿Necesito jugar partidas largas?",
+                "content": "Sí. Necesitas la presión competitiva de pensar a fondo en una partida clásica para perfeccionar tus habilidades, y necesitas esa partida para analizarla después. Las partidas blitz y rápidas no te ofrecen una oportunidad para un análisis profundo."
+            },
+            "startFree": {
+                "title": "¿Puedo empezar gratis?",
+                "content": "Sí. La membresía gratuita incluye planes de entrenamiento básicos y una base de datos de juegos limitada. Puedes actualizar tu membresía cuando quieras para desbloquear el programa completo, la comunidad y los cursos."
+            },
+            "cohorts": {
+                "title": "¿Cómo funcionan las cohortes?",
+                "content": "Te agrupan con jugadores de tu mismo nivel. Tu grupo es con quien entrenas, estudias y con quien mantienes el control, principalmente a través de Discord. El plan de entrenamiento es a tu propio ritmo; te graduarás cuando tu nivel supere el siguiente umbral."
+            },
+            "cancel": {
+                "title": "¿Cómo puedo cancelar?",
+                "content": "Puedes cancelar la suscripción en cualquier momento desde el editor de perfil después de iniciar sesión. El acceso continúa hasta el final del período de facturación."
             }
         },
         "footer": {
             "chessDojo": "ChessDojo",
+            "product": "Producto",
+            "company": "Compañía",
+            "features": "Características",
+            "liveClasses": "Clases en vivo",
+            "pricing": "Precios",
+            "senseis": "Senseis",
             "blog": "Blog",
+            "help": "Ayuda",
             "contactUs": "Contáctanos",
-            "donate": "Donar al Dojo"
+            "donate": "Donar al Dojo",
+            "privacy": "Privacidad",
+            "signIn": "Iniciar sesión"
         },
         "trainingPlan": {
             "dailyTasks": "Recibe tareas diarias y semanales con el algoritmo inteligente del Dojo",

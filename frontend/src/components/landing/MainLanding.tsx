@@ -1,13 +1,105 @@
 import { fontFamily } from '@/style/font';
+import { ChevronRight } from '@mui/icons-material';
 import { Box, Button, Grid, Stack, Typography } from '@mui/material';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackgroundImageContainer } from './BackgroundImage';
 import { FEATURES_ELEMENT_ID } from './Features';
-import { anton, barlow } from './fonts';
+import { anton, barlow, barlowCondensed, eyebrowSx } from './fonts';
 import heroImage from './hero.webp';
 import { JoinDojoButton } from './JoinDojoButton';
 import backgroundImage from './main-background.webp';
+
+const COUNT_UP_MS = 1600;
+const INCREMENT_EVERY_MS = 30_000;
+
+function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function easeOutCubic(t: number): number {
+    return 1 - (1 - t) ** 3;
+}
+
+function parseStatValue(formatted: string): { prefix: string; target: number; suffix: string } {
+    const match = /^(.*?)(\d[\d\s.,\u00a0\u202f]*)(.*)$/.exec(formatted);
+    if (!match) {
+        return { prefix: '', target: 0, suffix: formatted };
+    }
+    return {
+        prefix: match[1],
+        target: Number(match[2].replace(/[^\d]/g, '')) || 0,
+        suffix: match[3],
+    };
+}
+
+function formatStatNumber(n: number, locale: string): string {
+    const loc = locale === 'pseudo' ? 'en' : locale;
+    return new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }).format(n);
+}
+
+function useCountingNumber(target: number, incrementMin: number, incrementMax: number): number {
+    const [value, setValue] = useState(0);
+    const valueRef = useRef(0);
+    const frameRef = useRef(0);
+
+    const animateTo = useCallback((to: number, duration: number) => {
+        cancelAnimationFrame(frameRef.current);
+        const from = valueRef.current;
+        if (duration <= 0 || from === to) {
+            valueRef.current = to;
+            setValue(to);
+            return;
+        }
+        const start = performance.now();
+        const step = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const next = Math.round(from + (to - from) * easeOutCubic(t));
+            valueRef.current = next;
+            setValue(next);
+            if (t < 1) {
+                frameRef.current = requestAnimationFrame(step);
+            }
+        };
+        frameRef.current = requestAnimationFrame(step);
+    }, []);
+
+    useEffect(() => {
+        const reduced = prefersReducedMotion();
+        valueRef.current = 0;
+        setValue(0);
+        animateTo(target, reduced ? 0 : COUNT_UP_MS);
+
+        let intervalId: number | undefined;
+        const timeoutId = window.setTimeout(
+            () => {
+                intervalId = window.setInterval(() => {
+                    if (document.visibilityState === 'hidden') {
+                        return;
+                    }
+                    const span = incrementMax - incrementMin;
+                    const delta =
+                        span <= 0
+                            ? incrementMin
+                            : incrementMin + Math.floor(Math.random() * (span + 1));
+                    animateTo(valueRef.current + delta, prefersReducedMotion() ? 0 : 450);
+                }, INCREMENT_EVERY_MS);
+            },
+            reduced ? INCREMENT_EVERY_MS : COUNT_UP_MS + INCREMENT_EVERY_MS,
+        );
+
+        return () => {
+            cancelAnimationFrame(frameRef.current);
+            window.clearTimeout(timeoutId);
+            if (intervalId !== undefined) {
+                window.clearInterval(intervalId);
+            }
+        };
+    }, [animateTo, incrementMax, incrementMin, target]);
+
+    return value;
+}
 
 export function MainLanding() {
     const t = useTranslations('landing');
@@ -62,12 +154,25 @@ export function MainLanding() {
                         >
                             <Stack spacing={2}>
                                 <Typography
+                                    data-testid='eyebrow'
+                                    color='dojoOrange'
+                                    sx={{
+                                        textAlign: { xs: 'center', md: 'start' },
+                                        fontFamily: (theme) => fontFamily(theme, barlowCondensed),
+                                        ...eyebrowSx,
+                                    }}
+                                >
+                                    {t('hero.eyebrow')}
+                                </Typography>
+                                <Typography
                                     variant='h2'
                                     data-testid='title'
                                     sx={{
                                         textAlign: { xs: 'center', md: 'start' },
                                         fontFamily: (theme) => fontFamily(theme, anton),
                                         fontWeight: '400',
+                                        fontSize: { xs: '2.25rem', md: '3.25rem' },
+                                        lineHeight: 1.15,
                                     }}
                                 >
                                     {t('hero.title')
@@ -104,22 +209,21 @@ export function MainLanding() {
                                     gap: 3,
                                 }}
                             >
-                                <JoinDojoButton />
+                                <JoinDojoButton>{t('pricing.signUpFree')}</JoinDojoButton>
                                 <Button
                                     variant='outlined'
                                     onClick={(e) => scrollToId(e, FEATURES_ELEMENT_ID)}
+                                    endIcon={<ChevronRight />}
                                     sx={{
                                         fontSize: '0.94rem',
                                         fontWeight: '600',
-                                        border: 0,
-                                        borderBottomLeftRadius: 0,
-                                        borderBottomRightRadius: 0,
-                                        borderBottom:
-                                            '3px solid var(--mui-palette-dojoOrange-main)',
                                         color: 'white',
-                                        px: 1,
+                                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                                        px: 2,
+                                        py: '0.7rem',
                                         '&:hover': {
-                                            borderColor: 'var(--mui-palette-dojoOrange-dark)',
+                                            borderColor: 'var(--mui-palette-dojoOrange-main)',
+                                            backgroundColor: 'transparent',
                                         },
                                     }}
                                     color='dojoOrange'
@@ -132,7 +236,7 @@ export function MainLanding() {
 
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Image
-                            alt=''
+                            alt={t('hero.imageAlt')}
                             src={heroImage}
                             style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                             priority
@@ -144,26 +248,89 @@ export function MainLanding() {
             <Box
                 sx={{
                     width: 1,
-                    height: { xs: 'auto', md: 'var(--stats-height)' },
+                    minHeight: { md: 'var(--stats-height)' },
                     background:
                         'linear-gradient(90deg, var(--mui-palette-darkBlue-main) 0%, var(--mui-palette-darkBlue-light) 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    py: { xs: 0.5, md: 0 },
+                    py: { xs: 2, md: 0 },
+                    px: 2,
                 }}
             >
-                <Typography
+                <Grid
+                    container
                     sx={{
-                        textAlign: 'center',
-                        fontSize: '1.5rem',
+                        maxWidth: 'lg',
+                        width: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
                     }}
+                    spacing={{ xs: 2, md: 0 }}
                 >
-                    {t.rich('hero.ratingPoints', {
-                        strong: (chunks) => <strong>{chunks}</strong>,
-                    })}
-                </Typography>
+                    <Stat
+                        value={t('hero.stats.ratingPoints.value')}
+                        label={t('hero.stats.ratingPoints.label')}
+                        increment={[10, 28]}
+                    />
+                    <Stat
+                        value={t('hero.stats.graduations.value')}
+                        label={t('hero.stats.graduations.label')}
+                        increment={[1, 1]}
+                    />
+                    <Stat
+                        value={t('hero.stats.hours.value')}
+                        label={t('hero.stats.hours.label')}
+                        increment={[5, 14]}
+                    />
+                </Grid>
             </Box>
         </>
+    );
+}
+
+function Stat({
+    value,
+    label,
+    increment,
+}: {
+    value: string;
+    label: string;
+    increment: [number, number];
+}) {
+    const locale = useLocale();
+    const { prefix, target, suffix } = parseStatValue(value);
+    const count = useCountingNumber(target, increment[0], increment[1]);
+
+    return (
+        <Grid size={{ xs: 12, md: 4 }}>
+            <Stack sx={{ alignItems: 'center', gap: 0.5, px: 2 }}>
+                <Typography
+                    sx={{
+                        fontFamily: (theme) => fontFamily(theme, anton),
+                        fontSize: { xs: '2rem', md: '2.5rem' },
+                        lineHeight: 1.1,
+                        textAlign: 'center',
+                        fontVariantNumeric: 'tabular-nums',
+                    }}
+                >
+                    {prefix}
+                    {formatStatNumber(count, locale)}
+                    {suffix}
+                </Typography>
+                <Typography
+                    sx={{
+                        fontFamily: (theme) => fontFamily(theme, barlow),
+                        fontSize: '0.9375rem',
+                        lineHeight: 1.3,
+                        textAlign: 'center',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                    }}
+                >
+                    {label}
+                </Typography>
+            </Stack>
+        </Grid>
     );
 }

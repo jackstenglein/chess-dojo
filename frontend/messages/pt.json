@@ -952,21 +952,66 @@
         "signUp": "Cadastre-se",
         "joinTheDojo": "Entre no Dojo",
         "hero": {
+            "eyebrow": "Levou um xeque-mate? É hora de entrar no ChessDojo.",
             "title": "Tomou mate?\nHora de entrar no ChessDojo!",
             "subtitle": "Um plano de treinamento de xadrez para cada nível e uma comunidade para seguir junto.",
             "exploreProgram": "Explore o programa",
-            "ratingPoints": "Desde o seu lançamento em 2022, os membros do ChessDojo ganharam mais de <strong>186.000</strong> pontos de rating."
+            "imageAlt": "Imagem dos senseis do ChessDojo",
+            "stats": {
+                "ratingPoints": {
+                    "value": "Mais de 200.000",
+                    "label": "Pontos de classificação ganhos"
+                },
+                "graduations": {
+                    "value": "Mais de 4.700",
+                    "label": "Formaturas"
+                },
+                "hours": {
+                    "value": "Mais de 99.800",
+                    "label": "Horas de treinamento registradas"
+                }
+            }
         },
         "features": {
-            "heading": "O ChessDojo pode levar você de 0 a 2400+ com nosso plano de treinamento e recursos inovadores"
+            "heading": "O ChessDojo pode levar você de 0 a 2400+ com nosso plano de treinamento e recursos inovadores",
+            "subheading": "Tarefas diárias, material cuidadosamente selecionado e progresso que vai além da simples avaliação.",
+            "imageAlt": "Plano de treinamento do ChessDojo mostrando tarefas diárias e acompanhamento do progresso.",
+            "tiles": {
+                "dailyTasks": {
+                    "title": "Tarefas diárias e semanais",
+                    "description": "O algoritmo do Dojo indica em que você deve trabalhar hoje e nesta semana."
+                },
+                "progressTracking": {
+                    "title": "Progresso, não apenas classificação.",
+                    "description": "Registre horas de treino, jogos e marcos importantes — não apenas sua classificação."
+                },
+                "openingSpy": {
+                    "title": "Repertório de abertura Espião",
+                    "description": "Prepare suas jogadas iniciais contra os jogadores que você realmente enfrentará."
+                },
+                "annotatedGames": {
+                    "title": "Jogos anotados",
+                    "description": "Um extenso banco de dados de jogos com anotações de membros do Dojo."
+                }
+            }
         },
         "testimonialSection": {
             "heading": "Nosso programa tem um histórico\ncomprovado de sucesso",
-            "subheading": "O que dizem nossos membros"
+            "subheading": "O que dizem nossos membros",
+            "previous": "Depoimento anterior",
+            "next": "Próximo depoimento",
+            "goTo": "Mostrar depoimento {index}"
         },
         "communitySection": {
             "heading": "Você não precisa evoluir sozinho",
-            "description": "Ao entrar no ChessDojo, você passa a fazer parte de uma comunidade vibrante de jogadores que buscam evoluir, do iniciante ao Grande Mestre"
+            "description": "Ao entrar no ChessDojo, você passa a fazer parte de uma comunidade vibrante de jogadores que buscam evoluir, do iniciante ao Grande Mestre",
+            "imageAlt": "Comunidade de treinamento ChessDojo"
+        },
+        "liveClasses": {
+            "eyebrow": "Aulas ao vivo",
+            "heading": "Aprenda ao vivo com os senseis.",
+            "subheading": "Workshops semanais sobre cálculo, finais e aberturas, além de seminários menores de revisão de partidas e perfis.",
+            "viewAll": "Veja todas as turmas"
         },
         "pricing": {
             "cta": "Comece a melhorar no xadrez hoje mesmo",
@@ -988,24 +1033,55 @@
             "jesse": {
                 "title": "Grandmaster",
                 "name": "Jesse Kraai",
+                "quote": "He became a GM in 2007 by consistently examining his games.",
                 "bio": "GM Kraai has been playing and teaching chess since deep in the last millennium. He became a GM in 2007 by consistently examining his games, a pillar of the ChessDojo Training Program. He's played in seven US Championships and scored clear second in the 2024 US Senior Closed. When not chessing he herds two smallish children and finds time to lift heavy things."
             },
             "kostya": {
                 "title": "International Master",
                 "name": "Kostya Kavutskiy",
+                "quote": "A coach for the United States at World Youth and Pan-American Championships.",
                 "bio": "Kostya earned the IM title at the age of 24 and has been teaching chess to all levels and ages for over 15 years. He previously served as a coach for the United States at several World Youth & Pan-American Championships, with multiple students earning gold medals. Kostya is also a published author and has produced several popular courses for Chess.com, Chessable, and other sites."
             },
             "david": {
                 "title": "International Master",
                 "name": "David Pruess",
+                "quote": "He helped design the Training Program to cross the 2500 barrier.",
                 "bio": "David is a chess maximalist, never shying away from what he believes is the most principled path forward. With this madman approach, he attained the rank of International Master in 2003 and then in 2006 he won the prestigious Samford Chess Fellowship. He has all three Grandmaster norms and just needs to cross 2500 to reach the title. David helped design the ChessDojo Training Program with the dream that he could cross that difficult 2500 barrier using its guidance and structure."
+            }
+        },
+        "faq": {
+            "title": "Perguntas frequentes",
+            "longGames": {
+                "title": "Preciso jogar partidas longas?",
+                "content": "Sim. Você precisa da pressão competitiva de uma partida clássica que exige raciocínio prolongado para aprimorar suas habilidades, e precisa dessa partida para analisá-la posteriormente. Partidas blitz e rápidas não proporcionam uma experiência de análise profunda."
+            },
+            "startFree": {
+                "title": "Posso começar de graça?",
+                "content": "Sim. A adesão gratuita inclui planos de treinamento básicos e um banco de dados de jogos limitado. Faça um upgrade a qualquer momento para desbloquear o programa completo, a comunidade e os cursos."
+            },
+            "cohorts": {
+                "title": "Como funcionam as coortes?",
+                "content": "Você será agrupado com jogadores do seu nível. Seu grupo é formado por aqueles com quem você treina, estuda e se responsabiliza — principalmente no Discord. O plano de treinamento é autodidático; você avança para o próximo nível quando sua classificação ultrapassar o limite seguinte."
+            },
+            "cancel": {
+                "title": "Como faço para cancelar?",
+                "content": "Você pode cancelar a qualquer momento no editor de perfil após fazer login. O acesso continua até o final do período de faturamento."
             }
         },
         "footer": {
             "chessDojo": "ChessDojo",
+            "product": "Produto",
+            "company": "Empresa",
+            "features": "Características",
+            "liveClasses": "Aulas ao vivo",
+            "pricing": "Preços",
+            "senseis": "Senseis",
             "blog": "Blog",
+            "help": "Ajuda",
             "contactUs": "Fale conosco",
-            "donate": "Doe ao Dojo"
+            "donate": "Doe ao Dojo",
+            "privacy": "Privacidade",
+            "signIn": "Entrar"
         },
         "trainingPlan": {
             "dailyTasks": "Receba tarefas diárias e semanais com o algoritmo inteligente do Dojo",

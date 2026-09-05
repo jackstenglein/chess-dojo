@@ -1,10 +1,26 @@
+import { PresenterIcon } from '@/style/PresenterIcon';
+import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { fontFamily } from '@/style/font';
-import { Container, Divider, Grid, Stack, Typography } from '@mui/material';
+import { EmojiEvents, Groups, Hub, LiveTv, MenuBook, Speed } from '@mui/icons-material';
+import { Box, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { type JSX } from 'react';
 import { BulletPoint } from './BulletPoint';
 import { communityBulletPoints } from './bulletPoints';
-import { barlow, barlowCondensed } from './fonts';
-import { JoinDojoButton } from './JoinDojoButton';
+import { barlow, barlowCondensed, sectionTitleSx } from './fonts';
+import communityImage from './hero.webp';
+
+const itemIcons: Record<string, JSX.Element> = {
+    classicalTournaments: <EmojiEvents color='darkBlue' />,
+    chessCommunity: <Groups color='darkBlue' />,
+    testsAndTactics: <Speed color='darkBlue' />,
+    studyGroups: <MenuBook color='darkBlue' />,
+    workshops: <PresenterIcon color='darkBlue' />,
+    graduationStreams: <LiveTv color='darkBlue' />,
+    privateDiscord: <DiscordIcon color='darkBlue' />,
+    clubs: <Hub color='darkBlue' />,
+};
 
 export function Community() {
     const t = useTranslations('landing');
@@ -23,10 +39,8 @@ export function Community() {
                     >
                         <Typography
                             sx={{
-                                fontSize: '3rem',
-                                lineHeight: '3.375rem',
+                                ...sectionTitleSx,
                                 fontFamily: (theme) => fontFamily(theme, barlowCondensed),
-                                fontWeight: '500',
                                 textAlign: { xs: 'center', md: 'start' },
                             }}
                         >
@@ -52,37 +66,40 @@ export function Community() {
                         >
                             {t('communitySection.description')}
                         </Typography>
+
+                        <Box
+                            sx={{
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                width: 1,
+                                display: { xs: 'none', md: 'block' },
+                            }}
+                        >
+                            <Image
+                                alt={t('communitySection.imageAlt')}
+                                src={communityImage}
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                }}
+                            />
+                        </Box>
                     </Stack>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Grid
-                        container
-                        spacing='2rem'
-                        sx={{
-                            justifyContent: { xs: 'center', md: 'start' },
-                        }}
-                    >
+                    <Stack sx={{ gap: '2.5rem' }}>
                         {communityBulletPoints.map((bp) => (
-                            <Grid size={{ xs: 11, md: 6 }} key={bp.key}>
-                                <BulletPoint
-                                    title={t(`community.${bp.key}.title`)}
-                                    description={t(`community.${bp.key}.description`)}
-                                />
-                            </Grid>
+                            <BulletPoint
+                                key={bp.key}
+                                icon={itemIcons[bp.key]}
+                                title={t(`community.${bp.key}.title`)}
+                                description={t(`community.${bp.key}.description`)}
+                            />
                         ))}
-
-                        <Grid
-                            size={12}
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                mt: 3,
-                            }}
-                        >
-                            <JoinDojoButton />
-                        </Grid>
-                    </Grid>
+                    </Stack>
                 </Grid>
             </Grid>
         </Container>
