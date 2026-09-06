@@ -256,7 +256,20 @@ functions:
       - httpApi:
           path: /public/user/{username}
           method: get
+      - httpApi:
+          path: /user/profile/{username}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
       - Effect: Allow
         Action:
           - dynamodb:GetItem
@@ -336,6 +349,13 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
+      - Effect: Allow
+        Action:
           - dynamodb:Query
         Resource:
           - Fn::Join:
@@ -370,6 +390,13 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
+      - Effect: Allow
+        Action:
           - dynamodb:Query
         Resource: ${param:TimelineTableArn}
 
@@ -383,6 +410,13 @@ functions:
             type: jwt
             id: ${param:apiAuthorizer}
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
       - Effect: Allow
         Action:
           - dynamodb:Query

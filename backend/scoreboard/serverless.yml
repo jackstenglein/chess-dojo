@@ -39,6 +39,13 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
+      - Effect: Allow
+        Action:
           - dynamodb:BatchGetItem
         Resource: ${param:UsersTableArn}
       - Effect: Allow

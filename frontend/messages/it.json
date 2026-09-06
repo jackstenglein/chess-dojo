@@ -4194,5 +4194,14 @@
         "playAsWhite": "Gioca con il Bianco",
         "playAsBlack": "Gioca con il Nero",
         "randomColor": "Colore casuale"
+    },
+    "trainingPrivacy": {
+        "label": "Visibilità dell’allenamento",
+        "helperText": "Controlla la visibilità del tuo profilo di allenamento, delle tue attività e dei tuoi progressi sul sito.",
+        "public": "Pubblico",
+        "private": "Privato",
+        "members": "Solo membri del Dojo (abbonati attivi)",
+        "mutuals": "Solo follower reciproci (vi seguite a vicenda)",
+        "denied": "L’attività di allenamento di questo utente è privata."
     }
 }

@@ -2,14 +2,29 @@
 
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
 import NewsfeedItem from '@/components/newsfeed/NewsfeedItem';
 import { TimelineEntry } from '@/database/timeline';
 import LoadingPage from '@/loading/LoadingPage';
 import NotFoundPage from '@/NotFoundPage';
-import { Container } from '@mui/material';
+import { Alert, Container } from '@mui/material';
+import { isAxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export function NewsfeedDetail({ owner, id }: { owner: string; id: string }) {
+    const { user } = useAuth();
+    return (
+        <NewsfeedDetailContent
+            key={`${user?.username ?? 'public'}:${owner}:${id}`}
+            owner={owner}
+            id={id}
+        />
+    );
+}
+
+function NewsfeedDetailContent({ owner, id }: { owner: string; id: string }) {
+    const tPrivacy = useTranslations('trainingPrivacy');
     const api = useApi();
     const request = useRequest<TimelineEntry>();
 
@@ -26,10 +41,9 @@ export function NewsfeedDetail({ owner, id }: { owner: string; id: string }) {
         }
     }, [api, request, owner, id]);
 
-    const reset = request.reset;
-    useEffect(() => {
-        reset();
-    }, [reset, owner, id]);
+    if (isAxiosError(request.error) && request.error.response?.status === 403) {
+        return <Alert severity='info'>{tPrivacy('denied')}</Alert>;
+    }
 
     if (!request.isSent() || request.isLoading()) {
         return <LoadingPage />;

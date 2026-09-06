@@ -10,12 +10,15 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
 
 const (
 	requestType_Dojo      = "dojo"
 	requestType_Following = "following"
 )
+
+var privacyRepository trainingprivacy.Repository = database.DynamoDB
 
 var repository database.ScoreboardSummaryLister = database.DynamoDB
 var stage = os.Getenv("stage")
@@ -32,7 +35,10 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, event api.Request) (api.Response, error) {
+func handler(ctx context.Context, event api.Request) (response api.Response, handlerErr error) {
+	defer func() {
+		response = trainingprivacy.New(privacyRepository, api.GetUserInfo(event).Username).ProtectUsers(response)
+	}()
 	log.SetRequestId(event.RequestContext.RequestID)
 	log.Infof("Event: %#v", event)
 

@@ -3,6 +3,7 @@
 import NotFoundPage from '@/NotFoundPage';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { getYearReview } from '@/api/yearReviewApi';
+import { useAuth } from '@/auth/Auth';
 import DojoPointSection from '@/components/profile/yearReview/DojoPointSection';
 import GameSection from '@/components/profile/yearReview/GameSection';
 import GraduationSection from '@/components/profile/yearReview/GraduationSection';
@@ -13,12 +14,25 @@ import { YearReview } from '@/database/yearReview';
 import LoadingPage from '@/loading/LoadingPage';
 import Avatar from '@/profile/Avatar';
 import { ExpandMore } from '@mui/icons-material';
-import { Box, Container, Stack, Typography } from '@mui/material';
+import { Alert, Box, Container, Stack, Typography } from '@mui/material';
+import { isAxiosError } from 'axios';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 const YearReviewPage = ({ username, year }: { username: string; year: string }) => {
+    const { user } = useAuth();
+    return (
+        <YearReviewContent
+            key={`${user?.username ?? 'public'}:${username}:${year}`}
+            username={username}
+            year={year}
+        />
+    );
+};
+
+const YearReviewContent = ({ username, year }: { username: string; year: string }) => {
     const t = useTranslations('profile.yearReview');
+    const tPrivacy = useTranslations('trainingPrivacy');
     const request = useRequest<YearReview>();
 
     useEffect(() => {
@@ -33,6 +47,10 @@ const YearReviewPage = ({ username, year }: { username: string; year: string }) 
                 });
         }
     });
+
+    if (isAxiosError(request.error) && request.error.response?.status === 403) {
+        return <Alert severity='info'>{tPrivacy('denied')}</Alert>;
+    }
 
     if (!request.isSent() || request.isLoading()) {
         return <LoadingPage />;

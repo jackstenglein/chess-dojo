@@ -8,7 +8,10 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
+
+var privacyRepository trainingprivacy.Repository = database.DynamoDB
 
 var repository database.TimelineGetter = database.DynamoDB
 
@@ -16,7 +19,11 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, event api.Request) (api.Response, error) {
+func handler(ctx context.Context, event api.Request) (response api.Response, handlerErr error) {
+	defer func() { response = trainingprivacy.NoStore(response) }()
+	if err := trainingprivacy.New(privacyRepository, api.GetUserInfo(event).Username).Require(event.PathParameters["owner"]); err != nil {
+		return api.Failure(err), nil
+	}
 	log.SetRequestId(event.RequestContext.RequestID)
 	log.Infof("Event: %#v", event)
 

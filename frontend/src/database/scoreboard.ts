@@ -6,6 +6,7 @@ import { User } from './user';
  */
 export type ScoreboardSummary = Pick<
     User,
+    | 'canViewTraining'
     | 'username'
     | 'displayName'
     | 'graduationCohorts'

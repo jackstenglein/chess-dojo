@@ -14,9 +14,12 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
 
 const limit = 25
+
+var privacyRepository trainingprivacy.Repository = database.DynamoDB
 
 var repository = database.DynamoDB
 var stage = os.Getenv("stage")
@@ -34,7 +37,8 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, event api.Request) (api.Response, error) {
+func handler(ctx context.Context, event api.Request) (response api.Response, handlerErr error) {
+	defer func() { response = trainingprivacy.NoStore(response) }()
 	log.SetRequestId(event.RequestContext.RequestID)
 	log.Infof("Event: %#v", event)
 
@@ -83,6 +87,11 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	log.Debugf("Fetching timeline entries: %#v", timelineEntries)
 	resultEntries, err := repository.BatchGetTimelineEntries(timelineEntries)
+	if err != nil {
+		return api.Failure(err), nil
+	}
+
+	resultEntries, err = trainingprivacy.Filter(trainingprivacy.New(privacyRepository, api.GetUserInfo(event).Username), resultEntries, func(e database.TimelineEntry) string { return e.Owner })
 	if err != nil {
 		return api.Failure(err), nil
 	}

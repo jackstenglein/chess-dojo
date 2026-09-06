@@ -286,7 +286,7 @@ test.describe('ProgressHistory', () => {
         });
 
         // Mock timeline get route, and abort other timeline requests
-        await page.route(`${getEnv('apiBaseUrl')}/public/user/*/timeline`, async (route) => {
+        await page.route(`${getEnv('apiBaseUrl')}/user/*/timeline`, async (route) => {
             if (route.request().method() === 'GET') {
                 await route.fulfill({
                     status: 200,

@@ -1,5 +1,5 @@
 import { Graduation } from '../database/graduation';
-import { axiosService } from './axiosService';
+import { axiosService, viewerPath } from './axiosService';
 
 export interface GraduationApiContextType {
     /**
@@ -35,7 +35,7 @@ async function listGraduations(url: string, params: Record<string, string | unde
     const result: Graduation[] = [];
 
     do {
-        const resp = await axiosService.get<ListGraduationsResponse>(url, {
+        const resp = await axiosService.get<ListGraduationsResponse>(await viewerPath(url), {
             params,
             functionName: 'listGraduations',
         });

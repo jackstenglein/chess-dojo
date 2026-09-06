@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 
-import { User } from '../database/user';
 import { getConfig } from '@/config';
-import { Graduation } from '../database/graduation';
-import { TimelineEntry } from '../database/timeline';
-import { UserStatistics } from '../database/statistics';
 import { FollowerEntry } from '../database/follower';
+import { Graduation } from '../database/graduation';
+import { UserStatistics } from '../database/statistics';
+import { TimelineEntry } from '../database/timeline';
+import { User } from '../database/user';
 
 const BASE_URL = getConfig().api.baseUrl;
 
@@ -38,10 +38,7 @@ export type UserApiContextType = {
      * @param startKey The optional start key to use when searching.
      * @returns A ListUserTimelineResponse
      */
-    listUserTimeline: (
-        owner: string,
-        startKey?: string
-    ) => Promise<ListUserTimelineResponse>;
+    listUserTimeline: (owner: string, startKey?: string) => Promise<ListUserTimelineResponse>;
 
     /**
      * listUsersByCohort returns a list of users in the provided cohort.
@@ -68,7 +65,7 @@ export type UserApiContextType = {
      */
     updateUser: (
         update: Partial<User>,
-        autopickCohort?: boolean
+        autopickCohort?: boolean,
     ) => Promise<AxiosResponse<User, any>>;
 
     /**
@@ -85,7 +82,7 @@ export type UserApiContextType = {
         requirementId: string,
         incrementalCount: number,
         incrementalMinutesSpent: number,
-        date: Date | null
+        date: Date | null,
     ) => Promise<AxiosResponse<User, any>>;
 
     /**
@@ -104,7 +101,7 @@ export type UserApiContextType = {
         updated: TimelineEntry[],
         deleted: TimelineEntry[],
         count: number,
-        minutesSpent: number
+        minutesSpent: number,
     ) => Promise<AxiosResponse<User, any>>;
 
     /**
@@ -134,7 +131,7 @@ export type UserApiContextType = {
      */
     editFollower: (
         poster: string,
-        action: 'follow' | 'unfollow'
+        action: 'follow' | 'unfollow',
     ) => Promise<AxiosResponse<FollowerEntry | null, any>>;
 
     /**
@@ -145,7 +142,7 @@ export type UserApiContextType = {
      */
     listFollowers: (
         username: string,
-        startKey?: string
+        startKey?: string,
     ) => Promise<AxiosResponse<ListFollowersResponse, any>>;
 
     /**
@@ -156,7 +153,7 @@ export type UserApiContextType = {
      */
     listFollowing: (
         username: string,
-        startKey?: string
+        startKey?: string,
     ) => Promise<AxiosResponse<ListFollowersResponse, any>>;
 };
 
@@ -192,8 +189,10 @@ export function getUser(idToken: string) {
  * @param username The user to fetch public information for.
  * @returns An AxiosResponse containing the requested user.
  */
-export function getUserPublic(username: string) {
-    return axios.get<User>(BASE_URL + '/public/user/' + username);
+export function getUserPublic(idToken: string, username: string) {
+    return axios.get<User>(BASE_URL + '/user/profile/' + username, {
+        headers: { Authorization: 'Bearer ' + idToken },
+    });
 }
 
 export interface ListUserTimelineResponse {
@@ -208,21 +207,14 @@ export interface ListUserTimelineResponse {
  * @param startKey The optional start key to use when searching.
  * @returns A ListUserTimelineResponse
  */
-export async function listUserTimeline(
-    idToken: string,
-    owner: string,
-    startKey?: string
-) {
+export async function listUserTimeline(idToken: string, owner: string, startKey?: string) {
     let params = { startKey };
-    const resp = await axios.get<ListUserTimelineResponse>(
-        `${BASE_URL}/user/${owner}/timeline`,
-        {
-            params,
-            headers: {
-                Authorization: 'Bearer ' + idToken,
-            },
-        }
-    );
+    const resp = await axios.get<ListUserTimelineResponse>(`${BASE_URL}/user/${owner}/timeline`, {
+        params,
+        headers: {
+            Authorization: 'Bearer ' + idToken,
+        },
+    });
     return resp.data;
 }
 
@@ -238,11 +230,7 @@ interface ListUsersResponse {
  * @param startKey The optional startKey to use when searching.
  * @returns A list of users in the provided cohort.
  */
-export async function listUsersByCohort(
-    idToken: string,
-    cohort: string,
-    startKey?: string
-) {
+export async function listUsersByCohort(idToken: string, cohort: string, startKey?: string) {
     let params = { startKey };
     const result: User[] = [];
     do {
@@ -270,12 +258,9 @@ export async function searchUsers(query: string, fields: string[], startKey?: st
     const result: User[] = [];
 
     do {
-        const resp = await axios.get<ListUsersResponse>(
-            BASE_URL + '/public/user/search',
-            {
-                params,
-            }
-        );
+        const resp = await axios.get<ListUsersResponse>(BASE_URL + '/public/user/search', {
+            params,
+        });
         result.push(...resp.data.users);
         params.startKey = resp.data.lastEvaluatedKey;
     } while (params.startKey);
@@ -295,7 +280,7 @@ export async function updateUser(
     idToken: string,
     update: Partial<User>,
     callback: (update: Partial<User>) => void,
-    autopickCohort?: boolean
+    autopickCohort?: boolean,
 ) {
     const result = await axios.put<User>(`${BASE_URL}/user`, update, {
         headers: {
@@ -327,7 +312,7 @@ export async function updateUserProgress(
     incrementalCount: number,
     incrementalMinutesSpent: number,
     date: Date | null,
-    callback: (update: Partial<User>) => void
+    callback: (update: Partial<User>) => void,
 ) {
     const result = await axios.post<User>(
         BASE_URL + '/user/progress',
@@ -342,7 +327,7 @@ export async function updateUserProgress(
             headers: {
                 Authorization: 'Bearer ' + idToken,
             },
-        }
+        },
     );
     callback(result.data);
     return result;
@@ -368,7 +353,7 @@ export async function updateUserTimeline(
     deleted: TimelineEntry[],
     count: number,
     minutesSpent: number,
-    callback: (update: Partial<User>) => void
+    callback: (update: Partial<User>) => void,
 ) {
     const result = await axios.post<User>(
         BASE_URL + '/user/progress/timeline',
@@ -384,7 +369,7 @@ export async function updateUserTimeline(
             headers: {
                 Authorization: 'Bearer ' + idToken,
             },
-        }
+        },
     );
     callback(result.data);
     return result;
@@ -406,7 +391,7 @@ interface GraduationResponse {
 export async function graduate(
     idToken: string,
     comments: string,
-    callback: (update: Partial<User>) => void
+    callback: (update: Partial<User>) => void,
 ) {
     const result = await axios.post<GraduationResponse>(
         BASE_URL + '/user/graduate',
@@ -415,7 +400,7 @@ export async function graduate(
             headers: {
                 Authorization: 'Bearer ' + idToken,
             },
-        }
+        },
     );
     callback(result.data.userUpdate);
     return result;
@@ -449,11 +434,7 @@ export function getFollower(idToken: string, poster: string) {
  * @param action Whether to follow or unfollow the user.
  * @returns An empty AxiosResponse if successful.
  */
-export function editFollower(
-    idToken: string,
-    poster: string,
-    action: 'follow' | 'unfollow'
-) {
+export function editFollower(idToken: string, poster: string, action: 'follow' | 'unfollow') {
     return axios.post<FollowerEntry | null>(
         `${BASE_URL}/user/followers`,
         { poster, action },
@@ -461,7 +442,7 @@ export function editFollower(
             headers: {
                 Authorization: 'Bearer ' + idToken,
             },
-        }
+        },
     );
 }
 
@@ -477,10 +458,9 @@ export interface ListFollowersResponse {
  * @returns The list of followers and the next start key.
  */
 export function listFollowers(username: string, startKey?: string) {
-    return axios.get<ListFollowersResponse>(
-        `${BASE_URL}/public/user/${username}/followers`,
-        { params: { startKey } }
-    );
+    return axios.get<ListFollowersResponse>(`${BASE_URL}/public/user/${username}/followers`, {
+        params: { startKey },
+    });
 }
 
 /**
@@ -490,8 +470,7 @@ export function listFollowers(username: string, startKey?: string) {
  * @returns The list of who they are following and the next start key.
  */
 export function listFollowing(username: string, startKey?: string) {
-    return axios.get<ListFollowersResponse>(
-        `${BASE_URL}/public/user/${username}/following`,
-        { params: { startKey } }
-    );
+    return axios.get<ListFollowersResponse>(`${BASE_URL}/public/user/${username}/following`, {
+        params: { startKey },
+    });
 }

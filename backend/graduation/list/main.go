@@ -10,9 +10,11 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
 
 type graduationListRepository interface {
+	trainingprivacy.Repository
 	database.GraduationLister
 	database.GameLister
 }
@@ -33,23 +35,30 @@ func byCohortHandler(event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
-	return api.Success(&ListGraduationsResponse{
+	graduations, err = trainingprivacy.Filter(trainingprivacy.New(repository, api.GetUserInfo(event).Username), graduations, func(g database.Graduation) string { return g.Username })
+	if err != nil {
+		return api.Failure(err), nil
+	}
+	return trainingprivacy.NoStore(api.Success(&ListGraduationsResponse{
 		Graduations:      graduations,
 		LastEvaluatedKey: lastKey,
-	}), nil
+	})), nil
 }
 
 func byOwnerHandler(event api.Request) (api.Response, error) {
+	if err := trainingprivacy.New(repository, api.GetUserInfo(event).Username).Require(event.PathParameters["username"]); err != nil {
+		return trainingprivacy.NoStore(api.Failure(err)), nil
+	}
 	username := event.PathParameters["username"]
 	startKey := event.QueryStringParameters["startKey"]
 	graduations, lastKey, err := repository.ListGraduationsByOwner(username, startKey)
 	if err != nil {
 		return api.Failure(err), nil
 	}
-	return api.Success(&ListGraduationsResponse{
+	return trainingprivacy.NoStore(api.Success(&ListGraduationsResponse{
 		Graduations:      graduations,
 		LastEvaluatedKey: lastKey,
-	}), nil
+	})), nil
 }
 
 func byDateHandler(event api.Request) (api.Response, error) {
@@ -60,14 +69,18 @@ func byDateHandler(event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
+	graduations, err = trainingprivacy.Filter(trainingprivacy.New(repository, api.GetUserInfo(event).Username), graduations, func(g database.Graduation) string { return g.Username })
+	if err != nil {
+		return api.Failure(err), nil
+	}
 	if err := addRecentGamesAnnotated(graduations); err != nil {
 		return api.Failure(err), nil
 	}
 
-	return api.Success(&ListGraduationsResponse{
+	return trainingprivacy.NoStore(api.Success(&ListGraduationsResponse{
 		Graduations:      graduations,
 		LastEvaluatedKey: lastKey,
-	}), nil
+	})), nil
 }
 
 func addRecentGamesAnnotated(graduations []database.Graduation) error {

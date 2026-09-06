@@ -88,6 +88,7 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
     }
 
     let allPlayers = (request.data || [])
+        .filter((row) => !('canViewTraining' in row && row.canViewTraining === false))
         .filter(isUser)
         .map((p) => p as User & { isCurrent?: boolean; actualRank?: number });
 

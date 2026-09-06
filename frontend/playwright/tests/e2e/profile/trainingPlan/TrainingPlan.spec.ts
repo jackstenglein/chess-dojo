@@ -165,7 +165,7 @@ async function mockRequirements(page: Page, requirements: unknown[]) {
 }
 
 async function mockEmptyTimeline(page: Page) {
-    await page.route(`${getEnv('apiBaseUrl')}/public/user/*/timeline`, async (route) => {
+    await page.route(`${getEnv('apiBaseUrl')}/user/*/timeline`, async (route) => {
         await route.fulfill({
             status: 200,
             contentType: 'application/json',

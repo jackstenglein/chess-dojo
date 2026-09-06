@@ -81,7 +81,20 @@ functions:
       - httpApi:
           path: /public/clubs/{id}
           method: get
+      - httpApi:
+          path: /clubs/{id}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
       - Effect: Allow
         Action:
           - dynamodb:GetItem
@@ -146,6 +159,13 @@ functions:
             type: jwt
             id: ${param:apiAuthorizer}
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:BatchGetItem
+        Resource:
+          - ${param:UsersTableArn}
+          - ${param:FollowersTableArn}
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
