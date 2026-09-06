@@ -14,7 +14,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  FIDE_URL: https://ratings.fide.com/download/players_list.zip
+  FIDE_URL: https://ratings.fide.com/download/standard_rating_list.zip
   OBJECT_KEY: players_list.zip
 
 jobs:
