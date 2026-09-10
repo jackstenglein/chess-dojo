@@ -1,4 +1,6 @@
-import { cleanup, render } from '@testing-library/react';
+import { GameContext } from '@/context/useGame';
+import { Game } from '@/database/game';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PgnBoard from './PgnBoard';
 
@@ -42,7 +44,23 @@ const fake = vi.hoisted(() => {
         cancelMove: vi.fn(),
         stop: vi.fn(),
     };
-    return { calls, state, api };
+    const navigationGuard = {
+        active: false,
+        accept: vi.fn(),
+        reject: vi.fn(),
+    };
+    const navigateToGame = vi.fn();
+    const auth = { user: undefined as { username: string } | undefined };
+    const suggestedVariationRoots: unknown[] = [];
+    return {
+        calls,
+        state,
+        api,
+        navigationGuard,
+        navigateToGame,
+        auth,
+        suggestedVariationRoots,
+    };
 });
 
 vi.mock('@lichess-org/chessground', () => ({
@@ -58,7 +76,7 @@ vi.mock('@/style/useWindowSizeEffect', () => ({
     useWindowSizeEffect: () => undefined,
 }));
 vi.mock('@/auth/Auth', () => ({
-    useAuth: () => ({ user: undefined }),
+    useAuth: () => fake.auth,
 }));
 vi.mock('@/api/Api', () => ({
     useApi: () => ({}),
@@ -85,8 +103,18 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 vi.mock('next-navigation-guard', () => ({
-    useNavigationGuard: () => ({ active: false, accept: vi.fn(), reject: vi.fn() }),
+    useNavigationGuard: () => fake.navigationGuard,
 }));
+vi.mock('./boardTools/underboard/comments/suggestVariation', async () => {
+    const actual = await vi.importActual<
+        typeof import('./boardTools/underboard/comments/suggestVariation')
+    >('./boardTools/underboard/comments/suggestVariation');
+
+    return {
+        ...actual,
+        getUnsavedSuggestedVariationRoots: () => fake.suggestedVariationRoots,
+    };
+});
 vi.mock('./KeyboardHandler', () => ({
     default: () => null,
 }));
@@ -101,9 +129,34 @@ vi.mock('./boardTools/underboard/Underboard', () => ({
 vi.mock('./PlayerHeader', () => ({
     default: () => null,
 }));
-vi.mock('./boardTools/boardButtons/BoardButtons', () => ({
-    default: () => null,
-}));
+vi.mock('./boardTools/boardButtons/BoardButtons', async () => {
+    const { default: useGame } =
+        await vi.importActual<typeof import('@/context/useGame')>('@/context/useGame');
+
+    const MockBoardButtons = () => {
+        const { onNavigateToGame, setHasUnsavedGameChanges } = useGame();
+        return (
+            <>
+                <button
+                    data-testid='set-game-dirty'
+                    onClick={() => setHasUnsavedGameChanges?.(true)}
+                />
+                <button
+                    data-testid='set-game-clean'
+                    onClick={() => setHasUnsavedGameChanges?.(false)}
+                />
+                <button
+                    data-testid='navigate-to-game'
+                    onClick={() => onNavigateToGame?.('1500-1600', 'game-2')}
+                />
+            </>
+        );
+    };
+
+    return {
+        default: MockBoardButtons,
+    };
+});
 
 const PGN_A = '[FEN "8/8/8/8/8/8/8/K6k w - - 0 1"]\n[SetUp "1"]\n\n*';
 const PGN_B = '[FEN "k7/8/8/8/8/8/8/6K1 b - - 0 1"]\n[SetUp "1"]\n\n*';
@@ -115,6 +168,12 @@ describe('PgnBoard (re)initialization', () => {
         fake.calls.length = 0;
         fake.state.orientation = 'white';
         fake.state.animation.enabled = true;
+        fake.navigationGuard.active = false;
+        fake.navigationGuard.accept.mockReset();
+        fake.navigationGuard.reject.mockReset();
+        fake.navigateToGame.mockReset();
+        fake.auth.user = undefined;
+        fake.suggestedVariationRoots.length = 0;
         Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
             configurable: true,
             value: () => ({ width: 1200, height: 800, top: 0, left: 0, right: 1200, bottom: 800 }),
@@ -173,5 +232,107 @@ describe('PgnBoard (re)initialization', () => {
         expect(after.filter((c) => c.type === 'toggle')).toHaveLength(1);
         expect(after.filter((c) => c.type === 'set' && c.fen)).toHaveLength(0);
         expect(fake.state.orientation).toBe('black');
+    });
+});
+
+describe('PgnBoard navigation guard', () => {
+    const game = {
+        cohort: '1500-1600',
+        id: 'game-1',
+        owner: 'dojo-user',
+    } as Game;
+
+    const getBoard = (currentGame = game) => (
+        <GameContext.Provider value={{ game: currentGame, onNavigateToGame: fake.navigateToGame }}>
+            <div id='resize-container'>
+                <PgnBoard pgn={PGN_A} underboardTabs={[]} />
+            </div>
+        </GameContext.Provider>
+    );
+
+    beforeEach(() => {
+        fake.navigationGuard.active = false;
+        fake.navigationGuard.accept.mockReset();
+        fake.navigationGuard.reject.mockReset();
+        fake.navigateToGame.mockReset();
+        fake.auth.user = undefined;
+        fake.suggestedVariationRoots.length = 0;
+    });
+
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('resumes pending game navigation when unsaved game changes are cleared', async () => {
+        render(getBoard());
+
+        fireEvent.click(screen.getByTestId('set-game-dirty'));
+        fireEvent.click(screen.getByTestId('navigate-to-game'));
+
+        expect(fake.navigateToGame).not.toHaveBeenCalled();
+        expect(screen.getByTestId('unsaved-board-nav-guard')).toBeInTheDocument();
+        expect(screen.getByText('gameWarning')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByTestId('set-game-clean'));
+
+        await waitFor(() => {
+            expect(fake.navigateToGame).toHaveBeenCalledWith('1500-1600', 'game-2');
+        });
+        expect(screen.queryByText('suggestedVariationWarning')).not.toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.queryByTestId('unsaved-board-nav-guard')).not.toBeInTheDocument();
+        });
+    });
+
+    it('accepts a guarded Next.js navigation only after the game becomes clean', async () => {
+        const { rerender } = render(getBoard());
+        fireEvent.click(screen.getByTestId('set-game-dirty'));
+
+        fake.navigationGuard.active = true;
+        rerender(getBoard());
+
+        expect(fake.navigationGuard.accept).not.toHaveBeenCalled();
+        expect(screen.getByText('gameWarning')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByTestId('set-game-clean'));
+
+        await waitFor(() => {
+            expect(fake.navigationGuard.accept).toHaveBeenCalledOnce();
+        });
+    });
+
+    it('does not resume navigation after the user cancels', async () => {
+        render(getBoard());
+
+        fireEvent.click(screen.getByTestId('set-game-dirty'));
+        fireEvent.click(screen.getByTestId('navigate-to-game'));
+        fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+
+        await waitFor(() => {
+            expect(screen.queryByTestId('unsaved-board-nav-guard')).not.toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByTestId('set-game-clean'));
+        expect(fake.navigateToGame).not.toHaveBeenCalled();
+    });
+
+    it('resumes pending game navigation when suggested variations are cleared', async () => {
+        fake.auth.user = { username: 'dojo-user' };
+        fake.suggestedVariationRoots.push({});
+        const suggestedGame = { ...game, owner: 'another-user' };
+        const { rerender } = render(getBoard(suggestedGame));
+
+        fireEvent.click(screen.getByTestId('navigate-to-game'));
+
+        expect(fake.navigateToGame).not.toHaveBeenCalled();
+        expect(screen.getByText('suggestedVariationWarning')).toBeInTheDocument();
+
+        fake.suggestedVariationRoots.length = 0;
+        rerender(getBoard({ ...suggestedGame }));
+
+        await waitFor(() => {
+            expect(fake.navigateToGame).toHaveBeenCalledWith('1500-1600', 'game-2');
+        });
+        expect(screen.queryByText('suggestedVariationWarning')).not.toBeInTheDocument();
     });
 });
