@@ -21,7 +21,20 @@ export interface UserExamSummary {
     rating: number;
 }
 
+export enum TrainingVisibility {
+    Public = 'PUBLIC',
+    Members = 'DOJO_MEMBERS',
+    Mutuals = 'MUTUALS',
+    Private = 'PRIVATE',
+}
+
 export interface User {
+    trainingVisibility?: TrainingVisibility;
+    showTrainingTotals?: boolean;
+    canViewTrainingTotals?: boolean;
+    cohortDojoScore?: number;
+    canViewTraining?: boolean;
+
     username: string;
     displayName: string;
     discordUsername: string;

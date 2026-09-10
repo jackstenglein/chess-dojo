@@ -39,7 +39,17 @@ import {
     Timeline,
 } from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
-import { Box, Chip, Container, Stack, Tab, Tabs, useMediaQuery } from '@mui/material';
+import {
+    Alert,
+    Box,
+    Chip,
+    Container,
+    Stack,
+    Tab,
+    Tabs,
+    Typography,
+    useMediaQuery,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useEffect, type JSX } from 'react';
 
@@ -52,11 +62,19 @@ export function ProfilePage({ username }: { username?: string }) {
     if (!user) {
         return <NotFoundPage />;
     }
-    return <AuthProfilePage currentUser={user} username={username} />;
+    return (
+        <AuthProfilePage
+            key={`${user.username}:${username ?? user.username}`}
+            currentUser={user}
+            username={username}
+        />
+    );
 }
 
 function AuthProfilePage({ currentUser, username }: { currentUser: User; username?: string }) {
     const t = useTranslations('profile.profilePage');
+    const tCommon = useTranslations('common');
+    const tPrivacy = useTranslations('trainingPrivacy');
     const api = useApi();
     const request = useRequest<User>();
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
@@ -100,11 +118,10 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
         return <NotFoundPage />;
     }
 
-    const setFollowerCount = (count: number) => {
-        request.onSuccess({
-            ...user,
-            followerCount: count,
-        });
+    const canViewTraining = currentUserProfile || user.canViewTraining !== false;
+
+    const setFollowerCount = (_count: number) => {
+        request.reset();
     };
 
     return (
@@ -152,7 +169,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                 },
             }}
         >
-            <TimelineProvider owner={user.username}>
+            <TimelineProvider
+                key={`${user.username}:${canViewTraining}`}
+                owner={user.username}
+                enabled={canViewTraining}
+            >
                 <Box sx={{ gridArea: 'profile', width: '100%', typography: 'body1' }}>
                     <TabContext value={searchParams.get('view') || 'stats'}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -238,10 +259,18 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                             <CoachTab user={user} />
                         </TabPanel>
                         <TabPanel value='progress' sx={{ px: { xs: 0 }, pl: { lg: 1 } }}>
-                            <TrainingPlanTab user={user} />
+                            {canViewTraining ? (
+                                <TrainingPlanTab user={user} />
+                            ) : (
+                                <Alert severity='info'>{tPrivacy('denied')}</Alert>
+                            )}
                         </TabPanel>
                         <TabPanel value='activity' sx={{ px: 0, pl: { lg: 1 } }}>
-                            <ActivityTab user={user} />
+                            {canViewTraining ? (
+                                <ActivityTab user={user} />
+                            ) : (
+                                <Alert severity='info'>{tPrivacy('denied')}</Alert>
+                            )}
                         </TabPanel>
                         <TabPanel value='games' sx={{ px: 0 }}>
                             <DirectoryCacheProvider>
@@ -278,24 +307,57 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
 
                 {currentUserProfile && <SwitchCohortPrompt />}
 
-                <Box sx={{ gridArea: 'userInfo' }}>
+                <Stack spacing={2} sx={{ gridArea: 'userInfo' }}>
                     <UserCard user={user} setFollowerCount={setFollowerCount} />
-                </Box>
+                    {!canViewTraining && (
+                        <>
+                            {user.canViewTrainingTotals && (
+                                <Stack
+                                    spacing={1}
+                                    sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}
+                                >
+                                    <Typography>
+                                        {tPrivacy('totalPoints', {
+                                            points:
+                                                Math.round((user.totalDojoScore ?? 0) * 100) / 100,
+                                        })}
+                                    </Typography>
+                                    <Typography>
+                                        {tPrivacy('totalTime', {
+                                            time: tCommon('timeHours', {
+                                                hours:
+                                                    Math.round(
+                                                        ((user.minutesSpent?.ALL_COHORTS_ALL_TIME ??
+                                                            0) /
+                                                            60) *
+                                                            10,
+                                                    ) / 10,
+                                            }),
+                                        })}
+                                    </Typography>
+                                </Stack>
+                            )}
+                            <Alert severity='info'>
+                                {tPrivacy(user.canViewTrainingTotals ? 'totalsNotice' : 'denied')}
+                            </Alert>
+                        </>
+                    )}
+                </Stack>
 
-                {!isSmall && (
+                {canViewTraining && !isSmall && (
                     <Box sx={{ gridArea: 'heatmap', display: { xs: 'none', md: 'initial' } }}>
                         <HeatmapCard workGoalHistory={user.workGoalHistory ?? []} />
                     </Box>
                 )}
 
-                {(isSmall || isLarge) && (
+                {canViewTraining && (isSmall || isLarge) && (
                     <Box sx={{ gridArea: 'scorecard' }}>
                         <DojoScoreCard user={user} cohort={user.dojoCohort} />
                     </Box>
                 )}
 
                 <Box sx={{ gridArea: 'badges', display: { xs: 'none', lg: 'initial' } }}>
-                    <BadgeCard user={user} />
+                    {canViewTraining && <BadgeCard user={user} />}
                 </Box>
 
                 {currentUserProfile && (
