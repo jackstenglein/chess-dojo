@@ -398,7 +398,11 @@
             "updateTitle": "Aggiornare {name}?",
             "totalCount": "Conteggio totale: {totalCount}. Coorte attuale: {cohortCount}",
             "totalTime": "Tempo totale: {totalHours}h {totalMinutes}m. Coorte attuale: {cohortHours}h {cohortMinutes}m",
-            "restDayCleared": "Giorno di riposo annullato"
+            "restDayCleared": "Giorno di riposo annullato",
+            "deletedTaskTitle": "Eliminare la voce di attività?",
+            "deletedTaskDescription": "Questa voce fa riferimento a un compito personalizzato che è stato eliminato. Vuoi rimuoverla dalla cronologia delle tue attività?",
+            "deleteEntry": "Elimina",
+            "entryDeleted": "Voce di attività eliminata"
         },
         "info": {
             "type": "Tipo",

@@ -398,7 +398,11 @@
             "updateTitle": "Aktualisiere {name}?",
             "totalCount": "Gesamtanzahl: {totalCount}. Aktuelle Kohorte: {cohortCount}",
             "totalTime": "Gesamtzeit: {totalHours}h {totalMinutes}m. Aktuelle Kohorte: {cohortHours}h {cohortMinutes}m",
-            "restDayCleared": "Ruhetag gelöscht"
+            "restDayCleared": "Ruhetag gelöscht",
+            "deletedTaskTitle": "Aktivitätseintrag löschen?",
+            "deletedTaskDescription": "Dieser Eintrag bezieht sich auf eine gelöschte benutzerdefinierte Aufgabe. Möchtest du ihn aus deinem Aktivitätszeitstrahl entfernen?",
+            "deleteEntry": "Löschen",
+            "entryDeleted": "Aktivitätseintrag gelöscht"
         },
         "info": {
             "type": "Typ",
