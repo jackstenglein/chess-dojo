@@ -5,8 +5,10 @@ import {
     ListBreadcrumbsSchema,
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { NIL as uuidNil } from 'uuid';
+import { canViewDirectory, fetchSubscriptionTier } from './access';
 import { errToApiGatewayProxyResultV2, parseEvent, requireUserInfo, success } from './api';
 import { directoryTable, dynamo } from './database';
 
@@ -21,11 +23,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         console.log('Event: %j', event);
         const userInfo = requireUserInfo(event);
         const request = parseEvent(event, ListBreadcrumbsSchema);
+        const subscriptionTier =
+            userInfo.username === request.owner
+                ? undefined
+                : await fetchSubscriptionTier(userInfo.username);
         const breadcrumbs = await fetchBreadcrumbs({
             owner: request.owner,
             id: request.id,
             shared: request.shared,
             viewer: userInfo.username,
+            subscriptionTier,
         });
         return success(breadcrumbs);
     } catch (err) {
@@ -42,18 +49,21 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
  * @param viewer The username of the viewer.
  * @returns A map from the owner/id of each directory to its breadcrumb data.
  */
-async function fetchBreadcrumbs({
+export async function fetchBreadcrumbs({
     owner,
     id,
     shared,
     viewer,
+    subscriptionTier,
 }: {
     owner: string;
     id: string;
     shared?: boolean;
     viewer: string;
+    subscriptionTier?: SubscriptionTier;
 }) {
     const results: Record<string, { owner: string; id: string; name: string; parent: string }> = {};
+    let previousKey: string | undefined;
 
     while (id && id !== uuidNil) {
         const getItemOutput = await dynamo.send(
@@ -62,11 +72,12 @@ async function fetchBreadcrumbs({
                     owner: { S: owner },
                     id: { S: id },
                 },
-                ProjectionExpression: '#name, #parent, #access',
+                ProjectionExpression: '#name, #parent, #access, #visibility, subscriptionTiers',
                 ExpressionAttributeNames: {
                     '#name': 'name',
                     '#parent': 'parent',
                     '#access': 'access',
+                    '#visibility': 'visibility',
                 },
                 TableName: directoryTable,
             }),
@@ -76,6 +87,20 @@ async function fetchBreadcrumbs({
         }
 
         const directory = unmarshall(getItemOutput.Item) as Directory;
+        const canView = await canViewDirectory({
+            owner,
+            id,
+            username: viewer,
+            directory,
+            subscriptionTier,
+        });
+        if (!canView) {
+            if (previousKey) {
+                results[previousKey].parent = uuidNil;
+            }
+            return results;
+        }
+
         if (shared && directory.access?.[viewer]) {
             results[`${owner}/${id}`] = {
                 id,
@@ -89,15 +114,17 @@ async function fetchBreadcrumbs({
                 name: 'Shared with Me',
                 parent: uuidNil,
             };
-            break;
+            return results;
         }
 
-        results[`${owner}/${id}`] = {
+        const key = `${owner}/${id}`;
+        results[key] = {
             id,
             owner,
             name: directory.name,
             parent: directory.parent,
         };
+        previousKey = key;
         id = directory.parent;
     }
 
