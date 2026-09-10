@@ -1,29 +1,60 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { renderWithIntl as render } from '@/i18n/intl.test';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ResizableContainer from './ResizableContainer';
 import { DefaultUnderboardTab } from './boardTools/underboard/underboardTabs';
 
-import type { ReactNode } from 'react';
+import { useImperativeHandle, type ReactNode, type Ref } from 'react';
+import type { UnderboardApi } from './boardTools/underboard/Underboard';
 
-vi.mock('@/style/useWindowSizeEffect', () => ({
-    useWindowSizeEffect: () => undefined,
-}));
+vi.mock('@/style/useLightMode', () => ({ useLightMode: () => true }));
+vi.mock('@/context/useGame', () => ({ default: () => ({}) }));
+vi.mock('./PgnBoard', () => ({ useChess: () => ({ chess: {} }) }));
+vi.mock('./boardTools/boardButtons/StartButtons', () => ({ default: () => null }));
+vi.mock('./boardTools/boardButtons/ControlButtons', () => ({ default: () => null }));
+vi.mock('./boardTools/boardButtons/StatusIcon', () => ({ default: () => null }));
+vi.mock('@/components/games/edit/UnpublishedGameBanner', () => ({ VisibilityIcon: () => null }));
+vi.mock('@/components/games/edit/UnsavedGameBanner', () => ({ UnsavedGameIcon: () => null }));
 
 vi.mock('./KeyboardHandler', () => ({
-    default: () => <div data-testid='keyboard-handler' />,
+    default: ({ underboardRef }: { underboardRef: React.RefObject<UnderboardApi | null> }) => (
+        <button onClick={() => underboardRef.current?.switchTab(DefaultUnderboardTab.Explorer)}>
+            Reveal explorer
+        </button>
+    ),
 }));
 
-vi.mock('./ResizableBoardArea', () => ({
-    default: () => <div data-testid='board-area' />,
+vi.mock('../Board', () => ({
+    default: ({
+        resizeData,
+        hideResize,
+        onResize,
+    }: {
+        resizeData: { width: number };
+        hideResize?: boolean;
+        onResize: (event: unknown, data: { size: { width: number; height: number } }) => void;
+    }) => (
+        <div data-testid='board-area' data-width={resizeData.width} data-hide-resize={hideResize}>
+            <input aria-label='board state' />
+            <button onClick={() => onResize(null, { size: { width: 300, height: 300 } })}>
+                Resize board
+            </button>
+        </div>
+    ),
+}));
+vi.mock('./PlayerHeader', () => ({
+    default: ({ type }: { type: string }) => <div data-testid={`player-${type}`} />,
 }));
 
 vi.mock('./pgnText/PgnText', () => ({
     PgnTextBanners: () => <div data-testid='pgn-text-banners' />,
-    ResizablePgnText: () => <div data-testid='dedicated-pgn-panel' />,
+    ResizablePgnText: ({ hidden }: { hidden?: boolean }) => (
+        <div data-testid='dedicated-pgn-panel' style={{ display: hidden ? 'none' : undefined }} />
+    ),
 }));
 
 vi.mock('./boardTools/underboard/Underboard', () => ({
-    default: ({
+    default: function MockUnderboard({
         tabs,
         initialTab,
         storageKey,
@@ -31,6 +62,10 @@ vi.mock('./boardTools/underboard/Underboard', () => ({
         buttonTestIdPrefix,
         header,
         sidePanelTabs,
+        hidden,
+        onReveal,
+        onResize,
+        ref,
     }: {
         tabs: unknown[];
         initialTab?: string;
@@ -39,21 +74,179 @@ vi.mock('./boardTools/underboard/Underboard', () => ({
         buttonTestIdPrefix?: string;
         header?: ReactNode;
         sidePanelTabs?: unknown[];
-    }) => (
-        <div
-            data-testid='underboard-panel'
-            data-tabs={tabs.length}
-            data-initial-tab={initialTab}
-            data-storage-key={storageKey}
-            data-explorer-storage-key={explorerStorageKey}
-            data-button-test-id-prefix={buttonTestIdPrefix}
-            data-has-header={header ? 'true' : 'false'}
-            data-side-panel-tabs={sidePanelTabs?.length ?? 0}
-        />
-    ),
+        hidden?: boolean;
+        onReveal?: () => void;
+        onResize: (width: number, height: number) => void;
+        ref?: Ref<UnderboardApi>;
+    }) {
+        useImperativeHandle(ref, () => ({
+            switchTab: () => onReveal?.(),
+            focusEditor: () => onReveal?.(),
+            focusCommenter: () => onReveal?.(),
+        }));
+        return (
+            <div
+                data-testid='underboard-panel'
+                data-tabs={tabs.length}
+                data-initial-tab={initialTab}
+                data-storage-key={storageKey}
+                data-explorer-storage-key={explorerStorageKey}
+                data-button-test-id-prefix={buttonTestIdPrefix}
+                data-has-header={header ? 'true' : 'false'}
+                data-side-panel-tabs={sidePanelTabs?.length ?? 0}
+                style={{ display: hidden ? 'none' : undefined }}
+            >
+                <input aria-label={`${buttonTestIdPrefix || 'left-'}draft`} />
+                <button onClick={() => onResize(200, 400)}>
+                    Resize {buttonTestIdPrefix || 'left-'}
+                </button>
+            </div>
+        );
+    },
 }));
 
 describe('ResizableContainer side panels', () => {
+    const board = (
+        allowPanelHiding = true,
+        left = true,
+        right = true,
+        showPlayerHeaders = true,
+    ) => (
+        <div id='resize-container'>
+            <ResizableContainer
+                allowPanelHiding={allowPanelHiding}
+                showPlayerHeaders={showPlayerHeaders}
+                underboardTabs={left ? [DefaultUnderboardTab.Explorer] : []}
+                rightTabs={right ? [DefaultUnderboardTab.PgnText] : []}
+                onInitialize={vi.fn()}
+            />
+        </div>
+    );
+
+    it('toggles panels independently, retains mounted state, and resets on a fresh mount', () => {
+        const { unmount } = render(board());
+        const initialWidth = Number(screen.getByTestId('board-area').dataset.width);
+        const draft = screen.getByRole('textbox', { name: 'left-draft' });
+        fireEvent.change(draft, { target: { value: 'Unfinished comment' } });
+        const position = screen.getByRole('textbox', { name: 'board state' });
+        fireEvent.change(position, { target: { value: 'e4 e5 Nf3' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Hide left panel' }));
+        expect(draft).not.toBeVisible();
+        expect(screen.getAllByTestId('underboard-panel')[1]).toBeVisible();
+        expect(Number(screen.getByTestId('board-area').dataset.width)).toBe(initialWidth);
+        fireEvent.click(screen.getByRole('button', { name: 'Hide right panel' }));
+        expect(screen.getByRole('button', { name: 'Show right panel' })).toHaveAttribute(
+            'aria-expanded',
+            'false',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Show left panel' }));
+        expect(draft).toBeVisible();
+        expect(draft).toHaveValue('Unfinished comment');
+        expect(position).toHaveValue('e4 e5 Nf3');
+        fireEvent.click(screen.getByRole('button', { name: 'Show right panel' }));
+        expect(Number(screen.getByTestId('board-area').dataset.width)).toBe(initialWidth);
+        fireEvent.click(screen.getByRole('button', { name: 'Hide left panel' }));
+        unmount();
+        render(board());
+        expect(screen.getByRole('button', { name: 'Hide left panel' })).toHaveAttribute(
+            'aria-expanded',
+            'true',
+        );
+    });
+
+    it('fits without losing manual dimensions or board state, and moves focus to restoration', () => {
+        const { unmount } = render(board());
+        const position = screen.getByRole('textbox', { name: 'board state' });
+        fireEvent.change(position, { target: { value: 'e4 e5 Nf3' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Resize board' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide left panel' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide right panel' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+        expect(screen.queryByTestId('player-header')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('player-footer')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Show left panel' })).not.toBeInTheDocument();
+        expect(screen.getByTestId('board-area')).toHaveAttribute('data-width', '756');
+        expect(screen.getByTestId('board-area')).toHaveAttribute('data-hide-resize', 'true');
+        expect(screen.getByRole('button', { name: 'Show player bars and controls' })).toHaveFocus();
+        expect(screen.getByRole('textbox', { name: 'board state' })).toBe(position);
+        expect(position).toHaveValue('e4 e5 Nf3');
+        fireEvent.click(screen.getByRole('button', { name: 'Show player bars and controls' }));
+        expect(screen.getByTestId('board-area')).toHaveAttribute('data-width', '300');
+        expect(screen.getByTestId('player-header')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Hide player bars and controls' })).toHaveFocus();
+        expect(screen.getByRole('button', { name: 'Show left panel' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+        unmount();
+        render(board());
+        expect(screen.getByRole('button', { name: 'Hide player bars and controls' })).toBeVisible();
+    });
+
+    it('restores the normal layout for a resized window without enabling absent headers', () => {
+        render(board(true, true, true, false));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+        vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+            width: 390,
+        } as DOMRect);
+        fireEvent(window, new Event('resize'));
+        expect(screen.getByTestId('board-area')).toHaveAttribute('data-width', '348');
+        fireEvent.click(screen.getByRole('button', { name: 'Show player bars and controls' }));
+        expect(screen.getByTestId('board-area')).toHaveAttribute('data-width', '384');
+        expect(screen.queryByTestId('player-header')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('player-footer')).not.toBeInTheDocument();
+    });
+
+    it('refits after an imperative panel reveal and panel resizing without losing drafts', () => {
+        render(board());
+        const draft = screen.getByRole('textbox', { name: 'left-draft' });
+        fireEvent.change(draft, { target: { value: 'Keep my draft' } });
+        const initialWidth = screen.getByTestId('board-area').dataset.width;
+        fireEvent.click(screen.getByRole('button', { name: 'Hide left panel' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+        const hiddenWidth = Number(screen.getByTestId('board-area').dataset.width);
+        fireEvent.click(screen.getByRole('button', { name: 'Reveal explorer' }));
+        const revealedWidth = Number(screen.getByTestId('board-area').dataset.width);
+        expect(revealedWidth).toBeLessThan(hiddenWidth);
+        expect(draft).toBeVisible();
+        expect(draft).toHaveValue('Keep my draft');
+        fireEvent.click(screen.getByRole('button', { name: 'Resize left-' }));
+        expect(Number(screen.getByTestId('board-area').dataset.width)).toBeGreaterThan(
+            revealedWidth,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Show player bars and controls' }));
+        expect(screen.getByTestId('board-area').dataset.width).toBe(initialWidth);
+        expect(screen.getByRole('button', { name: 'Hide left panel' })).toBeVisible();
+    });
+
+    it('keeps restore controls available across window resizing', () => {
+        render(board());
+        fireEvent.click(screen.getByRole('button', { name: 'Hide right panel' }));
+        vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+            width: 390,
+        } as DOMRect);
+        fireEvent(window, new Event('resize'));
+        expect(Number(screen.getByTestId('board-area').dataset.width)).toBe(384);
+        expect(screen.getByRole('button', { name: 'Show right panel' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Show right panel' }));
+        expect(screen.getAllByTestId('underboard-panel')[1]).toBeVisible();
+    });
+
+    it('does not offer hiding unless enabled', () => {
+        render(board(false));
+        expect(
+            screen.queryByRole('button', { name: 'Hide player bars and controls' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Hide left panel' })).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [false, true],
+        [true, false],
+        [false, false],
+    ])('omits toggles for missing panels (%s, %s)', (left, right) => {
+        render(board(true, left, right));
+        expect(Boolean(screen.queryByRole('button', { name: 'Hide left panel' }))).toBe(left);
+        expect(Boolean(screen.queryByRole('button', { name: 'Hide right panel' }))).toBe(right);
+    });
     afterEach(() => {
         cleanup();
     });

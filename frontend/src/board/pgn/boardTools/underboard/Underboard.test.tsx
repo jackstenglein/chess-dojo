@@ -1,8 +1,8 @@
 import { renderWithIntl } from '@/i18n/intl.test';
-import { cleanup, fireEvent, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react';
+import { createRef, useEffect, useRef, useState, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import Underboard from './Underboard';
+import Underboard, { UnderboardApi } from './Underboard';
 import { DefaultUnderboardTab } from './underboardTabs';
 
 const { explorerProps } = vi.hoisted(() => ({
@@ -68,7 +68,13 @@ vi.mock('../../explorer/player/PlayerOpeningTree', () => ({
 }));
 
 vi.mock('./Editor', () => ({
-    default: () => <div data-testid='editor-tab' />,
+    default: function MockEditor({ focusEditor }: { focusEditor: boolean }) {
+        const ref = useRef<HTMLInputElement>(null);
+        useEffect(() => {
+            if (focusEditor) ref.current?.focus();
+        }, [focusEditor]);
+        return <input ref={ref} data-testid='editor-tab' />;
+    },
 }));
 
 vi.mock('./clock/ClockUsage', () => ({
@@ -111,6 +117,58 @@ const resizeData = {
 };
 
 describe('Underboard side-panel tabs', () => {
+    it('reveals a hidden editor before focusing and preserves its draft', () => {
+        const ref = createRef<UnderboardApi>();
+        function Harness() {
+            const [hidden, setHidden] = useState(false);
+            return (
+                <>
+                    <button onClick={() => setHidden(true)}>Hide</button>
+                    <Underboard
+                        ref={ref}
+                        hidden={hidden}
+                        onReveal={() => setHidden(false)}
+                        tabs={[DefaultUnderboardTab.Editor]}
+                        initialTab={DefaultUnderboardTab.Editor}
+                        resizeData={resizeData}
+                        onResize={vi.fn()}
+                    />
+                </>
+            );
+        }
+        renderWithIntl(<Harness />);
+        const editor = screen.getByTestId('editor-tab');
+        fireEvent.change(editor, { target: { value: 'Keep this draft' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+        expect(editor).not.toBeVisible();
+        act(() => ref.current?.focusEditor());
+        expect(editor).toBeVisible();
+        expect(editor).toHaveFocus();
+        expect(editor).toHaveValue('Keep this draft');
+    });
+
+    it('reveals supported imperative tab actions only', () => {
+        const ref = createRef<UnderboardApi>();
+        const onReveal = vi.fn();
+        renderWithIntl(
+            <Underboard
+                ref={ref}
+                hidden
+                onReveal={onReveal}
+                tabs={[DefaultUnderboardTab.Explorer, DefaultUnderboardTab.Comments]}
+                resizeData={resizeData}
+                onResize={vi.fn()}
+            />,
+        );
+        act(() => ref.current?.switchTab(DefaultUnderboardTab.Settings));
+        expect(onReveal).not.toHaveBeenCalled();
+        act(() => ref.current?.switchTab(DefaultUnderboardTab.Explorer));
+        act(() => ref.current?.focusCommenter());
+        act(() => ref.current?.focusEditor());
+        expect(onReveal).toHaveBeenCalledTimes(2);
+        expect(screen.getByTestId('comments-tab')).toBeInTheDocument();
+    });
+
     afterEach(() => {
         cleanup();
     });

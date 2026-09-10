@@ -2,21 +2,64 @@ import { VisibilityIcon } from '@/components/games/edit/UnpublishedGameBanner';
 import { UnsavedGameIcon } from '@/components/games/edit/UnsavedGameBanner';
 import useGame from '@/context/useGame';
 import { useLightMode } from '@/style/useLightMode';
-import { Box, Paper, Stack } from '@mui/material';
+import UnfoldLess from '@mui/icons-material/UnfoldLess';
+import ViewSidebarOutlined from '@mui/icons-material/ViewSidebarOutlined';
+import { Box, IconButton, Paper, Stack, Tooltip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useChess } from '../../PgnBoard';
 import { UnderboardApi } from '../underboard/Underboard';
 import ControlButtons from './ControlButtons';
 import StartButtons from './StartButtons';
 import StatusIcon from './StatusIcon';
 
+export interface PanelControls {
+    left?: { visible: boolean; onToggle: () => void };
+    right?: { visible: boolean; onToggle: () => void };
+}
+
 const BoardButtons = ({
     underboardRef,
+    panelControls,
+    boardWidth = Infinity,
+    onHideBars,
+    hideBarsRef,
 }: {
     underboardRef?: React.RefObject<UnderboardApi | null>;
+    panelControls?: PanelControls;
+    boardWidth?: number;
+    onHideBars?: () => void;
+    hideBarsRef?: React.Ref<HTMLButtonElement>;
 }) => {
+    const t = useTranslations('analysisBoard.boardButtons');
     const light = useLightMode();
     const { game, isOwner: isGameOwner, unsaved } = useGame();
     const { chess } = useChess();
+
+    const panelToggle = (side: 'left' | 'right') => {
+        const control = panelControls?.[side];
+        if (!control) return null;
+        const label =
+            side === 'left'
+                ? t(control.visible ? 'hideLeftPanel' : 'showLeftPanel')
+                : t(control.visible ? 'hideRightPanel' : 'showRightPanel');
+        return (
+            <Tooltip title={label}>
+                <IconButton
+                    size='small'
+                    aria-label={label}
+                    aria-expanded={control.visible}
+                    onClick={control.onToggle}
+                >
+                    <ViewSidebarOutlined
+                        sx={{
+                            color: 'text.secondary',
+                            transform: side === 'left' ? 'scaleX(-1)' : undefined,
+                        }}
+                    />
+                </IconButton>
+            </Tooltip>
+        );
+    };
 
     return (
         <Paper
@@ -37,20 +80,50 @@ const BoardButtons = ({
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     position: 'relative',
+                    ...(panelControls && {
+                        display: 'grid',
+                        gridTemplateColumns:
+                            boardWidth < 480 ? '1fr 1fr' : 'minmax(0, 1fr) auto minmax(0, 1fr)',
+                        gridTemplateAreas:
+                            boardWidth < 480 ? '"start end" "moves moves"' : '"start moves end"',
+                    }),
                 }}
             >
-                <StartButtons />
-                <ControlButtons />
-                {game && isGameOwner ? (
-                    <Stack direction='row'>
-                        <VisibilityIcon underboardRef={underboardRef} />
-                        <StatusIcon game={game} />
-                    </Stack>
-                ) : unsaved ? (
-                    <UnsavedGameIcon />
-                ) : (
-                    <Box sx={{ width: '40px' }}></Box>
-                )}
+                <Stack direction='row' sx={{ gridArea: 'start', alignItems: 'center' }}>
+                    {panelToggle('left')}
+                    <StartButtons />
+                    {onHideBars && (
+                        <Tooltip title={t('hideBoardBars')}>
+                            <IconButton
+                                ref={hideBarsRef}
+                                size='small'
+                                aria-label={t('hideBoardBars')}
+                                onClick={onHideBars}
+                            >
+                                <UnfoldLess sx={{ color: 'text.secondary' }} />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </Stack>
+                <Box sx={{ gridArea: 'moves', display: 'flex', justifyContent: 'center' }}>
+                    <ControlButtons />
+                </Box>
+                <Stack
+                    direction='row'
+                    sx={{ gridArea: 'end', alignItems: 'center', justifyContent: 'flex-end' }}
+                >
+                    {game && isGameOwner ? (
+                        <Stack direction='row'>
+                            <VisibilityIcon underboardRef={underboardRef} />
+                            <StatusIcon game={game} />
+                        </Stack>
+                    ) : unsaved ? (
+                        <UnsavedGameIcon />
+                    ) : (
+                        <Box sx={{ width: '40px' }}></Box>
+                    )}
+                    {panelToggle('right')}
+                </Stack>
             </Stack>
         </Paper>
     );

@@ -116,12 +116,13 @@ const PgnText = () => {
 };
 
 interface ResizablePgnTextProps {
+    hidden?: boolean;
     resizeData: ResizableData;
     onResize: (width: number, height: number) => void;
 }
 
 export const ResizablePgnText: React.FC<ResizablePgnTextProps> = (props) => {
-    const { resizeData, onResize } = props;
+    const { resizeData, onResize, hidden } = props;
     const { chess } = useChess();
 
     const handleResize = (_: React.SyntheticEvent, data: ResizeCallbackData) => {
@@ -142,6 +143,7 @@ export const ResizablePgnText: React.FC<ResizablePgnTextProps> = (props) => {
             <Stack
                 sx={{
                     mb: { xs: 1, md: 0 },
+                    display: hidden ? 'none' : undefined,
                     width: `${resizeData.width}px`,
                     maxHeight: `${resizeData.height}px`,
                     visibility: chess ? undefined : 'hidden',

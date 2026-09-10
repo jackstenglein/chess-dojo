@@ -95,6 +95,7 @@ export interface PgnBoardSlotProps {
 }
 
 interface PgnBoardProps extends ChessConfig {
+    allowPanelHiding?: boolean;
     underboardTabs: UnderboardTab[];
     initialUnderboardTab?: string;
     rightTabs?: UnderboardTab[];
@@ -113,6 +114,7 @@ interface PgnBoardProps extends ChessConfig {
 const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
     (
         {
+            allowPanelHiding = false,
             underboardTabs,
             initialUnderboardTab,
             rightTabs,
@@ -369,6 +371,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                         <GameContext.Provider value={guardedGameContext}>
                             <ResizableContainer
                                 {...{
+                                    allowPanelHiding,
                                     underboardTabs,
                                     initialUnderboardTab,
                                     rightTabs,

@@ -3545,6 +3545,12 @@
             }
         },
         "boardButtons": {
+            "hideBoardBars": "[T] Hide player bars and controls",
+            "showBoardBars": "[T] Show player bars and controls",
+            "hideLeftPanel": "[T] Hide left panel",
+            "showLeftPanel": "[T] Show left panel",
+            "hideRightPanel": "[T] Hide right panel",
+            "showRightPanel": "[T] Show right panel",
             "firstMove": "[T] First Move",
             "firstMoveAria": "[T] first move",
             "previousMove": "[T] Previous Move",
