@@ -924,6 +924,7 @@
         "books": "Bücher",
         "sparringPositions": "Sparring Positionen",
         "modelAnnotations": "Modellannotationen",
+        "gamesToStudy": "Spiele zum Studieren",
         "gamesToMemorize": "Spiele zum Auswendiglernen",
         "guides": "Anleitungen",
         "ratingConversions": "Bewertungsumrechnung",
@@ -2862,6 +2863,12 @@
         "modelGames": {
             "selectGame": "Spiel auswählen",
             "cohortLabel": "Kohorte",
+            "noGamesForCohort": "Keine Spiele für Kohorte {cohort} gefunden"
+        },
+        "gamesToStudy": {
+            "selectGame": "Spiel auswählen",
+            "cohortLabel": "Kohorte",
+            "noGames": "Noch keine Spiele verfügbar.",
             "noGamesForCohort": "Keine Spiele für Kohorte {cohort} gefunden"
         },
         "sparring": {

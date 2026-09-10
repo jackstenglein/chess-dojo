@@ -924,6 +924,7 @@
         "books": "Books",
         "sparringPositions": "Sparring Positions",
         "modelAnnotations": "Model Annotations",
+        "gamesToStudy": "Games to Study",
         "gamesToMemorize": "Games to Memorize",
         "guides": "Guides",
         "ratingConversions": "Rating Conversions",
@@ -2862,6 +2863,12 @@
         "modelGames": {
             "selectGame": "Select Game",
             "cohortLabel": "Cohort",
+            "noGamesForCohort": "No games found for cohort {cohort}"
+        },
+        "gamesToStudy": {
+            "selectGame": "Select Game",
+            "cohortLabel": "Cohort",
+            "noGames": "No games available yet.",
             "noGamesForCohort": "No games found for cohort {cohort}"
         },
         "sparring": {
