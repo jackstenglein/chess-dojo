@@ -23,6 +23,30 @@ test.describe('Memorize Games Page', () => {
         await expect(page.getByText('Show Answer')).toBeVisible();
     });
 
+    test('keeps the current game on screen while the next one loads', async ({ page }) => {
+        const items = page.getByTestId('pgn-selector-item');
+        test.skip((await items.count()) < 2, 'needs two games');
+        const firstMove = page.getByTestId('pgn-text-move-button').first();
+        await expect(firstMove).toBeVisible();
+
+        await page.route(/\/public\/game\//, async (route) => {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await route.continue();
+        });
+        const loaded = page.waitForResponse(/\/public\/game\//);
+        await items.nth(1).click();
+        await page.waitForTimeout(300);
+
+        // Mid-load: no spinner, the previous game still on the board.
+        expect(await page.getByRole('progressbar').count()).toBe(0);
+        expect(await page.getByTestId('chessground-board').isVisible()).toBe(true);
+        expect(await firstMove.isVisible()).toBe(true);
+
+        await loaded;
+        await expect(items.nth(1).getByRole('button')).toHaveClass(/Mui-selected/);
+        await expect(page.getByTestId('pgn-text-move-button').first()).toBeVisible();
+    });
+
     test('should not reveal moves past the frontier via keyboard in test mode', async ({
         page,
     }) => {
