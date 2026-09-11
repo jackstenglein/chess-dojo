@@ -1,3 +1,4 @@
 discordAuth: ''
 clientId: ''
 clientSecret: ''
+discordPurchasesWebhookUrl: ''
