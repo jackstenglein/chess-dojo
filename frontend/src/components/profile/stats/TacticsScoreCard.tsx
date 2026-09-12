@@ -81,7 +81,11 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                                     flexShrink: 0,
                                 }}
                             >
-                                <Icon name={RequirementCategory.Tactics} color='primary' fontSize='medium' />
+                                <Icon
+                                    name={RequirementCategory.Tactics}
+                                    color='primary'
+                                    fontSize='medium'
+                                />
                             </Box>
                             <Typography variant='h6' sx={{ fontWeight: 600 }}>
                                 {t('tacticsRating')}
@@ -114,82 +118,84 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                             py: 2,
                         }}
                     >
-                    <Grid
-                        container
-                        columnSpacing={2}
-                        sx={{
-                            rowGap: 2,
-                            justifyContent: 'space-evenly',
-                        }}
-                    >
-                        {tacticsRating.components.map((c) => (
-                            <Grid
-                                key={c.name}
-                                size={{
-                                    xs: 6,
-                                    sm: 3,
-                                    md: 'grow',
-                                }}
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <Tooltip title={c.description}>
-                                    <Stack
-                                        sx={{
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <Typography
-                                            variant='overline'
+                        <Grid
+                            container
+                            columnSpacing={2}
+                            sx={{
+                                rowGap: 2,
+                                justifyContent: 'space-evenly',
+                            }}
+                        >
+                            {tacticsRating.components.map((c) => (
+                                <Grid
+                                    key={c.name}
+                                    size={{
+                                        xs: 6,
+                                        sm: 3,
+                                        md: 'grow',
+                                    }}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Tooltip title={c.description}>
+                                        <Stack
                                             sx={{
-                                                color: 'text.secondary',
-                                                lineHeight: 1.4,
+                                                alignItems: 'center',
                                             }}
                                         >
-                                            <LinkIf to={c.link}>{c.name}</LinkIf>
-                                        </Typography>
-                                        <Typography
-                                            sx={{
-                                                fontSize: '1.5rem',
-                                                letterSpacing: '-0.01em',
-                                                lineHeight: 1,
-                                                fontWeight: 'bold',
-                                            }}
-                                        >
-                                            {c.rating > 0 ? Math.round(c.rating) : '?'}
-                                            {c.provisional && '?'}
-                                        </Typography>
-                                        {c.examCount !== undefined && c.rating > 0 && (
-                                            <Stack direction='row' sx={{ mt: 0.5 }}>
-                                                {[...Array(c.examCount).keys()].map((idx) => (
-                                                    <FiberManualRecord
-                                                        key={`taken-${idx}`}
-                                                        sx={{
-                                                            width: '0.7rem',
-                                                            height: '0.7rem',
-                                                            color: 'text.secondary',
-                                                        }}
-                                                    />
-                                                ))}
-                                                {[...Array(3 - c.examCount).keys()].map((idx) => (
-                                                    <FiberManualRecordOutlined
-                                                        key={`untaken-${idx}`}
-                                                        sx={{
-                                                            width: '0.7rem',
-                                                            height: '0.7rem',
-                                                            color: 'text.secondary',
-                                                        }}
-                                                    />
-                                                ))}
-                                            </Stack>
-                                        )}
-                                    </Stack>
-                                </Tooltip>
-                            </Grid>
-                        ))}
-                    </Grid>
+                                            <Typography
+                                                variant='overline'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                    lineHeight: 1.4,
+                                                }}
+                                            >
+                                                <LinkIf to={c.link}>{c.name}</LinkIf>
+                                            </Typography>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: '1.5rem',
+                                                    letterSpacing: '-0.01em',
+                                                    lineHeight: 1,
+                                                    fontWeight: 'bold',
+                                                }}
+                                            >
+                                                {c.rating > 0 ? Math.round(c.rating) : '?'}
+                                                {c.provisional && '?'}
+                                            </Typography>
+                                            {c.examCount !== undefined && c.rating > 0 && (
+                                                <Stack direction='row' sx={{ mt: 0.5 }}>
+                                                    {[...Array(c.examCount).keys()].map((idx) => (
+                                                        <FiberManualRecord
+                                                            key={`taken-${idx}`}
+                                                            sx={{
+                                                                width: '0.7rem',
+                                                                height: '0.7rem',
+                                                                color: 'text.secondary',
+                                                            }}
+                                                        />
+                                                    ))}
+                                                    {[...Array(3 - c.examCount).keys()].map(
+                                                        (idx) => (
+                                                            <FiberManualRecordOutlined
+                                                                key={`untaken-${idx}`}
+                                                                sx={{
+                                                                    width: '0.7rem',
+                                                                    height: '0.7rem',
+                                                                    color: 'text.secondary',
+                                                                }}
+                                                            />
+                                                        ),
+                                                    )}
+                                                </Stack>
+                                            )}
+                                        </Stack>
+                                    </Tooltip>
+                                </Grid>
+                            ))}
+                        </Grid>
                     </Box>
                 </Stack>
             </CardContent>

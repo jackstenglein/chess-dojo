@@ -52,7 +52,10 @@ export function DrillRatingsCard({ mateInOneRating }: DrillRatingsCardProps) {
                     </Stack>
 
                     <Stack sx={{ alignItems: 'center' }}>
-                        <Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
+                        <Typography
+                            variant='overline'
+                            sx={{ color: 'text.secondary', lineHeight: 1.4 }}
+                        >
                             Mate-in-One PR
                         </Typography>
                         <Typography

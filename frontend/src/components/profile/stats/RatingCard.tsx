@@ -2,12 +2,12 @@ import { useAuth } from '@/auth/Auth';
 import {
     cohortColors,
     dojoCohorts,
-    RatingHistory,
-    RatingSystem,
     formatRatingSystem,
     getNormalizedRating,
     getRatingBoundary,
     isCustom,
+    RatingHistory,
+    RatingSystem,
 } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
@@ -365,7 +365,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
         if (allDates.length === 0) {
             return undefined;
         }
-        const spanMs = Math.max(...allDates.map((d) => d.getTime())) - Math.min(...allDates.map((d) => d.getTime()));
+        const spanMs =
+            Math.max(...allDates.map((d) => d.getTime())) -
+            Math.min(...allDates.map((d) => d.getTime()));
         const paddingMs = Math.max(1000 * 60 * 60 * 24, spanMs * 0.02);
         const firstDate = new Date(Math.min(...allDates.map((d) => d.getTime())) - paddingMs);
         const lastDate = new Date(Math.max(...allDates.map((d) => d.getTime())) + paddingMs);
@@ -430,7 +432,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
     // past that for graduation if needed, with modest fixed-feeling headroom instead of another
     // 8% of the (now inflated) total range.
     const chartYDomain = useMemo(() => {
-        const ratingValues = displayedHistoryData.flatMap((series) => series.data.map((d) => d.rating));
+        const ratingValues = displayedHistoryData.flatMap((series) =>
+            series.data.map((d) => d.rating),
+        );
         if (ratingValues.length === 0) {
             return undefined;
         }
@@ -527,8 +531,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
             // The x-axis renders two copies internally (an invisible one used
             // only to measure rotated-label overflow) — only the "inner" one
             // is the real, visible plot edge.
-            const xAxisDomainLine =
-                svg?.querySelector<SVGLineElement>('.Axis-Group.inner line.domain');
+            const xAxisDomainLine = svg?.querySelector<SVGLineElement>(
+                '.Axis-Group.inner line.domain',
+            );
             if (!svg || !line || !xAxisDomainLine) {
                 return undefined;
             }
@@ -680,10 +685,16 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                 <RatingSystemIcon system={system} />
                             </Box>
 
-                            <Stack direction='row' spacing={0.5} sx={{ alignItems: 'baseline', flexWrap: 'wrap' }}>
+                            <Stack
+                                direction='row'
+                                spacing={0.5}
+                                sx={{ alignItems: 'baseline', flexWrap: 'wrap' }}
+                            >
                                 <Typography variant='h6' sx={{ fontWeight: 600, mr: 0.5 }}>
                                     {formatRatingSystem(system, tRating)}
-                                    {isCustom(system) && name && t('customRatingDisplayName', { name })}
+                                    {isCustom(system) &&
+                                        name &&
+                                        t('customRatingDisplayName', { name })}
                                 </Typography>
 
                                 <RatingProfileLink
@@ -760,7 +771,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                             {currentRating}
                                             {/* Lichess classical stays provisional for a long time,
                                                 so its `?` is permanent noise — hide it there. */}
-                                            {isProvisional && system !== RatingSystem.Lichess && '?'}
+                                            {isProvisional &&
+                                                system !== RatingSystem.Lichess &&
+                                                '?'}
                                         </Typography>
                                     </HeaderStat>
                                 </span>
@@ -771,7 +784,8 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     <Typography
                                         sx={{
                                             ...statNumberSx,
-                                            color: ratingChange >= 0 ? 'success.main' : 'error.main',
+                                            color:
+                                                ratingChange >= 0 ? 'success.main' : 'error.main',
                                         }}
                                     >
                                         {Math.abs(ratingChange)}
@@ -787,9 +801,15 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                         }}
                                     >
                                         {ratingChange >= 0 ? (
-                                            <ArrowUpwardIcon sx={{ fontSize: '0.9rem' }} color='success' />
+                                            <ArrowUpwardIcon
+                                                sx={{ fontSize: '0.9rem' }}
+                                                color='success'
+                                            />
                                         ) : (
-                                            <ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} color='error' />
+                                            <ArrowDownwardIcon
+                                                sx={{ fontSize: '0.9rem' }}
+                                                color='error'
+                                            />
                                         )}
                                     </Box>
                                 </Box>
@@ -800,7 +820,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                     <span>
                                         <HeaderStat label={t('normalized')}>
                                             <Typography sx={statNumberSx}>
-                                                {Math.round(getNormalizedRating(currentRating, system))}
+                                                {Math.round(
+                                                    getNormalizedRating(currentRating, system),
+                                                )}
                                             </Typography>
                                         </HeaderStat>
                                     </span>
@@ -809,7 +831,11 @@ const RatingCard: React.FC<RatingCardProps> = ({
 
                             {isPreferred && (
                                 <HeaderStat label={t('nextGraduation')}>
-                                    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+                                    <Stack
+                                        direction='row'
+                                        spacing={0.5}
+                                        sx={{ alignItems: 'center' }}
+                                    >
                                         <Typography sx={statNumberSx}>
                                             {graduation || t('naLabel')}
                                         </Typography>
@@ -900,7 +926,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                             primaryCursor: {
                                                 showLabel: false,
                                                 onChange: (value) =>
-                                                    setHoverDate(value instanceof Date ? value : null),
+                                                    setHoverDate(
+                                                        value instanceof Date ? value : null,
+                                                    ),
                                             },
                                             secondaryCursor: { showLabel: false },
                                             getSeriesStyle: (series) =>
@@ -921,14 +949,18 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                                           circle: { r: 0 },
                                                       }
                                                     : {
-                                                          line: { stroke: chartColor, strokeWidth: '2px' },
+                                                          line: {
+                                                              stroke: chartColor,
+                                                              strokeWidth: '2px',
+                                                          },
                                                           circle: { r: 0 },
                                                       },
                                             // Highlight the exact point on the rating line the user is
                                             // hovering, with the same translucent stroke color as the
                                             // chart's own crosshair line, so the two read as one unit.
                                             getDatumStyle: (datum, status) =>
-                                                status === 'none' || datum.originalSeries.label === graduationLabel
+                                                status === 'none' ||
+                                                datum.originalSeries.label === graduationLabel
                                                     ? {}
                                                     : {
                                                           circle: {
@@ -1002,11 +1034,17 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                                 left:
                                                     mousePos.x + 14 + TOOLTIP_WIDTH_ESTIMATE >
                                                     mousePos.containerWidth
-                                                        ? Math.max(mousePos.x - 14 - TOOLTIP_WIDTH_ESTIMATE, 0)
+                                                        ? Math.max(
+                                                              mousePos.x -
+                                                                  14 -
+                                                                  TOOLTIP_WIDTH_ESTIMATE,
+                                                              0,
+                                                          )
                                                         : mousePos.x + 14,
                                                 top: Math.min(
                                                     Math.max(mousePos.y - 10, 0),
-                                                    mousePos.containerHeight - TOOLTIP_HEIGHT_ESTIMATE,
+                                                    mousePos.containerHeight -
+                                                        TOOLTIP_HEIGHT_ESTIMATE,
                                                 ),
                                                 pointerEvents: 'none',
                                                 zIndex: 1,
@@ -1042,7 +1080,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                         value={chartPeriodMonths ?? 'all'}
                                         onChange={(_, value: number | 'all' | null) =>
                                             value !== null &&
-                                            setChartPeriodMonths(value === 'all' ? undefined : value)
+                                            setChartPeriodMonths(
+                                                value === 'all' ? undefined : value,
+                                            )
                                         }
                                         sx={{ ml: 'auto' }}
                                     >

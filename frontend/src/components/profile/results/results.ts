@@ -52,7 +52,9 @@ export function toUnifiedLichessResult(
         platform: RatingSystem.Lichess,
         url: `https://lichess.org/${game.id}`,
         date: game.lastMoveAt ?? game.createdAt,
-        opponent: opponent.user?.name ?? (opponent.aiLevel ? `Stockfish AI (${opponent.aiLevel})` : 'Anonymous'),
+        opponent:
+            opponent.user?.name ??
+            (opponent.aiLevel ? `Stockfish AI (${opponent.aiLevel})` : 'Anonymous'),
         opponentRating: opponent.rating,
         myRating: me.rating,
         color,
@@ -152,7 +154,11 @@ function computeBestWinStreak(results: UnifiedResult[]): number {
 function computeBestWin(results: UnifiedResult[]): UnifiedResult | undefined {
     let best: UnifiedResult | undefined;
     for (const result of results) {
-        if (result.outcome !== 'win' || result.opponentRating === undefined || result.opponentRating <= 0) {
+        if (
+            result.outcome !== 'win' ||
+            result.opponentRating === undefined ||
+            result.opponentRating <= 0
+        ) {
             continue;
         }
         if (!best || result.opponentRating > (best.opponentRating ?? 0)) {

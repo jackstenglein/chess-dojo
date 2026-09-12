@@ -95,7 +95,15 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
 };
 
 /** A compact "before → after" stat pill, e.g. Dojo Points: 45 → 50. */
-function StatDelta({ label, from, to }: { label: string; from: number | string; to: number | string }) {
+function StatDelta({
+    label,
+    from,
+    to,
+}: {
+    label: string;
+    from: number | string;
+    to: number | string;
+}) {
     return (
         <Stack
             direction='row'
@@ -154,7 +162,9 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
                     {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
                         <StatDelta
                             label={t('dojoPoints')}
-                            from={Math.round(100 * (entry.totalDojoPoints - entry.dojoPoints)) / 100}
+                            from={
+                                Math.round(100 * (entry.totalDojoPoints - entry.dojoPoints)) / 100
+                            }
                             to={Math.round(100 * entry.totalDojoPoints) / 100}
                         />
                     )}

@@ -8,6 +8,8 @@ import { Link } from '@/components/navigation/Link';
 import { getRatingUsername, hideRatingUsername, RatingSystem, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
+import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
     AccordionDetails,
@@ -31,8 +33,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useEffect, useState } from 'react';
 import {
@@ -279,9 +279,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                 {isOwnProfile && (
                     <Typography>
                         {t.rich('emptyConnectAccounts', {
-                            link: (chunks: ReactNode) => (
-                                <Link href='/profile/edit'>{chunks}</Link>
-                            ),
+                            link: (chunks: ReactNode) => <Link href='/profile/edit'>{chunks}</Link>,
                         })}
                     </Typography>
                 )}
@@ -584,7 +582,9 @@ function PlatformBreakdownCard({ aggregated }: { aggregated: AggregatedResults }
                                 >
                                     <RatingSystemIcon system={platform} size='small' />
                                     <Typography variant='body1'>
-                                        {platform === RatingSystem.Lichess ? 'Lichess' : 'Chess.com'}
+                                        {platform === RatingSystem.Lichess
+                                            ? 'Lichess'
+                                            : 'Chess.com'}
                                     </Typography>
                                 </Stack>
                                 <Box sx={{ flexGrow: 1 }}>
@@ -596,7 +596,9 @@ function PlatformBreakdownCard({ aggregated }: { aggregated: AggregatedResults }
                                 >
                                     {breakdown.wins}-{breakdown.losses}-{breakdown.draws}
                                 </Typography>
-                                <Typography sx={{ fontWeight: 'bold', minWidth: 48, textAlign: 'right' }}>
+                                <Typography
+                                    sx={{ fontWeight: 'bold', minWidth: 48, textAlign: 'right' }}
+                                >
                                     {breakdown.winRate.toFixed(0)}%
                                 </Typography>
                             </Stack>
@@ -656,7 +658,10 @@ function RecentSessionsCard({ sessions, t }: { sessions: GameSession[]; t: TFunc
                                         <Typography sx={{ fontWeight: 'bold' }}>
                                             {session.label}
                                         </Typography>
-                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                        <Typography
+                                            variant='body2'
+                                            sx={{ color: 'text.secondary' }}
+                                        >
                                             {session.games.length}{' '}
                                             {session.games.length === 1 ? 'game' : 'games'}
                                         </Typography>
@@ -709,67 +714,67 @@ function SessionGamesTable({ games, t }: { games: UnifiedResult[]; t: TFunc }) {
     return (
         <TableContainer>
             <Table size='small'>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>{t('date')}</TableCell>
-                                <TableCell>{t('opponent')}</TableCell>
-                                <TableCell align='center'>{t('opponentRating')}</TableCell>
-                                <TableCell align='center'>{t('color')}</TableCell>
-                                <TableCell>{t('result')}</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {games.map((game) => (
-                                <TableRow
-                                    key={`${game.platform}-${game.id}`}
-                                    hover
-                                    sx={{ '& > *': { whiteSpace: 'nowrap' } }}
+                <TableHead>
+                    <TableRow>
+                        <TableCell>{t('date')}</TableCell>
+                        <TableCell>{t('opponent')}</TableCell>
+                        <TableCell align='center'>{t('opponentRating')}</TableCell>
+                        <TableCell align='center'>{t('color')}</TableCell>
+                        <TableCell>{t('result')}</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {games.map((game) => (
+                        <TableRow
+                            key={`${game.platform}-${game.id}`}
+                            hover
+                            sx={{ '& > *': { whiteSpace: 'nowrap' } }}
+                        >
+                            <TableCell>
+                                <Link href={game.url} target='_blank' rel='noopener noreferrer'>
+                                    {new Date(game.date).toLocaleDateString(undefined, {
+                                        month: 'short',
+                                        day: 'numeric',
+                                    })}{' '}
+                                    {new Date(game.date).toLocaleTimeString(undefined, {
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                    })}
+                                </Link>
+                            </TableCell>
+                            <TableCell>
+                                <Link
+                                    href={game.url}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 0.75,
+                                    }}
                                 >
-                                    <TableCell>
-                                        <Link href={game.url} target='_blank' rel='noopener noreferrer'>
-                                            {new Date(game.date).toLocaleDateString(undefined, {
-                                                month: 'short',
-                                                day: 'numeric',
-                                            })}{' '}
-                                            {new Date(game.date).toLocaleTimeString(undefined, {
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                            })}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Link
-                                            href={game.url}
-                                            target='_blank'
-                                            rel='noopener noreferrer'
-                                            sx={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: 0.75,
-                                            }}
-                                        >
-                                            <RatingSystemIcon system={game.platform} size='small' />
-                                            {game.opponent}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align='center'>{game.opponentRating ?? '-'}</TableCell>
-                                    <TableCell align='center'>
-                                        <ColorChip color={game.color} t={t} />
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            textTransform: 'capitalize',
-                                            color: outcomeColor(game.outcome),
-                                            fontWeight: 'bold',
-                                        }}
-                                    >
-                                        {t(game.outcome)}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                    <RatingSystemIcon system={game.platform} size='small' />
+                                    {game.opponent}
+                                </Link>
+                            </TableCell>
+                            <TableCell align='center'>{game.opponentRating ?? '-'}</TableCell>
+                            <TableCell align='center'>
+                                <ColorChip color={game.color} t={t} />
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    textTransform: 'capitalize',
+                                    color: outcomeColor(game.outcome),
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {t(game.outcome)}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 }
 
