@@ -16,6 +16,7 @@ import { HeatmapCard } from '@/components/profile/info/HeatmapCard';
 import { NewsfeedCard } from '@/components/profile/info/NewsfeedCard';
 import { UserCard } from '@/components/profile/info/UserCard';
 import { LiveClassesTab } from '@/components/profile/liveClasses/LiveClassesTab';
+import ResultsTab from '@/components/profile/results/ResultsTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
 import { TrainingPlanTab } from '@/components/profile/trainingPlan/TrainingPlanTab';
 import { hasCreatedProfile, User } from '@/database/user';
@@ -33,6 +34,7 @@ import {
 import {
     AdminPanelSettings,
     Groups,
+    Leaderboard,
     PieChart,
     RocketLaunch,
     Star,
@@ -222,6 +224,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     icon={<PawnIcon fontSize='small' />}
                                 />
                                 <ProfileTab
+                                    label={t('tabResults')}
+                                    value='results'
+                                    icon={<Leaderboard fontSize='small' />}
+                                />
+                                <ProfileTab
                                     label={t('tabClubs')}
                                     value='clubs'
                                     icon={<Groups fontSize='small' />}
@@ -259,6 +266,9 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     }}
                                 />
                             </DirectoryCacheProvider>
+                        </TabPanel>
+                        <TabPanel value='results' sx={{ px: 0, pl: { lg: 1 } }}>
+                            <ResultsTab user={user} />
                         </TabPanel>
                         <TabPanel value='clubs' sx={{ px: 0, pl: { lg: 1 } }}>
                             <ClubsTab user={user} />

@@ -550,7 +550,7 @@
             "public": "Public",
             "private": "Private",
             "unlisted": "Unlisted",
-            "dateTooltip": "{date} \u2022 {time}",
+            "dateTooltip": "{date} • {time}",
             "moveDirectoryTitle": "Move {name}?",
             "moveGameTitle": "Move game?",
             "moveFoldersAndGamesTitle": "Move {dirCount} {dirCount, plural, =1 {folder} other {folders}} and {gameCount} {gameCount, plural, =1 {game} other {games}}?",
@@ -652,6 +652,7 @@
             "tabTrainingPlan": "Training Plan",
             "tabActivity": "Activity",
             "tabGames": "Games",
+            "tabResults": "Results",
             "tabClubs": "Clubs"
         },
         "yearReview": {
@@ -746,7 +747,10 @@
                 "ratingsUpdatedTooltip": "Ratings are updated every 24 hours",
                 "graphsUpdatedNote": "*Graphs are updated weekly",
                 "ratingChartLabel": "Rating",
-                "customRatingDisplayName": " ({name})"
+                "customRatingDisplayName": " ({name})",
+                "graduationLegend": "Graduation",
+                "cohortProgress": "Cohort Progress",
+                "ratingHistory": "Rating History"
             },
             "tacticsCard": {
                 "tacticsRating": "Tactics Rating",
@@ -848,6 +852,34 @@
             "upcomingSessions": "Upcoming Sessions",
             "viewAsList": "View as list",
             "viewInCalendar": "View in calendar"
+        },
+        "resultsTab": {
+            "windowDays": "{days} days",
+            "rapid": "Rapid",
+            "classical": "Classical",
+            "gamesPlayed": "Games Played",
+            "record": "Record (W-L-D)",
+            "winRate": "Win Rate",
+            "streakWin": "{count, plural, one {# Win} other {# Wins}}",
+            "asWhite": "Win % as White",
+            "asBlack": "Win % as Black",
+            "avgOpponent": "Avg Opponent",
+            "bestWin": "Best Win",
+            "recentGames": "Recent Games",
+            "date": "Date",
+            "opponent": "Opponent",
+            "opponentRating": "Rating",
+            "color": "Color",
+            "white": "White",
+            "black": "Black",
+            "result": "Result",
+            "win": "Win",
+            "loss": "Loss",
+            "draw": "Draw",
+            "emptyNoAccounts": "No connected Lichess or Chess.com account found.",
+            "emptyConnectAccounts": "<link>Connect your Lichess or Chess.com account</link> to see your results here.",
+            "emptyNoGames": "No games found in this time period.",
+            "bestStreak": "Best Win Streak"
         },
         "graduationShare": {
             "title": "Share your progress!",
@@ -1942,8 +1974,8 @@
                 "sortOldestFirst": "Oldest first",
                 "sortTcShortest": "Time control (shortest)",
                 "sortTcLongest": "Time control (longest)",
-                "sortTcClassBulletToClassical": "Time class (bullet \u2192 classical)",
-                "sortTcClassClassicalToBullet": "Time class (classical \u2192 bullet)",
+                "sortTcClassBulletToClassical": "Time class (bullet → classical)",
+                "sortTcClassClassicalToBullet": "Time class (classical → bullet)",
                 "sortWhiteWinsFirst": "White wins first",
                 "sortBlackWinsFirst": "Black wins first",
                 "sortDrawsFirst": "Draws first",
@@ -3147,7 +3179,7 @@
             "difficultyLabel": "Difficulty",
             "difficultyEasiest": "Easiest (-600)",
             "difficultyEasier": "Easier (-300)",
-            "difficultyStandard": "Standard (\u00b1200)",
+            "difficultyStandard": "Standard (±200)",
             "difficultyHarder": "Harder (+300)",
             "difficultyHardest": "Hardest (+600)",
             "rated": "Rated",
@@ -3287,7 +3319,7 @@
             "bestFitCohortRange": "Best Fit Cohort Range ({range})",
             "usersLine": "<dim>Users:</dim> {count}",
             "avgScoreLine": "<dim>Avg Score:</dim> {score}",
-            "regressionCaptionRange": "Best fit is calculated as a linear regression over all users {min}\u2013{max}",
+            "regressionCaptionRange": "Best fit is calculated as a linear regression over all users {min}–{max}",
             "regressionCaptionPlus": "Best fit is calculated as a linear regression over all users {min}+",
             "seriesTestRating": "Test Rating",
             "seriesYourScore": "Your Score",
@@ -3317,9 +3349,9 @@
         "freeVolunteer": "Offering volunteer help",
         "volunteeringHeading": "Volunteering",
         "volunteeringIntro": "Please message @hellokostya on Discord if you're interested in helping out with any of the following categories:",
-        "volunteerAdmin": "Admin/Organizational \u2014 organizing events, both on-stream and off-stream, modding, etc.",
-        "volunteerProgramming": "Programming \u2014 Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
-        "volunteerContent": "Content \u2014 thumbnails, posting clips on social media, etc."
+        "volunteerAdmin": "Admin/Organizational — organizing events, both on-stream and off-stream, modding, etc.",
+        "volunteerProgramming": "Programming — Discord bots, contributions to the website, Google Sheets, and other tech stuff!",
+        "volunteerContent": "Content — thumbnails, posting clips on social media, etc."
     },
     "blog": {
         "footer": {
@@ -3765,15 +3797,15 @@
                 "gameReviewCompleteDialogTitle": "Game Review Complete",
                 "completedReviewDescription": "Your game review was reviewed on a previous <stream>Twitch stream</stream>. If you missed the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "reviewerLabel": "Reviewer:",
-                "dateReviewedLabel": "Date Reviewed: {date} \u2022 {time}",
-                "dateRequestedLabel": "Date Requested: {date} \u2022 {time}",
+                "dateReviewedLabel": "Date Reviewed: {date} • {time}",
+                "dateRequestedLabel": "Date Requested: {date} • {time}",
                 "reviewTypeDisplayLabel": "Review Type: {type}",
                 "gameReviewPendingDialogTitle": "Game Review Pending",
                 "pendingReviewDescription": "Your game review is still in the queue. One of the senseis will review this game on a future <stream>Twitch stream</stream>. If you miss the live stream, you can watch the review in the <vods>Twitch VODs</vods> or on the <youtube>ChessDojoLive Youtube channel</youtube>.",
                 "currentQueuePositionLabel": "Current Position in Queue: <value></value>",
                 "estimatedReviewDateByLabel": "Estimated Review Date: by {date}",
                 "adminSettingsTitle": "Admin Settings",
-                "reviewRequestedLabel": "Review Requested: {date} \u2022 {time}",
+                "reviewRequestedLabel": "Review Requested: {date} • {time}",
                 "markReviewedButton": "Mark Reviewed",
                 "keyArrowLeft": "Arrow Left",
                 "keyArrowRight": "Arrow Right",
@@ -3809,7 +3841,7 @@
                 "replyPlaceholder": "Reply to {displayName} ({cohort})",
                 "replyCancelButton": "cancel",
                 "replyPostButton": "reply",
-                "updatedAt": "Updated at {date} \u2022 {time}"
+                "updatedAt": "Updated at {date} • {time}"
             },
             "directories": {},
             "share": {
@@ -4006,8 +4038,8 @@
             "previousPageLabel": "Go to previous page",
             "nextPageLabel": "Go to next page",
             "freeTierLimit": "Free-tier users can only access the first page of results",
-            "displayedRowsExact": "{from}\u2013{to} of {count}",
-            "displayedRowsWithMore": "{from}\u2013{to} of {count}+"
+            "displayedRowsExact": "{from}–{to} of {count}",
+            "displayedRowsWithMore": "{from}–{to} of {count}+"
         }
     },
     "upsell": {

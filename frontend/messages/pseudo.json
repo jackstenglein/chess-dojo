@@ -652,6 +652,7 @@
             "tabTrainingPlan": "[T] Training Plan",
             "tabActivity": "[T] Activity",
             "tabGames": "[T] Games",
+            "tabResults": "[T] Results",
             "tabClubs": "[T] Clubs"
         },
         "yearReview": {
@@ -746,7 +747,10 @@
                 "ratingsUpdatedTooltip": "[T] Ratings are updated every 24 hours",
                 "graphsUpdatedNote": "[T] *Graphs are updated weekly",
                 "ratingChartLabel": "[T] Rating",
-                "customRatingDisplayName": "[T]  ({name})"
+                "customRatingDisplayName": "[T]  ({name})",
+                "graduationLegend": "[T] Graduation",
+                "cohortProgress": "[T] Cohort Progress",
+                "ratingHistory": "[T] Rating History"
             },
             "tacticsCard": {
                 "tacticsRating": "[T] Tactics Rating",
@@ -848,6 +852,34 @@
             "upcomingSessions": "[T] Upcoming Sessions",
             "viewAsList": "[T] View as list",
             "viewInCalendar": "[T] View in calendar"
+        },
+        "resultsTab": {
+            "windowDays": "[T] {days} days",
+            "rapid": "[T] Rapid",
+            "classical": "[T] Classical",
+            "gamesPlayed": "[T] Games Played",
+            "record": "[T] Record (W-L-D)",
+            "winRate": "[T] Win Rate",
+            "streakWin": "[T] {count, plural, one {# Win} other {# Wins}}",
+            "asWhite": "[T] Win % as White",
+            "asBlack": "[T] Win % as Black",
+            "avgOpponent": "[T] Avg Opponent",
+            "bestWin": "[T] Best Win",
+            "recentGames": "[T] Recent Games",
+            "date": "[T] Date",
+            "opponent": "[T] Opponent",
+            "opponentRating": "[T] Rating",
+            "color": "[T] Color",
+            "white": "[T] White",
+            "black": "[T] Black",
+            "result": "[T] Result",
+            "win": "[T] Win",
+            "loss": "[T] Loss",
+            "draw": "[T] Draw",
+            "emptyNoAccounts": "[T] No connected Lichess or Chess.com account found.",
+            "emptyConnectAccounts": "<link>[T] Connect your Lichess or Chess.com account</link> [T] to see your results here.",
+            "emptyNoGames": "[T] No games found in this time period.",
+            "bestStreak": "[T] Best Win Streak"
         },
         "graduationShare": {
             "title": "[T] Share your progress!",

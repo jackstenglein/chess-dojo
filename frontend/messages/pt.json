@@ -652,6 +652,7 @@
             "tabTrainingPlan": "Plano de treino",
             "tabActivity": "Atividade",
             "tabGames": "Partidas",
+            "tabResults": "Results",
             "tabClubs": "Clubes"
         },
         "yearReview": {
@@ -746,7 +747,10 @@
                 "ratingsUpdatedTooltip": "Os ratings são atualizados a cada 24 horas",
                 "graphsUpdatedNote": "*Os gráficos são atualizados semanalmente",
                 "ratingChartLabel": "Rating",
-                "customRatingDisplayName": " ({name})"
+                "customRatingDisplayName": " ({name})",
+                "graduationLegend": "Graduation",
+                "cohortProgress": "Cohort Progress",
+                "ratingHistory": "Rating History"
             },
             "tacticsCard": {
                 "tacticsRating": "Rating de tática",
@@ -848,6 +852,34 @@
             "upcomingSessions": "Próximas sessões",
             "viewAsList": "Ver como lista",
             "viewInCalendar": "Ver no calendário"
+        },
+        "resultsTab": {
+            "windowDays": "{days} days",
+            "rapid": "Rapid",
+            "classical": "Classical",
+            "gamesPlayed": "Games Played",
+            "record": "Record (W-L-D)",
+            "winRate": "Win Rate",
+            "streakWin": "{count, plural, one {# Win} other {# Wins}}",
+            "asWhite": "Win % as White",
+            "asBlack": "Win % as Black",
+            "avgOpponent": "Avg Opponent",
+            "bestWin": "Best Win",
+            "recentGames": "Recent Games",
+            "date": "Date",
+            "opponent": "Opponent",
+            "opponentRating": "Rating",
+            "color": "Color",
+            "white": "White",
+            "black": "Black",
+            "result": "Result",
+            "win": "Win",
+            "loss": "Loss",
+            "draw": "Draw",
+            "emptyNoAccounts": "No connected Lichess or Chess.com account found.",
+            "emptyConnectAccounts": "<link>Connect your Lichess or Chess.com account</link> to see your results here.",
+            "emptyNoGames": "No games found in this time period.",
+            "bestStreak": "Best Win Streak"
         },
         "graduationShare": {
             "title": "Compartilhe seu progresso!",

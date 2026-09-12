@@ -38,7 +38,15 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
     const isCurrentUser = entry.owner === user?.username;
 
     return (
-        <Card variant='outlined'>
+        <Card
+            variant='outlined'
+            sx={{
+                borderRadius: 3,
+                boxShadow: 1,
+                transition: 'box-shadow 0.2s ease',
+                '&:hover': { boxShadow: 3 },
+            }}
+        >
             <CardContent>
                 <Stack>
                     <NewsfeedItemHeader entry={entry} />
@@ -86,6 +94,34 @@ const NewsfeedItem: React.FC<NewsfeedItemProps> = ({
     );
 };
 
+/** A compact "before → after" stat pill, e.g. Dojo Points: 45 → 50. */
+function StatDelta({ label, from, to }: { label: string; from: number | string; to: number | string }) {
+    return (
+        <Stack
+            direction='row'
+            spacing={0.75}
+            sx={{
+                alignItems: 'center',
+                bgcolor: 'action.hover',
+                borderRadius: 5,
+                py: 0.5,
+                px: 1.25,
+            }}
+        >
+            <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                {label}
+            </Typography>
+            <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                {from}
+            </Typography>
+            <ArrowRightAltIcon sx={{ color: 'text.secondary', fontSize: '1.1rem' }} />
+            <Typography variant='body2' sx={{ fontWeight: 700 }}>
+                {to}
+            </Typography>
+        </Stack>
+    );
+}
+
 const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }) => {
     const t = useTranslations('newsfeed');
     const tCommon = useTranslations('common');
@@ -113,39 +149,23 @@ const NewsfeedItemBody: React.FC<Omit<NewsfeedItemProps, 'onEdit'>> = ({ entry }
                 })}
             </Typography>
 
-            {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
-                <Stack direction='row' spacing={1}>
-                    <Typography
-                        component='span'
-                        sx={{
-                            color: 'text.secondary',
-                        }}
-                    >
-                        {t('dojoPoints')}
-                    </Typography>
-                    <Typography>
-                        {Math.round(100 * (entry.totalDojoPoints - entry.dojoPoints)) / 100}
-                    </Typography>
-                    <ArrowRightAltIcon sx={{ color: 'text.secondary' }} />
-                    <Typography>{Math.round(100 * entry.totalDojoPoints) / 100}</Typography>
-                </Stack>
-            )}
+            {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0 || entry.totalMinutesSpent > 0) && (
+                <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1, pt: 0.5 }}>
+                    {(entry.dojoPoints > 0 || entry.totalDojoPoints > 0) && (
+                        <StatDelta
+                            label={t('dojoPoints')}
+                            from={Math.round(100 * (entry.totalDojoPoints - entry.dojoPoints)) / 100}
+                            to={Math.round(100 * entry.totalDojoPoints) / 100}
+                        />
+                    )}
 
-            {entry.totalMinutesSpent > 0 && entry.minutesSpent > 0 && (
-                <Stack direction='row' spacing={1}>
-                    <Typography
-                        component='span'
-                        sx={{
-                            color: 'text.secondary',
-                        }}
-                    >
-                        {t('totalTime')}
-                    </Typography>
-                    <Typography>
-                        {formatTime(entry.totalMinutesSpent - entry.minutesSpent, tCommon)}
-                    </Typography>
-                    <ArrowRightAltIcon sx={{ color: 'text.secondary' }} />
-                    <Typography>{formatTime(entry.totalMinutesSpent, tCommon)}</Typography>
+                    {entry.totalMinutesSpent > 0 && entry.minutesSpent > 0 && (
+                        <StatDelta
+                            label={t('totalTime')}
+                            from={formatTime(entry.totalMinutesSpent - entry.minutesSpent, tCommon)}
+                            to={formatTime(entry.totalMinutesSpent, tCommon)}
+                        />
+                    )}
                 </Stack>
             )}
 

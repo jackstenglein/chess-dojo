@@ -652,6 +652,7 @@
             "tabTrainingPlan": "Plan d'entraînement",
             "tabActivity": "Activité",
             "tabGames": "Parties",
+            "tabResults": "Results",
             "tabClubs": "Clubs"
         },
         "yearReview": {
@@ -746,7 +747,10 @@
                 "ratingsUpdatedTooltip": "Les classements sont actualisés toutes les 24 heures",
                 "graphsUpdatedNote": "*Les graphiques sont actualisés chaque semaine",
                 "ratingChartLabel": "Classement",
-                "customRatingDisplayName": " ({name})"
+                "customRatingDisplayName": " ({name})",
+                "graduationLegend": "Graduation",
+                "cohortProgress": "Cohort Progress",
+                "ratingHistory": "Rating History"
             },
             "tacticsCard": {
                 "tacticsRating": "Classement tactique",
@@ -848,6 +852,34 @@
             "upcomingSessions": "Sessions à venir",
             "viewAsList": "Afficher en liste",
             "viewInCalendar": "Afficher dans le calendrier"
+        },
+        "resultsTab": {
+            "windowDays": "{days} days",
+            "rapid": "Rapid",
+            "classical": "Classical",
+            "gamesPlayed": "Games Played",
+            "record": "Record (W-L-D)",
+            "winRate": "Win Rate",
+            "streakWin": "{count, plural, one {# Win} other {# Wins}}",
+            "asWhite": "Win % as White",
+            "asBlack": "Win % as Black",
+            "avgOpponent": "Avg Opponent",
+            "bestWin": "Best Win",
+            "recentGames": "Recent Games",
+            "date": "Date",
+            "opponent": "Opponent",
+            "opponentRating": "Rating",
+            "color": "Color",
+            "white": "White",
+            "black": "Black",
+            "result": "Result",
+            "win": "Win",
+            "loss": "Loss",
+            "draw": "Draw",
+            "emptyNoAccounts": "No connected Lichess or Chess.com account found.",
+            "emptyConnectAccounts": "<link>Connect your Lichess or Chess.com account</link> to see your results here.",
+            "emptyNoGames": "No games found in this time period.",
+            "bestStreak": "Best Win Streak"
         },
         "graduationShare": {
             "title": "Partage ta progression !",

@@ -5,7 +5,7 @@ import { ALL_COHORTS, User } from '@/database/user';
 import { calculateTacticsRating } from '@/exams/view/exam';
 import Icon from '@/style/Icon';
 import { FiberManualRecord, FiberManualRecordOutlined } from '@mui/icons-material';
-import { Card, CardContent, Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
@@ -22,6 +22,13 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
         user.dojoCohort.split('-').length > 1 ? parseInt(user.dojoCohort.split('-')[1]) : minCohort;
 
     const isProvisional = tacticsRating.components.some((c) => c.rating < 0 || c.provisional);
+
+    const overallColor =
+        tacticsRating.overall < minCohort
+            ? 'error.main'
+            : tacticsRating.overall > maxCohort
+              ? 'success.main'
+              : 'warning.main';
 
     function getTooltip(rating: number, isProvisional: boolean): string {
         let tooltip = '';
@@ -41,106 +48,128 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
     }
 
     return (
-        <Card variant='outlined'>
-            <CardContent>
-                <Stack
-                    direction='row'
-                    spacing={2}
-                    sx={{
-                        mb: 2,
-                        justifyContent: 'start',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Typography variant='h6'>
-                        <Icon
-                            name={RequirementCategory.Tactics}
-                            color='primary'
-                            fontSize='large'
-                            sx={{ marginRight: 1.5, verticalAlign: 'middle' }}
-                        />
-                        {t('tacticsRating')}
-                    </Typography>
-                    <Tooltip title={getTooltip(tacticsRating.overall, isProvisional)}>
-                        <Typography
-                            variant='h6'
-                            sx={{
-                                fontSize: '2rem',
-                                fontWeight: 'bold',
-                            }}
-                            color={
-                                tacticsRating.overall < minCohort
-                                    ? 'error'
-                                    : tacticsRating.overall > maxCohort
-                                      ? 'success'
-                                      : 'warning'
-                            }
-                        >
-                            {Math.round(tacticsRating.overall)}
-                            {isProvisional && '?'}
-                        </Typography>
-                    </Tooltip>
-                </Stack>
-
-                <Grid
-                    container
-                    columnSpacing={2}
-                    sx={{
-                        rowGap: 4,
-                        justifyContent: 'center',
-                    }}
-                >
-                    {tacticsRating.components.map((c) => (
-                        <Grid
-                            key={c.name}
-                            size={{
-                                xs: 6,
-                                sm: 3,
-                                md: 'grow',
-                            }}
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <Tooltip title={c.description}>
-                                <Stack
+        <Card
+            variant='outlined'
+            sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+                boxShadow: 1,
+            }}
+        >
+            <Box sx={{ height: 4, bgcolor: overallColor }} />
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Stack spacing={2.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            rowGap: 1.5,
+                        }}
+                    >
+                        <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center' }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: '50%',
+                                    bgcolor: 'action.hover',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <Icon name={RequirementCategory.Tactics} color='primary' fontSize='medium' />
+                            </Box>
+                            <Typography variant='h6' sx={{ fontWeight: 600 }}>
+                                {t('tacticsRating')}
+                            </Typography>
+                            <Tooltip title={getTooltip(tacticsRating.overall, isProvisional)}>
+                                <Typography
                                     sx={{
-                                        alignItems: 'center',
+                                        fontSize: '1.5rem',
+                                        letterSpacing: '-0.01em',
+                                        lineHeight: 1,
+                                        fontWeight: 'bold',
+                                        color: overallColor,
+                                        ml: 0.5,
                                     }}
                                 >
-                                    <Typography
-                                        variant='body1'
+                                    {Math.round(tacticsRating.overall)}
+                                    {isProvisional && '?'}
+                                </Typography>
+                            </Tooltip>
+                        </Stack>
+                    </Stack>
+
+                    <Box
+                        sx={{
+                            bgcolor: 'action.hover',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2,
+                            px: { xs: 2, md: 3 },
+                            py: 2,
+                        }}
+                    >
+                    <Grid
+                        container
+                        columnSpacing={2}
+                        sx={{
+                            rowGap: 2,
+                            justifyContent: 'space-evenly',
+                        }}
+                    >
+                        {tacticsRating.components.map((c) => (
+                            <Grid
+                                key={c.name}
+                                size={{
+                                    xs: 6,
+                                    sm: 3,
+                                    md: 'grow',
+                                }}
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Tooltip title={c.description}>
+                                    <Stack
                                         sx={{
-                                            color: 'text.secondary',
+                                            alignItems: 'center',
                                         }}
                                     >
-                                        <LinkIf to={c.link}>{c.name}</LinkIf>
-                                    </Typography>
-                                    <Typography
-                                        sx={{
-                                            fontSize: '2rem',
-                                            lineHeight: 1,
-                                            fontWeight: 'bold',
-                                        }}
-                                    >
-                                        {c.rating > 0 ? Math.round(c.rating) : '?'}
-                                        {c.provisional && '?'}
-                                    </Typography>
-                                    {c.examCount !== undefined && c.rating > 0 && (
                                         <Typography
-                                            variant='body2'
+                                            variant='overline'
                                             sx={{
                                                 color: 'text.secondary',
+                                                lineHeight: 1.4,
                                             }}
                                         >
-                                            <Stack direction='row'>
+                                            <LinkIf to={c.link}>{c.name}</LinkIf>
+                                        </Typography>
+                                        <Typography
+                                            sx={{
+                                                fontSize: '1.5rem',
+                                                letterSpacing: '-0.01em',
+                                                lineHeight: 1,
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {c.rating > 0 ? Math.round(c.rating) : '?'}
+                                            {c.provisional && '?'}
+                                        </Typography>
+                                        {c.examCount !== undefined && c.rating > 0 && (
+                                            <Stack direction='row' sx={{ mt: 0.5 }}>
                                                 {[...Array(c.examCount).keys()].map((idx) => (
                                                     <FiberManualRecord
                                                         key={`taken-${idx}`}
                                                         sx={{
-                                                            width: '0.85rem',
-                                                            height: '0.85rem',
+                                                            width: '0.7rem',
+                                                            height: '0.7rem',
+                                                            color: 'text.secondary',
                                                         }}
                                                     />
                                                 ))}
@@ -148,19 +177,21 @@ const TacticsScoreCard: React.FC<TacticsScoreCardProps> = ({ user }) => {
                                                     <FiberManualRecordOutlined
                                                         key={`untaken-${idx}`}
                                                         sx={{
-                                                            width: '0.85rem',
-                                                            height: '0.85rem',
+                                                            width: '0.7rem',
+                                                            height: '0.7rem',
+                                                            color: 'text.secondary',
                                                         }}
                                                     />
                                                 ))}
                                             </Stack>
-                                        </Typography>
-                                    )}
-                                </Stack>
-                            </Tooltip>
-                        </Grid>
-                    ))}
-                </Grid>
+                                        )}
+                                    </Stack>
+                                </Tooltip>
+                            </Grid>
+                        ))}
+                    </Grid>
+                    </Box>
+                </Stack>
             </CardContent>
         </Card>
     );
