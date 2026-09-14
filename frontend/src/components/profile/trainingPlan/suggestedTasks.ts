@@ -4,6 +4,7 @@ import {
     Requirement,
     RequirementCategory,
     RequirementProgress,
+    RequirementStatus,
     getCurrentCount,
     getRemainingCategoryScorePercent,
     getRemainingScore,
@@ -151,7 +152,9 @@ export class TaskSuggestionAlgorithm {
         timeline: TimelineEntry[],
     ) {
         this.user = JSON.parse(JSON.stringify(user)) as User;
-        this.requirements = cohortRequirements;
+        this.requirements = cohortRequirements.filter(
+            (requirement) => requirement.status === RequirementStatus.Active,
+        );
         this.timeline = timeline;
         this.customTasks = this.user.customTasks ?? [];
         this.pinnedTasks =
@@ -159,7 +162,9 @@ export class TaskSuggestionAlgorithm {
                 ?.map(
                     (id) =>
                         this.customTasks.find((task) => task.id === id) ||
-                        allRequirements.find((task) => task.id === id),
+                        allRequirements.find(
+                            (task) => task.id === id && task.status === RequirementStatus.Active,
+                        ),
                 )
                 .filter((t) => !!t) ?? [];
         this.skippedTaskIds = this.user.weeklyPlan?.skippedTasks ?? [];
