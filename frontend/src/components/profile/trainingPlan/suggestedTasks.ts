@@ -388,10 +388,20 @@ export class TaskSuggestionAlgorithm {
                 task: t,
                 goalMinutes: 0,
             }));
+            const newSuggestions = algoSuggestions.filter(
+                (lhs) => !suggestions.some((rhs) => lhs.task.id === rhs.task.id),
+            );
+            const pinnedTaskIds = new Set(this.pinnedTasks.map((task) => task.id));
+            const pinnedSuggestions = newSuggestions.filter(({ task }) =>
+                pinnedTaskIds.has(task.id),
+            );
+            suggestions.push(...pinnedSuggestions);
+
+            const remainingSlots = Math.max(0, MAX_SUGGESTED_TASKS - suggestions.length);
             suggestions.push(
-                ...algoSuggestions.filter(
-                    (lhs) => !suggestions.some((rhs) => lhs.task.id === rhs.task.id),
-                ),
+                ...newSuggestions
+                    .filter(({ task }) => !pinnedTaskIds.has(task.id))
+                    .slice(0, remainingSlots),
             );
         }
 
