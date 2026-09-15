@@ -5,6 +5,7 @@ import { RequirementCategory } from '@/database/requirement';
 import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
+import Icon, { icons, type IconName } from '@/style/Icon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -55,7 +56,16 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                     alignItems: 'center',
                 }}
             >
-                <Avatar username={entry.owner} displayName={entry.ownerDisplayName} size={60} />
+                <Box
+                    sx={{
+                        borderRadius: '50%',
+                        border: '2px solid',
+                        borderColor: 'divider',
+                        lineHeight: 0,
+                    }}
+                >
+                    <Avatar username={entry.owner} displayName={entry.ownerDisplayName} size={60} />
+                </Box>
 
                 <Stack>
                     <Typography>
@@ -98,7 +108,31 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                             alignItems: 'end',
                         }}
                     >
-                        <Typography sx={{ color: CategoryColors[category] }}>{category}</Typography>
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                                py: 0.25,
+                                px: 1,
+                                borderRadius: 5,
+                                bgcolor: `${CategoryColors[category]}26`,
+                            }}
+                        >
+                            {category in icons && (
+                                <Icon
+                                    name={category as IconName}
+                                    fontSize='small'
+                                    sx={{ color: CategoryColors[category] }}
+                                />
+                            )}
+                            <Typography
+                                variant='body2'
+                                sx={{ color: CategoryColors[category], fontWeight: 600 }}
+                            >
+                                {category}
+                            </Typography>
+                        </Stack>
                         {entry.isCustomRequirement && (
                             <Typography
                                 variant='body2'
