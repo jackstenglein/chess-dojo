@@ -9,8 +9,10 @@ import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Lock } from '@mui/icons-material';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import { useTranslations } from 'next-intl';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { AppleButton } from './AppleButton';
@@ -56,6 +58,14 @@ export const SignInForm = () => {
 
     const onSocialSignIn = (provider: 'Google' | 'Apple') => {
         auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent) => {
@@ -195,8 +205,10 @@ export const SignInForm = () => {
                     />
 
                     <AppleButton onClick={() => onSocialSignIn('Apple')} />
+                    <ChesscomSignInButton onClick={onChesscomSignIn} />
+                    <LichessSignInButton onClick={onLichessSignIn} />
                 </Stack>
-            </Stack>
-        </Stack>
+            </Stack >
+        </Stack >
     );
 };

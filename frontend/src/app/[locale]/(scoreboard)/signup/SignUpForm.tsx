@@ -9,6 +9,8 @@ import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
@@ -73,6 +75,14 @@ export const SignUpForm = () => {
 
     const onSocialSignIn = (provider: 'Google' | 'Apple') => {
         auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -216,13 +226,23 @@ export const SignUpForm = () => {
                     </AppleButton>
                 </Stack>
 
+                <GoogleButton
+                    onClick={onGoogleSignIn}
+                    label='Sign up with Google'
+                    style={{
+                        transform: 'scale(1.1)',
+                        transformOrigin: 'center',
+                    }}
+                />
+                <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
+                <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 <Typography variant='body2' component='div' gutterBottom>
                     {t('signup.alreadyHaveAccount')}{' '}
                     <Link href='/signin' data-testid='signin-button'>
                         {t('signup.signIn')}
                     </Link>
                 </Typography>
-            </Stack>
-        </Stack>
+            </Stack >
+        </Stack >
     );
 };
