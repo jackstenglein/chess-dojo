@@ -121,9 +121,7 @@ export async function deleteDirectories(
                     id: { S: id },
                 },
                 ConditionExpression: parent ? `parent = :parent` : undefined,
-                ExpressionAttributeValues: parent
-                    ? { ':parent': { S: parent } }
-                    : undefined,
+                ExpressionAttributeValues: parent ? { ':parent': { S: parent } } : undefined,
                 TableName: directoryTable,
                 ReturnValues: 'ALL_OLD',
             }),

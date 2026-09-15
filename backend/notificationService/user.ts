@@ -7,7 +7,14 @@ const userTable = `${process.env.stage}-users`;
 
 export type PartialUser = Pick<
     User,
-    'username' | 'displayName' | 'discordId' | 'discordUsername' | 'notificationSettings'
+    | 'username'
+    | 'displayName'
+    | 'dojoCohort'
+    | 'discordId'
+    | 'discordUsername'
+    | 'notificationSettings'
+    | 'subscriptionStatus'
+    | 'subscriptionTier'
 > & { email: string };
 
 /**
@@ -21,7 +28,7 @@ export async function getNotificationSettings(username: string): Promise<Partial
             Key: {
                 username: { S: username },
             },
-            ProjectionExpression: `username, displayName, email, discordId, discordUsername, notificationSettings`,
+            ProjectionExpression: `username, displayName, dojoCohort, email, discordId, discordUsername, notificationSettings, subscriptionStatus, subscriptionTier`,
             TableName: userTable,
         }),
     );

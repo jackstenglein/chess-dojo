@@ -13,8 +13,11 @@ discordLiveClassesRole: '1441859114983751761'
 discordOpenClassicalRole: '1373383020752408738'
 discordRoundRobinRole: '1373410032313696397'
 discordRoundRobinChannelId: '1383195183645982720'
+discordBlogChannelId: '1288645108312571914'
+discordBlogRoleId: '968218453355925645'
 discordLiveClassesCategoryId: '691123894001598537'
 discordSenseiRoleId: '1388546253918441524'
+senseiDiscordIds: '683031755271569528,403639644887056406'
 monthlySubscriptionPriceId: 'price_1QfoWLGilmvijaecVMKJpIpI'
 yearlySubscriptionPriceId: 'price_1Qfo5bGilmvijaechHcHEW2t'
 lectureTierMonthlySubscriptionPriceId: 'price_1SWKM1Gilmvijaeci9xmvCOd'
@@ -31,3 +34,8 @@ coaches: 'google_112538452360881134254'
 mongoUri: mongodb+srv://dev-chess-dojo.pqjx4ee.mongodb.net/?retryWrites=true&w=majority&appName=dev-chess-dojo
 meetRecordingsDriveFolder: '102cXp0zEAGaMMBC0hzNnxdB5PeStvYfX'
 finishedUploadsDriveFolder: '1mU7cW4z8UWm21c4lyRlf7E4_Lvk5BrXX'
+# The URL of the shared OpenSearch domain for game search. The domain is
+# created by the prod stack; replace 'unset' with its endpoint after the first
+# prod deploy (Console -> OpenSearch -> chess-dojo-game-search -> Domain
+# endpoint), prefixed with https://. 'unset' disables search.
+gameSearchEndpoint: https://search-chess-dojo-game-search-sedvk25stijjxunhbjwmgfq76a.us-east-1.es.amazonaws.com

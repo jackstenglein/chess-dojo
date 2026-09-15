@@ -4,6 +4,7 @@ import type { JSX } from 'react';
 
 export enum DefaultUnderboardTab {
     Directories = 'directories',
+    PgnText = 'pgnText',
     Tags = 'tags',
     Editor = 'editor',
     Comments = 'comments',

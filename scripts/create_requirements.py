@@ -79,11 +79,17 @@ def getPositions(row: dict):
 
     positions = []
     fens = row['FENs'].split(',')
-    
+
     limitSeconds = int(row['Limit Seconds'])
     incrementSeconds = int(row['Increment Seconds']) if row['Increment Seconds'] else 0
     result = row['Expected Result']
     title = row['Position Title']
+
+    # Optional per-position videos column. Comma-separated, one URL per FEN
+    # in the same order as FENs. Empty entries (e.g. "url1,,url3") mean the
+    # corresponding position has no video.
+    position_videos_raw = row.get('Position Videos', '') or ''
+    position_videos = position_videos_raw.split(',') if position_videos_raw else []
 
     index = 1
     for fen in fens:
@@ -100,9 +106,17 @@ def getPositions(row: dict):
             'incrementSeconds': incrementSeconds,
             'result': result,
         }
+
+        video_url = ''
+        if index - 1 < len(position_videos):
+            video_url = position_videos[index - 1].strip()
+        if video_url:
+            position['videoUrl'] = video_url
+
         positions.append(position)
         index += 1
     return positions
+
 
 
 def getBlockers(row: dict):

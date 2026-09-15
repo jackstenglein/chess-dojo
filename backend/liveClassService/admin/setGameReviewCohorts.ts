@@ -86,7 +86,7 @@ async function handleRequest(request: SetGameReviewCohortsRequest) {
             cohort.members[key] = {
                 username: member.username,
                 displayName: member.displayName,
-                queueDate: member.queueDate,
+                queueDate: member.queueDate ?? new Date().toISOString(),
                 paused: member.paused,
             };
         }
@@ -389,9 +389,6 @@ async function createEvent({
         });
     }
 
-    const endTime = new Date(options.dtstart);
-    endTime.setHours(endTime.getHours() + 1);
-
     const event: Event = {
         id: uuidv4(),
         type: EventType.GameReviewTier,
@@ -399,8 +396,7 @@ async function createEvent({
         ownerDisplayName: 'Admin',
         ownerCohort: '2400+',
         title,
-        startTime: options.dtstart.toISOString(),
-        endTime: endTime.toISOString(),
+        durationMs: 60 * 60 * 1000,
         rrule,
         cohorts: [],
         status: EventStatus.Scheduled,
@@ -446,7 +442,7 @@ async function setClub(cohort: GameReviewCohort) {
         (acc, item) => {
             acc[item.username] = {
                 username: item.username,
-                joinedAt: item.queueDate,
+                joinedAt: item.queueDate ?? new Date().toISOString(),
             };
             return acc;
         },

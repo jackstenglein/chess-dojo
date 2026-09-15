@@ -1,4 +1,5 @@
 import {
+    CLOUD_EVAL_ENABLED,
     ENGINE_ADD_INFO_ON_EVAL_CLICK,
     ENGINE_ADD_INFO_ON_MOVE_CLICK,
     ENGINE_DEPTH,
@@ -6,10 +7,12 @@ import {
     ENGINE_LINE_COUNT,
     ENGINE_NAME,
     ENGINE_PRIMARY_EVAL_TYPE,
+    ENGINE_SHOW_EVAL,
     ENGINE_THREADS,
     EngineName,
     engines,
     HIGHLIGHT_ENGINE_LINES,
+    PERSIST_ENGINE_LINES,
 } from '@/stockfish/engine/engine';
 import Icon from '@/style/Icon';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -31,7 +34,9 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import KeyboardShortcuts from '../../boardTools/underboard/settings/KeyboardShortcuts';
@@ -39,6 +44,7 @@ import { ShortcutAction } from '../../boardTools/underboard/settings/ShortcutAct
 import Slider from './Slider';
 
 export default function Settings() {
+    const t = useTranslations('analysisBoard.engine');
     const [open, setOpen] = useState(false);
     const [depth, setDepth] = useLocalStorage<number>(ENGINE_DEPTH.Key, ENGINE_DEPTH.Default);
     const [multiPv, setMultiPv] = useLocalStorage<number>(
@@ -71,6 +77,19 @@ export default function Settings() {
         HIGHLIGHT_ENGINE_LINES.Key,
         HIGHLIGHT_ENGINE_LINES.Default,
     );
+    const [showEngineEval, setShowEngineEval] = useLocalStorage<boolean>(
+        ENGINE_SHOW_EVAL.Key,
+        ENGINE_SHOW_EVAL.Default,
+    );
+    const [persistEngineLines, setPersistEngineLines] = useLocalStorage<boolean>(
+        PERSIST_ENGINE_LINES.Key,
+        PERSIST_ENGINE_LINES.Default,
+    );
+
+    const [cloudEvalEnabled, setCloudEvalEnabled] = useLocalStorage<boolean>(
+        CLOUD_EVAL_ENABLED.Key,
+        CLOUD_EVAL_ENABLED.Default,
+    );
 
     useEffect(() => {
         if (!ENGINE_THREADS.Default) {
@@ -85,7 +104,7 @@ export default function Settings() {
     return (
         <>
             <IconButton
-                title='Engine settings'
+                title={t('engineSettingsTooltip')}
                 color='primary'
                 onClick={() => setOpen(true)}
                 sx={{ alignSelf: 'flex-end' }}
@@ -94,13 +113,18 @@ export default function Settings() {
             </IconButton>
 
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth='sm' fullWidth>
-                <DialogTitle>Engine Settings</DialogTitle>
+                <DialogTitle>{t('engineSettingsDialogTitle')}</DialogTitle>
                 <DialogContent>
-                    <Stack rowGap={2} sx={{ pt: 1 }}>
+                    <Stack
+                        sx={{
+                            rowGap: 2,
+                            pt: 1,
+                        }}
+                    >
                         <TextField
                             select
                             fullWidth
-                            label='Engine'
+                            label={t('engineLabel')}
                             value={engineName}
                             onChange={(e) => setEngineName(e.target.value as EngineName)}
                             slotProps={{
@@ -121,14 +145,14 @@ export default function Settings() {
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={engine.fullName}
-                                        secondary={engine.description}
+                                        secondary={t(`engineDescription_${engine.name}`)}
                                     />
                                 </MenuItem>
                             ))}
                         </TextField>
 
                         <Slider
-                            label='Depth'
+                            label={t('depthLabel')}
                             value={depth}
                             setValue={setDepth}
                             min={ENGINE_DEPTH.Min}
@@ -136,7 +160,7 @@ export default function Settings() {
                         />
 
                         <Slider
-                            label='Lines'
+                            label={t('linesLabel')}
                             value={multiPv}
                             setValue={setMultiPv}
                             min={ENGINE_LINE_COUNT.Min}
@@ -144,7 +168,7 @@ export default function Settings() {
                         />
 
                         <Slider
-                            label='Threads'
+                            label={t('threadsLabel')}
                             value={threads}
                             setValue={setThreads}
                             min={ENGINE_THREADS.Min}
@@ -152,18 +176,23 @@ export default function Settings() {
                         />
 
                         <Slider
-                            label='Memory'
+                            label={t('memoryLabel')}
                             value={hash}
                             setValue={setHash}
                             min={ENGINE_HASH.Min}
                             max={ENGINE_HASH.Max}
-                            valueLabel={(v) => `${Math.pow(2, v)} MB`}
+                            valueLabel={(v) => t('memoryFormat', { value: Math.pow(2, v) })}
                         />
                     </Stack>
 
-                    <Stack rowGap={{ xs: 2, sm: 1 }} sx={{ my: 3 }}>
-                        <FormControl>
-                            <FormLabel>Primary Evaluation Type</FormLabel>
+                    <Stack
+                        sx={{
+                            rowGap: { xs: 2, sm: 1 },
+                            my: 3,
+                        }}
+                    >
+                        <FormControl disabled={!showEngineEval}>
+                            <FormLabel>{t('primaryEvalTypeLabel')}</FormLabel>
                             <RadioGroup
                                 row
                                 value={primaryEvalType}
@@ -173,11 +202,16 @@ export default function Settings() {
                                     <FormControlLabel
                                         key={opt.value}
                                         value={opt.value}
-                                        label={opt.label}
+                                        label={t(`evalType_${opt.value}`)}
                                         control={<Radio />}
                                     />
                                 ))}
                             </RadioGroup>
+                            {!showEngineEval && (
+                                <Typography variant='caption' color='warning'>
+                                    {t('evalHiddenWarning')}
+                                </Typography>
+                            )}
                         </FormControl>
 
                         <FormControlLabel
@@ -187,7 +221,7 @@ export default function Settings() {
                                     onChange={(e) => setAddEngineInfoOnEval(e.target.checked)}
                                 />
                             }
-                            label='Add engine info as a comment when clicking eval'
+                            label={t('addInfoEvalLabel')}
                         />
 
                         <FormControlLabel
@@ -197,7 +231,7 @@ export default function Settings() {
                                     onChange={(e) => setAddEngineInfoOnMove(e.target.checked)}
                                 />
                             }
-                            label='Add engine info as a comment when clicking move or when using keyboard shortcut for top engine move'
+                            label={t('addInfoMoveLabel')}
                         />
 
                         <FormControlLabel
@@ -207,14 +241,45 @@ export default function Settings() {
                                     onChange={(e) => setHighlightEngineLines(e.target.checked)}
                                 />
                             }
-                            label='Highlight engine lines in PGN text'
+                            label={t('highlightLinesLabel')}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={showEngineEval}
+                                    onChange={(e) => setShowEngineEval(e.target.checked)}
+                                />
+                            }
+                            label={t('showEvalLabel')}
+                            sx={!showEngineEval ? { color: 'warning.main' } : undefined}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={persistEngineLines}
+                                    onChange={(e) => setPersistEngineLines(e.target.checked)}
+                                />
+                            }
+                            label={t('persistLinesLabel')}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={cloudEvalEnabled}
+                                    onChange={(e) => setCloudEvalEnabled(e.target.checked)}
+                                />
+                            }
+                            label={t('showCloudDbLabel')}
                         />
                     </Stack>
 
                     <KeyboardShortcuts actions={[ShortcutAction.InsertEngineMove]} hideReset />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpen(false)}>Done</Button>
+                    <Button onClick={() => setOpen(false)}>{t('doneButton')}</Button>
                 </DialogActions>
             </Dialog>
         </>

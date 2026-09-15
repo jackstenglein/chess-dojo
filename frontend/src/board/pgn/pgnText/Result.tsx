@@ -1,10 +1,12 @@
 import { Event, EventType } from '@jackstenglein/chess';
 import { Divider, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useChess } from '../PgnBoard';
 
 const Result = () => {
     const { chess } = useChess();
+    const t = useTranslations('analysisBoard.pgnText');
     const [, setForceRender] = useState(0);
 
     useEffect(() => {
@@ -31,12 +33,12 @@ const Result = () => {
     let title = result;
     let description = '';
     if (result === '1-0') {
-        description = 'White Wins';
+        description = t('whiteWins');
     } else if (result === '1/2-1/2') {
         title = '½-½';
-        description = 'Draw';
+        description = t('draw');
     } else if (result === '0-1') {
-        description = 'Black Wins';
+        description = t('blackWins');
     }
 
     if (!description) {
@@ -44,12 +46,26 @@ const Result = () => {
     }
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Divider sx={{ width: 1 }} />
-            <Typography fontWeight='bold' mt={1}>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                    mt: 1,
+                }}
+            >
                 {title}
             </Typography>
-            <Typography mb={1} fontStyle='italic'>
+            <Typography
+                sx={{
+                    mb: 1,
+                    fontStyle: 'italic',
+                }}
+            >
                 {description}
             </Typography>
         </Stack>

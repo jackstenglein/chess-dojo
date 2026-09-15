@@ -21,12 +21,13 @@ import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
+import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 
 const categories = [
     RequirementCategory.Games,
@@ -56,13 +57,28 @@ const DojoScoreCardProgressBar: React.FC<DojoScoreCardProgressBarProps> = ({
     return (
         <Grid
             size={{ xs: 12 }}
-            display='flex'
-            justifyContent={{
-                xs: 'start',
+            sx={{
+                display: 'flex',
+
+                justifyContent: {
+                    xs: 'start',
+                },
             }}
         >
-            <Stack alignItems='start' width={{ xs: 1 }} color={color}>
-                <Typography variant='subtitle2' color='text.secondary' sx={{ mb: -0.5 }}>
+            <Stack
+                sx={{
+                    alignItems: 'start',
+                    width: { xs: 1 },
+                    color: color,
+                }}
+            >
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: -0.5,
+                    }}
+                >
                     {title}
                 </Typography>
                 <ScoreboardProgress
@@ -86,20 +102,36 @@ function ClassicalGamesProgressBar({
     max: number;
     value: number;
 }) {
+    const t = useTranslations('profile.info');
     return (
         <Grid
             size={{ xs: 12 }}
-            display='flex'
-            justifyContent={{
-                xs: 'start',
+            sx={{
+                display: 'flex',
+
+                justifyContent: {
+                    xs: 'start',
+                },
             }}
         >
-            <Stack alignItems='start' width={{ xs: 1 }} color={color}>
-                <Typography variant='subtitle2' color='text.secondary' sx={{ mb: -0.5 }}>
+            <Stack
+                sx={{
+                    alignItems: 'start',
+                    width: { xs: 1 },
+                    color: color,
+                }}
+            >
+                <Typography
+                    variant='subtitle2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: -0.5,
+                    }}
+                >
                     <CrossedSwordIcon
                         sx={{ fontSize: 'inherit', position: 'relative', top: '2px' }}
                     />{' '}
-                    Classical Games (Past Year)
+                    {t('classicalGames')}
                 </Typography>
                 <ScoreboardProgress
                     value={value}
@@ -122,12 +154,15 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const { user: viewer } = useAuth();
     const { requirements } = useRequirements(cohort, false);
     const { entries: timeline } = useTimelineContext();
+    const t = useTranslations('profile.info');
+    const tCategory = useTranslations('enums.requirementCategory');
+    const tRating = useTranslations('enums.ratingSystem');
 
     const totalScore = getTotalScore(cohort, requirements);
     const cohortScore = getCohortScore(user, cohort, requirements, timeline);
     const percentComplete = Math.round((100 * cohortScore) / totalScore);
 
-    const classicalGamesTask = requirements.find((t) => t.id === CLASSICAL_GAMES_TASK_ID);
+    const classicalGamesTask = requirements.find((r) => r.id === CLASSICAL_GAMES_TASK_ID);
     const classicalGamesPlayed = getCurrentCount({
         cohort: user.dojoCohort,
         requirement: classicalGamesTask,
@@ -147,28 +182,55 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
     const ratingSystemName = user.ratings[user.ratingSystem]?.name;
 
+    const timeManagementRating = user.timeManagementRating;
+
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
             <CardContent>
-                <Grid container rowGap={2} columnSpacing={3} alignItems='center'>
+                <Grid
+                    container
+                    columnSpacing={3}
+                    sx={{
+                        rowGap: 2,
+                        alignItems: 'center',
+                    }}
+                >
                     {showRatingProgress && (
                         <Grid size={12}>
-                            <Stack width={1}>
-                                <Stack direction='row' alignItems='center' gap={0.5}>
+                            <Stack
+                                sx={{
+                                    width: 1,
+                                }}
+                            >
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                    }}
+                                >
                                     <RatingSystemIcon system={user.ratingSystem} size='small' />
                                     <Typography
                                         variant='body2'
-                                        color='text.secondary'
-                                        sx={{ fontWeight: 'bold' }}
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontWeight: 'bold',
+                                        }}
                                     >
-                                        {formatRatingSystem(user.ratingSystem)}
+                                        {formatRatingSystem(user.ratingSystem, tRating)}
                                         {isCustom(user.ratingSystem) &&
                                             ratingSystemName &&
                                             ` (${ratingSystemName})`}
                                     </Typography>
                                 </Stack>
 
-                                <Stack direction='row' alignItems='center' gap={0.5}>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                    }}
+                                >
                                     <ScoreboardProgress
                                         value={currentRating}
                                         min={minRatingBoundary}
@@ -180,7 +242,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
 
                                     <CohortIcon
                                         cohort={nextCohort}
-                                        tooltip={`Next graduation: from ${cohort} to ${nextCohort}`}
+                                        tooltip={t('nextGraduation', { cohort, nextCohort })}
                                         size={20}
                                         sx={{ marginTop: '-3px' }}
                                     />
@@ -198,7 +260,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                     )}
 
                     <DojoScoreCardProgressBar
-                        title='All Tasks'
+                        title={t('allTasks')}
                         value={percentComplete}
                         min={0}
                         max={100}
@@ -213,7 +275,7 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                         return (
                             <DojoScoreCardProgressBar
                                 key={idx}
-                                title={displayRequirementCategory(c)}
+                                title={tCategory.has(c) ? tCategory(c) : c}
                                 value={percent}
                                 min={0}
                                 max={100}
@@ -222,6 +284,10 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
                             />
                         );
                     })}
+
+                    {timeManagementRating && timeManagementRating.currentRating > 0 && (
+                        <TimeManagementRatingRow timeManagementRating={timeManagementRating} />
+                    )}
                 </Grid>
             </CardContent>
         </Card>

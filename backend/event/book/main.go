@@ -35,17 +35,26 @@ func checkTimes(event *database.Event, startTime string) error {
 		return errors.New(400, "Invalid request: startTime is required", "")
 	}
 
-	_, err := time.Parse(time.RFC3339, startTime)
+	selected, err := time.Parse(time.RFC3339, startTime)
 	if err != nil {
 		return errors.Wrap(400, "Invalid request: startTime must be RFC3339 format", "", err)
 	}
 
-	if startTime < event.StartTime {
-		return errors.New(400, "Invalid request: startTime must be greater than or equal to availability.startTime", "")
+	eventStart, err := database.GetEventStart(event)
+	if err != nil {
+		return err
+	}
+	eventEnd, err := database.GetEventEnd(event)
+	if err != nil {
+		return err
 	}
 
-	if startTime > event.EndTime {
-		return errors.New(400, "Invalid request: startTime must be less than or equal to availability.endTime", "")
+	if selected.Before(eventStart) {
+		return errors.New(400, "Invalid request: startTime must be greater than or equal to availability start", "")
+	}
+
+	if selected.After(eventEnd) {
+		return errors.New(400, "Invalid request: startTime must be less than or equal to availability end", "")
 	}
 
 	return nil

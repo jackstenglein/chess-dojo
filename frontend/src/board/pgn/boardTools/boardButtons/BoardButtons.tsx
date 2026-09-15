@@ -32,10 +32,12 @@ const BoardButtons = ({
         >
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
-                position='relative'
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    position: 'relative',
+                }}
             >
                 <StartButtons />
                 <ControlButtons />

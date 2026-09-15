@@ -6,9 +6,11 @@ import CommentList from '@/components/comments/CommentList';
 import { Event, EventType } from '@/database/event';
 import LoadingPage from '@/loading/LoadingPage';
 import { Box, Card, CardContent, CardHeader, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 const MeetingMessages = ({ meetingId }: { meetingId: string }) => {
+    const t = useTranslations('meeting');
     const { user } = useRequiredAuth();
     const cache = useCache();
     const api = useApi();
@@ -49,7 +51,7 @@ const MeetingMessages = ({ meetingId }: { meetingId: string }) => {
                 flexDirection: 'column',
             }}
         >
-            <CardHeader title='Messages' />
+            <CardHeader title={t('messagesTitle')} />
             <CardContent
                 sx={{
                     display: 'flex',
@@ -85,8 +87,8 @@ const MeetingMessages = ({ meetingId }: { meetingId: string }) => {
                         createFunctionProps={meetingId || ''}
                         createFunction={api.createMessage}
                         onSuccess={onSuccess}
-                        label='Send a message'
-                        tooltip='Send Message'
+                        label={t('sendMessageLabel')}
+                        tooltip={t('sendMessageTooltip')}
                     />
                 </Box>
             </CardContent>

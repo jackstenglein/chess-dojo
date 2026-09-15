@@ -14,6 +14,7 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { CSSProperties, useMemo, useState } from 'react';
 
 const ReactionTypes = [
@@ -136,7 +137,15 @@ const ReactionEmoji: React.FC<{ type: string; icon?: boolean }> = ({ type, icon 
 
     if (icon) return <>{type}</>;
 
-    return <Typography fontSize='1.25rem'>{type}</Typography>;
+    return (
+        <Typography
+            sx={{
+                fontSize: '1.25rem',
+            }}
+        >
+            {type}
+        </Typography>
+    );
 };
 
 interface ReactionListProps {
@@ -147,6 +156,7 @@ interface ReactionListProps {
 }
 
 const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdit }) => {
+    const t = useTranslations('newsfeed');
     const { user } = useAuth();
     const api = useApi();
     const request = useRequest();
@@ -197,14 +207,14 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
         <>
             <RequestSnackbar request={request} />
 
-            <Tooltip title='Add Reaction'>
+            <Tooltip title={t('addReaction')}>
                 <IconButton color='primary' onClick={handleClick}>
                     <AddReactionIcon />
                 </IconButton>
             </Tooltip>
 
             {Object.entries(reactionMap).map(([type, reactors]) => (
-                <Tooltip key={type} title={`Reacted by ${reactors.join(', ')}`}>
+                <Tooltip key={type} title={t('reactedBy', { names: reactors.join(', ') })}>
                     <Button
                         variant={isReactor(user, reactions, type) ? 'contained' : 'outlined'}
                         onClick={() => onReact(type)}
@@ -222,7 +232,12 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
                             <ReactionEmoji type={type} />
                         </Paper>
 
-                        <Typography ml='0.375rem' fontWeight='600'>
+                        <Typography
+                            sx={{
+                                ml: '0.375rem',
+                                fontWeight: '600',
+                            }}
+                        >
                             {reactors.length}
                         </Typography>
                     </Button>
@@ -231,11 +246,13 @@ const ReactionList: React.FC<ReactionListProps> = ({ owner, id, reactions, onEdi
 
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <Stack
-                    px={1}
-                    columnGap={0.5}
                     direction='row'
-                    flexWrap='wrap'
-                    sx={{ maxWidth: 'calc(6 * 2.96875rem)' }}
+                    sx={{
+                        px: 1,
+                        columnGap: 0.5,
+                        flexWrap: 'wrap',
+                        maxWidth: 'calc(6 * 2.96875rem)',
+                    }}
                 >
                     {ReactionTypes.map((type) => (
                         <IconButton

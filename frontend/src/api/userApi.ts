@@ -1,3 +1,4 @@
+import { CreatePatRequest, CreatePatResponse, ListPatsResponse } from '@/database/pat';
 import { RequirementProgress } from '@/database/requirement';
 import { DiscordAuthRequest } from '@jackstenglein/chess-dojo-common/src/auth/discord';
 import { AxiosResponse } from 'axios';
@@ -71,6 +72,13 @@ export interface UserApiContextType {
      * @returns An AxiosResponse containing the updated user in the data field.
      */
     updateUser: (update: Partial<User>, autopickCohort?: boolean) => Promise<AxiosResponse<User>>;
+
+    /**
+     * resetUserProgress clears the current user's training plan progress.
+     * @param confirm The required confirmation text.
+     * @returns An AxiosResponse containing the updated user in the data field.
+     */
+    resetUserProgress: (confirm: string) => Promise<AxiosResponse<User>>;
 
     /**
      * updateUserProgress updates the current user's progress on the provided requirement.
@@ -148,6 +156,28 @@ export interface UserApiContextType {
     discordAuth: (
         request: DiscordAuthRequest,
     ) => Promise<AxiosResponse<Partial<Pick<User, 'discordUsername' | 'discordId'>>>>;
+
+    /**
+     * Creates a new personal access token for the current signed-in user.
+     * @param request The token creation request.
+     * @returns An AxiosResponse containing the token metadata and the raw token value.
+     */
+    createPersonalAccessToken: (
+        request: CreatePatRequest,
+    ) => Promise<AxiosResponse<CreatePatResponse>>;
+
+    /**
+     * Lists the personal access tokens of the current signed-in user.
+     * @returns An AxiosResponse containing the list of tokens (metadata only).
+     */
+    listPersonalAccessTokens: () => Promise<AxiosResponse<ListPatsResponse>>;
+
+    /**
+     * Deletes the personal access token with the given id.
+     * @param id The id of the token to delete.
+     * @returns An empty AxiosResponse.
+     */
+    deletePersonalAccessToken: (id: string) => Promise<AxiosResponse>;
 }
 
 /**
@@ -187,6 +217,74 @@ export function getUser(idToken: string) {
 export function getUserPublic(username: string) {
     return axiosService.get<User>('/public/user/' + username, {
         functionName: 'getUserPublic',
+    });
+}
+
+/** The billing path hint for an admin-only user. */
+export type AdminBillingPathHint = 'override' | 'stripe' | 'wix' | 'none';
+
+/** The user as viewed by an admin. */
+export interface UserAdminView extends User {
+    /** The email of the user. */
+    email: string;
+    /** The email of the user on wix. */
+    wixEmail: string;
+}
+
+/** The response from an admin getting a user. */
+export interface AdminUserResponse {
+    /** The user. */
+    user: UserAdminView;
+    /** The admin hints. */
+    adminHints: {
+        /** The billing path hint. */
+        billingPath: AdminBillingPathHint;
+    };
+}
+
+/** The request to put a complimentary (OVERRIDE) subscription for an admin-only user. */
+export interface PutAdminComplimentaryRequest {
+    /** The subscription tier to set. */
+    subscriptionTier: string;
+    /** RFC3339 or empty for no expiry */
+    expiresAt?: string;
+}
+
+/**
+ * Admin-only: returns the target user (same shape as GET /user) plus billing hints.
+ * @param username The username of the user to get.
+ * @returns An AxiosResponse containing the admin user response.
+ */
+export function getAdminUser(username: string) {
+    return axiosService.get<AdminUserResponse>(`/admin/user/${encodeURIComponent(username)}`, {
+        functionName: 'getAdminUser',
+    });
+}
+
+/**
+ * Admin-only: grants or updates complimentary (OVERRIDE) subscription for the user.
+ * @param username The username of the user to put the complimentary subscription for.
+ * @param request The request to put the complimentary subscription.
+ * @returns An AxiosResponse containing the updated user.
+ */
+export function putAdminComplimentary(username: string, request: PutAdminComplimentaryRequest) {
+    return axiosService.put<User>(
+        `/admin/user/${encodeURIComponent(username)}/complimentary`,
+        request,
+        {
+            functionName: 'putAdminComplimentary',
+        },
+    );
+}
+
+/**
+ * Admin-only: removes active complimentary (OVERRIDE) subscription for the user.
+ * @param username The username of the user to delete the complimentary subscription for.
+ * @returns An AxiosResponse containing the updated user.
+ */
+export function deleteAdminComplimentary(username: string) {
+    return axiosService.delete<User>(`/admin/user/${encodeURIComponent(username)}/complimentary`, {
+        functionName: 'deleteAdminComplimentary',
     });
 }
 
@@ -299,6 +397,32 @@ export async function updateUser(
         },
         functionName: 'updateUser',
     });
+    callback(result.data);
+    return result;
+}
+
+/**
+ * resetUserProgress clears the current user's training plan progress.
+ * @param idToken The id token of the current signed-in user.
+ * @param confirm The required confirmation text.
+ * @param callback A callback function to invoke with the updated user after the reset succeeds.
+ * @returns An AxiosResponse containing the updated user in the data field.
+ */
+export async function resetUserProgress(
+    idToken: string,
+    confirm: string,
+    callback: (update: Partial<User>) => void,
+) {
+    const result = await axiosService.post<User>(
+        '/user/progress/reset',
+        { confirm },
+        {
+            headers: {
+                Authorization: 'Bearer ' + idToken,
+            },
+            functionName: 'resetUserProgress',
+        },
+    );
     callback(result.data);
     return result;
 }
@@ -504,4 +628,42 @@ export function discordAuth(idToken: string, request: DiscordAuthRequest) {
             functionName: 'discordAuth',
         },
     );
+}
+
+/**
+ * Creates a new personal access token for the current signed-in user.
+ * @param idToken The id token of the current signed-in user.
+ * @param request The token creation request.
+ * @returns An AxiosResponse containing the token metadata and the raw token value.
+ */
+export function createPersonalAccessToken(idToken: string, request: CreatePatRequest) {
+    return axiosService.post<CreatePatResponse>(`/user/pat`, request, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'createPersonalAccessToken',
+    });
+}
+
+/**
+ * Lists the personal access tokens of the current signed-in user.
+ * @param idToken The id token of the current signed-in user.
+ * @returns An AxiosResponse containing the list of tokens (metadata only).
+ */
+export function listPersonalAccessTokens(idToken: string) {
+    return axiosService.get<ListPatsResponse>(`/user/pat`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'listPersonalAccessTokens',
+    });
+}
+
+/**
+ * Deletes the personal access token with the given id.
+ * @param idToken The id token of the current signed-in user.
+ * @param id The id of the token to delete.
+ * @returns An empty AxiosResponse.
+ */
+export function deletePersonalAccessToken(idToken: string, id: string) {
+    return axiosService.delete(`/user/pat/${encodeURIComponent(id)}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        functionName: 'deletePersonalAccessToken',
+    });
 }

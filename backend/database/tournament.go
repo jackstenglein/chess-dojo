@@ -221,6 +221,9 @@ type OpenClassicalPairing struct {
 
 	// The notes included by the submitter when submitting
 	Notes string `dynamodbav:"notes,omitempty" json:"notes"`
+
+	// The S3 keys of screenshots submitted as proof of the result
+	Screenshots []string `dynamodbav:"screenshots,omitempty" json:"screenshots,omitempty"`
 }
 
 // OpenClassicalPlayerSummary represents the minimum information needed to schedule

@@ -12,7 +12,12 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
-var repository database.GraduationLister = database.DynamoDB
+type graduationListRepository interface {
+	database.GraduationLister
+	database.GameLister
+}
+
+var repository graduationListRepository = database.DynamoDB
 var stage = os.Getenv("stage")
 
 type ListGraduationsResponse struct {
@@ -54,10 +59,45 @@ func byDateHandler(event api.Request) (api.Response, error) {
 	if err != nil {
 		return api.Failure(err), nil
 	}
+
+	if err := addRecentGamesAnnotated(graduations); err != nil {
+		return api.Failure(err), nil
+	}
+
 	return api.Success(&ListGraduationsResponse{
 		Graduations:      graduations,
 		LastEvaluatedKey: lastKey,
 	}), nil
+}
+
+func addRecentGamesAnnotated(graduations []database.Graduation) error {
+	now := time.Now()
+	startDate := now.AddDate(0, -2, 0).Format("2006.01.02")
+	endDate := now.Format("2006.01.02")
+
+	counts := map[string]int{}
+	for _, graduation := range graduations {
+		if _, ok := counts[graduation.Username]; ok {
+			continue
+		}
+
+		count := 0
+		var gamesStartKey string
+		for ok := true; ok; ok = gamesStartKey != "" {
+			games, nextKey, err := repository.ListGamesByOwner(false, graduation.Username, startDate, endDate, gamesStartKey)
+			if err != nil {
+				return err
+			}
+			count += len(games)
+			gamesStartKey = nextKey
+		}
+		counts[graduation.Username] = count
+	}
+
+	for i := range graduations {
+		graduations[i].GamesAnnotated = counts[graduations[i].Username]
+	}
+	return nil
 }
 
 func Handler(ctx context.Context, event api.Request) (api.Response, error) {

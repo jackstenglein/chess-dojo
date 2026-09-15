@@ -1,5 +1,5 @@
+import { Color } from '@lichess-org/chessground/types';
 import { Stack } from '@mui/material';
-import { Color } from 'chessground/types';
 import { ResizeCallbackData } from 'react-resizable';
 import Board, { onInitializeFunc } from '../Board';
 import { useChess } from './PgnBoard';
@@ -38,7 +38,11 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
     };
 
     return (
-        <Stack width={`${resizeData.width}px`}>
+        <Stack
+            sx={{
+                width: `${resizeData.width}px`,
+            }}
+        >
             {showPlayerHeaders && <PlayerHeader type='header' />}
 
             <Board

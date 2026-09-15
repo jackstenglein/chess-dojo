@@ -14,8 +14,9 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
 import { Frequency, RRule } from 'rrule';
 import { DefaultTimezone } from '../../filters/TimezoneSelector';
 import { getDefaultRRuleCount, RRuleEnds, RRuleOptions } from '../useEventEditor';
@@ -51,6 +52,7 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
     countError,
 }) => {
     const { user } = useAuth();
+    const t = useTranslations('calendar');
     const timeFormat = user?.timeFormat || TimeFormat.TwelveHour;
     let timezone = user?.timezoneOverride;
     if (!timezone || timezone === DefaultTimezone) {
@@ -80,7 +82,12 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
 
     return (
         <Stack>
-            <Stack direction='row' alignItems='baseline'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'baseline',
+                }}
+            >
                 <DateTimePicker
                     value={start}
                     onChange={(value) => setStart(value)}
@@ -95,7 +102,7 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
                     ampm={timeFormat === TimeFormat.TwelveHour}
                 />
 
-                <Typography sx={{ mx: 1 }}>to</Typography>
+                <Typography sx={{ mx: 1 }}>{t('to')}</Typography>
 
                 <DateTimePicker
                     value={end}
@@ -123,15 +130,15 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
                         onChange={(event) => onChangeFreq(event.target.value)}
                         sx={{ mt: 3 }}
                     >
-                        <MenuItem value='never'>Does not repeat</MenuItem>
-                        <MenuItem value={RRule.DAILY}>Daily</MenuItem>
-                        <MenuItem value={RRule.WEEKLY}>Weekly</MenuItem>
-                        <MenuItem value={RRule.MONTHLY}>Monthly</MenuItem>
+                        <MenuItem value='never'>{t('doesNotRepeat')}</MenuItem>
+                        <MenuItem value={RRule.DAILY}>{t('daily')}</MenuItem>
+                        <MenuItem value={RRule.WEEKLY}>{t('weekly')}</MenuItem>
+                        <MenuItem value={RRule.MONTHLY}>{t('monthly')}</MenuItem>
                     </TextField>
 
                     {rruleOptions.freq && (
                         <FormControl sx={{ mt: 3 }}>
-                            <FormLabel>Ends</FormLabel>
+                            <FormLabel>{t('ends')}</FormLabel>
                             <RadioGroup
                                 value={rruleOptions.ends}
                                 onChange={(e) => onChangeEnds(e.target.value as RRuleEnds)}
@@ -140,19 +147,21 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
                                 <FormControlLabel
                                     value={RRuleEnds.Never}
                                     control={<Radio />}
-                                    label='Never'
+                                    label={t('never')}
                                 />
 
                                 <Stack
                                     direction='row'
-                                    columnGap={1.5}
-                                    alignItems='center'
-                                    ml={-1.375}
+                                    sx={{
+                                        columnGap: 1.5,
+                                        alignItems: 'center',
+                                        ml: -1.375,
+                                    }}
                                 >
                                     <FormControlLabel
                                         value={RRuleEnds.Until}
                                         control={<Radio />}
-                                        label='On'
+                                        label={t('on')}
                                         sx={{ m: 0 }}
                                     />
 
@@ -179,14 +188,16 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
 
                                 <Stack
                                     direction='row'
-                                    columnGap={1.5}
-                                    alignItems='center'
-                                    ml={-1.375}
+                                    sx={{
+                                        columnGap: 1.5,
+                                        alignItems: 'center',
+                                        ml: -1.375,
+                                    }}
                                 >
                                     <FormControlLabel
                                         value={RRuleEnds.Count}
                                         control={<Radio />}
-                                        label='After'
+                                        label={t('after')}
                                         sx={{ m: 0 }}
                                     />
 
@@ -204,7 +215,7 @@ const TimesFormSection: React.FC<TimesFormSectionProps> = ({
                                             onChange={(e) => onChangeCount(e.target.value)}
                                             endAdornment={
                                                 <InputAdornment position='end'>
-                                                    Occurrences
+                                                    {t('occurrences')}
                                                 </InputAdornment>
                                             }
                                             sx={{ maxWidth: '130px' }}

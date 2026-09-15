@@ -3,6 +3,7 @@ import { Position } from './requirement';
 export enum CourseType {
     Opening = 'OPENING',
     Endgame = 'ENDGAME',
+    Workshop = 'WORKSHOP',
 }
 
 /**
@@ -70,6 +71,41 @@ export interface Course {
      * The list of chapters included in the course.
      */
     chapters?: Chapter[];
+
+    /** The thumbnail image of the course. */
+    imageUrl?: string;
+
+    /**
+     * A YouTube URL introducing the course. Shown on the purchase page
+     * when the viewer does not yet have access.
+     */
+    videoUrl?: string;
+
+    /**
+     * Whether the course is a draft or published. Missing status is treated
+     * as published for courses created before this field existed.
+     */
+    status?: CourseStatus;
+
+    /**
+     * Whether to hide the chapter indices in the table of contents.
+     */
+    hideChapterIndices?: boolean;
+
+    /**
+     * Whether to hide the module indices in the table of contents.
+     */
+    hideModuleIndices?: boolean;
+}
+
+export enum CourseStatus {
+    Draft = 'DRAFT',
+    Published = 'PUBLISHED',
+}
+
+/** Returns true if the course should be visible to non-admin users. */
+export function isCoursePublished(course: Course): boolean {
+    return !course.status || course.status === CourseStatus.Published;
 }
 
 /** A way to purchase a course. */
@@ -107,16 +143,6 @@ export interface Chapter {
      * The name of the chapter.
      */
     name: string;
-
-    /**
-     * The FEN to display as the thumbnail of the chapter.
-     */
-    thumbnailFen: string;
-
-    /**
-     * The board orientation of the thumbnail.
-     */
-    thumbnailOrientation: 'white' | 'black';
 
     /**
      * The list of modules within the chapter.
@@ -184,12 +210,12 @@ export interface CourseModule {
      * The URLs of embedded videos, if any exist. Generally used only if
      * type is Video.
      */
-    videoUrls: string[];
+    videoUrls?: string[];
 
     /**
      * A list of PGNs for the module. Generally used only if type is PgnViewer, ModelGames or Exercises.
      */
-    pgns: string[];
+    pgns?: string[];
 
     /**
      * The coach to use for Exercises.
@@ -200,7 +226,7 @@ export interface CourseModule {
      * The positions of the module. Generally used only if type is
      * SparringPositions or Themes.
      */
-    positions: Position[];
+    positions?: Position[];
 
     /**
      * The default board orientation for the module.

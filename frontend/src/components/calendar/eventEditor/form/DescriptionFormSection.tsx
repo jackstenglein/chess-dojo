@@ -1,5 +1,6 @@
 import { Notes } from '@mui/icons-material';
 import { InputAdornment, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface DescriptionFormSectionProps {
     description: string;
@@ -14,10 +15,11 @@ const DescriptionFormSection: React.FC<DescriptionFormSectionProps> = ({
     required,
     error,
 }) => {
+    const t = useTranslations('calendar');
     return (
         <TextField
             data-testid='description-textfield'
-            placeholder={`Description${required ? '' : ' (Optional)'}`}
+            placeholder={required ? t('description') : t('descriptionOptional')}
             multiline
             minRows={3}
             maxRows={5}

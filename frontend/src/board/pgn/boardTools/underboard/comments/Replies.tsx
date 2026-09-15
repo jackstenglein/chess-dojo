@@ -1,7 +1,8 @@
 import { PositionComment } from '@/database/game';
 import { Stack } from '@mui/material';
 import Comment from './Comment';
-import { SortBy, usePositionCommentSort } from './Comments';
+import { usePositionCommentSort } from './Comments';
+import { SortBy } from './positionComments';
 
 interface RepliesProps {
     comment: PositionComment;
@@ -24,7 +25,12 @@ const Replies: React.FC<RepliesProps> = ({ isReadonly, comment }) => {
     });
 
     return (
-        <Stack pt={1} spacing={1.5}>
+        <Stack
+            spacing={1.5}
+            sx={{
+                pt: 1,
+            }}
+        >
             {sortedComments.map((reply) => (
                 <Comment isReadonly={isReadonly} key={reply.id} comment={reply} />
             ))}

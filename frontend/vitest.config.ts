@@ -4,9 +4,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     plugins: [react()],
+    envPrefix: 'NEXT_PUBLIC_',
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src'),
+            '~': path.resolve(__dirname),
             'node_modules/next-navigation-guard': path.resolve(
                 __dirname,
                 'node_modules/next-navigation-guard',
@@ -23,6 +25,12 @@ export default defineConfig({
                     enabled: true,
                     include: ['react-charts'],
                 },
+            },
+        },
+        server: {
+            deps: {
+                // https://github.com/vercel/next.js/issues/77200
+                inline: ['next-intl'],
             },
         },
     },

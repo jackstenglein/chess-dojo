@@ -6,10 +6,13 @@ import { Game, PositionComment } from '@jackstenglein/chess-dojo-common/src/data
 import {
     GameCommentEvent,
     GameReviewEvent,
+    GameReviewSubmittedEvent,
+    NotificationEventTypes,
     NotificationTypes,
 } from '@jackstenglein/chess-dojo-common/src/database/notification';
 import { ApiError } from '../directoryService/api';
 import { dynamo, UpdateItemBuilder } from '../directoryService/database';
+import { sendSenseiDirectMessages } from './sensei';
 import { getNotificationSettings } from './user';
 
 const gameTable = `${process.env.stage}-games`;
@@ -199,4 +202,61 @@ export async function handleGameReview(event: GameReviewEvent) {
     console.log(
         `Successfully created ${NotificationTypes.GAME_REVIEW_COMPLETE} notification for ${game.owner}`,
     );
+}
+
+const frontendHost = process.env.frontendHost;
+
+/**
+ * Sends Discord DM notifications to senseis when a game is submitted for review.
+ * @param event The event to create notifications for.
+ */
+export async function handleGameReviewSubmitted(event: GameReviewSubmittedEvent) {
+    const getGameOutput = await dynamo.send(
+        new GetItemCommand({
+            Key: {
+                cohort: { S: event.game.cohort },
+                id: { S: event.game.id },
+            },
+            ProjectionExpression: `cohort, #id, headers, #owner, review`,
+            ExpressionAttributeNames: {
+                '#owner': 'owner',
+                '#id': 'id',
+            },
+            TableName: gameTable,
+        }),
+    );
+    if (!getGameOutput.Item) {
+        throw new ApiError({
+            statusCode: 404,
+            publicMessage: `Invalid request: game ${event.game.cohort}/${event.game.id} not found`,
+        });
+    }
+
+    const game = unmarshall(getGameOutput.Item) as Pick<
+        Game,
+        'cohort' | 'id' | 'headers' | 'owner' | 'review'
+    >;
+
+    const message = gameReviewSubmittedMessage(game);
+
+    await sendSenseiDirectMessages(NotificationEventTypes.GAME_REVIEW_SUBMITTED, message);
+}
+
+/**
+ * Returns the Discord message text for a game review submitted notification.
+ * @param game The game that was submitted for review.
+ */
+function gameReviewSubmittedMessage(game: Pick<Game, 'headers' | 'review'>): string {
+    const white = game.headers?.White ?? 'Unknown';
+    const black = game.headers?.Black ?? 'Unknown';
+    const result = game.headers?.Result ?? '*';
+    const reviewType = game.review?.type ?? 'Unknown';
+
+    return `📋 **New game submitted for review!**
+
+**${white}** vs **${black}**
+Result: ${result}
+Review Type: ${reviewType}
+
+[View review queue](${frontendHost}/games/review)`;
 }

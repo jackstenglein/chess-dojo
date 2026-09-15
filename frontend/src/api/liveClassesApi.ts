@@ -7,8 +7,10 @@ import {
     LiveClass,
     PauseQueueDateRequest,
     ResetQueueDateRequest,
+    SAMPLE_LIVE_CLASS_S3_KEY,
     SetGameReviewCohortsRequest,
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
+import { fetchAuthSession } from 'aws-amplify/auth';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -29,17 +31,25 @@ export interface LiveClassesApiContextType {
     ) => Promise<AxiosResponse<GameReviewCohortResponse>>;
 }
 
-export function listRecordings() {
-    return axiosService.get<{ classes: LiveClass[] }>(`/public/live-classes/recordings`, {
+export async function listRecordings() {
+    const authTokens = await fetchAuthSession();
+    const idToken = authTokens.tokens?.idToken?.toString();
+    const url = idToken ? `/live-classes/recordings` : `/public/live-classes/recordings`;
+    return axiosService.get<{ classes: LiveClass[] }>(url, {
         functionName: 'listRecordings',
     });
 }
 
 export function getRecording(request: GetRecordingRequest) {
-    return axiosService.get<{ url: string }>(`/live-classes/recording`, {
-        params: request,
-        functionName: 'getRecording',
-    });
+    return axiosService.get<{ url: string }>(
+        request.s3Key === SAMPLE_LIVE_CLASS_S3_KEY
+            ? `/public/live-classes/recording`
+            : `/live-classes/recording`,
+        {
+            params: request,
+            functionName: 'getRecording',
+        },
+    );
 }
 
 /**

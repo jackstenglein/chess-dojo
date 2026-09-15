@@ -6,10 +6,12 @@ import {
     CreateNewFolder,
     Delete,
     Download,
+    OpenInNew,
     Visibility,
     VisibilityOff,
 } from '@mui/icons-material';
 import { Alert, IconButton, Paper, Snackbar, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Dispatch, SetStateAction, useState, type JSX } from 'react';
 import { AddToDirectoryDialog } from '../../../games/list/AddToDirectoryDialog';
 import { DeleteGamesDialog } from '../../../games/view/DeleteGameButton';
@@ -66,6 +68,7 @@ export function useBulkGameEditor({
     onClear: () => void;
 }): UseBulkGameEditorResponse {
     const isFreeTier = useFreeTier();
+    const t = useTranslations('games.bulkEditor');
     const [directoryPickerOpen, setDirectoryPickerOpen] = useState(false);
     const [visibilityDialog, setVisibilityDialog] = useState('');
     const [visibilitySkipped, setVisibilitySkipped] = useState<GameKey[]>([]);
@@ -102,17 +105,29 @@ export function useBulkGameEditor({
     const unpublished = games.filter((g) => g.unlisted);
     const published = games.filter((g) => !g.unlisted);
 
-    const actions = [
-        {
-            title: 'Add to Folder',
-            onClick: () => setDirectoryPickerOpen(true),
-            icon: <CreateNewFolder />,
-        },
-    ];
+    const actions: UseBulkGameEditorResponse['actions'] = [];
+
+    if (games.length === 1) {
+        actions.push({
+            title: t('openInNew'),
+            onClick: () =>
+                window.open(
+                    `/games/${encodeURIComponent(games[0].cohort)}/${encodeURIComponent(games[0].id)}`,
+                    '_blank',
+                ),
+            icon: <OpenInNew />,
+        });
+    }
+
+    actions.push({
+        title: t('addToFolder'),
+        onClick: () => setDirectoryPickerOpen(true),
+        icon: <CreateNewFolder />,
+    });
 
     if (unpublished.length > 0 && !isFreeTier && allowEdits) {
         actions.push({
-            title: `Publish Game${unpublished.length > 1 ? 's' : ''}`,
+            title: t('publishGame', { count: unpublished.length }),
             onClick: () => setVisibilityDialog('published'),
             icon: <Visibility />,
         });
@@ -120,21 +135,21 @@ export function useBulkGameEditor({
 
     if (published.length > 0 && allowEdits) {
         actions.push({
-            title: `Unlist Game${published.length > 1 ? 's' : ''}`,
+            title: t('unlistGame', { count: published.length }),
             onClick: () => setVisibilityDialog('unlisted'),
             icon: <VisibilityOff />,
         });
     }
 
     actions.push({
-        title: 'Download PGN',
+        title: t('downloadPgn'),
         onClick: () => setDownloadDialog(true),
         icon: <Download />,
     });
 
     if (allowEdits) {
         actions.push({
-            title: `Delete Game${games.length > 1 ? 's' : ''}`,
+            title: t('deleteGame', { count: games.length }),
             onClick: () => setDeleteDialogOpen(true),
             icon: <Delete />,
         });
@@ -167,6 +182,7 @@ export function BulkGameEditor({
     /** Callback invoked to update the cached list of games after they have been edited. */
     setGames: Dispatch<SetStateAction<GameInfo[]>>;
 }) {
+    const t = useTranslations('games.bulkEditor');
     const editor = useBulkGameEditor({ games, setGames, onClear, allowEdits: true });
 
     if (games.length === 0) {
@@ -175,14 +191,21 @@ export function BulkGameEditor({
 
     return (
         <Paper elevation={4} sx={{ borderRadius: '1.5rem', flexGrow: 1, py: 0.5, px: 1 }}>
-            <Stack direction='row' alignItems='center'>
-                <Tooltip title='Clear selection'>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Tooltip title={t('clearSelection')}>
                     <IconButton size='small' onClick={onClear}>
                         <Close />
                     </IconButton>
                 </Tooltip>
 
-                <Typography sx={{ ml: 1, mr: 2.5 }}>{games.length} selected</Typography>
+                <Typography sx={{ ml: 1, mr: 2.5 }}>
+                    {t('selected', { count: games.length })}
+                </Typography>
 
                 {editor.actions.map((action) => (
                     <Tooltip key={action.title} title={action.title}>
@@ -199,6 +222,8 @@ export function BulkGameEditor({
 }
 
 export function BulkGameEditorDialogs({ editor }: { editor: UseBulkGameEditorResponse }) {
+    const t = useTranslations('games.bulkEditor');
+
     return (
         <>
             <DirectoryCacheProvider>
@@ -242,10 +267,7 @@ export function BulkGameEditorDialogs({ editor }: { editor: UseBulkGameEditorRes
                     variant='filled'
                     onClose={() => editor.setVisibilitySkipped([])}
                 >
-                    {editor.visibilitySkipped.length} game
-                    {editor.visibilitySkipped.length !== 1 ? 's were' : ' was'} not able to be
-                    published because {editor.visibilitySkipped.length !== 1 ? 'they are' : 'it is'}{' '}
-                    missing data.
+                    {t('visibilitySkipped', { count: editor.visibilitySkipped.length })}
                 </Alert>
             </Snackbar>
         </>

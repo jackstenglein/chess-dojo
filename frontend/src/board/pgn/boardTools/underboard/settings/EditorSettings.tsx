@@ -9,6 +9,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 
 export const ClockFieldFormatKey = 'clockFieldFormat';
@@ -25,6 +26,7 @@ export const WarnBeforeDelete = {
 } as const;
 
 const EditorSettings = () => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     const [clockFieldFormat, setClockFieldFormat] = useLocalStorage<string>(
         ClockFieldFormatKey,
         ClockFieldFormat.SingleField,
@@ -39,22 +41,28 @@ const EditorSettings = () => {
     return (
         <Stack spacing={3}>
             {unsaved && <UnsavedGameBanner />}
-            <Typography variant='h5'>Editor Settings</Typography>
+            <Typography variant='h5'>{t('editorSettingsTitle')}</Typography>
             <TextField
                 select
-                label='Clock Field Format'
+                label={t('clockFieldFormatLabel')}
                 value={clockFieldFormat}
                 onChange={(e) => setClockFieldFormat(e.target.value)}
             >
-                <MenuItem value={ClockFieldFormat.SingleField}>Single Field</MenuItem>
-                <MenuItem value={ClockFieldFormat.ThreeField}>Three Fields</MenuItem>
+                <MenuItem value={ClockFieldFormat.SingleField}>
+                    {t('clockFieldFormatSingleField')}
+                </MenuItem>
+                <MenuItem value={ClockFieldFormat.ThreeField}>
+                    {t('clockFieldFormatThreeFields')}
+                </MenuItem>
                 <MenuItem value={ClockFieldFormat.SingleFieldInTotalMinutes}>
-                    Total Minutes
+                    {t('clockFieldFormatTotalMinutes')}
                 </MenuItem>
             </TextField>
 
             <FormGroup sx={{ px: 1 }}>
-                <FormLabel>Warn Before Deleting {warnBeforeDelete} or More Moves</FormLabel>
+                <FormLabel>
+                    {t('warnBeforeDeletingLabel', { threshold: warnBeforeDelete })}
+                </FormLabel>
                 <Slider
                     value={warnBeforeDelete}
                     onChange={(_, value) => setWarnBeforeDelete(value)}

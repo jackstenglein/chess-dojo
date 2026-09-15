@@ -5,6 +5,7 @@ import {
     isInTablebase,
 } from '@jackstenglein/chess-dojo-common/src/explorer/types';
 import { Button, Chip, Stack, Tooltip, Typography, styled } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Request } from '../../../api/Request';
 import LoadingPage from '../../../loading/LoadingPage';
 import { useReconcile } from '../../Board';
@@ -26,13 +27,19 @@ interface TablebaseProps {
 export function Tablebase({ fen, position, request }: TablebaseProps) {
     const { chess } = useChess();
     const reconcile = useReconcile();
+    const t = useTranslations('analysisBoard.explorer');
 
     if (!isInTablebase(fen)) {
         return (
-            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
-                <Typography>
-                    Tablebase is only available for positions with 7 pieces or fewer
-                </Typography>
+            <Stack
+                data-testid='explorer-tab-tablebase'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2,
+                }}
+            >
+                <Typography>{t('tablebaseAvailabilityMessage')}</Typography>
             </Stack>
         );
     }
@@ -43,8 +50,15 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     if (!position) {
         return (
-            <Stack data-testid='explorer-tab-tablebase' width={1} alignItems='center' mt={2}>
-                <Typography>No tablebase information found for this position</Typography>
+            <Stack
+                data-testid='explorer-tab-tablebase'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    mt: 2,
+                }}
+            >
+                <Typography>{t('noTablebaseFound')}</Typography>
             </Stack>
         );
     }
@@ -66,7 +80,7 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
             index = 0;
 
             items.push(
-                <TablebaseHeader key={status} direction='row' pl={1} py={0.5}>
+                <TablebaseHeader key={status} direction='row' sx={{ pl: 1, py: 0.5 }}>
                     <Typography>{status}</Typography>
                 </TablebaseHeader>,
             );
@@ -89,21 +103,25 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
                 <Stack
                     direction='row'
                     sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         width: 1,
                     }}
-                    justifyContent='space-between'
-                    alignItems='center'
                 >
                     {move.san}
 
                     <Stack direction='row' spacing={0.5}>
                         {move.dtz !== null && move.dtz !== 0 && (
-                            <Tooltip title='Distance to zeroing the 50-move rule (number of moves until a pawn move or capture)'>
+                            <Tooltip title={t('dtzTooltip')}>
                                 <Chip label={`DTZ ${Math.ceil(Math.abs(move.dtz) / 2)}`} />
                             </Tooltip>
                         )}
                         {move.dtm !== null && move.dtm !== 0 && (
-                            <Tooltip title={`Mate in ${Math.ceil(Math.abs(move.dtm) / 2)} moves`}>
+                            <Tooltip
+                                title={t('mateInTooltip', {
+                                    moves: Math.ceil(Math.abs(move.dtm) / 2),
+                                })}
+                            >
                                 <Chip label={`M${Math.ceil(Math.abs(move.dtm) / 2)}`} />
                             </Tooltip>
                         )}
@@ -116,11 +134,13 @@ export function Tablebase({ fen, position, request }: TablebaseProps) {
 
     return (
         <Stack
-            mt={2}
-            borderRadius='4px'
-            border='1px solid'
-            sx={{ borderColor: 'divider' }}
             data-testid='explorer-tab-tablebase'
+            sx={{
+                mt: 2,
+                borderRadius: '4px',
+                border: '1px solid',
+                borderColor: 'divider',
+            }}
         >
             {items}
         </Stack>

@@ -7,6 +7,7 @@ import {
     UpdateGameRequest,
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Box, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { EventType, trackEvent } from '../../analytics/events';
 import { useApi } from '../../api/Api';
 import { RequestSnackbar, useRequest } from '../../api/Request';
@@ -18,34 +19,35 @@ interface PreflightData {
 }
 
 const EditGamePage = ({ cohort, id }: { cohort: string; id: string }) => {
+    const t = useTranslations('games.edit.editGamePage');
     const api = useApi();
     const request = useRequest<PreflightData>();
     const router = useRouter();
 
-    const onEdit = (remoteGame?: CreateGameRequest, headers?: GameHeader) => {
+    const onEdit = async (remoteGame?: CreateGameRequest, headers?: GameHeader) => {
         if (!cohort || !id || !remoteGame) {
             return;
         }
 
-        const req: UpdateGameRequest = {
-            ...remoteGame,
-            cohort,
-            id,
-            headers,
-        };
-
         request.onStart();
-        api.updateGame(cohort, id, req)
-            .then(() => {
-                trackEvent(EventType.UpdateGame, {
-                    method: req.type,
-                    dojo_cohort: cohort,
-                });
-                router.push(`/games/${cohort}/${id}?firstLoad=true`);
-            })
-            .catch((err) => {
-                request.onFailure(err);
+        try {
+            const req: UpdateGameRequest = {
+                ...remoteGame,
+                cohort,
+                id,
+                headers,
+                forceUpdate: true,
+            };
+
+            await api.updateGame(cohort, id, req);
+            trackEvent(EventType.UpdateGame, {
+                method: req.type,
+                dojo_cohort: cohort,
             });
+            router.push(`/games/${cohort}/${id}?firstLoad=true`);
+        } catch (err) {
+            request.onFailure(err);
+        }
     };
 
     return (
@@ -53,10 +55,8 @@ const EditGamePage = ({ cohort, id }: { cohort: string; id: string }) => {
             <RequestSnackbar request={request} />
 
             <Stack spacing={2}>
-                <Typography variant='h6'>Replace PGN</Typography>
-                <Typography variant='body1'>
-                    Overwrite this game's PGN data? Any comments will remain.
-                </Typography>
+                <Typography variant='h6'>{t('replacePgn')}</Typography>
+                <Typography variant='body1'>{t('replacePgnDescription')}</Typography>
                 <Box sx={{ typography: 'body1' }}>
                     <ImportWizard onSubmit={onEdit} loading={request.isLoading()} />
                 </Box>

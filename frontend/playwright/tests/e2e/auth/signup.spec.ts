@@ -25,7 +25,7 @@ test.describe('Signup Page', () => {
 
     test('should link to signin', async ({ page }) => {
         await page.getByTestId('signin-button').click();
-        await expect(page).toHaveURL('/signin');
+        await expect(page).toHaveURL(/\/signin(?:\?|$)/);
     });
 
     test('requires name to submit form', async ({ page }) => {

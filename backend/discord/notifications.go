@@ -1,9 +1,9 @@
 package discord
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -116,13 +116,13 @@ func SendAvailabilityNotification(event *database.Event) (string, error) {
 		return "", errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
 	}
 
-	startTime, err := time.Parse(time.RFC3339, event.StartTime)
+	startTime, err := database.GetEventStart(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: availability.startTime cannot be parsed", "", err)
+		return "", err
 	}
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
+	endTime, err := database.GetEventEnd(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: availability.endTime cannot be parsed", "", err)
+		return "", err
 	}
 
 	var sb strings.Builder
@@ -211,13 +211,13 @@ func SendCoachingNotification(event *database.Event) (string, error) {
 		return "", errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
 	}
 
-	startTime, err := time.Parse(time.RFC3339, event.StartTime)
+	startTime, err := database.GetEventStart(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: event.startTime cannot be parsed", "", err)
+		return "", err
 	}
-	endTime, err := time.Parse(time.RFC3339, event.EndTime)
+	endTime, err := database.GetEventEnd(event)
 	if err != nil {
-		return "", errors.Wrap(400, "Invalid request: event.endTime cannot be parsed", "", err)
+		return "", err
 	}
 
 	var sb strings.Builder
@@ -348,6 +348,89 @@ func SendNotification(user *database.User, message string) error {
 
 	_, err = discord.ChannelMessageSend(channel.ID, message)
 	return errors.Wrap(500, "Temporary server error", "Failed to send discord message", err)
+}
+
+// SendMilestoneNotificationToSenseis sends a Discord DM to each sensei informing
+// them that a user has reached the given completion milestone.
+func SendMilestoneNotificationToSenseis(user *database.User, percent int) error {
+	senseiIds, err := GetSenseiDiscordIds()
+	if err != nil {
+		return err
+	}
+
+	if len(senseiIds) == 0 {
+		log.Infof("No senseis found; skipping milestone notification for %s", user.Username)
+		return nil
+	}
+
+	discord, err := discordgo.New("Bot " + authToken)
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed to create discord session", err)
+	}
+
+	cohortEmoji := CohortEmojiIds[user.DojoCohort]
+	var userRef string
+	if user.DiscordId != "" {
+		userRef = fmt.Sprintf("<@%s>", user.DiscordId)
+	} else {
+		userRef = fmt.Sprintf("**%s**", user.DisplayName)
+	}
+	message := fmt.Sprintf(
+		"%s %s has reached **%d%%** completion in the %s %s training program.",
+		MessageEmojiDojo, userRef, percent, string(user.DojoCohort), cohortEmoji,
+	)
+
+	var errs []error
+	for _, senseiId := range senseiIds {
+		channel, err := discord.UserChannelCreate(senseiId)
+		if err != nil {
+			log.Errorf("Failed to create DM channel for sensei %s: %v", senseiId, err)
+			errs = append(errs, err)
+			continue
+		}
+		if _, err := discord.ChannelMessageSend(channel.ID, message); err != nil {
+			log.Errorf("Failed to send milestone DM to sensei %s: %v", senseiId, err)
+			errs = append(errs, err)
+		}
+	}
+	return stderrors.Join(errs...)
+}
+
+func SendGraduationAnnouncement(graduation *database.Graduation, user *database.User) error {
+	if graduationsChannelId == "" {
+		log.Infof("No graduation Discord channel configured; skipping announcement for %s", graduation.Username)
+		return nil
+	}
+
+	discordId := user.DiscordId
+	if discordId == "" && user.DiscordUsername != "" {
+		var err error
+		discordId, err = getDiscordIdByUser(nil, user)
+		if err != nil {
+			log.Errorf("Failed to get Discord ID for graduation announcement: %v", err)
+		}
+	}
+
+	_, err := SendMessageInChannel(graduationAnnouncementMessage(graduation, user, discordId), graduationsChannelId)
+	return err
+}
+
+func graduationAnnouncementMessage(graduation *database.Graduation, user *database.User, discordId string) string {
+	userRef := user.DisplayName
+	if userRef == "" {
+		userRef = graduation.Username
+	}
+	if discordId != "" {
+		userRef = fmt.Sprintf("<@%s>", discordId)
+	} else {
+		userRef = fmt.Sprintf("**%s**", userRef)
+	}
+
+	message := fmt.Sprintf("%s Congrats to %s, who just graduated to **%s**!", MessageEmojiDojo, userRef, graduation.NewCohort)
+	if frontendHost != "" {
+		message += fmt.Sprintf("\n%s [**View Profile**](<%s/profile/%s>)", MessageEmojiArrow, frontendHost, graduation.Username)
+	}
+	return message
 }
 
 func SendMessageInChannel(message string, channelId string) (string, error) {

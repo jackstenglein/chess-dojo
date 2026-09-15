@@ -1,0 +1,643 @@
+'use client';
+
+import { submitSquareColorSession } from '@/api/puzzleApi';
+import { RequestSnackbar, useRequest } from '@/api/Request';
+import { AuthStatus, useAuth } from '@/auth/Auth';
+import LoadingPage from '@/loading/LoadingPage';
+import NotFoundPage from '@/NotFoundPage';
+import { SquareColorQuestion } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+import {
+    computeSquareColorRating,
+    MIN_QUESTIONS_FOR_RATING,
+} from '@jackstenglein/chess-dojo-common/src/squareColors/rating';
+import {
+    getRandomSquare,
+    getSquareColor,
+} from '@jackstenglein/chess-dojo-common/src/squareColors/squareColor';
+import AccessTime from '@mui/icons-material/AccessTime';
+import ArrowDownward from '@mui/icons-material/ArrowDownward';
+import ArrowUpward from '@mui/icons-material/ArrowUpward';
+import Target from '@mui/icons-material/GpsFixed';
+import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
+import Timer from '@mui/icons-material/Timer';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+type DrillState = 'ready' | 'in_progress' | 'complete';
+
+interface SessionSummary {
+    totalQuestions: number;
+    correctCount: number;
+    avgResponseTimeMs: number;
+    bestStreak: number;
+    totalTimeSeconds: number;
+    questions: SquareColorQuestion[];
+    rating?: number;
+}
+
+/**
+ * Computes aggregate stats for a square color drill session.
+ * A rating is included when the user has answered at least {@link MIN_QUESTIONS_FOR_RATING} questions.
+ *
+ * @param allQuestions - The list of answered questions.
+ * @param sessionStartTime - The epoch timestamp (ms) when the session started.
+ * @returns The computed session summary, including an optional rating.
+ */
+export function computeSessionStats(
+    allQuestions: SquareColorQuestion[],
+    sessionStartTime: number,
+): SessionSummary {
+    if (allQuestions.length === 0) {
+        return {
+            totalQuestions: 0,
+            correctCount: 0,
+            avgResponseTimeMs: 0,
+            bestStreak: 0,
+            totalTimeSeconds: 0,
+            questions: [],
+        };
+    }
+
+    const totalTimeSeconds = Math.round((Date.now() - sessionStartTime) / 1000);
+    const correctCount = allQuestions.filter((q) => q.userAnswer === q.correctAnswer).length;
+    const avgResponseTimeMs = Math.round(
+        allQuestions.reduce((sum, q) => sum + q.responseTimeMs, 0) / allQuestions.length,
+    );
+
+    let bestStreak = 0;
+    let currentStreak = 0;
+    for (const q of allQuestions) {
+        if (q.userAnswer === q.correctAnswer) {
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+        } else {
+            currentStreak = 0;
+        }
+    }
+
+    let rating: number | undefined;
+    if (allQuestions.length >= MIN_QUESTIONS_FOR_RATING) {
+        const accuracy = (correctCount / allQuestions.length) * 100;
+        rating = computeSquareColorRating(accuracy, avgResponseTimeMs);
+    }
+
+    return {
+        totalQuestions: allQuestions.length,
+        correctCount,
+        avgResponseTimeMs,
+        bestStreak,
+        totalTimeSeconds,
+        questions: allQuestions,
+        rating,
+    };
+}
+
+export function SquareColorDrillPage() {
+    const { user, status } = useAuth();
+
+    if (status === AuthStatus.Loading) {
+        return <LoadingPage />;
+    }
+    if (!user) {
+        return <NotFoundPage />;
+    }
+
+    return <SquareColorDrill />;
+}
+
+function SquareColorDrill() {
+    const t = useTranslations('puzzles.squareColors');
+    const { user, updateUser } = useAuth();
+    const submitRequest = useRequest();
+    const [drillState, setDrillState] = useState<DrillState>('ready');
+    const [currentSquare, setCurrentSquare] = useState('');
+    const [questions, setQuestions] = useState<SquareColorQuestion[]>([]);
+    const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+    const questionStartRef = useRef<number>(0);
+    const sessionStartRef = useRef<number>(0);
+    const questionsRef = useRef<SquareColorQuestion[]>([]);
+    const sessionCreatedAtRef = useRef<string>('');
+    const previousBestRef = useRef<number | undefined>(user?.squareColorRating);
+    const [summary, setSummary] = useState<SessionSummary | null>(null);
+
+    const nextSquare = useCallback(() => {
+        setCurrentSquare((prev) => {
+            const next = getRandomSquare(prev || undefined);
+            return next;
+        });
+        questionStartRef.current = Date.now();
+    }, []);
+
+    const startDrill = useCallback(() => {
+        setQuestions([]);
+        questionsRef.current = [];
+        setFeedback(null);
+        setSummary(null);
+        setDrillState('in_progress');
+        previousBestRef.current = user?.squareColorRating;
+        sessionStartRef.current = Date.now();
+        sessionCreatedAtRef.current = new Date().toISOString();
+        nextSquare();
+    }, [nextSquare, user?.squareColorRating]);
+
+    const finishDrill = useCallback(
+        (allQuestions: SquareColorQuestion[]) => {
+            if (allQuestions.length === 0) {
+                setDrillState('ready');
+                return;
+            }
+
+            const result = computeSessionStats(allQuestions, sessionStartRef.current);
+
+            setSummary(result);
+            setDrillState('complete');
+
+            submitRequest.onStart();
+            submitSquareColorSession({
+                ...result,
+                createdAt: sessionCreatedAtRef.current,
+                isFinal: true,
+            }).then(
+                (response) => {
+                    submitRequest.onSuccess();
+                    const rating = response.data.rating;
+                    if (
+                        rating !== undefined &&
+                        (user?.squareColorRating === undefined || rating > user.squareColorRating)
+                    ) {
+                        updateUser({ squareColorRating: rating });
+                    }
+                },
+                (err: unknown) => submitRequest.onFailure(err),
+            );
+        },
+        [submitRequest, user, updateUser],
+    );
+
+    const handleAnswer = useCallback(
+        (answer: 'black' | 'white') => {
+            if (feedback !== null) return;
+
+            const correctAnswer = getSquareColor(currentSquare);
+            const responseTimeMs = Date.now() - questionStartRef.current;
+
+            const question: SquareColorQuestion = {
+                square: currentSquare,
+                correctAnswer,
+                userAnswer: answer,
+                responseTimeMs,
+            };
+
+            const updatedQuestions = [...questionsRef.current, question];
+            questionsRef.current = updatedQuestions;
+            setQuestions(updatedQuestions);
+
+            const stats = computeSessionStats(updatedQuestions, sessionStartRef.current);
+            submitSquareColorSession({
+                ...stats,
+                createdAt: sessionCreatedAtRef.current,
+            }).catch(() => undefined);
+
+            setFeedback(answer === correctAnswer ? 'correct' : 'incorrect');
+
+            setTimeout(() => {
+                setFeedback(null);
+                nextSquare();
+            }, 400);
+        },
+        [feedback, currentSquare, nextSquare],
+    );
+
+    const handleStop = useCallback(() => {
+        finishDrill(questionsRef.current);
+    }, [finishDrill]);
+
+    useEffect(() => {
+        if (drillState === 'in_progress') {
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'w' || e.key === 'W') {
+                    handleAnswer('white');
+                } else if (e.key === 'b' || e.key === 'B') {
+                    handleAnswer('black');
+                }
+            };
+            window.addEventListener('keydown', onKeyDown);
+            return () => window.removeEventListener('keydown', onKeyDown);
+        }
+    }, [drillState, handleAnswer]);
+
+    if (drillState === 'ready') {
+        return <ReadyScreen onStart={startDrill} personalBest={user?.squareColorRating} />;
+    }
+
+    if (drillState === 'complete' && summary) {
+        return (
+            <>
+                <CompleteScreen
+                    summary={summary}
+                    onPlayAgain={startDrill}
+                    personalBest={previousBestRef.current}
+                />
+                <RequestSnackbar request={submitRequest} />
+            </>
+        );
+    }
+
+    const questionsRemaining = Math.max(0, MIN_QUESTIONS_FOR_RATING - questions.length);
+
+    return (
+        <Container maxWidth='sm' sx={{ py: 6, textAlign: 'center' }}>
+            <Typography
+                variant='subtitle1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
+                {t('questionLabel', { number: questions.length + 1 })}
+            </Typography>
+
+            {questionsRemaining > 0 && (
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 1,
+                    }}
+                >
+                    {t('questionsRemaining', { count: questionsRemaining })}
+                </Typography>
+            )}
+
+            <Box
+                sx={{
+                    py: 6,
+                    mb: 4,
+                    borderRadius: 2,
+                    backgroundColor:
+                        feedback === 'correct'
+                            ? 'success.main'
+                            : feedback === 'incorrect'
+                              ? 'error.main'
+                              : 'transparent',
+                    transition: 'background-color 0.15s',
+                }}
+            >
+                <Typography
+                    variant='h1'
+                    sx={{
+                        fontWeight: 'bold',
+                        fontSize: { xs: '4rem', sm: '6rem' },
+                        color: feedback ? 'white' : 'text.primary',
+                    }}
+                >
+                    {currentSquare}
+                </Typography>
+            </Box>
+
+            <Stack
+                direction='row'
+                spacing={3}
+                sx={{
+                    justifyContent: 'center',
+                }}
+            >
+                <Button
+                    variant='contained'
+                    size='large'
+                    disabled={feedback !== null}
+                    onClick={() => handleAnswer('white')}
+                    sx={{
+                        px: 5,
+                        py: 2,
+                        fontSize: '1.25rem',
+                        backgroundColor: '#fff',
+                        color: '#000',
+                        border: '1px solid #ccc',
+                        '&:hover': { backgroundColor: '#f0f0f0' },
+                        '&.Mui-disabled': {
+                            backgroundColor: '#fff',
+                            color: '#000',
+                            opacity: 0.6,
+                        },
+                    }}
+                >
+                    {t('whiteButton')}
+                </Button>
+                <Button
+                    variant='contained'
+                    size='large'
+                    disabled={feedback !== null}
+                    onClick={() => handleAnswer('black')}
+                    sx={{
+                        px: 5,
+                        py: 2,
+                        fontSize: '1.25rem',
+                        backgroundColor: '#000',
+                        color: '#fff',
+                        '&:hover': { backgroundColor: '#333' },
+                        '&.Mui-disabled': {
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            opacity: 0.6,
+                        },
+                    }}
+                >
+                    {t('blackButton')}
+                </Button>
+            </Stack>
+
+            <Button
+                variant='outlined'
+                size='small'
+                onClick={handleStop}
+                disabled={feedback !== null}
+                sx={{ mt: 4 }}
+            >
+                {t('stop')}
+            </Button>
+        </Container>
+    );
+}
+
+/**
+ * Landing screen shown before the drill begins. Implements a two-step "Ready / GO!"
+ * flow: the first click arms the timer prompt, the second click starts the drill.
+ *
+ * @param onStart - Callback invoked when the user confirms they are ready to start.
+ * @param personalBest - The user's best-ever square color drill rating, if any.
+ */
+function ReadyScreen({ onStart, personalBest }: { onStart: () => void; personalBest?: number }) {
+    const t = useTranslations('puzzles.squareColors');
+    const [armed, setArmed] = useState(false);
+
+    return (
+        <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
+            <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 2 }}>
+                {t('title')}
+            </Typography>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
+                {t('intro')}
+            </Typography>
+            <Typography
+                variant='body1'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                }}
+            >
+                {armed ? t('readyArmed') : t('readyUnarmed')}
+            </Typography>
+            <Typography
+                variant='body2'
+                sx={{
+                    color: 'text.secondary',
+                    mb: 4,
+                }}
+            >
+                {t.rich('keyboardShortcuts', {
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                })}
+            </Typography>
+            {personalBest !== undefined && (
+                <Typography
+                    variant='body1'
+                    sx={{
+                        color: 'text.secondary',
+                        mb: 2,
+                    }}
+                >
+                    {t('bestRating', { personalBest })}
+                </Typography>
+            )}
+            <Button
+                variant='contained'
+                size='large'
+                onClick={armed ? onStart : () => setArmed(true)}
+                sx={{ px: 6, py: 1.5 }}
+            >
+                {armed ? t('goButton') : t('startButton')}
+            </Button>
+        </Container>
+    );
+}
+
+/**
+ * Summary screen shown after the drill completes.
+ *
+ * @param summary - The computed session statistics.
+ * @param onPlayAgain - Callback invoked when the user wants to start a new session.
+ * @param personalBest - The user's best-ever square color drill rating, if any.
+ */
+function CompleteScreen({
+    summary,
+    onPlayAgain,
+    personalBest,
+}: {
+    summary: SessionSummary;
+    onPlayAgain: () => void;
+    personalBest?: number;
+}) {
+    const t = useTranslations('puzzles.squareColors');
+    const accuracy = Math.round((summary.correctCount / summary.totalQuestions) * 100);
+    const avgTime = (summary.avgResponseTimeMs / 1000).toFixed(1);
+
+    return (
+        <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
+            <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 4 }}>
+                {t('sessionComplete')}
+            </Typography>
+
+            <Stack spacing={2} sx={{ mb: 4 }}>
+                {summary.rating !== undefined ? (
+                    <Box
+                        sx={{
+                            py: 2,
+                            mb: 1,
+                            borderRadius: 2,
+                            backgroundColor: 'primary.main',
+                            color: 'primary.contrastText',
+                        }}
+                    >
+                        <Typography variant='overline' sx={{ opacity: 0.85 }}>
+                            {t('yourRating')}
+                        </Typography>
+                        <Typography variant='h3' sx={{ fontWeight: 'bold' }}>
+                            {summary.rating}
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                            mb: 1,
+                        }}
+                    >
+                        {t('answerAtLeast', { count: MIN_QUESTIONS_FOR_RATING })}
+                    </Typography>
+                )}
+                {summary.rating !== undefined &&
+                    personalBest !== undefined &&
+                    summary.rating !== personalBest && (
+                        <Stack
+                            direction='row'
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            {summary.rating > personalBest ? (
+                                <ArrowUpward color='success' sx={{ fontSize: '1.5rem' }} />
+                            ) : (
+                                <ArrowDownward color='error' sx={{ fontSize: '1.5rem' }} />
+                            )}
+                            <Typography
+                                variant='h6'
+                                sx={{ fontWeight: 'bold' }}
+                                color={summary.rating > personalBest ? 'success' : 'error'}
+                            >
+                                {summary.rating > personalBest ? '+' : ''}
+                                {summary.rating - personalBest}
+                            </Typography>
+                        </Stack>
+                    )}
+                {summary.rating !== undefined &&
+                    (personalBest === undefined || summary.rating > personalBest) && (
+                        <Typography variant='h6' sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                            {t('newPersonalBest')}
+                        </Typography>
+                    )}
+                {personalBest !== undefined && (
+                    <Typography
+                        variant='body1'
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('personalBest', { personalBest })}
+                    </Typography>
+                )}
+                <StatRow
+                    icon={<Target fontSize='small' />}
+                    label={t('accuracy')}
+                    value={`${accuracy}% (${summary.correctCount}/${summary.totalQuestions})`}
+                />
+                <StatRow
+                    icon={<Timer fontSize='small' />}
+                    label={t('avgResponseTime')}
+                    value={`${avgTime}s`}
+                />
+                <StatRow
+                    icon={<LocalFireDepartment fontSize='small' />}
+                    label={t('bestStreak')}
+                    value={`${summary.bestStreak}`}
+                />
+                <StatRow
+                    icon={<AccessTime fontSize='small' />}
+                    label={t('totalTime')}
+                    value={`${summary.totalTimeSeconds}s`}
+                />
+            </Stack>
+
+            <Stack spacing={1} sx={{ mb: 4, maxHeight: 300, overflow: 'auto' }}>
+                {summary.questions.map((q, i) => (
+                    <Stack
+                        key={i}
+                        direction='row'
+                        sx={{
+                            justifyContent: 'space-between',
+                            px: 2,
+                            py: 0.5,
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
+                        }}
+                    >
+                        <Typography
+                            sx={{
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                            }}
+                        >
+                            {q.square} ({getSquareColor(q.square)})
+                        </Typography>
+                        <Typography
+                            sx={{ flex: 1, textAlign: 'center' }}
+                            color={q.userAnswer === q.correctAnswer ? 'success' : 'error'}
+                        >
+                            {q.userAnswer === q.correctAnswer ? t('correct') : t('wrong')}
+                        </Typography>
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                                width: { sm: 76 },
+                                textAlign: 'right',
+                            }}
+                        >
+                            {(q.responseTimeMs / 1000).toFixed(1)}s
+                        </Typography>
+                    </Stack>
+                ))}
+            </Stack>
+
+            <Button variant='contained' size='large' onClick={onPlayAgain} sx={{ px: 6, py: 1.5 }}>
+                {t('playAgain')}
+            </Button>
+        </Container>
+    );
+}
+
+/**
+ * A single labeled stat row for the summary table.
+ *
+ * @param icon - An icon element displayed before the label.
+ * @param label - The human-readable label for the stat.
+ * @param value - The formatted value to display.
+ */
+function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+    return (
+        <Stack
+            direction='row'
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                px: 2,
+                py: 1,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+            }}
+        >
+            <Stack
+                direction='row'
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
+                <Box sx={{ color: 'text.secondary', display: 'flex' }}>{icon}</Box>
+                <Typography
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {label}
+                </Typography>
+            </Stack>
+            <Typography
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </Typography>
+        </Stack>
+    );
+}

@@ -1,0 +1,114 @@
+{
+    "games": [
+        {
+            "url": "https://www.chess.com/game/live/1001",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.28\"]\n[Round \"-\"]\n[White \"testuser\"]\n[Black \"opponent1\"]\n[Result \"1-0\"]\n[WhiteElo \"1500\"]\n[BlackElo \"1480\"]\n[TimeControl \"600\"]\n[Termination \"testuser won by resignation\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 1-0",
+            "time_control": "600",
+            "end_time": 1706400000,
+            "rated": true,
+            "uuid": "game-uuid-1001",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1500,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1480,
+                "result": "resigned",
+                "username": "opponent1",
+                "uuid": "user-uuid-2"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1002",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.25\"]\n[Round \"-\"]\n[White \"opponent2\"]\n[Black \"testuser\"]\n[Result \"0-1\"]\n[WhiteElo \"1520\"]\n[BlackElo \"1490\"]\n[TimeControl \"600\"]\n[Termination \"testuser won by checkmate\"]\n\n1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3 Nbd7 0-1",
+            "time_control": "600",
+            "end_time": 1706140000,
+            "rated": true,
+            "uuid": "game-uuid-1002",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1520,
+                "result": "checkmated",
+                "username": "opponent2",
+                "uuid": "user-uuid-3"
+            },
+            "black": {
+                "rating": 1490,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1003",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.20\"]\n[Round \"-\"]\n[White \"testuser\"]\n[Black \"opponent3\"]\n[Result \"1/2-1/2\"]\n[WhiteElo \"1495\"]\n[BlackElo \"1510\"]\n[TimeControl \"180\"]\n[Termination \"Game drawn by repetition\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. Nc3 d6 6. Be3 Bb6 1/2-1/2",
+            "time_control": "180",
+            "end_time": 1705708800,
+            "rated": true,
+            "uuid": "game-uuid-1003",
+            "time_class": "blitz",
+            "rules": "chess",
+            "white": {
+                "rating": 1495,
+                "result": "repetition",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1510,
+                "result": "repetition",
+                "username": "opponent3",
+                "uuid": "user-uuid-4"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1004",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.15\"]\n[Round \"-\"]\n[White \"opponent4\"]\n[Black \"testuser\"]\n[Result \"1-0\"]\n[WhiteElo \"1550\"]\n[BlackElo \"1485\"]\n[TimeControl \"600\"]\n[Termination \"opponent4 won by resignation\"]\n\n1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Be2 e5 1-0",
+            "time_control": "600",
+            "end_time": 1705276800,
+            "rated": true,
+            "uuid": "game-uuid-1004",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1550,
+                "result": "win",
+                "username": "opponent4",
+                "uuid": "user-uuid-5"
+            },
+            "black": {
+                "rating": 1485,
+                "result": "resigned",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            }
+        },
+        {
+            "url": "https://www.chess.com/game/live/1005",
+            "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2024.01.10\"]\n[Round \"-\"]\n[White \"testuser\"]\n[Black \"opponent5\"]\n[Result \"1-0\"]\n[WhiteElo \"1505\"]\n[BlackElo \"1470\"]\n[TimeControl \"600\"]\n[Termination \"testuser won by checkmate\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. d4 Nd6 6. Bxc6 dxc6 1-0",
+            "time_control": "600",
+            "end_time": 1704844800,
+            "rated": true,
+            "uuid": "game-uuid-1005",
+            "time_class": "rapid",
+            "rules": "chess",
+            "white": {
+                "rating": 1505,
+                "result": "win",
+                "username": "testuser",
+                "uuid": "user-uuid-1"
+            },
+            "black": {
+                "rating": 1470,
+                "result": "checkmated",
+                "username": "opponent5",
+                "uuid": "user-uuid-6"
+            }
+        }
+    ]
+}

@@ -2,7 +2,7 @@ import { useApi } from '@/api/Api';
 import { useAuth } from '@/auth/Auth';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { useCallback, useMemo } from 'react';
-import ReactJoyride, { CallBackProps, Step } from 'react-joyride-react19-compat';
+import { EventData, Joyride as ReactJoyride, Step } from 'react-joyride';
 import { TutorialName } from './tutorialNames';
 import TutorialTooltip from './TutorialTooltip';
 
@@ -20,7 +20,7 @@ const Tutorial: React.FC<TutorialProps> = ({ name, steps, zIndex }) => {
     const darkMode = !user?.enableLightMode;
 
     const callback = useCallback(
-        (state: CallBackProps) => {
+        (state: EventData) => {
             if (state.status === 'finished' || state.action === 'close') {
                 const tutorials = {
                     ...user?.tutorials,
@@ -43,15 +43,13 @@ const Tutorial: React.FC<TutorialProps> = ({ name, steps, zIndex }) => {
                 continuous
                 steps={steps}
                 tooltipComponent={TutorialTooltip}
-                styles={{
-                    options: {
-                        arrowColor: darkMode ? '#1e1e1e' : 'white',
-                        zIndex: zIndex || 100,
-                    },
+                onEvent={callback}
+                options={{
+                    arrowColor: darkMode ? '#1e1e1e' : 'white',
+                    zIndex: zIndex || 100,
+                    overlayClickAction: false,
+                    scrollOffset: 100,
                 }}
-                disableOverlayClose
-                scrollOffset={100}
-                callback={callback}
             />
         ),
         [run, callback, darkMode, steps, zIndex],

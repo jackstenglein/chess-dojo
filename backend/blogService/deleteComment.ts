@@ -14,7 +14,15 @@ import {
     requireUserInfo,
     success,
 } from '../directoryService/api';
-import { and, attributeExists, blogTable, dynamo, equal, getUser, UpdateItemBuilder } from './database';
+import {
+    and,
+    attributeExists,
+    blogTable,
+    dynamo,
+    equal,
+    getUser,
+    UpdateItemBuilder,
+} from './database';
 import { getBlog } from './get';
 
 /**
@@ -67,9 +75,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
-        const builder = new UpdateItemBuilder()
-            .key('owner', request.owner)
-            .key('id', request.id);
+        const builder = new UpdateItemBuilder().key('owner', request.owner).key('id', request.id);
 
         // DynamoDB REMOVE evaluates all paths against the original item atomically,
         // so index order does not matter within a single update expression.

@@ -5,6 +5,7 @@ import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { Warning } from '@mui/icons-material';
 import { Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface ParticipantsListProps {
     event: Event;
@@ -19,12 +20,19 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
     showPaymentWarning,
     hideOwner,
 }) => {
+    const t = useTranslations('calendar');
     const user = useAuth().user;
 
     return (
         <Stack spacing={1}>
             {!hideOwner && (
-                <Stack direction='row' spacing={1} alignItems='center'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Avatar username={event.owner} displayName={event.ownerDisplayName} size={25} />
                     <Link href={`/profile/${event.owner}`}>
                         <Typography variant='body1'>
@@ -38,7 +46,14 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
             {Object.values(event.participants)
                 .slice(0, maxItems ? maxItems - 1 : undefined)
                 .map((p) => (
-                    <Stack key={p.username} direction='row' spacing={1} alignItems='center'>
+                    <Stack
+                        key={p.username}
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Avatar username={p.username} displayName={p.displayName} size={25} />
                         <Link href={`/profile/${p.username}`}>
                             <Typography variant='body1'>
@@ -53,8 +68,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
                                 <Tooltip
                                     title={
                                         user.username === event.owner
-                                            ? 'This user has not paid and will lose their booking in <30 min'
-                                            : 'You have not completed payment and will lose your booking soon'
+                                            ? t('participantPaymentWarningOther')
+                                            : t('participantPaymentWarningSelf')
                                     }
                                 >
                                     <Warning color='warning' />

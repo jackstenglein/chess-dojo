@@ -1,7 +1,8 @@
 import { EventType } from '@/database/event';
 import { Check } from '@mui/icons-material';
 import { Box, FormControl, Menu, Select, Stack, Tooltip } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useRef, useState } from 'react';
 import { UseEventEditorResponse } from '../useEventEditor';
 
 const options = [
@@ -19,11 +20,34 @@ const options = [
     'dojoOrange',
     'twitch',
     'youtube',
-];
+] as const;
+
+type ColorOption = (typeof options)[number];
 
 export function ColorFormSection({ editor }: { editor: UseEventEditorResponse }) {
+    const t = useTranslations('calendar');
     const [open, setOpen] = useState(false);
     const anchorEl = useRef<HTMLElement>(null);
+
+    const colorLabels = useMemo<Record<ColorOption, string>>(
+        () => ({
+            tomato: t('colorTomato'),
+            flamingo: t('colorFlamingo'),
+            banana: t('colorBanana'),
+            sage: t('colorSage'),
+            basil: t('colorBasil'),
+            peacock: t('colorPeacock'),
+            blueberry: t('colorBlueberry'),
+            lavendar: t('colorLavendar'),
+            grape: t('colorGrape'),
+            graphite: t('colorGraphite'),
+            coaching: t('colorCoaching'),
+            dojoOrange: t('colorDojoOrange'),
+            twitch: t('colorTwitch'),
+            youtube: t('colorYoutube'),
+        }),
+        [t],
+    );
 
     return (
         <>
@@ -51,18 +75,16 @@ export function ColorFormSection({ editor }: { editor: UseEventEditorResponse })
             <Menu anchorEl={anchorEl.current} open={open} onClose={() => setOpen(false)}>
                 <Stack
                     direction='row'
-                    flexWrap='wrap'
-                    gap={0.75}
-                    py={0.5}
-                    px={1}
-                    alignItems='center'
+                    sx={{
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                        py: 0.5,
+                        px: 1,
+                        alignItems: 'center',
+                    }}
                 >
                     {options.map((option) => (
-                        <Tooltip
-                            key={option}
-                            title={`${option[0].toUpperCase()}${option.slice(1)}`}
-                            disableInteractive
-                        >
+                        <Tooltip key={option} title={colorLabels[option]} disableInteractive>
                             <Box
                                 sx={{
                                     position: 'relative',

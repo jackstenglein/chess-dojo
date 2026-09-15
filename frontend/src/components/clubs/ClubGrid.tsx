@@ -1,31 +1,45 @@
-import { Request, RequestSnackbar } from '@/api/Request';
+import type { Request } from '@/api/Request';
+import { RequestSnackbar } from '@/api/Request';
 import { LocationChip } from '@/components/clubs/LocationChip';
+import { MainClubChip } from '@/components/clubs/MainClubChip';
 import { MemberCountChip } from '@/components/clubs/MemberCountChip';
-import { Club } from '@/database/club';
+import type { Club } from '@/database/club';
 import { ClubAvatar } from '@/profile/Avatar';
+import type { SxProps, Theme } from '@mui/material';
 import {
+    Button,
     Card,
     CardActionArea,
+    CardActions,
     CardContent,
     CardHeader,
     Grid,
     Stack,
-    SxProps,
-    Theme,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface ClubGridProps<T> {
     clubs?: Club[];
     request: Request<T>;
+    mainClubId?: string;
+    onSetMainClub?: (clubId: string) => void;
+    settingMainClubId?: string;
 }
 
-export function ClubGrid<T>({ clubs, request }: ClubGridProps<T>) {
+export function ClubGrid<T>({
+    clubs,
+    request,
+    mainClubId,
+    onSetMainClub,
+    settingMainClubId,
+}: ClubGridProps<T>) {
+    const t = useTranslations('clubs.grid');
     if (!clubs || clubs.length === 0) {
         return (
             <>
                 <RequestSnackbar request={request} />
-                <Typography>No clubs found</Typography>
+                <Typography>{t('noClubsFound')}</Typography>
             </>
         );
     }
@@ -42,7 +56,14 @@ export function ClubGrid<T>({ clubs, request }: ClubGridProps<T>) {
                         md: 4,
                     }}
                 >
-                    <ListClubItem club={club} sx={{ height: 1 }} />
+                    <ListClubItem
+                        club={club}
+                        isMainClub={club.id === mainClubId}
+                        sx={{ height: 1 }}
+                        onSetMainClub={onSetMainClub}
+                        isSettingMainClub={settingMainClubId !== undefined}
+                        isSettingThisClub={club.id === settingMainClubId}
+                    />
                 </Grid>
             ))}
         </Grid>
@@ -52,14 +73,27 @@ export function ClubGrid<T>({ clubs, request }: ClubGridProps<T>) {
 interface ListClubItemProps {
     club: Club;
     sx?: SxProps<Theme>;
+    isMainClub?: boolean;
+    onSetMainClub?: (clubId: string) => void;
+    isSettingMainClub?: boolean;
+    isSettingThisClub?: boolean;
 }
 
-export const ListClubItem: React.FC<ListClubItemProps> = ({ club, sx }) => {
+export const ListClubItem: React.FC<ListClubItemProps> = ({
+    club,
+    isMainClub,
+    onSetMainClub,
+    isSettingMainClub,
+    isSettingThisClub,
+    sx,
+}) => {
+    const t = useTranslations('clubs.details');
+
     return (
-        <Card variant='outlined' sx={sx}>
+        <Card variant='outlined' sx={{ ...sx, display: 'flex', flexDirection: 'column' }}>
             <CardActionArea
                 sx={{
-                    height: 1,
+                    flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'start',
@@ -70,20 +104,48 @@ export const ListClubItem: React.FC<ListClubItemProps> = ({ club, sx }) => {
                 <CardHeader
                     sx={{ pb: 1 }}
                     title={
-                        <Stack direction='row' spacing={1} alignItems='center'>
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <ClubAvatar club={club} size={40} />
                             <Typography variant='h5'>{club.name}</Typography>
                         </Stack>
                     }
                 />
                 <CardContent sx={{ pt: 0 }}>
-                    <Stack direction='row' mb={2} spacing={1} flexWrap='wrap' rowGap={1}>
+                    <Stack
+                        direction='row'
+                        spacing={1}
+                        sx={{
+                            mb: 2,
+                            flexWrap: 'wrap',
+                            rowGap: 1,
+                        }}
+                    >
+                        {isMainClub && <MainClubChip />}
                         <MemberCountChip count={club.memberCount} />
                         <LocationChip location={club.location} />
                     </Stack>
                     <Typography>{club.shortDescription}</Typography>
                 </CardContent>
             </CardActionArea>
+
+            {onSetMainClub && !isMainClub && (
+                <CardActions sx={{ px: 2, pt: 0, pb: 2, justifyContent: 'flex-end' }}>
+                    <Button
+                        size='small'
+                        onClick={() => onSetMainClub(club.id)}
+                        disabled={isSettingMainClub}
+                        loading={isSettingThisClub}
+                    >
+                        {t('setMainClub')}
+                    </Button>
+                </CardActions>
+            )}
         </Card>
     );
 };

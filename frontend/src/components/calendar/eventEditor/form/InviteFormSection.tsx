@@ -17,6 +17,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
@@ -47,6 +48,7 @@ export function InviteFormSection({
     setInviteOnly,
     errors,
 }: InviteFormSectionProps) {
+    const t = useTranslations('calendar');
     const [options, setOptions] = useState<SearchParticipant[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
@@ -123,27 +125,29 @@ export function InviteFormSection({
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        placeholder='Invite users'
+                        placeholder={t('inviteUsers')}
                         error={!!errors.invited}
                         helperText={errors.invited}
                         slotProps={{
+                            ...params.slotProps,
+
                             input: {
-                                ...params.InputProps,
+                                ...params.slotProps.input,
                                 endAdornment: (
                                     <Fragment>
                                         {loading ? (
                                             <CircularProgress color='inherit' size={20} />
                                         ) : null}
-                                        {params.InputProps.endAdornment}
+                                        {params.slotProps.input.endAdornment}
                                     </Fragment>
                                 ),
                             },
                         }}
                     />
                 )}
-                renderTags={(users, getTagProps) =>
+                renderValue={(users, getItemProps) =>
                     users.map((user, index) => {
-                        const { key, ...tagProps } = getTagProps({ index });
+                        const { key, ...tagProps } = getItemProps({ index });
                         return (
                             <Chip
                                 key={key}
@@ -177,7 +181,12 @@ export function InviteFormSection({
                                     primary={
                                         <Stack>
                                             <span>{user.displayName}</span>
-                                            <Box component='span' color='text.secondary'>
+                                            <Box
+                                                component='span'
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
                                                 {user.cohort}
                                             </Box>
                                         </Stack>
@@ -189,7 +198,7 @@ export function InviteFormSection({
                         </Fragment>
                     );
                 }}
-                noOptionsText='Search for users...'
+                noOptionsText={t('searchUsers')}
             />
             <FormControlLabel
                 control={
@@ -198,7 +207,7 @@ export function InviteFormSection({
                         onChange={(e) => setInviteOnly(e.target.checked)}
                     />
                 }
-                label='Only allow invited users to book this meeting'
+                label={t('inviteOnlyLabel')}
             />
         </Stack>
     );
@@ -206,7 +215,13 @@ export function InviteFormSection({
 
 function ListItemSecondary({ user }: { user: SearchParticipant }) {
     return (
-        <Stack direction='row' flexWrap='wrap' columnGap={1.5}>
+        <Stack
+            direction='row'
+            sx={{
+                flexWrap: 'wrap',
+                columnGap: 1.5,
+            }}
+        >
             {user.chesscom && (
                 <span>
                     <SiChessdotcom style={{ color: '#81b64c', verticalAlign: 'middle' }} />{' '}

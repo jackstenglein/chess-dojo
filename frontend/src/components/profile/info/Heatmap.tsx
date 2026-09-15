@@ -1,30 +1,37 @@
+import { useApi } from '@/api/Api';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { formatTime, RequirementCategory } from '@/database/requirement';
-import { TimelineEntry } from '@/database/timeline';
-import { WorkGoalHistory, WorkGoalSettings } from '@/database/user';
+import { formatTime, RequirementCategory, ScoreboardDisplay } from '@/database/requirement';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
+import { User, WorkGoalHistory, WorkGoalSettings } from '@/database/user';
 import CohortIcon, { cohortIcons } from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useLightMode } from '@/style/useLightMode';
-import { displayRequirementCategory } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import {
     calculateColor,
     calculateLevel,
     getActivity,
     mixColors,
 } from '@jackstenglein/chess-dojo-common/src/heatmap/heatmap';
-import { CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
+import { Bedtime, CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
 import {
     Box,
     Checkbox,
     Divider,
     FormControlLabel,
+    Menu,
+    MenuItem,
     Paper,
     PaperProps,
+    PopoverPosition,
     Stack,
     Tooltip,
     Typography,
 } from '@mui/material';
-import { cloneElement, useEffect, useMemo, useState } from 'react';
+import { DateTime } from 'luxon';
+import { useTranslations } from 'next-intl';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityCalendar,
     Activity as BaseActivity,
@@ -32,6 +39,8 @@ import {
     DayIndex,
 } from 'react-activity-calendar';
 import { GiCrossedSwords } from 'react-icons/gi';
+import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long-press';
+import { useTimelineContext } from '../activity/useTimeline';
 import { DEFAULT_WORK_GOAL } from '../trainingPlan/workGoal';
 import { MIN_BLOCK_SIZE } from './HeatmapCard';
 import { HeatmapOptions, TimelineEntryField, useHeatmapOptions } from './HeatmapOptions';
@@ -58,6 +67,9 @@ interface ExtendedBaseActivity extends BaseActivity {
 
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
+
+    /** Whether the user marked the date as a rest day. */
+    restDay?: boolean;
 
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
@@ -93,6 +105,9 @@ interface WeekSummary {
 
     /** Whether a classical game was played on this date. */
     gamePlayed?: boolean;
+
+    /** Whether the user marked any date in the week as a rest day. */
+    restDay?: boolean;
 
     /** The highest cohort the user graduated from on this date. */
     graduation?: string;
@@ -131,9 +146,6 @@ const WEEKDAY_LEGEND_TOP_MARGIN = 29;
 /** The space between adjacent blocks in the heatmap. */
 const BLOCK_SPACING = 4;
 
-/** Labels of the weekdays by their index. */
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
-
 /**
  * Renders the Heatmap, including the options and legend, for the given timeline entries.
  */
@@ -142,8 +154,8 @@ export function Heatmap({
     description,
     blockSize = MIN_BLOCK_SIZE,
     onPopOut,
-    minDate,
-    maxDate,
+    minDate: initialMinDate,
+    maxDate: initialMaxDate,
     workGoalHistory,
     slotProps,
 }: {
@@ -158,16 +170,41 @@ export function Heatmap({
         weekdayLabelPaper?: PaperProps;
     };
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const isLight = useLightMode();
     const { user: viewer } = useAuth();
+    const api = useApi();
+    const timeline = useTimelineContext();
+    const editable = viewer?.username === timeline.owner;
+    const request = useRequest();
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
     const [, setCalendarRef] = useState<HTMLElement | null>(null);
+    const [contextMenu, setContextMenu] = useState<
+        | {
+              activity: Activity | ExtendedBaseActivity;
+              position: PopoverPosition;
+          }
+        | undefined
+    >();
     const { field, colorMode, maxPoints, maxMinutes, weekStartOn, weekEndOn } = useHeatmapOptions();
     const clamp = field === 'dojoPoints' ? maxPoints : maxMinutes;
     const theme = isLight ? LIGHT_THEME : DARK_THEME;
+    const weekdayLabels = useMemo(
+        () => [
+            t('weekdaySun'),
+            t('weekdayMon'),
+            t('weekdayTue'),
+            t('weekdayWed'),
+            t('weekdayThur'),
+            t('weekdayFri'),
+            t('weekdaySat'),
+        ],
+        [t],
+    );
 
-    if (!maxDate) {
-        maxDate = new Date().toISOString().split('T')[0];
-    }
+    const maxDate = initialMaxDate || new Date().toISOString().split('T')[0];
+    let minDate = initialMinDate;
     if (!minDate) {
         minDate = `${parseInt(maxDate.split('-')[0]) - 1}${maxDate.slice(4)}`;
         const d = new Date(minDate);
@@ -182,29 +219,136 @@ export function Heatmap({
     }, [entries, minDate, maxDate, viewer, weekEndOn]);
 
     useEffect(() => {
-        const scroller = document.getElementById('heatmap-scroll-container');
+        const scroller = scrollerRef.current;
         if (scroller) {
             scroller.scrollLeft = scroller.scrollWidth;
         }
-    });
+    }, []);
+
+    const closeContextMenu = () => setContextMenu(undefined);
+
+    const onBlockContextMenu = (
+        event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
+
+        setContextMenu({
+            activity,
+            position: {
+                top: event.clientY,
+                left: event.clientX,
+            },
+        });
+    };
+
+    const onBlockLongPress = (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => {
+        event.preventDefault();
+        if (!editable || !canManageRestDay(activity)) {
+            return;
+        }
+
+        const touch = 'touches' in event ? event.touches[0] : undefined;
+        if (!touch) {
+            return;
+        }
+
+        setContextMenu({
+            activity,
+            position: {
+                top: touch.clientY,
+                left: touch.clientX,
+            },
+        });
+    };
+
+    const currentRestDayEntry =
+        contextMenu && viewer
+            ? findRestDayEntry(entries, contextMenu.activity.date, viewer)
+            : undefined;
+
+    const saveRestDay = async () => {
+        if (!viewer || !contextMenu || currentRestDayEntry) {
+            return;
+        }
+
+        closeContextMenu();
+        const entry = createRestDayEntry(viewer, contextMenu.activity.date);
+        timeline.onEditEntries([entry]);
+
+        try {
+            request.onStart();
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [entry],
+                deleted: [],
+            });
+            request.onSuccess();
+        } catch (err) {
+            timeline.onDeleteEntries([entry]);
+            request.onFailure(err);
+        }
+    };
+
+    const clearRestDay = async () => {
+        if (!currentRestDayEntry) {
+            return;
+        }
+
+        closeContextMenu();
+        timeline.onDeleteEntries([currentRestDayEntry]);
+        try {
+            request.onStart();
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [],
+                deleted: [currentRestDayEntry],
+            });
+            request.onSuccess();
+        } catch (err) {
+            timeline.onEditEntries([currentRestDayEntry]);
+            request.onFailure(err);
+        }
+    };
 
     return (
         <Stack
-            maxWidth={1}
             sx={{
+                maxWidth: 1,
+
                 '& .react-activity-calendar__scroll-container': {
                     paddingTop: '1px',
                     paddingBottom: '10px',
                     overflow: 'visible !important',
                 },
+
                 '& .react-activity-calendar__footer': {
                     marginLeft: '0 !important',
                 },
             }}
         >
+            <RequestSnackbar request={request} />
             <HeatmapOptions onPopOut={onPopOut} />
 
-            <Stack id='heatmap-scroll-container' direction='row' sx={{ overflowX: 'auto' }}>
+            <Stack ref={scrollerRef} direction='row' sx={{ overflowX: 'auto' }}>
                 <Paper
                     elevation={1}
                     sx={{ position: 'sticky', left: 0, pr: 0.75, borderRadius: 0, pb: 4 }}
@@ -217,26 +361,26 @@ export function Heatmap({
                                 <Stack
                                     key={i}
                                     sx={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         mt: `${blockSize + (i === 0 ? WEEKDAY_LEGEND_TOP_MARGIN : 2 * BLOCK_SPACING)}px`,
                                         height: `${blockSize}px`,
                                     }}
-                                    alignItems='center'
-                                    justifyContent='center'
                                 >
                                     <Typography variant='caption'>
-                                        {WEEKDAY_LABELS[(i * 2 + 1 + weekStartOn) % 7]}
+                                        {weekdayLabels[(i * 2 + 1 + weekStartOn) % 7]}
                                     </Typography>
                                 </Stack>
                             ))}
                         <Stack
                             sx={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 mt: `${blockSize + 2 * BLOCK_SPACING + 7}px`,
                                 height: `${blockSize}px`,
                             }}
-                            alignItems='center'
-                            justifyContent='center'
                         >
-                            <Typography variant='caption'>Week</Typography>
+                            <Typography variant='caption'>{t('week')}</Typography>
                         </Stack>
                     </Stack>
                 </Paper>
@@ -254,7 +398,7 @@ export function Heatmap({
                             <Block
                                 key={activity.date}
                                 block={block}
-                                activity={activity as Activity}
+                                activity={activity}
                                 field={field}
                                 baseColor={theme[0]}
                                 clamp={clamp}
@@ -263,6 +407,9 @@ export function Heatmap({
                                 workGoalHistory={workGoalHistory}
                                 monochrome={colorMode === 'monochrome'}
                                 maxDate={maxDate}
+                                editable={editable}
+                                onContextMenu={onBlockContextMenu}
+                                onLongPress={onBlockLongPress}
                             />
                         )}
                         maxLevel={MAX_LEVEL}
@@ -275,22 +422,37 @@ export function Heatmap({
                     <Divider sx={{ mt: '2px' }} />
                 </Stack>
             </Stack>
+
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                flexWrap='wrap'
-                gap='4px 16px'
-                mt={0.5}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '4px 16px',
+                    mt: 0.5,
+                }}
             >
                 <Typography sx={{ fontSize: '14px' }}>
                     {field === 'dojoPoints'
-                        ? `${Math.round(10 * totalDojoPoints) / 10} Dojo points ${description}`
-                        : `${formatTime(totalMinutesSpent)} ${description}`}
+                        ? t('totalDojoPointsLine', {
+                              points: Math.round(10 * totalDojoPoints) / 10,
+                              description,
+                          })
+                        : t('totalMinutesLine', {
+                              time: formatTime(totalMinutesSpent, tCommon),
+                              description,
+                          })}
                 </Typography>
 
-                <Stack direction='row' alignItems='center' gap='3px'>
-                    <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>Less</Typography>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: '3px',
+                    }}
+                >
+                    <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>{t('less')}</Typography>
 
                     {Array(MAX_LEVEL + 1)
                         .fill(0)
@@ -317,10 +479,52 @@ export function Heatmap({
                             />
                         ))}
 
-                    <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>More</Typography>
+                    <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>{t('more')}</Typography>
                 </Stack>
             </Stack>
             <CategoryLegend />
+            <Menu
+                open={!!contextMenu}
+                onClose={closeContextMenu}
+                anchorReference='anchorPosition'
+                anchorPosition={contextMenu?.position}
+                slotProps={{
+                    root: {
+                        onContextMenu: (event: ReactMouseEvent) => {
+                            event.preventDefault();
+                            closeContextMenu();
+                        },
+                    },
+                }}
+            >
+                {currentRestDayEntry ? (
+                    <MenuItem onClick={() => void clearRestDay()} disabled={request.isLoading()}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
+                            <RestDayIcon size={18} />
+                            <Typography>{t('clearRestDay')}</Typography>
+                        </Stack>
+                    </MenuItem>
+                ) : (
+                    <MenuItem onClick={() => void saveRestDay()} disabled={request.isLoading()}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
+                            <RestDayIcon size={18} />
+                            <Typography>{t('restDay')}</Typography>
+                        </Stack>
+                    </MenuItem>
+                )}
+            </Menu>
         </Stack>
     );
 }
@@ -329,10 +533,17 @@ export function Heatmap({
  * Renders the legend for the heatmap categories.
  */
 export function CategoryLegend() {
+    const t = useTranslations('profile.info.heatmap');
+    const tCategory = useTranslations('enums.requirementCategory');
     const { colorMode, setColorMode } = useHeatmapOptions();
 
     return (
-        <Stack mt={0.5} alignItems='start'>
+        <Stack
+            sx={{
+                mt: 0.5,
+                alignItems: 'start',
+            }}
+        >
             <FormControlLabel
                 control={
                     <Checkbox
@@ -341,16 +552,31 @@ export function CategoryLegend() {
                         sx={{ '& .MuiSvgIcon-root': { fontSize: '1rem' } }}
                     />
                 }
-                label='Single Color Mode'
+                label={t('singleColorMode')}
                 slotProps={{ typography: { variant: 'caption' } }}
             />
 
             {colorMode !== 'monochrome' && (
-                <Stack direction='row' flexWrap='wrap' columnGap={1} rowGap={0.5} mt={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        flexWrap: 'wrap',
+                        columnGap: 1,
+                        rowGap: 0.5,
+                        mt: 0.5,
+                    }}
+                >
                     {VALID_TOOLTIP_CATEGORIES.map((category) => {
                         const color = CategoryColors[category];
                         return (
-                            <Stack key={category} direction='row' alignItems='center' gap={0.5}>
+                            <Stack
+                                key={category}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                }}
+                            >
                                 <Box
                                     sx={{
                                         height: '12px',
@@ -377,19 +603,55 @@ export function CategoryLegend() {
                                         />
                                     </svg>
                                 )}
-                                <Typography variant='caption' pt='2px'>
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        pt: '2px',
+                                    }}
+                                >
                                     {category === RequirementCategory.NonDojo
-                                        ? 'Custom Task'
-                                        : displayRequirementCategory(category)}
+                                        ? t('customTask')
+                                        : tCategory.has(category)
+                                          ? tCategory(category)
+                                          : category}
                                 </Typography>
                             </Stack>
                         );
                     })}
 
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
+                        </Typography>
+                    </Stack>
+
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
+                        <RestDayIcon size={12} />
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -430,6 +692,9 @@ function Block({
     workGoalHistory,
     monochrome,
     maxDate,
+    editable,
+    onContextMenu,
+    onLongPress,
 }: {
     block: BlockElement;
     activity: Activity | ExtendedBaseActivity;
@@ -441,6 +706,15 @@ function Block({
     workGoalHistory: WorkGoalHistory[];
     monochrome?: boolean;
     maxDate: string;
+    editable?: boolean;
+    onContextMenu?: (
+        event: ReactMouseEvent<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => void;
+    onLongPress?: (
+        event: LongPressReactEvents<SVGElement>,
+        activity: Activity | ExtendedBaseActivity,
+    ) => void;
 }) {
     let maxCategory: RequirementCategory | undefined = undefined;
     let totalCount = 0;
@@ -453,7 +727,7 @@ function Block({
         color = calculateColor([baseColor, MONOCHROME_COLOR], level);
     } else {
         for (const category of Object.values(RequirementCategory)) {
-            const count = activity.categoryCounts?.[category as RequirementCategory];
+            const count = activity.categoryCounts?.[category];
             if (!count) {
                 continue;
             }
@@ -461,7 +735,7 @@ function Block({
             const currentCount = count[field].custom + count[field].trainingPlan;
             totalCount += currentCount;
             if (maxCount === undefined || currentCount > maxCount) {
-                maxCategory = category as RequirementCategory;
+                maxCategory = category;
                 maxCount = currentCount;
             }
         }
@@ -476,7 +750,31 @@ function Block({
     }
 
     const newStyle = color ? { ...block.props.style, fill: color } : block.props.style;
-    const icon = Boolean(activity.graduation || activity.gamePlayed);
+    const icon = Boolean(activity.graduation || activity.gamePlayed || activity.restDay);
+    const canOpenContextMenu = editable && canManageRestDay(activity);
+    const longPress = useLongPress<SVGElement>(
+        (event) => {
+            if (canOpenContextMenu) {
+                onLongPress?.(event, activity);
+            }
+        },
+        {
+            detect: LongPressEventType.Touch,
+            threshold: 700,
+            onStart: (event) => {
+                event.preventDefault();
+            },
+        },
+    );
+    const blockProps = {
+        'data-testid': `heatmap-block-${activity.date}`,
+        'data-activity-date': activity.date,
+        'data-can-manage-rest-day': `${canOpenContextMenu}`,
+    };
+    const blockStyle = {
+        ...newStyle,
+        ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
+    };
 
     const isEndOfWeek = new Date(activity.date).getUTCDay() === weekEndOn;
     const isEnd = activity.date === maxDate;
@@ -491,6 +789,37 @@ function Block({
         }
     }
 
+    const showStripedCustomOverlay =
+        isCustom &&
+        !activity.graduation &&
+        !activity.gamePlayed &&
+        !activity.restDay &&
+        hasTrackedActivity(activity);
+
+    const renderedBlock = showStripedCustomOverlay ? (
+        <rect
+            {...blockProps}
+            x={block.props.x}
+            y={block.props.y}
+            width={block.props.width}
+            height={block.props.height}
+            fill='url(#diagonalHatch)'
+            onContextMenu={
+                canOpenContextMenu ? (event) => onContextMenu?.(event, activity) : undefined
+            }
+            {...longPress()}
+        />
+    ) : (
+        cloneElement(block, {
+            ...blockProps,
+            style: blockStyle,
+            onContextMenu: canOpenContextMenu
+                ? (event: ReactMouseEvent<SVGElement>) => onContextMenu?.(event, activity)
+                : undefined,
+            ...longPress(),
+        })
+    );
+
     return (
         <>
             {activity.graduation ? (
@@ -500,23 +829,33 @@ function Block({
                     y={block.props.y}
                     width={block.props.width}
                     height={block.props.height}
+                    style={{ pointerEvents: 'none' }}
                     crossOrigin='anonymous'
                 />
+            ) : activity.gamePlayed ? (
+                <GiCrossedSwords
+                    x={block.props.x}
+                    y={block.props.y}
+                    width={block.props.width}
+                    height={block.props.height}
+                    fontSize={`${block.props.width}px`}
+                    style={{ pointerEvents: 'none' }}
+                />
             ) : (
-                activity.gamePlayed && (
-                    <GiCrossedSwords
-                        x={block.props.x}
-                        y={block.props.y}
-                        width={block.props.width}
-                        height={block.props.height}
-                        fontSize={`${block.props.width}px`}
+                activity.restDay && (
+                    <RestDayIcon
+                        x={block.props.x as number}
+                        y={block.props.y as number}
+                        width={block.props.width as number}
+                        height={block.props.height as number}
                     />
                 )
             )}
 
-            {isCustom && !activity.graduation && !activity.gamePlayed && (
+            {showStripedCustomOverlay && (
                 <>
                     {cloneElement(block, {
+                        ...blockProps,
                         style: {
                             ...newStyle,
                             ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
@@ -531,22 +870,7 @@ function Block({
                 disableInteractive
                 title={<BlockTooltip activity={activity} field={field} />}
             >
-                {isCustom && !activity.graduation && !activity.gamePlayed ? (
-                    <rect
-                        x={block.props.x}
-                        y={block.props.y}
-                        width={block.props.width}
-                        height={block.props.height}
-                        fill='url(#diagonalHatch)'
-                    />
-                ) : (
-                    cloneElement(block, {
-                        style: {
-                            ...newStyle,
-                            ...(icon ? { fill: 'transparent', stroke: 'transparent' } : {}),
-                        },
-                    })
-                )}
+                {renderedBlock}
             </Tooltip>
 
             {(isEndOfWeek || isEnd) && (
@@ -638,6 +962,8 @@ function BlockTooltip({
     activity: Activity | ExtendedBaseActivity;
     field: TimelineEntryField;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const categories = Object.entries(activity.categoryCounts ?? {})
         .filter((entry) => VALID_TOOLTIP_CATEGORIES.includes(entry[0] as RequirementCategory))
         .sort(
@@ -648,25 +974,49 @@ function BlockTooltip({
         );
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {field === 'dojoPoints'
-                    ? `${Math.round(10 * (activity.dojoPoints || 0)) / 10} Dojo point${activity.dojoPoints !== 1 ? 's' : ''} on ${activity.date}`
-                    : `${formatTime(activity.minutesSpent || 0)} on ${activity.date}`}
+                    ? t('dojoPointsOnDate', {
+                          points: Math.round(10 * (activity.dojoPoints || 0)) / 10,
+                          pluralCount: activity.dojoPoints || 0,
+                          date: activity.date,
+                      })
+                    : t('minutesOnDate', {
+                          time: formatTime(activity.minutesSpent || 0, tCommon),
+                          date: activity.date,
+                      })}
             </Typography>
             <Divider sx={{ width: 1 }} />
             {activity.graduation && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={activity.graduation} size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Graduated from {activity.graduation}
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('graduatedFrom', { cohort: activity.graduation })}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -675,15 +1025,57 @@ function BlockTooltip({
             {activity.gamePlayed && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
+                        </Typography>
+                    </Stack>
+                </Stack>
+            )}
+            {activity.restDay && (
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
+                        <RestDayIcon size={12} />
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -734,6 +1126,8 @@ function WeekSummaryTooltip({
     goal: WorkGoalSettings;
     inProgress: boolean;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const startDate = new Date(weekSummary.date);
     startDate.setDate(startDate.getDate() - 6);
     const startDateStr = `${startDate.getUTCFullYear()}-${`${startDate.getUTCMonth() + 1}`.padStart(2, '0')}-${`${startDate.getUTCDate()}`.padStart(2, '0')}`;
@@ -755,7 +1149,11 @@ function WeekSummaryTooltip({
     }
 
     return (
-        <Stack alignItems='center'>
+        <Stack
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant='caption'>
                 {startDateStr} — {weekSummary.date}
             </Typography>
@@ -763,12 +1161,20 @@ function WeekSummaryTooltip({
 
             <Stack
                 direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                width={1}
-                columnGap={1}
+                sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: 1,
+                    columnGap: 1,
+                }}
             >
-                <Stack direction='row' alignItems='center' columnGap={0.5}>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                        columnGap: 0.5,
+                    }}
+                >
                     <Icon
                         width={12}
                         height={12}
@@ -781,28 +1187,56 @@ function WeekSummaryTooltip({
                                   : 'error.main',
                         }}
                     />
-                    <Typography variant='caption' pt='2px'>
-                        {metGoal ? 'Met' : !inProgress ? 'Missed' : ''} Weekly Goal
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            pt: '2px',
+                        }}
+                    >
+                        {metGoal
+                            ? t('weeklyGoalMet')
+                            : !inProgress
+                              ? t('weeklyGoalMissed')
+                              : t('weeklyGoalInProgress')}
                     </Typography>
                 </Stack>
 
-                <Typography variant='caption' pt='2px'>
-                    {formatTime(weekSummary.minutesSpent)} / {formatTime(goalMinutes)}
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
+                    {formatTime(weekSummary.minutesSpent, tCommon)} /{' '}
+                    {formatTime(goalMinutes, tCommon)}
                 </Typography>
             </Stack>
 
             {weekSummary.graduation && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <CohortIcon tooltip='' cohort={weekSummary.graduation} size={12} />
-                        <Typography variant='caption' pt='2px'>
-                            Graduated from {weekSummary.graduation}
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('graduatedFrom', { cohort: weekSummary.graduation })}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -811,15 +1245,57 @@ function WeekSummaryTooltip({
             {weekSummary.gamePlayed && (
                 <Stack
                     direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    columnGap='1rem'
-                    width={1}
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
                 >
-                    <Stack direction='row' alignItems='center' columnGap={0.5}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
                         <GiCrossedSwords />
-                        <Typography variant='caption' pt='2px'>
-                            Classical Game Played
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('classicalGamePlayed')}
+                        </Typography>
+                    </Stack>
+                </Stack>
+            )}
+            {weekSummary.restDay && (
+                <Stack
+                    direction='row'
+                    sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        columnGap: '1rem',
+                        width: 1,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                            columnGap: 0.5,
+                        }}
+                    >
+                        <RestDayIcon size={12} />
+                        <Typography
+                            variant='caption'
+                            sx={{
+                                pt: '2px',
+                            }}
+                        >
+                            {t('restDay')}
                         </Typography>
                     </Stack>
                 </Stack>
@@ -865,15 +1341,26 @@ function TooltipRow({
     count: number;
     striped?: boolean;
 }) {
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
+    const tCategory = useTranslations('enums.requirementCategory');
     return (
         <Stack
             direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            columnGap='1rem'
-            width={1}
+            sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                columnGap: '1rem',
+                width: 1,
+            }}
         >
-            <Stack direction='row' alignItems='center' columnGap={0.5}>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    columnGap: 0.5,
+                }}
+            >
                 <svg width='12' height='12'>
                     <g>
                         <rect
@@ -892,15 +1379,30 @@ function TooltipRow({
                     </g>
                 </svg>
 
-                <Typography variant='caption' pt='2px'>
-                    {displayRequirementCategory(category as RequirementCategory)}
+                <Typography
+                    variant='caption'
+                    sx={{
+                        pt: '2px',
+                    }}
+                >
+                    {tCategory.has(category)
+                        ? tCategory(category as RequirementCategory)
+                        : category}
                 </Typography>
             </Stack>
 
-            <Typography variant='caption' pt='2px'>
+            <Typography
+                variant='caption'
+                sx={{
+                    pt: '2px',
+                }}
+            >
                 {field === 'dojoPoints'
-                    ? `${Math.round(10 * count) / 10} Dojo point${count !== 1 ? 's' : ''}`
-                    : formatTime(count)}
+                    ? t('tooltipRowDojoPoints', {
+                          points: Math.round(10 * count) / 10,
+                          pluralCount: count,
+                      })
+                    : formatTime(count, tCommon)}
             </Typography>
         </Stack>
     );
@@ -925,30 +1427,35 @@ function LegendTooltip({
     clamp: number;
     field: TimelineEntryField;
 }) {
-    let value = '';
+    const t = useTranslations('profile.info.heatmap');
+    const tCommon = useTranslations('common');
     const minValue = Math.max(0, (clamp / (MAX_LEVEL - 1)) * (level - 1));
-    if (field === 'minutesSpent') {
-        value = formatTime(minValue);
-    } else {
-        value = `${Math.round(minValue * 100) / 100}`;
-    }
+    const baseValue =
+        field === 'minutesSpent'
+            ? formatTime(minValue, tCommon)
+            : `${Math.round(minValue * 100) / 100}`;
 
+    let value: string;
     if (level === 0) {
-        if (field === 'dojoPoints') {
-            value += ' Dojo points';
-        }
+        value =
+            field === 'dojoPoints' ? t('legendDojoPointsBase', { value: baseValue }) : baseValue;
     } else if (level < MAX_LEVEL) {
         const maxValue = (clamp / (MAX_LEVEL - 1)) * level;
-        if (field === 'minutesSpent') {
-            value += ` – ${formatTime(maxValue)}`;
-        } else {
-            value += ` – ${Math.round(maxValue * 100) / 100} Dojo points`;
-        }
+        value =
+            field === 'minutesSpent'
+                ? t('legendMinutesRange', {
+                      minValue: baseValue,
+                      maxValue: formatTime(maxValue, tCommon),
+                  })
+                : t('legendDojoPointsRange', {
+                      minValue: baseValue,
+                      maxValue: Math.round(maxValue * 100) / 100,
+                  });
     } else {
-        value += '+';
-        if (field === 'dojoPoints') {
-            value += ' Dojo points';
-        }
+        value =
+            field === 'dojoPoints'
+                ? t('legendDojoPointsMax', { value: baseValue })
+                : t('legendMinutesMax', { value: baseValue });
     }
 
     return (
@@ -969,5 +1476,109 @@ M3,5 l2,-2'
                 style={{ stroke: 'black', strokeWidth: 1 }}
             />
         </pattern>
+    );
+}
+
+function RestDayIcon({
+    size = 16,
+    x,
+    y,
+    width,
+    height,
+}: {
+    size?: number;
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+}) {
+    const finalWidth = width ?? size;
+    const finalHeight = height ?? size;
+    return (
+        <Bedtime
+            sx={{ pointerEvents: 'none', width: `${finalWidth}px`, height: `${finalHeight}px` }}
+            width={finalWidth}
+            height={finalHeight}
+            x={x}
+            y={y}
+        />
+    );
+}
+
+function canManageRestDay(activity: Activity | ExtendedBaseActivity) {
+    return !hasTrackedActivity(activity);
+}
+
+function hasTrackedActivity(activity: Activity | ExtendedBaseActivity) {
+    if (activity.gamePlayed || activity.graduation) {
+        return true;
+    }
+    if ((activity.dojoPoints ?? 0) > 0 || (activity.minutesSpent ?? 0) > 0) {
+        return true;
+    }
+
+    return Object.values(activity.categoryCounts ?? {}).some((count) => {
+        if (!count) {
+            return false;
+        }
+
+        return (
+            count.dojoPoints.custom > 0 ||
+            count.dojoPoints.trainingPlan > 0 ||
+            count.minutesSpent.custom > 0 ||
+            count.minutesSpent.trainingPlan > 0
+        );
+    });
+}
+
+function createRestDayEntry(user: User, date: string): TimelineEntry {
+    const now = DateTime.utc();
+    const timezone = user.timezoneOverride || 'local';
+    const restDate =
+        DateTime.fromISO(date, { zone: timezone })
+            .set({ hour: 12, minute: 0, second: 0, millisecond: 0 })
+            .toUTC()
+            .toISO() ??
+        now.toISO() ??
+        '';
+
+    return {
+        owner: user.username,
+        id: `${date}_${crypto.randomUUID()}`,
+        ownerDisplayName: user.displayName,
+        cohort: user.dojoCohort,
+        requirementId: TimelineSpecialRequirementId.RestDay,
+        requirementName: 'Rest Day',
+        requirementCategory: RequirementCategory.NonDojo,
+        scoreboardDisplay: ScoreboardDisplay.Hidden,
+        progressBarSuffix: '',
+        totalCount: 0,
+        previousCount: 0,
+        newCount: 0,
+        dojoPoints: 0,
+        totalDojoPoints: 0,
+        minutesSpent: 0,
+        totalMinutesSpent: 0,
+        date: restDate,
+        createdAt: now.toISO() ?? '',
+        notes: '',
+        comments: [],
+        reactions: {},
+    };
+}
+
+function findRestDayEntry(entries: TimelineEntry[], date: string, viewer: User) {
+    return entries.find(
+        (entry) =>
+            entry.requirementId === TimelineSpecialRequirementId.RestDay &&
+            getViewerDate(entry.date || entry.createdAt, viewer) === date,
+    );
+}
+
+function getViewerDate(date: string, viewer: User) {
+    const parsed = DateTime.fromISO(date, { setZone: true });
+    return (
+        (viewer.timezoneOverride ? parsed.setZone(viewer.timezoneOverride) : parsed).toISODate() ??
+        date.slice(0, 10)
     );
 }

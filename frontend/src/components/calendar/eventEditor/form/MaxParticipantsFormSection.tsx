@@ -1,5 +1,6 @@
 import { Person } from '@mui/icons-material';
 import { InputAdornment, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface MaxParticipantsFormSectionProps {
     maxParticipants: string;
@@ -14,11 +15,12 @@ const MaxParticipantsFormSection: React.FC<MaxParticipantsFormSectionProps> = ({
     helperText,
     error,
 }) => {
+    const t = useTranslations('calendar');
     return (
         <TextField
             data-testid='participants-textfield'
             fullWidth
-            placeholder='Max Participants'
+            placeholder={t('maxParticipants')}
             variant='outlined'
             value={maxParticipants}
             slotProps={{

@@ -19,7 +19,7 @@ export function useUnsavedGame(chessProp?: Chess) {
     const { chess: chessContext } = useChess();
 
     const chess = chessProp ?? chessContext;
-    const onSubmit = async (form: SaveGameForm) => {
+    const onSubmit = async (form: SaveGameForm, onNavigate?: () => void) => {
         if (!chess) {
             return;
         }
@@ -45,7 +45,7 @@ export function useUnsavedGame(chessProp?: Chess) {
             req.directory = undefined;
         }
 
-        await createGame(req).then(() => {
+        await createGame(req, onNavigate).then(() => {
             setShowDialog(false);
         });
     };

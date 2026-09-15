@@ -1,7 +1,8 @@
 import Board from '@/board/Board';
 import { Box, Fade, Stack, Tooltip, Typography } from '@mui/material';
 import { LineChart, useAxesTooltip } from '@mui/x-charts';
-import { useSvgRef, useXScale, useYScale } from '@mui/x-charts/hooks';
+import { useChartRootRef, useXScale, useYScale } from '@mui/x-charts/hooks';
+import { useTranslations } from 'next-intl';
 import { PuzzleSession } from '../checkmate/CheckmatePuzzlePage';
 
 const GRAPH_SUCCESS_COLOR = 'green';
@@ -79,8 +80,8 @@ export function PuzzleSessionChart({ session }: { session: PuzzleSession }) {
             }}
             slotProps={{
                 tooltip: {
-                    anchor: 'node',
                     trigger: 'axis',
+                    anchor: 'chart',
                 },
             }}
             sx={{ ml: '-20px', mt: 1, maxHeight: '200px' }}
@@ -89,12 +90,14 @@ export function PuzzleSessionChart({ session }: { session: PuzzleSession }) {
 }
 
 function TooltipPlacement({ session }: { session: PuzzleSession }) {
+    const t = useTranslations('puzzles.sessionChart');
     const tooltipData = useAxesTooltip({ directions: ['x'] });
     const xScale = useXScale();
     const yScale = useYScale();
-    const svgRef = useSvgRef();
+    const chartRootRef = useChartRootRef();
+    const svg = chartRootRef.current?.querySelector('svg');
 
-    if (!svgRef.current) {
+    if (!svg) {
         return null;
     }
 
@@ -111,8 +114,8 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
     const svgYPosition = yScale(yValue) ?? 0;
 
     const tooltipPosition = {
-        x: svgRef.current.getBoundingClientRect().left + svgXPosition,
-        y: svgRef.current.getBoundingClientRect().top + svgYPosition,
+        x: svg.getBoundingClientRect().left + svgXPosition,
+        y: svg.getBoundingClientRect().top + svgYPosition,
     };
 
     const item = session.history[xValue - 1];
@@ -159,21 +162,33 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
 
                         <Stack
                             direction='row'
-                            justifyContent='space-between'
-                            mt={0.5}
-                            alignItems='center'
+                            sx={{
+                                justifyContent: 'space-between',
+                                mt: 0.5,
+                                alignItems: 'center',
+                            }}
                         >
-                            <Typography variant='caption'>Puzzle Rating</Typography>
-                            <Typography variant='caption' fontWeight='bold'>
+                            <Typography variant='caption'>{t('puzzleRating')}</Typography>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {item?.puzzle.rating}
                             </Typography>
                         </Stack>
 
-                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='caption'>Your Rating</Typography>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography variant='caption'>{t('yourRating')}</Typography>
                             <Typography
                                 variant='caption'
-                                fontWeight='bold'
                                 color={
                                     item?.ratingChange > 0
                                         ? 'success'
@@ -181,6 +196,9 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                                           ? 'error'
                                           : undefined
                                 }
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
                             >
                                 {item?.rating} ({item?.ratingChange >= 0 && '+'}
                                 {item?.ratingChange})
@@ -189,8 +207,13 @@ function TooltipPlacement({ session }: { session: PuzzleSession }) {
                     </Box>
                 ) : (
                     <Box sx={{ p: 1, minWidth: 200 }}>
-                        <Stack direction='row' justifyContent='space-between'>
-                            <Typography variant='caption'>Start Rating</Typography>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <Typography variant='caption'>{t('startRating')}</Typography>
                             <Typography variant='caption'>{session.start}</Typography>
                         </Stack>
                     </Box>

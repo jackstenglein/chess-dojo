@@ -9,6 +9,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import SearchIcon from '@mui/icons-material/Search';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { MenuItem, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const NO_CLUBS: string[] = [];
 
@@ -30,6 +31,7 @@ interface ScoreboardViewSelectorProps {
  * @returns A component that allows switching between different scoreboard views.
  */
 const ScoreboardViewSelector: React.FC<ScoreboardViewSelectorProps> = ({ value, onChange }) => {
+    const t = useTranslations('scoreboard.view');
     const { user } = useAuth();
     const { clubs } = useClubs(user?.clubs || NO_CLUBS);
     const router = useRouter();
@@ -43,7 +45,7 @@ const ScoreboardViewSelector: React.FC<ScoreboardViewSelectorProps> = ({ value, 
             data-testid='scoreboard-view-selector'
             id='scoreboard-cohort-select'
             select
-            label='View'
+            label={t('label')}
             value={value}
             onChange={(event) =>
                 onChange ? onChange(event.target.value) : defaultOnChange(event.target.value)
@@ -52,16 +54,20 @@ const ScoreboardViewSelector: React.FC<ScoreboardViewSelectorProps> = ({ value, 
             fullWidth
         >
             <MenuItem value='search'>
-                <SearchIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} /> Search Users
+                <SearchIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} />{' '}
+                {t('searchUsers')}
             </MenuItem>
             <MenuItem value='stats'>
-                <AutoGraphIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} /> Statistics
+                <AutoGraphIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} />{' '}
+                {t('statistics')}
             </MenuItem>
             <MenuItem value='dojo'>
-                <LanguageIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} /> Full Dojo
+                <LanguageIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} />{' '}
+                {t('fullDojo')}
             </MenuItem>
             <MenuItem value='following'>
-                <ThumbUpIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} /> Followers
+                <ThumbUpIcon sx={{ marginRight: '0.6em', verticalAlign: 'middle' }} />{' '}
+                {t('followers')}
             </MenuItem>
             {clubs.map((club) => (
                 <MenuItem key={club.id} value={`clubs/${club.id}`}>

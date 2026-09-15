@@ -159,7 +159,11 @@ func handleSubscriptionPurchase(checkoutSession *stripe.CheckoutSession) api.Res
 		SubscriptionTier:   stripe.String(string(tier)),
 	}
 
-	user, err := repository.UpdateUser(checkoutSession.ClientReferenceID, &update)
+	user, shouldSendGameReviewSignup, err := updateSubscriptionAndDetectGameReviewSignup(
+		repository,
+		checkoutSession.ClientReferenceID,
+		&update,
+	)
 	if err != nil {
 		return api.Failure(err)
 	}
@@ -170,9 +174,50 @@ func handleSubscriptionPurchase(checkoutSession *stripe.CheckoutSession) api.Res
 	if err := database.SendSubscriptionCreatedEvent(user.Username); err != nil {
 		log.Errorf("Failed to send subscription created notification: %v", err)
 	}
+	if shouldSendGameReviewSignup {
+		sendGameReviewSignupNotification(user.Username)
+	}
 
 	analytics.PurchaseEvent(user, checkoutSession)
 	return api.Success(nil)
+}
+
+type gameReviewSignupSubscriptionUpdater interface {
+	UpdateUser(username string, update *database.UserUpdate) (*database.User, error)
+	UpdateUserIfNotGameReview(username string, update *database.UserUpdate) (*database.User, error)
+}
+
+func updateSubscriptionAndDetectGameReviewSignup(
+	repo gameReviewSignupSubscriptionUpdater,
+	username string,
+	update *database.UserUpdate,
+) (*database.User, bool, error) {
+	if update.SubscriptionTier == nil || database.SubscriptionTier(*update.SubscriptionTier) != database.SubscriptionTier_GameReview {
+		user, err := repo.UpdateUser(username, update)
+		return user, false, err
+	}
+
+	user, err := repo.UpdateUserIfNotGameReview(username, update)
+	if err == nil {
+		return user, true, nil
+	}
+	if !isConditionalCheckFailed(err) {
+		return nil, false, err
+	}
+
+	user, err = repo.UpdateUser(username, update)
+	return user, false, err
+}
+
+func isConditionalCheckFailed(err error) bool {
+	var conditionalErr *dynamodb.ConditionalCheckFailedException
+	return errors.As(err, &conditionalErr)
+}
+
+func sendGameReviewSignupNotification(username string) {
+	if err := database.SendGameReviewSignupEvent(username); err != nil {
+		log.Errorf("Failed to send game review signup notification: %v", err)
+	}
 }
 
 // Handles a successful coaching lesson purchase by setting the event participant's
@@ -210,9 +255,15 @@ func handleGameReviewPurchase(checkoutSession *stripe.CheckoutSession) api.Respo
 			StripeId: checkoutSession.ID,
 		},
 	}
-	if _, err := repository.UpdateGame(cohort, id, &update); err != nil {
+	game, err := repository.UpdateGame(cohort, id, &update)
+	if err != nil {
 		return api.Failure(err)
 	}
+
+	if err := database.SendGameReviewSubmittedEvent(game); err != nil {
+		log.Errorf("Failed to send game review submitted notification: %v", err)
+	}
+
 	return api.Success(nil)
 }
 
@@ -342,12 +393,19 @@ func handleSubscriptionUpdated(event *stripe.Event) api.Response {
 		SubscriptionTier:   stripe.String(string(tier)),
 	}
 
-	user, err := repository.UpdateUser(username, &update)
+	user, shouldSendGameReviewSignup, err := updateSubscriptionAndDetectGameReviewSignup(
+		repository,
+		username,
+		&update,
+	)
 	if err != nil {
 		return api.Failure(err)
 	}
 	if err := discord.SetCohortRole(user); err != nil {
 		log.Errorf("Failed to set Discord roles: %v", err)
+	}
+	if shouldSendGameReviewSignup {
+		sendGameReviewSignupNotification(user.Username)
 	}
 
 	return api.Success(nil)

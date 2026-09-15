@@ -24,7 +24,10 @@ type UserInfo struct {
 }
 
 // GetUserInfo extracts the user info from the id token claim of the given request.
-// Any fields that cannot be extracted are left blank.
+// If the request was authenticated by a Lambda authorizer instead of the Cognito
+// JWT authorizer (Eg: personal access tokens), the user info is extracted from
+// the Lambda authorizer context. Any fields that cannot be extracted are left
+// blank.
 func GetUserInfo(event Request) *UserInfo {
 	var username string
 	var email string
@@ -36,6 +39,18 @@ func GetUserInfo(event Request) *UserInfo {
 				username = claims["cognito:username"]
 				email = claims["email"]
 				name = claims["name"]
+			}
+		}
+
+		if lambdaCtx := authorizer.Lambda; lambdaCtx != nil {
+			if v, ok := lambdaCtx["username"].(string); ok && username == "" {
+				username = v
+			}
+			if v, ok := lambdaCtx["email"].(string); ok && email == "" {
+				email = v
+			}
+			if v, ok := lambdaCtx["name"].(string); ok && name == "" {
+				name = v
 			}
 		}
 	}

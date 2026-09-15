@@ -42,7 +42,14 @@ export function PlayerNameWithTitle({
     );
 
     return (
-        <Stack direction='row' alignItems='center' spacing={0.5} sx={{ minHeight: 0 }}>
+        <Stack
+            direction='row'
+            spacing={0.5}
+            sx={{
+                alignItems: 'center',
+                minHeight: 0,
+            }}
+        >
             {titleBeforeName ? (
                 <>
                     {titleElement}

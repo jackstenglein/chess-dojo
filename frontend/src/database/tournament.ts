@@ -102,6 +102,9 @@ export interface OpenClassicalPairing {
 
     /** The notes included by the submitter when submitting */
     notes: string;
+
+    /** The S3 keys of screenshots submitted as proof of the result. */
+    screenshots: string[];
 }
 
 export interface OpenClassicalRound {

@@ -38,6 +38,13 @@ test.describe('Position Explorer', () => {
         await expect(page.getByRole('tab', { name: 'Masters', selected: true })).toBeVisible();
     });
 
+    test('opens Repertoire Spy tab via URL param', async ({ page }) => {
+        await page.goto('/games/analysis?explorer=player');
+        await expect(
+            page.getByRole('tab', { name: 'Repertoire Spy', selected: true }),
+        ).toBeVisible();
+    });
+
     test('shows tablebase warning for more than 7 pieces', async ({ page }) => {
         await page.getByTestId('underboard-button-explorer').click();
         await page.getByTestId('explorer-tab-button-tablebase').click();

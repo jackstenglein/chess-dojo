@@ -111,8 +111,20 @@ const Markdown: React.FC<MarkdownProps> = ({ text, inline, move }) => {
                         </blockquote>
                     ),
                     img: (props) => (
-                        <Stack width={1} alignItems='center' justifyContent='center'>
-                            <Box width={0.95} sx={{ aspectRatio: '1/1', maxWidth: '300px' }}>
+                        <Stack
+                            sx={{
+                                width: 1,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    width: 0.95,
+                                    aspectRatio: '1/1',
+                                    maxWidth: '300px',
+                                }}
+                            >
                                 <ChessContext.Provider value={{}}>
                                     <Board
                                         config={{
@@ -159,13 +171,16 @@ function Text(props: {
     return (
         <Typography
             variant={props.inline ? 'caption' : 'body2'}
-            mx={props.inline ? '4px' : undefined}
-            color='text.secondary'
-            p={props.p || '6px'}
-            whiteSpace='pre-line'
-            fontSize={props.fontSize}
             component='p'
-            sx={{ ...sx, wordBreak: 'break-word' }}
+            sx={{
+                mx: props.inline ? '4px' : undefined,
+                color: 'text.secondary',
+                p: props.p || '6px',
+                whiteSpace: 'pre-line',
+                fontSize: props.fontSize,
+                ...sx,
+                wordBreak: 'break-word',
+            }}
         >
             {props.children}
         </Typography>

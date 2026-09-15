@@ -2,13 +2,17 @@ import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
 import { useLightMode } from '@/style/useLightMode';
 import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import { Exam } from '@jackstenglein/chess-dojo-common/src/database/exam';
-import { getExamMaxScore, getRegression } from '@jackstenglein/chess-dojo-common/src/exam/scores';
+import {
+    getExamMaxScore,
+    getRegression,
+    predictExamRating,
+} from '@jackstenglein/chess-dojo-common/src/exam/scores';
 import { Speed } from '@mui/icons-material';
 import { CardContent, Stack, Typography } from '@mui/material';
 import {
-    ChartContainer,
-    ChartDataProvider,
     ChartsClipPath,
+    ChartsContainer,
+    ChartsDataProvider,
     ChartsGrid,
     ChartsLegend,
     ChartsTooltip,
@@ -21,8 +25,9 @@ import {
     ScatterValueType,
     axisClasses,
     legendClasses,
-    lineElementClasses,
+    lineClasses,
 } from '@mui/x-charts';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../auth/Auth';
 import {
@@ -47,6 +52,7 @@ interface ExamStatisticsProps {
  * @param param0 The exam to display statistics for.
  */
 const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
+    const t = useTranslations('exams.statistics');
     const bestFitCohortRange = getBestFitCohortRange(exam.cohortRange);
     const [cohorts, setCohorts] = useState([bestFitCohortRange]);
     const { user } = useAuth();
@@ -75,7 +81,8 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                     highlighted: 'item',
                     faded: 'global',
                 },
-                valueFormatter: (value) => `Score: ${value?.x}, Rating: ${value?.y}`,
+                valueFormatter: (value) =>
+                    t('tooltipScoreRating', { x: value?.x ?? '', y: value?.y ?? '' }),
                 color: cohortColors[cohort],
             };
             series.data?.push({ x: answer.score, y: answer.rating, id: username });
@@ -83,7 +90,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
         });
 
         return cohortToSeries;
-    }, [exam, user]);
+    }, [exam, user, t]);
 
     const series = useMemo(() => {
         if (cohorts[0] === ALL_COHORTS) {
@@ -111,24 +118,27 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                 id: 'best-fit',
                 type: 'line',
                 label: '',
-                data: Array.from(Array(totalScore + 1)).map((_, i) => regression.predict(i)),
+                data: Array.from(Array(totalScore + 1)).map((_, i) =>
+                    predictExamRating(regression, i),
+                ),
                 color: isLight ? '#000' : '#fff',
             },
             {
                 id: 'best-fit-scatter',
                 type: 'scatter',
-                label: 'Test Rating',
+                label: t('seriesTestRating'),
                 color: isLight ? '#000' : '#fff',
                 data: Array.from(Array(totalScore + 1)).map((_, i) => ({
                     x: i,
-                    y: Math.round(regression.predict(i)),
+                    y: Math.round(predictExamRating(regression, i)),
                     id: i,
                 })),
                 markerSize: 0,
-                valueFormatter: (value) => `Score: ${value?.x}, Rating: ${value?.y}`,
+                valueFormatter: (value) =>
+                    t('tooltipScoreRating', { x: value?.x ?? '', y: value?.y ?? '' }),
             },
         ] as [LineSeriesType, ScatterSeriesType];
-    }, [exam, totalScore, isLight]);
+    }, [exam, totalScore, isLight, t]);
 
     useEffect(() => {
         if (!ref.current) {
@@ -164,7 +174,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
             ? [
                   {
                       type: 'scatter',
-                      label: 'Your Score',
+                      label: t('seriesYourScore'),
                       data: [
                           {
                               x: exam.answers[user.username].score,
@@ -176,7 +186,8 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                           highlight: 'item',
                           fade: 'global',
                       },
-                      valueFormatter: (value) => `Score: ${value?.x},\nRating: ${value?.y}`,
+                      valueFormatter: (value) =>
+                          t('tooltipScoreRatingNewline', { x: value?.x ?? '', y: value?.y ?? '' }),
                       color: isLight ? '#000' : '#fff',
                   },
               ]
@@ -196,9 +207,14 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
 
     return (
         <CardContent sx={{ height: 1 }}>
-            <Stack ref={ref} height={1}>
+            <Stack
+                ref={ref}
+                sx={{
+                    height: 1,
+                }}
+            >
                 <MultipleSelectChip
-                    label='Cohorts'
+                    label={t('cohortsLabel')}
                     selected={cohorts}
                     setSelected={onChangeCohort}
                     options={[
@@ -209,9 +225,9 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                         value: opt,
                         label:
                             opt === ALL_COHORTS
-                                ? 'All Cohorts'
+                                ? t('allCohorts')
                                 : opt === bestFitCohortRange
-                                  ? `Best Fit Cohort Range (${bestFitCohortRange})`
+                                  ? t('bestFitCohortRange', { range: bestFitCohortRange })
                                   : opt,
                         icon:
                             opt === bestFitCohortRange ? (
@@ -229,28 +245,68 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                     error={cohorts.length === 0}
                 />
 
-                <Stack alignItems='center' mt={1} mb={1} spacing={0.5}>
-                    <Stack direction='row' spacing={2} justifyContent='center'>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: 'center',
+                        mt: 1,
+                        mb: 1,
+                    }}
+                >
+                    <Stack
+                        direction='row'
+                        spacing={2}
+                        sx={{
+                            justifyContent: 'center',
+                        }}
+                    >
                         <Typography variant='body2'>
-                            <Typography variant='body2' component='span' color='text.secondary'>
-                                Users:
-                            </Typography>{' '}
-                            {userCount}
+                            {t.rich('usersLine', {
+                                count: userCount,
+                                dim: (chunks) => (
+                                    <Typography
+                                        variant='body2'
+                                        component='span'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
+                                        {chunks}
+                                    </Typography>
+                                ),
+                            })}
                         </Typography>
                         <Typography variant='body2'>
-                            <Typography variant='body2' component='span' color='text.secondary'>
-                                Avg Score:
-                            </Typography>{' '}
-                            {Math.round(10 * avgScore) / 10}
+                            {t.rich('avgScoreLine', {
+                                score: Math.round(10 * avgScore) / 10,
+                                dim: (chunks) => (
+                                    <Typography
+                                        variant='body2'
+                                        component='span'
+                                        sx={{
+                                            color: 'text.secondary',
+                                        }}
+                                    >
+                                        {chunks}
+                                    </Typography>
+                                ),
+                            })}
                         </Typography>
                     </Stack>
-                    <Typography variant='caption' color='text.secondary' textAlign='center'>
-                        Best fit is calculated as a linear regression over all users {minCohort}
-                        {maxCohort === Infinity ? '+' : `–${maxCohort}`}
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            color: 'text.secondary',
+                            textAlign: 'center',
+                        }}
+                    >
+                        {maxCohort === Infinity
+                            ? t('regressionCaptionPlus', { min: minCohort })
+                            : t('regressionCaptionRange', { min: minCohort, max: maxCohort })}
                     </Typography>
                 </Stack>
 
-                <ChartDataProvider>
+                <ChartsDataProvider>
                     <ChartsLegend
                         slotProps={{
                             legend: {
@@ -265,18 +321,18 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                             },
                         }}
                     />
-                    <ChartContainer
+                    <ChartsContainer
                         disableAxisListener
                         xAxis={[
                             {
-                                label: 'Score',
+                                label: t('xAxisLabel'),
                                 data: Array.from(Array(totalScore + 2)).map((_, i) => i),
                                 min: 0,
                             },
                         ]}
                         yAxis={[
                             {
-                                label: 'Normalized Rating',
+                                label: t('yAxisLabel'),
                                 valueFormatter: (value: number) => `${value}`,
                                 min: 0,
                             },
@@ -287,7 +343,7 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                             [`& .${axisClasses.left} .${axisClasses.label}`]: {
                                 transform: 'translateX(-20px)',
                             },
-                            [`.${lineElementClasses.root}`]: {
+                            [`.${lineClasses.line}`]: {
                                 strokeWidth: 1,
                             },
                             '.MuiLineElement-series-best-fit': {
@@ -316,8 +372,8 @@ const ExamStatistics: React.FC<ExamStatisticsProps> = ({ exam }) => {
                         <ScatterPlot />
                         <ChartsTooltip trigger='item' />
                         <ChartsClipPath id='clip-path' />
-                    </ChartContainer>
-                </ChartDataProvider>
+                    </ChartsContainer>
+                </ChartsDataProvider>
             </Stack>
         </CardContent>
     );

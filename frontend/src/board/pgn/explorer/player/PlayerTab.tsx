@@ -12,12 +12,17 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Database from '../Database';
 import { ExplorerDatabaseType } from '../Explorer';
 import { Filters } from './Filters';
 import { usePlayerOpeningTree } from './PlayerOpeningTree';
+import { Color } from './PlayerSource';
 import { PlayerSources } from './PlayerSources';
+import { createRepertoireSpyMoveProvider } from './repertoireSpyMoveProvider';
+import { DEFAULT_REPERTOIRE_SPY_START_FEN, useRepertoireSpyPlay } from './RepertoireSpyPlayContext';
+import { RepertoireSpyPlayControls } from './RepertoireSpyPlayControls';
 import { usePlayerGames } from './usePlayerGames';
 
 function onClickGame(game: GameInfo) {
@@ -25,6 +30,7 @@ function onClickGame(game: GameInfo) {
 }
 
 export function PlayerTab({ fen }: { fen: string }) {
+    const t = useTranslations('analysisBoard.explorer.player');
     const {
         sources,
         setSources,
@@ -39,11 +45,16 @@ export function PlayerTab({ fen }: { fen: string }) {
     const isFreeTier = useFreeTier();
     const pagination = usePlayerGames(fen, openingTree, readonlyFilters);
     const [filtersOpen, setFiltersOpen] = useState(false);
+    const { isAvailable, startRepertoireSpyGame } = useRepertoireSpyPlay();
 
     if (isFreeTier) {
         return (
-            <Box mt={2}>
-                <UpsellAlert>Upgrade to a full account to search by player.</UpsellAlert>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
+                <UpsellAlert>{t('upsellSearchByPlayer')}</UpsellAlert>
             </Box>
         );
     }
@@ -52,6 +63,8 @@ export function PlayerTab({ fen }: { fen: string }) {
         setFiltersOpen(false);
         void parentOnLoad();
     };
+
+    const position = openingTree.current?.getPosition(fen, readonlyFilters);
 
     return (
         <Stack>
@@ -71,7 +84,7 @@ export function PlayerTab({ fen }: { fen: string }) {
                     }}
                     expandIcon={<ExpandMore />}
                 >
-                    <Typography>Filters</Typography>
+                    <Typography>{t('filtersLabel')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 0 }}>
                     <PlayerSources
@@ -85,10 +98,14 @@ export function PlayerTab({ fen }: { fen: string }) {
             </Accordion>
 
             {isLoading && (
-                <Stack direction='row' spacing={1} my={1}>
-                    <Typography>
-                        {indexedCount} game{indexedCount === 1 ? '' : 's'} loaded...
-                    </Typography>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        my: 1,
+                    }}
+                >
+                    <Typography>{t('gamesLoadedCount', { count: indexedCount })}</Typography>
                     <CircularProgress size={20} />
                 </Stack>
             )}
@@ -97,16 +114,42 @@ export function PlayerTab({ fen }: { fen: string }) {
                 <Database
                     type={ExplorerDatabaseType.Player}
                     fen={fen}
-                    position={openingTree.current?.getPosition(fen, readonlyFilters)}
+                    position={position}
                     isLoading={false}
                     pagination={pagination}
                     onClickGame={onClickGame}
                 />
             )}
 
+            {isAvailable && openingTree.current && (
+                <RepertoireSpyPlayControls
+                    filters={readonlyFilters}
+                    performanceRating={position?.performanceData?.performanceRating}
+                    onStart={({ playerColor, maiaRating, minGames, timeControl }) => {
+                        if (!openingTree.current) {
+                            return;
+                        }
+                        const databaseColor = playerColor === 'white' ? Color.Black : Color.White;
+                        startRepertoireSpyGame({
+                            playerColor,
+                            maiaRating,
+                            minGames,
+                            timeControl,
+                            startFen: fen || DEFAULT_REPERTOIRE_SPY_START_FEN,
+                            botMoveProvider: createRepertoireSpyMoveProvider({
+                                openingTree: openingTree.current,
+                                filters: readonlyFilters,
+                                databaseColor,
+                                minGames,
+                            }),
+                        });
+                    }}
+                />
+            )}
+
             {!isLoading && !openingTree.current && (
                 <Button variant='contained' onClick={onLoad} sx={{ mt: 3 }} color='dojoOrange'>
-                    Load Games
+                    {t('loadGamesButton')}
                 </Button>
             )}
         </Stack>

@@ -1,10 +1,12 @@
 import { Stack, Typography } from '@mui/material';
 
-import { displayPrice } from '@/app/(scoreboard)/courses/(list)/CourseListItem';
+import { displayPrice } from '@/app/[locale]/(scoreboard)/courses/(list)/CourseListItem';
 import { useAuth } from '@/auth/Auth';
 import { Event } from '@/database/event';
+import { useTranslations } from 'next-intl';
 
 const PriceField: React.FC<{ event: Event }> = ({ event }) => {
+    const t = useTranslations('calendar');
     const user = useAuth().user;
 
     if (!event.coaching) {
@@ -19,13 +21,24 @@ const PriceField: React.FC<{ event: Event }> = ({ event }) => {
 
     return (
         <Stack>
-            <Typography variant='subtitle2' color='text.secondary'>
-                Price
+            <Typography
+                variant='subtitle2'
+                sx={{
+                    color: 'text.secondary',
+                }}
+            >
+                {t('price')}
             </Typography>
             {isParticipant ? (
-                <Typography>Already Booked</Typography>
+                <Typography>{t('alreadyBooked')}</Typography>
             ) : (
-                <Stack direction='row' spacing={1} alignItems='baseline'>
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'baseline',
+                    }}
+                >
                     <Typography
                         variant='body1'
                         sx={{
@@ -38,11 +51,21 @@ const PriceField: React.FC<{ event: Event }> = ({ event }) => {
 
                     {percentOff > 0 && (
                         <>
-                            <Typography variant='body1' color='success.main'>
+                            <Typography
+                                variant='body1'
+                                sx={{
+                                    color: 'success.main',
+                                }}
+                            >
                                 ${displayPrice(currentPrice / 100)}
                             </Typography>
 
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                }}
+                            >
                                 (-{percentOff}%)
                             </Typography>
                         </>

@@ -62,6 +62,9 @@ type Graduation struct {
 	// The amount of time spent in minutes on non-dojo tasks in the cohort
 	NonDojoMinutes int `dynamodbav:"nonDojoMinutes,omitempty" json:"nonDojoMinutes,omitempty"`
 
+	// The number of games annotated and published in the 2 months before graduation.
+	GamesAnnotated int `dynamodbav:"gamesAnnotated" json:"gamesAnnotated"`
+
 	// A map from a rating system to a slice of RatingHistory objects for that rating system.
 	RatingHistories map[RatingSystem][]RatingHistory `dynamodbav:"ratingHistories" json:"ratingHistories"`
 }
@@ -71,6 +74,7 @@ type GraduationCreator interface {
 	UserUpdater
 	RequirementLister
 	TimelineEditor
+	GameLister
 
 	// PutGraduation saves the provided Graduation in the database.
 	PutGraduation(graduation *Graduation) error

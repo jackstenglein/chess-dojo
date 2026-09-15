@@ -6,6 +6,8 @@ import { Link } from '@/components/navigation/Link';
 import { User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import { Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
+import { ReactNode } from 'react';
 
 interface ClubsTabProps {
     /** The user whose joined clubs will be displayed. */
@@ -18,6 +20,7 @@ interface ClubsTabProps {
  * @returns A ReactNode displaying the list of clubs the user is in.
  */
 const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
+    const t = useTranslations('profile.clubsTab');
     const viewer = useAuth().user;
     const { clubs, request } = useClubs(user.clubs || []);
 
@@ -30,19 +33,29 @@ const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
 
     if (displayedClubs.length === 0) {
         return (
-            <Stack alignItems='center'>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <RequestSnackbar request={request} />
 
                 {isCurrentUser ? (
                     <>
-                        <Typography>You have not joined any clubs yet.</Typography>
+                        <Typography>{t('emptyOwnLine1')}</Typography>
                         <Typography>
-                            Go to the <Link href='/clubs'>Clubs page</Link> to join some!
+                            {t.rich('emptyOwnLine2', {
+                                link: (chunks: ReactNode) => <Link href='/clubs'>{chunks}</Link>,
+                            })}
                         </Typography>
                     </>
                 ) : (
-                    <Typography textAlign='center'>
-                        This user has not joined any clubs yet.
+                    <Typography
+                        sx={{
+                            textAlign: 'center',
+                        }}
+                    >
+                        {t('emptyOther')}
                     </Typography>
                 )}
             </Stack>
@@ -54,7 +67,11 @@ const ClubsTab: React.FC<ClubsTabProps> = ({ user }) => {
             <RequestSnackbar request={request} />
 
             {displayedClubs.map((club) => (
-                <ListClubItem key={club.id} club={club} />
+                <ListClubItem
+                    key={club.id}
+                    club={club}
+                    isMainClub={isCurrentUser && club.id === viewer?.mainClubId}
+                />
             ))}
         </Stack>
     );

@@ -8,13 +8,15 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import { BoardApi } from '@/board/Board';
 import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard from '@/board/pgn/PgnBoard';
+import { useSidePanelTabs } from '@/board/pgn/sidePanelTabs';
 import { GameMoveButtonExtras } from '@/components/games/view/GameMoveButtonExtras';
 import { GameContext } from '@/context/useGame';
-import { Game, PositionComment } from '@/database/game';
+import { Game } from '@/database/game';
+import { mergeSuggestedVariations } from '@/games/mergeSuggestedVariations';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
-import { Chess, EventType as ChessEventType, Move } from '@jackstenglein/chess';
+import { Chess, EventType as ChessEventType } from '@jackstenglein/chess';
 import {
     GameHeader,
     GameImportTypes,
@@ -23,12 +25,17 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { Box } from '@mui/material';
 import { isAxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 import { notFound } from 'next/navigation';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MissingGameDataPreflight } from '../edit/MissingGameDataPreflight';
 import PgnErrorBoundary from './PgnErrorBoundary';
 
-const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
+/** Module-level cache so it survives React Strict Mode remounts in dev. */
+const gameCache = new Map<string, Game>();
+
+const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id: string }) => {
+    const t = useTranslations('games.view.gamePage');
     const api = useApi();
     const request = useRequest<Game>();
     const featureRequest = useRequest();
@@ -39,20 +46,38 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
     });
     const firstLoad = searchParams.get('firstLoad') === 'true';
 
+    // Track the current game separately so we can swap without navigation
+    const [currentCohort, setCurrentCohort] = useState(initialCohort);
+    const [currentId, setCurrentId] = useState(initialId);
+    const [currentGame, setCurrentGame] = useState<Game | undefined>();
+    const updatedAtRef = useRef<string>(undefined);
+
+    const cohort = currentCohort;
+    const id = currentId;
+
     const reset = request.reset;
     useEffect(() => {
         if (cohort && id) {
+            const cached = gameCache.get(`${cohort}/${id}`);
+            if (cached) {
+                setCurrentGame(cached);
+                updatedAtRef.current = cached.updatedAt || '';
+                return;
+            }
             reset();
         }
     }, [cohort, id, reset]);
 
     useEffect(() => {
-        if (!request.isSent() && cohort && id) {
+        if (!request.isSent() && cohort && id && !gameCache.has(`${cohort}/${id}`)) {
             request.onStart();
             api.getGame(cohort, id)
                 .then((response) => {
                     const game = response.data;
                     mergeSuggestedVariations(game);
+                    gameCache.set(`${cohort}/${id}`, game);
+                    setCurrentGame(game);
+                    updatedAtRef.current = game.updatedAt;
                     request.onSuccess(game);
                 })
                 .catch((err) => {
@@ -61,11 +86,37 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
         }
     }, [request, api, cohort, id]);
 
+    const onNavigateToGame = useCallback((newCohort: string, newId: string) => {
+        setCurrentCohort(newCohort);
+        setCurrentId(newId);
+        // Update URL without triggering Next.js navigation
+        const newUrl = `/games/${newCohort.replaceAll('+', '%2B')}/${newId.replaceAll('?', '%3F')}${window.location.search}`;
+        window.history.replaceState(null, '', newUrl);
+    }, []);
+
+    // Use currentGame to keep the board visible while switching games
+    const game = currentGame ?? request.data;
+    const isOwner = game?.owner === user?.username;
+    const availableSidePanelTabs = [
+        ...(user ? [DefaultUnderboardTab.Directories] : []),
+        DefaultUnderboardTab.PgnText,
+        DefaultUnderboardTab.Tags,
+        ...(isOwner ? [DefaultUnderboardTab.Editor] : []),
+        DefaultUnderboardTab.Comments,
+        DefaultUnderboardTab.Explorer,
+        DefaultUnderboardTab.Clocks,
+        DefaultUnderboardTab.Tools,
+        DefaultUnderboardTab.Share,
+        DefaultUnderboardTab.Settings,
+    ];
+    const { leftTabs, rightTabs } = useSidePanelTabs(availableSidePanelTabs);
+
     if (status === AuthStatus.Loading) {
         return <LoadingPage />;
     }
 
     if (
+        !currentGame &&
         request.isFailure() &&
         isAxiosError(request.error) &&
         request.error.response?.status === 404
@@ -74,7 +125,7 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
     }
 
     const onSave = (headers: GameHeader, orientation: GameOrientation) => {
-        const game = request.data;
+        const game = currentGame ?? request.data;
 
         if (game === undefined) {
             logger.error?.('Game is unexpectedly undefined');
@@ -101,6 +152,7 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
         const update: UpdateGameRequest = {
             cohort: game.cohort,
             id: game.id,
+            updatedAt: updatedAtRef.current || game.updatedAt || game.createdAt,
             headers,
             unlisted: true,
             orientation,
@@ -126,7 +178,11 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
     };
 
     const onUpdateGame = (g: Game) => {
-        request.onSuccess({ ...g, pgn: request.data?.pgn ?? g.pgn });
+        const current = currentGame ?? request.data;
+        const updated = { ...g, pgn: current?.pgn ?? g.pgn };
+        setCurrentGame(updated);
+        gameCache.set(`${updated.cohort}/${updated.id}`, updated);
+        request.onSuccess(updated);
     };
 
     const onInitialize = (_: BoardApi, chess: Chess) => {
@@ -144,9 +200,7 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
         }
     };
 
-    const isOwner = request.data?.owner === user?.username;
-    const showPreflight =
-        isOwner && firstLoad && request.data !== undefined && isMissingData(request.data);
+    const showPreflight = isOwner && firstLoad && game !== undefined && isMissingData(game);
 
     return (
         <Box
@@ -160,30 +214,26 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
             <RequestSnackbar request={featureRequest} showSuccess />
             <RequestSnackbar request={updateRequest} />
 
-            <PgnErrorBoundary pgn={request.data?.pgn} game={request.data}>
+            <PgnErrorBoundary pgn={game?.pgn} game={game}>
                 <GameContext.Provider
                     value={{
-                        game: request.data,
+                        game,
                         onUpdateGame,
                         isOwner,
+                        onNavigateToGame,
+                        updatedAtRef,
                     }}
                 >
                     <PgnBoard
-                        pgn={request.data?.pgn}
-                        startOrientation={request.data?.orientation}
-                        underboardTabs={[
-                            ...(user ? [DefaultUnderboardTab.Directories] : []),
-                            DefaultUnderboardTab.Tags,
-                            ...(isOwner ? [DefaultUnderboardTab.Editor] : []),
-                            DefaultUnderboardTab.Comments,
-                            DefaultUnderboardTab.Explorer,
-                            DefaultUnderboardTab.Clocks,
-                            DefaultUnderboardTab.Tools,
-                            DefaultUnderboardTab.Share,
-                            DefaultUnderboardTab.Settings,
-                        ]}
-                        allowMoveDeletion={request.data?.owner === user?.username}
-                        allowDeleteBefore={request.data?.owner === user?.username}
+                        key={`${game?.cohort}/${game?.id}`}
+                        pgn={game?.pgn}
+                        startOrientation={game?.orientation}
+                        underboardTabs={leftTabs}
+                        rightTabs={rightTabs}
+                        tabStorageKeyPrefix='game'
+                        sidePanelTabs={availableSidePanelTabs}
+                        allowMoveDeletion={game?.owner === user?.username}
+                        allowDeleteBefore={game?.owner === user?.username}
                         showElapsedMoveTimes
                         slots={{
                             moveButtonExtras: GameMoveButtonExtras,
@@ -192,17 +242,17 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
                     />
                 </GameContext.Provider>
             </PgnErrorBoundary>
-            {request.data && (
+            {game && (
                 <MissingGameDataPreflight
                     skippable
                     open={showPreflight}
-                    initHeaders={request.data.headers}
-                    initOrientation={request.data.orientation}
+                    initHeaders={game.headers}
+                    initOrientation={game.orientation}
                     loading={updateRequest.isLoading()}
                     onSubmit={onSave}
                     onClose={() => updateSearchParams({ firstLoad: 'false' })}
                 >
-                    You can fill this data out now or later in settings.
+                    {t('preflightHint')}
                 </MissingGameDataPreflight>
             )}
         </Box>
@@ -210,85 +260,3 @@ const GamePage = ({ cohort, id }: { cohort: string; id: string }) => {
 };
 
 export default GamePage;
-
-function mergeSuggestedVariations(game: Game) {
-    const suggestions: Record<string, PositionComment[]> = {};
-    for (const [fen, positionComments] of Object.entries(game.positionComments || {})) {
-        for (const comment of Object.values(positionComments)) {
-            if (comment.suggestedVariation) {
-                suggestions[fen] = (suggestions[fen] ?? []).concat(comment);
-            }
-        }
-    }
-
-    if (Object.keys(suggestions).length === 0) {
-        return;
-    }
-
-    const chess = new Chess({ pgn: game.pgn });
-    const stack: Move[] = [];
-    let move = null;
-
-    do {
-        const comments = suggestions[chess.normalizedFen(move)];
-        if (comments) {
-            mergeFromMove(chess, move, comments);
-        }
-
-        const nextMove = chess.nextMove(move);
-        if (nextMove) {
-            stack.push(nextMove);
-        }
-        for (const variation of move?.variations ?? []) {
-            stack.push(variation[0]);
-        }
-
-        move = stack.pop() ?? null;
-    } while (move);
-
-    game.pgn = chess.renderPgn();
-}
-
-function mergeFromMove(chess: Chess, move: Move | null, comments: PositionComment[]) {
-    comments.sort((lhs, rhs) => lhs.createdAt.localeCompare(rhs.createdAt));
-
-    for (const comment of comments) {
-        const commentChess = new Chess({ pgn: comment.suggestedVariation });
-        recursiveMergeLine(commentChess.history(), chess, move, comment);
-    }
-}
-
-/**
- * Recursively merges the given line into the target Chess instance.
- * @param line The line to merge into the Chess instance.
- * @param target The target Chess to merge the line into.
- * @param currentTargetMove The current move to start from in the target Chess.
- * @param comment The comment that generated the merge.
- */
-function recursiveMergeLine(
-    line: Move[],
-    target: Chess,
-    currentTargetMove: Move | null,
-    comment: PositionComment,
-) {
-    for (const move of line) {
-        const newTargetMove = target.move(move.san, {
-            previousMove: currentTargetMove,
-            skipSeek: true,
-        });
-        if (!newTargetMove) {
-            return;
-        }
-
-        target.setCommand(
-            'dojoComment',
-            `${comment.owner.username},${comment.owner.displayName},${comment.id}`,
-            newTargetMove,
-        );
-        for (const variation of move.variations) {
-            recursiveMergeLine(variation, target, currentTargetMove, comment);
-        }
-
-        currentTargetMove = newTargetMove;
-    }
-}

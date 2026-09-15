@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { LogLevel } from './logging/logLevel';
 
 export const MUI_LICENSE_KEY =
-    '24a7fa97376749c937d182874ff9e0bcTz0xMjMxMjIsRT0xNzk3MjA2Mzk5MDAwLFM9cHJvLExNPXN1YnNjcmlwdGlvbixQVj1RMy0yMDI0LEtWPTI=';
+    '88cd3224ebe6fef491d55087683d3ab3Tz0xMjMxMjIsRT0xNzk3MjkyNzk5MDAwLFM9cHJvLExNPWFubnVhbCxQVj1RMS0yMDI2LFE9MSxBVD1tdWx0aSxLVj0y';
 
 export const EnvSchema = z.object({
     auth: z.object({
@@ -20,6 +20,10 @@ export const EnvSchema = z.object({
             redirectSignOut: z.string(),
             responseType: z.literal('code'),
         }),
+    }),
+    database: z.object({
+        region: z.literal('us-east-1'),
+        usersTable: z.string(),
     }),
     api: z.object({
         baseUrl: z.string(),
@@ -59,7 +63,7 @@ export const EnvSchema = z.object({
         oauthRedirectUrl: z.string(),
         guildId: z.string(),
     }),
-    logLevel: z.nativeEnum(LogLevel),
+    logLevel: z.enum(LogLevel),
 });
 
 export type Config = z.infer<typeof EnvSchema>;
@@ -77,6 +81,10 @@ export function getConfig(): Config {
                 redirectSignOut: process.env.NEXT_PUBLIC_AUTH_OAUTH_REDIRECT_SIGN_OUT,
                 responseType: process.env.NEXT_PUBLIC_AUTH_OAUTH_RESPONSE_TYPE,
             },
+        },
+        database: {
+            region: process.env.NEXT_PUBLIC_DATABASE_REGION,
+            usersTable: process.env.NEXT_PUBLIC_DATABASE_USERS_TABLE,
         },
         api: {
             baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,

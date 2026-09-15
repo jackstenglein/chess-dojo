@@ -8,6 +8,7 @@ import {
     ToggleButtonGroup,
     Tooltip,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { DEFAULT_PLAYER_SOURCE, PlayerSource, SourceType } from './PlayerSource';
 
@@ -22,6 +23,8 @@ export function PlayerSources({
     locked: boolean;
     onClear: () => void;
 }) {
+    const t = useTranslations('analysisBoard.explorer.player');
+
     const handleTypeChange = (value: SourceType | null, index: number) => {
         if (!value) return;
 
@@ -57,9 +60,21 @@ export function PlayerSources({
     };
 
     return (
-        <Stack mt={1} spacing={1}>
+        <Stack
+            spacing={1}
+            sx={{
+                mt: 1,
+            }}
+        >
             {sources.map((source, i) => (
-                <Stack key={i} direction='row' spacing={1} alignItems='start'>
+                <Stack
+                    key={i}
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'start',
+                    }}
+                >
                     <ToggleButtonGroup
                         value={source.type}
                         exclusive
@@ -68,13 +83,13 @@ export function PlayerSources({
                         disabled={locked}
                         sx={{ pt: '3px' }}
                     >
-                        <Tooltip title='Chess.com'>
+                        <Tooltip title={t('chesscomLabel')}>
                             <ToggleButton value={SourceType.Chesscom}>
                                 <SiChessdotcom color='#81b64c' size='18' />
                             </ToggleButton>
                         </Tooltip>
 
-                        <Tooltip title='Lichess'>
+                        <Tooltip title={t('lichessLabel')}>
                             <ToggleButton value={SourceType.Lichess}>
                                 <SiLichess size='18' />
                             </ToggleButton>
@@ -84,8 +99,8 @@ export function PlayerSources({
                     <TextField
                         placeholder={
                             source.type === SourceType.Chesscom
-                                ? 'Chess.com Username'
-                                : 'Lichess Username'
+                                ? t('chesscomUsernamePlaceholder')
+                                : t('lichessUsernamePlaceholder')
                         }
                         value={source.username}
                         onChange={(e) => handleUsernameChange(e.target.value, i)}
@@ -98,7 +113,7 @@ export function PlayerSources({
 
                     {locked ? (
                         <Tooltip
-                            title={`${source.hidden ? 'Show source in' : 'Hide source from'} results`}
+                            title={source.hidden ? t('showSourceTooltip') : t('hideSourceTooltip')}
                             disableInteractive
                         >
                             <span style={{ paddingTop: '3px' }}>
@@ -113,7 +128,7 @@ export function PlayerSources({
                             </span>
                         </Tooltip>
                     ) : (
-                        <Tooltip title='Remove source' disableInteractive>
+                        <Tooltip title={t('removeSourceTooltip')} disableInteractive>
                             <span style={{ paddingTop: '3px' }}>
                                 <IconButton
                                     onClick={() => onDeleteSource(i)}
@@ -137,7 +152,7 @@ export function PlayerSources({
                     size='small'
                     color='error'
                 >
-                    Clear Data
+                    {t('clearDataButton')}
                 </Button>
             ) : (
                 <Button
@@ -146,7 +161,7 @@ export function PlayerSources({
                     sx={{ alignSelf: 'start' }}
                     size='small'
                 >
-                    Add Source
+                    {t('addSourceButton')}
                 </Button>
             )}
         </Stack>

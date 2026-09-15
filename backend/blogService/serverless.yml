@@ -69,6 +69,8 @@ functions:
 
   create:
     handler: create.handler
+    environment:
+      notificationEventSqsUrl: ${param:NotificationEventQueueUrl}
     events:
       - httpApi:
           path: /blog
@@ -85,6 +87,10 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+        Resource: ${param:NotificationEventQueueArn}
 
   createComment:
     handler: createComment.handler
@@ -148,6 +154,8 @@ functions:
 
   update:
     handler: update.handler
+    environment:
+      notificationEventSqsUrl: ${param:NotificationEventQueueUrl}
     events:
       - httpApi:
           path: /blog/{owner}/{id}
@@ -165,6 +173,10 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+        Resource: ${param:NotificationEventQueueArn}
 
 resources:
   Conditions:

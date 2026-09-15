@@ -1,4 +1,4 @@
-import { AttributeValue, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { AttributeValue, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { getCohortRangeInt } from '@jackstenglein/chess-dojo-common/src/database/cohort';
 import { SubscriptionTier, User } from '@jackstenglein/chess-dojo-common/src/database/user';
@@ -25,7 +25,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         const output = await dynamo.send(
-            new ScanCommand({
+            new QueryCommand({
+                KeyConditionExpression: `#type = :type`,
+                ExpressionAttributeNames: { '#type': 'type' },
+                ExpressionAttributeValues: { ':type': { S: 'GAME_REVIEW_COHORT' } },
                 TableName: LIVE_CLASSES_TABLE,
             }),
         );
@@ -48,12 +51,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             userCohortMap.set(u.username, u.dojoCohort);
         }
 
-        // Enrich each cohort member with their dojoCohort
+        // Enrich each cohort member with their dojoCohort and remove lapsed members
         for (const cohort of gameReviewCohorts) {
-            for (const [username, member] of Object.entries(cohort.members)) {
+            for (const username of Object.keys(cohort.members)) {
                 const dojoCohort = userCohortMap.get(username);
                 if (dojoCohort) {
-                    cohort.members[username] = { ...member, dojoCohort };
+                    cohort.members[username] = { ...cohort.members[username], dojoCohort };
+                } else {
+                    delete cohort.members[username];
                 }
             }
         }
@@ -80,7 +85,7 @@ async function getUsersByTier(tier: SubscriptionTier): Promise<User[]> {
     const users: User[] = [];
 
     do {
-        const input = new QueryCommand({
+        const input: QueryCommand = new QueryCommand({
             KeyConditionExpression: '#subscriptionTier = :tier',
             ExpressionAttributeNames: { '#subscriptionTier': 'subscriptionTier' },
             ExpressionAttributeValues: { ':tier': { S: tier } },

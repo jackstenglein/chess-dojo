@@ -1,5 +1,6 @@
 import { useAuth } from '@/auth/Auth';
 import { Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Chart } from 'react-charts';
 import { months, primaryAxis, secondaryAxes } from './DojoPointSection';
@@ -7,6 +8,7 @@ import Percentiles from './Percentiles';
 import { SectionProps } from './section';
 
 const GameSection = ({ review }: SectionProps) => {
+    const t = useTranslations('profile.yearReview.games');
     const viewer = useAuth().user;
     const dark = !viewer?.enableLightMode;
 
@@ -15,7 +17,7 @@ const GameSection = ({ review }: SectionProps) => {
     const monthData = useMemo(() => {
         return [
             {
-                label: 'Published',
+                label: t('published'),
                 data: Object.entries(months)
                     .sort((lhs, rhs) => rhs[1].localeCompare(lhs[1]))
                     .map((month) => ({
@@ -24,7 +26,7 @@ const GameSection = ({ review }: SectionProps) => {
                     })),
             },
             {
-                label: 'Unpublished',
+                label: t('unpublished'),
                 data: Object.entries(months)
                     .sort((lhs, rhs) => rhs[1].localeCompare(lhs[1]))
                     .map((month) => ({
@@ -33,88 +35,111 @@ const GameSection = ({ review }: SectionProps) => {
                     })),
             },
         ];
-    }, [data]);
+    }, [data, t]);
 
     const resultData = useMemo(() => {
         return [
             {
-                label: 'Published',
+                label: t('published'),
                 data: [
                     {
-                        primary: 'Analysis',
+                        primary: t('analysis'),
                         secondary: data.analysis?.value || 0,
                         style: { fill: 'var(--mui-palette-info-dark)' },
                     },
                     {
-                        primary: 'Loss',
+                        primary: t('loss'),
                         secondary: data.loss?.value || 0,
                         style: { fill: 'var(--mui-palette-error-dark' },
                     },
                     {
-                        primary: 'Draw',
+                        primary: t('draw'),
                         secondary: data.draw?.value || 0,
                         style: { fill: 'var(--mui-palette-warning-dark)' },
                     },
                     {
-                        primary: 'Win',
+                        primary: t('win'),
                         secondary: data.win?.value || 0,
                         style: { fill: 'var(--mui-palette-success-dark)' },
                     },
                 ],
             },
             {
-                label: 'Unpublished',
+                label: t('unpublished'),
                 data: [
                     {
-                        primary: 'Analysis',
+                        primary: t('analysis'),
                         secondary: data.analysisHidden || 0,
                         style: { fill: 'var(--mui-palette-info-light)' },
                     },
                     {
-                        primary: 'Loss',
+                        primary: t('loss'),
                         secondary: data.lossHidden || 0,
                         style: { fill: 'var(--mui-palette-error-light' },
                     },
                     {
-                        primary: 'Draw',
+                        primary: t('draw'),
                         secondary: data.drawHidden || 0,
                         style: { fill: 'var(--mui-palette-warning-light)' },
                     },
                     {
-                        primary: 'Win',
+                        primary: t('win'),
                         secondary: data.winHidden || 0,
                         style: { fill: 'var(--mui-palette-success-light)' },
                     },
                 ],
             },
         ];
-    }, [data]);
+    }, [data, t]);
 
     return (
-        <Stack width={1} alignItems='center'>
+        <Stack
+            sx={{
+                width: 1,
+                alignItems: 'center',
+            }}
+        >
             <Typography
                 variant='h6'
-                fontWeight='800'
-                fontSize='clamp(16px,3vw,32px)'
-                textAlign='center'
+                sx={{
+                    fontWeight: '800',
+                    fontSize: 'clamp(16px,3vw,32px)',
+                    textAlign: 'center',
+                }}
             >
-                Finally, we all know analyzing games is a cornerstone of the Dojo, so let's check
-                your game stats!
+                {t('intro')}
             </Typography>
             <Card variant='outlined' sx={{ width: 1, mt: 4 }}>
                 <CardContent>
-                    <Grid container alignItems='center' rowSpacing={2}>
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         <Grid
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 12,
                                 sm: 4,
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
-                            <Stack alignItems='center'>
-                                <Typography variant='caption' color='text.secondary'>
-                                    Total Games
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('totalGames')}
                                 </Typography>
 
                                 <Typography
@@ -130,23 +155,34 @@ const GameSection = ({ review }: SectionProps) => {
                         </Grid>
 
                         <Percentiles
-                            description='total games'
+                            description={t('totalGamesDescription')}
                             cohort={review.currentCohort}
                             percentile={data.total.percentile}
                             cohortPercentile={data.total.cohortPercentile}
                         />
 
                         <Grid
-                            display='flex'
-                            justifyContent='center'
                             size={{
                                 xs: 12,
                                 sm: 4,
                             }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
                         >
-                            <Stack alignItems='center'>
-                                <Typography variant='caption' color='text.secondary'>
-                                    Published Games
+                            <Stack
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography
+                                    variant='caption'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('publishedGames')}
                                 </Typography>
 
                                 <Typography
@@ -162,17 +198,33 @@ const GameSection = ({ review }: SectionProps) => {
                         </Grid>
 
                         <Percentiles
-                            description='published games'
+                            description={t('publishedGamesDescription')}
                             cohort={review.currentCohort}
                             percentile={data.published.percentile}
                             cohortPercentile={data.published.cohortPercentile}
                         />
                     </Grid>
 
-                    <Stack mt={4} spacing={4}>
-                        <Stack alignItems='start' spacing={0.5}>
-                            <Typography>Games by Result</Typography>
-                            <Box width={1} height={400} mt={2}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
+                            <Typography>{t('byResult')}</Typography>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: resultData,
@@ -193,10 +245,26 @@ const GameSection = ({ review }: SectionProps) => {
                         </Stack>
                     </Stack>
 
-                    <Stack mt={4} spacing={4}>
-                        <Stack alignItems='start' spacing={0.5}>
-                            <Typography>Games by Month</Typography>
-                            <Box width={1} height={400} mt={2}>
+                    <Stack
+                        spacing={4}
+                        sx={{
+                            mt: 4,
+                        }}
+                    >
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                alignItems: 'start',
+                            }}
+                        >
+                            <Typography>{t('byMonth')}</Typography>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: 400,
+                                    mt: 2,
+                                }}
+                            >
                                 <Chart
                                     options={{
                                         data: monthData,

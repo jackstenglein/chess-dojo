@@ -534,6 +534,26 @@ func (repo *dynamoRepository) RemoveClubMember(id string, username string) (*Clu
 	if _, err := repo.svc.UpdateItem(input); err != nil {
 		return nil, errors.Wrap(500, "Temporary server error", "Failed to update user", err)
 	}
+	input = &dynamodb.UpdateItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"username": {S: aws.String(username)},
+		},
+		ConditionExpression: aws.String("#mainClubId = :id"),
+		UpdateExpression:    aws.String("REMOVE #mainClubId"),
+		ExpressionAttributeNames: map[string]*string{
+			"#mainClubId": aws.String("mainClubId"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":id": {S: aws.String(id)},
+		},
+		TableName:    aws.String(userTable),
+		ReturnValues: aws.String("NONE"),
+	}
+	if _, err := repo.svc.UpdateItem(input); err != nil {
+		if _, ok := err.(*dynamodb.ConditionalCheckFailedException); !ok {
+			return nil, errors.Wrap(500, "Temporary server error", "Failed to clear user mainClubId", err)
+		}
+	}
 
 	return club, nil
 }

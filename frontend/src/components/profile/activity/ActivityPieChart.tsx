@@ -1,52 +1,48 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth } from '@/auth/Auth';
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
+import { RequirementCategory } from '@/database/requirement';
 import { ALL_COHORTS, compareCohorts, User } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
-import { Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import Icon, { type IconName } from '@/style/Icon';
+import { Box, Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import { displayTimeframe, getScoreChartData, getTimeChartData, Timeframe } from './activity';
+import { getScoreChartData, getTimeChartData, Timeframe } from './activity';
 import PieChart, { PieChartData } from './PieChart';
 import { UseTimelineResponse } from './useTimeline';
 
-/**
- * Returns a string for the score chart tooltip.
- * @param entry The PieChartData entry to get the tooltip for.
- * @returns The string for the tooltip.
- */
-function getScoreChartTooltip(entry?: PieChartData) {
-    if (!entry) {
-        return '';
-    }
-    const score = Math.round(entry.value * 100) / 100;
-    if (entry.count) {
-        return `${entry.name} - Count: ${entry.count}, Score: ${score}`;
-    }
-    return `${entry.name} - ${score}`;
-}
+type T = ReturnType<typeof useTranslations<'profile.activity'>>;
 
 /**
- * Returns a string for the time chart tooltip.
- * @param entry The PieChartData entry to get the tooltip for.
- * @returns The string for the tooltip.
+ * Maps activity pie chart category labels to icon names for tooltip display.
+ *
+ * @param name The displayed activity category name.
+ * @returns The matching icon name, if one exists.
  */
-function getTimeChartTooltip(entry?: PieChartData) {
-    if (!entry) {
-        return '';
-    }
-    return `${entry.name} - ${getTimeDisplay(entry.value)}`;
-}
+const getCategoryIconName = (name: string): IconName | undefined => {
+    const iconMap: Record<string, IconName> = {
+        'Games + Analysis': RequirementCategory.Games,
+        Tactics: RequirementCategory.Tactics,
+        'Middlegames + Strategy': RequirementCategory.Middlegames,
+        Endgame: RequirementCategory.Endgame,
+        Opening: RequirementCategory.Opening,
+        'Welcome to the Dojo': RequirementCategory.Welcome,
+    };
+
+    return iconMap[name];
+};
 
 /**
  * Converts a number of minutes to a display string in the format `1h 23m`.
  * @param value The time to display in minutes.
  * @returns The time as a display string.
  */
-function getTimeDisplay(value: number) {
+function getTimeDisplay(value: number, t: T) {
     const hours = Math.floor(value / 60);
     const minutes = value % 60;
-    return `${hours}h ${minutes}m`;
+    return t('timeDisplay', { hours, minutes });
 }
 
 const LAST_SELECTED_COHORTS_KEY = 'lastSelectedCohorts';
@@ -57,6 +53,7 @@ interface ActivityPieChartProps {
 }
 
 const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) => {
+    const t = useTranslations('profile.activity');
     const [timeframe, setTimeframe] = useState(Timeframe.AllTime);
     const { requirements } = useRequirements(ALL_COHORTS, false);
     const { user: viewer } = useAuth();
@@ -84,7 +81,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
         }
         return cohortOptions.map((opt) => ({
             value: opt,
-            label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+            label: opt === ALL_COHORTS ? t('allCohorts') : opt,
             icon: (
                 <CohortIcon
                     cohort={opt}
@@ -95,7 +92,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                 />
             ),
         }));
-    }, [user.progress, user.dojoCohort]);
+    }, [user.progress, user.dojoCohort, t]);
 
     const [cohorts, setCohorts] = useState(
         viewer?.username === user.username &&
@@ -125,6 +122,171 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
             requirements,
         );
     }, [user, cohorts, timeframe, timeline.entries, timeChartCategory, requirements]);
+
+    /**
+     * Returns tooltip content for a hovered time chart slice.
+     *
+     * On the top-level chart, this includes the parent category time and its
+     * subcategory breakdown. On a drilled-in chart, it shows only the hovered
+     * subcategory values.
+     *
+     * @param entry The hovered pie chart entry.
+     * @returns The tooltip content for that entry.
+     */
+    const getTimeChartTooltip = (entry?: PieChartData) => {
+        if (!entry) {
+            return '';
+        }
+
+        if (timeChartCategory) {
+            return (
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box>{entry.name}</Box>
+                    </Box>
+                    <Box sx={{ fontWeight: 700 }}>{getTimeDisplay(entry.value, t)}</Box>
+                </Box>
+            );
+        }
+
+        const breakdown = [
+            ...getTimeChartData(
+                user,
+                cohorts,
+                timeframe,
+                timeline.entries,
+                entry.name,
+                requirements,
+            ),
+        ].sort((a, b) => b.value - a.value);
+
+        return (
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mb: 0.75,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>{entry.name}</Box>
+                    </Box>
+
+                    <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
+                        {getTimeDisplay(entry.value, t)}
+                    </Box>
+                </Box>
+
+                {breakdown.map((item) => (
+                    <Box key={item.name} sx={{ pl: 1, mb: 0.25 }}>
+                        <Box component='span' sx={{ fontWeight: 700 }}>
+                            {item.name}
+                        </Box>{' '}
+                        - {getTimeDisplay(item.value, t)}
+                    </Box>
+                ))}
+
+                {!!breakdown.length && (
+                    <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
+                        {t('clickForMore')}
+                    </Box>
+                )}
+            </Box>
+        );
+    };
+
+    /**
+     * Returns tooltip content for a hovered score chart slice.
+     *
+     * On the top-level chart, this includes the parent category score and its
+     * subcategory breakdown. On a drilled-in chart, it shows only the hovered
+     * subcategory values.
+     *
+     * @param entry The hovered pie chart entry.
+     * @returns The tooltip content for that entry.
+     */
+    const getScoreChartTooltip = (entry?: PieChartData) => {
+        if (!entry) {
+            return '';
+        }
+
+        const score = Math.round(entry.value * 100) / 100;
+
+        if (scoreChartCategory) {
+            return (
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box>{entry.name}</Box>
+                    </Box>
+                    <Box>
+                        {entry.count ? t('countAndScore', { count: entry.count, score }) : score}
+                    </Box>
+                </Box>
+            );
+        }
+
+        const breakdown = [
+            ...getScoreChartData(
+                user,
+                cohorts,
+                timeframe,
+                timeline.entries,
+                entry.name,
+                requirements,
+            ),
+        ].sort((a, b) => b.value - a.value);
+
+        return (
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mb: 0.75,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Icon name={getCategoryIconName(entry.name)} fontSize='small' />
+                        <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>{entry.name}</Box>
+                    </Box>
+
+                    <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>
+                        {entry.count ? t('countAndScore', { count: entry.count, score }) : score}
+                    </Box>
+                </Box>
+
+                {breakdown.map((item) => {
+                    const childScore = Math.round(item.value * 100) / 100;
+
+                    return (
+                        <Box key={item.name} sx={{ pl: 1, mb: 0.25 }}>
+                            <Box component='span' sx={{ fontWeight: 700 }}>
+                                {item.name}
+                            </Box>{' '}
+                            -{' '}
+                            {item.count
+                                ? t('countAndScore', { count: item.count, score: childScore })
+                                : childScore}
+                        </Box>
+                    );
+                })}
+
+                {!!breakdown.length && (
+                    <Box sx={{ mt: 0.75, fontSize: '0.75rem', opacity: 0.8 }}>
+                        {t('clickForMore')}
+                    </Box>
+                )}
+            </Box>
+        );
+    };
 
     const onChangeCohort = (newCohorts: string[]) => {
         setScoreChartCategory('');
@@ -164,13 +326,19 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
     };
 
     return (
-        <Grid container columnSpacing={1} justifyContent='center'>
+        <Grid
+            container
+            columnSpacing={1}
+            sx={{
+                justifyContent: 'center',
+            }}
+        >
             <Grid size={{ xs: 12, sm: 6 }}>
                 <MultipleSelectChip
                     selected={cohorts}
                     setSelected={onChangeCohort}
                     options={cohortOptions}
-                    label='Cohorts'
+                    label={t('cohorts')}
                     sx={{ mb: 3, width: 1 }}
                     size='small'
                     error={cohorts.length === 0}
@@ -180,7 +348,7 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
             <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                     select
-                    label='Timeframe'
+                    label={t('timeframe')}
                     value={timeframe}
                     onChange={(event) => onChangeTimeframe(event.target.value as Timeframe)}
                     sx={{ mb: 3, height: 1 }}
@@ -188,60 +356,96 @@ const ActivityPieChart: React.FC<ActivityPieChartProps> = ({ user, timeline }) =
                 >
                     {Object.values(Timeframe).map((option) => (
                         <MenuItem key={option} value={option}>
-                            {displayTimeframe(option)}
+                            {t(option)}
                         </MenuItem>
                     ))}
                 </TextField>
             </Grid>
 
             <Grid size={12}>
-                <Typography variant='body2' color='text.secondary' textAlign='center'>
-                    Click on a segment of the pie chart to see more details
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                    }}
+                >
+                    {t('clickDetails')}
                 </Typography>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }} mt={4}>
+            <Grid
+                size={{ xs: 12, sm: 6 }}
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <PieChart
-                    id='score-chart'
-                    title={`Score Breakdown${scoreChartCategory && `: ${scoreChartCategory}`}`}
+                    title={
+                        scoreChartCategory
+                            ? t('scoreBreakdownCategory', { category: scoreChartCategory })
+                            : t('scoreBreakdown')
+                    }
                     data={scoreChartData}
                     renderTotal={(score) => (
-                        <Stack alignItems='center'>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='subtitle1'>
-                                Total {scoreChartCategory ? 'Category' : 'Cohort'} Score:{' '}
-                                {Math.round(score * 100) / 100}
+                                {scoreChartCategory
+                                    ? t('totalCategoryScore', {
+                                          score: Math.round(score * 100) / 100,
+                                      })
+                                    : t('totalCohortScore', {
+                                          score: Math.round(score * 100) / 100,
+                                      })}
                             </Typography>
                             {scoreChartCategory && (
                                 <Button onClick={() => setScoreChartCategory('')}>
-                                    Back to Cohort
+                                    {t('backToCohort')}
                                 </Button>
                             )}
                         </Stack>
                     )}
-                    getTooltip={getScoreChartTooltip}
+                    getTooltip={(entry) => getScoreChartTooltip(entry)}
                     onClick={onClickScoreChart}
                 />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }} mt={4}>
+            <Grid
+                size={{ xs: 12, sm: 6 }}
+                sx={{
+                    mt: 4,
+                }}
+            >
                 <PieChart
-                    id='time-chart'
-                    title={`Time Breakdown${timeChartCategory && `: ${timeChartCategory}`}`}
+                    title={
+                        timeChartCategory
+                            ? t('timeBreakdownCategory', { category: timeChartCategory })
+                            : t('timeBreakdown')
+                    }
                     data={timeChartData}
                     renderTotal={(time) => (
-                        <Stack alignItems='center'>
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
                             <Typography variant='subtitle1'>
-                                Total {timeChartCategory ? 'Category' : 'Cohort'} Time:{' '}
-                                {getTimeDisplay(time)}
+                                {timeChartCategory
+                                    ? t('totalCategoryTime', { time: getTimeDisplay(time, t) })
+                                    : t('totalCohortTime', { time: getTimeDisplay(time, t) })}
                             </Typography>
                             {timeChartCategory && (
                                 <Button onClick={() => setTimeChartCategory('')}>
-                                    Back to Cohort
+                                    {t('backToCohort')}
                                 </Button>
                             )}
                         </Stack>
                     )}
-                    getTooltip={getTimeChartTooltip}
+                    getTooltip={(entry) => getTimeChartTooltip(entry)}
                     onClick={onClickTimeChart}
                 />
             </Grid>

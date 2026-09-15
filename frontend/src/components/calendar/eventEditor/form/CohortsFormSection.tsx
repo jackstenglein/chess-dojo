@@ -1,6 +1,7 @@
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
 import { ALL_COHORTS, dojoCohorts } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
+import { useTranslations } from 'next-intl';
 
 interface CohortsFormSectionProps {
     placeholder: string;
@@ -21,6 +22,7 @@ const CohortsFormSection: React.FC<CohortsFormSectionProps> = ({
     setCohort,
     error,
 }) => {
+    const t = useTranslations('calendar');
     const selectedCohorts = allCohorts
         ? [ALL_COHORTS]
         : Object.keys(cohorts).filter((c) => cohorts[c]);
@@ -47,7 +49,7 @@ const CohortsFormSection: React.FC<CohortsFormSectionProps> = ({
             setSelected={onChangeCohort}
             options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
                 value: opt,
-                label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+                label: opt === ALL_COHORTS ? t('allCohorts') : opt,
                 icon: (
                     <CohortIcon
                         cohort={opt}

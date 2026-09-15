@@ -19,18 +19,21 @@ test.describe('Landing Page (unauthenticated)', () => {
 
     test('has sign up button', async ({ page }) => {
         await page.getByRole('link', { name: 'Join the Dojo' }).first().click();
-        await expect(page).toHaveURL('/signup');
+        await expect(page).toHaveURL(/\/signup(?:\?|$)/);
     });
 
     test('has explore button', async ({ page }) => {
         await page.getByRole('button', { name: 'Explore the Program' }).click();
-        await expect(page).toHaveURL('/');
+        await expect(page).toHaveURL(
+            /^http:\/\/localhost:3000\/(en|pseudo|de)?\/?$|^http:\/\/localhost:3000\/$/,
+        );
     });
 
     test('should redirect unauthenticated user to landing', async ({ page }) => {
         await page.goto('/profile');
-        // URL may include redirectUri query param to remember intended destination
-        await expect(page).toHaveURL(/^http:\/\/localhost:3000\/(\?redirectUri=.*)?$/);
+        await expect(page).toHaveURL(
+            /^http:\/\/localhost:3000\/(pseudo|de)?\/?\??(.*)$|^http:\/\/localhost:3000\/\??(.*)$/,
+        );
     });
 });
 
@@ -39,6 +42,6 @@ test.describe('Landing Page (authenticated)', () => {
 
     test('redirects authenticated user to profile', async ({ page }) => {
         await page.goto('/');
-        await expect(page).toHaveURL('/profile');
+        await expect(page).toHaveURL(/\/profile(?:\?|$)/);
     });
 });

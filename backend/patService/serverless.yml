@@ -1,0 +1,153 @@
+# Deploys the personal access tokens (PAT) service.
+#
+# This service contains:
+#   - The CRUD lambda used by the website to create/list/revoke tokens
+#     (JWT-authenticated).
+#   - The Lambda authorizer that authenticates PAT-protected routes.
+#   - The API Gateway REQUEST authorizer resource that other services
+#     (users, requirements) reference on their /pat/* routes.
+
+service: chess-dojo-pats
+frameworkVersion: '3'
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-go-plugin
+
+provider:
+  name: aws
+  runtime: provided.al2
+  architecture: arm64
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+custom:
+  go:
+    binDir: bin
+    cmd: GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -ldflags="-s -w"
+    supportedRuntimes: ['provided.al2']
+    buildProvidedRuntimeAsBootstrap: true
+
+functions:
+  crud:
+    handler: crud/main.go
+    events:
+      - httpApi:
+          path: /user/pat
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /user/pat
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /user/pat/{id}
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:DeleteItem
+        Resource: !GetAtt PersonalAccessTokensTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !Join ['', [!GetAtt PersonalAccessTokensTable.Arn, '/index/UsernameIdx']]
+
+  authorizer:
+    handler: authorizer/main.go
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt PersonalAccessTokensTable.Arn
+
+resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+    IsNotSimple: !Not [!Equals ['${sls:stage}', 'simple']]
+
+  Resources:
+    PersonalAccessTokensTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: !If [IsNotSimple, 'Retain', 'Delete']
+      Properties:
+        TableName: ${sls:stage}-personal-access-tokens
+        AttributeDefinitions:
+          - AttributeName: tokenHash
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tokenHash
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        GlobalSecondaryIndexes:
+          - IndexName: UsernameIdx
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    HttpApiAuthorizerPat:
+      Type: AWS::ApiGatewayV2::Authorizer
+      Properties:
+        ApiId: ${param:httpApiId}
+        Name: patAuthorizer
+        AuthorizerType: REQUEST
+        AuthorizerPayloadFormatVersion: '2.0'
+        EnableSimpleResponses: true
+        IdentitySource:
+          - $request.header.Authorization
+        AuthorizerResultTtlInSeconds: 300
+        AuthorizerUri: !Join
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref AWS::Region
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt AuthorizerLambdaFunction.Arn
+            - '/invocations'
+
+    PatAuthorizerInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !GetAtt AuthorizerLambdaFunction.Arn
+        Action: lambda:InvokeFunction
+        Principal: apigateway.amazonaws.com
+        SourceArn: !Join
+          - ''
+          - - 'arn:aws:execute-api:'
+            - !Ref AWS::Region
+            - ':'
+            - !Ref AWS::AccountId
+            - ':'
+            - ${param:httpApiId}
+            - '/authorizers/'
+            - !Ref HttpApiAuthorizerPat
+
+  Outputs:
+    patAuthorizer:
+      Value: !Ref HttpApiAuthorizerPat

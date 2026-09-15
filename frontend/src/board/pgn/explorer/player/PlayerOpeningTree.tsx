@@ -1,5 +1,6 @@
 import { logger } from '@/logging/logger';
 import { proxy, releaseProxy, Remote, wrap } from 'comlink';
+import { useTranslations } from 'next-intl';
 import {
     createContext,
     Dispatch,
@@ -40,6 +41,7 @@ export function usePlayerOpeningTree(): PlayerOpeningTreeContextType {
 }
 
 export function PlayerOpeningTreeProvider({ children }: { children: ReactNode }) {
+    const t = useTranslations('analysisBoard.explorer.player');
     const [sources, setSources] = useState([DEFAULT_PLAYER_SOURCE]);
     const [isLoading, setIsLoading] = useState(false);
     const [indexedCount, setIndexedCount] = useState(-1);
@@ -63,7 +65,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
             if (source.username.trim() === '') {
                 newSources.push({ ...source, hasError: true });
             } else if (seenSources.has(sourceKey)) {
-                newSources.push({ ...source, hasError: true, error: 'Duplicate source' });
+                newSources.push({ ...source, hasError: true, error: t('duplicateSourceError') });
             } else {
                 seenSources.add(sourceKey);
                 newSources.push({ ...source, hasError: undefined, error: undefined });
@@ -96,7 +98,7 @@ export function PlayerOpeningTreeProvider({ children }: { children: ReactNode })
         openingTree.current = tree;
         loadComplete.current = true;
         setIsLoading(false);
-    }, [sources, setSources, setIndexedCount]);
+    }, [sources, setSources, setIndexedCount, t]);
 
     const onClear = () => {
         openingTree.current = undefined;

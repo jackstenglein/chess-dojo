@@ -26,7 +26,7 @@ test.describe('Forgot Password Page', () => {
 
     test('links back to signin page', async ({ page }) => {
         await page.getByTestId('cancel-button').click();
-        await expect(page).toHaveURL('/signin');
+        await expect(page).toHaveURL(/\/signin(?:\?|$)/);
     });
 
     test('requires email to submit form', async ({ page }) => {
@@ -129,6 +129,6 @@ test.describe('Forgot Password Page', () => {
             'You can now sign in using your new password.',
         );
         await page.getByTestId('signin-button').click();
-        await expect(page).toHaveURL('/signin');
+        await expect(page).toHaveURL(/\/signin(?:\?|$)/);
     });
 });

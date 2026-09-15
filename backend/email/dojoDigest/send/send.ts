@@ -10,14 +10,14 @@ const ses = new SESv2Client({ region: 'us-east-1' });
 interface Arguments {
     /** The path to the main email HTML file. */
     emailPath: string;
-    /** The path to the email HTML file which includes a month summary. */
-    summaryEmailPath: string;
+    /** The path to the email HTML file which includes a personalized month summary, if applicable. */
+    personalizedEmailPath?: string;
     /** The subject of the email. */
     subject: string;
-    /** The paths to the subscribers CSV file. */
+    /** The paths to the subscribers CSV files. */
     subscribersPath: string[];
-    /** The path to the unsubscribers CSV file. */
-    unsubscribersPath: string;
+    /** The paths to the unsubscribers CSV files. */
+    unsubscribersPath: string[];
     /** The year of the email. */
     year: number;
     /** The month of the email. */
@@ -29,17 +29,23 @@ interface Arguments {
 const args = parse<Arguments>(
     {
         emailPath: { type: String, description: 'The path to the main email HTML file.' },
-        summaryEmailPath: {
+        personalizedEmailPath: {
             type: String,
-            description: 'The path to the email HTML file which includes a month summary.',
+            description:
+                'The path to the email HTML file which includes a personalized month summary.',
+            optional: true,
         },
         subject: { type: String, description: 'The subject of the email.' },
         subscribersPath: {
             type: String,
-            description: 'The path(s) to the subscribers CSV file.',
+            description: 'The path(s) to the subscribers CSV files.',
             multiple: true,
         },
-        unsubscribersPath: { type: String, description: 'The path to the unsubscribers CSV file.' },
+        unsubscribersPath: {
+            type: String,
+            description: 'The path(s) to the unsubscribers CSV files.',
+            multiple: true,
+        },
         year: { type: Number, description: 'The year of the email' },
         month: { type: Number, description: 'The month of the email (1-indexed).' },
         help: {
@@ -55,10 +61,9 @@ const args = parse<Arguments>(
 async function main() {
     if (
         !args.emailPath ||
-        !args.summaryEmailPath ||
         !args.subject ||
         !args.subscribersPath.length ||
-        !args.unsubscribersPath ||
+        !args.unsubscribersPath.length ||
         !args.month
     ) {
         throw new Error(`Not all required parameters passed. To view the help guide pass -h`);
@@ -72,36 +77,44 @@ async function main() {
         throw new Error(`Failed to read email HTML file (or it is empty): ${args.emailPath}`);
     }
 
-    let summaryHtml = readFileSync(args.summaryEmailPath, 'utf8');
-    if (!summaryHtml) {
-        throw new Error(
-            `Failed to read summary email HTML file (or it is empty): ${args.summaryEmailPath}`,
+    let personalizedHtml = '';
+    if (args.personalizedEmailPath) {
+        personalizedHtml = readFileSync(args.personalizedEmailPath, 'utf8');
+        if (!personalizedHtml) {
+            throw new Error(
+                `Failed to read personalized email HTML file (or it is empty): ${args.personalizedEmailPath}`,
+            );
+        }
+        personalizedHtml = personalizedHtml.replace(
+            '</style>',
+            HEATMAP_STYLE_MINIFIED + '</style>',
         );
     }
-    summaryHtml = summaryHtml.replace('</style>', HEATMAP_STYLE_MINIFIED + '</style>');
 
     let total = 0;
     let failed = 0;
     let basicSuccess = 0;
-    let summarySuccess = 0;
+    let personalizedSuccess = 0;
     for (const subscriber of subscribers) {
         total++;
         try {
             let data: DigestData | undefined = undefined;
-            try {
-                data = await getDigestData(args.year, args.month, subscriber.username);
-            } catch (err) {
-                console.error(`Failed to get digest data for ${subscriber.username}: `, err);
+            if (personalizedHtml) {
+                try {
+                    data = await getDigestData(args.year, args.month, subscriber.username);
+                } catch (err) {
+                    console.error(`Failed to get digest data for ${subscriber.username}: `, err);
+                }
             }
 
-            if (!data?.time || !data.heatmapHtml) {
+            if (!personalizedHtml || !data?.time || !data.heatmapHtml) {
                 // Send basic email
                 await sendEmail(subscriber.email, basicHtml, args.subject);
                 basicSuccess++;
             } else {
-                // Send email with previous month summary
-                await sendSummaryEmail(subscriber.email, summaryHtml, args.subject, data);
-                summarySuccess++;
+                // Send email with personalized summary of previous month
+                await sendPersonalizedEmail(subscriber.email, personalizedHtml, args.subject, data);
+                personalizedSuccess++;
             }
         } catch (err) {
             console.error(`Failed to send email to ${subscriber.email}: `, err);
@@ -110,18 +123,18 @@ async function main() {
 
         if (total % 1000 === 0) {
             console.log(
-                `In progress with ${basicSuccess} basic successes, ${summarySuccess} summary successes, and ${failed} failures.`,
+                `In progress with ${basicSuccess} basic successes, ${personalizedSuccess} personalized successes, and ${failed} failures.`,
             );
         }
     }
 
     console.log(
-        `Finished with ${basicSuccess} basic successes, ${summarySuccess} summary successes, and ${failed} failures.`,
+        `Finished with ${basicSuccess} basic successes, ${personalizedSuccess} personalized successes, and ${failed} failures.`,
     );
 }
 
 interface Unsubscriber {
-    Email: string;
+    email: string;
 }
 
 interface Subscriber {
@@ -137,16 +150,19 @@ interface Subscriber {
  * @returns A list of subscribers.
  */
 async function getSubscribers(args: Arguments): Promise<Subscriber[]> {
-    const unsubscribers: Set<string> = await new Promise((resolve, reject) => {
-        const unsubscribers = new Set<string>();
-        createReadStream(args.unsubscribersPath)
-            .pipe(csvParser())
-            .on('data', (row: Unsubscriber) => {
-                unsubscribers.add(row.Email);
-            })
-            .on('end', () => resolve(unsubscribers))
-            .on('error', reject);
-    });
+    const unsubscribers = new Set<string>();
+    for (const unsubscriberPath of args.unsubscribersPath) {
+        await new Promise((resolve, reject) => {
+            createReadStream(unsubscriberPath)
+                .pipe(csvParser())
+                .on('data', (row: Unsubscriber) => {
+                    unsubscribers.add(row.email);
+                })
+                .on('end', () => resolve(unsubscribers))
+                .on('error', reject);
+        });
+    }
+
     console.log(`Will skip ${unsubscribers.size} unsubscribed users`);
 
     const subscribers: Subscriber[] = [];
@@ -168,7 +184,20 @@ async function getSubscribers(args: Arguments): Promise<Subscriber[]> {
     return subscribers;
 }
 
-async function sendSummaryEmail(address: string, html: string, subject: string, data: DigestData) {
+/**
+ * Sends an email with a personalized month summary. It replaces variables of the form {{variable_name}}
+ * in the HTML and then sends the resulting email.
+ * @param address The address to send the email to.
+ * @param html The HTML to send, after replacing variables.
+ * @param subject The subject of the email.
+ * @param data The data to use when replacing the HTML variables.
+ */
+async function sendPersonalizedEmail(
+    address: string,
+    html: string,
+    subject: string,
+    data: DigestData,
+) {
     const finalHtml = html
         .replace('{{time}}', data.time)
         .replace('{{games}}', `${data.games}`)
@@ -177,6 +206,12 @@ async function sendSummaryEmail(address: string, html: string, subject: string, 
     return sendEmail(address, finalHtml, subject);
 }
 
+/**
+ * Sends an email.
+ * @param address The address to send the email to.
+ * @param html The HTML to send.
+ * @param subject The subject of the email.
+ */
 async function sendEmail(address: string, html: string, subject: string) {
     return ses.send(
         new SendEmailCommand({

@@ -28,6 +28,11 @@ test.describe('Graduations', () => {
         }
     });
 
+    test('displays games annotated count from stored value', async ({ page }) => {
+        const quiteKnightRow = page.getByRole('row', { name: /QuiteKnight/ });
+        await expect(quiteKnightRow.getByText('12')).toBeVisible();
+    });
+
     test('displays correct graduations from past week', async ({ page }) => {
         await expect(
             page.getByTestId('recent-graduates-table').getByText('1–11 of 11'),

@@ -1,6 +1,7 @@
 import { BlockBoardKeyboardShortcuts } from '@/board/pgn/PgnBoard';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import KeyboardShortcuts from './KeyboardShortcuts';
 
 export interface KeyboardShortcutsDialogProps {
@@ -15,6 +16,7 @@ export interface KeyboardShortcutsDialogProps {
  * Accepts open/setOpen for controlled visibility
  */
 export const KeyboardShortcutsDialog = ({ open, setOpen }: KeyboardShortcutsDialogProps) => {
+    const t = useTranslations('analysisBoard.underboard.settings');
     return (
         <Dialog
             open={open}
@@ -26,9 +28,9 @@ export const KeyboardShortcutsDialog = ({ open, setOpen }: KeyboardShortcutsDial
             fullWidth
         >
             <DialogTitle sx={{ pr: 6 }}>
-                Keyboard Shortcuts
+                {t('keyboardShortcutsDialogTitle')}
                 <IconButton
-                    aria-label='close'
+                    aria-label={t('closeButtonAriaLabel')}
                     onClick={() => setOpen(false)}
                     sx={{ position: 'absolute', right: 8, top: 8 }}
                 >

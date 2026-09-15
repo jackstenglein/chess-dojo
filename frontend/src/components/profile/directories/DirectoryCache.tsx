@@ -12,6 +12,7 @@ import {
     SHARED_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { AxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 import {
     createContext,
     Dispatch,
@@ -24,6 +25,8 @@ import {
     useState,
 } from 'react';
 import { NIL as uuidNil } from 'uuid';
+
+type DirectoryCacheTranslations = ReturnType<typeof useTranslations<'profile.directories.cache'>>;
 
 export interface BreadcrumbItem {
     /** The name of the directory in the breadcrumb item. */
@@ -140,39 +143,43 @@ export function DirectoryCacheProvider({ children }: { children: ReactNode }) {
     );
 }
 
-const defaultHomeDirectory: Omit<Directory, 'owner'> = {
-    id: HOME_DIRECTORY_ID,
-    parent: uuidNil,
-    name: 'Home',
-    visibility: DirectoryVisibility.PUBLIC,
-    createdAt: '',
-    updatedAt: '',
-    items: {
-        [MY_GAMES_DIRECTORY_ID]: {
-            id: MY_GAMES_DIRECTORY_ID,
-            type: DirectoryItemTypes.DIRECTORY,
-            metadata: {
-                name: 'My Games',
-                description: 'Serious classical games I have played',
-                visibility: DirectoryVisibility.PUBLIC,
-                createdAt: '',
-                updatedAt: '',
+function getDefaultHomeDirectory(t: DirectoryCacheTranslations): Omit<Directory, 'owner'> {
+    return {
+        id: HOME_DIRECTORY_ID,
+        parent: uuidNil,
+        name: t('homeDirectoryName'),
+        visibility: DirectoryVisibility.PUBLIC,
+        createdAt: '',
+        updatedAt: '',
+        items: {
+            [MY_GAMES_DIRECTORY_ID]: {
+                id: MY_GAMES_DIRECTORY_ID,
+                type: DirectoryItemTypes.DIRECTORY,
+                metadata: {
+                    name: t('myGamesName'),
+                    description: t('myGamesDescription'),
+                    visibility: DirectoryVisibility.PUBLIC,
+                    createdAt: '',
+                    updatedAt: '',
+                },
             },
         },
-    },
-    itemIds: [MY_GAMES_DIRECTORY_ID],
-};
+        itemIds: [MY_GAMES_DIRECTORY_ID],
+    };
+}
 
-const defaultSharedDirectory: Omit<Directory, 'owner'> = {
-    id: SHARED_DIRECTORY_ID,
-    parent: uuidNil,
-    name: 'Shared with Me',
-    visibility: DirectoryVisibility.PRIVATE,
-    createdAt: '',
-    updatedAt: '',
-    items: {},
-    itemIds: [],
-};
+function getDefaultSharedDirectory(t: DirectoryCacheTranslations): Omit<Directory, 'owner'> {
+    return {
+        id: SHARED_DIRECTORY_ID,
+        parent: uuidNil,
+        name: t('sharedDirectoryName'),
+        visibility: DirectoryVisibility.PRIVATE,
+        createdAt: '',
+        updatedAt: '',
+        items: {},
+        itemIds: [],
+    };
+}
 
 export interface UseDirectoryResponse {
     directory?: Directory;
@@ -183,6 +190,7 @@ export interface UseDirectoryResponse {
 }
 
 export function useDirectory(owner: string, id: string): UseDirectoryResponse {
+    const t = useTranslations('profile.directories.cache');
     const api = useApi();
     const cache = useDirectoryCache();
 
@@ -214,17 +222,17 @@ export function useDirectory(owner: string, id: string): UseDirectoryResponse {
                         cache.markFetched(compoundKey);
                         cache.request.onSuccess();
                         if (id === HOME_DIRECTORY_ID) {
-                            cache.put({ ...defaultHomeDirectory, owner });
+                            cache.put({ ...getDefaultHomeDirectory(t), owner });
                         }
                         if (id === SHARED_DIRECTORY_ID) {
-                            cache.put({ ...defaultSharedDirectory, owner });
+                            cache.put({ ...getDefaultSharedDirectory(t), owner });
                         }
                     } else {
                         cache.request.onFailure(err);
                     }
                 });
         }
-    }, [api, cache, compoundKey, owner, id]);
+    }, [api, cache, compoundKey, owner, id, t]);
 
     return {
         directory,
@@ -236,6 +244,7 @@ export function useDirectory(owner: string, id: string): UseDirectoryResponse {
 }
 
 export function useBreadcrumbs(owner: string, id: string, sharedOwner?: string) {
+    const t = useTranslations('profile.directories.cache');
     const cache = useDirectoryCache();
     const api = useApi();
     const request = useRequest();
@@ -255,7 +264,7 @@ export function useBreadcrumbs(owner: string, id: string, sharedOwner?: string) 
 
     if (id === ALL_MY_UPLOADS_DIRECTORY_ID && !result.length) {
         result.push({
-            name: 'All Uploads',
+            name: t('allUploadsBreadcrumb'),
             owner,
             id: ALL_MY_UPLOADS_DIRECTORY_ID,
             parent: uuidNil,

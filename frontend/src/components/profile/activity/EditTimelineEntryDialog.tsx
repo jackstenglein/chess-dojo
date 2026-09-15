@@ -1,7 +1,8 @@
+import { useApi } from '@/api/Api';
 import { useRequirement } from '@/api/cache/requirements';
-import { RequestSnackbar } from '@/api/Request';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { TimelineEntry } from '@/database/timeline';
+import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import LoadingPage from '@/loading/LoadingPage';
 import {
     Box,
@@ -13,20 +14,27 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import { ProgressHistoryItem, useProgressHistoryEditor } from '../trainingPlan/ProgressHistory';
+import { useTranslations } from 'next-intl';
+import { useProgressHistoryEditor } from '../trainingPlan/ProgressHistory';
+import { ProgressHistoryItem } from '../trainingPlan/ProgressHistoryItem';
 
 export function EditTimelinEntryDialog({
     entry,
     onClose,
+    onDeleteEntry,
 }: {
     entry: TimelineEntry;
     onClose: () => void;
+    onDeleteEntry: (entry: TimelineEntry) => void;
 }) {
+    const t = useTranslations('profile.activity');
+    const api = useApi();
     const { user } = useAuth();
+    const deleteRequest = useRequest<string>();
     const isCustom = entry.isCustomRequirement;
 
     const customTask = isCustom
-        ? user?.customTasks?.find((t) => t.id === entry.requirementId)
+        ? user?.customTasks?.find((task) => task.id === entry.requirementId)
         : undefined;
 
     const { requirement: fetchedRequirement } = useRequirement(
@@ -44,8 +52,10 @@ export function EditTimelinEntryDialog({
         cohortTime,
         totalCount,
         totalTime,
-        getUpdateItem,
-        getDeleteItem,
+        updateItem,
+        updateDraftItem,
+        getDraftItem,
+        deleteItem,
         onSubmit,
     } = useProgressHistoryEditor({
         requirement,
@@ -54,6 +64,54 @@ export function EditTimelinEntryDialog({
     });
 
     const index = items.findIndex((v) => v.entry.id === entry.id);
+
+    const onClearRestDay = async () => {
+        deleteRequest.onStart();
+        try {
+            await api.updateUserTimeline({
+                requirementId: TimelineSpecialRequirementId.RestDay,
+                progress: {
+                    requirementId: TimelineSpecialRequirementId.RestDay,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [],
+                deleted: [entry],
+            });
+            onDeleteEntry(entry);
+            deleteRequest.onSuccess(t('restDayCleared'));
+            onClose();
+        } catch (err) {
+            deleteRequest.onFailure(err);
+        }
+    };
+
+    if (entry.requirementId === TimelineSpecialRequirementId.RestDay) {
+        return (
+            <Dialog
+                open
+                onClose={deleteRequest.isLoading() ? undefined : onClose}
+                fullWidth
+                maxWidth='sm'
+            >
+                <DialogTitle>{t('clearRestDayTitle')}</DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ mt: 1 }}>{t('removeRestDayDescription')}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button disabled={deleteRequest.isLoading()} onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button loading={deleteRequest.isLoading()} onClick={onClearRestDay}>
+                        {t('clearRestDay')}
+                    </Button>
+                </DialogActions>
+
+                <RequestSnackbar request={deleteRequest} />
+            </Dialog>
+        );
+    }
 
     if (!requirement) {
         return (
@@ -68,10 +126,10 @@ export function EditTimelinEntryDialog({
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={request.isLoading()} onClick={onClose}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                     <Button loading={request.isLoading()} onClick={onSubmit}>
-                        Save
+                        {t('save')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -80,36 +138,54 @@ export function EditTimelinEntryDialog({
 
     return (
         <Dialog open onClose={request.isLoading() ? undefined : onClose} fullWidth maxWidth='md'>
-            <DialogTitle>Update {entry.requirementName}?</DialogTitle>
+            <DialogTitle>{t('updateTitle', { name: entry.requirementName })}</DialogTitle>
             <DialogContent>
                 <Box sx={{ mt: 1 }}>
                     <ProgressHistoryItem
                         requirement={requirement}
-                        item={items[index]}
+                        item={getDraftItem(index) ?? items[index]}
                         error={errors[index] || {}}
-                        updateItem={getUpdateItem(index)}
-                        deleteItem={getDeleteItem(index)}
+                        itemIndex={index}
+                        updateItem={updateItem}
+                        updateDraftItem={updateDraftItem}
+                        deleteItem={deleteItem}
                     />
                 </Box>
 
-                <Stack mt={2}>
+                <Stack
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     {!isTimeOnly && (
-                        <Typography color='text.secondary'>
-                            Total Count: {totalCount}. Current Cohort: {cohortCount}
+                        <Typography
+                            sx={{
+                                color: 'text.secondary',
+                            }}
+                        >
+                            {t('totalCount', { totalCount, cohortCount })}
                         </Typography>
                     )}
-                    <Typography color='text.secondary'>
-                        Total Time: {Math.floor(totalTime / 60)}h {totalTime % 60}m. Current Cohort:{' '}
-                        {Math.floor(cohortTime / 60)}h {Math.floor(cohortTime % 60)}m
+                    <Typography
+                        sx={{
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {t('totalTime', {
+                            totalHours: Math.floor(totalTime / 60),
+                            totalMinutes: totalTime % 60,
+                            cohortHours: Math.floor(cohortTime / 60),
+                            cohortMinutes: Math.floor(cohortTime % 60),
+                        })}
                     </Typography>
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button disabled={request.isLoading()} onClick={onClose}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button loading={request.isLoading()} onClick={onSubmit}>
-                    Save
+                    {t('save')}
                 </Button>
             </DialogActions>
 

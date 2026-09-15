@@ -6,6 +6,7 @@ import { RoundRobin } from '@jackstenglein/chess-dojo-common/src/roundRobin/api'
 import { CalendarMonth, EmojiEvents } from '@mui/icons-material';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { Chip, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { countActivePlayers, countCompletedGames } from './Stats';
 import { TimeControlChip } from './TimeControlChip';
 
@@ -15,13 +16,26 @@ import { TimeControlChip } from './TimeControlChip';
  */
 export function TournamentInfo({ tournament }: { tournament: RoundRobin }) {
     const { user } = useAuth();
+    const t = useTranslations('tournaments.roundRobin.tournamentInfo');
 
     const numPlayers = countActivePlayers(tournament);
     const gamesPlayed = countCompletedGames(tournament);
 
     return (
-        <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center'>
-            <Typography variant='h4' textAlign='center'>
+        <Stack
+            direction='row'
+            sx={{
+                flexWrap: 'wrap',
+                gap: 1,
+                alignItems: 'center',
+            }}
+        >
+            <Typography
+                variant='h4'
+                sx={{
+                    textAlign: 'center',
+                }}
+            >
                 {tournament.name}
             </Typography>
 
@@ -38,12 +52,19 @@ export function TournamentInfo({ tournament }: { tournament: RoundRobin }) {
                 />
             ))}
 
-            <Chip label={`${numPlayers} players`} icon={<PeopleAltIcon />} color='secondary' />
+            <Chip
+                label={t('playerCount', { count: numPlayers })}
+                icon={<PeopleAltIcon />}
+                color='secondary'
+            />
 
             <TimeControlChip cohort={tournament.cohort} />
 
             <Chip
-                label={`${gamesPlayed}/${(numPlayers * (numPlayers - 1)) / 2} games played`}
+                label={t('gamesPlayed', {
+                    played: gamesPlayed,
+                    total: (numPlayers * (numPlayers - 1)) / 2,
+                })}
                 icon={<PawnIcon />}
                 color='secondary'
             />

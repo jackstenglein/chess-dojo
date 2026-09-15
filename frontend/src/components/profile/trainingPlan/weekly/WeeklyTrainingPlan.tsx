@@ -1,7 +1,7 @@
-import { CustomTask, Requirement } from '@/database/requirement';
+import { CustomTask, getCurrentCount, Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { CategoryColors, themeRequirementCategory } from '@/style/ThemeProvider';
-import { displayRequirementCategoryShort } from '@jackstenglein/chess-dojo-common/src/database/requirement';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { Check, ExpandMore } from '@mui/icons-material';
 import {
     alpha,
@@ -10,12 +10,15 @@ import {
     Card,
     Chip,
     Collapse,
+    FormControlLabel,
     Grid,
     IconButton,
     Stack,
+    Switch,
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { taskTitle } from '../daily/DailyTrainingPlan';
@@ -29,6 +32,8 @@ import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
 export function WeeklyTrainingPlan() {
+    const t = useTranslations('profile.trainingPlan.weekly');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { startDate, endDate, weekSuggestions, timeline, isCurrentUser, isLoading, user } =
         use(TrainingPlanContext);
 
@@ -40,6 +45,10 @@ export function WeeklyTrainingPlan() {
     });
 
     const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
+    const [activeOnly, setActiveOnly] = useLocalStorage<boolean>(
+        'training-plan-weekly-active-only',
+        false,
+    );
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
@@ -59,9 +68,20 @@ export function WeeklyTrainingPlan() {
     };
 
     return (
-        <Stack spacing={2} width={1}>
-            <Stack direction='row' alignItems='center' width={1}>
-                <Tooltip title={expanded ? 'Hide' : 'Show'}>
+        <Stack
+            spacing={2}
+            sx={{
+                width: 1,
+            }}
+        >
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    width: 1,
+                }}
+            >
+                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
                     <IconButton onClick={toggleExpanded}>
                         <ExpandMore
                             sx={{
@@ -72,8 +92,15 @@ export function WeeklyTrainingPlan() {
                     </IconButton>
                 </Tooltip>
 
-                <Typography variant='h5' fontWeight='bold' ml={0.5} mr={2}>
-                    This Week
+                <Typography
+                    variant='h5'
+                    sx={{
+                        fontWeight: 'bold',
+                        ml: 0.5,
+                        mr: 2,
+                    }}
+                >
+                    {t('thisWeek')}
                 </Typography>
 
                 <WorkGoalSettingsEditor
@@ -87,20 +114,51 @@ export function WeeklyTrainingPlan() {
             </Stack>
 
             <Collapse in={expanded}>
-                {isLoading ? (
-                    <LoadingPage />
-                ) : (
-                    <Grid container columns={7}>
-                        {days.map((_, i) => (
-                            <Grid key={i} size={1}>
-                                <WeeklyTrainingPlanDay
-                                    dayIndex={(i + user.weekStart) % 7}
-                                    onOpenTask={onOpenTask}
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mb: 1,
+                    }}
+                >
+                    <Tooltip title={t('activeOnlyTooltip')} placement='right'>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={activeOnly}
+                                    onChange={(e) => setActiveOnly(e.target.checked)}
+                                    size='small'
                                 />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+                            }
+                            label={
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('activeOnlyLabel')}
+                                </Typography>
+                            }
+                            sx={{ ml: 1, width: 'fit-content' }}
+                        />
+                    </Tooltip>
+
+                    {isLoading ? (
+                        <LoadingPage />
+                    ) : (
+                        <Grid container columns={7} sx={{ minHeight: '158px' }}>
+                            {days.map((_, i) => (
+                                <Grid key={i} size={1}>
+                                    <WeeklyTrainingPlanDay
+                                        dayIndex={(i + user.weekStart) % 7}
+                                        onOpenTask={onOpenTask}
+                                        activeOnly={activeOnly}
+                                    />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
+                </Stack>
             </Collapse>
 
             {taskDialogView && selectedTask && (
@@ -120,10 +178,13 @@ export function WeeklyTrainingPlan() {
 function WeeklyTrainingPlanDay({
     dayIndex,
     onOpenTask,
+    activeOnly,
 }: {
     dayIndex: number;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
+    activeOnly: boolean;
 }) {
+    const t = useTranslations('profile.trainingPlan.weekly');
     const { suggestionsByDay, startDate, timeline, user, allRequirements, pinnedTasks } =
         use(TrainingPlanContext);
     const suggestedTasks = suggestionsByDay[dayIndex];
@@ -155,14 +216,20 @@ function WeeklyTrainingPlanDay({
     }, [user.customTasks, allRequirements, extraTaskIds]);
 
     return (
-        <Stack height={1}>
+        <Stack
+            sx={{
+                height: 1,
+            }}
+        >
             <Typography
                 variant='subtitle1'
-                fontWeight='bold'
-                color={todayIndex === dayIndex ? 'primary' : 'text.secondary'}
-                sx={{ ml: 0.25 }}
+                color={todayIndex === dayIndex ? 'primary' : 'textSecondary'}
+                sx={{
+                    fontWeight: 'bold',
+                    ml: 0.25,
+                }}
             >
-                {days[dayIndex]}
+                {t(days[dayIndex])}
             </Typography>
 
             <Card
@@ -173,7 +240,13 @@ function WeeklyTrainingPlanDay({
                     borderLeft: dayIndex === 0 ? undefined : 'none',
                 }}
             >
-                <Stack spacing={1} py={1} px={0.5}>
+                <Stack
+                    spacing={1}
+                    sx={{
+                        py: 1,
+                        px: 0.5,
+                    }}
+                >
                     {suggestedTasks.map(
                         (t) =>
                             (t.goalMinutes > 0 ||
@@ -184,6 +257,7 @@ function WeeklyTrainingPlanDay({
                                     onOpenTask={onOpenTask}
                                     startDate={dayStart}
                                     endDate={dayEnd}
+                                    activeOnly={activeOnly}
                                 />
                             ),
                     )}
@@ -195,6 +269,7 @@ function WeeklyTrainingPlanDay({
                             onOpenTask={onOpenTask}
                             startDate={dayStart}
                             endDate={dayEnd}
+                            activeOnly={false} // Extra tasks are always active
                         />
                     ))}
                 </Stack>
@@ -208,23 +283,38 @@ function WeeklyTrainingPlanItem({
     onOpenTask,
     startDate,
     endDate,
+    activeOnly,
 }: {
     suggestion: SuggestedTask;
     onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
     startDate: string;
     endDate: string;
+    activeOnly: boolean;
 }) {
-    const { task } = suggestion;
+    const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
+    const tTime = useTranslations('common');
+    const tCategoryShort = useTranslations('enums.requirementCategoryShort');
     const { isCurrentUser, user, timeline } = use(TrainingPlanContext);
     const tasks = useMemo(() => [suggestion], [suggestion]);
-    const [goalMinutes, timeWorked] = useTrainingPlanProgress({
+    const [goalMinutes, timeWorked, _, __, active] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks,
         timeline,
     });
 
+    const currentCount = getCurrentCount({
+        cohort: user.dojoCohort,
+        requirement: task,
+        progress: user.progress[task.id],
+        timeline,
+    });
+
     const isComplete = timeWorked >= goalMinutes;
+
+    if (activeOnly && !active) {
+        return null;
+    }
 
     const onOpenProgress = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -250,7 +340,14 @@ function WeeklyTrainingPlanItem({
                 }}
             />
             <ButtonBase
-                onClick={() => onOpenTask(task, TaskDialogView.Details)}
+                onClick={() =>
+                    onOpenTask(
+                        task,
+                        isCurrentUser && currentCount > 0
+                            ? TaskDialogView.Progress
+                            : TaskDialogView.Details,
+                    )
+                }
                 sx={{
                     flexGrow: 1,
                     pl: 0.75,
@@ -263,14 +360,34 @@ function WeeklyTrainingPlanItem({
                     },
                 }}
             >
-                <Stack spacing={3} width={1}>
-                    <Typography variant='body2' fontWeight='bold'>
-                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes })}
+                <Stack
+                    spacing={3}
+                    sx={{
+                        width: 1,
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {taskTitle({ task, cohort: user.dojoCohort, goalMinutes, tCommon: tTime })}
                     </Typography>
 
-                    <Stack direction='row' flexWrap='wrap' gap={1}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            flexWrap: 'wrap',
+                            gap: 1,
+                        }}
+                    >
                         <Chip
-                            label={displayRequirementCategoryShort(task.category)}
+                            label={
+                                tCategoryShort.has(task.category)
+                                    ? tCategoryShort(task.category)
+                                    : task.category
+                            }
                             color={themeRequirementCategory(task.category)}
                             size='small'
                             sx={{

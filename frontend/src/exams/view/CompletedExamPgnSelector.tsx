@@ -10,7 +10,8 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { Scores } from '../../app/(scoreboard)/tests/[type]/[id]/exam/ExamPage';
+import { useTranslations } from 'next-intl';
+import { Scores } from '../../app/[locale]/(scoreboard)/tests/[type]/[id]/exam/ExamPage';
 import { ExamPgnSelectorProps, formatTime } from './ExamPgnSelector';
 
 interface CompletedExamPgnSelectorProps extends Omit<
@@ -41,15 +42,37 @@ const CompletedExamPgnSelector: React.FC<CompletedExamPgnSelectorProps> = ({
     maxAttempts,
     pgnNames,
 }) => {
+    const t = useTranslations('exams.completedSelector');
     return (
         <CardContent>
-            <Stack alignItems='center' mb={3}>
-                <Typography variant='h6' color='text.secondary'>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                    mb: 3,
+                }}
+            >
+                <Typography
+                    variant='h6'
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
                     {cohortRange}: {name}
                 </Typography>
             </Stack>
-            <Stack spacing={3} direction='row' alignItems='center' justifyContent='center'>
-                <Stack alignItems='center'>
+            <Stack
+                spacing={3}
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Stack
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <TextField
                         select
                         value={attempt}
@@ -60,15 +83,18 @@ const CompletedExamPgnSelector: React.FC<CompletedExamPgnSelectorProps> = ({
                     >
                         {Array.from(Array(maxAttempts)).map((_, i) => (
                             <MenuItem key={i} value={`${i}`}>
-                                Attempt #{i + 1}
+                                {t('attemptNum', { number: i + 1 })}
                             </MenuItem>
                         ))}
                     </TextField>
                     <Typography variant='subtitle1'>
-                        Total Score: {scores?.total.user} / {scores?.total.solution}
+                        {t('totalScore', {
+                            user: scores?.total.user ?? '',
+                            solution: scores?.total.solution ?? '',
+                        })}
                     </Typography>
                     <Typography variant='subtitle1'>
-                        Time Used: {formatTime(elapsedTime || 0)}
+                        {t('timeUsed', { time: formatTime(elapsedTime || 0) })}
                     </Typography>
                 </Stack>
             </Stack>
@@ -78,7 +104,12 @@ const CompletedExamPgnSelector: React.FC<CompletedExamPgnSelectorProps> = ({
                     <ListItem key={i} disablePadding>
                         <ListItemButton selected={i === selected} onClick={() => onSelect(i)}>
                             <ListItemIcon sx={{ minWidth: '40px' }}>
-                                <Stack alignItems='center' width={1}>
+                                <Stack
+                                    sx={{
+                                        alignItems: 'center',
+                                        width: 1,
+                                    }}
+                                >
                                     <Typography
                                         sx={{
                                             color: 'primary.main',
@@ -90,11 +121,15 @@ const CompletedExamPgnSelector: React.FC<CompletedExamPgnSelectorProps> = ({
                             </ListItemIcon>
                             <Stack
                                 direction='row'
-                                justifyContent='space-between'
-                                width={1}
                                 spacing={1}
+                                sx={{
+                                    justifyContent: 'space-between',
+                                    width: 1,
+                                }}
                             >
-                                <Typography>{pgnNames?.[i] || `Problem ${i + 1}`}</Typography>
+                                <Typography>
+                                    {pgnNames?.[i] || t('problemFallback', { number: i + 1 })}
+                                </Typography>
 
                                 {scores && (
                                     <Typography>
@@ -107,9 +142,14 @@ const CompletedExamPgnSelector: React.FC<CompletedExamPgnSelectorProps> = ({
                 ))}
             </List>
 
-            <Stack alignItems='center' mt={3}>
+            <Stack
+                sx={{
+                    alignItems: 'center',
+                    mt: 3,
+                }}
+            >
                 <Button variant='contained' onClick={onReset}>
-                    {resetLabel || 'Reset Sample'}
+                    {resetLabel || t('resetSample')}
                 </Button>
             </Stack>
         </CardContent>

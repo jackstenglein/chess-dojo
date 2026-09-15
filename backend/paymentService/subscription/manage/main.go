@@ -14,6 +14,7 @@ import (
 )
 
 var repository database.UserGetter = database.DynamoDB
+var getBillingPortalSession = payment.GetBillingPortalSession
 
 type SubscriptionManageRequest struct {
 	Tier     database.SubscriptionTier `json:"tier"`
@@ -38,8 +39,9 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(err), nil
 	}
 
-	if !isValidCustomerId(user.PaymentInfo.GetCustomerId()) {
-		return api.Failure(errors.New(400, fmt.Sprintf("Invalid request: user has invalid Stripe customer ID %q", user.PaymentInfo.GetCustomerId()), "")), nil
+	paymentInfo := billingPortalPaymentInfo(user.PaymentInfo)
+	if !isValidCustomerId(paymentInfo.GetCustomerId()) {
+		return api.Failure(errors.New(400, fmt.Sprintf("Invalid request: user has invalid Stripe customer ID %q", paymentInfo.GetCustomerId()), "")), nil
 	}
 
 	var request SubscriptionManageRequest
@@ -47,11 +49,11 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(errors.Wrap(400, "Failed to unmarshal request body", "", err)), nil
 	}
 
-	if request.Tier != "" && user.PaymentInfo.GetSubscriptionId() == "" {
+	if request.Tier != "" && paymentInfo.GetSubscriptionId() == "" {
 		return api.Failure(errors.New(400, "Invalid request: subscription tier specified but user has no subscription ID", "")), nil
 	}
 
-	session, err := payment.GetBillingPortalSession(user.PaymentInfo, request.Tier, request.Interval)
+	session, err := getBillingPortalSession(paymentInfo, request.Tier, request.Interval)
 	if err != nil {
 		return api.Failure(err), nil
 	}
@@ -59,6 +61,21 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	return api.Success(SubscriptionManageResponse{Url: session.URL}), nil
 }
 
+func billingPortalPaymentInfo(paymentInfo *database.PaymentInfo) *database.PaymentInfo {
+	if paymentInfo == nil {
+		return nil
+	}
+
+	if paymentInfo.CustomerId == database.PaymentCustomerIdOverride && database.IsStripeCustomerID(paymentInfo.PreservedCustomerId) {
+		portalPaymentInfo := *paymentInfo
+		portalPaymentInfo.CustomerId = paymentInfo.PreservedCustomerId
+		portalPaymentInfo.SubscriptionId = paymentInfo.PreservedSubscriptionId
+		return &portalPaymentInfo
+	}
+
+	return paymentInfo
+}
+
 func isValidCustomerId(customerID string) bool {
-	return customerID != "" && customerID != "WIX" && customerID != "OVERRIDE"
+	return customerID != "" && customerID != "WIX" && customerID != database.PaymentCustomerIdOverride
 }

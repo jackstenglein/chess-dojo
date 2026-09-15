@@ -1,6 +1,7 @@
 import { User } from '@/database/user';
 import { useWindowSizeEffect } from '@/style/useWindowSizeEffect';
 import { Grid, useMediaQuery } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { Heatmap } from '../info/Heatmap';
 import { getBlockSize, MIN_BLOCK_SIZE } from '../info/HeatmapCard';
@@ -13,6 +14,7 @@ interface ActivityTabProps {
 }
 
 const ActivityTab: React.FC<ActivityTabProps> = ({ user }) => {
+    const tInfo = useTranslations('profile.info');
     const isSmall = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
     const timeline = useTimelineContext();
@@ -26,13 +28,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ user }) => {
     useWindowSizeEffect(resizeDialogBlocks);
 
     return (
-        <Grid container justifyContent='space-between' rowSpacing={5}>
+        <Grid
+            container
+            rowSpacing={5}
+            sx={{
+                justifyContent: 'space-between',
+            }}
+        >
             {isSmall && (
                 <Grid size={12}>
                     <Heatmap
                         entries={timeline.entries}
                         blockSize={blockSize}
-                        description='in the past year'
+                        description={tInfo('pastYear')}
                         slotProps={{
                             weekdayLabelPaper: {
                                 elevation: 0,

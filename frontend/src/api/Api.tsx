@@ -36,6 +36,7 @@ import { Club, ClubJoinRequestStatus } from '../database/club';
 import { Course } from '../database/course';
 import { Event } from '../database/event';
 import { GameReviewType, PositionComment } from '../database/game';
+import { CreatePatRequest } from '../database/pat';
 import { Requirement } from '../database/requirement';
 import { LeaderboardSite, TournamentType } from '../database/tournament';
 import { User } from '../database/user';
@@ -104,8 +105,6 @@ import {
     featureGame,
     getGame,
     listFeaturedGames,
-    listGamesByCohort,
-    listGamesByOpening,
     listGamesByOwner,
     listGamesByPosition,
     listGamesForReview,
@@ -190,6 +189,8 @@ import {
     UpdateUserTimelineRequest,
     UserApiContextType,
     checkUserAccess,
+    createPersonalAccessToken,
+    deletePersonalAccessToken,
     discordAuth,
     editFollower,
     getFollower,
@@ -200,8 +201,10 @@ import {
     graduate,
     listFollowers,
     listFollowing,
+    listPersonalAccessTokens,
     listUserTimeline,
     listUsersByCohort,
+    resetUserProgress,
     searchUsers,
     updateUser,
     updateUserProgress,
@@ -264,6 +267,8 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             searchUsers,
             updateUser: (update: Partial<User>, autopickCohort?: boolean) =>
                 updateUser(idToken, update, auth.updateUser, autopickCohort),
+            resetUserProgress: (confirm: string) =>
+                resetUserProgress(idToken, confirm, auth.updateUser),
             updateUserProgress: (request: UpdateUserProgressRequest) =>
                 updateUserProgress(idToken, request, auth.updateUser),
             updateUserTimeline: (request: UpdateUserTimelineRequest) =>
@@ -278,6 +283,10 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             listFollowing: (username: string, startKey?: string) =>
                 listFollowing(username, startKey),
             discordAuth: (request: DiscordAuthRequest) => discordAuth(idToken, request),
+            createPersonalAccessToken: (request: CreatePatRequest) =>
+                createPersonalAccessToken(idToken, request),
+            listPersonalAccessTokens: () => listPersonalAccessTokens(idToken),
+            deletePersonalAccessToken: (id: string) => deletePersonalAccessToken(idToken, id),
 
             bookEvent: (id: string, startTime?: Date, type?: string) =>
                 bookEvent(idToken, id, startTime, type),
@@ -297,12 +306,6 @@ export function ApiProvider({ children }: { children: ReactNode }) {
             updateGame: (cohort: string, id: string, req: Partial<UpdateGameRequest>) =>
                 updateGame(idToken, cohort, id, req),
             deleteGames: (request: DeleteGamesRequest) => deleteGames(idToken, request),
-            listGamesByCohort: (
-                cohort: string,
-                startKey?: string,
-                startDate?: string,
-                endDate?: string,
-            ) => listGamesByCohort(idToken, cohort, startKey, startDate, endDate),
             listGamesByOwner: (
                 owner?: string,
                 startKey?: string,
@@ -311,12 +314,6 @@ export function ApiProvider({ children }: { children: ReactNode }) {
                 player?: string,
                 color?: string,
             ) => listGamesByOwner(idToken, owner, startKey, startDate, endDate, player, color),
-            listGamesByOpening: (
-                eco: string,
-                startKey?: string,
-                startDate?: string,
-                endDate?: string,
-            ) => listGamesByOpening(idToken, eco, startKey, startDate, endDate),
             listGamesByPosition: (fen: string, mastersOnly: boolean, startKey?: string) =>
                 listGamesByPosition(idToken, fen, mastersOnly, startKey),
             listFeaturedGames: (startKey?: string) => listFeaturedGames(idToken, startKey),

@@ -3,9 +3,10 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { getConfig } from '@/config';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
+import { usePathname } from '@/i18n/navigation';
 import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { Button, Stack, Typography } from '@mui/material';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 const config = getConfig();
@@ -16,6 +17,7 @@ function DiscordOAuthButton() {
     const request = useRequest<string>();
     const pathname = usePathname();
     const { searchParams, updateSearchParams } = useNextSearchParams();
+    const t = useTranslations('profile.discord');
     const mode = user?.discordId ? 'disconnect' : 'connect';
     const code = searchParams.get('code');
     const redirectUri = `${config.baseUrl}${pathname}`;
@@ -26,7 +28,7 @@ function DiscordOAuthButton() {
             request.onStart();
             api.discordAuth({ mode: 'connect', code, redirectUri })
                 .then((resp) => {
-                    request.onSuccess(`Discord account successfully connected!`);
+                    request.onSuccess(t('connectSuccess'));
                     updateUser(resp.data);
                     updateSearchParams({ code: '' });
                 })
@@ -34,13 +36,13 @@ function DiscordOAuthButton() {
                     request.onFailure(err);
                 });
         }
-    }, [mode, code, request, api, updateUser, redirectUri, updateSearchParams]);
+    }, [mode, code, request, api, updateUser, redirectUri, updateSearchParams, t]);
 
     const handleDisconnect = () => {
         request.onStart();
         api.discordAuth({ mode: 'disconnect' })
             .then(() => {
-                request.onSuccess('Discord account disconnected.');
+                request.onSuccess(t('disconnectSuccess'));
                 updateUser({ discordUsername: '', discordId: '' });
             })
             .catch((err) => {
@@ -51,18 +53,28 @@ function DiscordOAuthButton() {
     return (
         <>
             {mode === 'connect' ? (
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Button
                         variant='contained'
                         loading={request.isLoading()}
                         startIcon={<DiscordIcon />}
                         href={discordAuthUrl}
                     >
-                        Connect Discord
+                        {t('connect')}
                     </Button>
                 </Stack>
             ) : (
-                <Stack direction='row' alignItems='center'>
+                <Stack
+                    direction='row'
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <DiscordIcon />
                     <Typography sx={{ ml: 1, mr: 2 }}>{user?.discordUsername}</Typography>
                     <Button
@@ -71,7 +83,7 @@ function DiscordOAuthButton() {
                         loading={request.isLoading()}
                         onClick={handleDisconnect}
                     >
-                        Disconnect Discord
+                        {t('disconnect')}
                     </Button>
                 </Stack>
             )}

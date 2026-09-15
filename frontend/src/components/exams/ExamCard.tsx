@@ -38,16 +38,28 @@ export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardPr
             >
                 <CardActionArea component='a' disabled={disabled} href={href} sx={{ height: 1 }}>
                     <CardContent>
-                        <Stack justifyContent='center' alignItems='center'>
+                        <Stack
+                            sx={{
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
                             <Icon sx={{ fontSize: '5rem', mb: 2 }} color='primary' />
-                            <Typography variant='h5' mb={0.5}>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    mb: 0.5,
+                                }}
+                            >
                                 {name}
                             </Typography>
                             <Typography
                                 variant='subtitle1'
-                                color='text.secondary'
-                                lineHeight='1.3'
-                                textAlign='center'
+                                sx={{
+                                    color: 'text.secondary',
+                                    lineHeight: '1.3',
+                                    textAlign: 'center',
+                                }}
                             >
                                 {description}
                             </Typography>

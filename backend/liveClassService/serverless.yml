@@ -20,26 +20,46 @@ provider:
     id: ${param:httpApiId}
   deploymentMethod: direct
 
+custom:
+  prod:
+    schedule: cron(0 * * * ? *) # Every hour
+  dev:
+    schedule: cron(0 0 ? * FRI 1970) # Never
+  simple:
+    schedule: cron(0 0 ? * FRI 1970) # Never
+
+layers:
+  ffmpeg:
+    package:
+      artifact: ffmpeg-layer.zip
+
 functions:
   copyRecordings:
+    memorySize: 2048 # MB
+    ephemeralStorageSize: 4096 # MB
     handler: copyRecordings.handler
+    layers:
+      - !Ref FfmpegLambdaLayer
     package:
       individually: true
       patterns:
-        - meetingIds.csv
+        - lectures-${sls:stage}.json
+        - game-reviews-${sls:stage}.json
     events:
-      - schedule:
-          rate: cron(0 * * * ? *) # Every hour
+      - schedule: ${self:custom.${sls:stage}.schedule}
     timeout: 600 # 10 min
     environment:
       stage: ${sls:stage}
       meetRecordingsDriveFolder: ${file(../config-${sls:stage}.yml):meetRecordingsDriveFolder}
       finishedUploadsDriveFolder: ${file(../config-${sls:stage}.yml):finishedUploadsDriveFolder}
       s3Bucket: !Ref LiveClassesBucket
+      PATH: '/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
     iamRoleStatements:
       - Effect: Allow
         Action:
           - s3:PutObject
+          - s3:PutObjectTagging
+          - s3:GetObject
         Resource: !Join
           - ''
           - - 'arn:aws:s3:::'
@@ -53,17 +73,47 @@ functions:
           - - 'arn:aws:s3:::'
             - ${param:SecretsBucket}
             - /liveClassesServiceAccountKey.json
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-liveClassesYouTubeOAuthCredentials-*
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-googleGenerativeAiApiKey-*
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - !GetAtt LiveClassesTable.Arn
 
   listRecordings:
     handler: listRecordings.handler
+    package:
+      individually: true
+      patterns:
+        - lectures-${sls:stage}.json
+        - game-reviews-${sls:stage}.json
     events:
       - httpApi:
           path: /public/live-classes/recordings
           method: get
+      - httpApi:
+          path: /live-classes/recordings
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     environment:
       stage: ${sls:stage}
       s3Bucket: !Ref LiveClassesBucket
     iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt LiveClassesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
       - Effect: Allow
         Action:
           - s3:ListBucket
@@ -75,6 +125,9 @@ functions:
   getRecording:
     handler: getRecording.handler
     events:
+      - httpApi:
+          path: /public/live-classes/recording
+          method: get
       - httpApi:
           path: /live-classes/recording
           method: get
@@ -152,6 +205,7 @@ functions:
 
   setGameReviewCohorts:
     handler: admin/setGameReviewCohorts.handler
+    timeout: 25
     events:
       - httpApi:
           path: /admin/game-review-cohorts
@@ -196,7 +250,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:Scan
+          - dynamodb:Query
         Resource: !GetAtt LiveClassesTable.Arn
       - Effect: Allow
         Action:

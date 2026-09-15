@@ -12,6 +12,7 @@ import {
     OutlinedInput,
     TextField,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useRef, useState } from 'react';
 import { ImportButton } from './ImportButton';
 import { ImportDialogProps } from './ImportWizard';
@@ -30,6 +31,7 @@ const pgnTextPlaceholder = `[Event "Classical game"]
 1. e4 { [%clk 1:30:00] } 1... c5 { [%clk 1:30:00] } 2. c3 { [%clk 1:30:21] } 2... Nf6 { [%clk 1:30:18] }`;
 
 export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClose }) => {
+    const t = useTranslations('games.import.pgnForm');
     const inputRef = useRef<HTMLInputElement>(null);
     const [pgnText, setPgnText] = useState('');
     const [file, setFile] = useState<File>();
@@ -37,7 +39,7 @@ export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClos
 
     const handleSubmit = () => {
         if (!file && pgnText.trim() === '') {
-            setError('One field is required');
+            setError(t('oneFieldRequired'));
             return;
         }
 
@@ -85,14 +87,14 @@ export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClos
 
     return (
         <>
-            <DialogTitle sx={{ pb: 0 }}>Import PGN</DialogTitle>
+            <DialogTitle sx={{ pb: 0 }}>{t('dialogTitle')}</DialogTitle>
             <DialogContent>
-                <DialogContentText sx={{ mb: 2 }}>Up to 100 games per file</DialogContentText>
+                <DialogContentText sx={{ mb: 2 }}>{t('upToNGames')}</DialogContentText>
                 <FormControl error={!!error} fullWidth>
                     <OutlinedInput
                         onClick={handleFileClick}
                         value={file?.name || ''}
-                        placeholder='Select a File'
+                        placeholder={t('selectFilePlaceholder')}
                         fullWidth
                         size='small'
                         endAdornment={
@@ -119,7 +121,7 @@ export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClos
 
                 <TextField
                     data-testid='pgn-text'
-                    label='Paste PGN'
+                    label={t('pastePgnLabel')}
                     placeholder={pgnTextPlaceholder}
                     value={pgnText}
                     onChange={handlePgnTextChange}
@@ -132,7 +134,7 @@ export const PGNForm: React.FC<ImportDialogProps> = ({ onSubmit, loading, onClos
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>{t('cancel')}</Button>
                 <ImportButton loading={loading} onClick={handleSubmit} />
             </DialogActions>
         </>

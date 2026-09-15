@@ -68,7 +68,9 @@ const Avatar: React.FC<AvatarProps> = ({
         <MuiAvatar
             src={url}
             {...avatarProps(displayName || '', size, fontSize, sx)}
-            imgProps={{ crossOrigin: 'anonymous' }}
+            slotProps={{
+                img: { crossOrigin: 'anonymous' },
+            }}
         />
     );
 };
@@ -106,7 +108,9 @@ export const ClubAvatar: React.FC<ClubAvatarProps> = ({ club, id, name, size, fo
         <MuiAvatar
             src={url}
             {...avatarProps(name || '', size, fontSize)}
-            imgProps={{ crossOrigin: 'anonymous' }}
+            slotProps={{
+                img: { crossOrigin: 'anonymous' },
+            }}
         />
     );
 };

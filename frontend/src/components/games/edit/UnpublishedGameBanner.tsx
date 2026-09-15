@@ -12,6 +12,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/game';
 import { InfoOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { Alert, Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import SaveGameDialog, { SaveGameDialogType, SaveGameForm } from './SaveGameDialog';
 
@@ -20,7 +21,7 @@ function useUnpublishedGame() {
     const isFreeTier = useFreeTier();
     const [showDialog, setShowDialog] = useState(false);
     const [showBanner, setShowBanner] = useState(true);
-    const { game, onUpdateGame } = useGame();
+    const { game, onUpdateGame, updatedAtRef } = useGame();
     const { chess } = useChess();
     const { updateGame, request } = useSaveGame();
 
@@ -39,6 +40,7 @@ function useUnpublishedGame() {
         const req: UpdateGameRequest = {
             id: game.id,
             cohort: game.cohort,
+            updatedAt: updatedAtRef?.current || game.updatedAt || game.createdAt || '',
             timelineId: game.timelineId,
             unlisted: false,
             pgnText: chess.renderPgn(),
@@ -46,7 +48,10 @@ function useUnpublishedGame() {
             orientation: form.orientation,
         };
 
-        await updateGame(req).then(() => {
+        await updateGame(req).then((resp) => {
+            if (updatedAtRef && resp?.updatedAt) {
+                updatedAtRef.current = resp.updatedAt;
+            }
             onUpdateGame?.({ ...game, unlisted: false, orientation: form.orientation });
             setShowDialog(false);
             setShowBanner(false);
@@ -72,6 +77,7 @@ interface UnpublishedGameBannerProps {
  * can be optionally dismissed and can open a dialog to publish the game.
  */
 export function UnpublishedGameBanner({ dismissable }: UnpublishedGameBannerProps) {
+    const t = useTranslations('games.unpublishedBanner');
     const { showBanner, setShowBanner, showDialog, setShowDialog, request, onSubmit } =
         useUnpublishedGame();
 
@@ -80,7 +86,7 @@ export function UnpublishedGameBanner({ dismissable }: UnpublishedGameBannerProp
             {showBanner && (
                 <Alert
                     icon={
-                        <Tooltip title='This game is not published. Other users can find it only if they have the URL.'>
+                        <Tooltip title={t('notPublishedTooltip')}>
                             <InfoOutlined />
                         </Tooltip>
                     }
@@ -89,14 +95,19 @@ export function UnpublishedGameBanner({ dismissable }: UnpublishedGameBannerProp
                     action={
                         <Box>
                             {dismissable && (
-                                <Button onClick={() => setShowBanner(false)}>Dismiss</Button>
+                                <Button onClick={() => setShowBanner(false)}>{t('dismiss')}</Button>
                             )}
-                            <Button onClick={() => setShowDialog(true)}>Publish</Button>
+                            <Button onClick={() => setShowDialog(true)}>{t('publish')}</Button>
                         </Box>
                     }
                 >
-                    <Stack direction='row' alignItems='center'>
-                        <Typography variant='body1'>This game is not published</Typography>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography variant='body1'>{t('notPublished')}</Typography>
                     </Stack>
                 </Alert>
             )}
@@ -104,7 +115,7 @@ export function UnpublishedGameBanner({ dismissable }: UnpublishedGameBannerProp
                 <SaveGameDialog
                     type={SaveGameDialogType.Publish}
                     open={showDialog}
-                    title='Publish Game'
+                    title={t('publishGame')}
                     loading={request.isLoading()}
                     onSubmit={onSubmit}
                     onClose={() => setShowDialog(false)}
@@ -125,6 +136,7 @@ export function VisibilityIcon({
 }: {
     underboardRef?: React.RefObject<UnderboardApi | null>;
 }) {
+    const t = useTranslations('games.unpublishedBanner');
     const { showDialog, setShowDialog, request, onSubmit } = useUnpublishedGame();
     const { game } = useGame();
 
@@ -134,13 +146,7 @@ export function VisibilityIcon({
 
     return (
         <>
-            <Tooltip
-                title={
-                    game.unlisted
-                        ? 'This game is not published. Other users can find it only if they have the URL.'
-                        : 'This game is published. Other users can find it on the games tab and on your profile. You can update this in the settings.'
-                }
-            >
+            <Tooltip title={game.unlisted ? t('notPublishedTooltip') : t('publishedTooltip')}>
                 <IconButton
                     onClick={
                         game.unlisted
@@ -160,7 +166,7 @@ export function VisibilityIcon({
                 <SaveGameDialog
                     type={SaveGameDialogType.Publish}
                     open={showDialog}
-                    title='Publish Game'
+                    title={t('publishGame')}
                     loading={request.isLoading()}
                     onSubmit={onSubmit}
                     onClose={() => setShowDialog(false)}

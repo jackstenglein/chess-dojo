@@ -8,14 +8,17 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 const TimeControlTable = () => {
+    const t = useTranslations('tournaments.roundRobin.timeControl');
+
     const timeControls = [
-        { cohort: 'Under 800', timeControl: '30+0' },
-        { cohort: '800-1200', timeControl: '30+30' },
-        { cohort: '1200-1600', timeControl: '45+30' },
-        { cohort: '1600-2000', timeControl: '60+30' },
-        { cohort: '2000+', timeControl: '90+30' },
+        { cohort: t('cohortUnder800'), timeControl: '30+0' },
+        { cohort: t('cohort800_1200'), timeControl: '30+30' },
+        { cohort: t('cohort1200_1600'), timeControl: '45+30' },
+        { cohort: t('cohort1600_2000'), timeControl: '60+30' },
+        { cohort: t('cohort2000Plus'), timeControl: '90+30' },
     ];
 
     return (
@@ -38,14 +41,16 @@ const TimeControlTable = () => {
                     fontWeight: 600,
                 }}
             >
-                Dojo Time Controls
+                {t('tableTitle')}
             </Typography>
             <Table size='small' sx={{ fontSize: '0.8rem' }}>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={{ py: 0.5, px: 1, fontWeight: 700 }}>Dojo Cohort</TableCell>
                         <TableCell sx={{ py: 0.5, px: 1, fontWeight: 700 }}>
-                            Minimum Time Control
+                            {t('columnCohort')}
+                        </TableCell>
+                        <TableCell sx={{ py: 0.5, px: 1, fontWeight: 700 }}>
+                            {t('columnMinTimeControl')}
                         </TableCell>
                     </TableRow>
                 </TableHead>

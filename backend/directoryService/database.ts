@@ -423,6 +423,34 @@ class AndCondition extends Condition {
     }
 }
 
+class OrCondition extends Condition {
+    private conditions: Condition[];
+
+    constructor(...conditions: Condition[]) {
+        super();
+        this.conditions = conditions;
+    }
+
+    build(
+        exprAttrNames: Record<string, string>,
+        exprAttrValues: Record<string, AttributeValue>,
+        reversedExprAttrNames: Record<string, string>,
+        parentAttrIndex = '',
+    ) {
+        const result = this.conditions
+            .map((condition, index) =>
+                condition.build(
+                    exprAttrNames,
+                    exprAttrValues,
+                    reversedExprAttrNames,
+                    `${parentAttrIndex}${index}`,
+                ),
+            )
+            .join(' OR ');
+        return `(${result})`;
+    }
+}
+
 class AttributeExistsCondition extends Condition {
     private path: AttributePathTokens;
 
@@ -528,6 +556,16 @@ export function and(...conditions: Condition[]): Condition {
 }
 
 /**
+ * Returns a condition which verifies that at least one of the nested
+ * conditions is true.
+ * @param conditions The conditions to verify.
+ * @returns A condition that is true when any nested condition is true.
+ */
+export function or(...conditions: Condition[]): Condition {
+    return new OrCondition(...conditions);
+}
+
+/**
  * Returns a condition which verifies that the given attribute path
  * exists on the DynamoDB item.
  * @param path The path to check.
@@ -573,6 +611,17 @@ export function notEqual(path: AttributePath, value: any): Condition {
  */
 export function sizeLessThan(path: AttributePath, value: number): Condition {
     return new SizeCondition(path, value, '<');
+}
+
+/**
+ * Returns a condition which verifies that the given attribute path
+ * is less than the given value.
+ * @param path The path to check.
+ * @param value The value to compare against.
+ * @returns A condition that is true when the attribute is less than the value.
+ */
+export function lessThan(path: AttributePath, value: any): Condition {
+    return new EqualityCondition(path, value, '<');
 }
 
 /** A builder for DynamoDB GetItem commands. */

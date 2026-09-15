@@ -1,12 +1,14 @@
 import { Link } from '@/components/navigation/Link';
+import { usePathname } from '@/i18n/navigation';
 import { Alert, Button } from '@mui/material';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface UpsellAlertProps {
     children: string;
 }
 
 const UpsellAlert: React.FC<UpsellAlertProps> = ({ children }) => {
+    const t = useTranslations('upsell.alert');
     const pathname = usePathname();
 
     return (
@@ -22,7 +24,7 @@ const UpsellAlert: React.FC<UpsellAlertProps> = ({ children }) => {
                     size='small'
                     sx={{ textAlign: 'center' }}
                 >
-                    View Options
+                    {t('viewOptions')}
                 </Button>
             }
         >

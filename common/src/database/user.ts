@@ -1,4 +1,5 @@
 import { getNormalizedRating, isCustom } from '../ratings/ratings';
+import { TimeManagementRating } from '../ratings/timeManagement';
 import { ExamType } from './exam';
 import { RatingSystem } from './ratingSystem';
 import { CustomTask, RequirementProgress } from './requirement';
@@ -33,6 +34,9 @@ export interface User {
     ratings: Partial<Record<RatingSystem, Rating>>;
     ratingHistories?: Record<RatingSystem, RatingHistory[]>;
 
+    /** The user's aggregate time management rating. */
+    timeManagementRating?: TimeManagementRating;
+
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
     disableCancellationNotifications: boolean;
@@ -53,6 +57,9 @@ export interface User {
     enableZenMode: boolean;
     timezoneOverride: string;
     timeFormat: TimeFormat;
+
+    /** The user's preferred language for the UI (e.g. "de", "es"). Empty/undefined = English. */
+    language?: string;
 
     hasCreatedProfile: boolean;
 
@@ -90,6 +97,8 @@ export interface User {
 
     /** The set of club ids the user is a member of. */
     clubs?: string[];
+    /** The id of the club the user has designated as their main club. Empty if unset. */
+    mainClubId?: string;
 
     /** A map from exam id to the user's summary for that exam. */
     exams: Record<string, UserExamSummary>;
@@ -118,6 +127,12 @@ export interface User {
      */
     puzzles?: Record<string, PuzzleThemeOverview>;
 
+    /** The user's best-ever square color drill rating (0-1500). */
+    squareColorRating?: number;
+
+    /** The user's best-ever mate-in-one drill block rating (0-2500). */
+    mateInOneRating?: number;
+
     /** The user's firebase cloud messaging tokens. */
     firebaseTokens?: string[];
 
@@ -132,6 +147,12 @@ export interface User {
 
     /** The ID of the task associated with the timer, if any. */
     timerTaskId?: string;
+
+    /** Tracks which milestone notifications have been sent for this user. Ex: '85_2000-2100' */
+    sentMilestoneNotifications?: string[];
+
+    /** Tracks which cohort version the user is currently on. Unset means 2024. */
+    cohortVersion?: string;
 }
 
 /**
@@ -232,11 +253,34 @@ export interface PuzzleThemeOverview {
     lastPlayed: string;
 }
 
+/** Sentinel stored in paymentInfo.customerId for admin-granted complimentary access. */
+export const PAYMENT_CUSTOMER_ID_OVERRIDE = 'OVERRIDE';
+
 export interface PaymentInfo {
-    /** The stripe customer id or a special value for non-stripe subscriptions. */
+    /** The stripe customer id or a special value (e.g. WIX, OVERRIDE) for non-stripe subscriptions. */
     customerId: string;
     /** The stripe subscription id or a special value for non-stripe subscriptions. */
     subscriptionId: string;
+    /** The date the payment info was last updated, in ISO 8601. */
+    updatedAt?: string;
+    /** When OVERRIDE access ends (RFC3339). Omitted = no expiry until revoked. */
+    expiresAt?: string;
+    /** The date the OVERRIDE access was granted, in ISO 8601. */
+    overrideGrantedAt?: string;
+    /** The username of the user who granted the OVERRIDE access. */
+    overrideGrantedBy?: string;
+    /** The date the OVERRIDE access was last updated, in ISO 8601. */
+    overrideUpdatedAt?: string;
+    /** The username of the user who last updated the OVERRIDE access. */
+    overrideUpdatedBy?: string;
+    /** The date the OVERRIDE access was revoked, in ISO 8601. */
+    overrideRevokedAt?: string;
+    /** The username of the user who revoked the OVERRIDE access. */
+    overrideRevokedBy?: string;
+    /** Stripe customer id preserved while OVERRIDE is active (restored when override ends). */
+    preservedCustomerId?: string;
+    preservedSubscriptionStatus?: string;
+    preservedSubscriptionTier?: string;
 }
 
 export interface CoachInfo {
@@ -255,6 +299,7 @@ export interface DiscordNotificationSettings {
     disableMeetingCancellation: boolean;
     disableCalendarInvite: boolean;
     disableRoundRobinStart: boolean;
+    disableGameReviewSubmitted?: boolean;
 }
 
 export interface EmailNotificationSettings {

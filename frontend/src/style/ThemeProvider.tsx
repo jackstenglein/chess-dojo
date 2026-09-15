@@ -64,6 +64,7 @@ declare module '@mui/material/styles' {
         meet: Palette['primary'];
         explorerTotal: Palette['primary'];
         trainingPlanTaskComplete: Palette['primary'];
+        apple: Palette['primary'];
 
         // Calendar colors
         tomato: Palette['primary'];
@@ -77,6 +78,8 @@ declare module '@mui/material/styles' {
         lavendar: Palette['primary'];
         grape: Palette['primary'];
         graphite: Palette['primary'];
+        twitch: Palette['primary'];
+        youtube: Palette['primary'];
     }
     interface PaletteOptions extends RequirementCategoryPalette {
         opening?: PaletteOptions['primary'];
@@ -94,6 +97,7 @@ declare module '@mui/material/styles' {
             headerBg: string;
             pinnedBg: string;
         };
+        apple?: Palette['primary'];
 
         // Calendar colors
         tomato: Palette['primary'];
@@ -107,6 +111,8 @@ declare module '@mui/material/styles' {
         lavendar: Palette['primary'];
         grape: Palette['primary'];
         graphite: Palette['primary'];
+        twitch: PaletteOptions['primary'];
+        youtube: PaletteOptions['primary'];
     }
 }
 
@@ -144,6 +150,7 @@ declare module '@mui/material' {
         book: true;
         meet: true;
         darkBlue: true;
+        apple: true;
     }
 
     interface IconButtonPropsColorOverrides {
@@ -163,6 +170,7 @@ declare module '@mui/material' {
         twitch: true;
         darkBlue: true;
         sage: true;
+        peacock: true;
     }
 }
 
@@ -300,6 +308,12 @@ const defaultPalette = {
         },
         name: 'graphite',
     }),
+    apple: defaultTheme.palette.augmentColor({
+        color: {
+            main: '#ffffff',
+        },
+        name: 'apple',
+    }),
     ...Object.values(RequirementCategory).reduce<Record<string, PaletteColor>>((acc, category) => {
         acc[themeRequirementCategory(category)] = defaultTheme.palette.augmentColor({
             color: {
@@ -362,6 +376,12 @@ const theme = createTheme({
                     },
                     name: 'basil',
                 }),
+                twitch: defaultTheme.palette.augmentColor({
+                    color: {
+                        main: '#6441a5',
+                    },
+                    name: 'twitch',
+                }),
                 peacock: defaultTheme.palette.augmentColor({
                     color: {
                         main: '#039be5',
@@ -391,6 +411,12 @@ const theme = createTheme({
                         main: '#616161',
                     },
                     name: 'graphite',
+                }),
+                apple: defaultTheme.palette.augmentColor({
+                    color: {
+                        main: '#000000',
+                    },
+                    name: 'apple',
                 }),
             },
         },

@@ -6,12 +6,15 @@ import {
 
 export type { Notification };
 
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
+
 /**
  * Returns the title for the given notification.
  * @param notification The notification to get the title for.
+ * @param t The translation function.
  * @returns The title for the given notification.
  */
-export function getTitle(notification: Notification): string {
+export function getTitle(notification: Notification, t: TranslateFn): string {
     switch (notification.type) {
         case NotificationTypes.GAME_COMMENT:
         case NotificationTypes.GAME_COMMENT_REPLY:
@@ -19,7 +22,7 @@ export function getTitle(notification: Notification): string {
         case NotificationTypes.GAME_REVIEW_COMPLETE:
             return `${notification.gameReviewMetadata?.headers.White} - ${notification.gameReviewMetadata?.headers.Black}`;
         case NotificationTypes.NEW_FOLLOWER:
-            return 'You have a new follower';
+            return t('newFollowerTitle');
         case NotificationTypes.TIMELINE_COMMENT:
         case NotificationTypes.TIMELINE_REACTION:
             return `${notification.timelineCommentMetadata?.name}`;
@@ -27,54 +30,55 @@ export function getTitle(notification: Notification): string {
             if (notification.count === 1) {
                 return `${notification.explorerGameMetadata?.[0].headers.White} - ${notification.explorerGameMetadata?.[0].headers.Black}`;
             }
-            return `${notification.count} new games were added with a position you follow.`;
+            return t('explorerGameTitle', { count: notification.count ?? 0 });
         case NotificationTypes.NEW_CLUB_JOIN_REQUEST:
             return `${notification.clubMetadata?.name}`;
         case NotificationTypes.CLUB_JOIN_REQUEST_APPROVED:
             return `${notification.clubMetadata?.name}`;
         case NotificationTypes.CALENDAR_INVITE:
-            return `You've been invited to an event on the calendar`;
+            return t('calendarInviteTitle');
         case NotificationTypes.ROUND_ROBIN_START:
-            return `Round robin ${notification.roundRobinStartMetadata?.cohort} ${notification.roundRobinStartMetadata?.name} has started`;
+            return t('roundRobinStartTitle', {
+                cohort: notification.roundRobinStartMetadata?.cohort ?? '',
+                name: notification.roundRobinStartMetadata?.name ?? '',
+            });
     }
 }
 
-export function getDescription(notification: Notification): string {
+export function getDescription(notification: Notification, t: TranslateFn): string {
     const count = notification.count || 1;
 
     switch (notification.type) {
         case NotificationTypes.GAME_COMMENT:
-            return 'There are new comments on your game.';
+            return t('gameCommentDescription');
         case NotificationTypes.GAME_COMMENT_REPLY:
-            return count === 1
-                ? `There is a new reply to a comment thread you participated in.`
-                : `There are ${count} new replies in comment threads you participated in.`;
+            return t('gameCommentReplyDescription', { count });
         case NotificationTypes.GAME_REVIEW_COMPLETE:
-            return `${notification.gameReviewMetadata?.reviewer.displayName} reviewed your game. Check the game settings for more info.`;
+            return t('gameReviewCompleteDescription', {
+                reviewer: notification.gameReviewMetadata?.reviewer.displayName ?? '',
+            });
         case NotificationTypes.NEW_FOLLOWER:
             return `${notification.newFollowerMetadata?.displayName}`;
         case NotificationTypes.TIMELINE_COMMENT:
-            return `There ${count !== 1 ? `are ${count}` : 'is a'} new comment${
-                count !== 1 ? 's' : ''
-            } on your activity.`;
+            return t('timelineCommentDescription', { count });
         case NotificationTypes.TIMELINE_REACTION:
-            return `There ${count !== 1 ? `are ${count}` : 'is a'} new reaction${
-                count !== 1 ? 's' : ''
-            } on your activity.`;
+            return t('timelineReactionDescription', { count });
         case NotificationTypes.EXPLORER_GAME:
             if (notification.count === 1) {
-                return `A new game was added containing a position you follow.`;
+                return t('explorerGameDescription');
             }
             return '';
         case NotificationTypes.NEW_CLUB_JOIN_REQUEST:
-            return `There ${count !== 1 ? `are ${count}` : 'is a'} new request${
-                count !== 1 ? 's' : ''
-            } to join your club.`;
+            return t('clubJoinRequestDescription', { count });
         case NotificationTypes.CLUB_JOIN_REQUEST_APPROVED:
-            return 'Your request to join the club was approved.';
+            return t('clubJoinApprovedDescription');
         case NotificationTypes.CALENDAR_INVITE: {
             const start = new Date(notification.calendarInviteMetadata?.startTime || '');
-            return `${notification.calendarInviteMetadata?.ownerDisplayName} invited you to an event at ${toDojoDateString(start, undefined, undefined)} ${toDojoTimeString(start, undefined, undefined)}`;
+            return t('calendarInviteDescription', {
+                owner: notification.calendarInviteMetadata?.ownerDisplayName ?? '',
+                date: toDojoDateString(start, undefined, undefined),
+                time: toDojoTimeString(start, undefined, undefined),
+            });
         }
         case NotificationTypes.ROUND_ROBIN_START:
             return ``;

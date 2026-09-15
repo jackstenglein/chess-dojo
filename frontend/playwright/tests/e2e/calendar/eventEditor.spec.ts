@@ -18,24 +18,37 @@ function fixEventDates(events: Event[]) {
 
 const events = fixEventDates(initialEvents);
 
+/** Empty time-slot buttons in the v5 scheduler week grid. */
 async function openEventEditor(page: Page) {
-    await page.locator('.rs__cell:not(.rs__header):not(.rs__time)').first().click();
+    const timeGrid = page.locator('[data-testid=grid] > div').nth(1);
+    await timeGrid
+        .locator('button.MuiButton-text')
+        .filter({ hasNot: page.locator('*') })
+        .first()
+        .click();
 }
 
 test.describe('Event Editor', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            for (const key of Object.keys(localStorage)) {
+                if (key.startsWith('calendarFilters.')) {
+                    localStorage.removeItem(key);
+                }
+            }
+        });
         await interceptApi(page, 'GET', '/calendar', {
             statusCode: 200,
             body: { events },
         });
         await page.goto('/calendar');
-        await expect(page.getByText('Hide Filters')).toBeVisible();
+        await expect(page.locator('[data-testid=calendar-filters]:visible')).toBeVisible();
     });
 
     test('prevents free users from adding events', async ({ page }) => {
         await useFreeTier(page);
         await page.goto('/calendar');
-        await expect(page.getByText('Hide Filters')).toBeVisible();
+        await expect(page.locator('[data-testid=calendar-filters]:visible')).toBeVisible();
 
         await openEventEditor(page);
         await expect(page.getByTestId('upsell-dialog')).toBeVisible();
@@ -97,7 +110,7 @@ test.describe('Event Editor', () => {
         await openEventEditor(page);
 
         await page.getByTestId('availability-type-selector').click();
-        await page.locator('.MuiPopover-root').getByText('All Types').click();
+        await page.locator('.MuiPopover-root').getByRole('option', { name: 'All Types' }).click();
         await page.locator('.MuiBackdrop-root').last().click({ force: true });
         await page.getByTestId('save-button').click();
 
@@ -113,7 +126,11 @@ test.describe('Event Editor', () => {
         await expect(page.getByTestId('availability-viewer').getByText('Cohorts')).toBeVisible();
         await expect(page.getByTestId('book-button')).not.toBeVisible();
 
-        await page.locator('.rs__popper_actions').getByRole('button').last().click();
+        const viewerActions = page
+            .locator('.MuiPopover-root')
+            .filter({ has: page.getByTestId('availability-viewer') });
+        // Header actions: close, edit, delete, copy link
+        await viewerActions.getByRole('button').nth(2).click();
         await page.getByText('DELETE').click();
 
         await expect(page.getByText('Availability deleted')).toBeVisible();

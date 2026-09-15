@@ -1,7 +1,8 @@
 import CloseButton from '@/components/ui/CloseButton';
 import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { Box, Button, Card, CardActions, CardContent, CardHeader, Typography } from '@mui/material';
-import { TooltipRenderProps } from 'react-joyride-react19-compat';
+import { useTranslations } from 'next-intl';
+import { TooltipRenderProps } from 'react-joyride';
 
 const TutorialTooltip: React.FC<TooltipRenderProps> = ({
     index,
@@ -13,6 +14,8 @@ const TutorialTooltip: React.FC<TooltipRenderProps> = ({
     isLastStep,
     closeProps,
 }) => {
+    const t = useTranslations('tutorial');
+
     return (
         <Card
             data-testid='tutorial-tooltip'
@@ -24,9 +27,9 @@ const TutorialTooltip: React.FC<TooltipRenderProps> = ({
                 <Typography>{step.content}</Typography>
             </CardContent>
             <CardActions>
-                {index > 0 && <Button {...backProps}>Back</Button>}
+                {index > 0 && <Button {...backProps}>{t('back')}</Button>}
                 <Button variant='contained' color='primary' onClick={primaryProps.onClick}>
-                    {isLastStep ? 'Close' : 'Next'}
+                    {isLastStep ? t('close') : t('next')}
                 </Button>
                 <Box sx={{ ml: 2, flexGrow: 1 }}>
                     <ScoreboardProgress min={0} max={size} value={index + 1} />

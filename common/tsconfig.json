@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
         "esModuleInterop": true,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
         "removeComments": false,
         "sourceMap": false,
         "strict": true,
-        "target": "ES2021"
+        "target": "ES2025"
     },
-    "include": ["src", "index.ts", "eslint.config.ts"],
+    "include": ["src", "index.ts", "eslint.config.mts"],
     "exclude": ["node_modules", "**/__tests__/*"]
 }

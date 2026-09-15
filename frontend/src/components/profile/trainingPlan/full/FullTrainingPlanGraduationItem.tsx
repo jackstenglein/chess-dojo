@@ -14,10 +14,12 @@ import {
 import CohortIcon from '@/scoreboard/CohortIcon';
 import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
+import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Lock } from '@mui/icons-material';
 import { Box, Divider, Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { GraduationDialog } from '../GraduationDialog';
 
@@ -29,11 +31,14 @@ interface FullTrainingPlanGraduationItemProps {
 }
 
 export function FullTrainingPlanGraduationItem({
-    requirement,
+    requirement: rawRequirement,
     user,
     cohort,
     isCurrentUser,
 }: FullTrainingPlanGraduationItemProps) {
+    const requirement = useTranslatedRequirement(rawRequirement) ?? rawRequirement;
+    const t = useTranslations('profile.trainingPlan.full');
+    const tRating = useTranslations('enums.ratingSystem');
     const isFreeTier = useFreeTier();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [upsellOpen, setUpsellOpen] = useState(false);
@@ -63,53 +68,90 @@ export function FullTrainingPlanGraduationItem({
 
     return (
         <>
-            <Tooltip
-                title={
-                    disabled ? 'Reach the required rating for your cohort to unlock graduation' : ''
-                }
-                followCursor
-            >
-                <Stack spacing={2} mt={2}>
+            <Tooltip title={disabled ? t('reachRatingToUnlock') : ''} followCursor>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Grid
                         container
-                        columnGap={0.5}
-                        alignItems='center'
-                        justifyContent='space-between'
                         onClick={isCurrentUser && !disabled ? onOpen : undefined}
                         sx={{
+                            columnGap: 0.5,
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
                             cursor: isCurrentUser && !disabled ? 'pointer' : 'default',
                             opacity: disabled ? 0.6 : 1,
                         }}
                     >
-                        <Grid size={9} display='flex' flexDirection='column' rowGap='0.25rem'>
-                            <Stack direction='row' alignItems='center' spacing={1}>
+                        <Grid
+                            size={9}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                rowGap: '0.25rem',
+                            }}
+                        >
+                            <Stack
+                                direction='row'
+                                spacing={1}
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 {disabled && (
                                     <Lock sx={{ color: 'text.secondary', fontSize: 20 }} />
                                 )}
-                                <Typography fontWeight='bold'>{requirement.name}</Typography>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    {requirement.name}
+                                </Typography>
                             </Stack>
                             {showRatingProgress &&
                                 (() => {
                                     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
                                     return (
-                                        <Stack width={1}>
-                                            <Stack direction='row' alignItems='center' gap={0.5}>
+                                        <Stack
+                                            sx={{
+                                                width: 1,
+                                            }}
+                                        >
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                    gap: 0.5,
+                                                }}
+                                            >
                                                 <RatingSystemIcon
                                                     system={user.ratingSystem}
                                                     size='small'
                                                 />
                                                 <Typography
                                                     variant='body2'
-                                                    color='text.secondary'
-                                                    sx={{ fontWeight: 'bold' }}
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                        fontWeight: 'bold',
+                                                    }}
                                                 >
-                                                    {formatRatingSystem(user.ratingSystem)}
+                                                    {formatRatingSystem(user.ratingSystem, tRating)}
                                                     {isCustom(user.ratingSystem) &&
                                                         ratingSystemName &&
                                                         ` (${ratingSystemName})`}
                                                 </Typography>
                                             </Stack>
-                                            <Stack direction='row' alignItems='center' gap={0.5}>
+                                            <Stack
+                                                direction='row'
+                                                sx={{
+                                                    alignItems: 'center',
+                                                    gap: 0.5,
+                                                }}
+                                            >
                                                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                                                     <ScoreboardProgress
                                                         value={currentRating}
@@ -128,7 +170,10 @@ export function FullTrainingPlanGraduationItem({
                                                         tooltip={
                                                             disabled
                                                                 ? ''
-                                                                : `Next graduation: from ${cohort} to ${nextCohort}`
+                                                                : t('nextGraduation', {
+                                                                      cohort,
+                                                                      nextCohort,
+                                                                  })
                                                         }
                                                         size={20}
                                                         sx={{ marginTop: '-3px' }}

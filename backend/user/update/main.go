@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
+	goaway "github.com/TwiN/go-away"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
@@ -23,6 +25,7 @@ import (
 var repository = database.DynamoDB
 var mediaStore database.MediaStore = database.S3
 var stage = os.Getenv("stage")
+var profanityDetector = goaway.NewProfanityDetector().WithExactWord(true)
 
 const (
 	referralSheetId = "198Me8Qm7YVKEtlY0Y56PbePaJz-Quqr4cA6hhhdRkgc"
@@ -78,7 +81,16 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 			return api.Failure(errors.New(400, "Invalid request: dojoCohort cannot be empty", "")), nil
 		}
 	}
-
+	// Validates that the bio does not contain profanity
+	if update.Bio != nil {
+		if profanityDetector.IsProfane(*update.Bio) {
+			flagged := profanityDetector.ExtractProfanity(*update.Bio)
+			return api.Failure(errors.New(400, fmt.Sprintf("Invalid request: bio contains inappropriate language: %q", flagged), "")), nil
+		}
+	}
+	if err := validateMainClubId(user, update); err != nil {
+		return api.Failure(err), nil
+	}
 	if err := saveReferralSource(ctx, user, update); err != nil {
 		return api.Failure(err), nil
 	}
@@ -115,6 +127,23 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	return api.Success(newUser), nil
+}
+
+// validateMainClubId returns an error if the update sets mainClubId to a club
+// the user is not a member of. An empty string is allowed and clears the designation.
+func validateMainClubId(user *database.User, update *database.UserUpdate) error {
+	if update.MainClubId == nil {
+		return nil
+	}
+	clubId := strings.TrimSpace(*update.MainClubId)
+	update.MainClubId = &clubId
+	if clubId == "" {
+		return nil
+	}
+	if !slices.Contains(user.Clubs, clubId) {
+		return errors.New(400, "Invalid request: mainClubId must be a club you are a member of", "")
+	}
+	return nil
 }
 
 func fetchCurrentRating(rating *database.Rating, fetcher ratings.RatingFetchFunc) error {

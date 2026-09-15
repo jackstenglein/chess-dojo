@@ -152,6 +152,11 @@ type Position struct {
 
 	// The expected result of the position
 	Result string `dynamodbav:"result" json:"result"`
+
+	// An optional URL of a video (e.g. YouTube) associated specifically
+	// with this position. When present, clients may offer to play the
+	// video from the position card (e.g. on the sparring page).
+	VideoUrl string `dynamodbav:"videoUrl,omitempty" json:"videoUrl,omitempty"`
 }
 
 type Requirement struct {
@@ -297,6 +302,44 @@ func (r *Requirement) CalculateScoreCount(cohort DojoCohort, count int) float32 
 
 	count = r.clampCount(cohort, count)
 	return float32(math.Max(float64(count-r.StartCount), 0)) * unitScore
+}
+
+// GetTotalScore returns the maximum possible score for the given cohort across all
+// provided requirements. This mirrors the frontend getTotalScore function.
+func GetTotalScore(cohort DojoCohort, requirements []*Requirement) float32 {
+	var total float32
+	for _, r := range requirements {
+		if _, ok := r.Counts[cohort]; !ok {
+			continue
+		}
+		if r.ScoreboardDisplay == NonDojo {
+			continue
+		}
+		if r.TotalScore > 0 {
+			total += r.TotalScore
+			continue
+		}
+		unitScore := r.UnitScore
+		if override, ok := r.UnitScoreOverride[cohort]; ok {
+			unitScore = override
+		}
+		count := r.Counts[cohort]
+		total += float32(math.Max(float64(count-r.StartCount), 0)) * unitScore
+	}
+	return total
+}
+
+// GetPercentComplete returns the user's completion percentage for their cohort.
+func GetPercentComplete(user *User, requirements []*Requirement) float32 {
+	if user == nil || !user.DojoCohort.IsValid() {
+		return 0
+	}
+	totalScore := GetTotalScore(user.DojoCohort, requirements)
+	if totalScore <= 0 {
+		return 0
+	}
+	userScore := user.CalculateScore(requirements)
+	return (userScore / totalScore) * 100
 }
 
 // Returns true if the given progress is expired for the requirement.

@@ -8,4 +8,6 @@ The Dojo recognizes all the open source contributions made by various devs and w
 
 - The Lichess developers https://github.com/lichess-org/lila/tree/master/ui/ceval who helped us get learning material and source code for Stockfish 17
 
+- The Lichess developers https://github.com/lichess-org/stockfish-web for providing Stockfish 18 and Stockfish 18 Lite WASM builds via `@lichess-org/stockfish-web`
+
 - The freechess developers https://github.com/GuillaumeSD/Freechess for providing the UI and Stockfish engine setup code for stockfish 16.1

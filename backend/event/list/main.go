@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"os"
-	"slices"
 
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/event/visibility"
 )
 
 var repository = database.DynamoDB
@@ -49,10 +49,10 @@ func Handler(ctx context.Context, request api.Request) (api.Response, error) {
 
 	finalEvents := make([]*database.Event, 0, len(events))
 	for _, e := range events {
-		if shouldRemoveEvent(e, user) {
+		if visibility.ShouldRemoveEvent(e, user) {
 			continue
 		}
-		if shouldHideEventDetails(e, user) {
+		if visibility.ShouldHideEventDetails(e, user) {
 			e.Location = ""
 			e.Messages = nil
 		}
@@ -63,124 +63,4 @@ func Handler(ctx context.Context, request api.Request) (api.Response, error) {
 		Events:           finalEvents,
 		LastEvaluatedKey: lastKey,
 	}), nil
-}
-
-// Returns true if the event should be removed from the list for the given user.
-func shouldRemoveEvent(event *database.Event, user *database.User) bool {
-	if user.GetIsCalendarAdmin() {
-		return false
-	}
-
-	if event.Owner == user.GetUsername() {
-		return false
-	}
-
-	switch event.Type {
-	case database.EventType_Availability:
-		return shouldRemoveAvailability(event, user)
-	case database.EventType_Dojo:
-		return shouldRemoveDojo(event, user)
-	case database.EventType_Coaching:
-		return shouldRemoveCoaching(event, user)
-	case database.EventType_GameReviewTier:
-		return shouldRemoveGameReview(event, user)
-	}
-
-	return false
-}
-
-// Returns true if the event of type Availability should be removed from the list
-// for the given user.
-func shouldRemoveAvailability(event *database.Event, user *database.User) bool {
-	if _, ok := event.Participants[user.GetUsername()]; ok {
-		return false
-	}
-
-	if event.Status != database.SchedulingStatus_Scheduled {
-		return true
-	}
-
-	if slices.ContainsFunc(
-		event.Invited,
-		func(p database.Participant) bool {
-			return p.Username == user.GetUsername()
-		}) {
-		return false
-	} else if event.InviteOnly {
-		return true
-	}
-
-	if len(event.Cohorts) > 0 && !slices.Contains(event.Cohorts, user.GetCohort()) {
-		return true
-	}
-
-	return false
-}
-
-// Returns true if the event of type Dojo should be removed from the list for
-// the given user.
-func shouldRemoveDojo(event *database.Event, user *database.User) bool {
-	if len(event.Cohorts) > 0 && !slices.Contains(event.Cohorts, user.GetCohort()) {
-		return true
-	}
-	return false
-}
-
-// Returns true if the event of type Coaching should be removed from the list
-// for the given user.
-func shouldRemoveCoaching(event *database.Event, user *database.User) bool {
-	if _, ok := event.Participants[user.GetUsername()]; ok {
-		return false
-	}
-
-	if len(event.Cohorts) > 0 && !slices.Contains(event.Cohorts, user.GetCohort()) {
-		return true
-	}
-	if !event.Coaching.BookableByFreeUsers && user.GetSubscriptionStatus() != database.SubscriptionStatus_Subscribed {
-		return true
-	}
-	if event.Status != database.SchedulingStatus_Scheduled {
-		return true
-	}
-
-	return false
-}
-
-// Returns true if the game review event should be removed from the list for
-// the given user.
-func shouldRemoveGameReview(event *database.Event, user *database.User) bool {
-	if user.GetSubscriptionTier() != database.SubscriptionTier_GameReview {
-		return false
-	}
-	return user.GameReviewCohortId != event.GameReviewCohortId
-}
-
-// Returns true if the event details (location, messages, etc) should be hidden.
-func shouldHideEventDetails(event *database.Event, user *database.User) bool {
-	if user.GetIsCalendarAdmin() {
-		return false
-	}
-
-	username := user.GetUsername()
-	if event.Owner == username {
-		return false
-	}
-
-	isGameReviewTier := user.GetSubscriptionTier() == database.SubscriptionTier_GameReview
-	isLectureTier := isGameReviewTier || (user.GetSubscriptionTier() == database.SubscriptionTier_Lecture)
-
-	p := event.Participants[username]
-	switch event.Type {
-	case database.EventType_Coaching:
-		return p == nil || !p.HasPaid
-
-	case database.EventType_GameReviewTier:
-		return !isGameReviewTier
-
-	case database.EventType_LectureTier:
-		return !isLectureTier
-
-	default:
-		return false
-	}
 }

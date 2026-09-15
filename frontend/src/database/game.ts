@@ -35,12 +35,15 @@ export function isDefaultHeader(header: string): boolean {
     );
 }
 
-export function displayGameReviewType(t: GameReviewType): string {
-    switch (t) {
+export function displayGameReviewType(
+    reviewType: GameReviewType,
+    t: (key: string) => string,
+): string {
+    switch (reviewType) {
         case GameReviewType.Quick:
-            return 'Quick';
+            return t('reviewTypeQuick');
         case GameReviewType.Deep:
-            return 'Deep Dive';
+            return t('reviewTypeDeepDive');
     }
 }
 export const MastersCohort = 'masters';

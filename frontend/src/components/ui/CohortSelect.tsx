@@ -1,6 +1,7 @@
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import MultipleSelectChip, { MultipleSelectChipProps } from './MultipleSelectChip';
 
 interface MultipleCohortSelectProps extends Omit<MultipleSelectChipProps, 'options'> {
@@ -14,6 +15,7 @@ type SingleCohortSelectProps = Omit<TextFieldProps, 'select'> & {
 type CohortSelectProps = SingleCohortSelectProps | MultipleCohortSelectProps;
 
 export function CohortSelect(props: CohortSelectProps) {
+    const t = useTranslations('ui.cohortSelect');
     if (props.multiple) {
         const onChangeCohort = (newCohorts: string[]) => {
             const addedCohorts = newCohorts.filter((c) => !props.selected.includes(c));
@@ -31,7 +33,7 @@ export function CohortSelect(props: CohortSelectProps) {
             <MultipleSelectChip
                 options={[ALL_COHORTS, ...dojoCohorts].map((opt) => ({
                     value: opt,
-                    label: opt === ALL_COHORTS ? 'All Cohorts' : opt,
+                    label: opt === ALL_COHORTS ? t('allCohorts') : opt,
                     icon: (
                         <CohortIcon
                             cohort={opt}

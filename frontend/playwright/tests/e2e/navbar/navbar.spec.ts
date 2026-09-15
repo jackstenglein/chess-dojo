@@ -11,7 +11,13 @@ const navbarStartItems = [
     'Shop',
 ];
 
-const navbarEndItems = ['Help', 'Search Users', 'Timer', 'Notifications', 'navbar-profile-button'];
+const navbarEndItems = [
+    { testId: 'help', name: 'Help' },
+    { testId: 'search', name: 'Search Users' },
+    { testId: 'Timer', name: 'Timer' },
+    { testId: 'Notifications', name: 'Notifications' },
+    { testId: 'navbar-profile-button', name: '' },
+];
 
 const viewPortWidths = [
     { width: 1501, hidden: 0, endHidden: 0 },
@@ -60,6 +66,24 @@ test.describe('Navbar (unauthenticated)', () => {
     });
 });
 
+test.describe('Navbar Games dropdown', () => {
+    test('has Repertoire Spy link that navigates to analysis with explorer param', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 1501, height: 660 });
+        await page.goto('/profile');
+
+        const navbar = page.getByTestId('navbar');
+        await navbar.getByText('Games').click();
+        await page.getByRole('menuitem', { name: 'Repertoire Spy' }).click();
+
+        await expect(page).toHaveURL(/\/games\/analysis\?explorer=player/);
+        await expect(
+            page.getByRole('tab', { name: 'Repertoire Spy', selected: true }),
+        ).toBeVisible();
+    });
+});
+
 test.describe('Navbar (authenticated)', () => {
     for (const { width, hidden, endHidden } of viewPortWidths) {
         test(`shows correct authenticated items with ${width}px width`, async ({ page }) => {
@@ -77,7 +101,7 @@ test.describe('Navbar (authenticated)', () => {
             // Check visible end items
             const visibleEndItems = navbarEndItems.slice(endHidden);
             for (const item of visibleEndItems) {
-                await expect(page.getByTestId(item)).toBeVisible();
+                await expect(page.getByTestId(item.testId)).toBeVisible();
             }
 
             // Check hidden items in menu
@@ -92,8 +116,8 @@ test.describe('Navbar (authenticated)', () => {
 
                 const hiddenEndItems = navbarEndItems.slice(0, endHidden);
                 for (const item of hiddenEndItems) {
-                    if (item !== 'navbar-profile-button') {
-                        await expect(menu.getByRole('menuitem', { name: item })).toBeVisible();
+                    if (item.testId !== 'navbar-profile-button') {
+                        await expect(menu.getByRole('menuitem', { name: item.name })).toBeVisible();
                     }
                 }
             }

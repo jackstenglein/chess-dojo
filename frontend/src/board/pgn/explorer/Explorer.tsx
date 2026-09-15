@@ -1,8 +1,12 @@
+import { useChessDB } from '@/stockfish/hooks/useChessDb';
 import { Event, EventType } from '@jackstenglein/chess';
 import { PersonSearch } from '@mui/icons-material';
+import CloudIcon from '@mui/icons-material/Cloud';
 import { TabContext } from '@mui/lab';
 import { Box, CardContent, Tab, Tabs } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SiLichess } from 'react-icons/si';
 import { useLocalStorage } from 'usehooks-ts';
 import { usePosition } from '../../../api/cache/positions';
@@ -10,6 +14,7 @@ import { ExplorerPositionFollower } from '../../../database/explorer';
 import { ChessDojoIcon } from '../../../style/ChessDojoIcon';
 import { KingIcon, RookIcon } from '../../../style/ChessIcons';
 import { useChess } from '../PgnBoard';
+import { ChessDBTab } from './ChessDb';
 import Database from './Database';
 import Header from './Header';
 import { PlayerTab } from './player/PlayerTab';
@@ -28,12 +33,35 @@ export enum ExplorerDatabaseType {
     Lichess = 'lichess',
     Player = 'player',
     Tablebase = 'tablebase',
+    ChessDB = 'chessdb',
 }
 
-const Explorer = () => {
-    const [tab, setTab] = useLocalStorage(explorerTabKey, ExplorerDatabaseType.Dojo);
+interface ExplorerProps {
+    storageKey?: string;
+}
+
+const Explorer: React.FC<ExplorerProps> = ({ storageKey = explorerTabKey }) => {
+    const [tab, setTab] = useLocalStorage(storageKey, ExplorerDatabaseType.Dojo);
+    const searchParams = useSearchParams();
     const { chess } = useChess();
-    const [fen, setFen] = useState(chess?.fen() || startingPositionFen);
+    const t = useTranslations('analysisBoard.explorer');
+
+    const hasSetTabFromParams = useRef(false);
+    useEffect(() => {
+        if (hasSetTabFromParams.current) {
+            return;
+        }
+        const explorer = searchParams.get('explorer');
+        if (
+            explorer &&
+            Object.values(ExplorerDatabaseType).includes(explorer as ExplorerDatabaseType)
+        ) {
+            hasSetTabFromParams.current = true;
+            setTab(explorer as ExplorerDatabaseType);
+        }
+    }, [searchParams, setTab]);
+
+    const [fen, setFen] = useState(chess?.fen() ?? startingPositionFen);
     const { position, request, putPosition } = usePosition(fen);
     const [minCohort, setMinCohort] = useState('');
     const [maxCohort, setMaxCohort] = useState('');
@@ -46,6 +74,15 @@ const Explorer = () => {
         timeControls,
     });
 
+    const {
+        data: chessDbMoves,
+        loading: chessDbLoading,
+        error: chessDbError,
+        queueing: chessDbQueueing,
+        queued: chessDbQueued,
+        queueAnalysis: chessDbRequestAnalysis,
+    } = useChessDB({ enableMoves: true, enablePv: false });
+
     useEffect(() => {
         if (chess) {
             const observer = {
@@ -54,7 +91,7 @@ const Explorer = () => {
                     if (event.type === EventType.Initialized) {
                         setFen(chess.fen());
                     } else {
-                        setFen(event.move?.after || chess.setUpFen());
+                        setFen(event.move?.after ?? chess.setUpFen());
                     }
                 },
             };
@@ -91,7 +128,7 @@ const Explorer = () => {
         );
     };
 
-    const { dojo, masters, lichess, tablebase, follower } = position || {};
+    const { dojo, masters, lichess, tablebase, follower } = position ?? {};
 
     const selectedPosition =
         tab === ExplorerDatabaseType.Dojo
@@ -99,6 +136,42 @@ const Explorer = () => {
             : tab === ExplorerDatabaseType.Masters
               ? masters
               : lichess;
+
+    const renderTabContent = () => {
+        switch (tab) {
+            case ExplorerDatabaseType.Tablebase:
+                return <Tablebase fen={fen} position={tablebase} request={request} />;
+            case ExplorerDatabaseType.Player:
+                return <PlayerTab fen={fen} />;
+            case ExplorerDatabaseType.ChessDB:
+                return (
+                    <ChessDBTab
+                        moves={chessDbMoves}
+                        loading={chessDbLoading}
+                        error={chessDbError}
+                        queueing={chessDbQueueing}
+                        queued={chessDbQueued}
+                        requestAnalysis={() => chessDbRequestAnalysis(fen)}
+                    />
+                );
+            default:
+                return (
+                    <Database
+                        type={tab}
+                        fen={fen}
+                        position={selectedPosition}
+                        isLoading={request.isLoading() || !request.isSent()}
+                        minCohort={minCohort}
+                        maxCohort={maxCohort}
+                        setMinCohort={setMinCohort}
+                        setMaxCohort={setMaxCohort}
+                        timeControls={timeControls}
+                        setTimeControls={onSetTimeControls}
+                        pagination={pagination}
+                    />
+                );
+        }
+    };
 
     return (
         <CardContent>
@@ -115,11 +188,11 @@ const Explorer = () => {
                     <Tabs
                         value={tab}
                         onChange={(_, val: ExplorerDatabaseType) => setTab(val)}
-                        aria-label='Position database type'
+                        aria-label={t('tabsAriaLabel')}
                         variant='scrollable'
                     >
                         <Tab
-                            label='Dojo'
+                            label={t('tabDojo')}
                             value={ExplorerDatabaseType.Dojo}
                             icon={<ChessDojoIcon />}
                             iconPosition='start'
@@ -127,7 +200,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-dojo'
                         />
                         <Tab
-                            label='Masters'
+                            label={t('tabMasters')}
                             value={ExplorerDatabaseType.Masters}
                             icon={<KingIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
@@ -135,7 +208,15 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-masters'
                         />
                         <Tab
-                            label='Lichess'
+                            label={t('tabCloudDb')}
+                            value={ExplorerDatabaseType.ChessDB}
+                            icon={<CloudIcon sx={{ fontSize: '1rem' }} />}
+                            iconPosition='start'
+                            sx={{ minHeight: '48px' }}
+                            data-cy='explorer-tab-button-chessdb'
+                        />
+                        <Tab
+                            label={t('tabLichess')}
                             value={ExplorerDatabaseType.Lichess}
                             icon={<SiLichess />}
                             iconPosition='start'
@@ -143,7 +224,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-lichess'
                         />
                         <Tab
-                            label='Player'
+                            label={t('tabRepertoireSpy')}
                             value={ExplorerDatabaseType.Player}
                             icon={<PersonSearch />}
                             iconPosition='start'
@@ -151,7 +232,7 @@ const Explorer = () => {
                             data-testid='explorer-tab-button-player'
                         />
                         <Tab
-                            label='Tablebase'
+                            label={t('tabTablebase')}
                             value={ExplorerDatabaseType.Tablebase}
                             icon={<RookIcon sx={{ fontSize: '1rem' }} />}
                             iconPosition='start'
@@ -161,25 +242,7 @@ const Explorer = () => {
                     </Tabs>
                 </Box>
 
-                {tab === ExplorerDatabaseType.Tablebase ? (
-                    <Tablebase fen={fen} position={tablebase} request={request} />
-                ) : tab === ExplorerDatabaseType.Player ? (
-                    <PlayerTab fen={fen} />
-                ) : (
-                    <Database
-                        type={tab}
-                        fen={fen}
-                        position={selectedPosition}
-                        isLoading={request.isLoading() || !request.isSent()}
-                        minCohort={minCohort}
-                        maxCohort={maxCohort}
-                        setMinCohort={setMinCohort}
-                        setMaxCohort={setMaxCohort}
-                        timeControls={timeControls}
-                        setTimeControls={onSetTimeControls}
-                        pagination={pagination}
-                    />
-                )}
+                {renderTabContent()}
             </TabContext>
         </CardContent>
     );

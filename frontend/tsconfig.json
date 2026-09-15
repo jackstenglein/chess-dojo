@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "target": "ES2015",
         "useDefineForClassFields": true,
         "lib": ["ESNext", "DOM", "DOM.Iterable"],
@@ -26,7 +25,9 @@
             }
         ],
         "paths": {
-            "@/*": ["src/*"]
+            "*": ["./*"],
+            "@/*": ["./src/*"],
+            "~/*": ["./*"]
         }
     },
     "include": [
@@ -45,6 +46,8 @@
     "exclude": [
         "node_modules",
         "src/stockfish/engine/sf17-79.js",
-        "src/stockfish/engine/sf171-79.js"
+        "src/stockfish/engine/sf171-79.js",
+        "src/stockfish/engine/sf18.js",
+        "src/stockfish/engine/sf18-smallnet.js"
     ]
 }

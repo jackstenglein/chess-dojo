@@ -3,7 +3,6 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { CustomTask } from '@/database/requirement';
-import { LoadingButton } from '@mui/lab';
 import {
     Button,
     Dialog,
@@ -12,6 +11,7 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 
 interface DeleteCustomTaskModalProps {
     task: CustomTask;
@@ -26,6 +26,8 @@ const DeleteCustomTaskModal: React.FC<DeleteCustomTaskModalProps> = ({
     onCancel,
     onDelete,
 }) => {
+    const t = useTranslations('profile.trainingPlan.deleteCustomTask');
+    const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
     const api = useApi();
     const request = useRequest();
@@ -60,21 +62,18 @@ const DeleteCustomTaskModal: React.FC<DeleteCustomTaskModalProps> = ({
         <Dialog open={open} onClose={request.isLoading() ? undefined : onCancel} maxWidth='sm'>
             <RequestSnackbar request={request} />
 
-            <DialogTitle>Delete {task.name}?</DialogTitle>
+            <DialogTitle>{t('title', { name: task.name })}</DialogTitle>
             <DialogContent>
-                <DialogContentText>
-                    This custom task will be removed from your profile, and all time logged will be
-                    lost. This action is irreverisble.
-                </DialogContentText>
+                <DialogContentText>{t('body')}</DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel} disabled={request.isLoading()}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
 
-                <LoadingButton color='error' loading={request.isLoading()} onClick={handleDelete}>
-                    Delete Task
-                </LoadingButton>
+                <Button color='error' loading={request.isLoading()} onClick={handleDelete}>
+                    {t('delete')}
+                </Button>
             </DialogActions>
         </Dialog>
     );

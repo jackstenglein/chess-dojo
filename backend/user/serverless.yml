@@ -87,9 +87,18 @@ functions:
         Resource: ${param:UsersTableArn}
     environment:
       wixApiKey: ${file(../wix.yml):wixApiKey}
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      discordPublicGuildId: ${file(../config-${sls:stage}.yml):discordPublicGuildId}
+      discordFreeRoles: ${file(../config-${sls:stage}.yml):discordFreeRoles}
+      discordPaidRoles: ${file(../config-${sls:stage}.yml):discordPaidRoles}
 
   update:
     handler: update/main.go
+    # First FIDE lookup in a cold instance downloads+parses the ~44MB list.
+    # HTTP API integration timeout caps at 30s.
+    timeout: 25
+    memorySize: 2048
     events:
       - httpApi:
           path: /user
@@ -125,7 +134,16 @@ functions:
           - - 'arn:aws:s3:::'
             - ${param:SecretsBucket}
             - /openClassicalServiceAccountKey.json
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+        Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${param:FideRatingsBucket}
+            - /players_list.zip
     environment:
+      fideRatingsBucket: ${param:FideRatingsBucket}
       discordAuth: ${file(../discord.yml):discordAuth}
       discordFindGameChannelId: ${file(../config-${sls:stage}.yml):discordFindGameChannelId}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
@@ -135,6 +153,7 @@ functions:
 
   updateProgress:
     handler: progress/update/main.go
+    timeout: 10
     events:
       - httpApi:
           path: /user/progress/v2
@@ -148,6 +167,16 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /pat/user/progress/v3
+          method: post
+          authorizer:
+            type: request
+            id: ${param:patAuthorizer}
+    environment:
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      discordSenseiRoleId: ${file(../config-${sls:stage}.yml):discordSenseiRoleId}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -157,6 +186,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:Query
         Resource: ${param:RequirementsTableArn}
       - Effect: Allow
         Action:
@@ -193,6 +223,21 @@ functions:
           - dynamodb:BatchWriteItem
         Resource: ${param:TimelineTableArn}
 
+  resetProgress:
+    handler: progress/reset/main.go
+    events:
+      - httpApi:
+          path: /user/progress/reset
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
   get:
     handler: get/main.go
     events:
@@ -202,6 +247,12 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /pat/user
+          method: get
+          authorizer:
+            type: request
+            id: ${param:patAuthorizer}
       - httpApi:
           path: /public/user/{username}
           method: get
@@ -215,6 +266,66 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: ${param:DirectoriesTableArn}
+
+  adminGetUser:
+    handler: admin/get/main.go
+    events:
+      - httpApi:
+          path: /admin/user/{username}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
+  adminPutComplimentary:
+    handler: admin/complimentary/put/main.go
+    environment:
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      discordPublicGuildId: ${file(../config-${sls:stage}.yml):discordPublicGuildId}
+      discordFreeRoles: ${file(../config-${sls:stage}.yml):discordFreeRoles}
+      discordPaidRoles: ${file(../config-${sls:stage}.yml):discordPaidRoles}
+    events:
+      - httpApi:
+          path: /admin/user/{username}/complimentary
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
+
+  adminDeleteComplimentary:
+    handler: admin/complimentary/delete/main.go
+    environment:
+      discordAuth: ${file(../discord.yml):discordAuth}
+      discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
+      discordPublicGuildId: ${file(../config-${sls:stage}.yml):discordPublicGuildId}
+      discordFreeRoles: ${file(../config-${sls:stage}.yml):discordFreeRoles}
+      discordPaidRoles: ${file(../config-${sls:stage}.yml):discordPaidRoles}
+    events:
+      - httpApi:
+          path: /admin/user/{username}/complimentary
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: ${param:UsersTableArn}
 
   getByDiscordId:
     handler: get/discord/main.go
@@ -300,6 +411,7 @@ functions:
 
   updateRatings:
     handler: ratings/update/main.go
+    reservedConcurrency: 1
     events:
       - schedule:
           rate: cron(0 0 * * ? *)
@@ -532,6 +644,9 @@ functions:
               cohorts:
                 - 2400+
     timeout: 900
+    memorySize: 3008
+    environment:
+      fideRatingsBucket: ${param:FideRatingsBucket}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -545,6 +660,18 @@ functions:
               - ''
               - - ${param:UsersTableArn}
                 - '/index/CohortIdx'
+      - Effect: Allow
+        Action:
+          - lambda:InvokeFunction
+        Resource: arn:aws:lambda:${aws:region}:${aws:accountId}:function:chess-dojo-users-${sls:stage}-updateRatings
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+        Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - ${param:FideRatingsBucket}
+            - /players_list.zip
 
   updateStatistics:
     handler: statistics/update/main.go
@@ -711,9 +838,11 @@ functions:
             type: jwt
             id: ${param:apiAuthorizer}
     environment:
+      frontendHost: ${file(../config-${sls:stage}.yml):frontendHost}
       discordAuth: ${file(../discord.yml):discordAuth}
       discordPrivateGuildId: ${file(../config-${sls:stage}.yml):discordPrivateGuildId}
       discordPublicGuildId: ${file(../config-${sls:stage}.yml):discordPublicGuildId}
+      discordGraduationsChannelId: ${file(../config-${sls:stage}.yml):discordGraduationsChannelId}
       discordFreeRoles: ${file(../config-${sls:stage}.yml):discordFreeRoles}
       discordPaidRoles: ${file(../config-${sls:stage}.yml):discordPaidRoles}
     iamRoleStatements:
@@ -734,6 +863,14 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: ${param:TimelineTableArn}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource:
+          - Fn::Join:
+              - ''
+              - - ${param:GamesTableArn}
+                - '/index/OwnerIdx'
 
   getStatistics:
     handler: statistics/get/main.go
@@ -884,6 +1021,26 @@ resources:
         Threshold: 700000
         ComparisonOperator: GreaterThanThreshold
         TreatMissingData: ignore
+
+    UpdateRatingsErrorAlarm:
+      Condition: IsNotSimple
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: UpdateRatingsError-${sls:stage}
+        AlarmDescription: 'Notifications about Lambda errors for the updateRatings function, including continuation-cap hits and failed writes'
+        AlarmActions:
+          - ${param:AlertNotificationsTopic}
+        Namespace: AWS/Lambda
+        MetricName: Errors
+        Statistic: Sum
+        Dimensions:
+          - Name: FunctionName
+            Value: chess-dojo-users-${sls:stage}-updateRatings
+        Period: 86400
+        EvaluationPeriods: 1
+        Threshold: 0
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
 
     UpdateStatisticsTimeoutAlarm:
       Condition: IsNotSimple

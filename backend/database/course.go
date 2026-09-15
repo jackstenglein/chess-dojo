@@ -10,8 +10,17 @@ import (
 type CourseType string
 
 const (
-	Opening CourseType = "OPENING"
-	Other   CourseType = "OTHER"
+	Opening  CourseType = "OPENING"
+	Endgame  CourseType = "ENDGAME"
+	Workshop CourseType = "WORKSHOP"
+	Other    CourseType = "OTHER"
+)
+
+type CourseStatus string
+
+const (
+	CourseStatusDraft     CourseStatus = "DRAFT"
+	CourseStatusPublished CourseStatus = "PUBLISHED"
 )
 
 type CourseColor string
@@ -73,6 +82,28 @@ type Course struct {
 
 	// The list of chapters included in the course.
 	Chapters []*Chapter `dynamodbav:"chapters" json:"chapters"`
+
+	// The thumbnail image of the course.
+	ImageUrl string `dynamodbav:"imageUrl,omitempty" json:"imageUrl,omitempty"`
+
+	// A YouTube URL introducing the course. Shown on the purchase page
+	// when the viewer does not yet have access.
+	VideoUrl string `dynamodbav:"videoUrl,omitempty" json:"videoUrl,omitempty"`
+
+	// Whether the course is a draft or published. Empty is treated as published
+	// for courses created before this field existed.
+	Status CourseStatus `dynamodbav:"status,omitempty" json:"status,omitempty"`
+
+	// Whether to hide the chapter indices in the table of contents.
+	HideChapterIndices bool `dynamodbav:"hideChapterIndices,omitempty" json:"hideChapterIndices,omitempty"`
+
+	// Whether to hide the module indices in the table of contents.
+	HideModuleIndices bool `dynamodbav:"hideModuleIndices,omitempty" json:"hideModuleIndices,omitempty"`
+}
+
+// IsPublished returns true if the course should be visible to non-admin users.
+func (c *Course) IsPublished() bool {
+	return c.Status == "" || c.Status == CourseStatusPublished
 }
 
 // Represents a way to purchase a course.
@@ -124,6 +155,7 @@ const (
 	PgnViewer         CourseModuleType = "PGN_VIEWER"
 	SparringPositions CourseModuleType = "SPARRING_POSITIONS"
 	ModelGames        CourseModuleType = "MODEL_GAMES"
+	Themes            CourseModuleType = "THEMES"
 	Exercises         CourseModuleType = "EXERCISES"
 )
 
@@ -201,24 +233,37 @@ func (repo *dynamoRepository) GetCourse(courseType, id string) (*Course, error) 
 // CourseLister provides an interface for listing courses.
 type CourseLister interface {
 	// ListCourses returns a list of courses with the provided type.
-	ListCourses(courseType, startKey string) ([]Course, string, error)
+	ListCourses(courseType, startKey string, publishedOnly bool) ([]Course, string, error)
 
 	// ScanCourses returns a list of all courses.
-	ScanCourses(startKey string) ([]Course, string, error)
+	ScanCourses(startKey string, publishedOnly bool) ([]Course, string, error)
+}
+
+func applyPublishedOnlyFilter(names map[string]*string, values map[string]*dynamodb.AttributeValue) (string, map[string]*string, map[string]*dynamodb.AttributeValue) {
+	values[":published"] = &dynamodb.AttributeValue{S: aws.String(string(CourseStatusPublished))}
+	names["#status"] = aws.String("status")
+	return "attribute_not_exists(#status) OR #status = :published", names, values
 }
 
 // ListCourses returns a list of courses with the provided type.
-func (repo *dynamoRepository) ListCourses(courseType, startKey string) ([]Course, string, error) {
+func (repo *dynamoRepository) ListCourses(courseType, startKey string, publishedOnly bool) ([]Course, string, error) {
+	values := map[string]*dynamodb.AttributeValue{
+		":type": {S: aws.String(courseType)},
+	}
 	input := &dynamodb.QueryInput{
 		KeyConditionExpression: aws.String("#type = :type"),
 		ExpressionAttributeNames: map[string]*string{
 			"#type": aws.String("type"),
 		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":type": {S: aws.String(courseType)},
-		},
-		IndexName: aws.String("SummaryIndex"),
-		TableName: aws.String(courseTable),
+		ExpressionAttributeValues: values,
+		IndexName:                 aws.String("SummaryIndex"),
+		TableName:                 aws.String(courseTable),
+	}
+	if publishedOnly {
+		filter, filterNames, filterValues := applyPublishedOnlyFilter(input.ExpressionAttributeNames, values)
+		input.FilterExpression = aws.String(filter)
+		input.ExpressionAttributeNames = filterNames
+		input.ExpressionAttributeValues = filterValues
 	}
 	var courses []Course
 	lastKey, err := repo.query(input, startKey, &courses)
@@ -229,10 +274,16 @@ func (repo *dynamoRepository) ListCourses(courseType, startKey string) ([]Course
 }
 
 // ScanCourses returns a list of all courses.
-func (repo *dynamoRepository) ScanCourses(startKey string) ([]Course, string, error) {
+func (repo *dynamoRepository) ScanCourses(startKey string, publishedOnly bool) ([]Course, string, error) {
 	input := &dynamodb.ScanInput{
 		IndexName: aws.String("SummaryIndex"),
 		TableName: aws.String(courseTable),
+	}
+	if publishedOnly {
+		filter, filterNames, filterValues := applyPublishedOnlyFilter(map[string]*string{}, map[string]*dynamodb.AttributeValue{})
+		input.FilterExpression = aws.String(filter)
+		input.ExpressionAttributeNames = filterNames
+		input.ExpressionAttributeValues = filterValues
 	}
 	var courses []Course
 	lastKey, err := repo.scan(input, startKey, &courses)
@@ -247,27 +298,42 @@ type CourseSetter interface {
 	// Required to fetch the user's coach permissions.
 	UserGetter
 
-	// SetCourse saves the provided course to the database.
+	// SetCourse saves the provided course to the database. Existing courses
+	// can only be overwritten by their owner.
 	SetCourse(course *Course) error
+
+	// AdminSetCourse saves the provided course without an owner condition.
+	AdminSetCourse(course *Course) error
 }
 
 // SetCourse saves the provided course to the database.
 func (repo *dynamoRepository) SetCourse(course *Course) error {
+	return repo.putCourse(course, true)
+}
+
+// AdminSetCourse saves the provided course without an owner condition.
+func (repo *dynamoRepository) AdminSetCourse(course *Course) error {
+	return repo.putCourse(course, false)
+}
+
+func (repo *dynamoRepository) putCourse(course *Course, requireOwner bool) error {
 	item, err := dynamodbattribute.MarshalMap(course)
 	if err != nil {
 		return errors.New(500, "Temporary server error", "Unable to marshal course")
 	}
 
 	input := &dynamodb.PutItemInput{
-		ConditionExpression: aws.String("attribute_not_exists(id) OR #owner = :owner"),
-		ExpressionAttributeNames: map[string]*string{
-			"#owner": aws.String("owner"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(course.Owner)},
-		},
 		Item:      item,
 		TableName: aws.String(courseTable),
+	}
+	if requireOwner {
+		input.ConditionExpression = aws.String("attribute_not_exists(id) OR #owner = :owner")
+		input.ExpressionAttributeNames = map[string]*string{
+			"#owner": aws.String("owner"),
+		}
+		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
+			":owner": {S: aws.String(course.Owner)},
+		}
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed Dynamo PutItem", err)

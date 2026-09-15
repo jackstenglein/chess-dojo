@@ -1,5 +1,6 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { Link } from '@/components/navigation/Link';
+import { usePathname } from '@/i18n/navigation';
 import {
     Button,
     Dialog,
@@ -8,8 +9,8 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@mui/material';
-import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo } from 'react';
 
 export enum RestrictedAction {
     AccessAllTasks = 'Access all training plan tasks for all cohorts (0-2500)',
@@ -51,13 +52,43 @@ export interface UpsellDialogProps {
 const UpsellDialog: React.FC<UpsellDialogProps> = ({
     open,
     onClose,
-    title = 'Upgrade to a Full Account',
-    description = "You're currently on the free plan. Subscribe to the full training plan to:",
-    postscript = 'Your progress on the free plan will be carried over when you subscribe.',
+    title,
+    description,
+    postscript,
     bulletPoints = defaultBulletPoints,
     currentAction,
 }) => {
+    const t = useTranslations('upsell.dialog');
     const pathname = usePathname();
+
+    const restrictedActionLabels = useMemo<Record<string, string>>(
+        () => ({
+            [RestrictedAction.AccessAllTasks]: t('restrictedActionAccessAllTasks'),
+            [RestrictedAction.AccessOpenings]: t('restrictedActionAccessOpenings'),
+            [RestrictedAction.AddCalendarEvents]: t('restrictedActionAddCalendarEvents'),
+            [RestrictedAction.SubmitGames]: t('restrictedActionSubmitGames'),
+            [RestrictedAction.JoinScoreboard]: t('restrictedActionJoinScoreboard'),
+            [RestrictedAction.Graduate]: t('restrictedActionGraduate'),
+            [RestrictedAction.DownloadDatabase]: t('restrictedActionDownloadDatabase'),
+            [RestrictedAction.SearchDatabase]: t('restrictedActionSearchDatabase'),
+            [RestrictedAction.DatabaseExplorer]: t('restrictedActionDatabaseExplorer'),
+            [RestrictedAction.CreateClubs]: t('restrictedActionCreateClubs'),
+            [RestrictedAction.JoinSubscriberClubs]: t('restrictedActionJoinSubscriberClubs'),
+            [RestrictedAction.SubscriberChat]: t('restrictedActionSubscriberChat'),
+            [RestrictedAction.TacticsExams]: t('restrictedActionTacticsExams'),
+            [RestrictedAction.ViewGroupClassRecording]: t(
+                'restrictedActionViewGroupClassRecording',
+            ),
+            [RestrictedAction.ViewGameAndProfileReviewRecording]: t(
+                'restrictedActionViewGameAndProfileReviewRecording',
+            ),
+        }),
+        [t],
+    );
+
+    const displayTitle = title ?? t('defaultTitle');
+    const displayDescription = description ?? t('defaultDescription');
+    const displayPostscript = postscript ?? t('defaultPostscript');
 
     useEffect(() => {
         if (open) {
@@ -77,23 +108,23 @@ const UpsellDialog: React.FC<UpsellDialogProps> = ({
             open={open}
             onClose={() => onClose(false)}
         >
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle>{displayTitle}</DialogTitle>
             <DialogContent>
-                <DialogContentText>{description}</DialogContentText>
+                <DialogContentText>{displayDescription}</DialogContentText>
                 <DialogContentText component='div'>
                     <ul>
                         {bulletPoints.slice(0, 6).map((item) => (
-                            <li key={item}>{item}</li>
+                            <li key={item}>{restrictedActionLabels[item] ?? item}</li>
                         ))}
-                        <li>And more!</li>
+                        <li>{t('andMore')}</li>
                     </ul>
                 </DialogContentText>
-                <DialogContentText>{postscript}</DialogContentText>
+                <DialogContentText>{displayPostscript}</DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onClose(false)}>Cancel</Button>
+                <Button onClick={() => onClose(false)}>{t('cancel')}</Button>
                 <Button component={Link} href={`/prices?redirect=${pathname}`}>
-                    View Options
+                    {t('viewOptions')}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -236,6 +236,18 @@ type Game struct {
 
 	// A set of directories containing this game, in the form `owner/id`.
 	Directories []string `dynamodbav:"directories,stringset,omitempty" json:"directories,omitempty"`
+
+	// The time management rating for white in this game.
+	TimeManagementRatingWhite int `dynamodbav:"timeManagementRatingWhite,omitempty" json:"timeManagementRatingWhite,omitempty"`
+
+	// The time management rating for black in this game.
+	TimeManagementRatingBlack int `dynamodbav:"timeManagementRatingBlack,omitempty" json:"timeManagementRatingBlack,omitempty"`
+
+	// The signed time management area for white in this game.
+	TimeManagementAreaWhite float64 `dynamodbav:"timeManagementAreaWhite,omitempty" json:"timeManagementAreaWhite,omitempty"`
+
+	// The signed time management area for black in this game.
+	TimeManagementAreaBlack float64 `dynamodbav:"timeManagementAreaBlack,omitempty" json:"timeManagementAreaBlack,omitempty"`
 }
 
 type Reviewer struct {

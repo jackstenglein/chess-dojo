@@ -63,7 +63,14 @@ const icons = [
 
 const SocialIcons = () => {
     return (
-        <Stack direction='row' alignItems='center' flexWrap='wrap' justifyContent='center'>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+            }}
+        >
             {icons}
         </Stack>
     );

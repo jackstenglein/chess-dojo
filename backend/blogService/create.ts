@@ -18,6 +18,7 @@ import {
     success,
 } from '../directoryService/api';
 import { blogTable, dynamo, getUser } from './database';
+import { sendBlogPublishedEvent } from './notification';
 
 /**
  * Handles requests to create a blog post. The caller must be an admin.
@@ -67,6 +68,7 @@ async function createBlog(request: CreateBlogRequest): Promise<Blog> {
         createdAt: updatedAt,
         updatedAt,
         status,
+        ...(status === BlogStatuses.PUBLISHED && { discordPosted: true }),
     };
 
     try {
@@ -87,6 +89,14 @@ async function createBlog(request: CreateBlogRequest): Promise<Blog> {
             });
         }
         throw new ApiError({ statusCode: 500, publicMessage: 'Internal server error', cause: err });
+    }
+
+    if (status === BlogStatuses.PUBLISHED) {
+        try {
+            await sendBlogPublishedEvent(blog);
+        } catch (err) {
+            console.error('Failed to send blog published event for %s:', blog.id, err);
+        }
     }
 
     return blog;

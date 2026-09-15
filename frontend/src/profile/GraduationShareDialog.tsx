@@ -3,7 +3,6 @@ import GraduationCard from '@/components/graduations/GraduationCard';
 import { Graduation } from '@/database/graduation';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
-import { LoadingButton } from '@mui/lab';
 import {
     Box,
     Button,
@@ -15,6 +14,7 @@ import {
     Stack,
 } from '@mui/material';
 import { domToPng } from 'modern-screenshot';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 interface GraduationShareDialogProps {
@@ -28,6 +28,7 @@ export default function GraduationShareDialog({
     onClose,
     graduation,
 }: GraduationShareDialogProps) {
+    const t = useTranslations('profile.graduationShare');
     const { newCohort } = graduation;
     const [reportRef, setReportRef] = useState<HTMLDivElement>();
     const [imageData, setImageData] = useState<string>();
@@ -88,18 +89,17 @@ export default function GraduationShareDialog({
 
     return (
         <Dialog maxWidth='md' open={open} onClose={handleClose} fullWidth>
-            <DialogTitle>Share your progress!</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
             <DialogContent>
                 <Stack spacing={2}>
-                    <DialogContentText>
-                        Show off your hard work and welcome the world to the Dojo! Download this
-                        image and share on social media.
-                    </DialogContentText>
+                    <DialogContentText>{t('description')}</DialogContentText>
                     <Stack
-                        display='grid'
-                        gridTemplateRows='auto 1fr'
-                        alignItems='center'
-                        justifyContent='center'
+                        sx={{
+                            display: 'grid',
+                            gridTemplateRows: 'auto 1fr',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
                     >
                         {imageData ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -109,7 +109,7 @@ export default function GraduationShareDialog({
                                     maxWidth: '100%',
                                     borderRadius: '8px',
                                 }}
-                                alt='dojo graduation badge'
+                                alt={t('imageAlt')}
                                 src={imageData}
                             />
                         ) : (
@@ -121,10 +121,10 @@ export default function GraduationShareDialog({
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
-                <LoadingButton loading={!imageData} onClick={onDownload}>
-                    Download
-                </LoadingButton>
+                <Button onClick={handleClose}>{t('close')}</Button>
+                <Button loading={!imageData} onClick={onDownload}>
+                    {t('download')}
+                </Button>
             </DialogActions>
         </Dialog>
     );
@@ -140,26 +140,31 @@ interface ReportCanvasProps {
 const ReportCanvas = ({ reportRef, children }: ReportCanvasProps) => {
     return (
         <Box
-            position='relative'
-            overflow='hidden'
-            sx={{ aspectRatio: '1.6/1', borderRadius: 1 }}
-            width='100%'
-            height='auto'
+            sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                width: '100%',
+                height: 'auto',
+                aspectRatio: '1.6/1',
+                borderRadius: 1,
+            }}
         >
             <Box
-                display='grid'
-                height='100%'
-                width='100%'
-                bgcolor='background.default'
-                position='absolute'
-                zIndex={1}
+                sx={{
+                    display: 'grid',
+                    height: '100%',
+                    width: '100%',
+                    bgcolor: 'background.default',
+                    position: 'absolute',
+                    zIndex: 1,
+                }}
             >
                 <LoadingPage />
             </Box>
             <Box
                 ref={reportRef}
-                display='grid'
                 sx={{
+                    display: 'grid',
                     width: '800px',
                     height: '540px',
                 }}

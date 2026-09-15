@@ -59,7 +59,10 @@ export interface WeeklySuggestedTasks {
 export const CLASSICAL_GAMES_TASK_ID = '38f46441-7a4e-4506-8632-166bcbe78baf';
 
 /** The id of the annotate classical games task. */
-const ANNOTATE_GAMES_TASK_ID = '4d23d689-1284-46e6-b2a2-4b4bfdc37174';
+export const ANNOTATE_GAMES_TASK_ID = '4d23d689-1284-46e6-b2a2-4b4bfdc37174';
+
+/** Task IDs that represent minimums rather than completion targets. */
+export const MINIMUM_TASKS = new Set([CLASSICAL_GAMES_TASK_ID, ANNOTATE_GAMES_TASK_ID]);
 
 /** The id of the review games with higher rated players task. */
 const REVIEW_WITH_HIGHER_RATED_TASK_ID = '72241c06-5d06-4245-92da-9b294c6b736a';
@@ -99,6 +102,8 @@ const INELIGIBLE_SUGGESTED_TASKS = [
     'd1688281-2bf0-4a70-9b0d-1f1484a0b9e5', // Dojo middlegame lecture
     '27d02505-64d7-4075-af02-769a54ca40df', // Dojo endgame lecture
     '7ceed525-82fd-4f2a-adbb-f6cbd7300979', // Dojo opening lecture
+    'fdf5870c-ad68-4e1f-b078-0519036ea97a', // Peer reviews
+    'e794313b-bfa2-43e8-b36d-80859ac3cd25', // Sensei reviews
 ];
 
 /**

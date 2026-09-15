@@ -1,0 +1,166 @@
+import {
+    ChessDbCacheEntry,
+    ChessDbMove,
+    ChessDbPv,
+    getChessDbCache,
+    setChessDbCacheEntry,
+} from '@/api/cache/chessdb';
+import { ChessDBService } from '@/api/chessdbService';
+import { useChess } from '@/board/pgn/PgnBoard';
+import { Chess, EventType } from '@jackstenglein/chess';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+function validateFen(fen: string): boolean {
+    try {
+        new Chess({ fen });
+        return true;
+    } catch (_err) {
+        return false;
+    }
+}
+
+export function useChessDB({ enableMoves, enablePv }: { enableMoves: boolean; enablePv: boolean }) {
+    const t = useTranslations('analysisBoard.engine');
+    const { chess } = useChess();
+    const [data, setData] = useState<ChessDbMove[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [queueing, setQueueing] = useState(false);
+    const [queued, setQueued] = useState(false);
+    const [pv, setPv] = useState<ChessDbPv | null>(null);
+    const [pvLoading, setPvLoading] = useState(false);
+
+    const chessDbService = useMemo(() => new ChessDBService(), []);
+
+    const queueAnalysis = useCallback(
+        async (fenString: string): Promise<void> => {
+            if (!fenString.trim() || !validateFen(fenString)) return;
+
+            setQueueing(true);
+            setQueued(false);
+            setError(null);
+
+            try {
+                const result = await chessDbService.queueAnalysis(fenString);
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                setQueued(true);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : t('failedToQueueAnalysis'));
+            } finally {
+                setQueueing(false);
+            }
+        },
+        [chessDbService, t],
+    );
+
+    const fetchPv = useCallback(
+        async (fenString: string, enabled: boolean) => {
+            if (!fenString.trim() || !validateFen(fenString)) return;
+
+            setPvLoading(true);
+
+            try {
+                const cached = await getChessDbCache(fenString);
+                if (cached?.pv?.fen) {
+                    setPv(cached.pv);
+                    return;
+                }
+                if (!enabled) {
+                    return;
+                }
+
+                const pvData = await chessDbService.getPv(fenString);
+                if (pvData.data) {
+                    await setChessDbCacheEntry(fenString, { pv: pvData.data });
+                    setPv(pvData.data);
+                } else {
+                    throw new Error(pvData.error);
+                }
+            } catch {
+                setPv(null);
+                return null;
+            } finally {
+                setPvLoading(false);
+            }
+        },
+        [chessDbService],
+    );
+
+    const fetchChessDBData = useCallback(
+        async (fenString: string, enabled: boolean) => {
+            setQueued(false);
+            if (!fenString.trim()) {
+                setData([]);
+                setError(null);
+                return;
+            }
+            if (!validateFen(fenString)) {
+                setError(t('invalidFen'));
+                setData([]);
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                const cached = (await getChessDbCache(fenString)) as ChessDbCacheEntry | null;
+                if (cached?.moves) {
+                    setData(cached.moves);
+                    return;
+                }
+                if (!enabled) {
+                    return;
+                }
+
+                const chessDbMoves = await chessDbService.getAnalysis(fenString);
+                if (chessDbMoves.data) {
+                    await setChessDbCacheEntry(fenString, { moves: chessDbMoves.data.moves });
+                    setData(chessDbMoves.data.moves);
+                } else {
+                    throw new Error(chessDbMoves.error);
+                }
+            } catch (err) {
+                setData([]);
+                setError(err instanceof Error ? err.message : t('failedToFetchData'));
+            } finally {
+                setLoading(false);
+            }
+        },
+        [chessDbService, t],
+    );
+
+    useEffect(() => {
+        if (!chess) return;
+
+        const onMove = () => {
+            const fen = chess.fen();
+            void fetchChessDBData(fen, enableMoves);
+            void fetchPv(fen, enablePv);
+        };
+        onMove();
+
+        const observer = {
+            types: [EventType.Initialized, EventType.LegalMove],
+            handler: onMove,
+        };
+        chess.addObserver(observer);
+        return () => chess.removeObserver(observer);
+    }, [fetchChessDBData, fetchPv, enableMoves, enablePv, chess]);
+
+    return {
+        data,
+        loading,
+        error,
+        queueing,
+        queued,
+        fetchChessDBData,
+        queueAnalysis,
+        pv,
+        pvLoading,
+        fetchPv,
+    };
+}

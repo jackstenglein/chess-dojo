@@ -17,8 +17,8 @@ import { useSessionStorage } from 'usehooks-ts';
 const STAGED_CREATE_GAME_KEY = 'useSaveGame:stageCreateGame';
 
 export interface UseSaveGameFields {
-    createGame: (req: CreateGameRequest) => Promise<void>;
-    updateGame: (req: UpdateGameRequest) => Promise<void>;
+    createGame: (req: CreateGameRequest, onNavigate?: () => void) => Promise<void>;
+    updateGame: (req: UpdateGameRequest) => Promise<Game | undefined>;
     setStagedGame: (req: CreateGameRequest) => void;
     stagedGame: CreateGameRequest | null;
     request: Request<string>;
@@ -31,14 +31,14 @@ export default function useSaveGame(): UseSaveGameFields {
         STAGED_CREATE_GAME_KEY,
         null,
     );
-    const { game } = useGame();
+    const { game, updatedAtRef } = useGame();
     const router = useRouter();
 
-    const createGame = async (createReq: CreateGameRequest) => {
+    const createGame = async (createReq: CreateGameRequest, onNavigate?: () => void) => {
         request.onStart();
         try {
             const response = await api.createGame(createReq);
-            onCreateGame(createReq, response.data, router);
+            onCreateGame(createReq, response.data, router, onNavigate);
 
             if (isGame(response.data)) {
                 request.onSuccess();
@@ -58,8 +58,17 @@ export default function useSaveGame(): UseSaveGameFields {
 
         request.onStart();
         try {
-            await api.updateGame(game.cohort, game.id, updateReq);
+            const response = await api.updateGame(game.cohort, game.id, {
+                ...updateReq,
+                updatedAt:
+                    updatedAtRef?.current ||
+                    updateReq.updatedAt ||
+                    game.updatedAt ||
+                    game.createdAt ||
+                    '',
+            });
             request.onSuccess();
+            return response.data;
         } catch (err) {
             request.onFailure(err);
         }
@@ -78,6 +87,7 @@ function onCreateGame(
     req: CreateGameRequest,
     data: Game | EditGameResponse,
     router: AppRouterInstance,
+    onNavigate?: () => void,
 ) {
     if (isGame(data)) {
         const game = data;
@@ -85,6 +95,11 @@ function onCreateGame(
             count: 1,
             method: req.type,
         });
+
+        if (onNavigate) {
+            onNavigate();
+            return;
+        }
 
         const urlSafeId = game.id.replaceAll('?', '%3F');
         let newUrl = `/games/${game.cohort.replaceAll('+', '%2B')}/${urlSafeId}`;

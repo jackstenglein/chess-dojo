@@ -3,13 +3,23 @@
 import { Link } from '@/components/navigation/Link';
 import { CalendarSessionType } from '@/database/event';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { Button, ButtonProps, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import {
+    Button,
+    ButtonProps,
+    Card,
+    CardContent,
+    Grid,
+    GridProps,
+    Stack,
+    Typography,
+} from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { JSX, useSyncExternalStore } from 'react';
 import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
 import { getCurrency } from './locales';
 
-const priceDataByCurrency: Record<
+export const priceDataByCurrency: Record<
     string,
     {
         symbol: string;
@@ -93,16 +103,30 @@ interface PriceMatrixProps {
     onSubscribe: onSubscribeFunc;
     onFreeTier?: () => void;
     currentTier: SubscriptionTier;
+    /** List of tiers to display in the matrix. If not included, all tiers are displayed. */
+    tiers?: SubscriptionTier[];
 }
 
-const PriceMatrix: React.FC<PriceMatrixProps> = ({
+function getGridSize(cardCount: number): GridProps['size'] {
+    if (cardCount === 2) {
+        return { xs: 12, sm: 9, md: 6 };
+    }
+    if (cardCount === 3) {
+        return { xs: 12, sm: 8.5, md: 4, lg: 'grow' };
+    }
+    return { xs: 12, sm: 8.5, md: 6, lg: 'grow' };
+}
+
+function PriceMatrix({
     request,
     interval,
     selectedTier,
     onSubscribe,
     onFreeTier,
     currentTier,
-}) => {
+    tiers: initialTiers,
+}: PriceMatrixProps) {
+    const t = useTranslations('upsell.priceMatrix');
     const currency = useSyncExternalStore(
         () => () => null,
         () => getCurrency(navigator.languages[0]),
@@ -110,13 +134,18 @@ const PriceMatrix: React.FC<PriceMatrixProps> = ({
     );
 
     const priceData = priceDataByCurrency[currency || 'USD'] || priceDataByCurrency.USD;
+    const tiers = initialTiers || Object.values(SubscriptionTier);
+    let cardCount = tiers.length;
+    if (!onFreeTier && tiers.includes(SubscriptionTier.Free)) {
+        cardCount--;
+    }
 
     return (
         <>
-            {onFreeTier && (
-                <Grid size={{ xs: 12, sm: 8.5, md: 6, lg: 'grow' }}>
+            {onFreeTier && tiers.includes(SubscriptionTier.Free) && (
+                <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        name='Free Tier'
+                        name={t('freeTierName')}
                         price={{
                             value: 0,
                             symbol: priceData.symbol,
@@ -125,30 +154,30 @@ const PriceMatrix: React.FC<PriceMatrixProps> = ({
                         }}
                         sellingPoints={[
                             {
-                                description: 'Limited training plans, 0-2500',
+                                description: t('freeLimitedTrainingPlans'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Limited game database',
+                                description: t('freeLimitedGameDatabase'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Limited puzzles',
+                                description: t('freeLimitedPuzzles'),
                                 status: SellingPointStatus.Restricted,
                             },
                             {
-                                description: 'Opening courses',
+                                description: t('freeOpeningCourses'),
                                 status: SellingPointStatus.Excluded,
                             },
                             {
-                                description: 'Community forum access',
+                                description: t('freeCommunityForum'),
                                 status: SellingPointStatus.Excluded,
                             },
                         ]}
                         buttonProps={{
                             disabled: request?.isLoading(),
                             onClick: onFreeTier,
-                            children: 'Continue for Free',
+                            children: t('continueForFree'),
                             variant: 'outlined',
                             color: 'primary',
                         }}
@@ -157,177 +186,212 @@ const PriceMatrix: React.FC<PriceMatrixProps> = ({
                 </Grid>
             )}
 
-            <Grid size={{ xs: 12, sm: 8.5, md: onFreeTier ? 6 : 4, lg: 'grow' }}>
-                <PriceCard
-                    name='Core'
-                    price={{
-                        fullValue:
-                            interval === 'year'
-                                ? priceData[SubscriptionTier.Basic].month
-                                : undefined,
-                        value: priceData[SubscriptionTier.Basic][interval],
-                        symbol: priceData.symbol,
-                        interval: `month${interval === 'year' ? '*' : ''}`,
-                        subtitle: ' ',
-                    }}
-                    sellingPoints={[
-                        {
-                            description: 'All training plans, 0-2500',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Rating dashboard & progress tracking',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Full game database',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Unlimited puzzles',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'All opening courses',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Community forum access',
-                            status: SellingPointStatus.Included,
-                        },
-                    ]}
-                    buttonProps={{
-                        loading: request?.isLoading() && selectedTier === SubscriptionTier.Basic,
-                        disabled: request?.isLoading() && selectedTier !== SubscriptionTier.Basic,
-                        onClick: () =>
-                            onSubscribe(SubscriptionTier.Basic, interval, {
-                                currency,
-                                value: priceData[SubscriptionTier.Basic][interval],
-                            }),
-                        children: 'Start Training',
-                    }}
-                    isCurrentTier={currentTier === SubscriptionTier.Basic}
-                />
-            </Grid>
+            {tiers.includes(SubscriptionTier.Basic) && (
+                <Grid size={getGridSize(cardCount)}>
+                    <PriceCard
+                        name={t('coreTierName')}
+                        price={{
+                            fullValue:
+                                interval === 'year'
+                                    ? priceData[SubscriptionTier.Basic].month
+                                    : undefined,
+                            value: priceData[SubscriptionTier.Basic][interval],
+                            symbol: priceData.symbol,
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
+                            subtitle: ' ',
+                        }}
+                        sellingPoints={[
+                            {
+                                description: t('coreAllTrainingPlans'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('coreRatingDashboard'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('coreFullGameDatabase'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('coreUnlimitedPuzzles'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('coreAllOpeningCourses'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('coreCommunityForum'),
+                                status: SellingPointStatus.Included,
+                            },
+                        ]}
+                        buttonProps={{
+                            loading:
+                                request?.isLoading() && selectedTier === SubscriptionTier.Basic,
+                            disabled:
+                                request?.isLoading() && selectedTier !== SubscriptionTier.Basic,
+                            onClick: () =>
+                                onSubscribe(SubscriptionTier.Basic, interval, {
+                                    currency,
+                                    value: priceData[SubscriptionTier.Basic][interval],
+                                }),
+                            children: t('startTraining'),
+                        }}
+                        isCurrentTier={currentTier === SubscriptionTier.Basic}
+                    />
+                </Grid>
+            )}
 
-            <Grid size={{ xs: 12, sm: 8.5, md: onFreeTier ? 6 : 4, lg: 'grow' }}>
-                <PriceCard
-                    name='Lectures'
-                    price={{
-                        value: priceData[SubscriptionTier.Lecture][interval],
-                        symbol: priceData.symbol,
-                        interval: `month`,
-                        subtitle: `(~ ${priceData.symbol}${Math.round(priceData[SubscriptionTier.Lecture][interval] / 15)} / class)`,
-                    }}
-                    sellingPoints={[
-                        {
-                            description: 'Everything from previous tier',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Weekly live lectures on specialized topics',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Q&A sessions with Dojo coaches',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Structured homework assignments',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Access to recordings of all lectures',
-                            status: SellingPointStatus.Included,
-                        },
-                    ]}
-                    buttonProps={{
-                        loading: request?.isLoading() && selectedTier === SubscriptionTier.Lecture,
-                        disabled: request?.isLoading() && selectedTier !== SubscriptionTier.Lecture,
-                        onClick: () =>
-                            onSubscribe(SubscriptionTier.Lecture, 'month', {
-                                currency,
-                                value: priceData[SubscriptionTier.Lecture][interval],
+            {tiers.includes(SubscriptionTier.Lecture) && (
+                <Grid size={getGridSize(cardCount)}>
+                    <PriceCard
+                        name={t('lecturesTierName')}
+                        price={{
+                            value: priceData[SubscriptionTier.Lecture][interval],
+                            symbol: priceData.symbol,
+                            interval: t('intervalMonth'),
+                            subtitle: t('perClassSubtitle', {
+                                currency: priceData.symbol,
+                                amount: Math.round(
+                                    priceData[SubscriptionTier.Lecture][interval] / 15,
+                                ),
                             }),
-                        children: 'Join Lectures',
-                    }}
-                    afterButton={
-                        <Typography>
-                            <Link target='_blank' href='/help?id=live-classes'>
-                                FAQ
-                            </Link>
-                            {' / '}
-                            <Link
-                                target='_blank'
-                                href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures])}&types=[]&tournaments=[]`}
-                            >
-                                Class Calendar
-                            </Link>
-                        </Typography>
-                    }
-                    isCurrentTier={currentTier === SubscriptionTier.Lecture}
-                />
-            </Grid>
+                        }}
+                        sellingPoints={[
+                            {
+                                description: t('lecturesEverythingFromCore'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('lecturesWeeklyLive'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('lecturesQandA'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('lecturesHomework'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('lecturesRecordings'),
+                                status: SellingPointStatus.Included,
+                            },
+                        ]}
+                        buttonProps={{
+                            loading:
+                                request?.isLoading() && selectedTier === SubscriptionTier.Lecture,
+                            disabled:
+                                request?.isLoading() && selectedTier !== SubscriptionTier.Lecture,
+                            onClick: () =>
+                                onSubscribe(SubscriptionTier.Lecture, 'month', {
+                                    currency,
+                                    value: priceData[SubscriptionTier.Lecture][interval],
+                                }),
+                            children: t('joinLectures'),
+                        }}
+                        beforeButton={
+                            <Typography>
+                                {t.rich('faqClassCalendar', {
+                                    faqLink: (chunks) => (
+                                        <Link target='_blank' href='/help?id=live-classes'>
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                    calendarLink: (chunks) => (
+                                        <Link
+                                            target='_blank'
+                                            href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures])}&types=[]&tournaments=[]`}
+                                        >
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                })}
+                            </Typography>
+                        }
+                        isCurrentTier={currentTier === SubscriptionTier.Lecture}
+                    />
+                </Grid>
+            )}
 
-            <Grid size={{ xs: 12, sm: 8.5, md: onFreeTier ? 6 : 4, lg: 'grow' }}>
-                <PriceCard
-                    name='Game & Profile Review'
-                    price={{
-                        value: priceData[SubscriptionTier.GameReview][interval],
-                        symbol: priceData.symbol,
-                        interval: 'month',
-                        subtitle: `(~ ${priceData.symbol}${Math.round(priceData[SubscriptionTier.GameReview][interval] / 20)} / class)`,
-                    }}
-                    sellingPoints={[
-                        {
-                            description: 'Everything from previous tiers',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Personalized game review classes',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Direct feedback from a sensei',
-                            status: SellingPointStatus.Included,
-                        },
-                        {
-                            description: 'Access to recordings of all lectures and classes',
-                            status: SellingPointStatus.Included,
-                        },
-                    ]}
-                    buttonProps={{
-                        loading:
-                            request?.isLoading() && selectedTier === SubscriptionTier.GameReview,
-                        disabled:
-                            request?.isLoading() && selectedTier !== SubscriptionTier.GameReview,
-                        onClick: () =>
-                            onSubscribe(SubscriptionTier.GameReview, 'month', {
-                                currency,
-                                value: priceData[SubscriptionTier.Lecture][interval],
+            {tiers.includes(SubscriptionTier.GameReview) && (
+                <Grid size={getGridSize(cardCount)}>
+                    <PriceCard
+                        name={t('gameReviewTierName')}
+                        price={{
+                            value: priceData[SubscriptionTier.GameReview][interval],
+                            symbol: priceData.symbol,
+                            interval: t('intervalMonth'),
+                            subtitle: t('perClassSubtitle', {
+                                currency: priceData.symbol,
+                                amount: Math.round(
+                                    priceData[SubscriptionTier.GameReview][interval] / 20,
+                                ),
                             }),
-                        children: 'Get Sensei Feedback',
-                    }}
-                    afterButton={
-                        <Typography>
-                            <Link target='_blank' href='/help?id=live-classes'>
-                                FAQ
-                            </Link>
-                            {' / '}
-                            <Link
-                                target='_blank'
-                                href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
-                            >
-                                Class Calendar
-                            </Link>
-                        </Typography>
-                    }
-                    isCurrentTier={currentTier === SubscriptionTier.GameReview}
-                />
-            </Grid>
+                        }}
+                        sellingPoints={[
+                            {
+                                description: t('gameReviewEverythingFromPrevious'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('gameReviewPersonalizedReview'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('gameReviewDirectFeedback'),
+                                status: SellingPointStatus.Included,
+                            },
+                            {
+                                description: t('gameReviewRecordings'),
+                                status: SellingPointStatus.Included,
+                            },
+                        ]}
+                        buttonProps={{
+                            loading:
+                                request?.isLoading() &&
+                                selectedTier === SubscriptionTier.GameReview,
+                            disabled:
+                                request?.isLoading() &&
+                                selectedTier !== SubscriptionTier.GameReview,
+                            onClick: () =>
+                                onSubscribe(SubscriptionTier.GameReview, 'month', {
+                                    currency,
+                                    value: priceData[SubscriptionTier.Lecture][interval],
+                                }),
+                            children: t('getSenseiFeedback'),
+                        }}
+                        beforeButton={
+                            <Typography>
+                                {t.rich('faqClassCalendar', {
+                                    faqLink: (chunks) => (
+                                        <Link target='_blank' href='/help?id=live-classes'>
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                    calendarLink: (chunks) => (
+                                        <Link
+                                            target='_blank'
+                                            href={`/calendar?sessions=${JSON.stringify([CalendarSessionType.Lectures, CalendarSessionType.GameReviews])}&types=[]&tournaments=[]`}
+                                        >
+                                            {chunks}
+                                        </Link>
+                                    ),
+                                })}
+                            </Typography>
+                        }
+                        isCurrentTier={currentTier === SubscriptionTier.GameReview}
+                    />
+                </Grid>
+            )}
         </>
     );
-};
+}
 
 export default PriceMatrix;
 
@@ -336,7 +400,7 @@ function PriceCard({
     price,
     sellingPoints,
     buttonProps,
-    afterButton,
+    beforeButton,
     isCurrentTier,
 }: {
     name: string;
@@ -349,19 +413,33 @@ function PriceCard({
     };
     sellingPoints: SellingPointProps[];
     buttonProps: ButtonProps;
-    afterButton?: JSX.Element;
+    beforeButton?: JSX.Element;
     isCurrentTier: boolean;
 }) {
+    const t = useTranslations('upsell.priceMatrix');
     return (
         <Card variant='outlined' sx={{ height: 1 }}>
             <CardContent sx={{ height: 1 }}>
-                <Stack alignItems='center' spacing={3} height={1}>
-                    <Stack alignItems='center' gap={1}>
+                <Stack
+                    spacing={3}
+                    sx={{
+                        alignItems: 'center',
+                        height: 1,
+                    }}
+                >
+                    <Stack
+                        sx={{
+                            alignItems: 'center',
+                            gap: 1,
+                        }}
+                    >
                         <Typography
                             variant='h6'
-                            fontWeight='bold'
-                            color='text.secondary'
-                            textAlign='center'
+                            sx={{
+                                fontWeight: 'bold',
+                                color: 'text.secondary',
+                                textAlign: 'center',
+                            }}
                         >
                             {name}
                         </Typography>
@@ -371,8 +449,11 @@ function PriceCard({
                                 <Typography
                                     variant='h5'
                                     component='span'
-                                    sx={{ textDecoration: 'line-through', verticalAlign: 'middle' }}
-                                    color='text.secondary'
+                                    sx={{
+                                        color: 'text.secondary',
+                                        textDecoration: 'line-through',
+                                        verticalAlign: 'middle',
+                                    }}
                                 >
                                     {price.symbol}
                                     {Math.round(price.fullValue * 100) / 100}
@@ -397,26 +478,38 @@ function PriceCard({
                             )}
                         </Typography>
 
-                        <Typography variant='h6' mt={-1} color='text.secondary' whiteSpace='pre'>
+                        <Typography
+                            variant='h6'
+                            sx={{
+                                mt: -1,
+                                color: 'text.secondary',
+                                whiteSpace: 'pre',
+                            }}
+                        >
                             {price.subtitle}
                         </Typography>
                     </Stack>
 
-                    <Stack spacing={1} flexGrow={1}>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            flexGrow: 1,
+                        }}
+                    >
                         {sellingPoints.map((sp) => (
                             <SellingPoint key={sp.description} {...sp} />
                         ))}
                     </Stack>
 
+                    {beforeButton}
+
                     {isCurrentTier ? (
                         <Button variant='contained' fullWidth disabled>
-                            Already Subscribed
+                            {t('alreadySubscribed')}
                         </Button>
                     ) : (
                         <Button variant='contained' fullWidth color='subscribe' {...buttonProps} />
                     )}
-
-                    {afterButton}
                 </Stack>
             </CardContent>
         </Card>

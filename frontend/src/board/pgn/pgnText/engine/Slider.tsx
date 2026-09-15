@@ -20,7 +20,13 @@ interface Props {
  */
 export default function Slider({ min, max, label, value, setValue, valueLabel }: Props) {
     return (
-        <Stack direction='row' alignItems='center' width={1}>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+                width: 1,
+            }}
+        >
             <Typography sx={{ mr: 2 }}>{label}</Typography>
 
             <MuiSlider

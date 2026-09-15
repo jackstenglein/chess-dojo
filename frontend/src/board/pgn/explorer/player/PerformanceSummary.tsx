@@ -11,6 +11,7 @@ import {
     TableFooter,
     TableRow,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Color } from './PlayerSource';
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -18,6 +19,7 @@ const StyledTableCell = styled(TableCell)(() => ({
 }));
 
 export function PerformanceSummary({ data }: { data?: PerformanceData }) {
+    const t = useTranslations('analysisBoard.explorer.player');
     if (!data) {
         return null;
     }
@@ -38,43 +40,44 @@ export function PerformanceSummary({ data }: { data?: PerformanceData }) {
             <Table size='small'>
                 <TableBody>
                     <TableRow>
-                        <StyledTableCell>Performance Rating (Normalized)</StyledTableCell>
+                        <StyledTableCell>{t('performanceRatingLabel')}</StyledTableCell>
                         <StyledTableCell>{data.performanceRating}</StyledTableCell>
                     </TableRow>
                     <TableRow>
-                        <StyledTableCell>Avg Opponent Rating (Normalized)</StyledTableCell>
+                        <StyledTableCell>{t('avgOpponentRatingLabel')}</StyledTableCell>
                         <StyledTableCell>{data.averageOpponentRating}</StyledTableCell>
                     </TableRow>
                     <TableRow>
-                        <StyledTableCell>Total Games</StyledTableCell>
+                        <StyledTableCell>{t('totalGamesLabel')}</StyledTableCell>
                         <StyledTableCell>{totalGames}</StyledTableCell>
                     </TableRow>
                     <TableRow>
-                        <StyledTableCell>Results</StyledTableCell>
+                        <StyledTableCell>{t('resultsLabel')}</StyledTableCell>
                         <StyledTableCell>
-                            +{wins} -{losses} ={draws}
+                            {t('resultsDisplay', { wins, losses, draws })}
                         </StyledTableCell>
                     </TableRow>
                     <TableRow>
-                        <StyledTableCell>Score</StyledTableCell>
+                        <StyledTableCell>{t('scoreLabel')}</StyledTableCell>
                         <StyledTableCell>
-                            {score} / {totalGames}{' '}
-                            {percentage !== undefined && <>({percentage}%)</>}
+                            {percentage !== undefined
+                                ? t('scoreDisplay', { score, totalGames, percentage })
+                                : `${score} / ${totalGames}`}
                         </StyledTableCell>
                     </TableRow>
                     <TableRow>
-                        <StyledTableCell>Last Played</StyledTableCell>
+                        <StyledTableCell>{t('lastPlayedLabel')}</StyledTableCell>
                         <GameMetadata game={data.lastPlayed} showResult showRating />
                     </TableRow>
                     {data.bestWin && (
                         <TableRow>
-                            <StyledTableCell>Best Win</StyledTableCell>
+                            <StyledTableCell>{t('bestWinLabel')}</StyledTableCell>
                             <GameMetadata game={data.bestWin} showRating />
                         </TableRow>
                     )}
                     {data.worstLoss && (
                         <TableRow>
-                            <StyledTableCell>Worst Loss</StyledTableCell>
+                            <StyledTableCell>{t('worstLossLabel')}</StyledTableCell>
                             <GameMetadata game={data.worstLoss} showRating />
                         </TableRow>
                     )}
@@ -82,10 +85,16 @@ export function PerformanceSummary({ data }: { data?: PerformanceData }) {
                 <TableFooter>
                     <TableRow>
                         <StyledTableCell colSpan={2} sx={{ borderBottom: 0 }}>
-                            Performance rating calculated using{' '}
-                            <Link href='https://handbook.fide.com/chapter/B022017' target='_blank'>
-                                FIDE regulations
-                            </Link>
+                            {t.rich('performanceRatingFooter', {
+                                link: (chunks) => (
+                                    <Link
+                                        href='https://handbook.fide.com/chapter/B022017'
+                                        target='_blank'
+                                    >
+                                        {chunks}
+                                    </Link>
+                                ),
+                            })}
                         </StyledTableCell>
                     </TableRow>
                 </TableFooter>
@@ -103,12 +112,13 @@ function GameMetadata({
     showResult?: boolean;
     showRating?: boolean;
 }) {
+    const t = useTranslations('analysisBoard.explorer.player');
     const result =
         game.result === GameResult.Draw
-            ? 'Draw'
+            ? t('drawResult')
             : (game.result === GameResult.White) === (game.playerColor === Color.White)
-              ? 'Win'
-              : 'Loss';
+              ? t('winResult')
+              : t('lossResult');
 
     let description = showResult ? result : '';
     if (showRating) {

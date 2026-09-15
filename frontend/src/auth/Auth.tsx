@@ -28,7 +28,7 @@ import { getUser } from '../api/userApi';
 import {
     clearCheckoutSessionIds,
     getAllCheckoutSessionIds,
-} from '../app/(scoreboard)/courses/localStorage';
+} from '../app/[locale]/(scoreboard)/courses/localStorage';
 import { CognitoUser, isFree, parseUser, User } from '../database/user';
 
 const config = getConfig();
@@ -66,7 +66,7 @@ interface AuthContextType {
     getCurrentUser: () => Promise<void>;
     updateUser: (update: Partial<User>) => void;
 
-    socialSignin: (provider: 'Google' | 'Chesscom' | 'Lichess', redirectUri: string) => void;
+    socialSignin: (provider: 'Google' | 'Apple' | 'Chesscom' | 'Lichess', redirectUri: string) => void;
     signin: (email: string, password: string) => Promise<void>;
 
     signup: (
@@ -105,11 +105,11 @@ const AuthContext = createContext<AuthContextType>({
     signout: defaultAuthContextFunction,
 });
 
-function socialSignin(provider: 'Google' | 'Chesscom' | 'Lichess', redirectUri: string) {
+function socialSignin(provider: 'Google' | 'Apple' | 'Chesscom' | 'Lichess', redirectUri: string) {
     trackEvent(EventType.Login, { method: provider });
     const providerArg =
-        provider === 'Google'
-            ? ({ provider: 'Google' } as const)
+        provider === 'Google' || provider === 'Apple'
+            ? ({ provider } as const)
             : ({ provider: { custom: provider } } as const);
     signInWithRedirect({
         ...providerArg,
@@ -222,11 +222,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void getCurrentUser();
     }, [getCurrentUser]);
 
-    const updateUser = (update: Partial<User>) => {
-        if (user) {
-            setUser({ ...user, ...update });
-        }
-    };
+    // Functional update so rapid successive callers (e.g. progress save then timer
+    // clear) cannot clobber each other via a stale `user` closure.
+    const updateUser = useCallback((update: Partial<User>) => {
+        setUser((prev) => (prev ? { ...prev, ...update } : prev));
+    }, []);
 
     const signin = (email: string, password: string) => {
         return new Promise<void>((resolve, reject) => {
@@ -245,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (err) {
                     logger.error?.('Failed to sign in: ', err);
                     setStatus(AuthStatus.Unauthenticated);
-                    reject(err as Error);
+                    reject(err);
                 }
             })();
         });

@@ -1,12 +1,13 @@
 import { DefaultTimezone, TimezoneSelector } from '@/components/calendar/filters/TimezoneSelector';
-import { LoadingButton } from '@mui/lab';
-import { Stack, TextField } from '@mui/material';
+import { Button, Stack, TextField } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useApi } from '../../api/Api';
 import { RequestSnackbar, useRequest } from '../../api/Request';
 import { ProfileCreatorFormProps } from './ProfileCreatorPage';
 
 const PersonalInfoForm: React.FC<ProfileCreatorFormProps> = ({ user, onNextStep }) => {
+    const t = useTranslations('profile.creator.personalInfo');
     const api = useApi();
     const request = useRequest();
 
@@ -37,14 +38,14 @@ const PersonalInfoForm: React.FC<ProfileCreatorFormProps> = ({ user, onNextStep 
         <Stack spacing={4}>
             <TextField
                 required
-                label='Display Name'
+                label={t('displayName')}
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
-                helperText={'This is how other users will identify you'}
+                helperText={t('displayNameHelper')}
             />
 
             <TextField
-                label='Bio (Optional)'
+                label={t('bioOptional')}
                 multiline
                 minRows={3}
                 maxRows={6}
@@ -52,17 +53,21 @@ const PersonalInfoForm: React.FC<ProfileCreatorFormProps> = ({ user, onNextStep 
                 onChange={(event) => setBio(event.target.value)}
             />
 
-            <TimezoneSelector label='Timezone (Optional)' value={timezone} onChange={setTimezone} />
+            <TimezoneSelector
+                label={t('timezoneOptional')}
+                value={timezone}
+                onChange={setTimezone}
+            />
 
-            <LoadingButton
+            <Button
                 disabled={!canSave}
                 loading={request.isLoading()}
                 variant='contained'
                 onClick={onSave}
                 sx={{ alignSelf: 'end' }}
             >
-                Next
-            </LoadingButton>
+                {t('next')}
+            </Button>
 
             <RequestSnackbar request={request} />
         </Stack>

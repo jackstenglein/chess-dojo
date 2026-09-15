@@ -15,6 +15,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { Timer, TimerContext } from './TimerContext';
 
@@ -26,6 +27,7 @@ import { Timer, TimerContext } from './TimerContext';
 export function TimerButton() {
     const { user } = useAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const t = useTranslations('timer');
     if (!user) {
         return null;
     }
@@ -35,7 +37,7 @@ export function TimerButton() {
 
     return (
         <>
-            <Tooltip title='Timer'>
+            <Tooltip title={t('title')}>
                 <IconButton
                     data-testid='Timer'
                     onClick={(e) => setAnchorEl(e.currentTarget)}
@@ -55,24 +57,48 @@ export function TimerButton() {
                     transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     <Box sx={{ px: 2 }}>
-                        <Stack direction='row' alignItems='center' gap={3}>
-                            <Typography variant='subtitle1' fontWeight='bold' color='textSecondary'>
-                                {task ? getTaskName(task) : 'Work Timer'}
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 3,
+                            }}
+                        >
+                            <Typography
+                                variant='subtitle1'
+                                color='textSecondary'
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {task ? getTaskName(task) : t('workTimer')}
                             </Typography>
-                            <Typography fontWeight='bold'>{formatTime(timerSeconds)}</Typography>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {formatTime(timerSeconds)}
+                            </Typography>
                         </Stack>
 
-                        <Stack direction='row' gap={2} mt={1}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                gap: 2,
+                                mt: 1,
+                            }}
+                        >
                             {isRunning ? (
                                 <Button
                                     startIcon={<Pause />}
                                     onClick={() => onPause(undefined, true)}
                                 >
-                                    Pause
+                                    {t('pause')}
                                 </Button>
                             ) : (
                                 <Button startIcon={<PlayArrow />} onClick={() => onStart()}>
-                                    Start
+                                    {t('start')}
                                 </Button>
                             )}
                             <Button
@@ -81,7 +107,7 @@ export function TimerButton() {
                                 sx={{ visibility: isPaused ? 'visible' : 'hidden' }}
                                 color='error'
                             >
-                                Reset
+                                {t('reset')}
                             </Button>
                         </Stack>
                     </Box>
@@ -108,6 +134,7 @@ function getTaskName(task: Requirement | CustomTask): string {
  * for starting/stopping the timer. It does not link anywhere.
  */
 export function TimerMenuItem() {
+    const t = useTranslations('timer');
     const timer = use(TimerContext);
     const { timerSeconds, isRunning, isPaused, onStart, onPause, onClear } = timer;
 
@@ -117,12 +144,24 @@ export function TimerMenuItem() {
                 <TimerIcon color={isPaused ? 'warning' : isRunning ? 'secondary' : undefined} />
             </ListItemIcon>
 
-            <Stack width={1} direction='row' alignItems='center' gap={1}>
-                <Typography>Timer</Typography>
-                <Typography fontWeight='bold' sx={{ minWidth: '42px' }}>
+            <Stack
+                direction='row'
+                sx={{
+                    width: 1,
+                    alignItems: 'center',
+                    gap: 1,
+                }}
+            >
+                <Typography>{t('title')}</Typography>
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                        minWidth: '42px',
+                    }}
+                >
                     {formatTime(timerSeconds)}
                 </Typography>
-                <Tooltip title='Reset'>
+                <Tooltip title={t('reset')}>
                     <IconButton
                         onClick={(e) => {
                             e.preventDefault();

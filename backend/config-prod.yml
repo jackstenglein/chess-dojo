@@ -13,8 +13,11 @@ discordLiveClassesRole: '1441605550273069128'
 discordOpenClassicalRole: '1366468011489230858'
 discordRoundRobinRole: '1298020637297606727'
 discordRoundRobinChannelId: '1298021531447984191'
+discordBlogChannelId: '1288645108312571914'
+discordBlogRoleId: '968218453355925645'
 discordLiveClassesCategoryId: '1441605897842462851'
 discordSenseiRoleId: '951960912150036480'
+senseiDiscordIds: '683031755271569528,403639644887056406'
 monthlySubscriptionPriceId: 'price_1SqhDSGilmvijaecdx5ueA0y'
 yearlySubscriptionPriceId: 'price_1SqhG2Gilmvijaec2nBoh1LQ'
 lectureTierMonthlySubscriptionPriceId: 'price_1Spe3PGilmvijaecJ7jZmkfZ'
@@ -31,3 +34,5 @@ coaches: 'google_108763076343237273295,google_100898429805622416873,google_11167
 mongoUri: mongodb+srv://chess-dojo-prod.bsc8oxy.mongodb.net/?retryWrites=true&w=majority&appName=chess-dojo-prod
 meetRecordingsDriveFolder: '102cXp0zEAGaMMBC0hzNnxdB5PeStvYfX'
 finishedUploadsDriveFolder: '1mU7cW4z8UWm21c4lyRlf7E4_Lvk5BrXX'
+# Unused in prod: the GameSearchEndpoint output reads the domain directly.
+gameSearchEndpoint: unset

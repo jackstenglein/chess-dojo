@@ -51,6 +51,12 @@ functions:
           authorizer:
             type: jwt
             id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /pat/requirements/{cohort}
+          method: get
+          authorizer:
+            type: request
+            id: ${param:patAuthorizer}
     iamRoleStatements:
       - Effect: Allow
         Action:

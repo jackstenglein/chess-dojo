@@ -7,13 +7,15 @@ applications:
           commands:
             - echo 'Pre build'
             - pwd
-            - npm --version
+            - corepack enable
             - node --version
-            - npm ci --cache .npm --prefer-offline
+            - pnpm --version
+            - pnpm config set store-dir .pnpm-store
+            - pnpm install --frozen-lockfile
         build:
           commands:
             - pwd
-            - npm run build:$AMPLIFY_ENV
+            - pnpm build:$AMPLIFY_ENV
       artifacts:
         baseDirectory: .next
         files:
@@ -21,4 +23,4 @@ applications:
       cache:
         paths:
           - .next/cache/**/*
-          - .npm/**/*
+          - .pnpm-store/**/*

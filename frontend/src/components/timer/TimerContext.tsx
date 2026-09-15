@@ -6,7 +6,8 @@ import { useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { User } from '@/database/user';
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { createContext, ReactNode, useEffect, useEffectEvent, useState } from 'react';
 
 /** Regex which matches the timer in the title of the page */
 const TIMER_TITLE_REGEX = /^[\d:]+ - /;
@@ -33,24 +34,40 @@ export const TimerContext = createContext<Timer>(null as unknown as Timer);
  * between different components.
  */
 export function TimerContextProvider({ children }: { children: ReactNode }) {
+    const t = useTranslations('timer');
     const { user, updateUser } = useAuth();
     const api = useApi();
     const [timerSeconds, setTimerSeconds] = useState(() => getTimerSeconds(user));
     const [showTask, setShowTask] = useState(false);
+    const [initialized, setInitialized] = useState(false);
     const { requirement } = useRequirement(user?.timerTaskId);
-    const customTask = user?.customTasks?.find((t) => t.id === user.timerTaskId);
+    const customTask = user?.customTasks?.find((ct) => ct.id === user.timerTaskId);
 
     const [isRunning, setIsRunning] = useState(Boolean(user?.timerStartedAt));
     const isPaused = !isRunning && Boolean(user?.timerSeconds);
 
+    const onInitialize = useEffectEvent(() => {
+        setInitialized(true);
+        setTimerSeconds(getTimerSeconds(user));
+        setIsRunning(Boolean(user?.timerStartedAt));
+    });
+    useEffect(() => {
+        if (!initialized && user) {
+            onInitialize();
+        }
+    }, [user, initialized]);
+
+    const onTick = useEffectEvent(() => {
+        const seconds = getTimerSeconds(user);
+        setTimerSeconds(seconds);
+        document.title =
+            formatTime(seconds) + ` - ` + document.title.replace(TIMER_TITLE_REGEX, '');
+    });
+
     useEffect(() => {
         if (isRunning) {
-            const id = setInterval(() => {
-                const seconds = getTimerSeconds(user);
-                setTimerSeconds(seconds);
-                document.title =
-                    formatTime(seconds) + ` - ` + document.title.replace(TIMER_TITLE_REGEX, '');
-            }, 1000);
+            onTick();
+            const id = setInterval(onTick, 1000);
             return () => clearInterval(id);
         } else {
             document.title = document.title.replace(TIMER_TITLE_REGEX, '');
@@ -91,15 +108,15 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
     const getLabel = (taskId?: string) => {
         if (!user?.timerTaskId || taskId === user?.timerTaskId) {
             if (isRunning) {
-                return `Pause Timer (${formatTime(timerSeconds)})`;
+                return t('pauseTimer', { time: formatTime(timerSeconds) });
             }
             if (user?.timerSeconds) {
-                return `Resume Timer (${formatTime(timerSeconds)})`;
+                return t('resumeTimer', { time: formatTime(timerSeconds) });
             }
-            return 'Start Timer';
+            return t('startTimer');
         }
 
-        return `Clear and Restart Timer`;
+        return t('clearAndRestart');
     };
 
     const onToggle = (taskId?: string) => {
@@ -136,7 +153,7 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
  * @param user The user to get the work timer for.
  * @returns The number of seconds on the user's work timer.
  */
-function getTimerSeconds(user: User | undefined): number {
+function getTimerSeconds(user: Pick<User, 'timerSeconds' | 'timerStartedAt'> | undefined): number {
     let timerSeconds = user?.timerSeconds ?? 0;
     if (user?.timerStartedAt) {
         const now = Date.now();

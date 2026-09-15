@@ -131,6 +131,7 @@ func getPairingUpdate(openClassical *database.OpenClassical, request *VerifyResu
 					Verified:       true,
 					ReportOpponent: pairing.ReportOpponent,
 					Notes:          pairing.Notes,
+					Screenshots:    pairing.Screenshots,
 				},
 			}, nil
 		}

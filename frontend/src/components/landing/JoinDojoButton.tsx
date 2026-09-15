@@ -1,10 +1,12 @@
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { Button, ButtonProps } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { Link } from '../navigation/Link';
 
 export function JoinDojoButton(props: ButtonProps) {
     const { searchParams } = useNextSearchParams();
     const paramsString = searchParams.toString();
+    const t = useTranslations('landing');
 
     return (
         <Button
@@ -21,7 +23,7 @@ export function JoinDojoButton(props: ButtonProps) {
                 ...props.sx,
             }}
         >
-            {props.children ?? 'Join the Dojo'}
+            {props.children ?? t('joinTheDojo')}
         </Button>
     );
 }

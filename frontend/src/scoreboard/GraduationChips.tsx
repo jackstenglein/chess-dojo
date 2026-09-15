@@ -1,4 +1,5 @@
 import { Chip, Stack } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import {
     formatRatingSystem,
     getMinRatingBoundary,
@@ -13,6 +14,7 @@ interface GraduationChipsProps {
 const { Custom, Custom2, Custom3, ...ratingSystems } = RatingSystem;
 
 const GraduationChips: React.FC<GraduationChipsProps> = ({ cohort }) => {
+    const tRating = useTranslations('enums.ratingSystem');
     const ratingBoundary = getRatingBoundary(cohort, RatingSystem.Chesscom);
 
     if (!ratingBoundary) {
@@ -20,7 +22,16 @@ const GraduationChips: React.FC<GraduationChipsProps> = ({ cohort }) => {
     }
 
     return (
-        <Stack direction='row' alignItems='center' columnGap={1} rowGap={1} mb={2} flexWrap='wrap'>
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+                columnGap: 1,
+                rowGap: 1,
+                mb: 2,
+                flexWrap: 'wrap',
+            }}
+        >
             {Object.values(ratingSystems).map((rs) => {
                 let minRating = getMinRatingBoundary(cohort, rs);
                 const maxRating = getRatingBoundary(cohort, rs);
@@ -32,7 +43,10 @@ const GraduationChips: React.FC<GraduationChipsProps> = ({ cohort }) => {
                 }
 
                 return (
-                    <Chip key={rs} label={`${minRating}-${maxRating} ${formatRatingSystem(rs)}`} />
+                    <Chip
+                        key={rs}
+                        label={`${minRating}-${maxRating} ${formatRatingSystem(rs, tRating)}`}
+                    />
                 );
             })}
         </Stack>

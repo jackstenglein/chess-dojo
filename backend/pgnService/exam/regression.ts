@@ -5,12 +5,9 @@ import {
     DynamoDBClient,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import {
-    Exam,
-    isValidExamType,
-} from '@jackstenglein/chess-dojo-common/src/database/exam';
+import { Exam, isValidExamType } from '@jackstenglein/chess-dojo-common/src/database/exam';
 import { UserExamSummary } from '@jackstenglein/chess-dojo-common/src/database/user';
-import { getRegression } from '@jackstenglein/chess-dojo-common/src/exam/scores';
+import { getRegression, predictExamRating } from '@jackstenglein/chess-dojo-common/src/exam/scores';
 import { DynamoDBRecord, DynamoDBStreamHandler } from 'aws-lambda';
 
 const dynamo = new DynamoDBClient({ region: 'us-east-1' });
@@ -38,9 +35,7 @@ async function processRecord(record: DynamoDBRecord) {
         return;
     }
 
-    const exam = unmarshall(
-        record.dynamodb?.NewImage as Record<string, AttributeValue>,
-    ) as Exam;
+    const exam = unmarshall(record.dynamodb?.NewImage as Record<string, AttributeValue>) as Exam;
 
     if (!isValidExamType(exam.type)) {
         return;
@@ -62,7 +57,7 @@ async function processRecord(record: DynamoDBRecord) {
                 examType: exam.type,
                 cohortRange: exam.cohortRange,
                 createdAt: answer.createdAt,
-                rating: regression.predict(answer.score),
+                rating: predictExamRating(regression, answer.score),
             },
         });
     }

@@ -1,6 +1,7 @@
 'use strict';
 
 import { DeleteItemCommand } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     DeleteGamesRequest,
     DeleteGamesSchema,
@@ -13,7 +14,9 @@ import {
     success,
 } from '../../directoryService/api';
 import { dynamo } from '../../directoryService/database';
+import { removeDirectoryItems } from '../../directoryService/removeItems';
 import { gamesTable } from './create';
+import { rebuildUserTimeManagementRating } from './timeManagement';
 
 /**
  * Handles batch deleting up to 100 games. The caller must be the owner
@@ -27,6 +30,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const userInfo = requireUserInfo(event);
         const request = parseBody(event, DeleteGamesSchema);
         const deleted = await deleteGames({ username: userInfo.username, request });
+        await rebuildUserTimeManagementRating(userInfo.username);
         return success(deleted);
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
@@ -46,38 +50,53 @@ async function deleteGames({
     username: string;
     request: DeleteGamesRequest;
 }): Promise<DeleteGamesRequest> {
-    const promises = [];
+    const results = await Promise.allSettled(
+        request.map((game) => deleteGameAndCleanup(username, game)),
+    );
 
-    for (const { cohort, id } of request) {
-        promises.push(
-            dynamo.send(
-                new DeleteItemCommand({
-                    ConditionExpression: '#owner = :owner',
-                    Key: {
-                        cohort: { S: cohort },
-                        id: { S: id },
-                    },
-                    ExpressionAttributeNames: {
-                        '#owner': 'owner',
-                    },
-                    ExpressionAttributeValues: {
-                        ':owner': { S: username },
-                    },
-                    TableName: gamesTable,
-                    ReturnValues: 'NONE',
-                }),
-            ),
-        );
+    return request.filter((_, i) => results[i].status === 'fulfilled');
+}
+
+/**
+ * Deletes a single game and removes its references from any directories.
+ * @param username The owner's username (used as a condition check).
+ * @param game The game key to delete.
+ */
+async function deleteGameAndCleanup(
+    username: string,
+    game: { cohort: string; id: string },
+): Promise<void> {
+    const result = await dynamo.send(
+        new DeleteItemCommand({
+            ConditionExpression: '#owner = :owner',
+            Key: {
+                cohort: { S: game.cohort },
+                id: { S: game.id },
+            },
+            ExpressionAttributeNames: { '#owner': 'owner' },
+            ExpressionAttributeValues: { ':owner': { S: username } },
+            TableName: gamesTable,
+            ReturnValues: 'ALL_OLD',
+        }),
+    );
+
+    if (!result.Attributes) {
+        return;
     }
 
-    const results = await Promise.allSettled(promises);
-    const deleted = [];
+    const deletedGame = unmarshall(result.Attributes) as { directories?: string[] };
+    if (!deletedGame.directories) {
+        return;
+    }
 
-    for (let i = 0; i < results.length; i++) {
-        if (results[i].status === 'fulfilled') {
-            deleted.push(request[i]);
+    const itemId = `${game.cohort}/${game.id}`;
+    for (const dir of deletedGame.directories) {
+        const [dirOwner, ...dirIdParts] = dir.split('/');
+        const dirId = dirIdParts.join('/');
+        try {
+            await removeDirectoryItems(dirOwner, dirId, [itemId]);
+        } catch (err) {
+            console.error(`Failed to remove game from directory ${dir}:`, err);
         }
     }
-
-    return deleted;
 }

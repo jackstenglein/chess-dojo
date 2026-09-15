@@ -12,9 +12,14 @@ def process_user(user, writer):
         return
     if user.get('dojoCohort', 'NO_COHORT') == 'NO_COHORT':
         return
+    
+    tier = user.get('subscriptionTier', 'FREE')
+    if tier == 'FREE' and user.get('subscriptionStatus', 'NOT_SUBSCRIBED') == 'SUBSCRIBED':
+        tier = 'BASIC'
 
     writer.writerow([
         user['username'],
+        tier,
         user['dojoCohort'],
         user['ratingSystem'],
         user.get('ratings', {}).get('CHESSCOM', {}).get('currentRating', 0),
@@ -40,6 +45,7 @@ def main():
             writer = csv.writer(file)
             writer.writerow([
                 'username', 
+                'subscriptionTier',
                 'cohort',
                 'preferredRating',
                 'chesscom', 

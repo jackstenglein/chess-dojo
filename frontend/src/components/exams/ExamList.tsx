@@ -9,7 +9,7 @@ import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { Exam, ExamType } from '@jackstenglein/chess-dojo-common/src/database/exam';
-import { getRegression } from '@jackstenglein/chess-dojo-common/src/exam/scores';
+import { getRegression, predictExamRating } from '@jackstenglein/chess-dojo-common/src/exam/scores';
 import { Check, Close, ExpandLess, ExpandMore, Help, Lock } from '@mui/icons-material';
 import {
     Alert,
@@ -22,6 +22,7 @@ import {
     Typography,
 } from '@mui/material';
 import { DataGridPro, GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 interface CohortRangeExams {
@@ -55,12 +56,12 @@ function getExamInfo(e: Exam, username?: string, timezoneOverride?: string): Exa
     let userRating: number | undefined = undefined;
     if (regression) {
         const sum = Object.values(e.answers)
-            .map((a) => regression.predict(a.score))
+            .map((a) => predictExamRating(regression, a.score))
             .reduce((sum, rating) => sum + rating, 0);
         averageRating = Math.round((10 * sum) / Object.values(e.answers).length) / 10;
 
         if (answer) {
-            userRating = Math.round(10 * regression.predict(answer.score)) / 10;
+            userRating = Math.round(10 * predictExamRating(regression, answer.score)) / 10;
         }
     }
 
@@ -82,6 +83,7 @@ function getExamInfo(e: Exam, username?: string, timezoneOverride?: string): Exa
  * @param examType The type of exam shown in this section
  */
 export const ExamList: React.FC<ExamListProps> = ({ cohortRanges, examType }) => {
+    const t = useTranslations('exams.list');
     const api = useApi();
     const request = useRequest<ExamInfo[]>();
     const { user, status } = useAuth();
@@ -141,9 +143,19 @@ export const ExamList: React.FC<ExamListProps> = ({ cohortRanges, examType }) =>
                 <Stack spacing={3}>
                     {ranges.map((range, i) => (
                         <Stack key={range.name}>
-                            <Stack spacing={1} direction='row' alignItems='center'>
+                            <Stack
+                                spacing={1}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Tooltip
-                                    title={expanded[i] ? 'Collapse Section' : 'Expand Section'}
+                                    title={
+                                        expanded[i]
+                                            ? t('tooltipCollapseSection')
+                                            : t('tooltipExpandSection')
+                                    }
                                 >
                                     <ButtonBase onClick={() => onChangeExpanded(i)}>
                                         {expanded[i] ? <ExpandLess /> : <ExpandMore />}
@@ -165,122 +177,6 @@ export const ExamList: React.FC<ExamListProps> = ({ cohortRanges, examType }) =>
     );
 };
 
-const columns: GridColDef<ExamInfo>[] = [
-    {
-        field: 'problems',
-        headerName: '# of Problems',
-        valueGetter: (_value, row) => row.exam.pgns.length,
-        align: 'center',
-        headerAlign: 'center',
-        flex: 1,
-    },
-    {
-        field: 'timeLimitSeconds',
-        headerName: 'Time Limit',
-        valueGetter: (_value, row) => row.exam.timeLimitSeconds,
-        valueFormatter: (value: number) => `${value / 60} min`,
-        headerAlign: 'center',
-        align: 'center',
-        flex: 1,
-    },
-    {
-        field: 'takebacksDisabled',
-        headerName: 'Takebacks',
-        headerAlign: 'center',
-        align: 'center',
-        width: 88,
-        valueGetter: (_value, row) => row.exam.takebacksDisabled,
-        renderCell(params) {
-            return (
-                <Tooltip
-                    title={
-                        params.value
-                            ? 'Takebacks are disabled for this exam. Once you make a move, it is locked in.'
-                            : 'Takebacks are enabled for this exam. After making a move, you can promote another move instead.'
-                    }
-                >
-                    {params.value ? (
-                        <Close color='error' sx={{ height: 1 }} />
-                    ) : (
-                        <Check color='success' sx={{ height: 1 }} />
-                    )}
-                </Tooltip>
-            );
-        },
-    },
-    {
-        field: 'avgScore',
-        headerName: 'Avg Score',
-        headerAlign: 'center',
-        align: 'center',
-        valueGetter: (_value, row) => row.averageScore,
-        renderCell(params: GridRenderCellParams<ExamInfo, number>) {
-            if (params.value === undefined || isNaN(params.value)) {
-                return `- / ${params.row.exam.totalScore}`;
-            }
-            return `${params.value} / ${params.row.exam.totalScore}`;
-        },
-        flex: 1,
-    },
-    {
-        field: 'yourScore',
-        headerName: 'Your Score',
-        align: 'center',
-        headerAlign: 'center',
-        valueGetter: (_value, row) => row.userScore,
-        renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
-            if (params.value === undefined) {
-                return `- / ${params.row.exam.totalScore}`;
-            }
-            return `${params.value} / ${params.row.exam.totalScore}`;
-        },
-        flex: 1,
-    },
-    {
-        field: 'avgRating',
-        headerName: 'Avg Rating',
-        headerAlign: 'center',
-        align: 'center',
-        valueGetter: (_value, row) => row.averageRating,
-        renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
-            if (params.value === undefined || isNaN(params.value)) {
-                return (
-                    <Tooltip title='Avg rating is not calculated until enough people have taken the exam.'>
-                        <Help sx={{ color: 'text.secondary', height: 1 }} />
-                    </Tooltip>
-                );
-            }
-            return `${params.value}`;
-        },
-        flex: 1,
-    },
-    {
-        field: 'yourRating',
-        headerName: 'Your Rating',
-        align: 'center',
-        headerAlign: 'center',
-        valueGetter: (_value, row) => row.userRating,
-        renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
-            if (params.value === undefined || isNaN(params.value)) {
-                return (
-                    <Tooltip title='Your rating is not calculated until enough people have taken the exam.'>
-                        <Help sx={{ color: 'text.secondary', height: 1 }} />
-                    </Tooltip>
-                );
-            }
-            return `${params.value}`;
-        },
-    },
-    {
-        field: 'dateTaken',
-        headerName: 'Date Taken',
-        align: 'center',
-        headerAlign: 'center',
-        valueGetter: (_value, row) => row.dateTaken,
-        flex: 1,
-    },
-];
-
 const initialState = {
     pagination: {
         paginationModel: { pageSize: 10 },
@@ -288,6 +184,7 @@ const initialState = {
 };
 
 export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
+    const t = useTranslations('exams.list');
     const user = useAuth().user;
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [upsellOpen, setUpsellOpen] = useState(false);
@@ -295,10 +192,126 @@ export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
     const router = useRouter();
 
     const examColumns = useMemo(() => {
+        const sharedColumns: GridColDef<ExamInfo>[] = [
+            {
+                field: 'problems',
+                headerName: t('columnNumProblems'),
+                valueGetter: (_value, row) => row.exam.pgns.length,
+                align: 'center',
+                headerAlign: 'center',
+                flex: 1,
+            },
+            {
+                field: 'timeLimitSeconds',
+                headerName: t('columnTimeLimit'),
+                valueGetter: (_value, row) => row.exam.timeLimitSeconds,
+                valueFormatter: (value: number) => t('timeLimitMin', { minutes: value / 60 }),
+                headerAlign: 'center',
+                align: 'center',
+                flex: 1,
+            },
+            {
+                field: 'takebacksDisabled',
+                headerName: t('columnTakebacks'),
+                headerAlign: 'center',
+                align: 'center',
+                width: 88,
+                valueGetter: (_value, row) => row.exam.takebacksDisabled,
+                renderCell(params) {
+                    return (
+                        <Tooltip
+                            title={
+                                params.value
+                                    ? t('tooltipTakebacksDisabled')
+                                    : t('tooltipTakebacksEnabled')
+                            }
+                        >
+                            {params.value ? (
+                                <Close color='error' sx={{ height: 1 }} />
+                            ) : (
+                                <Check color='success' sx={{ height: 1 }} />
+                            )}
+                        </Tooltip>
+                    );
+                },
+            },
+            {
+                field: 'avgScore',
+                headerName: t('columnAvgScore'),
+                headerAlign: 'center',
+                align: 'center',
+                valueGetter: (_value, row) => row.averageScore,
+                renderCell(params: GridRenderCellParams<ExamInfo, number>) {
+                    if (params.value === undefined || isNaN(params.value)) {
+                        return `- / ${params.row.exam.totalScore}`;
+                    }
+                    return `${params.value} / ${params.row.exam.totalScore}`;
+                },
+                flex: 1,
+            },
+            {
+                field: 'yourScore',
+                headerName: t('columnYourScore'),
+                align: 'center',
+                headerAlign: 'center',
+                valueGetter: (_value, row) => row.userScore,
+                renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
+                    if (params.value === undefined) {
+                        return `- / ${params.row.exam.totalScore}`;
+                    }
+                    return `${params.value} / ${params.row.exam.totalScore}`;
+                },
+                flex: 1,
+            },
+            {
+                field: 'avgRating',
+                headerName: t('columnAvgRating'),
+                headerAlign: 'center',
+                align: 'center',
+                valueGetter: (_value, row) => row.averageRating,
+                renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
+                    if (params.value === undefined || isNaN(params.value)) {
+                        return (
+                            <Tooltip title={t('tooltipAvgRatingNotCalculated')}>
+                                <Help sx={{ color: 'text.secondary', height: 1 }} />
+                            </Tooltip>
+                        );
+                    }
+                    return `${params.value}`;
+                },
+                flex: 1,
+            },
+            {
+                field: 'yourRating',
+                headerName: t('columnYourRating'),
+                align: 'center',
+                headerAlign: 'center',
+                valueGetter: (_value, row) => row.userRating,
+                renderCell(params: GridRenderCellParams<ExamInfo, number | undefined>) {
+                    if (params.value === undefined || isNaN(params.value)) {
+                        return (
+                            <Tooltip title={t('tooltipYourRatingNotCalculated')}>
+                                <Help sx={{ color: 'text.secondary', height: 1 }} />
+                            </Tooltip>
+                        );
+                    }
+                    return `${params.value}`;
+                },
+            },
+            {
+                field: 'dateTaken',
+                headerName: t('columnDateTaken'),
+                align: 'center',
+                headerAlign: 'center',
+                valueGetter: (_value, row) => row.dateTaken,
+                flex: 1,
+            },
+        ];
+
         const examColumns: GridColDef<ExamInfo>[] = [
             {
                 field: 'name',
-                headerName: 'Name',
+                headerName: t('columnName'),
                 valueGetter: (_value, row) => row.exam.name,
                 renderCell(params: GridRenderCellParams<ExamInfo, string>) {
                     const hasAnswered = Boolean(params.row.exam.answers[user?.username || '']);
@@ -310,9 +323,21 @@ export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
                         !exams[i - 1].exam.answers[user?.username || '']
                     ) {
                         return (
-                            <Tooltip title='This exam is locked until you complete the previous exam'>
-                                <Stack direction='row' spacing={0.5} alignItems='center'>
-                                    <Link color='text.disabled'>{params.value}</Link>
+                            <Tooltip title={t('tooltipExamLocked')}>
+                                <Stack
+                                    direction='row'
+                                    spacing={0.5}
+                                    sx={{
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Link
+                                        sx={{
+                                            color: 'text.disabled',
+                                        }}
+                                    >
+                                        {params.value}
+                                    </Link>
                                     <Lock fontSize='small' />
                                 </Stack>
                             </Tooltip>
@@ -322,10 +347,10 @@ export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
                 },
                 flex: 1,
             },
-            ...columns,
+            ...sharedColumns,
         ];
         return examColumns;
-    }, [user, exams]);
+    }, [user, exams, t]);
 
     const onClickRow = (params: GridRowParams<ExamInfo>) => {
         if (params.row.exam.answers[user?.username || '']) {
@@ -370,7 +395,7 @@ export const ExamsTable = ({ exams }: { exams: ExamInfo[] }) => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 <Alert severity='error' variant='filled' onClose={handleClose}>
-                    This exam is locked until you complete the previous exam.
+                    {t('alertExamLocked')}
                 </Alert>
             </Snackbar>
             <UpsellDialog
