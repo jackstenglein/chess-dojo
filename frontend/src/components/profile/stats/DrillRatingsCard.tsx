@@ -19,7 +19,6 @@ export function DrillRatingsCard({ mateInOneRating }: DrillRatingsCardProps) {
                 boxShadow: 1,
             }}
         >
-            <Box sx={{ height: 4, bgcolor: 'primary.main' }} />
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Stack
                     direction='row'
