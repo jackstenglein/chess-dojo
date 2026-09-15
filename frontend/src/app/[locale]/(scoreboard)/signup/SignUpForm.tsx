@@ -226,7 +226,6 @@ export const SignUpForm = () => {
                     </AppleButton>
                 </Stack>
 
-<<<<<<< HEAD:frontend/src/app/(scoreboard)/signup/SignUpForm.tsx
                 <GoogleButton
                     onClick={onGoogleSignIn}
                     label='Sign up with Google'
@@ -237,8 +236,6 @@ export const SignUpForm = () => {
                 />
                 <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
                 <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
-=======
->>>>>>> main:frontend/src/app/[locale]/(scoreboard)/signup/SignUpForm.tsx
                 <Typography variant='body2' component='div' gutterBottom>
                     {t('signup.alreadyHaveAccount')}{' '}
                     <Link href='/signin' data-testid='signin-button'>
