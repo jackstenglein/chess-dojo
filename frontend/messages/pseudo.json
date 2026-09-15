@@ -879,7 +879,8 @@
             "emptyNoAccounts": "[T] No connected Lichess or Chess.com account found.",
             "emptyConnectAccounts": "<link>[T] Connect your Lichess or Chess.com account</link> [T] to see your results here.",
             "emptyNoGames": "[T] No games found in this time period.",
-            "bestStreak": "[T] Best Win Streak"
+            "bestStreak": "[T] Best Win Streak",
+            "resultsFor": "[T] Results for:"
         },
         "graduationShare": {
             "title": "[T] Share your progress!",

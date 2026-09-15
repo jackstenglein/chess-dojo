@@ -19,7 +19,13 @@ import { LiveClassesTab } from '@/components/profile/liveClasses/LiveClassesTab'
 import ResultsTab from '@/components/profile/results/ResultsTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
 import { TrainingPlanTab } from '@/components/profile/trainingPlan/TrainingPlanTab';
-import { hasCreatedProfile, User } from '@/database/user';
+import {
+    getRatingUsername,
+    hasCreatedProfile,
+    hideRatingUsername,
+    RatingSystem,
+    User,
+} from '@/database/user';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
 import ClubsTab from '@/profile/clubs/ClubsTab';
@@ -108,6 +114,13 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
             followerCount: count,
         });
     };
+
+    const showResultsTab = [RatingSystem.Lichess, RatingSystem.Chesscom].some((rs) => {
+        if (!getRatingUsername(user, rs)) {
+            return false;
+        }
+        return currentUserProfile || !hideRatingUsername(user, rs);
+    });
 
     return (
         <Container
@@ -223,11 +236,13 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     value='games'
                                     icon={<PawnIcon fontSize='small' />}
                                 />
-                                <ProfileTab
-                                    label={t('tabResults')}
-                                    value='results'
-                                    icon={<Leaderboard fontSize='small' />}
-                                />
+                                {showResultsTab && (
+                                    <ProfileTab
+                                        label={t('tabResults')}
+                                        value='results'
+                                        icon={<Leaderboard fontSize='small' />}
+                                    />
+                                )}
                                 <ProfileTab
                                     label={t('tabClubs')}
                                     value='clubs'
@@ -268,7 +283,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                             </DirectoryCacheProvider>
                         </TabPanel>
                         <TabPanel value='results' sx={{ px: 0, pl: { lg: 1 } }}>
-                            <ResultsTab user={user} />
+                            {showResultsTab && <ResultsTab user={user} />}
                         </TabPanel>
                         <TabPanel value='clubs' sx={{ px: 0, pl: { lg: 1 } }}>
                             <ClubsTab user={user} />

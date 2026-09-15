@@ -333,7 +333,7 @@ const RatingCard: React.FC<RatingCardProps> = ({
         { x: number; y: number; containerWidth: number; containerHeight: number } | undefined
     >(undefined);
     const ratingChange = currentRating - startRating;
-    const chartColor = theme.palette.success.main;
+    const chartColor = theme.palette.primary.main;
     const graduation = getRatingBoundary(cohort, system);
     const nextCohort = dojoCohorts[dojoCohorts.indexOf(cohort) + 1];
     const graduationColor = nextCohort ? cohortColors[nextCohort] : undefined;
@@ -648,7 +648,6 @@ const RatingCard: React.FC<RatingCardProps> = ({
                 boxShadow: 1,
             }}
         >
-            <Box sx={{ height: 4, bgcolor: chartColor }} />
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Stack spacing={2.5}>
                     <Stack
