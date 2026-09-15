@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { interceptApi, useFreeTier } from '../../../lib/helpers';
+import { interceptApi, useFreeTier, useTestCohort } from '../../../lib/helpers';
 import { dateMapper, Event } from '../../../lib/utils';
 import { events as initialEvents } from './events';
 
@@ -37,6 +37,7 @@ test.describe('Event Editor', () => {
                 }
             }
         });
+        await useTestCohort(page, '1500-1600');
         await interceptApi(page, 'GET', '/calendar', {
             statusCode: 200,
             body: { events },

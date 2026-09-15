@@ -87,6 +87,48 @@ export async function useFreeTier(page: Page) {
     await page.route(`${getEnv('apiBaseUrl')}/user/access/v2`, (route) => route.abort());
 }
 
+/**
+ * Pins the current user's cohort for tests that depend on it (e.g. calendar).
+ * The calendar fixtures assume a 1500-1600 user: 26 visible events, Ricardo Alves
+ * bookable, and 1400-1500/1500-1600/1600-1700 default cohorts in the event editor.
+ * Without this, graduation of the shared e2e test user breaks those assertions.
+ */
+export async function useTestCohort(page: Page, cohort = '1500-1600') {
+    await page.route(`${getEnv('apiBaseUrl')}/user`, async (route) => {
+        if (route.request().method() !== 'GET') {
+            await route.continue();
+            return;
+        }
+
+        try {
+            const response = await route.fetch();
+            if (!response.ok()) {
+                throw new Error(`GET /user returned ${response.status()}`);
+            }
+            const body = (await response.json()) as Record<string, unknown>;
+            await route.fulfill({
+                response,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    ...body,
+                    dojoCohort: cohort,
+                }),
+            });
+        } catch {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    ...fallbackAdminUser,
+                    isAdmin: false,
+                    isCalendarAdmin: false,
+                    dojoCohort: cohort,
+                }),
+            });
+        }
+    });
+}
+
 /** Minimal user returned when the live /user fetch fails in admin tests. */
 const fallbackAdminUser = {
     username: 'test-admin',

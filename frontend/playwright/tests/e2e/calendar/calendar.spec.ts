@@ -1,6 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { getEnv } from '../../../lib/env';
-import { interceptApi } from '../../../lib/helpers';
+import { interceptApi, useTestCohort } from '../../../lib/helpers';
 import { dateMapper, Event } from '../../../lib/utils';
 import { events as initialEvents } from './events';
 
@@ -40,6 +40,7 @@ test.describe('Calendar Page', () => {
                 }
             }
         });
+        await useTestCohort(page, '1500-1600');
         await interceptApi(page, 'GET', '/calendar', {
             statusCode: 200,
             body: { events },
