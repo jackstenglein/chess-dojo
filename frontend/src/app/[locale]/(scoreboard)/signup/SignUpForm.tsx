@@ -224,18 +224,10 @@ export const SignUpForm = () => {
                     <AppleButton onClick={() => onSocialSignIn('Apple')}>
                         Sign up with Apple
                     </AppleButton>
+                    <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
+                    <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 </Stack>
 
-                <GoogleButton
-                    onClick={onGoogleSignIn}
-                    label='Sign up with Google'
-                    style={{
-                        transform: 'scale(1.1)',
-                        transformOrigin: 'center',
-                    }}
-                />
-                <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
-                <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 <Typography variant='body2' component='div' gutterBottom>
                     {t('signup.alreadyHaveAccount')}{' '}
                     <Link href='/signin' data-testid='signin-button'>
