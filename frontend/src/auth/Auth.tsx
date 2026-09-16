@@ -66,7 +66,10 @@ interface AuthContextType {
     getCurrentUser: () => Promise<void>;
     updateUser: (update: Partial<User>) => void;
 
-    socialSignin: (provider: 'Google' | 'Apple' | 'Chesscom' | 'Lichess', redirectUri: string) => void;
+    socialSignin: (
+        provider: 'Google' | 'Apple' | 'Chesscom' | 'Lichess',
+        redirectUri: string,
+    ) => void;
     signin: (email: string, password: string) => Promise<void>;
 
     signup: (

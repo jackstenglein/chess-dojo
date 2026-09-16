@@ -2,6 +2,8 @@
 
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { Link } from '@/components/navigation/Link';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { useRouter } from '@/hooks/useRouter';
@@ -9,8 +11,6 @@ import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Email as EmailIcon, Lock as LockIcon } from '@mui/icons-material';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
-import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
@@ -224,7 +224,10 @@ export const SignUpForm = () => {
                     <AppleButton onClick={() => onSocialSignIn('Apple')}>
                         Sign up with Apple
                     </AppleButton>
-                    <ChesscomSignInButton onClick={onChesscomSignIn} label='Sign up with Chess.com' />
+                    <ChesscomSignInButton
+                        onClick={onChesscomSignIn}
+                        label='Sign up with Chess.com'
+                    />
                     <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 </Stack>
 
@@ -234,7 +237,7 @@ export const SignUpForm = () => {
                         {t('signup.signIn')}
                     </Link>
                 </Typography>
-            </Stack >
-        </Stack >
+            </Stack>
+        </Stack>
     );
 };

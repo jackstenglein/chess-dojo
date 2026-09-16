@@ -2,6 +2,8 @@
 
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { Link } from '@/components/navigation/Link';
 import { useRouter } from '@/i18n/navigation';
 import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
@@ -9,10 +11,8 @@ import { logger } from '@/logging/logger';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { AccountCircle, Lock } from '@mui/icons-material';
 import { Button, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
-import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
-import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from 'react-google-button';
 import { AppleButton } from './AppleButton';
@@ -208,7 +208,7 @@ export const SignInForm = () => {
                     <ChesscomSignInButton onClick={onChesscomSignIn} />
                     <LichessSignInButton onClick={onLichessSignIn} />
                 </Stack>
-            </Stack >
-        </Stack >
+            </Stack>
+        </Stack>
     );
 };
