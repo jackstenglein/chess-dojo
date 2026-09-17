@@ -1,6 +1,9 @@
 package discord
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
 	stderrors "errors"
 	"fmt"
 	"strings"
@@ -444,4 +447,41 @@ func SendMessageInChannel(message string, channelId string) (string, error) {
 		return "", errors.Wrap(500, "Temporary server error", "Failed to send discord channel message", err)
 	}
 	return msg.ID, nil
+}
+
+// SendPurchaseNotification posts a purchase alert to the configured purchases
+// destination. Prefers discordPurchasesWebhookUrl if set (simple webhook POST,
+// no bot permissions needed), otherwise falls back to purchasesChannelId via
+// the bot. If neither is configured, the notification is skipped.
+func SendPurchaseNotification(message string) error {
+	if purchasesWebhookUrl != "" {
+		return sendWebhookMessage(purchasesWebhookUrl, message)
+	}
+
+	if purchasesChannelId == "" {
+		log.Infof("No purchases Discord destination configured; skipping purchase notification: %s", message)
+		return nil
+	}
+
+	_, err := SendMessageInChannel(message, purchasesChannelId)
+	return err
+}
+
+// sendWebhookMessage posts a plain-text message to a Discord incoming webhook URL.
+func sendWebhookMessage(webhookUrl, message string) error {
+	body, err := json.Marshal(map[string]string{"content": message})
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed to marshal webhook payload", err)
+	}
+
+	resp, err := http.Post(webhookUrl, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return errors.Wrap(500, "Temporary server error", "Failed to post Discord webhook", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return errors.New(500, "Temporary server error", fmt.Sprintf("Discord webhook returned status %s", resp.Status))
+	}
+	return nil
 }
