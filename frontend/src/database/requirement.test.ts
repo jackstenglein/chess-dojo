@@ -1,7 +1,9 @@
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     CustomTask,
     getCurrentCount,
+    isRequirementAvailableForSubscriptionTier,
     Requirement,
     RequirementCategory,
     RequirementStatus,
@@ -112,6 +114,38 @@ const timelineEntryNormal: TimelineEntry = {
 };
 
 describe('requirement.ts', () => {
+    describe('isRequirementAvailableForSubscriptionTier', () => {
+        it('includes unrestricted and matching requirements', () => {
+            expect(
+                isRequirementAvailableForSubscriptionTier(
+                    requirementNormal,
+                    SubscriptionTier.Basic,
+                ),
+            ).toBe(true);
+            expect(
+                isRequirementAvailableForSubscriptionTier(
+                    {
+                        ...requirementNormal,
+                        subscriptionTiers: [SubscriptionTier.Basic],
+                    },
+                    SubscriptionTier.Basic,
+                ),
+            ).toBe(true);
+        });
+
+        it('excludes requirements for a different subscription tier', () => {
+            expect(
+                isRequirementAvailableForSubscriptionTier(
+                    {
+                        ...requirementNormal,
+                        subscriptionTiers: [SubscriptionTier.Lecture],
+                    },
+                    SubscriptionTier.Basic,
+                ),
+            ).toBe(false);
+        });
+    });
+
     describe('getCurrentCount', () => {
         beforeEach(() => {
             vi.useFakeTimers();
