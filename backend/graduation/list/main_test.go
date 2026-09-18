@@ -209,3 +209,24 @@ func TestByCohortAndByOwnerHandlersKeepStoredGamesAnnotated(t *testing.T) {
 		t.Fatalf("non-date handlers should not query games, got calls: %#v", fake.gameCalls)
 	}
 }
+
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyUser(username string) (*database.User, error) {
+	return &database.User{Username: username}, nil
+}
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyFollower(poster, follower string) (*database.FollowerEntry, error) {
+	return nil, nil
+}
+
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyUsers(names []string) ([]*database.User, error) {
+	result := make([]*database.User, 0, len(names))
+	for _, name := range names {
+		user, err := r.GetTrainingPrivacyUser(name)
+		if err != nil {
+			return nil, err
+		}
+		if user != nil {
+			result = append(result, user)
+		}
+	}
+	return result, nil
+}

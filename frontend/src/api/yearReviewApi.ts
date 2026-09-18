@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { YearReview } from '../database/yearReview';
-import { axiosService } from './axiosService';
+import { axiosService, viewerPath } from './axiosService';
 
 /**
  * Provides an API for interacting with year reviews.
@@ -21,8 +21,11 @@ export interface YearReviewApiContextType {
  * @param year The year to fetch.
  * @returns The year review for the given user and year.
  */
-export function getYearReview(username: string, year: string) {
-    return axiosService.get<YearReview>(`/public/yearreview/${username}/${year}`, {
-        functionName: 'getYearReview',
-    });
+export async function getYearReview(username: string, year: string) {
+    return axiosService.get<YearReview>(
+        await viewerPath(`/public/yearreview/${username}/${year}`),
+        {
+            functionName: 'getYearReview',
+        },
+    );
 }

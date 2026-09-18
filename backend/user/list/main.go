@@ -9,7 +9,10 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
+
+var privacyRepository trainingprivacy.Repository = database.DynamoDB
 
 var repository database.UserLister = database.DynamoDB
 
@@ -18,7 +21,10 @@ type ListUsersResponse struct {
 	LastEvaluatedKey string           `json:"lastEvaluatedKey,omitempty"`
 }
 
-func Handler(ctx context.Context, event api.Request) (api.Response, error) {
+func Handler(ctx context.Context, event api.Request) (response api.Response, handlerErr error) {
+	defer func() {
+		response = trainingprivacy.New(privacyRepository, api.GetUserInfo(event).Username).ProtectUsers(response)
+	}()
 	log.SetRequestId(event.RequestContext.RequestID)
 	log.Infof("Event: %#v", event)
 

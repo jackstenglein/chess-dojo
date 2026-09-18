@@ -55,6 +55,10 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		return api.Failure(errors.Wrap(400, "Invalid request: unable to unmarshal request body", "", err)), nil
 	}
 
+	if update.TrainingVisibility != nil && !update.TrainingVisibility.Valid() {
+		return api.Failure(errors.New(400, "Invalid training visibility", "")), nil
+	}
+
 	autopickCohort := event.QueryStringParameters["autopickCohort"]
 	if autopickCohort == "true" {
 		return handleAutopickCohort(user, update), nil
