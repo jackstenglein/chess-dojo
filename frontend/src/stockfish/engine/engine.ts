@@ -1,5 +1,6 @@
 /** The name of an available engine. */
 export enum EngineName {
+    Stockfish19 = 'stockfish_19',
     Stockfish18 = 'stockfish_18',
     Stockfish18Lite = 'stockfish_18_lite',
     Stockfish17 = 'stockfish_17',
@@ -38,6 +39,16 @@ export interface EngineInfo {
 
 /** The list of engines available for use. */
 export const engines: EngineInfo[] = [
+    {
+        name: EngineName.Stockfish19,
+        fullName: 'Stockfish 19 NNUE • 94.5 MB',
+        shortName: 'SF 19 • 94.5 MB',
+        extraShortName: 'SF 19 ',
+        description: 'Best for desktop',
+        tech: 'NNUE',
+        techDescription: `Evaluation is performed by Stockfish's neural network.`,
+        location: 'in local browser',
+    },
     {
         name: EngineName.Stockfish18,
         fullName: 'Stockfish 18 NNUE • 108 MB',
@@ -95,7 +106,7 @@ export const ENGINE_NAME = {
     /** Local storage key for the engine name. */
     Key: 'engine-name',
     /** The default engine name. */
-    Default: EngineName.Stockfish18,
+    Default: EngineName.Stockfish19,
 } as const;
 
 /** Settings for the number of lines calculated/displayed by the engine. */

@@ -6,6 +6,7 @@ import { Stockfish16 } from '../engine/Stockfish16';
 import { Stockfish17 } from '../engine/Stockfish17';
 import { Stockfish18 } from '../engine/Stockfish18';
 import { Stockfish18Lite } from '../engine/Stockfish18Lite';
+import { Stockfish19 } from '../engine/Stockfish19';
 import { UciEngine } from '../engine/UciEngine';
 
 export const useEngine = (enabled: boolean, engineName: EngineName | undefined) => {
@@ -32,6 +33,8 @@ export const useEngine = (enabled: boolean, engineName: EngineName | undefined) 
 
 const pickEngine = (engine: EngineName): UciEngine => {
     switch (engine) {
+        case EngineName.Stockfish19:
+            return new Stockfish19();
         case EngineName.Stockfish18:
             return new Stockfish18();
         case EngineName.Stockfish18Lite:
