@@ -11,8 +11,9 @@ import {
     DirectoryVisibility,
     HOME_DIRECTORY_ID,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { checkAccess, getAccessRole } from './access';
+import { checkAccess, fetchSubscriptionTier, getAccessRole } from './access';
 import {
     ApiError,
     errToApiGatewayProxyResultV2,
@@ -50,11 +51,16 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
+        const subscriptionTier =
+            userInfo.username === directory.owner
+                ? undefined
+                : await fetchSubscriptionTier(userInfo.username);
         const accessRole = await getAccessRole({
             owner: directory.owner,
             id: directory.id,
             username: userInfo.username,
             directory,
+            subscriptionTier,
         });
         const isViewer = compareRoles(DirectoryAccessRole.Viewer, accessRole);
 
@@ -67,7 +73,7 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         if (!isViewer) {
-            await filterPrivateItems(directory, userInfo.username);
+            await filterPrivateItems(directory, userInfo.username, subscriptionTier);
         }
 
         for (const id of directory.itemIds) {
@@ -77,6 +83,7 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
                     directory.owner,
                     id,
                     userInfo.username,
+                    subscriptionTier,
                 );
             }
         }
@@ -123,13 +130,20 @@ async function getRecursiveGameCount(
     owner: string,
     directoryId: string,
     username: string,
+    subscriptionTier?: SubscriptionTier,
 ): Promise<number> {
     const directory = await fetchDirectory(owner, directoryId);
     if (!directory) {
         return 0;
     }
 
-    const accessRole = await getAccessRole({ owner, id: directoryId, username, directory });
+    const accessRole = await getAccessRole({
+        owner,
+        id: directoryId,
+        username,
+        directory,
+        subscriptionTier,
+    });
     const isViewer = compareRoles(DirectoryAccessRole.Viewer, accessRole);
 
     if (directory.visibility === DirectoryVisibility.PRIVATE && !isViewer) {
@@ -145,18 +159,7 @@ async function getRecursiveGameCount(
         }
 
         if (item.type === DirectoryItemTypes.DIRECTORY) {
-            if (
-                item.metadata.visibility === DirectoryVisibility.PUBLIC ||
-                (await checkAccess({
-                    owner,
-                    id,
-                    role: DirectoryAccessRole.Viewer,
-                    skipRecursion: true,
-                    username,
-                }))
-            ) {
-                count += await getRecursiveGameCount(owner, id, username);
-            }
+            count += await getRecursiveGameCount(owner, id, username, subscriptionTier);
         } else {
             if (isViewer || !item.metadata.unlisted) {
                 count++;
@@ -174,7 +177,11 @@ async function getRecursiveGameCount(
  * @param directory The directory to remove private subdirectories from.
  * @param viewer The username of the person viewing the directory.
  */
-async function filterPrivateItems(directory: Directory, viewer: string) {
+async function filterPrivateItems(
+    directory: Directory,
+    viewer: string,
+    subscriptionTier?: SubscriptionTier,
+) {
     let i = 0;
     let j = 0;
 
@@ -192,6 +199,7 @@ async function filterPrivateItems(directory: Directory, viewer: string) {
                     role: DirectoryAccessRole.Viewer,
                     skipRecursion: true,
                     username: viewer,
+                    subscriptionTier,
                 })))
         ) {
             directory.itemIds[j++] = id;
