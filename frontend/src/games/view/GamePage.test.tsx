@@ -135,6 +135,7 @@ describe('GamePage side tabs', () => {
         renderWithIntl(<GamePage cohort='dojo' id='game1' />);
 
         expect(pgnBoardProps[0]).toMatchObject({
+            allowPanelHiding: true,
             underboardTabs: [
                 DefaultUnderboardTab.Directories,
                 DefaultUnderboardTab.Tags,

@@ -83,6 +83,8 @@ export interface UnderboardApi {
 }
 
 interface UnderboardProps {
+    hidden?: boolean;
+    onReveal?: () => void;
     tabs: UnderboardTab[];
     initialTab?: string;
     resizeData: ResizableData;
@@ -97,6 +99,8 @@ interface UnderboardProps {
 const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
     (
         {
+            hidden = false,
+            onReveal,
             tabs,
             initialTab,
             resizeData,
@@ -261,26 +265,30 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
             return {
                 switchTab(tab: DefaultUnderboardTab) {
                     if (tabs.includes(tab)) {
+                        onReveal?.();
                         setUnderboard(tab);
                     }
                 },
                 focusEditor() {
-                    if (isOwner) {
+                    if (isOwner && tabs.includes(DefaultUnderboardTab.Editor)) {
+                        onReveal?.();
                         setUnderboard(DefaultUnderboardTab.Editor);
                         setFocusEditor(true);
-                    } else if (tabs.includes(DefaultUnderboardTab.Comments)) {
+                    } else if (!isOwner && tabs.includes(DefaultUnderboardTab.Comments)) {
+                        onReveal?.();
                         setUnderboard(DefaultUnderboardTab.Comments);
                         setFocusCommenter(true);
                     }
                 },
                 focusCommenter() {
                     if (tabs.includes(DefaultUnderboardTab.Comments)) {
+                        onReveal?.();
                         setUnderboard(DefaultUnderboardTab.Comments);
                         setFocusCommenter(true);
                     }
                 },
             };
-        }, [tabs, setUnderboard, isOwner, setFocusEditor, setFocusCommenter]);
+        }, [tabs, setUnderboard, isOwner, setFocusEditor, setFocusCommenter, onReveal]);
 
         const handleResize = (_: React.SyntheticEvent, data: ResizeCallbackData) => {
             onResize(Math.floor(data.size.width), Math.floor(data.size.height));
@@ -307,7 +315,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
             >
                 <Stack
                     sx={{
-                        display: 'flex',
+                        display: hidden ? 'none' : 'flex',
                         flexDirection: 'column',
                         mt: { xs: 1, xl: 0 },
                         width: `${resizeData.width}px`,
@@ -444,7 +452,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                                 )}
                                 {underboard === DefaultUnderboardTab.Editor && (
                                     <Editor
-                                        focusEditor={focusEditor}
+                                        focusEditor={focusEditor && !hidden}
                                         setFocusEditor={setFocusEditor}
                                     />
                                 )}
@@ -462,7 +470,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                                 {underboard === DefaultUnderboardTab.Comments && (
                                     <Comments
                                         isReadonly={!isAuthenticated}
-                                        focusEditor={focusCommenter}
+                                        focusEditor={focusCommenter && !hidden}
                                         setFocusEditor={setFocusCommenter}
                                     />
                                 )}

@@ -1,3 +1,4 @@
+import { stripLocalePrefixFromUrl } from '@/i18n/locales';
 import { Check, ContentPaste } from '@mui/icons-material';
 import { IconButton, Menu, MenuItem, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -33,7 +34,7 @@ const StartButtons = () => {
         if (fen) {
             url.searchParams.set('fen', fen);
         }
-        await navigator.clipboard.writeText(url.href);
+        await navigator.clipboard.writeText(stripLocalePrefixFromUrl(url.href));
         onCopy('url');
     };
 

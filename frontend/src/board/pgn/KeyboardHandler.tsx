@@ -17,6 +17,7 @@ import {
     VariationBehavior,
     VariationBehaviorKey,
 } from './boardTools/underboard/settings/ViewerSettings';
+import { solitaireBlocksAction } from './solitaire/solitaireFrontier';
 
 const SCROLL_THROTTLE_DELAY = 250; // milliseconds
 
@@ -94,12 +95,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                 }
             }
 
-            if (
-                matchedAction === ShortcutAction.NextMove &&
-                solitaire?.enabled &&
-                !solitaire.complete &&
-                chess.currentMove() === solitaire.currentMove
-            ) {
+            if (solitaireBlocksAction(matchedAction, chess, solitaire)) {
                 return;
             }
 
@@ -166,17 +162,13 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             if (!timeoutId) {
                 timeoutId = setTimeout(
                     () => {
+                        timeoutId = null;
                         const action =
                             event.deltaY < 0
                                 ? ShortcutAction.PreviousMove
                                 : ShortcutAction.NextMove;
 
-                        if (
-                            action === ShortcutAction.NextMove &&
-                            solitaire?.enabled &&
-                            !solitaire.complete &&
-                            chess.currentMove() === solitaire.currentMove
-                        ) {
+                        if (solitaireBlocksAction(action, chess, solitaire)) {
                             return;
                         }
 
@@ -186,7 +178,6 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                             reconcile,
                         });
                         lastExecTime = Date.now();
-                        timeoutId = null;
                     },
                     Math.max(1, SCROLL_THROTTLE_DELAY - timeSinceLastExec),
                 );

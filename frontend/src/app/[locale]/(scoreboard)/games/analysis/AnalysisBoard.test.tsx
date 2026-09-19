@@ -30,6 +30,12 @@ vi.mock('@/board/pgn/PgnBoard', () => ({
     },
 }));
 
+vi.mock('@/components/playbot/useMaiaGame', () => ({
+    useMaiaGame: () => ({ onBoardInit: vi.fn(), startGame: vi.fn(), stopGame: vi.fn() }),
+}));
+
+vi.mock('@/board/Board', () => ({ reconcile: vi.fn() }));
+
 vi.mock('@/components/games/edit/SaveGameDialog', () => ({
     default: () => <div data-testid='save-game-dialog' />,
     SaveGameDialogType: {
@@ -92,6 +98,7 @@ describe('AnalysisBoard side tabs', () => {
         renderWithIntl(<AnalysisBoard />);
 
         expect(pgnBoardProps[0]).toMatchObject({
+            allowPanelHiding: true,
             underboardTabs: [
                 DefaultUnderboardTab.Tags,
                 DefaultUnderboardTab.Editor,
