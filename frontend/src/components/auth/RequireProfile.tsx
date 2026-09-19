@@ -8,7 +8,7 @@ import { DEFAULT_LOCALE, LOCALE_CODES, setLocaleCookie } from '@/i18n/locales';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { AxiosError } from 'axios';
 import { useLocale } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const validPathnames = ['/help', '/profile'];
 
@@ -25,6 +25,11 @@ export function RequireProfile() {
     const router = useRouter();
     const pathname = usePathname();
     const currentLocale = useLocale();
+
+    // Tracks whether the page successfully loaded without redirecting to another locale.
+    // This is required to allow redirecting if a user enters on the wrong locale in /profile/edit,
+    // but to not redirect after the user changes their locale, as that is handled by the ProfileEditorPage.
+    const initialLocaleLoad = useRef(false);
 
     useEffect(() => {
         if (status === AuthStatus.Authenticated && !request.isSent()) {
@@ -45,7 +50,7 @@ export function RequireProfile() {
 
     useEffect(() => {
         // ProfileEditorPage delays language navigation until every edited section is clean.
-        if (pathname === '/profile/edit') return;
+        if (initialLocaleLoad.current && pathname === '/profile/edit') return;
 
         if (!username) return;
 
@@ -62,6 +67,8 @@ export function RequireProfile() {
             const { search, hash } = window.location;
             const prefix = preferred === DEFAULT_LOCALE ? '' : `/${preferred}`;
             window.location.replace(`${prefix}${pathname}${search}${hash}`);
+        } else {
+            initialLocaleLoad.current = true;
         }
     }, [username, language, currentLocale, pathname]);
 
