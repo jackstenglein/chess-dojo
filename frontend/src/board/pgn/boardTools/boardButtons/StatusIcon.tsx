@@ -40,6 +40,13 @@ interface UndoLog {
     pgn: string;
 }
 
+interface PendingSave {
+    cohort: string;
+    id: string;
+    pgnText: string;
+    isUndo?: boolean;
+}
+
 interface StatusIconProps {
     game: Game;
 }
@@ -49,7 +56,9 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const { chess } = useChess();
     const api = useApi();
     const request = useRequest<Date>();
-    const [initialPgn, setInitialPgn] = useState(chess?.renderPgn() || '');
+    const initialPgnRef = useRef(chess?.renderPgn() || '');
+    const saveInFlightRef = useRef(false);
+    const pendingSaveRef = useRef<PendingSave>(undefined);
     const [hasChanges, setHasChanges] = useState(false);
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -57,26 +66,42 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const { updatedAtRef, setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
 
-    const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
-        if (pgnText !== initialPgn) {
-            request.onStart();
-            api.updateGame(cohort, id, {
-                type: GameImportTypes.editor,
-                pgnText,
-                updatedAt: updatedAtRef?.current,
-            })
-                .then((resp) => {
-                    trackEvent(EventType.UpdateGame, {
-                        method: 'autosave',
-                        dojo_cohort: cohort,
+    const processSaveQueue = async () => {
+        if (saveInFlightRef.current) {
+            return;
+        }
+
+        saveInFlightRef.current = true;
+        try {
+            while (pendingSaveRef.current) {
+                const pendingSave = pendingSaveRef.current;
+                pendingSaveRef.current = undefined;
+                const previousPgn = initialPgnRef.current;
+
+                if (pendingSave.pgnText === previousPgn) {
+                    setHasChanges(chess?.renderPgn() !== previousPgn);
+                    continue;
+                }
+
+                request.onStart();
+                try {
+                    const resp = await api.updateGame(pendingSave.cohort, pendingSave.id, {
+                        type: GameImportTypes.editor,
+                        pgnText: pendingSave.pgnText,
+                        updatedAt: updatedAtRef?.current,
                     });
 
-                    if (!isUndo) {
+                    trackEvent(EventType.UpdateGame, {
+                        method: 'autosave',
+                        dojo_cohort: pendingSave.cohort,
+                    });
+
+                    if (!pendingSave.isUndo) {
                         setUndoLog((log) => [
                             ...log,
                             {
                                 date: request.data || new Date(game.updatedAt || ''),
-                                pgn: initialPgn,
+                                pgn: previousPgn,
                             },
                         ]);
                     }
@@ -86,15 +111,21 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                     }
                     const date = new Date();
                     request.onSuccess(date);
-                    setInitialPgn(pgnText);
-                    setHasChanges(false);
-                })
-                .catch((err) => {
+                    initialPgnRef.current = pendingSave.pgnText;
+                    setHasChanges(chess?.renderPgn() !== pendingSave.pgnText);
+                } catch (err) {
                     request.onFailure(err);
-                });
-        } else {
-            setHasChanges(false);
+                    return;
+                }
+            }
+        } finally {
+            saveInFlightRef.current = false;
         }
+    };
+
+    const onSave = (cohort: string, id: string, pgnText: string, isUndo?: boolean) => {
+        pendingSaveRef.current = { cohort, id, pgnText, isUndo };
+        void processSaveQueue();
     };
 
     const debouncedOnSave = useDebounce(onSave);
@@ -117,10 +148,10 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 handler: (event: Event) => {
                     if (event.type === ChessEventType.Initialized) {
                         const pgn = chess.renderPgn();
-                        setInitialPgn(pgn);
+                        initialPgnRef.current = pgn;
                     } else {
                         const pgn = chess.renderPgn();
-                        setHasChanges(pgn !== initialPgn);
+                        setHasChanges(pgn !== initialPgnRef.current);
                         debouncedOnSave(game.cohort, game.id, pgn);
                     }
                 },
@@ -129,7 +160,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
             chess.addObserver(observer);
             return () => chess.removeObserver(observer);
         }
-    }, [chess, game, initialPgn, setInitialPgn, debouncedOnSave, setHasChanges]);
+    }, [chess, game, debouncedOnSave, setHasChanges]);
 
     useEffect(() => {
         setHasUnsavedGameChanges?.(hasChanges);
