@@ -3545,6 +3545,12 @@
             }
         },
         "boardButtons": {
+            "hideBoardBars": "Ocultar las barras de jugadores y los controles",
+            "showBoardBars": "Mostrar las barras de jugadores y los controles",
+            "hideLeftPanel": "Ocultar panel izquierdo",
+            "showLeftPanel": "Mostrar panel izquierdo",
+            "hideRightPanel": "Ocultar panel derecho",
+            "showRightPanel": "Mostrar panel derecho",
             "firstMove": "Primera jugada",
             "firstMoveAria": "primera jugada",
             "previousMove": "Jugada anterior",

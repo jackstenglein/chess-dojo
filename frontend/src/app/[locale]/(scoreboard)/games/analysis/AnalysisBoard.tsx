@@ -161,6 +161,7 @@ export default function AnalysisBoard() {
             >
                 <RepertoireSpyPlayProvider value={repertoireSpyPlayContext}>
                     <PgnBoard
+                        allowPanelHiding
                         pgn={pgn}
                         fen={playFen || searchParams.get('fen') || fen}
                         startOrientation={

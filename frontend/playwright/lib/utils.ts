@@ -49,6 +49,8 @@ export const dateMapper: Record<string, string> = {
  * Event interface for calendar tests.
  */
 export interface Event {
+    title: string;
+    ownerDisplayName: string;
     startTime: string;
     endTime: string;
 }

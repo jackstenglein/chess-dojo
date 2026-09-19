@@ -3545,6 +3545,12 @@
             }
         },
         "boardButtons": {
+            "hideBoardBars": "Masquer les barres des joueurs et les commandes",
+            "showBoardBars": "Afficher les barres des joueurs et les commandes",
+            "hideLeftPanel": "Masquer le panneau gauche",
+            "showLeftPanel": "Afficher le panneau gauche",
+            "hideRightPanel": "Masquer le panneau droit",
+            "showRightPanel": "Afficher le panneau droit",
             "firstMove": "Premier coup",
             "firstMoveAria": "premier coup",
             "previousMove": "Coup précédent",

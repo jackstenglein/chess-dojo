@@ -40,30 +40,27 @@ export function RequireProfile() {
         }
     }, [request, api, status, updateUser, user]);
 
+    const username = user?.username;
+    const language = user?.language;
+
     useEffect(() => {
-        const preferred = user?.language;
-        if (!preferred) return;
-        // Persist the cross-device preference into the cookie so the
-        // middleware picks it up on bare-URL visits. setLocaleCookie silently
-        // no-ops on an unsupported value, and the guard below also gates the
-        // URL redirect - a stale user.language outside SUPPORTED_LOCALES
-        // leaves both untouched rather than corrupting state.
+        if (!username) return;
+
+        // Unset means English (common/src/database/user.ts).
+        const preferred = language || DEFAULT_LOCALE;
+        if (!(LOCALE_CODES as readonly string[]).includes(preferred)) return;
+
         setLocaleCookie(preferred);
-        if (
-            preferred !== currentLocale &&
-            (LOCALE_CODES as readonly string[]).includes(preferred)
-        ) {
-            // next-intl 4.x: passing { locale } always emits a prefixed URL
-            // even under as-needed (to let the cookie write before hydration).
-            // For the default locale we drop the option and rely on the cookie
-            // set above, so the URL lands at the bare path instead of /en/...
-            if (preferred === DEFAULT_LOCALE) {
-                router.replace(pathname);
-            } else {
-                router.replace(pathname, { locale: preferred });
-            }
+
+        // A hard navigation, as the profile editor does on a language change.
+        // next-intl's replace with { locale: 'en' } emits /en/..., and the 308
+        // back to the bare path drops the hash. usePathname() has no query or hash.
+        if (preferred !== currentLocale) {
+            const { search, hash } = window.location;
+            const prefix = preferred === DEFAULT_LOCALE ? '' : `/${preferred}`;
+            window.location.replace(`${prefix}${pathname}${search}${hash}`);
         }
-    }, [user?.language, currentLocale, router, pathname]);
+    }, [username, language, currentLocale, pathname]);
 
     useEffect(() => {
         if (user && !hasCreatedProfile(user) && !validPathnames.includes(pathname)) {
