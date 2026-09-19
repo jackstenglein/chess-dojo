@@ -12,9 +12,9 @@ describe('ratingBoundaries', () => {
 });
 
 describe('oldRatingBoundaries', () => {
-    it('differs from current boundaries for Chesscom', () => {
-        expect(oldRatingBoundaries['1000-1100'][RatingSystem.Chesscom]).not.toBe(
-            ratingBoundaries['1000-1100'][RatingSystem.Chesscom],
+    it('differs from current boundaries for DWZ', () => {
+        expect(oldRatingBoundaries['1000-1100'][RatingSystem.Dwz]).not.toBe(
+            ratingBoundaries['1000-1100'][RatingSystem.Dwz],
         );
     });
 });
@@ -33,8 +33,8 @@ describe('ratingToCohort', () => {
 
 describe('getNormalizedRating', () => {
     it('produces different normalized ratings under old vs new boundaries', () => {
-        const oldNormalized = getNormalizedRating(1000, RatingSystem.Chesscom, oldRatingBoundaries);
-        const newNormalized = getNormalizedRating(1000, RatingSystem.Chesscom);
+        const oldNormalized = getNormalizedRating(1000, RatingSystem.Dwz, oldRatingBoundaries);
+        const newNormalized = getNormalizedRating(1000, RatingSystem.Dwz);
         expect(oldNormalized).not.toBe(newNormalized);
     });
 });

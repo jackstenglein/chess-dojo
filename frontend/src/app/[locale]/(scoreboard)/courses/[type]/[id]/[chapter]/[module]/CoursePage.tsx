@@ -6,7 +6,6 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GetCourseResponse } from '@/api/courseApi';
 import { AuthStatus, useAuth, useFreeTier } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
-import { Course } from '@/database/course';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
@@ -18,6 +17,29 @@ import { getCheckoutSessionId, setCheckoutSessionId } from '../../../../localSto
 import Contents from './Contents';
 import Module from './Module';
 import PurchaseCoursePage from './PurchaseCoursePage';
+import { getAdjacentModule } from './courseUtils';
+
+function AdminEditBar({ type, id, padded }: { type: string; id: string; padded?: boolean }) {
+    const button = (
+        <Button
+            component={Link}
+            href={`/admin/courses/${type}/${id}`}
+            variant='outlined'
+            size='small'
+            sx={{ mb: 2 }}
+        >
+            Edit course
+        </Button>
+    );
+    if (padded) {
+        return (
+            <Container maxWidth='lg' sx={{ pt: 2 }}>
+                {button}
+            </Container>
+        );
+    }
+    return button;
+}
 
 export const CoursePage = ({
     params,
@@ -75,7 +97,12 @@ export const CoursePage = ({
     if (isBlocked) {
         // Pass rawCourse so PurchaseCoursePage runs useTranslatedCourse once
         // rather than translating an already-translated Course.
-        return <PurchaseCoursePage course={rawCourse} isFreeTier={isFreeTier} />;
+        return (
+            <>
+                {auth.user?.isAdmin && <AdminEditBar type={params.type} id={params.id} padded />}
+                <PurchaseCoursePage course={rawCourse} isFreeTier={isFreeTier} />
+            </>
+        );
     }
 
     if (!request.isSent() || request.isLoading()) {
@@ -86,11 +113,12 @@ export const CoursePage = ({
         return <NotFoundPage />;
     }
 
-    const prevModule = getPreviousModule(chapterIndex, moduleIndex, course);
-    const nextModule = getNextModule(chapterIndex, moduleIndex, course);
+    const prevModule = getAdjacentModule(chapterIndex, moduleIndex, course.chapters, -1);
+    const nextModule = getAdjacentModule(chapterIndex, moduleIndex, course.chapters, 1);
 
     return (
         <Container maxWidth={false} sx={{ pt: 6, pb: 4 }}>
+            {auth.user?.isAdmin && <AdminEditBar type={course.type} id={course.id} />}
             {anonymousUser && (
                 <Alert
                     severity='warning'
@@ -164,60 +192,14 @@ export const CoursePage = ({
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 2.5 }}>
-                    <Contents course={course} />
+                    <Contents
+                        course={course}
+                        selectedChapter={chapterIndex}
+                        selectedModule={moduleIndex}
+                    />
                 </Grid>
             </Grid>
             <RequestSnackbar request={request} />
         </Container>
     );
 };
-
-function getPreviousModule(chapterIndex: number, moduleIndex: number, course: Course) {
-    if (chapterIndex === 0 && moduleIndex === 0) {
-        return undefined;
-    }
-    if (!course.chapters) {
-        return undefined;
-    }
-
-    if (moduleIndex === 0) {
-        const prevModuleIndex = course.chapters[chapterIndex - 1].modules.length - 1;
-        return {
-            chapterIndex: `${chapterIndex - 1}`,
-            moduleIndex: `${prevModuleIndex}`,
-            name: course.chapters[chapterIndex - 1].modules[prevModuleIndex].name,
-        };
-    }
-
-    return {
-        chapterIndex: `${chapterIndex}`,
-        moduleIndex: `${moduleIndex - 1}`,
-        name: course.chapters[chapterIndex].modules[moduleIndex - 1].name,
-    };
-}
-
-function getNextModule(chapterIndex: number, moduleIndex: number, course: Course) {
-    if (!course.chapters) {
-        return undefined;
-    }
-    if (
-        chapterIndex === course.chapters.length - 1 &&
-        moduleIndex === course.chapters[chapterIndex].modules.length - 1
-    ) {
-        return undefined;
-    }
-
-    if (moduleIndex === course.chapters[chapterIndex].modules.length - 1) {
-        return {
-            chapterIndex: `${chapterIndex + 1}`,
-            moduleIndex: '0',
-            name: course.chapters[chapterIndex + 1].modules[0].name,
-        };
-    }
-
-    return {
-        chapterIndex: `${chapterIndex}`,
-        moduleIndex: `${moduleIndex + 1}`,
-        name: course.chapters[chapterIndex].modules[moduleIndex + 1].name,
-    };
-}

@@ -10,6 +10,8 @@ export default function Page() {
                 <Link href='/admin/game-review'>Update Game Review Cohorts</Link>
                 <Link href='/admin/blog'>Blog posts</Link>
                 <Link href='/admin/blog/new'>Create Blog Post</Link>
+                <Link href='/admin/courses'>Courses</Link>
+                <Link href='/admin/courses/new'>Create Course</Link>
             </Stack>
         </Container>
     );

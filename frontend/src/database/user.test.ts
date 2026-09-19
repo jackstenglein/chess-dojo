@@ -59,8 +59,9 @@ describe('getSuggestedCohorts', () => {
         const found = ratingsToTry.find((currentRating) => {
             const [oldCohort, newCohort] = getSuggestedCohorts(
                 makeUser({
+                    ratingSystem: RatingSystem.Dwz,
                     ratings: {
-                        [RatingSystem.Chesscom]: {
+                        [RatingSystem.Dwz]: {
                             username: 'testuser',
                             startRating: currentRating,
                             currentRating,

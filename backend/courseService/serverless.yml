@@ -63,12 +63,19 @@ functions:
       - httpApi:
           path: /public/courses
           method: get
+      - httpApi:
+          path: /courses
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
           - dynamodb:Scan
         Resource:
+          - !GetAtt CoursesTable.Arn
           - Fn::Join:
               - ''
               - - !GetAtt CoursesTable.Arn
@@ -79,8 +86,8 @@ functions:
                 - '/index/SummaryIdx'
       - Effect: Allow
         Action:
-          - dynamodb:Scan
-        Resource: !GetAtt CoursesTable.Arn
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
   purchase:
     handler: purchase/main.go
@@ -122,6 +129,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
+          - dynamodb:GetItem
         Resource: !GetAtt CoursesTable.Arn
       - Effect: Allow
         Action:
@@ -155,7 +163,7 @@ resources:
             - true
             - false
         GlobalSecondaryIndexes:
-          - IndexName: SummaryIdx
+          - IndexName: SummaryIndex
             KeySchema:
               - AttributeName: type
                 KeyType: HASH
@@ -176,3 +184,4 @@ resources:
                 - owner
                 - ownerDisplayName
                 - imageUrl
+                - status

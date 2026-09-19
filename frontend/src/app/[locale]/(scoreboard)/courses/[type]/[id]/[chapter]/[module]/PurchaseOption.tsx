@@ -41,7 +41,14 @@ const PurchaseOption: React.FC<PurchaseOptionProps> = ({ course, purchaseOption,
     };
 
     return (
-        <Card variant='outlined'>
+        <Card
+            variant='outlined'
+            sx={{
+                overflow: 'hidden',
+                transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+                '&:hover': { boxShadow: 2 },
+            }}
+        >
             <CardContent>
                 <Stack
                     spacing={3}

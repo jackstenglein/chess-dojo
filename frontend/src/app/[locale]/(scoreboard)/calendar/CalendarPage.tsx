@@ -365,8 +365,8 @@ export function processLiveClassEvent(
         return null;
     }
 
-    const isOwner = event.owner === user?.username;
-    const canMove = isOwner || Boolean(user?.isAdmin || user?.isCalendarAdmin);
+    const isOwner =
+        Boolean(user?.isAdmin || user?.isCalendarAdmin) || event.owner === user?.username;
     const { start, end } = getSeriesTimes(event);
 
     return {
@@ -381,7 +381,7 @@ export function processLiveClassEvent(
               : theme.palette.peacock.main,
         editable: isOwner,
         deletable: isOwner && Object.values(event.participants).length === 0,
-        draggable: canMove,
+        draggable: isOwner,
         isOwner,
         event,
         recurring: getProcessedRecurrence(event),

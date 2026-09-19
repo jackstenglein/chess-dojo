@@ -8,9 +8,10 @@ import VideoModule from './VideoModule';
 
 export interface ModuleProps {
     module: CourseModule;
+    preview?: boolean;
 }
 
-const Module: React.FC<ModuleProps> = ({ module }) => {
+const Module = ({ module, preview }: ModuleProps) => {
     let M = null;
     switch (module.type) {
         case CourseModuleType.Video:
@@ -29,26 +30,28 @@ const Module: React.FC<ModuleProps> = ({ module }) => {
             M = null;
             break;
         case CourseModuleType.Exercises:
-            M = <ExercisesModule module={module} />;
+            M = <ExercisesModule module={module} preview={preview} />;
             break;
         default:
             M = null;
     }
 
-    if (M === null) {
+    if (M === null && !module.name && !module.description && !module.postscript) {
         return null;
     }
 
     return (
         <Stack>
-            <Typography variant='h6'>{module.name}</Typography>
-            <Typography
-                sx={{
-                    whiteSpace: 'break-spaces',
-                }}
-            >
-                {module.description}
-            </Typography>
+            {module.name && <Typography variant='h6'>{module.name}</Typography>}
+            {module.description && (
+                <Typography
+                    sx={{
+                        whiteSpace: 'break-spaces',
+                    }}
+                >
+                    {module.description}
+                </Typography>
+            )}
 
             {M}
 

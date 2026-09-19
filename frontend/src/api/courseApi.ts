@@ -28,9 +28,9 @@ export interface CourseApiContextType {
     listCourses: (type: string, startKey?: string) => Promise<Course[]>;
 
     /**
-     * listAllCourses returns a list of all courses.
+     * listAllCourses returns a list of all published courses.
      * @param startKey The optional start key to use when searching.
-     * @returns A list of all courses.
+     * @returns A list of all published courses.
      */
     listAllCourses: (startKey?: string) => Promise<Course[]>;
 
@@ -140,6 +140,26 @@ export async function listAllCourses(startKey?: string) {
         const resp = await axiosService.get<ListCoursesResponse>(`/public/courses`, {
             params,
             functionName: 'listAllCourses',
+        });
+
+        result.push(...resp.data.courses);
+        params.startKey = resp.data.lastEvaluatedKey;
+    } while (params.startKey);
+
+    return result;
+}
+
+/**
+ * listAdminCourses returns all courses, including drafts. Requires an admin JWT.
+ */
+export async function listAdminCourses(startKey?: string) {
+    const params = { startKey };
+    const result: Course[] = [];
+
+    do {
+        const resp = await axiosService.get<ListCoursesResponse>(`/courses`, {
+            params,
+            functionName: 'listAdminCourses',
         });
 
         result.push(...resp.data.courses);

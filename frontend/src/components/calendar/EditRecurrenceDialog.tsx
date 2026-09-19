@@ -36,7 +36,14 @@ export function useRecurrenceEditPrompt() {
     }, []);
 
     const dialog = (
-        <Dialog open={open} onClose={() => close('cancel')} data-testid='edit-recurrence-dialog'>
+        <Dialog
+            open={open}
+            onClose={() => close('cancel')}
+            data-testid='edit-recurrence-dialog'
+            sx={{
+                zIndex: 999_999, // Required due to calendar library loading z-Index
+            }}
+        >
             <DialogTitle>{t('editRecurringTitle')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{t('editRecurringDescription')}</DialogContentText>

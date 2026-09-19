@@ -4,6 +4,7 @@ import {
     Requirement,
     RequirementCategory,
     RequirementProgress,
+    RequirementStatus,
     getCurrentCount,
     getRemainingCategoryScorePercent,
     getRemainingScore,
@@ -102,6 +103,8 @@ const INELIGIBLE_SUGGESTED_TASKS = [
     'd1688281-2bf0-4a70-9b0d-1f1484a0b9e5', // Dojo middlegame lecture
     '27d02505-64d7-4075-af02-769a54ca40df', // Dojo endgame lecture
     '7ceed525-82fd-4f2a-adbb-f6cbd7300979', // Dojo opening lecture
+    'fdf5870c-ad68-4e1f-b078-0519036ea97a', // Peer reviews
+    'e794313b-bfa2-43e8-b36d-80859ac3cd25', // Sensei reviews
 ];
 
 /**
@@ -149,7 +152,9 @@ export class TaskSuggestionAlgorithm {
         timeline: TimelineEntry[],
     ) {
         this.user = JSON.parse(JSON.stringify(user)) as User;
-        this.requirements = cohortRequirements;
+        this.requirements = cohortRequirements.filter(
+            (requirement) => requirement.status === RequirementStatus.Active,
+        );
         this.timeline = timeline;
         this.customTasks = this.user.customTasks ?? [];
         this.pinnedTasks =
@@ -157,7 +162,9 @@ export class TaskSuggestionAlgorithm {
                 ?.map(
                     (id) =>
                         this.customTasks.find((task) => task.id === id) ||
-                        allRequirements.find((task) => task.id === id),
+                        allRequirements.find(
+                            (task) => task.id === id && task.status === RequirementStatus.Active,
+                        ),
                 )
                 .filter((t) => !!t) ?? [];
         this.skippedTaskIds = this.user.weeklyPlan?.skippedTasks ?? [];
@@ -386,10 +393,20 @@ export class TaskSuggestionAlgorithm {
                 task: t,
                 goalMinutes: 0,
             }));
+            const newSuggestions = algoSuggestions.filter(
+                (lhs) => !suggestions.some((rhs) => lhs.task.id === rhs.task.id),
+            );
+            const pinnedTaskIds = new Set(this.pinnedTasks.map((task) => task.id));
+            const pinnedSuggestions = newSuggestions.filter(({ task }) =>
+                pinnedTaskIds.has(task.id),
+            );
+            suggestions.push(...pinnedSuggestions);
+
+            const remainingSlots = Math.max(0, MAX_SUGGESTED_TASKS - suggestions.length);
             suggestions.push(
-                ...algoSuggestions.filter(
-                    (lhs) => !suggestions.some((rhs) => lhs.task.id === rhs.task.id),
-                ),
+                ...newSuggestions
+                    .filter(({ task }) => !pinnedTaskIds.has(task.id))
+                    .slice(0, remainingSlots),
             );
         }
 
