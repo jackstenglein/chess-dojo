@@ -18,16 +18,16 @@
         "globals": "^17.11.0",
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
-        "uuid": "^14.0.1",
+        "uuid": "^14.0.2",
         "zod": "^4.5.4"
     },
     "devDependencies": {
-        "eslint": "^10.8.0",
+        "eslint": "^10.9.1",
         "@eslint/js": "^10.0.1",
         "jiti": "^2.7.0",
         "prettier": "^3.9.5",
         "prettier-plugin-organize-imports": "^4.3.0",
         "typescript-eslint": "^8.68.0",
-        "vitest": "^4.1.10"
+        "vitest": "^4.1.11"
     }
 }

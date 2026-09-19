@@ -3545,6 +3545,12 @@
             }
         },
         "boardButtons": {
+            "hideBoardBars": "Ocultar as barras dos jogadores e os controles",
+            "showBoardBars": "Mostrar as barras dos jogadores e os controles",
+            "hideLeftPanel": "Ocultar painel esquerdo",
+            "showLeftPanel": "Mostrar painel esquerdo",
+            "hideRightPanel": "Ocultar painel direito",
+            "showRightPanel": "Mostrar painel direito",
             "firstMove": "Primeiro lance",
             "firstMoveAria": "primeiro lance",
             "previousMove": "Lance anterior",

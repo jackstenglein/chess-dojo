@@ -275,7 +275,9 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     const { chess, config: chessConfig } = useChess();
     const [board, setBoard] = useState<BoardApi | null>(null);
     const boardRef = useRef<HTMLDivElement>(null);
-    const [isInitialized, setIsInitialized] = useState(false);
+    // Last initialized key, fen and pgn. A ref rather than state, so a changed
+    // position re-initializes in the same commit, before parent effects redraw.
+    const initialized = useRef<{ initKey?: string; fen?: string; pgn?: string } | null>(null);
     const [promotion, setPromotion] = useState<PrePromotionMove | null>(null);
     const [boardStyle] = useLocalStorage<BoardStyle>(BoardStyleKey, BoardStyle.Standard);
     const [pieceStyle] = useLocalStorage<PieceStyle>(PieceStyleKey, PieceStyle.Standard);
@@ -319,12 +321,22 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         reconcile(chess, board, showGlyphs, playSound);
     }, [board, chess, showGlyphs, playSound]);
 
+    const fen = config?.fen;
+    const pgn = config?.pgn;
+    const initKey = chessConfig?.initKey;
+
     useEffect(() => {
+        const needsInit =
+            !initialized.current ||
+            initialized.current.initKey !== initKey ||
+            initialized.current.fen !== fen ||
+            initialized.current.pgn !== pgn;
+
         if (boardRef.current && !board) {
             const chessgroundApi = Chessground(boardRef.current, config);
             setBoard(chessgroundApi);
             window.chessground = chessgroundApi;
-        } else if (boardRef.current && board && chess && !isInitialized) {
+        } else if (boardRef.current && board && chess && needsInit) {
             if (config?.pgn) {
                 chess.loadPgn(config.pgn);
                 chess.seek(null);
@@ -334,6 +346,9 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
 
             board.set({
                 ...config,
+                // Loading a position must not animate, or the pieces fly in from
+                // the default position or from the previous one.
+                animation: { enabled: false },
                 fen: chess.fen(),
                 turnColor: config?.turnColor || toColor(chess),
                 movable: {
@@ -365,19 +380,22 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             });
 
             onInitialize?.(board, chess, boardRef);
-            setIsInitialized(true);
-        } else if (boardRef.current && board && !isInitialized) {
+            // onInitialize may load a position too, so re-enable animation after it.
+            board.set({ animation: { enabled: true, ...config?.animation } });
+            initialized.current = { initKey, fen, pgn };
+        } else if (boardRef.current && board && needsInit) {
             board.set({ ...config });
             onInitializeBoard?.(board);
-            setIsInitialized(true);
+            initialized.current = { initKey, fen, pgn };
         }
     }, [
         boardRef,
         board,
         chess,
         config,
-        isInitialized,
-        setIsInitialized,
+        initKey,
+        fen,
+        pgn,
         onMove,
         onInitialize,
         onInitializeBoard,
@@ -386,15 +404,6 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
         showGlyphs,
         playSound,
     ]);
-
-    const fen = config?.fen;
-    const pgn = config?.pgn;
-    const initKey = chessConfig?.initKey;
-    useEffect(() => {
-        if (initKey || fen || pgn) {
-            setIsInitialized(false);
-        }
-    }, [initKey, fen, pgn, setIsInitialized]);
 
     useEffect(() => {
         if (chess && board) {

@@ -9,7 +9,7 @@ import ResizableBoardArea from './ResizableBoardArea';
 import Underboard, { UnderboardApi } from './boardTools/underboard/Underboard';
 import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { PgnTextBanners, ResizablePgnText } from './pgnText/PgnText';
-import { AreaSizes, getNewSizes, getSizes } from './resize';
+import { AreaSizes, getFittedSizes, getNewSizes, getSizes } from './resize';
 
 export const CONTAINER_ID = 'resize-container';
 
@@ -26,6 +26,7 @@ function getExplorerStorageKey(prefix: string | undefined, side: 'left' | 'right
 }
 
 interface ResizableContainerProps {
+    allowPanelHiding?: boolean;
     underboardTabs: UnderboardTab[];
     initialUnderboardTab?: string;
     rightTabs?: UnderboardTab[];
@@ -40,6 +41,7 @@ interface ResizableContainerProps {
 }
 
 const ResizableContainer: React.FC<ResizableContainerProps> = ({
+    allowPanelHiding = false,
     underboardTabs,
     initialUnderboardTab,
     rightTabs,
@@ -53,18 +55,32 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     onInitialize,
 }) => {
     const underboardRef = useRef<UnderboardApi>(null);
-    const showUnderboard = underboardTabs.length > 0;
+    const hasLeftPanel = underboardTabs.length > 0;
+    const hasRightPanel = rightTabs === undefined || rightTabs.length > 0;
+    const [leftVisible, setLeftVisible] = useState(true);
+    const [rightVisible, setRightVisible] = useState(true);
+    const showUnderboard = hasLeftPanel && (!allowPanelHiding || leftVisible);
+    const showPgn = hasRightPanel && (!allowPanelHiding || rightVisible);
+    const showPanelControls = allowPanelHiding && (hasLeftPanel || hasRightPanel);
 
     const [sizes, setSizes] = useState<AreaSizes | null>(null);
+    const [fittedBase, setFittedBase] = useState<AreaSizes | null>(null);
+    const barsHidden = allowPanelHiding && fittedBase !== null;
 
     const calcSizes = useCallback(() => {
         const parentWidth = getParentWidth();
 
-        return getSizes(parentWidth, showUnderboard, !showPlayerHeaders);
-    }, [showUnderboard, showPlayerHeaders]);
+        // Visibility only changes which panels occupy the layout, not their saved dimensions.
+        return getSizes(parentWidth, hasLeftPanel, !showPlayerHeaders, {
+            showPgn: hasRightPanel,
+            showPanelControls,
+        });
+    }, [hasLeftPanel, showPlayerHeaders, hasRightPanel, showPanelControls]);
 
     const onWindowResize = useCallback(() => {
-        setSizes(calcSizes());
+        const nextSizes = calcSizes();
+        setSizes(nextSizes);
+        setFittedBase((current) => (current ? nextSizes : null));
     }, [setSizes, calcSizes]);
 
     useEffect(() => {
@@ -75,7 +91,8 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
     const onResize = useCallback(
         (area: 'board' | 'underboard' | 'pgn') => (width: number, height: number) => {
-            setSizes((sizes) => {
+            const updateSizes = barsHidden ? setFittedBase : setSizes;
+            updateSizes((sizes) => {
                 if (!sizes) {
                     sizes = calcSizes();
                 }
@@ -85,15 +102,20 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                         [area]: { ...sizes[area], width, height },
                     },
                     !showPlayerHeaders,
+                    { showPgn: hasRightPanel, showPanelControls },
                 );
             });
         },
-        [setSizes, calcSizes, showPlayerHeaders],
+        [setSizes, calcSizes, showPlayerHeaders, hasRightPanel, showPanelControls, barsHidden],
     );
 
     if (!sizes) {
         return null;
     }
+
+    const displayedSizes = barsHidden
+        ? getFittedSizes(fittedBase, getParentWidth(), showUnderboard, showPgn)
+        : sizes;
 
     return (
         <Stack
@@ -111,12 +133,14 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
         >
             <KeyboardHandler underboardRef={underboardRef} />
 
-            {showUnderboard && (
+            {hasLeftPanel && (
                 <Underboard
+                    hidden={!showUnderboard}
+                    onReveal={() => setLeftVisible(true)}
                     ref={underboardRef}
                     tabs={underboardTabs}
                     initialTab={initialUnderboardTab}
-                    resizeData={sizes.underboard}
+                    resizeData={displayedSizes.underboard}
                     onResize={onResize('underboard')}
                     storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'left')}
                     explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'left')}
@@ -126,23 +150,45 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
             <ResizableBoardArea
                 {...{
-                    resizeData: sizes.board,
+                    resizeData: displayedSizes.board,
                     onResize: onResize('board'),
-                    hideResize: sizes.breakpoint === 'xs',
+                    hideResize: barsHidden || sizes.breakpoint === 'xs',
+                    barsHidden,
+                    onToggleBars: allowPanelHiding
+                        ? () => setFittedBase((current) => (current ? null : sizes))
+                        : undefined,
                     showPlayerHeaders,
                     pgn,
                     fen,
                     startOrientation,
                     onInitialize,
                     underboardRef,
+                    panelControls: showPanelControls
+                        ? {
+                              left: hasLeftPanel
+                                  ? {
+                                        visible: showUnderboard,
+                                        onToggle: () => setLeftVisible((value) => !value),
+                                    }
+                                  : undefined,
+                              right: hasRightPanel
+                                  ? {
+                                        visible: showPgn,
+                                        onToggle: () => setRightVisible((value) => !value),
+                                    }
+                                  : undefined,
+                          }
+                        : undefined,
                 }}
             />
 
             {rightTabs ? (
                 <Underboard
+                    hidden={!showPgn}
+                    onReveal={() => setRightVisible(true)}
                     tabs={rightTabs}
                     initialTab={initialRightTab}
-                    resizeData={sizes.pgn}
+                    resizeData={displayedSizes.pgn}
                     onResize={onResize('pgn')}
                     storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'right')}
                     explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'right')}
@@ -151,7 +197,11 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                     sidePanelTabs={sidePanelTabs}
                 />
             ) : (
-                <ResizablePgnText resizeData={sizes.pgn} onResize={onResize('pgn')} />
+                <ResizablePgnText
+                    hidden={!showPgn}
+                    resizeData={displayedSizes.pgn}
+                    onResize={onResize('pgn')}
+                />
             )}
         </Stack>
     );

@@ -179,6 +179,19 @@ export function isRequirement(obj: unknown): obj is Requirement {
 }
 
 /**
+ * Returns whether the requirement is available to the given subscription tier.
+ * @param requirement The requirement to check.
+ * @param subscriptionTier The subscription tier to check availability for.
+ * @returns Whether the requirement is available to the subscription tier.
+ */
+export function isRequirementAvailableForSubscriptionTier(
+    requirement: Requirement,
+    subscriptionTier: SubscriptionTier,
+): boolean {
+    return requirement.subscriptionTiers?.includes(subscriptionTier) ?? true;
+}
+
+/**
  * A function which can be used to sort Requirements.
  * @param a The first Requirement to compare.
  * @param b The second Requirement to compare.

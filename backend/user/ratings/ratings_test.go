@@ -277,3 +277,78 @@ func TestMonthlyFetchers_PreservePlayerNotFoundStatus(t *testing.T) {
 		})
 	}
 }
+
+// ecfRatingBody is the ECF API's response for player 388159 on 2026-09-11.
+const ecfRatingBody = `{"success":true,"message":"Player rating found","data":{"effective_date":"2026-09-01","original_rating":1884,"revised_rating":1884,"original_category":"P","revised_category":"P","domain":"S"},"processing_time":"15.5ms","total_processing_time_today":"15.5ms","max_processing_time_daily":"600000ms"}`
+
+// stubClient answers every request with the given status and body.
+func stubClient(t *testing.T, status int, body string) *[]*http.Request {
+	t.Helper()
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+
+	var requests []*http.Request
+	client = http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		requests = append(requests, req)
+		return &http.Response{
+			StatusCode: status,
+			Body:       io.NopCloser(strings.NewReader(body)),
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})}
+	return &requests
+}
+
+func TestFetchEcfRating_Success(t *testing.T) {
+	tests := []struct {
+		name  string
+		ecfId string
+	}{
+		{"plain code", "388159"},
+		{"code with check letter", "388159D"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			requests := stubClient(t, http.StatusOK, ecfRatingBody)
+
+			before := time.Now().Format(time.DateOnly)
+			rating, err := FetchEcfRating(tc.ecfId)
+			after := time.Now().Format(time.DateOnly)
+
+			if err != nil {
+				t.Fatalf("expected success, got %v", err)
+			}
+			if rating.CurrentRating != 1884 {
+				t.Errorf("expected rating 1884, got %d", rating.CurrentRating)
+			}
+
+			if len(*requests) != 1 {
+				t.Fatalf("expected 1 request, got %d", len(*requests))
+			}
+			u := (*requests)[0].URL
+			if got := u.Scheme + "://" + u.Host + u.Path; got != "https://rating.englishchess.org.uk/api/ratings" {
+				t.Errorf("unexpected endpoint %q", got)
+			}
+			q := u.Query()
+			if got := q.Get("player_no"); got != "388159" {
+				t.Errorf("expected player_no 388159, got %q", got)
+			}
+			if got := q.Get("domain"); got != "S" {
+				t.Errorf("expected domain S, got %q", got)
+			}
+			if got := q.Get("date"); got != before && got != after {
+				t.Errorf("expected today's date, got %q", got)
+			}
+		})
+	}
+}
+
+func TestFetchEcfRating_MissingRatingIsError(t *testing.T) {
+	stubClient(t, http.StatusOK, `{"success":true,"data":{}}`)
+
+	rating, err := FetchEcfRating("388159")
+	if err == nil {
+		t.Fatalf("expected an error instead of a zero rating, got %+v", rating)
+	}
+}

@@ -3,6 +3,7 @@ import {
     getCategoryScore,
     getTotalCategoryScore,
     isComplete,
+    isRequirementAvailableForSubscriptionTier,
     Requirement,
     RequirementCategory,
     RequirementStatus,
@@ -114,7 +115,8 @@ export function FullTrainingPlan({
         const subscriptionTier = getSubscriptionTier(user);
 
         const requirements = allRequirements.filter(
-            (r) => r.counts[cohort] && (r.subscriptionTiers?.includes(subscriptionTier) ?? true),
+            (r) =>
+                r.counts[cohort] && isRequirementAvailableForSubscriptionTier(r, subscriptionTier),
         );
         const tasks = (requirements as (Requirement | CustomTask)[]).concat(user.customTasks ?? []);
         for (const task of tasks) {

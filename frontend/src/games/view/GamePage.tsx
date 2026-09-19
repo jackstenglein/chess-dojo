@@ -225,6 +225,7 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
                     }}
                 >
                     <PgnBoard
+                        allowPanelHiding
                         key={`${game?.cohort}/${game?.id}`}
                         pgn={game?.pgn}
                         startOrientation={game?.orientation}
