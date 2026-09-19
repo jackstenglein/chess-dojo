@@ -8,6 +8,7 @@ import Board, { onInitializeFunc } from '../Board';
 import { useChess } from './PgnBoard';
 import PlayerHeader from './PlayerHeader';
 import BoardButtons, { PanelControls, PanelToggle } from './boardTools/boardButtons/BoardButtons';
+import { FlipBoardButton } from './boardTools/boardButtons/ControlButtons';
 import { UnderboardApi } from './boardTools/underboard/Underboard';
 import { ResizableData, RESTORE_GUTTER_WIDTH } from './resize';
 
@@ -108,6 +109,8 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
 
                     <PanelToggle side='left' size='small' panelControls={panelControls} />
                     <PanelToggle side='right' size='small' panelControls={panelControls} />
+
+                    <FlipBoardButton size='small' />
                 </Stack>
             )}
         </Stack>

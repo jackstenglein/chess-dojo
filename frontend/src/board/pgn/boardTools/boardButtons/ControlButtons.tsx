@@ -6,7 +6,7 @@ import {
     WifiProtectedSetup as Flip,
     LastPage,
 } from '@mui/icons-material';
-import { IconButton, Stack, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useLocalStorage } from 'usehooks-ts';
 import { useReconcile } from '../../../Board';
@@ -24,7 +24,7 @@ const ControlButtons = () => {
         GoToEndButtonBehaviorKey,
         GoToEndButtonBehavior.SingleClick,
     );
-    const { chess, toggleOrientation, solitaire } = useChess();
+    const { chess, solitaire } = useChess();
     const reconcile = useReconcile();
 
     const onClickMove = (move: Move | null) => {
@@ -120,15 +120,25 @@ const ControlButtons = () => {
                 </Tooltip>
             )}
 
-            {toggleOrientation && (
-                <Tooltip title={t('flipBoard')}>
-                    <IconButton aria-label={t('flipBoardAria')} onClick={toggleOrientation}>
-                        <Flip sx={{ color: 'text.secondary' }} />
-                    </IconButton>
-                </Tooltip>
-            )}
+            <FlipBoardButton />
         </Stack>
     );
 };
 
 export default ControlButtons;
+
+export function FlipBoardButton(props: IconButtonProps) {
+    const t = useTranslations('analysisBoard.boardButtons');
+    const { toggleOrientation } = useChess();
+    if (!toggleOrientation) {
+        return null;
+    }
+
+    return (
+        <Tooltip title={t('flipBoard')}>
+            <IconButton {...props} aria-label={t('flipBoardAria')} onClick={toggleOrientation}>
+                <Flip sx={{ color: 'text.secondary' }} />
+            </IconButton>
+        </Tooltip>
+    );
+}

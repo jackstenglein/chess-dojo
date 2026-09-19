@@ -9,9 +9,8 @@ import type { UnderboardApi } from './boardTools/underboard/Underboard';
 
 vi.mock('@/style/useLightMode', () => ({ useLightMode: () => true }));
 vi.mock('@/context/useGame', () => ({ default: () => ({}) }));
-vi.mock('./PgnBoard', () => ({ useChess: () => ({ chess: {} }) }));
+vi.mock('./PgnBoard', () => ({ useChess: () => ({ chess: {}, toggleOrientation: () => null }) }));
 vi.mock('./boardTools/boardButtons/StartButtons', () => ({ default: () => null }));
-vi.mock('./boardTools/boardButtons/ControlButtons', () => ({ default: () => null }));
 vi.mock('./boardTools/boardButtons/StatusIcon', () => ({ default: () => null }));
 vi.mock('@/components/games/edit/UnpublishedGameBanner', () => ({ VisibilityIcon: () => null }));
 vi.mock('@/components/games/edit/UnsavedGameBanner', () => ({ UnsavedGameIcon: () => null }));
@@ -41,6 +40,7 @@ vi.mock('../Board', () => ({
             </button>
         </div>
     ),
+    useReconcile: () => null,
 }));
 vi.mock('./PlayerHeader', () => ({
     default: ({ type }: { type: string }) => <div data-testid={`player-${type}`} />,
@@ -194,6 +194,15 @@ describe('ResizableContainer side panels', () => {
         expect(screen.getByTestId('board-area')).toHaveAttribute('data-width', '384');
         expect(screen.queryByTestId('player-header')).not.toBeInTheDocument();
         expect(screen.queryByTestId('player-footer')).not.toBeInTheDocument();
+    });
+
+    it('shows flip board button when controls are hidden', () => {
+        render(board(true, true, true, false));
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+
+        expect(screen.queryByTestId('player-header')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('player-footer')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'flip board' })).toBeVisible();
     });
 
     it('refits after an imperative panel reveal and panel resizing without losing drafts', () => {
