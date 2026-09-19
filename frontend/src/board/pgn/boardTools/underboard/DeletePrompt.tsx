@@ -15,6 +15,7 @@ import { useChess } from '../../PgnBoard';
 import {
     getSuggestedVariationRoot,
     isSuggestedVariation,
+    isUnsavedVariation,
     saveSuggestedVariation,
 } from './comments/suggestVariation';
 import { WarnBeforeDelete } from './settings/EditorSettings';
@@ -119,6 +120,22 @@ function getDeleteBeforeStats(
     return { moves, comments };
 }
 
+/**
+ * Returns the ID of the comment associated with the given Move,
+ * or the empty string if there is no comment.
+ * @param move The move to get the comment for.
+ * @returns The ID of the comment or the empty string if there is no comment.
+ */
+function getCommentId(move: Move): string {
+    const dojoComment = move.commentDiag?.dojoComment;
+    if (!dojoComment) return '';
+
+    const lastComma = dojoComment.lastIndexOf(',');
+    if (lastComma === -1) return '';
+
+    return dojoComment.substring(lastComma + 1);
+}
+
 function handleBackendSync(
     user: User,
     game: Game,
@@ -129,32 +146,27 @@ function handleBackendSync(
     onUpdateGame?: (game: Game) => void,
     onFailure?: (err: unknown) => void,
 ) {
-    if (rootSurvived) {
+    const commentId = getCommentId(rootToSync);
+
+    if (rootSurvived && commentId && commentId !== 'unsaved') {
         saveSuggestedVariation(user, game, api, chess, rootToSync)
             .then((res) => {
                 if (res?.game) onUpdateGame?.(res.game);
             })
             .catch((err: unknown) => onFailure?.(err));
     } else {
-        const dojoComment = rootToSync.commentDiag?.dojoComment;
-        if (dojoComment) {
-            const lastComma = dojoComment.lastIndexOf(',');
-            if (lastComma === -1) return;
-
-            const commentId = dojoComment.substring(lastComma + 1);
-            if (commentId && commentId !== 'unsaved') {
-                api.deleteComment({
-                    cohort: game.cohort,
-                    gameId: game.id,
-                    id: commentId,
-                    fen: chess.normalizedFen(rootToSync.previous),
-                    parentIds: '',
+        if (commentId && commentId !== 'unsaved') {
+            api.deleteComment({
+                cohort: game.cohort,
+                gameId: game.id,
+                id: commentId,
+                fen: chess.normalizedFen(rootToSync.previous),
+                parentIds: '',
+            })
+                .then((res) => {
+                    if (res?.data) onUpdateGame?.(res.data);
                 })
-                    .then((res) => {
-                        if (res?.data) onUpdateGame?.(res.data);
-                    })
-                    .catch((err: unknown) => onFailure?.(err));
-            }
+                .catch((err: unknown) => onFailure?.(err));
         }
     }
 }
@@ -255,7 +267,7 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
     const [deleteAction, setDeleteAction] = useState<DeleteAction>();
     const reconcile = useReconcile();
 
-    const onDelete = (move: Move | null, type: 'before' | 'after', allowSyncBackend = true) => {
+    const onDelete = (move: Move | null, type: 'before' | 'after') => {
         if (!move || !chess) {
             return;
         }
@@ -269,11 +281,10 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
             rootToSync = getSuggestedVariationRoot(user, move);
             if (type === 'before') {
                 rootSurvived = false;
+                shouldSyncBackend = true;
             } else {
                 rootSurvived = rootToSync !== move;
-            }
-            if (allowSyncBackend || !rootSurvived) {
-                shouldSyncBackend = true;
+                shouldSyncBackend = !isUnsavedVariation(move);
             }
         }
 

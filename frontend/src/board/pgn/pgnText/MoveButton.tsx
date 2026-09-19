@@ -315,10 +315,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                     ]}
 
                     {canDeleteMove && [
-                        <MenuItem
-                            key='delete-from-here'
-                            onClick={() => onDelete(move, 'after', false)}
-                        >
+                        <MenuItem key='delete-from-here' onClick={() => onDelete(move, 'after')}>
                             <ListItemIcon>
                                 <Backspace sx={{ transform: 'rotateY(180deg)' }} />
                             </ListItemIcon>
@@ -328,7 +325,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                         <MenuItem
                             key='delete-before'
                             disabled={!canDeleteBefore}
-                            onClick={() => onDelete(move, 'before', false)}
+                            onClick={() => onDelete(move, 'before')}
                         >
                             <ListItemIcon>
                                 <Backspace />
