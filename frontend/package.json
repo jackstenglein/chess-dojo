@@ -111,7 +111,7 @@
         "@next/eslint-plugin-next": "^16.3.3",
         "@playwright/test": "^1.62.0",
         "@testing-library/jest-dom": "^7.0.0",
-        "@testing-library/react": "^16.3.2",
+        "@testing-library/react": "^16.3.3",
         "@types/deep-equal": "^1.0.4",
         "@types/lodash.debounce": "^4.0.9",
         "@types/luxon": "^3.7.5",
