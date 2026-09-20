@@ -1,4 +1,3 @@
-
 import { EngineName } from './engine';
 import { UciEngine } from './UciEngine';
 
@@ -11,8 +10,7 @@ export class Stockfish19 extends UciEngine {
             throw new Error('Stockfish 19 is not supported');
         }
 
-        const enginePath =
-            '/static/engine/stockfish-19.js#/static/engine/stockfish-19.wasm'
+        const enginePath = '/static/engine/stockfish-19.js#/static/engine/stockfish-19.wasm';
         const worker = UciEngine.workerFromPath(enginePath);
 
         super(EngineName.Stockfish19, worker);
@@ -24,7 +22,8 @@ export class Stockfish19 extends UciEngine {
     }
 
     public static isSupported() {
-        const isSupported = typeof WebAssembly === 'object' &&
+        const isSupported =
+            typeof WebAssembly === 'object' &&
             WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
         return isSupported;
     }
