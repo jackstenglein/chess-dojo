@@ -7,19 +7,12 @@ import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
 import { StockfishIcon } from '@/style/ChessIcons';
 import { Chess, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
-import {
-    Backspace,
-    Chat,
-    ChevronRight,
-    Help,
-    KeyboardReturn,
-    Merge,
-} from '@mui/icons-material';
+import { Backspace, Chat, ChevronRight, Help, KeyboardReturn, Merge } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import CheckIcon from '@mui/icons-material/Check';
 import {
-    ClickAwayListener,
     CircularProgress,
+    ClickAwayListener,
     Grid,
     ListItemIcon,
     ListItemText,
@@ -351,12 +344,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
 
     return (
         <>
-            <Menu
-                anchorEl={anchor}
-                open={Boolean(anchor)}
-                onClose={onClose}
-                disableScrollLock
-            >
+            <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={onClose} disableScrollLock>
                 <RequestSnackbar request={saveVariationRequest} />
                 <MenuList>
                     {canAnnotateMove && [
@@ -489,7 +477,10 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                 sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
             >
                 <ClickAwayListener onClickAway={() => setSymbolMenuAnchor(undefined)}>
-                    <Paper onMouseEnter={cancelCloseSymbolMenu} onMouseLeave={scheduleCloseSymbolMenu}>
+                    <Paper
+                        onMouseEnter={cancelCloseSymbolMenu}
+                        onMouseLeave={scheduleCloseSymbolMenu}
+                    >
                         <MenuList autoFocusItem={Boolean(symbolMenuAnchor)}>
                             {moveNags.map((nag) => (
                                 <MenuItem
