@@ -2,11 +2,7 @@
     "compilerOptions": {
         "target": "ES2015",
         "useDefineForClassFields": true,
-        "lib": [
-            "ESNext",
-            "DOM",
-            "DOM.Iterable"
-        ],
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -29,15 +25,9 @@
             }
         ],
         "paths": {
-            "*": [
-                "./*"
-            ],
-            "@/*": [
-                "./src/*"
-            ],
-            "~/*": [
-                "./*"
-            ]
+            "*": ["./*"],
+            "@/*": ["./src/*"],
+            "~/*": ["./*"]
         }
     },
     "include": [
@@ -58,7 +48,6 @@
         "src/stockfish/engine/sf17-79.js",
         "src/stockfish/engine/sf171-79.js",
         "src/stockfish/engine/sf18.js",
-        "src/stockfish/engine/sf18-smallnet.js",
-        "src/stockfish/engine/sf19.js",
+        "src/stockfish/engine/sf18-smallnet.js"
     ]
 }
