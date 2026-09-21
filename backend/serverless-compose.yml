@@ -272,6 +272,12 @@ services:
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
 
+  chesscomOIDCService:
+    path: chesscomOIDCService
+
+  lichessOIDCService:
+    path: lichessOIDCService
+  
   translationService:
     path: translationService
     params:
