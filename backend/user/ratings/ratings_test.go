@@ -246,6 +246,86 @@ func TestFetchBulkLichessRatings_Success(t *testing.T) {
 	}
 }
 
+func TestFetchFideRating_Success(t *testing.T) {
+	var gotPath string
+	setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		_, _ = w.Write([]byte(`{"id":1503014,"name":"Carlsen, Magnus","federation":"NOR","standard":2831,"rapid":2812,"blitz":2886}`))
+	})
+
+	rating, err := FetchFideRating("1503014")
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if rating.CurrentRating != 2831 {
+		t.Errorf("expected rating 2831, got %d", rating.CurrentRating)
+	}
+	if gotPath != "/api/fide/player/1503014" {
+		t.Errorf("expected path /api/fide/player/1503014, got %q", gotPath)
+	}
+}
+
+func TestFetchFideRating_Non200(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+	}{
+		{"not found", http.StatusNotFound},
+		{"server error", http.StatusInternalServerError},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tc.status)
+			})
+
+			_, err := FetchFideRating("999999")
+			if err == nil {
+				t.Fatal("expected error for non-200 response")
+			}
+			var apiErr *errors.Error
+			if !errors.As(err, &apiErr) || apiErr.Code != 400 {
+				t.Fatalf("expected api error with code 400, got %v", err)
+			}
+			if !strings.Contains(apiErr.PublicMessage, "999999") {
+				t.Errorf("expected FIDE ID in message, got %q", apiErr.PublicMessage)
+			}
+		})
+	}
+}
+
+func TestFetchFideRating_InvalidJSON(t *testing.T) {
+	setupLichess(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`not json`))
+	})
+
+	_, err := FetchFideRating("1503014")
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+	var apiErr *errors.Error
+	if !errors.As(err, &apiErr) || apiErr.Code != 500 {
+		t.Errorf("expected api error with code 500, got %v", err)
+	}
+}
+
+func TestFetchFideRating_RequestError(t *testing.T) {
+	originalClient := client
+	t.Cleanup(func() { client = originalClient })
+	client = http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return nil, io.EOF
+	})}
+
+	_, err := FetchFideRating("1503014")
+	if err == nil {
+		t.Fatal("expected error when request fails")
+	}
+	var apiErr *errors.Error
+	if !errors.As(err, &apiErr) || apiErr.Code != 500 {
+		t.Errorf("expected api error with code 500, got %v", err)
+	}
+}
+
 func TestMonthlyFetchers_PreservePlayerNotFoundStatus(t *testing.T) {
 	originalClient := client
 	t.Cleanup(func() { client = originalClient })

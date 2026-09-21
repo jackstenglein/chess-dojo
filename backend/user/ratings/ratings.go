@@ -288,6 +288,35 @@ func FetchBulkLichessRatings(lichessUsernames []string) (map[string]LichessRespo
 	return result, nil
 }
 
+type lichessFideResponse struct {
+	Standard int `json:"standard"`
+}
+
+// FetchFideRating returns the current standard rating of the player with the given ID.
+// It uses the Lichess API to fetch the rating.
+// See https://lichess.org/api#tag/fide/GET/api/fide/player/{playerId}
+func FetchFideRating(id string) (*database.Rating, error) {
+	resp, err := client.Get(fmt.Sprintf("%s/api/fide/player/%s", lichessHost, id))
+	if err != nil {
+		err = errors.Wrap(500, "Internal server error", "Failed to get FIDE rating", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		err = errors.New(400, fmt.Sprintf("Invalid request: lichess API returned status `%d` for FIDE ID `%s`", resp.StatusCode, id), "")
+		return nil, err
+	}
+
+	var rating lichessFideResponse
+	if err := json.NewDecoder(resp.Body).Decode(&rating); err != nil {
+		err = errors.Wrap(500, "Internal server error", "Failed to read lichess FIDE API response", err)
+		return nil, err
+	}
+
+	return &database.Rating{CurrentRating: rating.Standard}, nil
+}
+
 func findRating(body []byte, regex *regexp.Regexp) (int, error) {
 	groups := regex.FindSubmatch(body)
 	if len(groups) < 2 {

@@ -24,7 +24,6 @@ services:
       FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
       PicturesBucket: ${chess-dojo-scheduler.PicturesBucket}
       SecretsBucket: ${chess-dojo-scheduler.SecretsBucket}
-      FideRatingsBucket: ${chess-dojo-scheduler.FideRatingsBucket}
       AlertNotificationsTopic: ${chess-dojo-scheduler.AlertNotificationsTopic}
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
