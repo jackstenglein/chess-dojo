@@ -181,6 +181,8 @@ export function toUnifiedFideResults(
 /**
  * Converts one USCF section's per-game rows into unified results.
  * Opponent ratings and per-game dates are not published by US Chess.
+ * Sections flagged fide_matched contribute only their USCF-only games —
+ * shared games are already covered by the FIDE side (FIDE takes precedence).
  */
 export function toUnifiedUscfResults(
     section: OtbTournament,
@@ -188,8 +190,10 @@ export function toUnifiedUscfResults(
     index: number,
 ): UnifiedResult[] {
     const date = Date.parse(section.start || '') || 0;
+    const rows =
+        section.fide_matched === true ? (section.uscf_only ?? []) : section.rounds ?? [];
     const out: UnifiedResult[] = [];
-    (section.rounds || []).forEach((g, i) => {
+    rows.forEach((g, i) => {
         const outcome = otbOutcome(g.score);
         if (!outcome) return;
         out.push({

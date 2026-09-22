@@ -67,6 +67,22 @@ describe('toUnifiedUscfResults', () => {
         expect(results[1].timeClass).toBe('blitz');
         expect(results[1].opponentRating).toBeUndefined();
     });
+
+    it('skips fully shared sections and keeps only USCF-only games', () => {
+        const duped = {
+            ...uscfSection,
+            fide_matched: true,
+            uscf_only: [
+                { opp: 'EXTRA, PLAYER', color: 'Black', score: 1.0, games: 1, system: 'R' },
+            ],
+        };
+        const results = toUnifiedUscfResults(duped, '12742780', 0);
+        expect(results).toHaveLength(1);
+        expect(results[0].opponent).toBe('EXTRA, PLAYER');
+        expect(toUnifiedUscfResults({ ...uscfSection, fide_matched: true, uscf_only: [] }, '1', 0)).toEqual(
+            [],
+        );
+    });
 });
 
 describe('aggregateResults with OTB platforms', () => {

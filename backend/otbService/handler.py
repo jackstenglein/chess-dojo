@@ -234,6 +234,11 @@ def worker(event, context):
                         t["rounds"] = old_rounds[t["section_id"]]
                 _enrich_new_sections(uscf_id, up["tournaments"], old_rounds,
                                      usprogress)
+                # FIDE takes precedence in the tab: flag USCF sections that
+                # duplicate a FIDE tournament, keeping only their USCF-only
+                # games for display (possibly none = fully shared).
+                _mark_fide_duplicates(payload["tournaments"],
+                                      up["tournaments"])
                 payload["uschess"] = up
                 payload["uschess_error"] = None
                 payload["uscf_id"] = uscf_id
@@ -273,6 +278,28 @@ def worker(event, context):
                 ":u": _now(),
             },
         )
+
+
+def _mark_fide_duplicates(fide_tournaments, uscf_sections):
+    """Flag USCF sections duplicated by FIDE tournaments.
+
+    Matched sections get fide_matched=True plus uscf_only (their games not
+    shared with FIDE, possibly empty). The tab renders FIDE rounds fully and
+    only the uscf_only rows — each game shown once, FIDE first.
+    """
+    pairs, _, _ = lib.match_events(fide_tournaments, uscf_sections)
+    by_sec = {}
+    for f, u, _sg, _ss in pairs:
+        by_sec[id(u)] = (f, u)
+    for s in uscf_sections:
+        m = by_sec.get(id(s))
+        if not m:
+            continue
+        f, _u = m
+        _shared, only = lib.split_shared((f or {}).get("rounds"),
+                                         (s.get("rounds") or []))
+        s["fide_matched"] = True
+        s["uscf_only"] = only
 
 
 def _enrich_new_sections(uscf_id, tournaments, old_rounds, progress=None):

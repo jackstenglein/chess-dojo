@@ -58,6 +58,23 @@ def flask_cache_get(fide_id):
     return json.loads(payload)
 
 
+def mark_fide_duplicates(fide_tournaments, uscf_sections):
+    """Same contract as handler._mark_fide_duplicates (local-dev copy)."""
+    pairs, _, _ = lib.match_events(fide_tournaments, uscf_sections)
+    by_sec = {}
+    for f, u, _sg, _ss in pairs:
+        by_sec[id(u)] = (f, u)
+    for s in uscf_sections:
+        m = by_sec.get(id(s))
+        if not m:
+            continue
+        f, _u = m
+        _shared, only = lib.split_shared((f or {}).get("rounds"),
+                                         (s.get("rounds") or []))
+        s["fide_matched"] = True
+        s["uscf_only"] = only
+
+
 def worker(job_id, fide_id):
     def progress(done, total, label):
         with jobs_lock:
@@ -68,6 +85,9 @@ def worker(job_id, fide_id):
     try:
         cached = flask_cache_get(fide_id)
         if cached and cached.get("tournaments"):
+            if cached.get("uschess"):
+                mark_fide_duplicates(cached["tournaments"],
+                                     cached["uschess"]["tournaments"])
             with jobs_lock:
                 jobs[job_id].update(status="done", done=1, total=1,
                                     label="cached", payload=cached)
@@ -84,6 +104,8 @@ def worker(job_id, fide_id):
                 fide_id, (payload["info"] or {}).get("name", ""))
             if uscf_id:
                 up = api.fetch_player(uscf_id, progress=usprogress)
+                mark_fide_duplicates(payload["tournaments"],
+                                     up["tournaments"])
                 payload["uschess"] = up
                 payload["uschess_error"] = None
                 payload["uscf_id"] = uscf_id

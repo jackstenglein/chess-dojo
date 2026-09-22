@@ -58,6 +58,10 @@ export interface OtbTournament {
     rating_change?: number;
     combined_change?: number;
     rounds: OtbRound[];
+    /** True when this USCF section duplicates a FIDE tournament. */
+    fide_matched?: boolean;
+    /** USCF-only games (not shared with FIDE); empty = fully shared. */
+    uscf_only?: OtbRound[];
 }
 
 export interface OtbPayload {
