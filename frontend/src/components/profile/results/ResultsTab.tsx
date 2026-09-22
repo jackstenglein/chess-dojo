@@ -166,7 +166,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     const isOwnProfile = viewer?.username === user.username;
 
     const [windowMonths, setWindowMonths] = useState<number | undefined>(3);
-    const [timeControl, setTimeControl] = useState<TimeControl>('rapid');
+    const [timeControl, setTimeControl] = useState<TimeControl>('classical');
     const [includeLichess, setIncludeLichess] = useState(true);
     const [includeChesscom, setIncludeChesscom] = useState(true);
     const [includeFide, setIncludeFide] = useState(true);
