@@ -173,7 +173,6 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     const [includeUscf, setIncludeUscf] = useState(true);
     const request = useRequest<UnifiedResult[]>();
     const otbRequest = useRequest<OtbPayload>();
-
     const lichessUsername = getRatingUsername(user, RatingSystem.Lichess);
     const showLichess =
         !!lichessUsername && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Lichess));
@@ -189,6 +188,13 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     const uscfId = getRatingUsername(user, RatingSystem.Uscf);
     const showUscf =
         !!uscfId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Uscf));
+
+    // Online and OTB are fully separate views with separate stats — never mixed.
+    // Default to whichever world the profile actually has linked.
+    const [source, setSource] = useState<'online' | 'otb'>(() =>
+        showLichess || showChesscom ? 'online' : 'otb',
+    );
+    const isOtb = source === 'otb';
 
     const fetchLichessGames = showLichess && includeLichess;
     const fetchChesscomGames = showChesscom && includeChesscom;
@@ -289,11 +295,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     ]);
 
     // OTB history comes from the OTB service (backend/otbService), which
-    // scrapes FIDE/US Chess asynchronously. Fetch once per FIDE ID; the
-    // include toggles only filter at render time. Online results render
-    // independently — a missing/unreachable service must not block them.
+    // scrapes FIDE/US Chess asynchronously. Fetched on demand when the OTB
+    // view is selected; the include toggles only filter at render time.
     useEffect(() => {
-        if (!showFide || otbRequest.data || otbRequest.isLoading()) {
+        if (!isOtb || !showFide || otbRequest.data || otbRequest.isLoading()) {
             return;
         }
         const controller = new AbortController();
@@ -311,9 +316,42 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
             });
         return () => controller.abort();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showFide, fideId]);
+    }, [isOtb, showFide, fideId]);
 
-    if (!showLichess && !showChesscom && !showFide && !showUscf) {
+    const onlineAvailable = showLichess || showChesscom;
+    const otbAvailable = showFide || showUscf;
+
+    if (!onlineAvailable && !otbAvailable) {
+        return (
+            <Stack spacing={1} sx={{ alignItems: 'center', textAlign: 'center' }}>
+                <Typography>{t('emptyNoAccounts')}</Typography>
+                {isOwnProfile && (
+                    <Typography>
+                        {t.rich('emptyConnectAccounts', {
+                            link: (chunks: ReactNode) => <Link href='/profile/edit'>{chunks}</Link>,
+                        })}
+                    </Typography>
+                )}
+            </Stack>
+        );
+    }
+
+    if (isOtb && !otbAvailable) {
+        return (
+            <Stack spacing={1} sx={{ alignItems: 'center', textAlign: 'center' }}>
+                <Typography>{t('emptyNoOtbAccounts')}</Typography>
+                {isOwnProfile && (
+                    <Typography>
+                        {t.rich('emptyConnectOtbAccounts', {
+                            link: (chunks: ReactNode) => <Link href='/profile/edit'>{chunks}</Link>,
+                        })}
+                    </Typography>
+                )}
+            </Stack>
+        );
+    }
+
+    if (!isOtb && !onlineAvailable) {
         return (
             <Stack spacing={1} sx={{ alignItems: 'center', textAlign: 'center' }}>
                 <Typography>{t('emptyNoAccounts')}</Typography>
@@ -329,9 +367,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     }
 
     if (
-        (!request.isSent() || request.isLoading() || !otbRequest.isSent() || otbRequest.isLoading()) &&
-        !request.data &&
-        !otbRequest.data
+        (isOtb
+            ? !otbRequest.isSent() || otbRequest.isLoading()
+            : !request.isSent() || request.isLoading()) &&
+        !(isOtb ? otbRequest.data : request.data)
     ) {
         return <LoadingPage />;
     }
@@ -394,12 +433,12 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     }
     const otbGames = otbSessions.flatMap((s) => s.games);
 
-    const results = [...onlineResults, ...otbGames];
+    const results = isOtb ? otbGames : onlineResults;
     const aggregated = aggregateResults(results);
     // Online games group by calendar month; OTB games already arrived in
-    // per-tournament sessions. Merge newest-first under the display caps.
+    // per-tournament sessions. Newest first under the display caps.
     const recentSessions = (() => {
-        const sessions = [...groupByMonth(onlineResults), ...otbSessions].sort(
+        const sessions = (isOtb ? otbSessions : groupByMonth(onlineResults)).sort(
             (a, b) => b.start - a.start,
         );
         const picked: GameSession[] = [];
@@ -416,8 +455,21 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
 
     return (
         <Stack spacing={3}>
+            {onlineAvailable && otbAvailable && (
+                <ToggleButtonGroup
+                    exclusive
+                    fullWidth
+                    size='large'
+                    value={source}
+                    onChange={(_, value: 'online' | 'otb' | null) => value && setSource(value)}
+                    aria-label={t('sourceToggle')}
+                >
+                    <ToggleButton value='online'>{t('online')}</ToggleButton>
+                    <ToggleButton value='otb'>{t('overTheBoard')}</ToggleButton>
+                </ToggleButtonGroup>
+            )}
             <RequestSnackbar request={request} />
-            <RequestSnackbar request={otbRequest} />
+            {isOtb && <RequestSnackbar request={otbRequest} />}
 
             <SummaryCard aggregated={aggregated} t={t} />
 
@@ -439,7 +491,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     <Typography variant='body1' sx={{ fontWeight: 600 }}>
                         {t('resultsFor')}
                     </Typography>
-                    {showChesscom && (
+                    {showChesscom && !isOtb && (
                         <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                             <RatingSystemIcon system={RatingSystem.Chesscom} size='small' />
                             <Link
@@ -451,10 +503,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             </Link>
                         </Stack>
                     )}
-                    {showLichess && showChesscom && (
+                    {!isOtb && showLichess && showChesscom && (
                         <Typography sx={{ color: 'text.secondary' }}>·</Typography>
                     )}
-                    {showLichess && (
+                    {!isOtb && showLichess && (
                         <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                             <RatingSystemIcon system={RatingSystem.Lichess} size='small' />
                             <Link
@@ -466,10 +518,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             </Link>
                         </Stack>
                     )}
-                    {showFide && (showLichess || showChesscom) && (
-                        <Typography sx={{ color: 'text.secondary' }}>·</Typography>
-                    )}
-                    {showFide && (
+                    {isOtb && showFide && (
                         <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                             <RatingSystemIcon system={RatingSystem.Fide} size='small' />
                             <Link
@@ -481,10 +530,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             </Link>
                         </Stack>
                     )}
-                    {showUscf && (showFide || showLichess || showChesscom) && (
+                    {isOtb && showUscf && showFide && (
                         <Typography sx={{ color: 'text.secondary' }}>·</Typography>
                     )}
-                    {showUscf && (
+                    {isOtb && showUscf && (
                         <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                             <RatingSystemIcon system={RatingSystem.Uscf} size='small' />
                             <Link
@@ -526,7 +575,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     ))}
                 </ToggleButtonGroup>
 
-                {(showLichess || showChesscom || showFide || showUscf) && (
+                {(!isOtb && (showLichess || showChesscom)) && (
                     <Stack direction='row' spacing={0} sx={{ alignItems: 'center' }}>
                         <FormControlLabel
                             control={
@@ -562,6 +611,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                                     </Stack>
                                 }
                             />
+                    </Stack>
+                )}
+                {isOtb && (showFide || showUscf) && (
+                    <Stack direction='row' spacing={0} sx={{ alignItems: 'center' }}>
                         {showFide && (
                             <FormControlLabel
                                 control={
@@ -604,7 +657,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                 )}
             </Stack>
 
-            {otbRequest.isLoading() && (
+            {isOtb && otbRequest.isLoading() && (
                 <Typography variant='caption' sx={{ color: 'text.secondary', textAlign: 'center' }}>
                     {t('otbLoading')}
                 </Typography>
