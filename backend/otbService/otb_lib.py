@@ -367,3 +367,42 @@ def dp_for(pct):
         return _DP[round(lo, 2)]
     frac = (pct - lo) / 0.01
     return _DP[round(lo, 2)] * (1 - frac) + _DP[round(hi, 2)] * frac
+
+
+# ---------------------------------------------------------------- scheduler
+# (pure selection logic; AWS I/O lives in scheduler.py for testability)
+
+SCHEDULER_TTL_SECONDS = 30 * 86400
+
+
+def _cohort_floor(cohort):
+    """'2000-2100' -> 2000. Unparseable -> -1 (scheduled last)."""
+    try:
+        return int(str(cohort).split("-")[0])
+    except (ValueError, IndexError, AttributeError):
+        return -1
+
+
+def select_batch(users, cache, limit, now, ttl=SCHEDULER_TTL_SECONDS):
+    """Pick up to `limit` FIDE IDs due for refresh, strongest first.
+
+    users: [{fide_id, cohort}]. cache: {fide_id: updated_at}.
+    Never-scraped members go first (cohort rating descending — "from the
+    top"), then stale members oldest-first. Members without a FIDE ID or
+    with fresh cache are skipped.
+    """
+    never, old = [], []
+    for u in users:
+        fid = u.get("fide_id")
+        if not fid:
+            continue
+        ts = cache.get(str(fid))
+        if ts is None:
+            never.append(u)
+        elif now - ts > ttl:
+            old.append((ts, u))
+    never.sort(key=lambda u: _cohort_floor(u.get("cohort")), reverse=True)
+    old.sort(key=lambda item: item[0])
+    ordered = [str(u["fide_id"]) for u in never]
+    ordered += [str(u["fide_id"]) for _, u in old]
+    return ordered[:limit]

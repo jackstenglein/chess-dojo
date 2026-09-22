@@ -42,6 +42,12 @@ provider:
       Action:
         - lambda:InvokeFunction
       Resource: !Sub 'arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${sls:stage}-worker'
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+      Resource:
+        - ${param:UsersTableArn}
+        - !GetAtt OtbCacheTable.Arn
 
 functions:
   startJob:
@@ -68,10 +74,26 @@ functions:
     handler: handler.worker
     timeout: 900
     memorySize: 1024
+  scheduler:
+    handler: scheduler.run
+    timeout: 300
+    memorySize: 256
+    events:
+      # Nightly ≈2am ET in prod (dev: far-future no-op, cf. twicService).
+      # 65 members/night covers 2000 members every ~30 days; staleness
+      # ordering keeps the spread forever.
+      - schedule:
+          rate: ${self:custom.scheduleRate.${sls:stage}}
+    environment:
+      USERS_TABLE_ARN: ${param:UsersTableArn}
+      SCHEDULER_BATCH_SIZE: 65
 
 custom:
   pythonRequirements:
     dockerizePip: true
+  scheduleRate:
+    prod: cron(0 7 ? * * *)
+    dev: cron(0 7 ? * SAT 1970)
 
 resources:
   Resources:
