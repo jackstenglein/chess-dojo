@@ -190,9 +190,9 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
         !!uscfId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Uscf));
 
     // Online and OTB are fully separate views with separate stats — never mixed.
-    // Default to whichever world the profile actually has linked.
+    // OTB first and default: it is the primary view for rated tournament players.
     const [source, setSource] = useState<'online' | 'otb'>(() =>
-        showLichess || showChesscom ? 'online' : 'otb',
+        showFide || showUscf ? 'otb' : 'online',
     );
     const isOtb = source === 'otb';
 
@@ -464,8 +464,8 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     onChange={(_, value: 'online' | 'otb' | null) => value && setSource(value)}
                     aria-label={t('sourceToggle')}
                 >
-                    <ToggleButton value='online'>{t('online')}</ToggleButton>
                     <ToggleButton value='otb'>{t('overTheBoard')}</ToggleButton>
+                    <ToggleButton value='online'>{t('online')}</ToggleButton>
                 </ToggleButtonGroup>
             )}
             <RequestSnackbar request={request} />
