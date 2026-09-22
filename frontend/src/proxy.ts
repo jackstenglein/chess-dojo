@@ -50,6 +50,9 @@ const unauthenticatedPaths = [
     /^\/signup$/,
     /^\/verify-email$/,
     /^\/forgot-password$/,
+    // Demo-only: the tactics trainer is playable without login when the
+    // TACTICS_DEMO_OPEN env var is set (local demo server only).
+    ...(process.env.TACTICS_DEMO_OPEN === '1' ? [/^\/puzzles\/tactics$/] : []),
 ];
 
 const authenticatedRedirects: [RegExp, string][] = [
