@@ -8,7 +8,8 @@ import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import { getRatingUsername, hideRatingUsername, RatingSystem, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
-import { RatingSystemIcon } from '@/style/RatingSystemIcons';
+import { FideIcon, RatingSystemIcon, UscfIcon } from '@/style/RatingSystemIcons';
+import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -464,8 +465,20 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     onChange={(_, value: 'online' | 'otb' | null) => value && setSource(value)}
                     aria-label={t('sourceToggle')}
                 >
-                    <ToggleButton value='otb'>{t('overTheBoard')}</ToggleButton>
-                    <ToggleButton value='online'>{t('online')}</ToggleButton>
+                    <ToggleButton value='otb'>
+                        <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                            <FideIcon size='small' />
+                            <UscfIcon size='small' />
+                            {t('overTheBoard')}
+                        </Stack>
+                    </ToggleButton>
+                    <ToggleButton value='online'>
+                        <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                            <SiLichess size={15} />
+                            <SiChessdotcom size={15} />
+                            {t('online')}
+                        </Stack>
+                    </ToggleButton>
                 </ToggleButtonGroup>
             )}
             <RequestSnackbar request={request} />
