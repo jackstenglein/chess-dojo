@@ -1,4 +1,13 @@
+import axios from 'axios';
 import { axiosService } from '../axiosService';
+
+/**
+ * Local-dev escape hatch: set NEXT_PUBLIC_OTB_BASE_URL=http://localhost:5002
+ * to talk to backend/otbService/local_shim.py instead of the deployed
+ * service (which also skips the JWT, so no login is needed for OTB calls).
+ */
+const OTB_BASE_URL = process.env.NEXT_PUBLIC_OTB_BASE_URL || '';
+const otbHttp = OTB_BASE_URL ? axios.create({ baseURL: OTB_BASE_URL }) : axiosService;
 
 /**
  * Client for the OTB (FIDE + US Chess) history service (backend/otbService).
@@ -63,14 +72,14 @@ export interface OtbPayload {
 }
 
 export function startOtbJob(fideId: string) {
-    return axiosService.post<{ jobId: string; cached: boolean }>(`/otb/jobs`, {
+    return otbHttp.post<{ jobId: string; cached: boolean }>(`/otb/jobs`, {
         fideId,
         functionName: 'startOtbJob',
     });
 }
 
 export function getOtbJob(jobId: string) {
-    return axiosService.get<OtbJob>(`/otb/jobs/${jobId}`, {
+    return otbHttp.get<OtbJob>(`/otb/jobs/${jobId}`, {
         functionName: 'getOtbJob',
     });
 }
