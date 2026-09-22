@@ -115,7 +115,12 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
         });
     };
 
-    const showResultsTab = [RatingSystem.Lichess, RatingSystem.Chesscom].some((rs) => {
+    const showResultsTab = [
+        RatingSystem.Lichess,
+        RatingSystem.Chesscom,
+        RatingSystem.Fide,
+        RatingSystem.Uscf,
+    ].some((rs) => {
         if (!getRatingUsername(user, rs)) {
             return false;
         }

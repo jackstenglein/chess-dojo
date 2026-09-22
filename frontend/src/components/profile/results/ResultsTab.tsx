@@ -2,6 +2,7 @@
 
 import { fetchChesscomArchiveGames } from '@/api/external/chesscom';
 import { lichessApi } from '@/api/external/lichess';
+import { OtbPayload, OtbTournament, pollOtbPayload } from '@/api/external/otb';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
@@ -40,7 +41,9 @@ import {
     ResultOutcome,
     ResultsBreakdown,
     toUnifiedChesscomResult,
+    toUnifiedFideResults,
     toUnifiedLichessResult,
+    toUnifiedUscfResults,
     UnifiedResult,
 } from './results';
 
@@ -62,6 +65,9 @@ const MAX_GAMES_PER_PLATFORM = 300;
 const MAX_RECENT_GAMES = 1000;
 const MAX_RECENT_SESSIONS = 60;
 const ONLINE_PLATFORMS = [RatingSystem.Chesscom, RatingSystem.Lichess] as const;
+const OTB_PLATFORMS = [RatingSystem.Fide, RatingSystem.Uscf] as const;
+/** OTB games carry the event start as their date (no per-game dates published). */
+const OTB_EVENT_LABEL_MAX = 32;
 
 /** Theme color token for a given result outcome. */
 function outcomeColor(outcome: ResultOutcome): string {
@@ -163,7 +169,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     const [timeControl, setTimeControl] = useState<TimeControl>('rapid');
     const [includeLichess, setIncludeLichess] = useState(true);
     const [includeChesscom, setIncludeChesscom] = useState(true);
+    const [includeFide, setIncludeFide] = useState(true);
+    const [includeUscf, setIncludeUscf] = useState(true);
     const request = useRequest<UnifiedResult[]>();
+    const otbRequest = useRequest<OtbPayload>();
 
     const lichessUsername = getRatingUsername(user, RatingSystem.Lichess);
     const showLichess =
@@ -172,6 +181,14 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     const chesscomUsername = getRatingUsername(user, RatingSystem.Chesscom);
     const showChesscom =
         !!chesscomUsername && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Chesscom));
+
+    const fideId = getRatingUsername(user, RatingSystem.Fide);
+    const showFide =
+        !!fideId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Fide));
+
+    const uscfId = getRatingUsername(user, RatingSystem.Uscf);
+    const showUscf =
+        !!uscfId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Uscf));
 
     const fetchLichessGames = showLichess && includeLichess;
     const fetchChesscomGames = showChesscom && includeChesscom;
@@ -271,7 +288,32 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
         windowMonths,
     ]);
 
-    if (!showLichess && !showChesscom) {
+    // OTB history comes from the OTB service (backend/otbService), which
+    // scrapes FIDE/US Chess asynchronously. Fetch once per FIDE ID; the
+    // include toggles only filter at render time. Online results render
+    // independently — a missing/unreachable service must not block them.
+    useEffect(() => {
+        if (!showFide || otbRequest.data || otbRequest.isLoading()) {
+            return;
+        }
+        const controller = new AbortController();
+        otbRequest.onStart();
+        pollOtbPayload(fideId, undefined, controller.signal)
+            .then((payload) => {
+                if (!controller.signal.aborted) {
+                    otbRequest.onSuccess(payload);
+                }
+            })
+            .catch((err) => {
+                if (!controller.signal.aborted) {
+                    otbRequest.onFailure(err);
+                }
+            });
+        return () => controller.abort();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showFide, fideId]);
+
+    if (!showLichess && !showChesscom && !showFide && !showUscf) {
         return (
             <Stack spacing={1} sx={{ alignItems: 'center', textAlign: 'center' }}>
                 <Typography>{t('emptyNoAccounts')}</Typography>
@@ -286,22 +328,80 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
         );
     }
 
-    if (!request.isSent() || request.isLoading()) {
+    if (
+        (!request.isSent() || request.isLoading() || !otbRequest.isSent() || otbRequest.isLoading()) &&
+        !request.data &&
+        !otbRequest.data
+    ) {
         return <LoadingPage />;
     }
 
     const allResults = request.data ?? [];
-    const results = allResults.filter(
+    const onlineResults = allResults.filter(
         (r) =>
             r.timeClass === timeControl &&
             ((r.platform === RatingSystem.Lichess && includeLichess) ||
                 (r.platform === RatingSystem.Chesscom && includeChesscom)),
     );
+
+    const cutoffMs = (() => {
+        if (windowMonths === undefined) return 0;
+        const c = new Date();
+        c.setMonth(c.getMonth() - windowMonths);
+        return c.getTime();
+    })();
+
+    // OTB games become one session per tournament/section (newest first).
+    // Blitz time controls are excluded, matching the tab's rapid/classical policy.
+    const otbSessions: GameSession[] = [];
+    const otbPayload = otbRequest.data;
+    if (otbPayload) {
+        const pushSessions = (
+            tournaments: OtbTournament[] | undefined,
+            convert: (t: OtbTournament, i: number) => UnifiedResult[],
+            prefix: string,
+        ) => {
+            (tournaments ?? []).forEach((t, ti) => {
+                const games = convert(t, ti).filter(
+                    (g) => g.date >= cutoffMs && g.timeClass === timeControl,
+                );
+                if (games.length === 0) return;
+                const start = Date.parse(t.start || '') || 0;
+                const label =
+                    t.name.length > OTB_EVENT_LABEL_MAX
+                        ? `${t.name.slice(0, OTB_EVENT_LABEL_MAX - 1)}…`
+                        : t.name;
+                otbSessions.push({
+                    id: `${prefix}-${ti}`,
+                    label,
+                    games,
+                    start,
+                    end: start,
+                });
+            });
+        };
+        if (includeFide) {
+            pushSessions(otbPayload.tournaments, toUnifiedFideResults, 'fide');
+        }
+        if (includeUscf && otbPayload.uschess) {
+            const uscfId = otbPayload.uschess.uscf_id ?? '';
+            pushSessions(
+                otbPayload.uschess.tournaments,
+                (s, si) => toUnifiedUscfResults(s, uscfId, si),
+                'uscf',
+            );
+        }
+    }
+    const otbGames = otbSessions.flatMap((s) => s.games);
+
+    const results = [...onlineResults, ...otbGames];
     const aggregated = aggregateResults(results);
-    // Every calendar month is a session, including the ongoing month.
-    // Most-recent month first, covering up to MAX_RECENT_GAMES games.
+    // Online games group by calendar month; OTB games already arrived in
+    // per-tournament sessions. Merge newest-first under the display caps.
     const recentSessions = (() => {
-        const sessions = groupByMonth(results);
+        const sessions = [...groupByMonth(onlineResults), ...otbSessions].sort(
+            (a, b) => b.start - a.start,
+        );
         const picked: GameSession[] = [];
         let gameCount = 0;
         for (const session of sessions) {
@@ -317,6 +417,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
     return (
         <Stack spacing={3}>
             <RequestSnackbar request={request} />
+            <RequestSnackbar request={otbRequest} />
 
             <SummaryCard aggregated={aggregated} t={t} />
 
@@ -365,6 +466,36 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             </Link>
                         </Stack>
                     )}
+                    {showFide && (showLichess || showChesscom) && (
+                        <Typography sx={{ color: 'text.secondary' }}>·</Typography>
+                    )}
+                    {showFide && (
+                        <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+                            <RatingSystemIcon system={RatingSystem.Fide} size='small' />
+                            <Link
+                                href={`https://ratings.fide.com/profile/${fideId}`}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                            >
+                                {fideId}
+                            </Link>
+                        </Stack>
+                    )}
+                    {showUscf && (showFide || showLichess || showChesscom) && (
+                        <Typography sx={{ color: 'text.secondary' }}>·</Typography>
+                    )}
+                    {showUscf && (
+                        <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+                            <RatingSystemIcon system={RatingSystem.Uscf} size='small' />
+                            <Link
+                                href={`https://ratings.uschess.org/player/${uscfId}`}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                            >
+                                {uscfId}
+                            </Link>
+                        </Stack>
+                    )}
                 </Stack>
 
                 <ToggleButtonGroup
@@ -395,7 +526,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     ))}
                 </ToggleButtonGroup>
 
-                {showLichess && showChesscom && (
+                {(showLichess || showChesscom || showFide || showUscf) && (
                     <Stack direction='row' spacing={0} sx={{ alignItems: 'center' }}>
                         <FormControlLabel
                             control={
@@ -425,15 +556,59 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             label={
                                 <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
                                     <RatingSystemIcon system={RatingSystem.Lichess} size='small' />
-                                    <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-                                        Lichess
-                                    </Typography>
-                                </Stack>
-                            }
-                        />
+                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                            Lichess
+                                        </Typography>
+                                    </Stack>
+                                }
+                            />
+                        {showFide && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size='small'
+                                        checked={includeFide}
+                                        onChange={(e) => setIncludeFide(e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                                        <RatingSystemIcon system={RatingSystem.Fide} size='small' />
+                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                            {t('fide')}
+                                        </Typography>
+                                    </Stack>
+                                }
+                            />
+                        )}
+                        {showUscf && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size='small'
+                                        checked={includeUscf}
+                                        onChange={(e) => setIncludeUscf(e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                                        <RatingSystemIcon system={RatingSystem.Uscf} size='small' />
+                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                            {t('uscf')}
+                                        </Typography>
+                                    </Stack>
+                                }
+                            />
+                        )}
                     </Stack>
                 )}
             </Stack>
+
+            {otbRequest.isLoading() && (
+                <Typography variant='caption' sx={{ color: 'text.secondary', textAlign: 'center' }}>
+                    {t('otbLoading')}
+                </Typography>
+            )}
 
             {results.length === 0 ? (
                 <Typography sx={{ textAlign: 'center' }}>{t('emptyNoGames')}</Typography>
@@ -521,7 +696,15 @@ function formatScore(score: number): string {
 
 function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFunc }) {
     const { overall, byColor, byPlatform, avgOpponentRating, bestWinStreak, bestWin } = aggregated;
-    const platforms = ONLINE_PLATFORMS.filter((platform) => byPlatform[platform]);
+    const platforms = [...ONLINE_PLATFORMS, ...OTB_PLATFORMS].filter(
+        (platform) => byPlatform[platform],
+    );
+    const platformName: Record<string, string> = {
+        [RatingSystem.Lichess]: 'Lichess',
+        [RatingSystem.Chesscom]: 'Chess.com',
+        [RatingSystem.Fide]: 'FIDE',
+        [RatingSystem.Uscf]: 'US Chess',
+    };
 
     return (
         <Card variant='outlined' sx={{ borderRadius: 3 }}>
@@ -609,9 +792,7 @@ function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFun
                                                     variant='body2'
                                                     sx={{ color: 'text.secondary' }}
                                                 >
-                                                    {platform === RatingSystem.Lichess
-                                                        ? 'Lichess'
-                                                        : 'Chess.com'}
+                                                    {platformName[platform] ?? platform}
                                                 </Typography>
                                             </Stack>
                                             <Box sx={{ flexGrow: 1 }}>

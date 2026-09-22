@@ -1,0 +1,119 @@
+# OTB (FIDE + US Chess) tournament-history service for the profile results tab.
+#
+# Mirrors backend/twicService conventions (Python runtime, DynamoDB + S3).
+# Deploy: `serverless deploy --stage <dev|prod>` (needs AWS credentials;
+# no credentials are required to work on the code or run the frontend).
+# NOT YET DEPLOYED — frontend falls back gracefully until the endpoint exists.
+
+service: chess-dojo-otb
+frameworkVersion: '3'
+
+plugins:
+  - serverless-python-requirements
+  - serverless-plugin-custom-roles
+
+provider:
+  name: aws
+  runtime: python3.14
+  region: us-east-1
+  logRetentionInDays: 14
+  deploymentMethod: direct
+  environment:
+    stage: ${sls:stage}
+    WORKER_FUNCTION: ${self:service}-${sls:stage}-worker
+  httpApi:
+    id: ${param:httpApiId}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+      Resource:
+        - !GetAtt OtbJobsTable.Arn
+        - !GetAtt OtbCacheTable.Arn
+        - !GetAtt OtbLinksTable.Arn
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: !Sub '${OtbPayloadsBucket.Arn}/*'
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: !Sub 'arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${sls:stage}-worker'
+
+functions:
+  startJob:
+    handler: handler.start_job
+    timeout: 30
+    events:
+      - httpApi:
+          path: /otb/jobs
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+  getJob:
+    handler: handler.get_job
+    timeout: 30
+    events:
+      - httpApi:
+          path: /otb/jobs/{jobId}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+  worker:
+    handler: handler.worker
+    timeout: 900
+    memorySize: 1024
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+resources:
+  Resources:
+    OtbJobsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${sls:stage}-otb-jobs
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: jobId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: jobId
+            KeyType: HASH
+    OtbCacheTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${sls:stage}-otb-cache
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: fideId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: fideId
+            KeyType: HASH
+    OtbLinksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${sls:stage}-otb-links
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: fideId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: fideId
+            KeyType: HASH
+    OtbPayloadsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${sls:stage}-otb-payloads
+        LifecycleConfiguration:
+          Rules:
+            - Id: expire-old-payloads
+              Status: Enabled
+              ExpirationInDays: 60
