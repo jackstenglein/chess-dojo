@@ -103,7 +103,7 @@
         "use-long-press": "^3.3.0",
         "usehooks-ts": "^3.1.1",
         "uuid": "^13.0.0",
-        "zod": "^4.3.6"
+        "zod": "^4.5.4"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
