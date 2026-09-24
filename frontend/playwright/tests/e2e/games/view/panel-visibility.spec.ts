@@ -162,6 +162,54 @@ for (const width of [2463, 1400, 390]) {
     }
 }
 
+for (const route of ['/games/analysis', '/games/1500-1600/panel-visibility']) {
+    test(`${route}: keeps square coordinates aligned when side panels are toggled`, async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 1400, height: 1000 });
+        await page.goto(route);
+        const board = page.locator('cg-board');
+        const left = page.getByTestId('underboard-tab-content');
+        const right = page.getByTestId('right-underboard-tab-content');
+        await expect(board).toBeVisible();
+
+        const highlightSquare = async (square: string) => {
+            const bounds = await boardBounds(board);
+            const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
+            const rank = Number(square[1]);
+            await page.mouse.click(
+                bounds.x + ((file + 0.5) * bounds.width) / 8,
+                bounds.y + ((8 - rank + 0.5) * bounds.height) / 8,
+                { button: 'right' },
+            );
+            await expect
+                .poll(() =>
+                    page.evaluate(() => {
+                        const api = (
+                            window as unknown as {
+                                chessground: {
+                                    state: { drawable: { shapes: { orig: string }[] } };
+                                };
+                            }
+                        ).chessground;
+                        return api.state.drawable.shapes.at(-1)?.orig;
+                    }),
+                )
+                .toBe(square);
+        };
+
+        await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
+        await expect(left).toBeHidden();
+        await highlightSquare('e7');
+
+        await page.getByRole('button', { name: 'Show left panel', exact: true }).click();
+        await expect(left).toBeVisible();
+        await page.getByRole('button', { name: 'Hide right panel', exact: true }).click();
+        await expect(right).toBeHidden();
+        await highlightSquare('b2');
+    });
+}
+
 for (const viewport of [
     { width: 1400, height: 800 },
     { width: 700, height: 900 },
