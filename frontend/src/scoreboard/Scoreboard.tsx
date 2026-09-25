@@ -37,6 +37,7 @@ import {
     getRatingSystem,
     getStartRating,
 } from './scoreboardData';
+import { isTrainingColumnPrivate, privateTrainingColumn } from './trainingPrivacy';
 
 type ScoreboardT = ReturnType<typeof useTranslations<'scoreboard'>>;
 type RatingT = ReturnType<typeof useTranslations<'enums.ratingSystem'>>;
@@ -68,8 +69,20 @@ function getRankColumn(t: ScoreboardT): GridColDef<ScoreboardRow> {
         field: 'rank',
         headerName: t('rankColumn'),
         renderHeader: () => '',
-        valueGetter: (_value, row, _column, api) =>
-            api.current.getSortedRowIds().indexOf(row.username.replace('#pinned', '')) + 1,
+        valueGetter: (_value, row, _column, api) => {
+            const trainingSorts = api.current
+                .getSortModel()
+                .filter(
+                    (sort) => api.current.getColumn(sort.field)?.getSortComparator !== undefined,
+                );
+            const isRestricted = (candidate: ScoreboardRow | null) =>
+                trainingSorts.some((sort) => isTrainingColumnPrivate(candidate, sort.field));
+            if (isRestricted(row)) return null;
+            const ids = api.current
+                .getSortedRowIds()
+                .filter((id) => !isRestricted(api.current.getRow<ScoreboardRow>(id)));
+            return ids.indexOf(row.username.replace('#pinned', '')) + 1;
+        },
         sortable: false,
         filterable: false,
         align: 'center',
@@ -588,11 +601,13 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     const columns = useMemo(
         () =>
             [actionColumn].concat(
-                isSummary ? summaryUserInfoColumns : defaultUserInfoColumns,
+                (isSummary ? summaryUserInfoColumns : defaultUserInfoColumns).map((column) =>
+                    column.field === 'previousCohort' ? privateTrainingColumn(column) : column,
+                ),
                 ratingsColumns,
-                trainingPlanColumns,
-                timeSpentColumns,
-                requirementColumns,
+                trainingPlanColumns.map(privateTrainingColumn),
+                timeSpentColumns.map(privateTrainingColumn),
+                requirementColumns.map(privateTrainingColumn),
             ),
         [
             actionColumn,

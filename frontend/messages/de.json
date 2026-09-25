@@ -4204,5 +4204,19 @@
         "playAsWhite": "Als Weiß spielen",
         "playAsBlack": "Als Schwarz spielen",
         "randomColor": "Zufällige Farbe"
+    },
+    "trainingPrivacy": {
+        "showTotals": "Trainingszeit und Dojo-Punkte für alle anzeigen",
+        "totalsHelper": "Trainingsdetails bleiben nur für deine ausgewählte Zielgruppe sichtbar.",
+        "totalsNotice": "Trainingssummen sind sichtbar. Trainingsdetails sind privat.",
+        "totalPoints": "Dojo-Punkte: {points}",
+        "totalTime": "Trainingszeit: {time}",
+        "label": "Sichtbarkeit des Trainings",
+        "helperText": "Legt fest, wer dein Trainingsprofil, deine Aktivitäten und deinen Fortschritt auf der Website sehen kann.",
+        "public": "Öffentlich",
+        "private": "Privat",
+        "members": "Nur Dojo-Mitglieder (aktive Abonnenten)",
+        "mutuals": "Nur gegenseitige Follower (ihr folgt einander)",
+        "denied": "Die Trainingsaktivität dieses Nutzers ist privat."
     }
 }

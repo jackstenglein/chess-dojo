@@ -40,12 +40,14 @@ services:
   coach:
     path: coach
     params:
+      FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
 
   scoreboard:
     path: scoreboard
     params:
+      RequirementsTableArn: ${chess-dojo-scheduler.RequirementsTableArn}
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
@@ -67,6 +69,7 @@ services:
       GraduationsTableArn: ${chess-dojo-scheduler.GraduationsTableArn}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
+      FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
 
   courseService:
     path: courseService
@@ -155,6 +158,9 @@ services:
     path: yearReviewService
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+      FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
 
   clubService:
     path: clubService
@@ -165,6 +171,7 @@ services:
       PicturesBucket: ${chess-dojo-scheduler.PicturesBucket}
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
+      FollowersTableArn: ${chess-dojo-scheduler.FollowersTableArn}
 
   examService:
     path: examService

@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { TimelineEntry } from '../database/timeline';
-import { axiosService } from './axiosService';
+import { axiosService, viewerPath } from './axiosService';
 
 export interface NewsfeedApiContextType {
     /**
@@ -55,8 +55,8 @@ export interface NewsfeedApiContextType {
  * @param id The id of the timeline entry.
  * @returns An AxiosResponse containing the timeline entry.
  */
-export function getNewsfeedItem(owner: string, id: string) {
-    return axiosService.get<TimelineEntry>(`/public/newsfeed/${owner}/${id}`, {
+export async function getNewsfeedItem(owner: string, id: string) {
+    return axiosService.get<TimelineEntry>(await viewerPath(`/public/newsfeed/${owner}/${id}`), {
         functionName: 'getNewsfeedItem',
     });
 }
