@@ -3422,6 +3422,14 @@
             "failedToFetchData": "Falha ao obter os dados"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Inserir partida com referência",
+                "cite": "Citar partida",
+                "open": "Abrir partida numa nova aba",
+                "inserted": "Partida inserida.",
+                "cited": "Partida citada.",
+                "invalidSource": "Não é possível inserir esta partida: a linha principal é inválida, está vazia ou tem uma posição inicial diferente."
+            },
             "columnMove": "Lance",
             "columnGames": "Partidas",
             "columnPerformance": "Performance",

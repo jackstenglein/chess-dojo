@@ -3422,6 +3422,14 @@
             "failedToFetchData": "Failed to fetch data"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Insert game with citation",
+                "cite": "Cite game",
+                "open": "Open game in new tab",
+                "inserted": "Game inserted.",
+                "cited": "Game cited.",
+                "invalidSource": "Cannot insert this game: its mainline is invalid, empty, or has a different starting position."
+            },
             "columnMove": "Move",
             "columnGames": "Games",
             "columnPerformance": "Performance",

@@ -3422,6 +3422,14 @@
             "failedToFetchData": "Daten konnten nicht abgerufen werden"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Partie mit Quellenangabe einfügen",
+                "cite": "Partie zitieren",
+                "open": "Partie in neuem Tab öffnen",
+                "inserted": "Partie eingefügt.",
+                "cited": "Partie zitiert.",
+                "invalidSource": "Diese Partie kann nicht eingefügt werden: Die Hauptvariante ist ungültig, leer oder hat eine andere Ausgangsstellung."
+            },
             "columnMove": "Zug",
             "columnGames": "Partien",
             "columnPerformance": "Leistung",

@@ -3422,6 +3422,14 @@
             "failedToFetchData": "Impossibile recuperare i dati"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Inserisci partita con riferimento",
+                "cite": "Cita partita",
+                "open": "Apri partita in una nuova scheda",
+                "inserted": "Partita inserita.",
+                "cited": "Partita citata.",
+                "invalidSource": "Impossibile inserire questa partita: la linea principale non è valida, è vuota o ha una posizione iniziale diversa."
+            },
             "columnMove": "Mossa",
             "columnGames": "Partite",
             "columnPerformance": "Performance",

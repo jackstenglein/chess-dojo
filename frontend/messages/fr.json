@@ -3422,6 +3422,14 @@
             "failedToFetchData": "Échec de la récupération des données"
         },
         "explorer": {
+            "gameActions": {
+                "insert": "Insérer la partie avec sa référence",
+                "cite": "Citer la partie",
+                "open": "Ouvrir la partie dans un nouvel onglet",
+                "inserted": "Partie insérée.",
+                "cited": "Partie citée.",
+                "invalidSource": "Impossible d’insérer cette partie : la ligne principale est invalide, vide ou commence dans une position différente."
+            },
             "columnMove": "Coup",
             "columnGames": "Parties",
             "columnPerformance": "Performance",
