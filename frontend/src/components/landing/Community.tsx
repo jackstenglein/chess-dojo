@@ -9,7 +9,7 @@ import { type JSX } from 'react';
 import { BulletPoint } from './BulletPoint';
 import { communityBulletPoints } from './bulletPoints';
 import { barlow, barlowCondensed, sectionTitleSx } from './fonts';
-import communityImage from './hero.webp';
+import communityImage from './kostya-david.webp';
 
 const itemIcons: Record<string, JSX.Element> = {
     classicalTournaments: <EmojiEvents color='darkBlue' />,

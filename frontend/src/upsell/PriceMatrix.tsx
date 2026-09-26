@@ -24,61 +24,59 @@ import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
 import { getCurrency } from './locales';
 
-type PriceCardAccent = 'free' | 'core' | 'workshops' | 'review';
-
-function accentColor(accent: PriceCardAccent): string {
-    switch (accent) {
-        case 'free':
-            return '#55b080';
-        case 'core':
-            return 'rgba(24, 117, 238, 1)';
-        case 'workshops':
-            return '#F7941F';
-        case 'review':
+function accentColor(tier: SubscriptionTier): string {
+    switch (tier) {
+        case SubscriptionTier.Free:
+            return '#616161';
+        case SubscriptionTier.Basic:
             return '#e7ba51';
+        case SubscriptionTier.Lecture:
+            return '#33b679';
+        case SubscriptionTier.GameReview:
+            return '#039be5';
     }
 }
 
-function cardAccentSx(theme: Theme, accent: PriceCardAccent) {
-    const color = accentColor(accent);
+function cardAccentSx(theme: Theme, tier: SubscriptionTier) {
+    const color = accentColor(tier);
     const isDark = theme.palette.mode === 'dark';
-    const wash = alpha(color, isDark ? 0.14 : 0.08);
-    const line = alpha(color, isDark ? 0.16 : 0.14);
+    const wash = alpha(color, isDark ? 0.08 : 0.08);
+    // const line = alpha(color, isDark ? 0.16 : 0.14);
 
-    let backgroundImage = 'none';
-    let backgroundSize = 'unset';
+    // let backgroundImage = 'none';
+    // let backgroundSize = 'unset';
 
-    if (accent === 'free') {
-        backgroundImage = [
-            `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
-            `repeating-linear-gradient(0deg, transparent, transparent 10px, ${line} 10px, ${line} 11px)`,
-        ].join(', ');
-    } else if (accent === 'core') {
-        backgroundImage = [
-            `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
-            `repeating-linear-gradient(0deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
-            `repeating-linear-gradient(90deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
-        ].join(', ');
-    } else if (accent === 'workshops') {
-        backgroundImage = [
-            `linear-gradient(180deg, ${alpha(color, isDark ? 0.22 : 0.14)} 0%, transparent 48%)`,
-            `repeating-linear-gradient(-38deg, transparent, transparent 8px, ${line} 8px, ${line} 9px)`,
-        ].join(', ');
-    } else if (accent === 'review') {
-        backgroundImage = [
-            `radial-gradient(120% 70% at 50% -8%, ${alpha(color, isDark ? 0.34 : 0.22)} 0%, transparent 58%)`,
-            `radial-gradient(${alpha(color, isDark ? 0.32 : 0.22)} 1.15px, transparent 1.2px)`,
-        ].join(', ');
-        backgroundSize = 'auto, 15px 15px';
-    }
+    // if (accent === 'free') {
+    //     backgroundImage = [
+    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
+    //         `repeating-linear-gradient(0deg, transparent, transparent 10px, ${line} 10px, ${line} 11px)`,
+    //     ].join(', ');
+    // } else if (accent === 'core') {
+    //     backgroundImage = [
+    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
+    //         `repeating-linear-gradient(0deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
+    //         `repeating-linear-gradient(90deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
+    //     ].join(', ');
+    // } else if (accent === 'workshops') {
+    //     backgroundImage = [
+    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.22 : 0.14)} 0%, transparent 48%)`,
+    //         `repeating-linear-gradient(-38deg, transparent, transparent 8px, ${line} 8px, ${line} 9px)`,
+    //     ].join(', ');
+    // } else if (accent === 'review') {
+    //     backgroundImage = [
+    //         `radial-gradient(120% 70% at 50% -8%, ${alpha(color, isDark ? 0.34 : 0.22)} 0%, transparent 58%)`,
+    //         `radial-gradient(${alpha(color, isDark ? 0.32 : 0.22)} 1.15px, transparent 1.2px)`,
+    //     ].join(', ');
+    //     backgroundSize = 'auto, 15px 15px';
+    // }
 
     return {
         height: 1,
         position: 'relative',
         overflow: 'hidden',
         bgcolor: wash,
-        backgroundImage,
-        backgroundSize,
+        // backgroundImage,
+        // backgroundSize,
         borderColor: alpha(color, isDark ? 0.48 : 0.36),
         '&::before': {
             content: '""',
@@ -109,11 +107,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 75,
-            year: 75,
+            year: 67,
         },
         [SubscriptionTier.GameReview]: {
             month: 200,
-            year: 200,
+            year: 180,
         },
     },
     EUR: {
@@ -124,11 +122,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 65,
-            year: 65,
+            year: 58,
         },
         [SubscriptionTier.GameReview]: {
             month: 170,
-            year: 170,
+            year: 153,
         },
     },
     GBP: {
@@ -139,11 +137,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 55,
-            year: 55,
+            year: 50,
         },
         [SubscriptionTier.GameReview]: {
             month: 150,
-            year: 150,
+            year: 135,
         },
     },
     INR: {
@@ -154,11 +152,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 3250,
-            year: 3250,
+            year: 2925,
         },
         [SubscriptionTier.GameReview]: {
             month: 17925,
-            year: 17925,
+            year: 16130,
         },
     },
 };
@@ -218,14 +216,13 @@ function PriceMatrix({
             {onFreeTier && tiers.includes(SubscriptionTier.Free) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        accent='free'
-                        icon={<PersonOutlined fontSize='small' />}
+                        tier={SubscriptionTier.Free}
+                        icon={<PersonOutlined sx={{ fontSize: 28 }} />}
                         name={t('freeTierName')}
                         price={{
                             value: 0,
                             symbol: priceData.symbol,
                             interval: '',
-                            subtitle: ' ',
                         }}
                         sellingPoints={[
                             {
@@ -264,8 +261,8 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Basic) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        accent='core'
-                        icon={<School fontSize='small' />}
+                        tier={SubscriptionTier.Basic}
+                        icon={<School sx={{ fontSize: 28 }} />}
                         name={t('coreTierName')}
                         price={{
                             fullValue:
@@ -278,7 +275,6 @@ function PriceMatrix({
                                 interval === 'year'
                                     ? t('intervalMonthWithAsterisk')
                                     : t('intervalMonth'),
-                            subtitle: ' ',
                         }}
                         sellingPoints={[
                             {
@@ -326,19 +322,20 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Lecture) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        accent='workshops'
-                        icon={<PresenterIcon fontSize='small' />}
+                        tier={SubscriptionTier.Lecture}
+                        icon={<PresenterIcon sx={{ fontSize: 25 }} />}
                         name={t('lecturesTierName')}
                         price={{
+                            fullValue:
+                                interval === 'year'
+                                    ? priceData[SubscriptionTier.Lecture].month
+                                    : undefined,
                             value: priceData[SubscriptionTier.Lecture][interval],
                             symbol: priceData.symbol,
-                            interval: t('intervalMonth'),
-                            subtitle: t('perClassSubtitle', {
-                                currency: priceData.symbol,
-                                amount: Math.round(
-                                    priceData[SubscriptionTier.Lecture][interval] / 15,
-                                ),
-                            }),
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
                         }}
                         sellingPoints={[
                             {
@@ -401,19 +398,20 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.GameReview) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
-                        accent='review'
-                        icon={<Troubleshoot fontSize='small' />}
+                        tier={SubscriptionTier.GameReview}
+                        icon={<Troubleshoot sx={{ fontSize: 28 }} />}
                         name={t('gameReviewTierName')}
                         price={{
+                            fullValue:
+                                interval === 'year'
+                                    ? priceData[SubscriptionTier.GameReview].month
+                                    : undefined,
                             value: priceData[SubscriptionTier.GameReview][interval],
                             symbol: priceData.symbol,
-                            interval: t('intervalMonth'),
-                            subtitle: t('perClassSubtitle', {
-                                currency: priceData.symbol,
-                                amount: Math.round(
-                                    priceData[SubscriptionTier.GameReview][interval] / 20,
-                                ),
-                            }),
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
                         }}
                         sellingPoints={[
                             {
@@ -477,7 +475,7 @@ function PriceMatrix({
 export default PriceMatrix;
 
 function PriceCard({
-    accent,
+    tier,
     icon,
     name,
     price,
@@ -486,7 +484,7 @@ function PriceCard({
     beforeButton,
     isCurrentTier,
 }: {
-    accent: PriceCardAccent;
+    tier: SubscriptionTier;
     icon: ReactNode;
     name: string;
     price: {
@@ -504,7 +502,7 @@ function PriceCard({
     const t = useTranslations('upsell.priceMatrix');
     const theme = useTheme();
     return (
-        <Card variant='outlined' sx={cardAccentSx(theme, accent)}>
+        <Card variant='outlined' sx={cardAccentSx(theme, tier)}>
             <CardContent sx={{ height: 1, pt: 3 }}>
                 <Stack
                     spacing={3}
@@ -533,13 +531,13 @@ function PriceCard({
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    width: 36,
-                                    height: 36,
+                                    width: 40,
+                                    height: 40,
                                     flexShrink: 0,
                                     borderRadius: '50%',
-                                    color: accentColor(accent),
+                                    color: accentColor(tier),
                                     bgcolor: alpha(
-                                        accentColor(accent),
+                                        accentColor(tier),
                                         theme.palette.mode === 'dark' ? 0.22 : 0.16,
                                     ),
                                 })}
@@ -547,10 +545,9 @@ function PriceCard({
                                 {icon}
                             </Box>
                             <Typography
-                                variant='h6'
+                                variant='h5'
                                 sx={{
                                     fontWeight: 'bold',
-                                    color: 'text.secondary',
                                     textAlign: 'center',
                                 }}
                             >
@@ -558,7 +555,7 @@ function PriceCard({
                             </Typography>
                         </Stack>
 
-                        <Typography variant='h4'>
+                        <Typography variant='h5'>
                             {price.fullValue && (
                                 <Typography
                                     variant='h5'
@@ -575,7 +572,7 @@ function PriceCard({
                             )}
 
                             <Typography
-                                variant='h4'
+                                variant='h5'
                                 component='span'
                                 color={price.fullValue ? 'success' : undefined}
                             >

@@ -20,7 +20,7 @@ export function Pricing() {
             src={backgroundImage}
             background='linear-gradient(270deg, #141422 0%, #06060B 100%)'
             slotProps={{
-                image: { style: { opacity: 0.12 } },
+                image: { style: { opacity: 0.05 } },
                 container: { maxWidth: 'xl' },
             }}
         >

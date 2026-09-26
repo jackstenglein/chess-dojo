@@ -121,12 +121,16 @@ export function MainLanding() {
                 background='linear-gradient(270deg, rgba(7, 7, 18, 0.765) 10%, rgba(7, 7, 18, 0.9) 100%)'
                 slotProps={{
                     image: { style: { opacity: 0.15 }, priority: true },
-                    container: { sx: { pt: { xs: 1, md: 0 }, pb: { xs: 3, md: 0 } } },
+                    container: {
+                        sx: { pt: { xs: 1, md: 0 }, pb: { xs: 3, md: 0 } },
+                        maxWidth: 'xl',
+                    },
                 }}
             >
                 <Grid
                     container
                     rowSpacing={4}
+                    columnSpacing={2}
                     sx={{
                         alignItems: 'center',
                         height: {
@@ -238,7 +242,12 @@ export function MainLanding() {
                         <Image
                             alt={t('hero.imageAlt')}
                             src={heroImage}
-                            style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                objectFit: 'contain',
+                                borderRadius: '4px',
+                            }}
                             priority
                         />
                     </Grid>
