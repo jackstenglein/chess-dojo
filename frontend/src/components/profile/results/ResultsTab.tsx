@@ -1005,15 +1005,7 @@ function SummaryCard({
 }
 
 /** Large centered hero stat, matching the RatingCard header pattern. */
-function HeroStat({
-    label,
-    value,
-    color,
-}: {
-    label: string;
-    value: ReactNode;
-    color?: string;
-}) {
+function HeroStat({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
     return (
         <Stack sx={{ alignItems: 'center', minWidth: 0, flex: '1 1 0' }}>
             <Typography
