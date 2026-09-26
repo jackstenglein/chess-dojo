@@ -41,42 +41,12 @@ function cardAccentSx(theme: Theme, tier: SubscriptionTier) {
     const color = accentColor(tier);
     const isDark = theme.palette.mode === 'dark';
     const wash = alpha(color, isDark ? 0.08 : 0.08);
-    // const line = alpha(color, isDark ? 0.16 : 0.14);
-
-    // let backgroundImage = 'none';
-    // let backgroundSize = 'unset';
-
-    // if (accent === 'free') {
-    //     backgroundImage = [
-    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
-    //         `repeating-linear-gradient(0deg, transparent, transparent 10px, ${line} 10px, ${line} 11px)`,
-    //     ].join(', ');
-    // } else if (accent === 'core') {
-    //     backgroundImage = [
-    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.2 : 0.12)} 0%, transparent 48%)`,
-    //         `repeating-linear-gradient(0deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
-    //         `repeating-linear-gradient(90deg, transparent, transparent 13px, ${line} 13px, ${line} 14px)`,
-    //     ].join(', ');
-    // } else if (accent === 'workshops') {
-    //     backgroundImage = [
-    //         `linear-gradient(180deg, ${alpha(color, isDark ? 0.22 : 0.14)} 0%, transparent 48%)`,
-    //         `repeating-linear-gradient(-38deg, transparent, transparent 8px, ${line} 8px, ${line} 9px)`,
-    //     ].join(', ');
-    // } else if (accent === 'review') {
-    //     backgroundImage = [
-    //         `radial-gradient(120% 70% at 50% -8%, ${alpha(color, isDark ? 0.34 : 0.22)} 0%, transparent 58%)`,
-    //         `radial-gradient(${alpha(color, isDark ? 0.32 : 0.22)} 1.15px, transparent 1.2px)`,
-    //     ].join(', ');
-    //     backgroundSize = 'auto, 15px 15px';
-    // }
 
     return {
         height: 1,
         position: 'relative',
         overflow: 'hidden',
         bgcolor: wash,
-        // backgroundImage,
-        // backgroundSize,
         borderColor: alpha(color, isDark ? 0.48 : 0.36),
         '&::before': {
             content: '""',
