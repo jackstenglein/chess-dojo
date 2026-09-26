@@ -838,9 +838,19 @@ function SummaryCard({
                         <HeroStat
                             label={t('record')}
                             value={
-                                isOtb
-                                    ? `${overall.wins}-${overall.losses}-${overall.draws} · ${scorePercentage(overall).toFixed(0)}%`
-                                    : `${overall.wins}-${overall.losses}-${overall.draws}`
+                                isOtb ? (
+                                    <>
+                                        <Box
+                                            component='span'
+                                            sx={{ display: { xs: 'none', sm: 'inline' } }}
+                                        >
+                                            {`${overall.wins}-${overall.losses}-${overall.draws} · `}
+                                        </Box>
+                                        {`${scorePercentage(overall).toFixed(0)}%`}
+                                    </>
+                                ) : (
+                                    `${overall.wins}-${overall.losses}-${overall.draws}`
+                                )
                             }
                         />
                         {isOtb ? (
@@ -995,7 +1005,15 @@ function SummaryCard({
 }
 
 /** Large centered hero stat, matching the RatingCard header pattern. */
-function HeroStat({ label, value, color }: { label: string; value: string; color?: string }) {
+function HeroStat({
+    label,
+    value,
+    color,
+}: {
+    label: string;
+    value: ReactNode;
+    color?: string;
+}) {
     return (
         <Stack sx={{ alignItems: 'center', minWidth: 0, flex: '1 1 0' }}>
             <Typography
