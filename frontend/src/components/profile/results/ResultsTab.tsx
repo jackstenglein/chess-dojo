@@ -10,7 +10,7 @@ import { getRatingUsername, hideRatingUsername, RatingSystem, User } from '@/dat
 import LoadingPage from '@/loading/LoadingPage';
 import { FideIcon, RatingSystemIcon, UscfIcon } from '@/style/RatingSystemIcons';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
-import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
+import { KingIcon } from '@/style/ChessIcons';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
@@ -39,6 +39,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import {
     AggregatedResults,
     aggregateResults,
+    getFidePerformance,
     ResultOutcome,
     ResultsBreakdown,
     toUnifiedChesscomResult,
@@ -68,7 +69,6 @@ const MAX_RECENT_SESSIONS = 60;
 const ONLINE_PLATFORMS = [RatingSystem.Chesscom, RatingSystem.Lichess] as const;
 const OTB_PLATFORMS = [RatingSystem.Fide, RatingSystem.Uscf] as const;
 /** OTB games carry the event start as their date (no per-game dates published). */
-const OTB_EVENT_LABEL_MAX = 32;
 
 /** Theme color token for a given result outcome. */
 function outcomeColor(outcome: ResultOutcome): string {
@@ -100,6 +100,12 @@ interface SessionStats {
     percentage: number;
     /** FIDE performance rating, or undefined when no opponent ratings are known. */
     performance?: number;
+    /** Points scored with White and number of games played with White. */
+    whiteScore: number;
+    whiteGames: number;
+    /** Points scored with Black and number of games played with Black. */
+    blackScore: number;
+    blackGames: number;
 }
 
 /** Score, percentage and FIDE performance rating for a set of games. */
@@ -109,18 +115,24 @@ function getSessionStats(games: UnifiedResult[]): SessionStats {
     const draws = games.length - wins - losses;
     const score = wins + draws / 2;
     const percentage = games.length > 0 ? (score / games.length) * 100 : 0;
-
-    const opponentRatings = games
-        .map((g) => g.opponentRating)
-        .filter((r): r is number => r !== undefined && r > 0);
-    let performance: number | undefined;
-    if (opponentRatings.length > 0) {
-        const avg = Math.round(
-            opponentRatings.reduce((sum, r) => sum + r, 0) / opponentRatings.length,
-        );
-        performance = avg + fideDpTable[Math.round(percentage)];
-    }
-    return { wins, losses, draws, score, percentage, performance };
+    const performance = getFidePerformance(games);
+    const scoreOf = (subset: UnifiedResult[]) =>
+        subset.filter((g) => g.outcome === 'win').length +
+        subset.filter((g) => g.outcome === 'draw').length / 2;
+    const whiteGamesList = games.filter((g) => g.color === 'white');
+    const blackGamesList = games.filter((g) => g.color === 'black');
+    return {
+        wins,
+        losses,
+        draws,
+        score,
+        percentage,
+        performance,
+        whiteScore: scoreOf(whiteGamesList),
+        whiteGames: whiteGamesList.length,
+        blackScore: scoreOf(blackGamesList),
+        blackGames: blackGamesList.length,
+    };
 }
 
 /**
@@ -407,13 +419,9 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                 );
                 if (games.length === 0) return;
                 const start = Date.parse(t.start || '') || 0;
-                const label =
-                    t.name.length > OTB_EVENT_LABEL_MAX
-                        ? `${t.name.slice(0, OTB_EVENT_LABEL_MAX - 1)}…`
-                        : t.name;
                 otbSessions.push({
                     id: `${prefix}-${ti}`,
-                    label,
+                    label: t.name,
                     games,
                     start,
                     end: start,
@@ -484,7 +492,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
             <RequestSnackbar request={request} />
             {isOtb && <RequestSnackbar request={otbRequest} />}
 
-            <SummaryCard aggregated={aggregated} t={t} />
+            <SummaryCard aggregated={aggregated} isOtb={isOtb} t={t} />
 
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
@@ -680,7 +688,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                 <Typography sx={{ textAlign: 'center' }}>{t('emptyNoGames')}</Typography>
             ) : (
                 <>
-                    <RecentSessionsCard sessions={recentSessions} t={t} />
+                    <RecentSessionsCard sessions={recentSessions} isOtb={isOtb} t={t} />
                 </>
             )}
         </Stack>
@@ -760,8 +768,39 @@ function formatScore(score: number): string {
     return Number.isInteger(score) ? `${score}` : `${Math.floor(score)}½`;
 }
 
-function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFunc }) {
-    const { overall, byColor, byPlatform, avgOpponentRating, bestWinStreak, bestWin } = aggregated;
+/** Score percentage (wins + draws/2) / games * 100 — includes draws, unlike winRate. */
+function scorePercentage(breakdown: ResultsBreakdown): number {
+    return breakdown.games > 0
+        ? ((breakdown.wins + breakdown.draws / 2) / breakdown.games) * 100
+        : 0;
+}
+
+/** Share of games not lost (wins + draws) / games * 100. */
+function unbeatenPercentage(breakdown: ResultsBreakdown): number {
+    return breakdown.games > 0
+        ? ((breakdown.wins + breakdown.draws) / breakdown.games) * 100
+        : 0;
+}
+
+function SummaryCard({
+    aggregated,
+    isOtb,
+    t,
+}: {
+    aggregated: AggregatedResults;
+    isOtb: boolean;
+    t: TFunc;
+}) {
+    const {
+        overall,
+        byPlatform,
+        avgOpponentRating,
+        bestWinStreak,
+        bestWin,
+        whitePerformance,
+        blackPerformance,
+        performance,
+    } = aggregated;
     const platforms = [...ONLINE_PLATFORMS, ...OTB_PLATFORMS].filter(
         (platform) => byPlatform[platform],
     );
@@ -784,9 +823,27 @@ function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFun
                     >
                         <HeroStat
                             label={t('record')}
-                            value={`${overall.wins}-${overall.losses}-${overall.draws}`}
+                            value={
+                                isOtb
+                                    ? `${overall.wins}-${overall.losses}-${overall.draws} · ${scorePercentage(overall).toFixed(0)}%`
+                                    : `${overall.wins}-${overall.losses}-${overall.draws}`
+                            }
                         />
-                        <HeroStat label={t('winRate')} value={`${overall.winRate.toFixed(0)}%`} />
+                        {isOtb ? (
+                            <HeroStat
+                                label='Performance Rating'
+                                value={
+                                    performance !== undefined
+                                        ? `${Math.round(performance)}`
+                                        : '-'
+                                }
+                            />
+                        ) : (
+                            <HeroStat
+                                label={t('winRate')}
+                                value={`${unbeatenPercentage(overall).toFixed(0)}%`}
+                            />
+                        )}
                         <HeroStat
                             label={t('bestStreak')}
                             value={t('streakWin', { count: bestWinStreak })}
@@ -804,12 +861,30 @@ function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFun
                                 sx={{ justifyContent: 'space-evenly', flexWrap: 'wrap', rowGap: 1 }}
                             >
                                 <MiniStat
-                                    label={t('asWhite')}
-                                    value={`${byColor.white.winRate.toFixed(0)}%`}
+                                    label={
+                                        <ColorStatLabel
+                                                color='white'
+                                                    text='Performance White'
+                                        />
+                                    }
+                                    value={
+                                        whitePerformance !== undefined
+                                            ? `${Math.round(whitePerformance)}`
+                                            : '-'
+                                    }
                                 />
                                 <MiniStat
-                                    label={t('asBlack')}
-                                    value={`${byColor.black.winRate.toFixed(0)}%`}
+                                    label={
+                                        <ColorStatLabel
+                                                color='black'
+                                                    text='Performance Black'
+                                        />
+                                    }
+                                    value={
+                                        blackPerformance !== undefined
+                                            ? `${Math.round(blackPerformance)}`
+                                            : '-'
+                                    }
                                 />
                                 <MiniStat
                                     label={t('avgOpponent')}
@@ -850,30 +925,29 @@ function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFun
                                                 spacing={1}
                                                 sx={{
                                                     alignItems: 'center',
-                                                    minWidth: 104,
+                                                    width: 120,
+                                                    flexShrink: 0,
                                                 }}
                                             >
                                                 <RatingSystemIcon system={platform} size='small' />
                                                 <Typography
                                                     variant='body2'
                                                     sx={{ color: 'text.secondary' }}
+                                                    noWrap
                                                 >
                                                     {platformName[platform] ?? platform}
                                                 </Typography>
                                             </Stack>
                                             <Box sx={{ flexGrow: 1 }}>
-                                                <WinLossDrawBar
-                                                    breakdown={breakdown}
-                                                    centerLabel={`Score ${formatScore(
-                                                        breakdown.wins + breakdown.draws / 2,
-                                                    )}/${breakdown.games}`}
-                                                />
+                                                <WinLossDrawBar breakdown={breakdown} />
                                             </Box>
                                             <Typography
                                                 variant='caption'
                                                 sx={{
                                                     color: 'text.secondary',
                                                     whiteSpace: 'nowrap',
+                                                    width: 68,
+                                                    flexShrink: 0,
                                                 }}
                                             >
                                                 {breakdown.wins}-{breakdown.losses}-
@@ -887,7 +961,11 @@ function SummaryCard({ aggregated, t }: { aggregated: AggregatedResults; t: TFun
                                                     textAlign: 'right',
                                                 }}
                                             >
-                                                {breakdown.winRate.toFixed(0)}%
+                                                {(isOtb
+                                                    ? scorePercentage(breakdown)
+                                                    : unbeatenPercentage(breakdown)
+                                                ).toFixed(0)}
+                                                %
                                             </Typography>
                                         </Stack>
                                     );
@@ -925,7 +1003,7 @@ function MiniStat({
     href,
     color,
 }: {
-    label: string;
+    label: ReactNode;
     value: string;
     /** If set, the value links out (e.g. to the game the stat came from). */
     href?: string;
@@ -953,19 +1031,67 @@ function MiniStat({
             ) : (
                 valueNode
             )}
+            {typeof label === 'string' ? (
+                <Typography variant='caption' sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                    {label}
+                </Typography>
+            ) : (
+                label
+            )}
+        </Stack>
+    );
+}
+
+/** King piece icon on a circle of its own color (white gets a border to stay visible). */
+function ColorKingIcon({ color }: { color: 'white' | 'black' }) {
+    const isWhite = color === 'white';
+    return (
+        <Box
+            sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                bgcolor: isWhite ? 'common.white' : 'common.black',
+                border: '1px solid',
+                borderColor: 'text.secondary',
+            }}
+        >
+            <KingIcon
+                sx={{ fontSize: '0.65rem', color: isWhite ? 'common.black' : 'common.white' }}
+            />
+        </Box>
+    );
+}
+
+/** Label pairing a color king icon with its stat text. */
+function ColorStatLabel({ color, text }: { color: 'white' | 'black'; text: string }) {
+    return (
+        <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+            <ColorKingIcon color={color} />
             <Typography variant='caption' sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                {label}
+                {text}
             </Typography>
         </Stack>
     );
 }
 
-function RecentSessionsCard({ sessions, t }: { sessions: GameSession[]; t: TFunc }) {
+function RecentSessionsCard({
+    sessions,
+    isOtb,
+    t,
+}: {
+    sessions: GameSession[];
+    isOtb: boolean;
+    t: TFunc;
+}) {
     return (
         <Card variant='outlined' sx={{ borderRadius: 3 }}>
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography variant='overline' sx={{ color: 'text.secondary' }}>
-                    Performance by Month
+                    {isOtb ? 'Tournament Results' : 'Performance by Month'}
                 </Typography>
                 <Stack spacing={1} sx={{ mt: 1.5 }}>
                     {sessions.map((session, index) => {
@@ -975,7 +1101,7 @@ function RecentSessionsCard({ sessions, t }: { sessions: GameSession[]; t: TFunc
                                 key={session.id}
                                 disableGutters
                                 elevation={0}
-                                defaultExpanded={index === 0}
+                                defaultExpanded={index === 0 && !isOtb}
                                 slotProps={{ transition: { unmountOnExit: true } }}
                                 sx={{
                                     border: '1px solid',
@@ -996,13 +1122,33 @@ function RecentSessionsCard({ sessions, t }: { sessions: GameSession[]; t: TFunc
                                             minWidth: 0,
                                         }}
                                     >
-                                        <Typography
-                                            variant='body2'
-                                            sx={{ fontWeight: 600, minWidth: 92 }}
-                                            noWrap
-                                        >
-                                            {session.label}
-                                        </Typography>
+                                        <Box sx={{ minWidth: 92, flexShrink: 1 }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{ fontWeight: 600 }}
+                                            >
+                                                {session.label}
+                                            </Typography>
+                                            {isOtb && session.start > 0 && (
+                                                <Typography
+                                                    variant='caption'
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                        display: 'block',
+                                                        lineHeight: 1.2,
+                                                    }}
+                                                    noWrap
+                                                >
+                                                    {new Date(session.start).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            month: 'long',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
+                                                </Typography>
+                                            )}
+                                        </Box>
                                         <Box sx={{ flexGrow: 1, minWidth: 40 }}>
                                             <WinLossDrawBar
                                                 breakdown={{
@@ -1038,21 +1184,66 @@ function RecentSessionsCard({ sessions, t }: { sessions: GameSession[]; t: TFunc
                                     </Stack>
                                 </AccordionSummary>
                                 <AccordionDetails sx={{ px: 1, pb: 1, pt: 0 }}>
-                                    <Typography
-                                        variant='caption'
-                                        sx={{
-                                            color: 'text.secondary',
-                                            display: 'block',
-                                            px: 1,
-                                            pb: 0.5,
-                                        }}
+                                    <Stack
+                                        direction='row'
+                                        spacing={1}
+                                        sx={{ alignItems: 'center', px: 1, pb: 0.5 }}
                                     >
-                                        {session.games.length}{' '}
-                                        {session.games.length === 1 ? 'game' : 'games'} · Score{' '}
-                                        {formatScore(stats.score)}/{session.games.length}
-                                        {stats.performance !== undefined &&
-                                            ` · ${Math.round(stats.performance)} Performance`}
-                                    </Typography>
+                                        <Typography
+                                            variant='caption'
+                                            sx={{
+                                                color: 'text.secondary',
+                                                display: 'block',
+                                                flexGrow: 1,
+                                            }}
+                                        >
+                                            {session.games.length}{' '}
+                                            {session.games.length === 1 ? 'game' : 'games'} · Score:{' '}
+                                            {formatScore(stats.score)}/{session.games.length}
+                                            {stats.performance !== undefined &&
+                                                ` · Performance ${Math.round(stats.performance)}`}
+                                        </Typography>
+                                        {isOtb && (
+                                            <Stack direction='row' spacing={1.5}>
+                                                <Stack
+                                                    direction='row'
+                                                    spacing={0.5}
+                                                    sx={{ alignItems: 'center' }}
+                                                >
+                                                    <ColorKingIcon color='white' />
+                                                    <Typography
+                                                        variant='caption'
+                                                        sx={{
+                                                            color: 'text.secondary',
+                                                            whiteSpace: 'nowrap',
+                                                        }}
+                                                    >
+                                                        {stats.whiteGames > 0
+                                                            ? `${formatScore(stats.whiteScore)}/${stats.whiteGames}`
+                                                            : '-'}
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack
+                                                    direction='row'
+                                                    spacing={0.5}
+                                                    sx={{ alignItems: 'center' }}
+                                                >
+                                                    <ColorKingIcon color='black' />
+                                                    <Typography
+                                                        variant='caption'
+                                                        sx={{
+                                                            color: 'text.secondary',
+                                                            whiteSpace: 'nowrap',
+                                                        }}
+                                                    >
+                                                        {stats.blackGames > 0
+                                                            ? `${formatScore(stats.blackScore)}/${stats.blackGames}`
+                                                            : '-'}
+                                                    </Typography>
+                                                </Stack>
+                                            </Stack>
+                                        )}
+                                    </Stack>
                                     <SessionGamesTable games={session.games} t={t} />
                                 </AccordionDetails>
                             </Accordion>

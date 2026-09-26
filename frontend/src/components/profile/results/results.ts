@@ -2,6 +2,7 @@ import { ChesscomGame } from '@/api/external/chesscom';
 import { LichessGame } from '@/api/external/lichess';
 import { OtbTournament } from '@/api/external/otb';
 import { RatingSystem } from '@/database/user';
+import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 
 export type ResultOutcome = 'win' | 'loss' | 'draw';
 
@@ -221,11 +222,42 @@ function summarize(results: UnifiedResult[]): ResultsBreakdown {
     return { games, wins, losses, draws, winRate };
 }
 
+/**
+ * FIDE performance rating for a set of games (average opponent rating plus
+ * the dp offset for the score percentage). Only games with a known opponent
+ * rating count — unrated games (e.g. US Chess) are excluded entirely, since
+ * a performance without opponent ratings is meaningless.
+ */
+export function getFidePerformance(games: UnifiedResult[]): number | undefined {
+    const rated = games.filter(
+        (g) => g.opponentRating !== undefined && g.opponentRating > 0,
+    );
+    if (rated.length === 0) {
+        return undefined;
+    }
+    const wins = rated.filter((r) => r.outcome === 'win').length;
+    const draws = rated.filter((r) => r.outcome === 'draw').length;
+    const percentage = ((wins + draws / 2) / rated.length) * 100;
+    const opponentRatings = rated
+        .map((r) => r.opponentRating)
+        .filter((r): r is number => r !== undefined && r > 0);
+    const avg = Math.round(
+        opponentRatings.reduce((sum, r) => sum + r, 0) / opponentRatings.length,
+    );
+    return avg + fideDpTable[Math.round(percentage)];
+}
+
 export interface AggregatedResults {
     overall: ResultsBreakdown;
     byPlatform: Partial<Record<ResultPlatform, ResultsBreakdown>>;
     byTimeClass: Record<string, ResultsBreakdown>;
     byColor: Record<'white' | 'black', ResultsBreakdown>;
+    /** FIDE performance rating with the white pieces, if computable. */
+    whitePerformance?: number;
+    /** FIDE performance rating with the black pieces, if computable. */
+    blackPerformance?: number;
+    /** Overall FIDE performance rating, if computable. */
+    performance?: number;
     /** Average rated opponent strength across all results with a known rating. */
     avgOpponentRating?: number;
     /** The longest run of consecutive wins across all results in the period. */
@@ -313,6 +345,9 @@ export function aggregateResults(results: UnifiedResult[]): AggregatedResults {
         byPlatform,
         byTimeClass,
         byColor,
+        whitePerformance: getFidePerformance(results.filter((r) => r.color === 'white')),
+        blackPerformance: getFidePerformance(results.filter((r) => r.color === 'black')),
+        performance: getFidePerformance(results),
         avgOpponentRating,
         bestWinStreak: computeBestWinStreak(results),
         bestWin: computeBestWin(results),
