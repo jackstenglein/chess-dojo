@@ -82,7 +82,7 @@ export const landingLiveClasses: LiveClass[] = [
         recordings: [
             {
                 date: '2026-09-21',
-                url: 'https://www.youtube.com/watch?v=Y9BeyFbM6mA',
+                url: 'https://www.youtube.com/embed/Oxpt7ahbeO4?autoplay=1',
                 s3Key: '',
             },
         ],
@@ -101,7 +101,7 @@ export const landingLiveClasses: LiveClass[] = [
         recordings: [
             {
                 date: '2026-08-05',
-                url: 'https://www.youtube.com/watch?v=8GLJJp4NzDc',
+                url: 'https://www.youtube.com/embed/8GLJJp4NzDc?autoplay=1',
                 s3Key: '',
             },
         ],
