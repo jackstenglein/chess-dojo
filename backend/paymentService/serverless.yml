@@ -101,9 +101,9 @@ functions:
       monthlyPriceId: ${file(../config-${sls:stage}.yml):monthlySubscriptionPriceId}
       yearlyPriceId: ${file(../config-${sls:stage}.yml):yearlySubscriptionPriceId}
       lectureTierMonthlyPriceId: ${file(../config-${sls:stage}.yml):lectureTierMonthlySubscriptionPriceId}
-      lectureTierPresalePriceId: ${file(../config-${sls:stage}.yml):lectureTierPresalePriceId}
+      lectureTierYearlyPriceId: ${file(../config-${sls:stage}.yml):lectureTierYearlySubscriptionPriceId}
       gameReviewTierMonthlyPriceId: ${file(../config-${sls:stage}.yml):gameReviewTierMonthlySubscriptionPriceId}
-      gameReviewTierPresalePriceId: ${file(../config-${sls:stage}.yml):gameReviewTierPresalePriceId}
+      gameReviewTierYearlyPriceId: ${file(../config-${sls:stage}.yml):gameReviewTierYearlySubscriptionPriceId}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -129,9 +129,9 @@ functions:
       monthlyPriceId: ${file(../config-${sls:stage}.yml):monthlySubscriptionPriceId}
       yearlyPriceId: ${file(../config-${sls:stage}.yml):yearlySubscriptionPriceId}
       lectureTierMonthlyPriceId: ${file(../config-${sls:stage}.yml):lectureTierMonthlySubscriptionPriceId}
-      lectureTierPresalePriceId: ${file(../config-${sls:stage}.yml):lectureTierPresalePriceId}
+      lectureTierYearlyPriceId: ${file(../config-${sls:stage}.yml):lectureTierYearlySubscriptionPriceId}
       gameReviewTierMonthlyPriceId: ${file(../config-${sls:stage}.yml):gameReviewTierMonthlySubscriptionPriceId}
-      gameReviewTierPresalePriceId: ${file(../config-${sls:stage}.yml):gameReviewTierPresalePriceId}
+      gameReviewTierYearlyPriceId: ${file(../config-${sls:stage}.yml):gameReviewTierYearlySubscriptionPriceId}
     iamRoleStatements:
       - Effect: Allow
         Action:

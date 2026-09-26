@@ -2,8 +2,11 @@
 
 import { Link } from '@/components/navigation/Link';
 import { CalendarSessionType } from '@/database/event';
+import { PresenterIcon } from '@/style/PresenterIcon';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { PersonOutlined, School, Troubleshoot } from '@mui/icons-material';
 import {
+    Box,
     Button,
     ButtonProps,
     Card,
@@ -11,13 +14,51 @@ import {
     Grid,
     GridProps,
     Stack,
+    Theme,
     Typography,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { JSX, useSyncExternalStore } from 'react';
+import { JSX, ReactNode, useSyncExternalStore } from 'react';
 import { Request } from '../api/Request';
 import SellingPoint, { SellingPointProps, SellingPointStatus } from './SellingPoint';
 import { getCurrency } from './locales';
+
+function accentColor(tier: SubscriptionTier): string {
+    switch (tier) {
+        case SubscriptionTier.Free:
+            return '#616161';
+        case SubscriptionTier.Basic:
+            return '#e7ba51';
+        case SubscriptionTier.Lecture:
+            return '#33b679';
+        case SubscriptionTier.GameReview:
+            return '#039be5';
+    }
+}
+
+function cardAccentSx(theme: Theme, tier: SubscriptionTier) {
+    const color = accentColor(tier);
+    const isDark = theme.palette.mode === 'dark';
+    const wash = alpha(color, isDark ? 0.08 : 0.08);
+
+    return {
+        height: 1,
+        position: 'relative',
+        overflow: 'hidden',
+        bgcolor: wash,
+        borderColor: alpha(color, isDark ? 0.48 : 0.36),
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            bgcolor: color,
+        },
+    };
+}
 
 export const priceDataByCurrency: Record<
     string,
@@ -36,11 +77,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 75,
-            year: 75,
+            year: 67,
         },
         [SubscriptionTier.GameReview]: {
             month: 200,
-            year: 200,
+            year: 180,
         },
     },
     EUR: {
@@ -51,11 +92,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 65,
-            year: 65,
+            year: 58,
         },
         [SubscriptionTier.GameReview]: {
             month: 170,
-            year: 170,
+            year: 153,
         },
     },
     GBP: {
@@ -66,11 +107,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 55,
-            year: 55,
+            year: 50,
         },
         [SubscriptionTier.GameReview]: {
             month: 150,
-            year: 150,
+            year: 135,
         },
     },
     INR: {
@@ -81,11 +122,11 @@ export const priceDataByCurrency: Record<
         },
         [SubscriptionTier.Lecture]: {
             month: 3250,
-            year: 3250,
+            year: 2925,
         },
         [SubscriptionTier.GameReview]: {
             month: 17925,
-            year: 17925,
+            year: 16130,
         },
     },
 };
@@ -145,12 +186,13 @@ function PriceMatrix({
             {onFreeTier && tiers.includes(SubscriptionTier.Free) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        tier={SubscriptionTier.Free}
+                        icon={<PersonOutlined sx={{ fontSize: 28 }} />}
                         name={t('freeTierName')}
                         price={{
                             value: 0,
                             symbol: priceData.symbol,
                             interval: '',
-                            subtitle: ' ',
                         }}
                         sellingPoints={[
                             {
@@ -189,6 +231,8 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Basic) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        tier={SubscriptionTier.Basic}
+                        icon={<School sx={{ fontSize: 28 }} />}
                         name={t('coreTierName')}
                         price={{
                             fullValue:
@@ -201,7 +245,6 @@ function PriceMatrix({
                                 interval === 'year'
                                     ? t('intervalMonthWithAsterisk')
                                     : t('intervalMonth'),
-                            subtitle: ' ',
                         }}
                         sellingPoints={[
                             {
@@ -249,17 +292,20 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.Lecture) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        tier={SubscriptionTier.Lecture}
+                        icon={<PresenterIcon sx={{ fontSize: 25 }} />}
                         name={t('lecturesTierName')}
                         price={{
+                            fullValue:
+                                interval === 'year'
+                                    ? priceData[SubscriptionTier.Lecture].month
+                                    : undefined,
                             value: priceData[SubscriptionTier.Lecture][interval],
                             symbol: priceData.symbol,
-                            interval: t('intervalMonth'),
-                            subtitle: t('perClassSubtitle', {
-                                currency: priceData.symbol,
-                                amount: Math.round(
-                                    priceData[SubscriptionTier.Lecture][interval] / 15,
-                                ),
-                            }),
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
                         }}
                         sellingPoints={[
                             {
@@ -322,17 +368,20 @@ function PriceMatrix({
             {tiers.includes(SubscriptionTier.GameReview) && (
                 <Grid size={getGridSize(cardCount)}>
                     <PriceCard
+                        tier={SubscriptionTier.GameReview}
+                        icon={<Troubleshoot sx={{ fontSize: 28 }} />}
                         name={t('gameReviewTierName')}
                         price={{
+                            fullValue:
+                                interval === 'year'
+                                    ? priceData[SubscriptionTier.GameReview].month
+                                    : undefined,
                             value: priceData[SubscriptionTier.GameReview][interval],
                             symbol: priceData.symbol,
-                            interval: t('intervalMonth'),
-                            subtitle: t('perClassSubtitle', {
-                                currency: priceData.symbol,
-                                amount: Math.round(
-                                    priceData[SubscriptionTier.GameReview][interval] / 20,
-                                ),
-                            }),
+                            interval:
+                                interval === 'year'
+                                    ? t('intervalMonthWithAsterisk')
+                                    : t('intervalMonth'),
                         }}
                         sellingPoints={[
                             {
@@ -396,6 +445,8 @@ function PriceMatrix({
 export default PriceMatrix;
 
 function PriceCard({
+    tier,
+    icon,
     name,
     price,
     sellingPoints,
@@ -403,6 +454,8 @@ function PriceCard({
     beforeButton,
     isCurrentTier,
 }: {
+    tier: SubscriptionTier;
+    icon: ReactNode;
     name: string;
     price: {
         fullValue?: number;
@@ -417,9 +470,10 @@ function PriceCard({
     isCurrentTier: boolean;
 }) {
     const t = useTranslations('upsell.priceMatrix');
+    const theme = useTheme();
     return (
-        <Card variant='outlined' sx={{ height: 1 }}>
-            <CardContent sx={{ height: 1 }}>
+        <Card variant='outlined' sx={cardAccentSx(theme, tier)}>
+            <CardContent sx={{ height: 1, pt: 3 }}>
                 <Stack
                     spacing={3}
                     sx={{
@@ -433,18 +487,45 @@ function PriceCard({
                             gap: 1,
                         }}
                     >
-                        <Typography
-                            variant='h6'
+                        <Stack
+                            direction='row'
+                            spacing={1}
                             sx={{
-                                fontWeight: 'bold',
-                                color: 'text.secondary',
-                                textAlign: 'center',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}
                         >
-                            {name}
-                        </Typography>
+                            <Box
+                                aria-hidden
+                                sx={(theme) => ({
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 40,
+                                    height: 40,
+                                    flexShrink: 0,
+                                    borderRadius: '50%',
+                                    color: accentColor(tier),
+                                    bgcolor: alpha(
+                                        accentColor(tier),
+                                        theme.palette.mode === 'dark' ? 0.22 : 0.16,
+                                    ),
+                                })}
+                            >
+                                {icon}
+                            </Box>
+                            <Typography
+                                variant='h5'
+                                sx={{
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {name}
+                            </Typography>
+                        </Stack>
 
-                        <Typography variant='h4'>
+                        <Typography variant='h5'>
                             {price.fullValue && (
                                 <Typography
                                     variant='h5'
@@ -461,7 +542,7 @@ function PriceCard({
                             )}
 
                             <Typography
-                                variant='h4'
+                                variant='h5'
                                 component='span'
                                 color={price.fullValue ? 'success' : undefined}
                             >

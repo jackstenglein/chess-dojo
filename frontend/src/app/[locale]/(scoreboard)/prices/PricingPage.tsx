@@ -17,20 +17,22 @@ interface PricingPageProps {
     tiers?: SubscriptionTier[];
     onFreeTier?: () => void;
     hideInterval?: boolean;
+    /** Render the table without a page-level Container or auth loading screen. */
+    embedded?: boolean;
 }
 
-function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
+function PricingPage({ tiers, onFreeTier, hideInterval, embedded }: PricingPageProps) {
     const t = useTranslations('upsell.pricingPage');
     const { status, user } = useAuth();
     const [interval, setInterval] = useState<'month' | 'year'>(hideInterval ? 'month' : 'year');
     const { tier, request, onSubscribe } = useOnSubscribe();
 
-    if (status === AuthStatus.Loading) {
+    if (status === AuthStatus.Loading && !embedded) {
         return <LoadingPage />;
     }
 
-    return (
-        <Container maxWidth='xl' sx={{ py: 5 }}>
+    const content = (
+        <>
             <RequestSnackbar request={request} />
             <Grid
                 container
@@ -115,6 +117,16 @@ function PricingPage({ tiers, onFreeTier, hideInterval }: PricingPageProps) {
                     )}
                 </Grid>
             </Grid>
+        </>
+    );
+
+    if (embedded) {
+        return content;
+    }
+
+    return (
+        <Container maxWidth='xl' sx={{ py: 5 }}>
+            {content}
         </Container>
     );
 }
