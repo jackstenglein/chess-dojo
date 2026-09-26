@@ -2,19 +2,11 @@ import { runWithAmplifyServerContext } from '@/auth/amplifyServerUtils';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
-import { DEFAULT_LOCALE, LOCALE_CODES } from './i18n/locales';
+import { DEFAULT_LOCALE, LOCALE_PREFIX_REGEX } from './i18n/locales';
 import { routing } from './i18n/routing';
 import { logger } from './logging/logger';
 
 const intlMiddleware = createIntlMiddleware(routing);
-
-// Derived from LOCALE_CODES so adding a locale in locales.ts covers every
-// matcher site. A hard-coded alternation here would silently strip new
-// locales and emit wrong-prefix redirects.
-if (LOCALE_CODES.length === 0) {
-    throw new Error('proxy: LOCALE_CODES is empty; SUPPORTED_LOCALES must have at least one entry');
-}
-const LOCALE_PREFIX_REGEX = new RegExp(`^/(${LOCALE_CODES.join('|')})(?=/|$)`);
 
 // Under localePrefix: 'as-needed', the default locale is served at bare URLs
 // (e.g. '/profile' for en). Non-default locales keep their prefix
@@ -83,14 +75,13 @@ const legacyRoutes = [
 ];
 
 export async function proxy(request: NextRequest) {
-    // Run next-intl first. For non-default locales it returns a redirect
-    // (Location header); for the default locale under as-needed it returns
-    // a rewrite (x-middleware-rewrite) with no Location. If it's a redirect,
-    // short-circuit now. Otherwise fall through and forward its rewrite +
-    // cookie headers onto whatever the auth/legacy logic decides to return.
+    // next-intl answers a non-default locale with a redirect and the default
+    // locale with a rewrite. The rewrite is forwarded onto whatever we return.
     let intlResponse: NextResponse | undefined;
     try {
         intlResponse = intlMiddleware(request);
+        // Drop next-intl's Set-Cookie, or a prefixed URL becomes a stored preference.
+        intlResponse.headers.delete('set-cookie');
     } catch (error) {
         logger.error?.('next-intl middleware threw; falling through', error);
     }
@@ -98,31 +89,14 @@ export async function proxy(request: NextRequest) {
         return intlResponse;
     }
 
-    // Under as-needed, next-intl rewrites bare default-locale URLs internally
-    // via x-middleware-rewrite (no Location header) and sets a Set-Cookie on
-    // first visits. We must forward both onto our own response or Next will
-    // 404 the bare URL (no [locale] segment match) and the locale cookie will
-    // be lost forever. getSetCookie() returns each cookie separately; fall
-    // back to get('set-cookie') for runtimes that don't expose it.
+    // Forward next-intl's rewrite header, or Next 404s the bare default-locale URL.
     function forwardIntlHeaders(target: NextResponse): NextResponse {
         if (!intlResponse) return target;
         const headers = intlResponse.headers;
         const rewrite = headers.get('x-middleware-rewrite');
-        // x-middleware-rewrite is meaningless on a redirect response and Next
-        // currently ignores it there, but a future version honouring it would
-        // double-rewrite. Gate to pass-through responses only.
+        // Not on redirects: a future Next honouring the header there would double-rewrite.
         if (rewrite && !target.headers.get('location')) {
             target.headers.set('x-middleware-rewrite', rewrite);
-        }
-
-        const cookies = typeof headers.getSetCookie === 'function' ? headers.getSetCookie() : [];
-        if (cookies.length > 0) {
-            for (const cookie of cookies) {
-                target.headers.append('set-cookie', cookie);
-            }
-        } else {
-            const single = headers.get('set-cookie');
-            if (single) target.headers.append('set-cookie', single);
         }
         return target;
     }

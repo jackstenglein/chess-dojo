@@ -9,6 +9,19 @@ describe('calculateTimeRating', () => {
         assert.isUndefined(result, 'should return undefined for < 5 moves');
     });
 
+    test('returns undefined for exactly MIN_MOVES moves', () => {
+        const timeControls = [{ seconds: 5400 }];
+        const dataset: ClockDatum[] = [
+            { seconds: 5400 },
+            { seconds: 5380 },
+            { seconds: 5360 },
+            { seconds: 5340 },
+            { seconds: 5320 },
+        ];
+        const result = calculateTimeRating(timeControls, dataset);
+        assert.isUndefined(result, 'should return undefined for exactly 5 moves');
+    });
+
     test('returns undefined for short time control', () => {
         const timeControls = [{ seconds: 300 }]; // 5 min blitz
         const dataset: ClockDatum[] = Array.from({ length: 20 }, (_, i) => ({

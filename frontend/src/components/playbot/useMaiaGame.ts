@@ -121,6 +121,7 @@ export function useMaiaGame(): UseMaiaGameResult {
     const moveStartRef = useRef(Date.now());
     const timeControlRef = useRef<TimeControl>(UNLIMITED_TC);
     const botMoveProviderRef = useRef<BotMoveProvider | null>(null);
+    const openingBookEnabledRef = useRef(true);
     // Track last tick timestamp for accurate countdown
     const clockTickRef = useRef<number>(Date.now());
     const clockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -245,6 +246,10 @@ export function useMaiaGame(): UseMaiaGameResult {
                 },
                 {
                     provider: botMoveProviderRef.current,
+                    skipOpeningBook: !openingBookEnabledRef.current,
+                    onOpeningBookFailure: () => {
+                        openingBookEnabledRef.current = false;
+                    },
                 },
             );
 
@@ -367,6 +372,7 @@ export function useMaiaGame(): UseMaiaGameResult {
             setMaiaRating(opts.maiaRating);
             maiaRatingRef.current = opts.maiaRating;
             botMoveProviderRef.current = opts.botMoveProvider ?? null;
+            openingBookEnabledRef.current = true;
             setStartFen(opts.startFen || FEN.start);
             setTimeControl(opts.timeControl);
             timeControlRef.current = opts.timeControl;

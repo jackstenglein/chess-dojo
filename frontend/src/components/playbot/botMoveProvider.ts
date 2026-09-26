@@ -24,6 +24,8 @@ interface ResolveBotMoveDeps {
     provider?: BotMoveProvider | null;
     getDefaultOpeningBookMove?: typeof getOpeningBookMove;
     callMaia?: typeof callMaiaApi;
+    skipOpeningBook?: boolean;
+    onOpeningBookFailure?: () => void;
 }
 
 export async function resolveBotMove(
@@ -32,6 +34,8 @@ export async function resolveBotMove(
         provider,
         getDefaultOpeningBookMove = getOpeningBookMove,
         callMaia = callMaiaApi,
+        skipOpeningBook = false,
+        onOpeningBookFailure,
     }: ResolveBotMoveDeps = {},
 ): Promise<BotMoveResult | null> {
     const customMove = await provider?.(context);
@@ -39,13 +43,19 @@ export async function resolveBotMove(
         return customMove;
     }
 
-    const bookMove = await getDefaultOpeningBookMove(
-        context.fen,
-        context.maiaRating,
-        context.plyCount,
-    );
-    if (bookMove) {
-        return { ...bookMove, source: 'book' };
+    if (!skipOpeningBook) {
+        try {
+            const bookMove = await getDefaultOpeningBookMove(
+                context.fen,
+                context.maiaRating,
+                context.plyCount,
+            );
+            if (bookMove) {
+                return { ...bookMove, source: 'book' };
+            }
+        } catch {
+            onOpeningBookFailure?.();
+        }
     }
 
     const evalResult: MaiaEvalResult = await callMaia(context.fen, context.maiaRating);

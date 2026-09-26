@@ -31,7 +31,7 @@ const (
 	maxNotFoundCount       = 3
 	monthlyFailureMinUsers = 10
 	// monthlyUpdateDay is the day of month on which monthly rating systems are
-	// fetched: the day after downloadFideRatings refreshes the FIDE table.
+	// fetched.
 	monthlyUpdateDay = 2
 	// checkpointBuffer is the remaining-time threshold below which the
 	// handler stops and re-invokes itself. Chosen together with the 700s

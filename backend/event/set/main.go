@@ -314,10 +314,6 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 		return api.Failure(err)
 	}
 
-	if err := checkCohorts(event.Cohorts); err != nil {
-		return api.Failure(err)
-	}
-
 	if event.Id == "" {
 		if !user.GetIsCalendarAdmin() {
 			err := errors.New(403, "You do not have permission to create live class events", "")
@@ -351,6 +347,7 @@ func handleLiveClass(info *api.UserInfo, event *database.Event) api.Response {
 	event.BookedType = ""
 	event.MaxParticipants = 0
 	event.DiscordMessageId = ""
+	event.Cohorts = nil
 
 	if err := repository.SetEvent(event); err != nil {
 		return api.Failure(err)

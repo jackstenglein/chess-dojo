@@ -20,6 +20,7 @@ import { MaiaRating } from './maiaengine';
 export const OPENING_PLY_LIMIT = 20;
 
 const POSIRA_BASE = 'https://api.posira.dev/api/v1/explorer';
+export const OPENING_BOOK_TIMEOUT_MS = 1500;
 
 /**
  * Rating bracket mapping
@@ -110,17 +111,13 @@ export async function getOpeningBookMove(
 
     const ratings = MAIA_TO_POSIRA_RATINGS[maiaRating];
 
-    try {
-        const res = await axiosService.get<PosiraResponse>(POSIRA_BASE, {
-            params: { fen, ratings, top_n: '12' },
-            functionName: 'getPosiraExplorer',
-        });
-        const data = res.data;
-        const chosen = weightedRandomMove(data.moves);
-        if (!chosen) return null;
+    const res = await axiosService.get<PosiraResponse>(POSIRA_BASE, {
+        params: { fen, ratings, top_n: '12' },
+        functionName: 'getPosiraExplorer',
+        timeout: OPENING_BOOK_TIMEOUT_MS,
+    });
+    const chosen = weightedRandomMove(res.data.moves);
+    if (!chosen) return null;
 
-        return { uci: chosen.uci, san: chosen.san, source: 'book' };
-    } catch {
-        return null;
-    }
+    return { uci: chosen.uci, san: chosen.san, source: 'book' };
 }

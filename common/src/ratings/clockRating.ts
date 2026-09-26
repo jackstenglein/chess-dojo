@@ -95,7 +95,8 @@ export function calculateTimeRating(
     timeControls: TimeControl[],
     dataset: ClockDatum[],
 ): { rating: number; area: number } | undefined {
-    if (dataset.length < MIN_MOVE) {
+    if (dataset.length < MIN_MOVE + 2) {
+        // We require at least MIN_MOVE moves, plus 2 for both players to play one turn afterward.
         return;
     }
     if ((timeControls[0].seconds ?? 0) < MIN_TIME_CONTROL) {
@@ -107,6 +108,9 @@ export function calculateTimeRating(
         dataset,
         timeControls,
     );
+    if (zeroRatingArea <= 0) {
+        return;
+    }
     const playerRating = ((-1 * MAX_RATING) / zeroRatingArea) * absolutePlayerArea + MAX_RATING;
     return { rating: Math.round(Math.max(0, playerRating)), area: playerArea };
 }
