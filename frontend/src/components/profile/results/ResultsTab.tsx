@@ -828,8 +828,12 @@ function SummaryCard({
                     <Stack
                         direction='row'
                         divider={<Divider orientation='vertical' flexItem />}
-                        spacing={3}
-                        sx={{ justifyContent: 'space-evenly' }}
+                        spacing={{ xs: 1, sm: 3 }}
+                        sx={{
+                            justifyContent: 'space-evenly',
+                            flexWrap: 'wrap',
+                            rowGap: 2,
+                        }}
                     >
                         <HeroStat
                             label={t('record')}
@@ -927,14 +931,17 @@ function SummaryCard({
                                                 spacing={1}
                                                 sx={{
                                                     alignItems: 'center',
-                                                    width: 120,
+                                                    width: { xs: 34, sm: 120 },
                                                     flexShrink: 0,
                                                 }}
                                             >
                                                 <RatingSystemIcon system={platform} size='small' />
                                                 <Typography
                                                     variant='body2'
-                                                    sx={{ color: 'text.secondary' }}
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                        display: { xs: 'none', sm: 'block' },
+                                                    }}
                                                     noWrap
                                                 >
                                                     {platformName[platform] ?? platform}
@@ -948,7 +955,7 @@ function SummaryCard({
                                                 sx={{
                                                     color: 'text.secondary',
                                                     whiteSpace: 'nowrap',
-                                                    width: 68,
+                                                    width: { xs: 56, sm: 68 },
                                                     flexShrink: 0,
                                                 }}
                                             >
@@ -984,14 +991,27 @@ function SummaryCard({
 /** Large centered hero stat, matching the RatingCard header pattern. */
 function HeroStat({ label, value, color }: { label: string; value: string; color?: string }) {
     return (
-        <Stack sx={{ alignItems: 'center', minWidth: 0 }}>
+        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: '1 1 0' }}>
             <Typography
                 variant='overline'
-                sx={{ color: 'text.secondary', lineHeight: 1.4, whiteSpace: 'nowrap' }}
+                sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.4,
+                    textAlign: 'center',
+                }}
             >
                 {label}
             </Typography>
-            <Typography variant='h5' sx={{ color, fontWeight: 600, lineHeight: 1.2 }}>
+            <Typography
+                variant='h5'
+                sx={{
+                    color,
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                    whiteSpace: 'nowrap',
+                }}
+            >
                 {value}
             </Typography>
         </Stack>
@@ -1025,7 +1045,7 @@ function MiniStat({
     );
 
     return (
-        <Stack sx={{ alignItems: 'center', minWidth: 0 }}>
+        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: { xs: '1 1 40%', sm: 'none' } }}>
             {href ? (
                 <Link href={href} target='_blank' rel='noopener noreferrer' underline='none'>
                     {valueNode}
