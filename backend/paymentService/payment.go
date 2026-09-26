@@ -121,15 +121,12 @@ var subscriptionPriceIds = map[database.SubscriptionTier]map[string]string{
 	},
 	database.SubscriptionTier_Lecture: {
 		string(stripe.PriceRecurringIntervalMonth): os.Getenv("lectureTierMonthlyPriceId"),
+		string(stripe.PriceRecurringIntervalYear):  os.Getenv("lectureTierYearlyPriceId"),
 	},
 	database.SubscriptionTier_GameReview: {
 		string(stripe.PriceRecurringIntervalMonth): os.Getenv("gameReviewTierMonthlyPriceId"),
+		string(stripe.PriceRecurringIntervalYear):  os.Getenv("gameReviewTierYearlyPriceId"),
 	},
-}
-
-var presalePriceIds = map[database.SubscriptionTier]string{
-	database.SubscriptionTier_Lecture:    os.Getenv("lectureTierPresalePriceId"),
-	database.SubscriptionTier_GameReview: os.Getenv("gameReviewTierPresalePriceId"),
 }
 
 type PurchaseSubscriptionRequest struct {
