@@ -1051,7 +1051,7 @@ function MiniStat({
     );
 
     return (
-        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: { xs: '1 1 0', sm: 'none' } }}>
+        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: { xs: '1 1 45%', sm: 'none' } }}>
             {href ? (
                 <Link href={href} target='_blank' rel='noopener noreferrer' underline='none'>
                     {valueNode}
