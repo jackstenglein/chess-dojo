@@ -41,11 +41,13 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
     onInitialize,
     underboardRef,
 }) => {
-    const { slotProps } = useChess();
+    const { board, slotProps } = useChess();
     const t = useTranslations('analysisBoard.boardButtons');
     const hideButton = useRef<HTMLButtonElement>(null);
     const restoreButton = useRef<HTMLButtonElement>(null);
     const previouslyHidden = useRef(barsHidden);
+    const leftPanelVisible = panelControls?.left?.visible;
+    const rightPanelVisible = panelControls?.right?.visible;
 
     useEffect(() => {
         if (previouslyHidden.current !== barsHidden) {
@@ -53,6 +55,10 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
             previouslyHidden.current = barsHidden;
         }
     }, [barsHidden]);
+
+    useEffect(() => {
+        board?.redrawAll();
+    }, [board, barsHidden, leftPanelVisible, rightPanelVisible]);
 
     const handlResize = (_: React.SyntheticEvent, data: ResizeCallbackData) => {
         onResize(data.size.width, data.size.height);
