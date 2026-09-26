@@ -8,10 +8,7 @@ export type ResultOutcome = 'win' | 'loss' | 'draw';
 
 /** Platforms with unified results: online (live fetch) and OTB (OTB service). */
 export type ResultPlatform =
-    | RatingSystem.Lichess
-    | RatingSystem.Chesscom
-    | RatingSystem.Fide
-    | RatingSystem.Uscf;
+    RatingSystem.Lichess | RatingSystem.Chesscom | RatingSystem.Fide | RatingSystem.Uscf;
 
 export interface UnifiedResult {
     id: string;
@@ -153,10 +150,7 @@ function otbOutcome(score?: number): ResultOutcome | undefined {
  * Converts one FIDE tournament's per-opponent rows into unified results.
  * Multi-game aggregate rows are skipped (a result can't be attributed).
  */
-export function toUnifiedFideResults(
-    tournament: OtbTournament,
-    index: number,
-): UnifiedResult[] {
+export function toUnifiedFideResults(tournament: OtbTournament, index: number): UnifiedResult[] {
     const date = Date.parse(tournament.start || '') || 0;
     const out: UnifiedResult[] = [];
     (tournament.rounds || []).forEach((g, i) => {
@@ -191,8 +185,7 @@ export function toUnifiedUscfResults(
     index: number,
 ): UnifiedResult[] {
     const date = Date.parse(section.start || '') || 0;
-    const rows =
-        section.fide_matched === true ? (section.uscf_only ?? []) : section.rounds ?? [];
+    const rows = section.fide_matched === true ? (section.uscf_only ?? []) : (section.rounds ?? []);
     const out: UnifiedResult[] = [];
     rows.forEach((g, i) => {
         const outcome = otbOutcome(g.score);
@@ -229,9 +222,7 @@ function summarize(results: UnifiedResult[]): ResultsBreakdown {
  * a performance without opponent ratings is meaningless.
  */
 export function getFidePerformance(games: UnifiedResult[]): number | undefined {
-    const rated = games.filter(
-        (g) => g.opponentRating !== undefined && g.opponentRating > 0,
-    );
+    const rated = games.filter((g) => g.opponentRating !== undefined && g.opponentRating > 0);
     if (rated.length === 0) {
         return undefined;
     }
@@ -241,9 +232,7 @@ export function getFidePerformance(games: UnifiedResult[]): number | undefined {
     const opponentRatings = rated
         .map((r) => r.opponentRating)
         .filter((r): r is number => r !== undefined && r > 0);
-    const avg = Math.round(
-        opponentRatings.reduce((sum, r) => sum + r, 0) / opponentRatings.length,
-    );
+    const avg = Math.round(opponentRatings.reduce((sum, r) => sum + r, 0) / opponentRatings.length);
     return avg + fideDpTable[Math.round(percentage)];
 }
 

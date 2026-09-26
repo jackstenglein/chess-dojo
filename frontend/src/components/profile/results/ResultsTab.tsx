@@ -8,9 +8,8 @@ import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
 import { getRatingUsername, hideRatingUsername, RatingSystem, User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
-import { FideIcon, RatingSystemIcon, UscfIcon } from '@/style/RatingSystemIcons';
-import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { KingIcon } from '@/style/ChessIcons';
+import { FideIcon, RatingSystemIcon, UscfIcon } from '@/style/RatingSystemIcons';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
@@ -36,6 +35,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useEffect, useState } from 'react';
+import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import {
     AggregatedResults,
     aggregateResults,
@@ -195,12 +195,10 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
         !!chesscomUsername && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Chesscom));
 
     const fideId = getRatingUsername(user, RatingSystem.Fide);
-    const showFide =
-        !!fideId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Fide));
+    const showFide = !!fideId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Fide));
 
     const uscfId = getRatingUsername(user, RatingSystem.Uscf);
-    const showUscf =
-        !!uscfId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Uscf));
+    const showUscf = !!uscfId && (isOwnProfile || !hideRatingUsername(user, RatingSystem.Uscf));
 
     // Online and OTB are fully separate views with separate stats — never mixed.
     // OTB first and default: it is the primary view for rated tournament players.
@@ -596,7 +594,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                     ))}
                 </ToggleButtonGroup>
 
-                {(!isOtb && (showLichess || showChesscom)) && (
+                {!isOtb && (showLichess || showChesscom) && (
                     <Stack direction='row' spacing={0} sx={{ alignItems: 'center' }}>
                         <FormControlLabel
                             control={
@@ -626,12 +624,12 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                             label={
                                 <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
                                     <RatingSystemIcon system={RatingSystem.Lichess} size='small' />
-                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-                                            Lichess
-                                        </Typography>
-                                    </Stack>
-                                }
-                            />
+                                    <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                        Lichess
+                                    </Typography>
+                                </Stack>
+                            }
+                        />
                     </Stack>
                 )}
                 {isOtb && (showFide || showUscf) && (
@@ -646,9 +644,16 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                                     />
                                 }
                                 label={
-                                    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                                    <Stack
+                                        direction='row'
+                                        spacing={0.75}
+                                        sx={{ alignItems: 'center' }}
+                                    >
                                         <RatingSystemIcon system={RatingSystem.Fide} size='small' />
-                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                        <Typography
+                                            variant='body2'
+                                            sx={{ color: 'text.secondary' }}
+                                        >
                                             {t('fide')}
                                         </Typography>
                                     </Stack>
@@ -665,9 +670,16 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ user }) => {
                                     />
                                 }
                                 label={
-                                    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+                                    <Stack
+                                        direction='row'
+                                        spacing={0.75}
+                                        sx={{ alignItems: 'center' }}
+                                    >
                                         <RatingSystemIcon system={RatingSystem.Uscf} size='small' />
-                                        <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                                        <Typography
+                                            variant='body2'
+                                            sx={{ color: 'text.secondary' }}
+                                        >
                                             {t('uscf')}
                                         </Typography>
                                     </Stack>
@@ -777,9 +789,7 @@ function scorePercentage(breakdown: ResultsBreakdown): number {
 
 /** Share of games not lost (wins + draws) / games * 100. */
 function unbeatenPercentage(breakdown: ResultsBreakdown): number {
-    return breakdown.games > 0
-        ? ((breakdown.wins + breakdown.draws) / breakdown.games) * 100
-        : 0;
+    return breakdown.games > 0 ? ((breakdown.wins + breakdown.draws) / breakdown.games) * 100 : 0;
 }
 
 function SummaryCard({
@@ -833,9 +843,7 @@ function SummaryCard({
                             <HeroStat
                                 label='Performance Rating'
                                 value={
-                                    performance !== undefined
-                                        ? `${Math.round(performance)}`
-                                        : '-'
+                                    performance !== undefined ? `${Math.round(performance)}` : '-'
                                 }
                             />
                         ) : (
@@ -862,10 +870,7 @@ function SummaryCard({
                             >
                                 <MiniStat
                                     label={
-                                        <ColorStatLabel
-                                                color='white'
-                                                    text='Performance White'
-                                        />
+                                        <ColorStatLabel color='white' text='Performance White' />
                                     }
                                     value={
                                         whitePerformance !== undefined
@@ -875,10 +880,7 @@ function SummaryCard({
                                 />
                                 <MiniStat
                                     label={
-                                        <ColorStatLabel
-                                                color='black'
-                                                    text='Performance Black'
-                                        />
+                                        <ColorStatLabel color='black' text='Performance Black' />
                                     }
                                     value={
                                         blackPerformance !== undefined
@@ -1032,7 +1034,10 @@ function MiniStat({
                 valueNode
             )}
             {typeof label === 'string' ? (
-                <Typography variant='caption' sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                <Typography
+                    variant='caption'
+                    sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}
+                >
                     {label}
                 </Typography>
             ) : (
@@ -1123,10 +1128,7 @@ function RecentSessionsCard({
                                         }}
                                     >
                                         <Box sx={{ minWidth: 92, flexShrink: 1 }}>
-                                            <Typography
-                                                variant='body2'
-                                                sx={{ fontWeight: 600 }}
-                                            >
+                                            <Typography variant='body2' sx={{ fontWeight: 600 }}>
                                                 {session.label}
                                             </Typography>
                                             {isOtb && session.start > 0 && (
