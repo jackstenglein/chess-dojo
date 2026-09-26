@@ -868,7 +868,13 @@ function SummaryCard({
                             <Divider />
                             <Stack
                                 direction='row'
-                                divider={<Divider orientation='vertical' flexItem />}
+                                divider={
+                                    <Divider
+                                        orientation='vertical'
+                                        flexItem
+                                        sx={{ display: { xs: 'none', sm: 'block' } }}
+                                    />
+                                }
                                 spacing={2}
                                 sx={{ justifyContent: 'space-evenly', flexWrap: 'wrap', rowGap: 1 }}
                             >
@@ -1045,7 +1051,7 @@ function MiniStat({
     );
 
     return (
-        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: { xs: '1 1 40%', sm: 'none' } }}>
+        <Stack sx={{ alignItems: 'center', minWidth: 0, flex: { xs: '1 1 0', sm: 'none' } }}>
             {href ? (
                 <Link href={href} target='_blank' rel='noopener noreferrer' underline='none'>
                     {valueNode}
