@@ -177,14 +177,18 @@ for (const route of ['/games/analysis', '/games/1500-1600/panel-visibility']) {
             const bounds = await boardBounds(board);
             const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
             const rank = Number(square[1]);
-            await page.mouse.click(
-                bounds.x + ((file + 0.5) * bounds.width) / 8,
-                bounds.y + ((8 - rank + 0.5) * bounds.height) / 8,
-                { button: 'right' },
-            );
+            const x = ((file + 0.5) * bounds.width) / 8;
+            const y = ((8 - rank + 0.5) * bounds.height) / 8;
+
             await expect
-                .poll(() =>
-                    page.evaluate(() => {
+                .poll(async () => {
+                    await board.click({
+                        position: { x, y },
+                        button: 'right',
+                        force: true,
+                        delay: 10,
+                    });
+                    return page.evaluate(() => {
                         const api = (
                             window as unknown as {
                                 chessground: {
@@ -193,8 +197,8 @@ for (const route of ['/games/analysis', '/games/1500-1600/panel-visibility']) {
                             }
                         ).chessground;
                         return api.state.drawable.shapes.at(-1)?.orig;
-                    }),
-                )
+                    });
+                })
                 .toBe(square);
         };
 
