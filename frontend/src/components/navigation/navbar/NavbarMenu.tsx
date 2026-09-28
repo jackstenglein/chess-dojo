@@ -40,6 +40,7 @@ import {
     Person2 as Person2Icon,
     PersonSearch,
     Psychology,
+    School,
     Scoreboard,
     Sell,
     SignalCellularAlt,
@@ -262,6 +263,12 @@ function allStartItems(
                     name: t('modelAnnotations'),
                     icon: <BorderColor />,
                     href: '/learn/modelgames',
+                },
+                {
+                    id: 'games-to-study',
+                    name: t('gamesToStudy'),
+                    icon: <School />,
+                    href: '/learn/games-to-study',
                 },
                 {
                     id: 'games-to-memorize',
