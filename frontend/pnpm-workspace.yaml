@@ -8,3 +8,4 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@jackstenglein/react-scheduler@5.0.6 || 5.0.7'
+  - '@jalpp/stockfishts@1.1.0'

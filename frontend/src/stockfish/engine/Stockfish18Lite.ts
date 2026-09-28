@@ -1,6 +1,6 @@
 import { logger } from '@/logging/logger';
+import { EngineWorker } from '@jalpp/stockfishts';
 import { EngineName } from './engine';
-import { EngineWorker } from './EngineWorker';
 import { objectStorage } from './objectStorage';
 import makeModule from './sf18-smallnet.js';
 import { sharedWasmMemory } from './Stockfish17';
@@ -34,13 +34,6 @@ export class Stockfish18Lite extends UciEngine {
 
         this.worker = worker;
         await super.init();
-    }
-
-    public static isSupported() {
-        return (
-            typeof WebAssembly === 'object' &&
-            WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00))
-        );
     }
 
     private getModels(nnueFilenames: string[]): Promise<Uint8Array[]> {
