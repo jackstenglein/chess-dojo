@@ -44,6 +44,9 @@ importers:
       '@jackstenglein/react-scheduler':
         specifier: ^5.0.7
         version: 5.0.7(f45ede2add4198988dad173a2e75dbb1)
+      '@jalpp/stockfishts':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@lichess-org/chessground':
         specifier: ^10.1.1
         version: 10.1.1
@@ -1073,6 +1076,10 @@ packages:
     peerDependenciesMeta:
       rrule:
         optional: true
+
+  '@jalpp/stockfishts@1.1.0':
+    resolution: {integrity: sha512-PJlJJfu9xf/Sb86pGKST41cGxcphJPQu+jacZLd5XBUsJIN2+jJtgqvytTT47HS2F6G0VgMpDYrybyHMTGwJ2w==}
+    engines: {node: '>=18'}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -6098,6 +6105,10 @@ snapshots:
       react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:
       rrule: 2.8.1
+
+  '@jalpp/stockfishts@1.1.0':
+    dependencies:
+      async-mutex: 0.5.0
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

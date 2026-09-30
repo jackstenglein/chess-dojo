@@ -20,11 +20,4 @@ export class Stockfish19 extends UciEngine {
         await super.init();
         await this.sendCommands(['position startpos', 'go depth 1'], 'bestmove');
     }
-
-    public static isSupported() {
-        const isSupported =
-            typeof WebAssembly === 'object' &&
-            WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-        return isSupported;
-    }
 }
