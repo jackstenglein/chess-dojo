@@ -1,6 +1,7 @@
 // Based off of https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary
 
 import { logger } from '@/logging/logger';
+import { ContentCopy } from '@mui/icons-material';
 import { Button, Container, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React, { Component, ErrorInfo } from 'react';
@@ -11,6 +12,7 @@ import DeleteGameButton from './DeleteGameButton';
 
 interface PgnErrorBoundaryProps {
     pgn?: string;
+    getCurrentPgn?: () => string | undefined;
     game?: Game;
 }
 
@@ -48,17 +50,35 @@ class PgnErrorBoundary extends Component<
         });
     }
 
+    getPgn() {
+        try {
+            return this.props.getCurrentPgn?.() ?? this.props.pgn ?? '';
+        } catch {
+            return this.props.pgn ?? '';
+        }
+    }
+
     render() {
         if (!this.state.hasError) {
             return this.props.children;
         }
 
         const { t } = this.props;
+        const pgn = this.getPgn();
         return (
             <Container maxWidth='md' sx={{ pt: 6, pb: 4, gridArea: 'pgn' }}>
                 <Stack spacing={4}>
                     <Typography variant='h5'>{t('invalidPgn')}</Typography>
                     <Typography variant='body1'>{t('invalidPgnDescription')}</Typography>
+
+                    <Button
+                        variant='contained'
+                        startIcon={<ContentCopy />}
+                        onClick={() => void navigator.clipboard.writeText(pgn)}
+                        sx={{ alignSelf: 'flex-start' }}
+                    >
+                        {t('copyPgn')}
+                    </Button>
 
                     {this.props.game?.owner === this.props.username && (
                         <Stack direction='row' spacing={2}>
@@ -97,7 +117,7 @@ class PgnErrorBoundary extends Component<
                     >
                         {`${t('rawPgnLabel')}
 
-                        ${this.props.pgn}`}
+                        ${pgn}`}
                     </Typography>
                 </Stack>
             </Container>

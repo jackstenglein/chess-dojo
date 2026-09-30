@@ -2196,6 +2196,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "Copy PGN",
                 "invalidPgn": "Invalid PGN",
                 "invalidPgnDescription": "Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see the error message below). This most likely happened due to a malformed PGN. If you manually produced your PGN, it is likely incorrect. If you believe your PGN is correct or are otherwise unable to correct it, please send a Discord DM to @JackStenglein with the link to this page.",
                 "resubmitPgn": "Resubmit PGN",

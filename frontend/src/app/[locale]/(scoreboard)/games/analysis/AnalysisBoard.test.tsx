@@ -1,12 +1,13 @@
 import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import { renderWithIntl } from '@/i18n/intl.test';
-import { cleanup } from '@testing-library/react';
+import { act, cleanup } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AnalysisBoard from './AnalysisBoard';
 
-const { pgnBoardProps } = vi.hoisted(() => ({
+const { pgnBoardProps, pgnErrorBoundaryProps } = vi.hoisted(() => ({
     pgnBoardProps: [] as Record<string, unknown>[],
+    pgnErrorBoundaryProps: [] as Record<string, unknown>[],
 }));
 
 vi.mock('@/auth/Auth', () => ({
@@ -48,7 +49,10 @@ vi.mock('@/components/games/view/GameMoveButtonExtras', () => ({
 }));
 
 vi.mock('@/games/view/PgnErrorBoundary', () => ({
-    default: ({ children }: { children: ReactNode }) => <>{children}</>,
+    default: ({ children, ...props }: { children: ReactNode } & Record<string, unknown>) => {
+        pgnErrorBoundaryProps.push(props);
+        return <>{children}</>;
+    },
 }));
 
 vi.mock('@/hooks/useNextSearchParams', () => ({
@@ -92,6 +96,7 @@ describe('AnalysisBoard side tabs', () => {
     beforeEach(() => {
         localStorage.clear();
         pgnBoardProps.length = 0;
+        pgnErrorBoundaryProps.length = 0;
     });
 
     it('uses the familiar default side-panel layout', () => {
@@ -148,5 +153,23 @@ describe('AnalysisBoard side tabs', () => {
                 DefaultUnderboardTab.Explorer,
             ],
         });
+    });
+
+    it('provides the current PGN to the error boundary', () => {
+        renderWithIntl(<AnalysisBoard />);
+        const currentPgn = '[Event "Analysis"]\n\n1. e4 e5 2. Nf3';
+        const chess = { renderPgn: vi.fn(() => currentPgn) };
+
+        act(() => {
+            const onInitialize = pgnBoardProps[0].onInitialize as (
+                board: unknown,
+                chess: unknown,
+            ) => void;
+            onInitialize({}, chess);
+        });
+
+        const getCurrentPgn = pgnErrorBoundaryProps.at(-1)?.getCurrentPgn as () =>
+            string | undefined;
+        expect(getCurrentPgn()).toBe(currentPgn);
     });
 });

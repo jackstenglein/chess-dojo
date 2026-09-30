@@ -2196,6 +2196,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "Copiar PGN",
                 "invalidPgn": "PGN inválido",
                 "invalidPgnDescription": "Infelizmente, o PGN desta partida não pode ser exibido pelo nosso visualizador de PGN (veja a mensagem de erro abaixo). Isso provavelmente aconteceu por causa de um PGN malformado. Se você criou o PGN manualmente, é provável que esteja incorreto. Se você acredita que o seu PGN está correto ou não consegue corrigi-lo, envie uma DM no Discord para @JackStenglein com o link desta página.",
                 "resubmitPgn": "Reenviar PGN",

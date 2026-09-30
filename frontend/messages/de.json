@@ -2196,6 +2196,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "PGN kopieren",
                 "invalidPgn": "Ungültiges PGN",
                 "invalidPgnDescription": "Leider kann die PGN dieses Spiels von unserem PGN-Viewer nicht angezeigt werden (siehe die Fehlermeldung unten). Dies ist höchstwahrscheinlich auf eine fehlerhafte PGN zurückzuführen. Wenn du deine PGN manuell erstellt hast, ist sie wahrscheinlich falsch. Wenn du glaubst, dass deine PGN korrekt ist, oder wenn du sie ansonsten nicht korrigieren kannst, sende bitte eine Discord-DM an @JackStenglein mit dem Link zu dieser Seite.",
                 "resubmitPgn": "PGN erneut einreichen",

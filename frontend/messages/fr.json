@@ -2196,6 +2196,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "Copier le PGN",
                 "invalidPgn": "PGN invalide",
                 "invalidPgnDescription": "Malheureusement, le PGN de cette partie ne peut pas être affiché par notre visionneuse de PGN (voir le message d'erreur ci-dessous). Cela est très probablement dû à un PGN mal formé. Si tu as créé ton PGN manuellement, il est probablement incorrect. Si tu penses que ton PGN est correct ou que tu n'arrives pas à le corriger, envoie un message privé Discord à @JackStenglein avec le lien vers cette page.",
                 "resubmitPgn": "Soumettre à nouveau le PGN",
