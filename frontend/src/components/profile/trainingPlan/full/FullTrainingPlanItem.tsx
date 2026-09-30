@@ -14,6 +14,7 @@ import {
 } from '@/database/requirement';
 import { ALL_COHORTS, User } from '@/database/user';
 import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
+import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AddCircle, Lock, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
@@ -210,7 +211,7 @@ export const FullTrainingPlanItem = ({
                             <Typography
                                 sx={{
                                     opacity: blocker.isBlocked ? 0.5 : 1,
-                                    fontWeight: 'bold',
+                                    fontWeight: 600,
                                 }}
                             >
                                 {requirementName}
@@ -237,14 +238,27 @@ export const FullTrainingPlanItem = ({
                             )}
                         </Stack>
                         {displayProgress(requirement) && (
-                            <ScoreboardProgress
-                                value={currentCount}
-                                max={totalCount}
-                                min={requirement.startCount || 0}
-                                isTime={requirement.scoreboardDisplay === ScoreboardDisplay.Minutes}
-                                hideProgressText={true}
-                                sx={{ height: '6px' }}
-                            />
+                            <Box sx={{ color: CategoryColors[requirement.category] }}>
+                                <ScoreboardProgress
+                                    color='inherit'
+                                    value={currentCount}
+                                    max={totalCount}
+                                    min={requirement.startCount || 0}
+                                    isTime={
+                                        requirement.scoreboardDisplay === ScoreboardDisplay.Minutes
+                                    }
+                                    hideProgressText={true}
+                                    sx={{
+                                        height: '6px',
+                                        borderRadius: 3,
+                                        backgroundColor: 'action.hover',
+                                        '& .MuiLinearProgress-bar': {
+                                            borderRadius: 3,
+                                            backgroundColor: 'currentColor',
+                                        },
+                                    }}
+                                />
+                            </Box>
                         )}
                     </Grid>
                     <Grid size='auto' id='task-status'>
@@ -258,12 +272,13 @@ export const FullTrainingPlanItem = ({
                             {!blocker.isBlocked && (
                                 <Typography
                                     noWrap
+                                    variant='body2'
                                     sx={{
                                         color: 'text.secondary',
                                         textOverflow: 'unset',
                                         mr: 1,
                                         display: { xs: 'none', sm: 'initial' },
-                                        fontWeight: 'bold',
+                                        fontVariantNumeric: 'tabular-nums',
                                     }}
                                 >
                                     {time}

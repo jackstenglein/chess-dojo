@@ -1,7 +1,17 @@
 import { useAuth } from '@/auth/Auth';
-import { ZoomOutMap } from '@mui/icons-material';
-import { IconButton, MenuItem, Stack, TextField, Tooltip } from '@mui/material';
+import { Settings, ZoomOutMap } from '@mui/icons-material';
+import {
+    Checkbox,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Popover,
+    Stack,
+    TextField,
+    Tooltip,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 /**
@@ -75,71 +85,107 @@ export function useHeatmapOptions() {
 }
 
 /**
- * Renders options for the heatmap.
+ * Renders a settings button for the heatmap. The options it opens (what to measure,
+ * the daily goal that sets the colour scale, and single-colour mode) are rarely
+ * changed, so they stay out of the way until asked for.
  */
-export function HeatmapOptions({ onPopOut }: { onPopOut?: () => void }) {
-    const { field, setField, maxPoints, setMaxPoints, maxMinutes, setMaxMinutes } =
-        useHeatmapOptions();
+export function HeatmapSettingsButton() {
+    const {
+        field,
+        setField,
+        maxPoints,
+        setMaxPoints,
+        maxMinutes,
+        setMaxMinutes,
+        colorMode,
+        setColorMode,
+    } = useHeatmapOptions();
     const t = useTranslations('profile.info');
+    const tHeatmap = useTranslations('profile.info.heatmap');
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     return (
-        <Stack
-            direction='row'
-            sx={{
-                mb: 3,
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                justifyContent: 'space-between',
-            }}
-        >
-            <Stack
-                direction='row'
-                sx={{
-                    gap: 2,
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    flexGrow: 1,
-                }}
+        <>
+            <Tooltip title={tHeatmap('settings')}>
+                <IconButton
+                    size='small'
+                    aria-label={tHeatmap('settings')}
+                    onClick={(e) => setAnchorEl(e.currentTarget)}
+                    sx={{ color: 'text.secondary' }}
+                    data-testid='heatmap-settings-button'
+                >
+                    <Settings fontSize='small' />
+                </IconButton>
+            </Tooltip>
+            <Popover
+                open={Boolean(anchorEl)}
+                anchorEl={anchorEl}
+                onClose={() => setAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <TextField
-                    label={t('type')}
-                    size='small'
-                    select
-                    value={field}
-                    onChange={(e) => setField(e.target.value as TimelineEntryField)}
-                    sx={{ ml: -0.6 }}
-                >
-                    <MenuItem value='dojoPoints'>{t('dojoPoints')}</MenuItem>
-                    <MenuItem value='minutesSpent'>{t('hoursWorked')}</MenuItem>
-                </TextField>
-                <TextField
-                    label={t('goal')}
-                    size='small'
-                    select
-                    value={field === 'dojoPoints' ? maxPoints : maxMinutes / 60}
-                    onChange={(e) =>
-                        field === 'dojoPoints'
-                            ? setMaxPoints(Number(e.target.value))
-                            : setMaxMinutes(Number(e.target.value) * 60)
-                    }
-                >
-                    {[1, 2, 3, 4].map((value) => (
-                        <MenuItem key={value} value={value}>
-                            {field === 'dojoPoints'
-                                ? t('goalPoints', { value })
-                                : t('goalHours', { value })}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            </Stack>
+                <Stack spacing={2} sx={{ p: 2, minWidth: 220 }} data-testid='heatmap-settings'>
+                    <TextField
+                        label={t('type')}
+                        size='small'
+                        select
+                        value={field}
+                        onChange={(e) => setField(e.target.value as TimelineEntryField)}
+                    >
+                        <MenuItem value='dojoPoints'>{t('dojoPoints')}</MenuItem>
+                        <MenuItem value='minutesSpent'>{t('hoursWorked')}</MenuItem>
+                    </TextField>
+                    <TextField
+                        label={t('goal')}
+                        size='small'
+                        select
+                        value={field === 'dojoPoints' ? maxPoints : maxMinutes / 60}
+                        onChange={(e) =>
+                            field === 'dojoPoints'
+                                ? setMaxPoints(Number(e.target.value))
+                                : setMaxMinutes(Number(e.target.value) * 60)
+                        }
+                    >
+                        {[1, 2, 3, 4].map((value) => (
+                            <MenuItem key={value} value={value}>
+                                {field === 'dojoPoints'
+                                    ? t('goalPoints', { value })
+                                    : t('goalHours', { value })}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                size='small'
+                                checked={colorMode === 'monochrome'}
+                                onChange={(e) =>
+                                    setColorMode(e.target.checked ? 'monochrome' : 'standard')
+                                }
+                            />
+                        }
+                        label={tHeatmap('singleColorMode')}
+                        slotProps={{ typography: { variant: 'body2' } }}
+                    />
+                </Stack>
+            </Popover>
+        </>
+    );
+}
 
-            {onPopOut && (
-                <Tooltip title={t('popOutView')}>
-                    <IconButton color='primary' onClick={onPopOut}>
-                        <ZoomOutMap />
-                    </IconButton>
-                </Tooltip>
-            )}
-        </Stack>
+/** Renders a button that opens the heatmap in a larger view. */
+export function HeatmapPopOutButton({ onPopOut }: { onPopOut: () => void }) {
+    const t = useTranslations('profile.info');
+    return (
+        <Tooltip title={t('popOutView')}>
+            <IconButton
+                size='small'
+                aria-label={t('popOutView')}
+                onClick={onPopOut}
+                sx={{ color: 'text.secondary' }}
+            >
+                <ZoomOutMap fontSize='small' />
+            </IconButton>
+        </Tooltip>
     );
 }

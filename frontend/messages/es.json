@@ -149,17 +149,43 @@
                 "commentsPlaceholder": "Comentarios opcionales sobre tu progreso o sobre la tarea en sí. Visibles para los demás en Novedades.",
                 "mustBeNumeric": "Solo se aceptan caracteres numéricos",
                 "mustBeInteger": "Este campo debe ser un número entero",
-                "fieldRequired": "Este campo es obligatorio"
+                "fieldRequired": "Este campo es obligatorio",
+                "moreActions": "Más acciones"
             },
             "inputSlider": {
                 "decrement": "Disminuir",
                 "increment": "Aumentar",
-                "progressCount": "Contador de progreso",
+                "progressCount": "Progreso",
                 "count": "Cantidad"
+            },
+            "verbs": {
+                "read": "Leer",
+                "watch": "Ver",
+                "solve": "Resolver",
+                "study": "Estudiar",
+                "play": "Jugar",
+                "spar": "Sparring",
+                "annotate": "Anotar",
+                "review": "Revisar",
+                "guide": "Leer guía"
+            },
+            "quickLog": {
+                "logTraining": "Registrar entrenamiento",
+                "logTooltip": "Registrar progreso y tiempo para esta tarea",
+                "undo": "Deshacer"
             },
             "daily": {
                 "today": "Hoy",
-                "progressCompleted": "Completado: {current} / {total} {suffix}"
+                "summary": "{done} de {total} tareas hechas · {worked} de {goal}",
+                "allDone": "Terminado por hoy · {worked} registrados",
+                "goalMet": "Meta de tiempo cumplida",
+                "skippedHeading": "Omitidas esta semana ({count})",
+                "restore": "Restaurar {name}",
+                "skippedToast": "{name} omitida el resto de la semana",
+                "swapTooltip": "Cambiar por otra tarea de {category}",
+                "swapNone": "No hay otras tareas de {category} para cambiar",
+                "swapHeading": "Cambiar por otra tarea de {category}",
+                "swapped": "{from} cambiada por {to}"
             },
             "weekly": {
                 "thisWeek": "Esta semana",
@@ -171,7 +197,15 @@
                 "Fri": "Vie",
                 "Sat": "Sáb",
                 "activeOnlyTooltip": "Mostrar solo las tareas que has actualizado esta semana",
-                "activeOnlyLabel": "Solo activas"
+                "activeOnlyLabel": "Solo activas",
+                "empty": "No hay nada planificado esta semana.",
+                "cellPlanned": "Planificado: {goal}",
+                "cellPartial": "{worked} de {goal} hasta ahora",
+                "cellDone": "Hecho: {worked} de {goal}",
+                "cellMissed": "Perdido: {worked} de {goal}",
+                "cellExtra": "Extra: {worked} registrados, no planificado",
+                "restDay": "Día de descanso",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Plan de entrenamiento completo",
@@ -186,16 +220,12 @@
                 "addCustomTask": "Añadir tarea personalizada",
                 "unlockTasks": "{count, plural, =1 {Desbloquea # tarea más actualizando a una cuenta completa} other {Desbloquea # tareas más actualizando a una cuenta completa}}",
                 "viewPrices": "Ver precios",
-                "nextGraduation": "Próxima graduación: de {cohort} a {nextCohort}",
-                "reachRatingToUnlock": "Alcanza el rating requerido de tu cohorte para desbloquear la graduación",
                 "renewTooltip": "¡Es hora de renovar esta tarea!",
                 "renewLabel": "Renovar",
                 "minimumReachedTooltip": "¡Has alcanzado el mínimo, sigue así!",
                 "minimumReachedLabel": "Mínimo alcanzado",
                 "checkboxAriaLabel": "Casilla de verificación {name}",
-                "updateAriaLabel": "Actualizar {name}",
-                "graduateName": "Graduarse de {cohort}",
-                "graduateDescription": "Pasa a la siguiente cohorte y aparece en el programa de graduación."
+                "updateAriaLabel": "Actualizar {name}"
             },
             "graduation": {
                 "title": "¿Graduarte de {cohort}?",
@@ -291,7 +321,12 @@
             "progressUpdater": {
                 "markComplete": "¿Marcar como completada?",
                 "totalTime": "Tiempo total: {hours}h {minutes}m",
-                "largeTimeWarning": "¡Estás añadiendo mucho tiempo! Revisa bien los datos antes de guardar."
+                "largeTimeWarning": "¡Estás añadiendo mucho tiempo! Revisa bien los datos antes de guardar.",
+                "addTime": "Añadir 5 minutos",
+                "removeTime": "Restar 5 minutos",
+                "timeSpent": "Tiempo dedicado",
+                "minutesShort": "min",
+                "totalTimeChange": "Total {before} → {after}"
             },
             "scheduleGame": {
                 "title": "Programa tu próxima partida clásica",
@@ -312,7 +347,8 @@
                 "countRequired": "Este campo es obligatorio",
                 "countNumeric": "Solo se aceptan caracteres numéricos",
                 "countMinOne": "Se requiere al menos una partida",
-                "deleteEntry": "Eliminar"
+                "deleteEntry": "Eliminar",
+                "scheduleAction": "Programar"
             },
             "taskDialog": {
                 "historyTitle": "Historial de {name}",
@@ -348,7 +384,7 @@
                 "taskLockedUntil": "Esta tarea está bloqueada hasta que completes {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini tabla de clasificación",
+                "heading": "Tabla de clasificación",
                 "type": "Tipo",
                 "dojoScore": "Puntuación Dojo",
                 "trainingTime": "Tiempo de entrenamiento",
@@ -411,6 +447,7 @@
             "classicalGames": "Partidas clásicas (último año)",
             "nextGraduation": "Próxima graduación: de {cohort} a {nextCohort}",
             "allTasks": "Todas las tareas",
+            "progressTitle": "Progreso",
             "metrics": "Métricas",
             "tacticsRating": "Rating de táctica",
             "tacticsRatingTooltip": "Para sub-1700, es una combinación del progreso en los mates de Polgar, Puzzle Rush 5 min y Puzzle Rush Survival. Para 1700-2100, es una combinación de los mates de Polgar, Puzzle Rush Survival y la prueba de táctica del Dojo. Para 2100+, se basa únicamente en la prueba de táctica del Dojo.",
@@ -490,7 +527,10 @@
                 "legendMinutesRange": "{minValue} – {maxValue}",
                 "legendDojoPointsRange": "{minValue} – {maxValue} puntos Dojo",
                 "legendMinutesMax": "{value}+",
-                "legendDojoPointsMax": "{value}+ puntos Dojo"
+                "legendDojoPointsMax": "{value}+ puntos Dojo",
+                "settings": "Ajustes del mapa de calor",
+                "legend": "Qué significan los colores",
+                "title": "Mapa de calor"
             }
         },
         "directories": {
@@ -1487,6 +1527,7 @@
         "graduations": "Graduaciones",
         "viewAll": "Ver todo",
         "showPostsFrom": "Mostrar publicaciones de",
+        "showMyPosts": "Mostrar mis publicaciones",
         "categories": "Categorías",
         "allCategories": "Todas las categorías",
         "annotations": "Anotaciones",
@@ -1495,6 +1536,8 @@
         "completedRequirement": "Completó <strong>{name}</strong>",
         "updated": "Actualizado",
         "updatedRequirement": "Actualizó <strong>{name}</strong>",
+        "dojoPointsLabel": "Puntos Dojo",
+        "markedNotDone": "Marcada como no hecha",
         "dojoPoints": "Puntos Dojo:",
         "totalTime": "Tiempo total:",
         "customTask": "Tarea personalizada",
@@ -1513,7 +1556,8 @@
             "players": "Jugadores:",
             "date": "Fecha:",
             "result": "Resultado:",
-            "moves": "Jugadas:"
+            "moves": "Jugadas:",
+            "moveCount": "{count, plural, one {# jugada} other {# jugadas}}"
         },
         "graduation": {
             "graduated": "Se graduó de <strong>{oldCohort}</strong> a <strong>{newCohort}</strong>",
@@ -1534,7 +1578,8 @@
             "dojoScore": "Puntuación Dojo",
             "gamesAnnotated": "Partidas anotadas",
             "date": "Fecha"
-        }
+        },
+        "comment": "Comentar"
     },
     "tutorial": {
         "back": "Atrás",

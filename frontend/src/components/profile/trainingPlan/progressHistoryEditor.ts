@@ -290,3 +290,35 @@ export function getTimelineUpdate(
 
     return { progress, updated, deleted, errors };
 }
+
+/**
+ * Converts the given timeline entries into the history items used by the progress history
+ * editor. Entries for other requirements are ignored, and the result is sorted oldest first
+ * so that counts can be accumulated in order.
+ * @param requirement The requirement to build the history for.
+ * @param entries The user's timeline entries.
+ * @returns The history items for the given requirement.
+ */
+export function getHistoryItems(
+    requirement: Requirement | CustomTask | undefined,
+    entries: TimelineEntry[],
+): HistoryItem[] {
+    // Older timeline entries in the database may have previousCount < startCount.
+    // It's important to make sure that count will be newCount - startCount
+    // in these cases, so we take Math.max(previousCount, startCount || 0).
+    return entries
+        .filter((t) => t.requirementId === requirement?.id)
+        .sort((a, b) => (a.date || a.createdAt).localeCompare(b.date || b.createdAt))
+        .map((t, idx) => ({
+            date: DateTime.fromISO(t.date || t.createdAt),
+            count: `${t.newCount - Math.max(t.previousCount, requirement?.startCount || 0)}`,
+            hours: `${Math.floor(t.minutesSpent / 60)}`,
+            minutes: `${t.minutesSpent % 60}`,
+            notes: t.notes,
+            cohort: t.cohort,
+            entry: t,
+            index: idx,
+            deleted: false,
+            isNew: false,
+        }));
+}

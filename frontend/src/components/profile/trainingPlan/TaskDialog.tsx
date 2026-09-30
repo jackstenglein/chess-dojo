@@ -37,6 +37,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import CustomTaskEditor from './CustomTaskEditor';
+import { CategoryLabel } from './daily/DailyCard';
 import { TaskDescription } from './TaskDescription';
 
 export enum TaskDialogView {
@@ -52,6 +53,8 @@ interface TaskDialogProps {
     initialView: TaskDialogView;
     progress: RequirementProgress | undefined;
     cohort: string;
+    /** Time to prefill in the progress form, in minutes. */
+    initialMinutes?: number;
 }
 
 function getRequirementName(task: Requirement | CustomTask, cohort: string) {
@@ -71,6 +74,22 @@ export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskD
             open={open}
             onClose={props.onClose}
             maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
+            slotProps={{
+                paper: {
+                    // Logging is a small, focused form; the other views keep their width.
+                    sx:
+                        view === TaskDialogView.Progress
+                            ? {
+                                  maxWidth: 460,
+                                  backgroundColor: 'background.default',
+                                  backgroundImage: 'none',
+                                  border: 1,
+                                  borderColor: 'divider',
+                                  borderRadius: 3,
+                              }
+                            : undefined,
+                },
+            }}
             fullWidth
         >
             {view === TaskDialogView.Details && (
@@ -88,7 +107,15 @@ type ProgressDialogProps = Omit<TaskDialogProps, 'open' | 'initialView'> & {
     setView: (v: TaskDialogView) => void;
 };
 
-function ProgressDialog({ onClose, task, progress, cohort, view, setView }: ProgressDialogProps) {
+function ProgressDialog({
+    onClose,
+    task,
+    progress,
+    cohort,
+    view,
+    setView,
+    initialMinutes,
+}: ProgressDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const { user } = useAuth();
 
@@ -104,20 +131,28 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
     }
 
     const requirementName = getRequirementName(task, selectedCohort);
-    const isNonDojo = task.scoreboardDisplay === ScoreboardDisplay.NonDojo;
 
-    let dialogTitle = '';
-    if (view === TaskDialogView.History) {
-        dialogTitle = t('historyTitle', { name: requirementName });
-    } else if (isNonDojo) {
-        dialogTitle = t('addTimeTitle', { name: requirementName });
-    } else {
-        dialogTitle = t('updateTitle', { name: requirementName });
-    }
+    // Logging progress is titled with just the task's name.
+    const dialogTitle =
+        view === TaskDialogView.History
+            ? t('historyTitle', { name: requirementName })
+            : requirementName;
 
     return (
         <>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle sx={{ pb: 1.5 }}>
+                {view === TaskDialogView.Progress && (
+                    <Box sx={{ mb: 0.75 }}>
+                        <CategoryLabel category={task.category} />
+                    </Box>
+                )}
+                <Box
+                    component='span'
+                    sx={{ display: 'block', fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.3 }}
+                >
+                    {dialogTitle}
+                </Box>
+            </DialogTitle>
 
             {view === TaskDialogView.History && (
                 <ProgressHistory requirement={task} onClose={onClose} setView={setView} />
@@ -129,6 +164,7 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
                     cohort={selectedCohort}
                     onClose={onClose}
                     setView={setView}
+                    initialMinutes={initialMinutes}
                 />
             )}
         </>

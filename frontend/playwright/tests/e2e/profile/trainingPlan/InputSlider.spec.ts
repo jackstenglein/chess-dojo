@@ -149,15 +149,14 @@ test.describe('InputSlider', () => {
         await page.unrouteAll();
     });
 
-    test('input autofills startCount when there is startCount but no progress', async ({
-        page,
-    }) => {
+    test('input starts at 0 when there is a startCount but no progress', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal' })
             .click();
 
-        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('25');
+        // Counts are shown from the task's start, as on the training plan card.
+        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('0');
     });
 
     test('left spinner starts grayed out at startCount (startCount exists)', async ({ page }) => {
@@ -184,7 +183,7 @@ test.describe('InputSlider', () => {
         await expect(page.getByRole('button', { name: 'Decrement' })).toBeEnabled();
     });
 
-    test('left spinner grays out after changing input to startCount (startCount exists)', async ({
+    test('left spinner grays out after changing input to 0 (startCount exists)', async ({
         page,
     }) => {
         await page
@@ -193,7 +192,7 @@ test.describe('InputSlider', () => {
             .click();
 
         const input = page.getByRole('textbox', { name: 'Pages' });
-        await input.fill('25');
+        await input.fill('0');
         await input.blur();
 
         await expect(page.getByRole('button', { name: 'Decrement' })).toBeDisabled();
@@ -208,35 +207,32 @@ test.describe('InputSlider', () => {
         await expect(page.getByRole('button', { name: 'Decrement' })).toBeDisabled();
     });
 
-    test('input values smaller than startCount are overwritten on blur', async ({ page }) => {
+    test('input shows progress counted from startCount', async ({ page }) => {
         await page
-            .getByTestId('Nonzero-Min-Goal-training-plan-entry')
-            .getByRole('button', { name: 'Update Nonzero Min Goal' })
+            .getByTestId('Nonzero-Min-Goal-with-Progress-training-plan-entry')
+            .getByRole('button', { name: 'Update Nonzero Min Goal with Progress' })
             .click();
 
-        const input = page.getByRole('textbox', { name: 'Pages' });
-        await input.fill('20');
-        await input.blur();
-
-        await expect(input).toHaveValue('25');
+        // A count of 30 on a task starting at 25 is 5 done.
+        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('5');
     });
 
-    test('input values < progress count but >= than startCount are okay', async ({ page }) => {
+    test('input values below the current progress are okay', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-with-Progress-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal with Progress' })
             .click();
 
         const input = page.getByRole('textbox', { name: 'Pages' });
-        await input.fill('25');
+        await input.fill('2');
         await input.blur();
 
-        await expect(input).toHaveValue('25');
+        await expect(input).toHaveValue('2');
 
-        await input.fill('27');
+        await input.fill('4');
         await input.blur();
 
-        await expect(input).toHaveValue('27');
+        await expect(input).toHaveValue('4');
     });
 
     test('input values smaller than 0 are overwritten on blur (no startCount)', async ({
@@ -272,7 +268,7 @@ test.describe('InputSlider', () => {
         await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('30');
     });
 
-    test('inputs greater than goal are okay', async ({ page }) => {
+    test('inputs greater than the goal are capped at the goal', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal' })
@@ -282,7 +278,8 @@ test.describe('InputSlider', () => {
         await input.fill('200');
         await input.blur();
 
-        await expect(input).toHaveValue('200');
+        // A goal of 100 starting at 25 is 75 to do.
+        await expect(input).toHaveValue('75');
     });
 
     test('left spinner decrements input value by 1', async ({ page }) => {
@@ -293,7 +290,7 @@ test.describe('InputSlider', () => {
 
         await page.getByRole('button', { name: 'Decrement' }).click();
 
-        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('29');
+        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('4');
     });
 
     test('right spinner increments input value by 1', async ({ page }) => {
@@ -304,10 +301,10 @@ test.describe('InputSlider', () => {
 
         await page.getByRole('button', { name: 'Increment' }).click();
 
-        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('31');
+        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('6');
     });
 
-    test('right spinner allows values greater than goal', async ({ page }) => {
+    test('right spinner is disabled at the goal', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-with-Progress-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal with Progress' })
@@ -317,9 +314,8 @@ test.describe('InputSlider', () => {
         await input.fill('200');
         await input.blur();
 
-        await page.getByRole('button', { name: 'Increment' }).click();
-
-        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('201');
+        await expect(input).toHaveValue('75');
+        await expect(page.getByRole('button', { name: 'Increment' })).toBeDisabled();
     });
 
     test('normal inputs are not changed on blur', async ({ page }) => {

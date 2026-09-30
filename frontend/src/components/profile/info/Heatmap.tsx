@@ -13,12 +13,19 @@ import {
     getActivity,
     mixColors,
 } from '@jackstenglein/chess-dojo-common/src/heatmap/heatmap';
-import { Bedtime, CheckCircle, Close, HourglassBottom } from '@mui/icons-material';
+import {
+    Bedtime,
+    CheckCircle,
+    Close,
+    HourglassBottom,
+    InfoOutlined,
+    LocalFireDepartment,
+} from '@mui/icons-material';
 import {
     Box,
-    Checkbox,
+    ClickAwayListener,
     Divider,
-    FormControlLabel,
+    IconButton,
     Menu,
     MenuItem,
     Paper,
@@ -30,7 +37,7 @@ import {
 } from '@mui/material';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
-import type { MouseEvent as ReactMouseEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityCalendar,
@@ -43,7 +50,12 @@ import { LongPressEventType, LongPressReactEvents, useLongPress } from 'use-long
 import { useTimelineContext } from '../activity/useTimeline';
 import { DEFAULT_WORK_GOAL } from '../trainingPlan/workGoal';
 import { MIN_BLOCK_SIZE } from './HeatmapCard';
-import { HeatmapOptions, TimelineEntryField, useHeatmapOptions } from './HeatmapOptions';
+import {
+    HeatmapPopOutButton,
+    HeatmapSettingsButton,
+    TimelineEntryField,
+    useHeatmapOptions,
+} from './HeatmapOptions';
 
 interface CategoryCount {
     /** The count of the category spent on custom tasks. */
@@ -158,9 +170,12 @@ export function Heatmap({
     maxDate: initialMaxDate,
     workGoalHistory,
     slotProps,
+    title,
 }: {
     entries: TimelineEntry[];
     description: string;
+    /** A heading shown in place of the total, when given. */
+    title?: string;
     blockSize?: number;
     onPopOut?: () => void;
     minDate?: string;
@@ -336,7 +351,7 @@ export function Heatmap({
 
                 '& .react-activity-calendar__scroll-container': {
                     paddingTop: '1px',
-                    paddingBottom: '10px',
+                    paddingBottom: 0,
                     overflow: 'visible !important',
                 },
 
@@ -346,12 +361,101 @@ export function Heatmap({
             }}
         >
             <RequestSnackbar request={request} />
-            <HeatmapOptions onPopOut={onPopOut} />
+            <Stack
+                direction='row'
+                sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1.5 }}
+            >
+                <Typography
+                    sx={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.75,
+                    }}
+                >
+                    {title && (
+                        <LocalFireDepartment
+                            fontSize='small'
+                            sx={{ color: 'dojoOrange.main' }}
+                            aria-hidden
+                        />
+                    )}
+                    {title ??
+                        (field === 'dojoPoints'
+                            ? t('totalDojoPointsLine', {
+                                  points: Math.round(10 * totalDojoPoints) / 10,
+                                  description,
+                              })
+                            : t('totalMinutesLine', {
+                                  time: formatTime(totalMinutesSpent, tCommon),
+                                  description,
+                              }))}
+                </Typography>
 
-            <Stack ref={scrollerRef} direction='row' sx={{ overflowX: 'auto' }}>
+                <Stack direction='row' sx={{ alignItems: 'center', gap: 0.25 }}>
+                    <HeatmapLegendButton
+                        scale={
+                            <Stack
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                }}
+                            >
+                                <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>
+                                    {t('less')}
+                                </Typography>
+
+                                {Array(MAX_LEVEL + 1)
+                                    .fill(0)
+                                    .map((_, i) => (
+                                        <LegendTooltip
+                                            key={i}
+                                            block={
+                                                <svg width={blockSize} height={blockSize}>
+                                                    <rect
+                                                        width={blockSize}
+                                                        height={blockSize}
+                                                        fill={theme[i]}
+                                                        rx='2'
+                                                        ry='2'
+                                                        style={{
+                                                            stroke: 'rgba(255, 255, 255, 0.04)',
+                                                        }}
+                                                    ></rect>
+                                                </svg>
+                                            }
+                                            level={i}
+                                            clamp={clamp}
+                                            field={field}
+                                        />
+                                    ))}
+
+                                <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>
+                                    {t('more')}
+                                </Typography>
+                            </Stack>
+                        }
+                    />
+                    <HeatmapSettingsButton />
+                    {onPopOut && <HeatmapPopOutButton onPopOut={onPopOut} />}
+                </Stack>
+            </Stack>
+
+            <Stack
+                ref={scrollerRef}
+                direction='row'
+                sx={{
+                    overflowX: 'auto',
+                    // Still scrolls sideways, without a scrollbar strip under the weeks.
+                    scrollbarWidth: 'none',
+                    '&::-webkit-scrollbar': { display: 'none' },
+                }}
+            >
                 <Paper
                     elevation={1}
-                    sx={{ position: 'sticky', left: 0, pr: 0.75, borderRadius: 0, pb: 4 }}
+                    sx={{ position: 'sticky', left: 0, pr: 0.75, borderRadius: 0 }}
                     {...slotProps?.weekdayLabelPaper}
                 >
                     <Stack>
@@ -423,66 +527,6 @@ export function Heatmap({
                 </Stack>
             </Stack>
 
-            <Stack
-                direction='row'
-                sx={{
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '4px 16px',
-                    mt: 0.5,
-                }}
-            >
-                <Typography sx={{ fontSize: '14px' }}>
-                    {field === 'dojoPoints'
-                        ? t('totalDojoPointsLine', {
-                              points: Math.round(10 * totalDojoPoints) / 10,
-                              description,
-                          })
-                        : t('totalMinutesLine', {
-                              time: formatTime(totalMinutesSpent, tCommon),
-                              description,
-                          })}
-                </Typography>
-
-                <Stack
-                    direction='row'
-                    sx={{
-                        alignItems: 'center',
-                        gap: '3px',
-                    }}
-                >
-                    <Typography sx={{ fontSize: '14px', mr: '0.4em' }}>{t('less')}</Typography>
-
-                    {Array(MAX_LEVEL + 1)
-                        .fill(0)
-                        .map((_, i) => (
-                            <LegendTooltip
-                                key={i}
-                                block={
-                                    <svg width={blockSize} height={blockSize}>
-                                        <rect
-                                            width={blockSize}
-                                            height={blockSize}
-                                            fill={theme[i]}
-                                            rx='2'
-                                            ry='2'
-                                            style={{
-                                                stroke: 'rgba(255, 255, 255, 0.04)',
-                                            }}
-                                        ></rect>
-                                    </svg>
-                                }
-                                level={i}
-                                clamp={clamp}
-                                field={field}
-                            />
-                        ))}
-
-                    <Typography sx={{ fontSize: '14px', ml: '0.4em' }}>{t('more')}</Typography>
-                </Stack>
-            </Stack>
-            <CategoryLegend />
             <Menu
                 open={!!contextMenu}
                 onClose={closeContextMenu}
@@ -530,32 +574,74 @@ export function Heatmap({
 }
 
 /**
+ * Renders an info button whose popup explains the heatmap: the colour scale and
+ * what each category colour and icon means. Opens on hover, and on tap for phones.
+ */
+function HeatmapLegendButton({ scale }: { scale: ReactNode }) {
+    const t = useTranslations('profile.info.heatmap');
+    // Controlled so a click or tap pins it open as well as hover showing it.
+    const [open, setOpen] = useState(false);
+    const [pinned, setPinned] = useState(false);
+
+    return (
+        <ClickAwayListener
+            onClickAway={() => {
+                setPinned(false);
+                setOpen(false);
+            }}
+        >
+            <Tooltip
+                open={open || pinned}
+                onOpen={() => setOpen(true)}
+                onClose={() => setOpen(false)}
+                disableTouchListener
+                placement='bottom-end'
+                slotProps={{
+                    tooltip: {
+                        sx: {
+                            bgcolor: 'background.paper',
+                            backgroundImage: 'var(--Paper-overlay)',
+                            color: 'text.primary',
+                            border: 1,
+                            borderColor: 'divider',
+                            boxShadow: 4,
+                            p: 1.5,
+                            maxWidth: 340,
+                        },
+                    },
+                }}
+                title={
+                    <Stack spacing={1.25} data-testid='heatmap-legend'>
+                        {scale}
+                        <CategoryLegend />
+                    </Stack>
+                }
+            >
+                <IconButton
+                    size='small'
+                    aria-label={t('legend')}
+                    aria-expanded={open || pinned}
+                    onClick={() => setPinned((v) => !v)}
+                    sx={{ color: 'text.secondary' }}
+                    data-testid='heatmap-legend-button'
+                >
+                    <InfoOutlined fontSize='small' />
+                </IconButton>
+            </Tooltip>
+        </ClickAwayListener>
+    );
+}
+
+/**
  * Renders the legend for the heatmap categories.
  */
 export function CategoryLegend() {
     const t = useTranslations('profile.info.heatmap');
     const tCategory = useTranslations('enums.requirementCategory');
-    const { colorMode, setColorMode } = useHeatmapOptions();
+    const { colorMode } = useHeatmapOptions();
 
     return (
-        <Stack
-            sx={{
-                mt: 0.5,
-                alignItems: 'start',
-            }}
-        >
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={colorMode === 'monochrome'}
-                        onChange={(e) => setColorMode(e.target.checked ? 'monochrome' : 'standard')}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: '1rem' } }}
-                    />
-                }
-                label={t('singleColorMode')}
-                slotProps={{ typography: { variant: 'caption' } }}
-            />
-
+        <Stack sx={{ alignItems: 'start' }}>
             {colorMode !== 'monochrome' && (
                 <Stack
                     direction='row'
@@ -563,7 +649,6 @@ export function CategoryLegend() {
                         flexWrap: 'wrap',
                         columnGap: 1,
                         rowGap: 0.5,
-                        mt: 0.5,
                     }}
                 >
                     {VALID_TOOLTIP_CATEGORIES.map((category) => {

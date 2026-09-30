@@ -17,11 +17,11 @@ import {
     Typography,
 } from '@mui/material';
 import { AxiosResponse } from 'axios';
-import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     createNewEntry,
+    getHistoryItems,
     getProgressSummary,
     getTimelineUpdate,
     type HistoryItem,
@@ -73,26 +73,10 @@ export function useProgressHistoryEditor({
         requirement?.scoreboardDisplay === ScoreboardDisplay.NonDojo ||
         requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes;
 
-    const initialItems: HistoryItem[] = useMemo(() => {
-        // Older timeline entries in the database may have previousCount < startCount.
-        // It's important to make sure that count will be newCount - startCount
-        // in these cases, so we take Math.max(previousCount, startCount || 0).
-        return entries
-            .filter((t) => t.requirementId === requirement?.id)
-            .sort((a, b) => (a.date || a.createdAt).localeCompare(b.date || b.createdAt))
-            .map((t, idx) => ({
-                date: DateTime.fromISO(t.date || t.createdAt),
-                count: `${t.newCount - Math.max(t.previousCount, requirement?.startCount || 0)}`,
-                hours: `${Math.floor(t.minutesSpent / 60)}`,
-                minutes: `${t.minutesSpent % 60}`,
-                notes: t.notes,
-                cohort: t.cohort,
-                entry: t,
-                index: idx,
-                deleted: false,
-                isNew: false,
-            }));
-    }, [requirement, entries]);
+    const initialItems: HistoryItem[] = useMemo(
+        () => getHistoryItems(requirement, entries),
+        [requirement, entries],
+    );
 
     const [items, setItems] = useState(initialItems);
     const draftItemsRef = useRef<Record<number, HistoryItem | undefined>>({});

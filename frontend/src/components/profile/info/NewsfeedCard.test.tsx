@@ -24,7 +24,11 @@ vi.mock('@/api/Request', () => ({
 }));
 
 vi.mock('@/components/newsfeed/NewsfeedItem', () => ({
-    default: ({ entry }: { entry: { id: string } }) => (
+    isRestDayEntry: (entry: { requirementId: string }) => entry.requirementId === 'RestDay',
+}));
+
+vi.mock('@/components/newsfeed/CompactNewsfeedItem', () => ({
+    CompactNewsfeedItem: ({ entry }: { entry: { id: string } }) => (
         <div data-testid={`newsfeed-item-${entry.id}`}>Mock Entry</div>
     ),
 }));

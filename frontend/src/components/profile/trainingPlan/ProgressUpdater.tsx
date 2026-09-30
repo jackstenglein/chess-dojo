@@ -6,34 +6,45 @@ import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import { TimerContext } from '@/components/timer/TimerContext';
 import {
     CustomTask,
+    formatTime,
+    getCurrentCount,
+    isRequirement,
     Requirement,
     RequirementProgress,
     ScoreboardDisplay,
-    getCurrentCount,
-    isRequirement,
 } from '@/database/requirement';
 import { TimeFormat } from '@/database/user';
+import { History, InfoOutlined } from '@mui/icons-material';
 import {
     Alert,
+    Box,
     Button,
     Checkbox,
     DialogActions,
     DialogContent,
-    DialogContentText,
     FormControlLabel,
-    Grid,
+    IconButton,
     Stack,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
+    Typography,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
-import { InputSlider } from './InputSlider';
+import { SectionLabel } from './SectionLabel';
+import { Stepper } from './Stepper';
 import { TaskDialogView } from './TaskDialog';
+import { getTaskUnit } from './taskUnit';
 
-const NUMBER_REGEX = /^[0-9]*$/;
+/** How much the −/+ buttons change the time by, in minutes. */
+const TIME_STEP_MINUTES = 5;
 const TIME_WARNING_THRESHOLD_MINS = 60 * 5;
+/** The preset times offered under the time stepper, in minutes. */
+const QUICK_ADD_MINUTES = [15, 30, 60];
 const SECONDS_PER_HOUR = 3600;
 
 interface ProgressUpdaterProps {
@@ -42,6 +53,8 @@ interface ProgressUpdaterProps {
     cohort: string;
     onClose: () => void;
     setView?: (view: TaskDialogView) => void;
+    /** Time to prefill when no timer is running for this task, in minutes. */
+    initialMinutes?: number;
 }
 
 export const ProgressUpdater = ({
@@ -50,9 +63,12 @@ export const ProgressUpdater = ({
     cohort,
     onClose,
     setView,
+    initialMinutes,
 }: ProgressUpdaterProps) => {
     const t = useTranslations('profile.trainingPlan.progressUpdater');
     const tCommon = useTranslations('profile.trainingPlan.common');
+    const tTime = useTranslations('common');
+    const tSlider = useTranslations('profile.trainingPlan.inputSlider');
     const { user } = useAuth();
     const api = useApi();
     const { entries, onNewEntry } = useTimelineContext();
@@ -60,9 +76,17 @@ export const ProgressUpdater = ({
     const totalCount = requirement.counts[cohort] || 0;
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
 
-    const [value, setValue] = useState<number>(currentCount);
+    // Counts are edited as units done past the task's start, matching the card:
+    // a task starting at puzzle #307 shows 0 until puzzle #307 is solved.
+    const startCount = requirement.startCount || 0;
+    const [value, setValue] = useState<number>(Math.max(currentCount - startCount, 0));
+    const maxValue = Math.max(totalCount - startCount, 0);
+    const unit = getTaskUnit(requirement);
     const [markComplete, setMarkComplete] = useState(true);
-    const [date, setDate] = useState<DateTime | null>(DateTime.now());
+    const [date, setDate] = useState<DateTime | null>(
+        // Rounded down to the hour, a tidier default than the current minute.
+        DateTime.now().startOf('hour'),
+    );
 
     const { task: timerTask, onClear: onClearTimer, timerSeconds } = use(TimerContext);
     let timerHours = Math.floor(timerSeconds / SECONDS_PER_HOUR);
@@ -71,10 +95,12 @@ export const ProgressUpdater = ({
         timerHours = 0;
         timerMinutes = 0;
     }
-    const [hours, setHours] = useState(timerHours ? `${timerHours}` : '');
-    const [minutes, setMinutes] = useState(timerMinutes ? `${timerMinutes}` : '');
-
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    if (!timerHours && !timerMinutes && initialMinutes) {
+        timerHours = Math.floor(initialMinutes / 60);
+        timerMinutes = initialMinutes % 60;
+    }
+    // The time being logged, in minutes. Below zero removes time from the task.
+    const [addedTime, setAddedTime] = useState(60 * timerHours + timerMinutes);
     const [notes, setNotes] = useState('');
     const request = useRequest();
 
@@ -89,30 +115,22 @@ export const ProgressUpdater = ({
     const isMinutes = requirement.scoreboardDisplay === ScoreboardDisplay.Minutes;
     const useTwelveHourClock = user?.timeFormat !== TimeFormat.TwentyFourHour;
 
-    const hoursInt = parseInt(hours) || 0;
-    const minutesInt = parseInt(minutes) || 0;
-    const totalTime = 60 * hoursInt + minutesInt + (progress?.minutesSpent[cohort] ?? 0);
-    const addedTime = 60 * hoursInt + minutesInt;
+    const previousTime = progress?.minutesSpent[cohort] ?? 0;
+    const subtract = addedTime < 0;
+    const enteredTime = Math.abs(addedTime);
+    const totalTime = previousTime + addedTime;
+
+    /**
+     * Changes the time being logged by the given number of minutes. Going below zero
+     * removes time from the task instead, down to what has already been logged.
+     */
+    const onQuickAdd = (change: number) => onSetTime(addedTime + change);
+
+    /** Sets the time being logged. Removing time can't take the task's total below zero. */
+    const onSetTime = (minutes: number) => setAddedTime(Math.max(minutes, -previousTime));
 
     const onSubmit = () => {
-        const errors: Record<string, string> = {};
-        if (hours !== '') {
-            if (!NUMBER_REGEX.test(hours)) {
-                errors.hours = tCommon('mustBeNumeric');
-            }
-        }
-        if (minutes !== '') {
-            if (!NUMBER_REGEX.test(minutes)) {
-                errors.minutes = tCommon('mustBeNumeric');
-            }
-        }
-        setErrors(errors);
-
-        if (Object.keys(errors).length > 0) {
-            return;
-        }
-
-        let newCount = value;
+        let newCount = value + startCount;
         if (isMinutes) {
             newCount = totalTime;
         } else if (isNonDojo) {
@@ -147,8 +165,7 @@ export const ProgressUpdater = ({
                 });
                 onNewEntry(resp.data.timelineEntry);
                 onClose();
-                setHours('');
-                setMinutes('');
+                setAddedTime(0);
                 request.reset();
                 // Only clear the timer when it was tracking this task or not specific to a task.
                 if (!timerTask || timerTask.id === requirement.id) {
@@ -162,16 +179,36 @@ export const ProgressUpdater = ({
 
     return (
         <>
-            <DialogContent>
-                <Stack spacing={3} sx={{ mt: isMinutes || isNonDojo ? 1 : undefined }}>
+            <DialogContent sx={{ pt: '4px !important' }}>
+                <Stack spacing={2.5}>
                     {isSlider && (
-                        <InputSlider
-                            value={value}
-                            setValue={setValue}
-                            max={totalCount}
-                            min={requirement.startCount || 0}
-                            suffix={requirement.progressBarSuffix}
-                        />
+                        <Section label={unit || tSlider('progressCount')}>
+                            <Stepper
+                                value={`${value}`}
+                                onChange={(text) =>
+                                    // Kept between 0 and the goal; a typed "-1" becomes 0.
+                                    setValue(
+                                        Math.min(
+                                            Math.max(
+                                                parseInt(text.replace(/[^0-9-]/g, '')) || 0,
+                                                0,
+                                            ),
+                                            maxValue,
+                                        ),
+                                    )
+                                }
+                                onDecrement={() => setValue((v) => Math.max(v - 1, 0))}
+                                onIncrement={() => setValue((v) => Math.min(v + 1, maxValue))}
+                                decrementDisabled={value <= 0}
+                                incrementDisabled={value >= maxValue}
+                                unit={`/ ${maxValue}`}
+                                label={unit || tSlider('count')}
+                                decrementLabel={tSlider('decrement')}
+                                incrementLabel={tSlider('increment')}
+                                primary
+                                data-testid='task-updater-count'
+                            />
+                        </Section>
                     )}
 
                     {isCheckbox && (
@@ -186,109 +223,143 @@ export const ProgressUpdater = ({
                         />
                     )}
 
-                    <TextField
-                        label={tCommon('comments')}
-                        placeholder={tCommon('commentsPlaceholder')}
-                        multiline={true}
-                        maxRows={3}
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                    />
+                    <Section
+                        label={t('timeSpent')}
+                        aside={
+                            <Box
+                                component='span'
+                                sx={{ color: subtract ? 'warning.main' : undefined }}
+                                data-testid='task-updater-total-time'
+                            >
+                                {t('totalTimeChange', {
+                                    before: formatTime(previousTime, tTime),
+                                    after: formatTime(totalTime, tTime),
+                                })}
+                            </Box>
+                        }
+                    >
+                        <Stack spacing={1}>
+                            <Stepper
+                                value={`${addedTime}`}
+                                onChange={(text) =>
+                                    onSetTime(parseInt(text.replace(/[^0-9-]/g, '')) || 0)
+                                }
+                                onDecrement={() => onQuickAdd(-TIME_STEP_MINUTES)}
+                                onIncrement={() => onQuickAdd(TIME_STEP_MINUTES)}
+                                decrementDisabled={addedTime <= -previousTime}
+                                unit={t('minutesShort')}
+                                label={tCommon('minutes')}
+                                decrementLabel={t('removeTime')}
+                                incrementLabel={t('addTime')}
+                                warning={subtract}
+                                data-testid='task-updater-minutes'
+                            />
+                            <ToggleButtonGroup
+                                exclusive
+                                fullWidth
+                                size='small'
+                                value={addedTime}
+                                onChange={(_, minutes: number | null) =>
+                                    minutes !== null && onSetTime(minutes)
+                                }
+                                sx={{
+                                    '& .MuiToggleButton-root': {
+                                        textTransform: 'none',
+                                        py: 0.5,
+                                        color: 'text.secondary',
+                                        borderColor: 'divider',
+                                    },
+                                    '& .Mui-selected': { color: 'text.primary !important' },
+                                }}
+                            >
+                                {QUICK_ADD_MINUTES.map((quickMinutes) => (
+                                    <ToggleButton
+                                        key={quickMinutes}
+                                        value={quickMinutes}
+                                        data-testid={`task-updater-quick-add-${quickMinutes}`}
+                                    >
+                                        {formatTime(quickMinutes, tTime)}
+                                    </ToggleButton>
+                                ))}
+                            </ToggleButtonGroup>
+                        </Stack>
+                    </Section>
 
-                    <Stack spacing={2}>
-                        <Grid
-                            container
-                            sx={{
-                                width: 1,
-                                gap: 2,
+                    {enteredTime > TIME_WARNING_THRESHOLD_MINS && (
+                        <Alert severity='warning'>{t('largeTimeWarning')}</Alert>
+                    )}
+
+                    <Section label={tCommon('date')}>
+                        <DateTimePicker
+                            disableFuture
+                            value={date}
+                            onChange={setDate}
+                            slotProps={{
+                                textField: {
+                                    fullWidth: true,
+                                    size: 'small',
+                                    'aria-label': tCommon('date'),
+                                },
                             }}
-                        >
-                            <Grid size={{ xs: 12, sm: 'grow' }}>
-                                <DateTimePicker
-                                    label={tCommon('date')}
-                                    disableFuture
-                                    value={date}
-                                    onChange={setDate}
-                                    slotProps={{
-                                        textField: {
-                                            fullWidth: true,
-                                        },
-                                    }}
-                                    ampm={useTwelveHourClock}
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 'grow' }}>
-                                <TextField
-                                    label={tCommon('hours')}
-                                    value={hours}
-                                    slotProps={{
-                                        htmlInput: {
-                                            inputMode: 'numeric',
-                                            pattern: '[0-9]*',
-                                        },
-                                    }}
-                                    onChange={(event) => setHours(event.target.value)}
-                                    error={!!errors.hours}
-                                    helperText={errors.hours}
-                                    fullWidth
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 'grow' }}>
-                                <TextField
-                                    label={tCommon('minutes')}
-                                    value={minutes}
-                                    slotProps={{
-                                        htmlInput: {
-                                            inputMode: 'numeric',
-                                            pattern: '[0-9]*',
-                                        },
-                                    }}
-                                    onChange={(event) => setMinutes(event.target.value)}
-                                    error={!!errors.minutes}
-                                    helperText={errors.minutes}
-                                    fullWidth
-                                />
-                            </Grid>
-                        </Grid>
-                        <DialogContentText>
-                            {t('totalTime', {
-                                hours: Math.floor(totalTime / 60),
-                                minutes: totalTime % 60,
-                            })}
-                        </DialogContentText>
-                        {addedTime > TIME_WARNING_THRESHOLD_MINS && (
-                            <Alert severity='warning' variant='filled'>
-                                {t('largeTimeWarning')}
-                            </Alert>
-                        )}
-                    </Stack>
+                            ampm={useTwelveHourClock}
+                        />
+                    </Section>
+
+                    <Section label={tCommon('comments')}>
+                        <TextField
+                            placeholder={tCommon('commentsPlaceholder')}
+                            multiline
+                            size='small'
+                            minRows={2}
+                            maxRows={4}
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            slotProps={{ htmlInput: { 'aria-label': tCommon('comments') } }}
+                        />
+                    </Section>
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ flexWrap: 'wrap' }}>
-                <Button onClick={onClose} disabled={request.isLoading()}>
-                    {tCommon('cancel')}
-                </Button>
+            <DialogActions sx={{ px: 3, pb: 2.5, pt: 1, gap: 1 }}>
                 {setView && (
-                    <>
-                        <Button
-                            onClick={() => setView(TaskDialogView.Details)}
-                            disabled={request.isLoading()}
-                        >
-                            {tCommon('taskDetails')}
-                        </Button>
-                        <Button
-                            data-testid='task-updater-show-history-button'
-                            onClick={() => setView(TaskDialogView.History)}
-                            disabled={request.isLoading()}
-                        >
-                            {tCommon('showHistory')}
-                        </Button>
-                    </>
+                    <Stack direction='row' sx={{ mr: 'auto', ml: -1 }}>
+                        <Tooltip title={tCommon('taskDetails')}>
+                            <IconButton
+                                aria-label={tCommon('taskDetails')}
+                                onClick={() => setView(TaskDialogView.Details)}
+                                disabled={request.isLoading()}
+                                sx={{ color: 'text.secondary' }}
+                            >
+                                <InfoOutlined fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title={tCommon('showHistory')}>
+                            <IconButton
+                                aria-label={tCommon('showHistory')}
+                                onClick={() => setView(TaskDialogView.History)}
+                                disabled={request.isLoading()}
+                                sx={{ color: 'text.secondary' }}
+                                data-testid='task-updater-show-history-button'
+                            >
+                                <History fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
                 )}
                 <Button
+                    color='inherit'
+                    onClick={onClose}
+                    disabled={request.isLoading()}
+                    sx={{ textTransform: 'none', ml: setView ? 0 : 'auto' }}
+                >
+                    {tCommon('cancel')}
+                </Button>
+                <Button
+                    variant='contained'
+                    disableElevation
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
+                    sx={{ borderRadius: 1.5, px: 2.5, textTransform: 'none', fontWeight: 600 }}
                 >
                     {tCommon('update')}
                 </Button>
@@ -298,3 +369,37 @@ export const ProgressUpdater = ({
         </>
     );
 };
+
+/**
+ * One section of the form: a small label (and, on its right, an optional aside such
+ * as a running total) above its control.
+ */
+function Section({
+    label,
+    aside,
+    children,
+}: {
+    label: string;
+    aside?: React.ReactNode;
+    children: React.ReactNode;
+}) {
+    return (
+        <Stack spacing={0.75}>
+            <Stack
+                direction='row'
+                sx={{ alignItems: 'baseline', justifyContent: 'space-between', gap: 2 }}
+            >
+                <SectionLabel>{label}</SectionLabel>
+                {aside && (
+                    <Typography
+                        variant='caption'
+                        sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
+                    >
+                        {aside}
+                    </Typography>
+                )}
+            </Stack>
+            {children}
+        </Stack>
+    );
+}

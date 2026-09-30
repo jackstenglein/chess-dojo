@@ -4,14 +4,16 @@ import {
     getCurrentCount,
     getTotalCount,
     isPinnable,
-    isRequirement,
     Requirement,
+    ScoreboardDisplay,
 } from '@/database/requirement';
 import { shouldPromptGraduation } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
-import { themeRequirementCategory } from '@/style/ThemeProvider';
+import { ProgressText } from '@/scoreboard/ScoreboardProgress';
+import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import {
+    Add,
     Check,
     ExpandMore,
     Help,
@@ -21,14 +23,15 @@ import {
 } from '@mui/icons-material';
 import {
     Box,
+    Button,
     Card,
     CardActionArea,
     CardActions,
     CardContent,
-    Chip,
     Collapse,
     Grid,
     IconButton,
+    LinearProgress,
     Stack,
     Tooltip,
     Typography,
@@ -38,15 +41,29 @@ import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
+import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
 import { TaskDescription } from '../TaskDescription';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
-import { TimeProgressChip } from '../TimeProgressChip';
+import { taskDisplayName } from '../taskDisplayName';
+import { TaskName } from '../TaskName';
+import { getTaskUnit } from '../taskUnit';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
+import {
+    CategoryLabel,
+    dailyCardActionsSx,
+    dailyCardSx,
+    dailyPrimaryButtonSx,
+    DailyTimePill,
+} from './DailyCard';
+import { DailyTaskMenu, DailyTaskMenuAction } from './DailyTaskMenu';
 import { GraduationTask } from './GraduationTask';
+import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
+import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
+import { getTodaySummary } from './todaySummary';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -65,12 +82,24 @@ export function DailyTrainingPlan() {
 
     const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
 
-    const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
+    const [goalTime, suggestedWorkedTime, workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: suggestionsByDay[new Date().getDay()],
         timeline,
     });
+
+    const { taskCount, doneCount } = useMemo(
+        () =>
+            getTodaySummary({
+                suggestions: suggestionsByDay[new Date().getDay()] ?? [],
+                timeline,
+                startDate,
+                endDate,
+                gameSchedule: user.gameSchedule,
+            }),
+        [suggestionsByDay, timeline, startDate, endDate, user.gameSchedule],
+    );
 
     const toggleExpanded = () => {
         setExpanded((v) => !v);
@@ -119,8 +148,18 @@ export function DailyTrainingPlan() {
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
                     workGoalHistory={user.workGoalHistory}
+                    variant={taskCount > 0 ? 'icon' : 'chip'}
                 />
             </Stack>
+
+            {!isLoading && taskCount > 0 && (
+                <DailySummary
+                    taskCount={taskCount}
+                    doneCount={doneCount}
+                    goalMinutes={goalTime}
+                    workedMinutes={suggestedWorkedTime}
+                />
+            )}
 
             <Collapse in={expanded}>
                 {isLoading ? (
@@ -133,6 +172,74 @@ export function DailyTrainingPlan() {
                     />
                 )}
             </Collapse>
+        </Stack>
+    );
+}
+
+/**
+ * Renders the summary of today's plan: how many tasks are done, how much of the
+ * day's suggested time has been worked, and a clear finished state.
+ */
+export function DailySummary({
+    taskCount,
+    doneCount,
+    goalMinutes,
+    workedMinutes,
+}: {
+    taskCount: number;
+    doneCount: number;
+    goalMinutes: number;
+    workedMinutes: number;
+}) {
+    const t = useTranslations('profile.trainingPlan.daily');
+    const tTime = useTranslations('common');
+    const allDone = doneCount >= taskCount;
+    // The day's suggested time is logged, even if some tasks are left.
+    const goalMet = goalMinutes > 0 && workedMinutes >= goalMinutes;
+    const complete = allDone || goalMet;
+    const percent = goalMinutes > 0 ? Math.min(100, (100 * workedMinutes) / goalMinutes) : 0;
+
+    return (
+        <Stack spacing={0.75} sx={{ width: 1, maxWidth: 520, pl: 1 }} data-testid='daily-summary'>
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 0.75 }}>
+                {allDone && <Check fontSize='small' color='success' />}
+                <Typography
+                    variant='body2'
+                    sx={{ fontWeight: 600, color: allDone ? 'success.main' : 'text.secondary' }}
+                >
+                    {allDone
+                        ? t('allDone', { worked: formatTime(workedMinutes, tTime) })
+                        : t('summary', {
+                              done: doneCount,
+                              total: taskCount,
+                              worked: formatTime(workedMinutes, tTime),
+                              goal: formatTime(goalMinutes, tTime),
+                          })}
+                </Typography>
+                {!allDone && goalMet && (
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.25,
+                            fontWeight: 600,
+                            color: 'success.main',
+                            ml: 'auto',
+                        }}
+                        data-testid='daily-goal-met'
+                    >
+                        <Check sx={{ fontSize: '1rem' }} />
+                        {t('goalMet')}
+                    </Typography>
+                )}
+            </Stack>
+            <LinearProgress
+                variant='determinate'
+                value={complete ? 100 : percent}
+                color={complete ? 'success' : 'primary'}
+                sx={{ height: 8, borderRadius: 4, backgroundColor: 'action.hover' }}
+            />
         </Stack>
     );
 }
@@ -151,6 +258,7 @@ function DailyTrainingPlanInternal({
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
+    const [initialMinutes, setInitialMinutes] = useState<number>();
 
     const extraTasks = useMemo(() => {
         const tasks = [];
@@ -165,9 +273,10 @@ function DailyTrainingPlanInternal({
         return tasks;
     }, [user.customTasks, allRequirements, extraTaskIds]);
 
-    const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
+    const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView, minutes?: number) => {
         setSelectedTask(task);
         setTaskDialogView(view);
+        setInitialMinutes(minutes);
     };
 
     const onCloseTask = () => {
@@ -189,11 +298,12 @@ function DailyTrainingPlanInternal({
                     initialView={taskDialogView}
                     progress={user.progress[selectedTask.id]}
                     cohort={user.dojoCohort}
+                    initialMinutes={initialMinutes}
                 />
             )}
 
             <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
-                {shouldPromptGraduation(user) && !skippedTaskIds?.includes('graduation') && (
+                {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
                     <GraduationTask />
                 )}
 
@@ -223,6 +333,10 @@ function DailyTrainingPlanInternal({
                     />
                 ))}
             </Grid>
+
+            <SkippedTasksRow />
+            <SkipUndoSnackbar />
+            <SwapUndoSnackbar />
         </Stack>
     );
 }
@@ -236,12 +350,10 @@ function DailyTrainingPlanItem({
     suggestion: SuggestedTask;
     startDate: string;
     endDate: string;
-    onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView) => void;
+    onOpenTask: (task: Requirement | CustomTask, view: TaskDialogView, minutes?: number) => void;
 }) {
-    const t = useTranslations('profile.trainingPlan.daily');
     const tCommon = useTranslations('profile.trainingPlan.common');
-    const tTime = useTranslations('common');
-    const tCategory = useTranslations('enums.requirementCategory');
+    const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
     const { isCurrentUser, pinnedTasks, togglePin, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
@@ -264,59 +376,77 @@ function DailyTrainingPlanItem({
     });
 
     const isComplete = timeWorkedMinutes >= goalMinutes;
+
+    // Counts are offset by startCount, so display and bar both work from the
+    // adjusted values; otherwise a task starting at 306 shows "306 / 2100" over
+    // an empty bar.
+    const progressCurrent = Math.max(currentCount - (task.startCount || 0), 0);
+    const progressTotal = Math.max(totalCount - (task.startCount || 0), 0);
+    const progressPercent =
+        progressTotal > 0 ? Math.min(100, (100 * progressCurrent) / progressTotal) : 0;
+
+    // The quick log records whatever is left of today's suggested time for this task.
+    const remainingMinutes = Math.max(goalMinutes - timeWorkedMinutes, 0);
+    // Prefill the log with what's left of today's suggestion, or the full
+    // suggestion once it's been met (someone logging more is still training).
+    const suggestedLogMinutes = remainingMinutes > 0 ? remainingMinutes : goalMinutes;
+
+    const title = taskDisplayName({ task, cohort: user.dojoCohort });
+
+    const menuActions: DailyTaskMenuAction[] = [
+        {
+            key: 'details',
+            label: tCommon('viewTaskDetails'),
+            icon: <Help fontSize='small' />,
+            onClick: () => onOpenTask(task, TaskDialogView.Details),
+        },
+    ];
+    if (isCurrentUser) {
+        if (isPinnable(task)) {
+            menuActions.push({
+                key: 'pin',
+                label: isPinned ? tCommon('unpinFromDaily') : tCommon('pinToDaily'),
+                icon: isPinned ? (
+                    <PushPin fontSize='small' color='dojoOrange' />
+                ) : (
+                    <PushPinOutlined fontSize='small' color='dojoOrange' />
+                ),
+                onClick: () => togglePin(task),
+            });
+        }
+        menuActions.push({
+            key: 'skip',
+            label: tCommon('skipForWeek'),
+            icon: <NotInterested fontSize='small' />,
+            onClick: () => toggleSkip(task.id),
+        });
+    }
+
     return (
         <Grid key={task.id} size={{ xs: 12, md: 4 }}>
-            <Card
-                variant='outlined'
-                sx={{
-                    height: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    opacity: isComplete ? 0.6 : undefined,
-                }}
-            >
+            <Card variant='outlined' sx={dailyCardSx(isComplete)}>
+                <DailyTaskMenu actions={menuActions} />
+                {isCurrentUser && goalMinutes > 0 && <SwapTaskButton task={suggestion.task} />}
+
                 <CardActionArea
-                    sx={{ flexGrow: 1 }}
-                    onClick={() =>
-                        onOpenTask(
-                            task,
-                            isCurrentUser && currentCount > 0
-                                ? TaskDialogView.Progress
-                                : TaskDialogView.Details,
-                        )
-                    }
+                    sx={{
+                        flexGrow: 1,
+                        borderRadius: 'inherit',
+                        opacity: isComplete ? 0.75 : undefined,
+                    }}
+                    onClick={() => onOpenTask(task, TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1 }}>
+                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
                         <Stack sx={{ height: 1 }}>
-                            <Stack
-                                spacing={1}
-                                sx={{
-                                    alignItems: 'start',
-                                }}
-                            >
-                                <Chip
-                                    variant='outlined'
-                                    label={
-                                        tCategory.has(task.category)
-                                            ? tCategory(task.category)
-                                            : task.category
-                                    }
-                                    color={themeRequirementCategory(task.category)}
-                                    size='small'
-                                />
+                            <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                                <Box sx={{ pr: 4 }}>
+                                    <CategoryLabel category={task.category} />
+                                </Box>
 
                                 <Typography
-                                    variant='h6'
-                                    sx={{
-                                        fontWeight: 'bold',
-                                    }}
+                                    sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
                                 >
-                                    {taskTitle({
-                                        task,
-                                        cohort: user.dojoCohort,
-                                        goalMinutes,
-                                        tCommon: tTime,
-                                    })}
+                                    <TaskName name={title} iconColor='text.secondary' />
                                 </Typography>
                             </Stack>
 
@@ -324,10 +454,13 @@ function DailyTrainingPlanItem({
                                 <Box
                                     sx={{
                                         color: 'text.secondary',
+                                        fontSize: '0.875rem',
+                                        '& *': { fontSize: 'inherit', lineHeight: 'inherit' },
                                         mt: 1,
-                                        lineClamp: 4,
+                                        lineHeight: 1.55,
+                                        lineClamp: 2,
                                         display: '-webkit-box',
-                                        WebkitLineClamp: 4,
+                                        WebkitLineClamp: 2,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -340,118 +473,80 @@ function DailyTrainingPlanItem({
                             )}
 
                             {displayProgress(task) && (
-                                <Stack sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}>
-                                    <Typography color='textSecondary'>
-                                        {t('progressCompleted', {
-                                            current: Math.max(
-                                                currentCount - (task.startCount || 0),
-                                                0,
-                                            ),
-                                            total: Math.max(totalCount - (task.startCount || 0), 0),
-                                            suffix: task.progressBarSuffix.toLowerCase(),
-                                        })}
-                                    </Typography>
+                                <Stack
+                                    spacing={0.75}
+                                    sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}
+                                >
+                                    <ProgressText
+                                        value={progressCurrent}
+                                        max={progressTotal}
+                                        min={0}
+                                        suffix={getTaskUnit(task).toLowerCase()}
+                                        isTime={
+                                            task.scoreboardDisplay === ScoreboardDisplay.Minutes
+                                        }
+                                    />
+                                    <LinearProgress
+                                        variant='determinate'
+                                        value={progressPercent}
+                                        sx={{
+                                            height: 6,
+                                            borderRadius: 3,
+                                            backgroundColor: 'action.hover',
+                                            '& .MuiLinearProgress-bar': {
+                                                borderRadius: 3,
+                                                backgroundColor: CategoryColors[task.category],
+                                            },
+                                        }}
+                                    />
                                 </Stack>
                             )}
                         </Stack>
                     </CardContent>
                 </CardActionArea>
-                <CardActions disableSpacing>
-                    <Tooltip title={tCommon('viewTaskDetails')}>
-                        <IconButton
-                            sx={{ color: 'text.secondary' }}
-                            onClick={() => onOpenTask(task, TaskDialogView.Details)}
-                        >
-                            <Help />
-                        </IconButton>
-                    </Tooltip>
 
+                <CardActions disableSpacing sx={dailyCardActionsSx}>
                     {isCurrentUser && (
-                        <>
-                            <Tooltip title={tCommon('skipForWeek')}>
-                                <IconButton
-                                    onClick={() => toggleSkip(task.id)}
-                                    sx={{
-                                        color: 'text.secondary',
-                                        marginLeft: 'auto',
-                                    }}
-                                >
-                                    <NotInterested />
-                                </IconButton>
-                            </Tooltip>
-
-                            {isPinnable(task) && (
-                                <Tooltip
-                                    title={
-                                        isPinned ? tCommon('unpinFromDaily') : tCommon('pinToDaily')
-                                    }
-                                >
-                                    <IconButton onClick={() => togglePin(task)}>
-                                        {isPinned ? (
-                                            <PushPin color='dojoOrange' />
-                                        ) : (
-                                            <PushPinOutlined color='dojoOrange' />
-                                        )}
-                                    </IconButton>
-                                </Tooltip>
-                            )}
-
-                            <TaskTimerIconButton taskId={task.id} />
-                        </>
+                        <Tooltip title={tQuickLog('logTooltip')}>
+                            <Button
+                                size='small'
+                                variant='contained'
+                                disableElevation
+                                startIcon={<Add />}
+                                onClick={() =>
+                                    onOpenTask(task, TaskDialogView.Progress, suggestedLogMinutes)
+                                }
+                                sx={dailyPrimaryButtonSx}
+                                data-testid='quick-log-button'
+                            >
+                                {tQuickLog('logTraining')}
+                            </Button>
+                        </Tooltip>
                     )}
 
+                    {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
+
                     <Tooltip title={isCurrentUser ? tCommon('updateProgress') : ''}>
-                        <TimeProgressChip
-                            value={timeWorkedMinutes}
-                            goal={goalMinutes}
-                            slotProps={{
-                                chip: {
-                                    icon: isComplete ? (
-                                        <Check fontSize='inherit' color='success' />
-                                    ) : undefined,
-                                    onClick: isCurrentUser
-                                        ? () => onOpenTask(task, TaskDialogView.Progress)
-                                        : undefined,
-                                },
-                                container: { sx: { mx: 0.5 } },
-                            }}
-                            data-testid='update-task-button'
-                        />
+                        <Box component='span' sx={{ ml: 'auto' }}>
+                            <DailyTimePill
+                                worked={timeWorkedMinutes}
+                                goal={goalMinutes}
+                                onClick={
+                                    isCurrentUser
+                                        ? () =>
+                                              onOpenTask(
+                                                  task,
+                                                  TaskDialogView.Progress,
+                                                  suggestedLogMinutes,
+                                              )
+                                        : undefined
+                                }
+                                data-testid='update-task-button'
+                            />
+                        </Box>
                     </Tooltip>
                 </CardActions>
             </Card>
         </Grid>
     );
-}
-
-/**
- * Returns the title for a task.
- * @param task The task to get the title for.
- * @param cohort The cohort to get the title for.
- * @param goalMinutes The number of minutes to work on the task.
- * @returns The title for the task.
- */
-export function taskTitle({
-    task,
-    cohort,
-    goalMinutes,
-    tCommon,
-}: {
-    task: Requirement | CustomTask;
-    cohort: string;
-    goalMinutes: number;
-    tCommon: (key: string, values?: Record<string, string | number>) => string;
-}) {
-    const totalCount = getTotalCount(cohort, task, true);
-
-    let title = goalMinutes > 0 ? task.dailyName : task.name;
-    title = (title || task.name)
-        .replaceAll('{{count}}', `${totalCount}`)
-        .replaceAll('{{time}}', formatTime(goalMinutes, tCommon));
-
-    if (!isRequirement(task) && goalMinutes > 0) {
-        title += ` - ${formatTime(goalMinutes, tCommon)}`;
-    }
-
-    return title;
 }

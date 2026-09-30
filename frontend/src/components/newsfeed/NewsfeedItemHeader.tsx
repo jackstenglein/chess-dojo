@@ -14,7 +14,8 @@ interface NewsfeedItemHeaderProps {
     entry: TimelineEntry;
 }
 
-const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
+/** Returns an entry's date as shown on the newsfeed, e.g. "September 21 at 7:34 AM". */
+export function useEntryDateTime(entry: TimelineEntry): string {
     const t = useTranslations('newsfeed');
     const { user } = useAuth();
 
@@ -31,6 +32,13 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
         hour: 'numeric',
         minute: '2-digit',
     });
+
+    return t('dateTime', { date, year: displayYear, time });
+}
+
+const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
+    const t = useTranslations('newsfeed');
+    const dateTime = useEntryDateTime(entry);
 
     const category =
         entry.requirementId === TimelineSpecialRequirementId.GameSubmission
@@ -76,7 +84,7 @@ const NewsfeedItemHeader: React.FC<NewsfeedItemHeaderProps> = ({ entry }) => {
                             color: 'text.secondary',
                         }}
                     >
-                        {t('dateTime', { date, year: displayYear, time })}
+                        {dateTime}
                     </Typography>
                 </Stack>
             </Stack>

@@ -10,6 +10,7 @@ import {
     DialogContent,
     FormLabel,
     Grid,
+    IconButton,
     MenuItem,
     Stack,
     TextField,
@@ -32,6 +33,7 @@ export function WorkGoalSettingsEditor({
     workGoal = DEFAULT_WORK_GOAL,
     workGoalHistory = [],
     disabled,
+    variant = 'chip',
 }: {
     /** The current goal to display in the chip that opens the editor. */
     currentGoal: number;
@@ -45,6 +47,11 @@ export function WorkGoalSettingsEditor({
     workGoalHistory?: WorkGoalHistory[];
     /** Whether the editor is disabled. */
     disabled: boolean;
+    /**
+     * How the editor's trigger is shown: a chip with the current progress, or just a
+     * settings icon for places that already show the progress elsewhere.
+     */
+    variant?: 'chip' | 'icon';
 }) {
     const t = useTranslations('profile.trainingPlan.workGoal');
     const tCommon = useTranslations('profile.trainingPlan.common');
@@ -110,19 +117,35 @@ export function WorkGoalSettingsEditor({
 
     return (
         <>
-            <Tooltip title={disabled ? undefined : t('editGoalTooltip')}>
-                <TimeProgressChip
-                    goal={currentGoal}
-                    value={currentValue}
-                    slotProps={{
-                        chip: {
-                            deleteIcon: <Settings />,
-                            onDelete: disabled ? undefined : () => setOpen(true),
-                            onClick: disabled ? undefined : () => setOpen(true),
-                        },
-                    }}
-                />
-            </Tooltip>
+            {variant === 'icon' ? (
+                !disabled && (
+                    <Tooltip title={t('editGoalTooltip')}>
+                        <IconButton
+                            size='small'
+                            onClick={() => setOpen(true)}
+                            aria-label={t('editGoalTooltip')}
+                            sx={{ color: 'text.secondary' }}
+                            data-testid='work-goal-settings-button'
+                        >
+                            <Settings fontSize='small' />
+                        </IconButton>
+                    </Tooltip>
+                )
+            ) : (
+                <Tooltip title={disabled ? undefined : t('editGoalTooltip')}>
+                    <TimeProgressChip
+                        goal={currentGoal}
+                        value={currentValue}
+                        slotProps={{
+                            chip: {
+                                deleteIcon: <Settings />,
+                                onDelete: disabled ? undefined : () => setOpen(true),
+                                onClick: disabled ? undefined : () => setOpen(true),
+                            },
+                        }}
+                    />
+                </Tooltip>
+            )}
             <Dialog open={open} onClose={request.isLoading() ? undefined : onClose} fullWidth>
                 <RequestSnackbar request={request} />
 

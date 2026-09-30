@@ -8,30 +8,29 @@ import {
     RequirementCategory,
 } from '@/database/requirement';
 import { User } from '@/database/user';
-import ScoreboardProgress, { ProgressText } from '@/scoreboard/ScoreboardProgress';
-import { Checklist } from '@mui/icons-material';
+import { ProgressText } from '@/scoreboard/ScoreboardProgress';
+import { Add, Checklist } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Box,
     Button,
     Divider,
     Grid,
+    LinearProgress,
     Stack,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import CustomTaskEditor from '../CustomTaskEditor';
+import { CategoryLabel } from '../daily/DailyCard';
 import { ScheduleClassicalGame } from '../ScheduleClassicalGame';
+import { SectionLabel } from '../SectionLabel';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID } from '../suggestedTasks';
-import { TrainingPlanIcon } from '../TrainingPlanIcon';
-import { FullTrainingPlanGraduationItem } from './FullTrainingPlanGraduationItem';
 import { FullTrainingPlanItem } from './FullTrainingPlanItem';
-
-/** Fake requirement id for the graduation task in the full training plan. */
-export const GRADUATION_TASK_ID = 'GRADUATION_TASK';
 
 /** A section in the training plan view. */
 export interface Section {
@@ -84,7 +83,6 @@ export function FullTrainingPlanSection({
 }: TrainingPlanSectionProps) {
     const t = useTranslations('profile.trainingPlan.full');
     const tCommon = useTranslations('profile.trainingPlan.common');
-    const tCategory = useTranslations('enums.requirementCategory');
     const isFreeTier = useFreeTier();
     const [showCustomTaskEditor, setShowCustomTaskEditor] = useState(false);
     const preventCategoryTranslation =
@@ -105,7 +103,19 @@ export function FullTrainingPlanSection({
             key={section.category}
             expanded={expanded}
             onChange={() => toggleExpand(section.category)}
-            sx={{ width: 1 }}
+            disableGutters
+            elevation={0}
+            sx={{
+                width: 1,
+                mb: 1,
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: '12px !important',
+                backgroundColor: 'background.default',
+                backgroundImage: 'none',
+                overflow: 'hidden',
+                '&:before': { display: 'none' },
+            }}
         >
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
@@ -124,46 +134,48 @@ export function FullTrainingPlanSection({
                     }}
                 >
                     <Grid size={{ xs: 'auto', sm: 5.5, lg: 5, xl: 3 }}>
-                        <Typography
-                            sx={{
-                                fontWeight: 'bold',
-                                whiteSpace: 'nowrap',
-                            }}
+                        <Box
+                            component='span'
+                            translate={preventCategoryTranslation ? 'no' : undefined}
+                            className={preventCategoryTranslation ? 'notranslate' : undefined}
                         >
-                            <TrainingPlanIcon
-                                category={section.category}
-                                sx={{
-                                    color: section.color || 'primary.main',
-                                    marginRight: '0.6rem',
-                                    verticalAlign: 'middle',
-                                }}
-                            />
-                            <span
-                                translate={preventCategoryTranslation ? 'no' : undefined}
-                                className={preventCategoryTranslation ? 'notranslate' : undefined}
-                            >
-                                {tCategory.has(section.category)
-                                    ? tCategory(section.category)
-                                    : section.category}
-                            </span>
-                        </Typography>
+                            <CategoryLabel category={section.category} />
+                        </Box>
                     </Grid>
 
                     <Grid
                         size={{ xs: 0, sm: 'grow' }}
-                        sx={{
-                            color: section.color,
-                            display: { xs: 'none', sm: 'initial' },
-                        }}
+                        sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}
                     >
                         {section.progressBar !== undefined && (
-                            <ScoreboardProgress
-                                value={section.progressBar}
-                                min={0}
-                                max={100}
-                                color={'inherit'}
-                                label={`${section.progressBar}%`}
-                            />
+                            <>
+                                <LinearProgress
+                                    variant='determinate'
+                                    value={section.progressBar}
+                                    sx={{
+                                        flexGrow: 1,
+                                        height: 8,
+                                        borderRadius: 4,
+                                        backgroundColor: 'action.hover',
+                                        '& .MuiLinearProgress-bar': {
+                                            borderRadius: 4,
+                                            backgroundColor: section.color || 'primary.main',
+                                        },
+                                    }}
+                                />
+                                <Typography
+                                    variant='body2'
+                                    sx={{
+                                        width: 44,
+                                        textAlign: 'right',
+                                        fontWeight: 600,
+                                        color: 'text.secondary',
+                                        fontVariantNumeric: 'tabular-nums',
+                                    }}
+                                >
+                                    {section.progressBar}%
+                                </Typography>
+                            </>
                         )}
                     </Grid>
 
@@ -179,9 +191,10 @@ export function FullTrainingPlanSection({
                     </Grid>
                 </Grid>
             </AccordionSummary>
-            <AccordionDetails data-testid={`progress-category-${section.category}`}>
-                <Divider />
-
+            <AccordionDetails
+                data-testid={`progress-category-${section.category}`}
+                sx={{ pt: 0, borderTop: 1, borderColor: 'divider' }}
+            >
                 <TaskList
                     tasks={section.uncompletedTasks}
                     user={user}
@@ -199,22 +212,19 @@ export function FullTrainingPlanSection({
                                 direction='row'
                                 sx={{
                                     alignItems: 'center',
-                                    mt: 6,
+                                    mt: 4,
                                     mb: 1,
                                 }}
                             >
-                                <Checklist color='primary' />
-                                <Typography
-                                    variant='body1'
-                                    sx={{
-                                        fontWeight: 700,
-                                        ml: 1,
-                                        flexGrow: 1,
-                                    }}
+                                <Checklist sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                                <Box sx={{ ml: 0.75, flexGrow: 1 }}>
+                                    <SectionLabel>{t('completedTasks')}</SectionLabel>
+                                </Box>
+                                <Button
+                                    color='inherit'
+                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
+                                    onClick={() => setShowCompleted(false)}
                                 >
-                                    {t('completedTasks')}
-                                </Typography>
-                                <Button onClick={() => setShowCompleted(false)}>
                                     {tCommon('hide')}
                                 </Button>
                             </Stack>
@@ -232,7 +242,11 @@ export function FullTrainingPlanSection({
                         </>
                     ) : (
                         <>
-                            <Button sx={{ my: 2 }} onClick={() => setShowCompleted(true)}>
+                            <Button
+                                color='inherit'
+                                sx={{ my: 1.5, color: 'text.secondary', textTransform: 'none' }}
+                                onClick={() => setShowCompleted(true)}
+                            >
                                 {t('showCompleted', { count: section.completedTasks.length })}
                             </Button>
                             <Divider />
@@ -241,7 +255,8 @@ export function FullTrainingPlanSection({
 
                 {!isFreeTier && isCustomTaskCategory(section.category) && isCurrentUser && (
                     <Button
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 2, textTransform: 'none' }}
+                        startIcon={<Add />}
                         onClick={() => setShowCustomTaskEditor(true)}
                         data-testid={`add-custom-task-button-${section.category.replaceAll(' ', '-')}`}
                     >
@@ -300,17 +315,6 @@ function TaskList({
             {tasks.map((r) => {
                 if (r.id === SCHEDULE_CLASSICAL_GAME_TASK_ID) {
                     return <ScheduleClassicalGame key={r.id} hideChip />;
-                }
-                if (r.id === GRADUATION_TASK_ID) {
-                    return (
-                        <FullTrainingPlanGraduationItem
-                            key={r.id}
-                            requirement={r as Requirement}
-                            user={user}
-                            cohort={cohort}
-                            isCurrentUser={isCurrentUser}
-                        />
-                    );
                 }
                 if (isFreeTier && isRequirement(r) && !r.isFree) {
                     return null;

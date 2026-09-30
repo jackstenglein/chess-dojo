@@ -1,6 +1,6 @@
 import { RequestSnackbar } from '@/api/Request';
 import { User } from '@/database/user';
-import { Stack, useMediaQuery } from '@mui/material';
+import { Stack } from '@mui/material';
 import { createContext, useEffect, useState } from 'react';
 import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
@@ -12,7 +12,6 @@ import { WeeklyTrainingPlan } from './weekly/WeeklyTrainingPlan';
 export const TrainingPlanContext = createContext<UseWeeklyTrainingPlanResponse>(null!);
 
 export function TrainingPlanTab({ user }: { user: User }) {
-    const hideWeekly = useMediaQuery((theme) => theme.breakpoints.down('sm'));
     const trainingPlan = useWeeklyTrainingPlan(user);
     const [cohort, setCohort] = useState(user.dojoCohort);
 
@@ -31,7 +30,7 @@ export function TrainingPlanTab({ user }: { user: User }) {
 
             <TrainingPlanContext value={trainingPlan}>
                 <DailyTrainingPlan />
-                {!hideWeekly && <WeeklyTrainingPlan />}
+                <WeeklyTrainingPlan />
                 <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
                 <MiniScoreboard cohort={cohort} />
             </TrainingPlanContext>

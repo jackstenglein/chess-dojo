@@ -149,17 +149,43 @@
                 "commentsPlaceholder": "Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "Only numeric characters are accepted",
                 "mustBeInteger": "This field must be an integer",
-                "fieldRequired": "This field is required"
+                "fieldRequired": "This field is required",
+                "moreActions": "More actions"
             },
             "inputSlider": {
                 "decrement": "Decrement",
                 "increment": "Increment",
-                "progressCount": "Progress count",
+                "progressCount": "Progress",
                 "count": "Count"
+            },
+            "verbs": {
+                "read": "Read",
+                "watch": "Watch",
+                "solve": "Solve",
+                "study": "Study",
+                "play": "Play",
+                "spar": "Spar",
+                "annotate": "Annotate",
+                "review": "Review",
+                "guide": "Read guide"
+            },
+            "quickLog": {
+                "logTraining": "Log training",
+                "logTooltip": "Log progress and time for this task",
+                "undo": "Undo"
             },
             "daily": {
                 "today": "Today",
-                "progressCompleted": "{current} / {total} {suffix} completed"
+                "summary": "{done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "Done for today · {worked} logged",
+                "goalMet": "Time goal met",
+                "skippedHeading": "Skipped this week ({count})",
+                "restore": "Restore {name}",
+                "skippedToast": "Skipped {name} for the rest of the week",
+                "swapTooltip": "Swap for another {category} task",
+                "swapNone": "No other {category} tasks to swap in",
+                "swapHeading": "Swap for another {category} task",
+                "swapped": "Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "This Week",
@@ -171,7 +197,15 @@
                 "Fri": "Fri",
                 "Sat": "Sat",
                 "activeOnlyTooltip": "Only show tasks you have updated this week",
-                "activeOnlyLabel": "Active Only"
+                "activeOnlyLabel": "Active Only",
+                "empty": "Nothing planned this week.",
+                "cellPlanned": "Planned: {goal}",
+                "cellPartial": "{worked} of {goal} so far",
+                "cellDone": "Done: {worked} of {goal}",
+                "cellMissed": "Missed: {worked} of {goal}",
+                "cellExtra": "Extra: {worked} logged, not planned",
+                "restDay": "Rest day",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Full Training Plan",
@@ -186,16 +220,12 @@
                 "addCustomTask": "Add Custom Task",
                 "unlockTasks": "{count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "View Prices",
-                "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "It's time for you to renew this task!",
                 "renewLabel": "Renew",
                 "minimumReachedTooltip": "You've reached the minimum, keep going!",
                 "minimumReachedLabel": "Minimum Reached",
                 "checkboxAriaLabel": "Checkbox {name}",
-                "updateAriaLabel": "Update {name}",
-                "graduateName": "Graduate from {cohort}",
-                "graduateDescription": "Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "Update {name}"
             },
             "graduation": {
                 "title": "Graduate from {cohort}?",
@@ -291,7 +321,12 @@
             "progressUpdater": {
                 "markComplete": "Mark as Completed?",
                 "totalTime": "Total Time: {hours}h {minutes}m",
-                "largeTimeWarning": "You're adding a lot of time! Please double-check your input before saving."
+                "largeTimeWarning": "You're adding a lot of time! Please double-check your input before saving.",
+                "addTime": "Add 5 minutes",
+                "removeTime": "Remove 5 minutes",
+                "timeSpent": "Time spent",
+                "minutesShort": "min",
+                "totalTimeChange": "Total {before} → {after}"
             },
             "scheduleGame": {
                 "title": "Schedule Your Next Classical Game",
@@ -312,7 +347,8 @@
                 "countRequired": "This field is required",
                 "countNumeric": "Only numeric characters are accepted",
                 "countMinOne": "At least one game is required",
-                "deleteEntry": "Delete"
+                "deleteEntry": "Delete",
+                "scheduleAction": "Schedule"
             },
             "taskDialog": {
                 "historyTitle": "{name} History",
@@ -348,7 +384,7 @@
                 "taskLockedUntil": "This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini Scoreboard",
+                "heading": "Scoreboard",
                 "type": "Type",
                 "dojoScore": "Dojo Score",
                 "trainingTime": "Training Time",
@@ -411,6 +447,7 @@
             "classicalGames": "Classical Games (Past Year)",
             "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "All Tasks",
+            "progressTitle": "Progress",
             "metrics": "Metrics",
             "tacticsRating": "Tactics Rating",
             "tacticsRatingTooltip": "For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
@@ -490,7 +527,10 @@
                 "legendMinutesRange": "{minValue} – {maxValue}",
                 "legendDojoPointsRange": "{minValue} – {maxValue} Dojo points",
                 "legendMinutesMax": "{value}+",
-                "legendDojoPointsMax": "{value}+ Dojo points"
+                "legendDojoPointsMax": "{value}+ Dojo points",
+                "settings": "Heatmap settings",
+                "legend": "What the colours mean",
+                "title": "Heatmap"
             }
         },
         "directories": {
@@ -1487,6 +1527,7 @@
         "graduations": "Graduations",
         "viewAll": "View All",
         "showPostsFrom": "Show Posts From",
+        "showMyPosts": "Show my posts",
         "categories": "Categories",
         "allCategories": "All Categories",
         "annotations": "Annotations",
@@ -1495,6 +1536,8 @@
         "completedRequirement": "Completed <strong>{name}</strong>",
         "updated": "Updated",
         "updatedRequirement": "Updated <strong>{name}</strong>",
+        "dojoPointsLabel": "Dojo points",
+        "markedNotDone": "Marked not done",
         "dojoPoints": "Dojo Points:",
         "totalTime": "Total Time:",
         "customTask": "Custom Task",
@@ -1513,7 +1556,8 @@
             "players": "Players:",
             "date": "Date:",
             "result": "Result:",
-            "moves": "Moves:"
+            "moves": "Moves:",
+            "moveCount": "{count, plural, one {# move} other {# moves}}"
         },
         "graduation": {
             "graduated": "Graduated from <strong>{oldCohort}</strong> into <strong>{newCohort}</strong>",
@@ -1534,7 +1578,8 @@
             "dojoScore": "Dojo Score",
             "gamesAnnotated": "Games Annotated",
             "date": "Date"
-        }
+        },
+        "comment": "Comment"
     },
     "tutorial": {
         "back": "Back",

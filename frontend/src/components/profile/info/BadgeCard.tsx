@@ -2,17 +2,8 @@ import { useRequirements } from '@/api/cache/requirements';
 import { Link } from '@/components/navigation/Link';
 import { ALL_COHORTS, User } from '@/database/user';
 import { calculateTacticsRating } from '@/exams/view/exam';
-import { ZoomOutMap } from '@mui/icons-material';
-import {
-    Box,
-    Card,
-    CardContent,
-    CardHeader,
-    IconButton,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { MilitaryTech, ZoomOutMap } from '@mui/icons-material';
+import { Box, Card, CardContent, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
@@ -24,6 +15,7 @@ import { BadgCabinetDialog } from './BadgeCabinetDialog';
 import BadgeDialog from './BadgeDialog';
 import { Badge, detectNewBadge, getBadges } from './badgeHandler';
 import { BadgeImage } from './BadgeImage';
+import { CardTitle } from './CardTitle';
 
 export const BadgeCard = ({ user }: { user: User }) => {
     const t = useTranslations('profile.info.badge');
@@ -126,7 +118,7 @@ export const BadgeCard = ({ user }: { user: User }) => {
 
     return (
         <>
-            <Card>
+            <Card variant='outlined'>
                 <Stack
                     direction='row'
                     sx={{
@@ -136,10 +128,19 @@ export const BadgeCard = ({ user }: { user: User }) => {
                         pt: 2,
                     }}
                 >
-                    <CardHeader title={t('badgesCardTitle')} sx={{ p: 0 }} />
+                    <CardTitle
+                        icon={<MilitaryTech sx={{ color: 'dojoOrange.main' }} aria-hidden />}
+                    >
+                        {t('badgesCardTitle')}
+                    </CardTitle>
                     <Tooltip title={t('viewAllBadges')}>
-                        <IconButton color='primary' onClick={() => setIsViewAllModalOpen(true)}>
-                            <ZoomOutMap />
+                        <IconButton
+                            size='small'
+                            aria-label={t('viewAllBadges')}
+                            onClick={() => setIsViewAllModalOpen(true)}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            <ZoomOutMap fontSize='small' />
                         </IconButton>
                     </Tooltip>
                 </Stack>

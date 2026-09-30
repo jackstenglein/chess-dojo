@@ -149,17 +149,43 @@
                 "commentsPlaceholder": "[T] Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "[T] Only numeric characters are accepted",
                 "mustBeInteger": "[T] This field must be an integer",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "moreActions": "[T] More actions"
             },
             "inputSlider": {
                 "decrement": "[T] Decrement",
                 "increment": "[T] Increment",
-                "progressCount": "[T] Progress count",
+                "progressCount": "[T] Progress",
                 "count": "[T] Count"
+            },
+            "verbs": {
+                "read": "[T] Read",
+                "watch": "[T] Watch",
+                "solve": "[T] Solve",
+                "study": "[T] Study",
+                "play": "[T] Play",
+                "spar": "[T] Spar",
+                "annotate": "[T] Annotate",
+                "review": "[T] Review",
+                "guide": "[T] Read guide"
+            },
+            "quickLog": {
+                "logTraining": "[T] Log training",
+                "logTooltip": "[T] Log progress and time for this task",
+                "undo": "[T] Undo"
             },
             "daily": {
                 "today": "[T] Today",
-                "progressCompleted": "[T] {current} / {total} {suffix} completed"
+                "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "[T] Done for today · {worked} logged",
+                "goalMet": "[T] Time goal met",
+                "skippedHeading": "[T] Skipped this week ({count})",
+                "restore": "[T] Restore {name}",
+                "skippedToast": "[T] Skipped {name} for the rest of the week",
+                "swapTooltip": "[T] Swap for another {category} task",
+                "swapNone": "[T] No other {category} tasks to swap in",
+                "swapHeading": "[T] Swap for another {category} task",
+                "swapped": "[T] Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "[T] This Week",
@@ -171,7 +197,15 @@
                 "Fri": "[T] Fri",
                 "Sat": "[T] Sat",
                 "activeOnlyTooltip": "[T] Only show tasks you have updated this week",
-                "activeOnlyLabel": "[T] Active Only"
+                "activeOnlyLabel": "[T] Active Only",
+                "empty": "[T] Nothing planned this week.",
+                "cellPlanned": "[T] Planned: {goal}",
+                "cellPartial": "[T] {worked} of {goal} so far",
+                "cellDone": "[T] Done: {worked} of {goal}",
+                "cellMissed": "[T] Missed: {worked} of {goal}",
+                "cellExtra": "[T] Extra: {worked} logged, not planned",
+                "restDay": "[T] Rest day",
+                "partialTime": "[T] {worked} / {goal}"
             },
             "full": {
                 "heading": "[T] Full Training Plan",
@@ -186,16 +220,12 @@
                 "addCustomTask": "[T] Add Custom Task",
                 "unlockTasks": "[T] {count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "[T] View Prices",
-                "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "[T] Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "[T] It's time for you to renew this task!",
                 "renewLabel": "[T] Renew",
                 "minimumReachedTooltip": "[T] You've reached the minimum, keep going!",
                 "minimumReachedLabel": "[T] Minimum Reached",
                 "checkboxAriaLabel": "[T] Checkbox {name}",
-                "updateAriaLabel": "[T] Update {name}",
-                "graduateName": "[T] Graduate from {cohort}",
-                "graduateDescription": "[T] Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "[T] Update {name}"
             },
             "graduation": {
                 "title": "[T] Graduate from {cohort}?",
@@ -291,7 +321,12 @@
             "progressUpdater": {
                 "markComplete": "[T] Mark as Completed?",
                 "totalTime": "[T] Total Time: {hours}h {minutes}m",
-                "largeTimeWarning": "[T] You're adding a lot of time! Please double-check your input before saving."
+                "largeTimeWarning": "[T] You're adding a lot of time! Please double-check your input before saving.",
+                "addTime": "[T] Add 5 minutes",
+                "removeTime": "[T] Remove 5 minutes",
+                "timeSpent": "[T] Time spent",
+                "minutesShort": "[T] min",
+                "totalTimeChange": "[T] Total {before} → {after}"
             },
             "scheduleGame": {
                 "title": "[T] Schedule Your Next Classical Game",
@@ -312,7 +347,8 @@
                 "countRequired": "[T] This field is required",
                 "countNumeric": "[T] Only numeric characters are accepted",
                 "countMinOne": "[T] At least one game is required",
-                "deleteEntry": "[T] Delete"
+                "deleteEntry": "[T] Delete",
+                "scheduleAction": "[T] Schedule"
             },
             "taskDialog": {
                 "historyTitle": "[T] {name} History",
@@ -348,7 +384,7 @@
                 "taskLockedUntil": "[T] This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "[T] Mini Scoreboard",
+                "heading": "[T] Scoreboard",
                 "type": "[T] Type",
                 "dojoScore": "[T] Dojo Score",
                 "trainingTime": "[T] Training Time",
@@ -411,6 +447,7 @@
             "classicalGames": "[T] Classical Games (Past Year)",
             "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "[T] All Tasks",
+            "progressTitle": "[T] Progress",
             "metrics": "[T] Metrics",
             "tacticsRating": "[T] Tactics Rating",
             "tacticsRatingTooltip": "[T] For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
@@ -490,7 +527,10 @@
                 "legendMinutesRange": "[T] {minValue} – {maxValue}",
                 "legendDojoPointsRange": "[T] {minValue} – {maxValue} Dojo points",
                 "legendMinutesMax": "[T] {value}+",
-                "legendDojoPointsMax": "[T] {value}+ Dojo points"
+                "legendDojoPointsMax": "[T] {value}+ Dojo points",
+                "settings": "[T] Heatmap settings",
+                "legend": "[T] What the colours mean",
+                "title": "[T] Heatmap"
             }
         },
         "directories": {
@@ -1487,6 +1527,7 @@
         "graduations": "[T] Graduations",
         "viewAll": "[T] View All",
         "showPostsFrom": "[T] Show Posts From",
+        "showMyPosts": "[T] Show my posts",
         "categories": "[T] Categories",
         "allCategories": "[T] All Categories",
         "annotations": "[T] Annotations",
@@ -1495,6 +1536,8 @@
         "completedRequirement": "[T] Completed <strong>{name}</strong>",
         "updated": "[T] Updated",
         "updatedRequirement": "[T] Updated <strong>{name}</strong>",
+        "dojoPointsLabel": "[T] Dojo points",
+        "markedNotDone": "[T] Marked not done",
         "dojoPoints": "[T] Dojo Points:",
         "totalTime": "[T] Total Time:",
         "customTask": "[T] Custom Task",
@@ -1513,7 +1556,8 @@
             "players": "[T] Players:",
             "date": "[T] Date:",
             "result": "[T] Result:",
-            "moves": "[T] Moves:"
+            "moves": "[T] Moves:",
+            "moveCount": "[T] {count, plural, one {# move} other {# moves}}"
         },
         "graduation": {
             "graduated": "[T] Graduated from <strong>{oldCohort}</strong> into <strong>{newCohort}</strong>",
@@ -1534,7 +1578,8 @@
             "dojoScore": "[T] Dojo Score",
             "gamesAnnotated": "[T] Games Annotated",
             "date": "[T] Date"
-        }
+        },
+        "comment": "[T] Comment"
     },
     "tutorial": {
         "back": "[T] Back",
