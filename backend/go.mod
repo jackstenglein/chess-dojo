@@ -1,6 +1,6 @@
 module github.com/jackstenglein/chess-dojo-scheduler/backend
 
-go 1.25.8
+go 1.26.0
 
 require (
 	github.com/TwiN/go-away v1.8.1
@@ -8,7 +8,7 @@ require (
 	github.com/corentings/chess v0.0.0-20241113092200-3f44c4e3e959
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/stripe/stripe-go/v81 v81.4.0
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.23.0
 )
 
 require (
