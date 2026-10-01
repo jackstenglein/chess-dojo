@@ -4,8 +4,8 @@ import {
     PuzzleRushSession,
     SubmitPuzzleRushSessionResponse,
     submitPuzzleRushSessionSchema,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
-import { computePuzzleRushStats } from '@jackstenglein/chess-dojo-common/src/puzzleRush/rating';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
+import { computePuzzleRushStats } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import {
     errToApiGatewayProxyResultV2,

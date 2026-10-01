@@ -11,13 +11,13 @@ import { Chess, Color } from '@jackstenglein/chess';
 import {
     PuzzleRushAttempt,
     PuzzleRushResult,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     PUZZLE_RUSH_DURATION_SECONDS,
     PUZZLE_RUSH_MAX_STRIKES,
     PUZZLE_RUSH_RATING_WINDOW,
     PUZZLE_RUSH_START_RATING,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/rating';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import { AccessTime, Bolt, Close, LocalFireDepartment, Timeline } from '@mui/icons-material';
 import {
     Box,

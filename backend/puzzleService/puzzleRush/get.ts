@@ -1,8 +1,8 @@
 import {
     GetPuzzleRushPuzzleResponse,
     getPuzzleRushPuzzleSchema,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
-import { PUZZLE_RUSH_RATING_WINDOW } from '@jackstenglein/chess-dojo-common/src/puzzleRush/rating';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
+import { PUZZLE_RUSH_RATING_WINDOW } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import { Puzzle } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { MongoClient, ServerApiVersion } from 'mongodb';

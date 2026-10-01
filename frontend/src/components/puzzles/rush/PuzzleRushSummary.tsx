@@ -8,7 +8,7 @@ import {
     PuzzleRushAttempt,
     PuzzleRushEndReason,
     PuzzleRushStats,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     Box,
     Fade,

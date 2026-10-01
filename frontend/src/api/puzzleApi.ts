@@ -11,7 +11,7 @@ import {
     ListPuzzleRushSessionsResponse,
     SubmitPuzzleRushSessionRequest,
     SubmitPuzzleRushSessionResponse,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     GetPuzzleHistoryRequest,
     GetPuzzleHistoryResponse,

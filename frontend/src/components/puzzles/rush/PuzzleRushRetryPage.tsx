@@ -14,7 +14,7 @@ import { Chess, Color } from '@jackstenglein/chess';
 import {
     PuzzleRushAttempt,
     PuzzleRushSession,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import { Bolt, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Box, Button, CardContent, Container, Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';

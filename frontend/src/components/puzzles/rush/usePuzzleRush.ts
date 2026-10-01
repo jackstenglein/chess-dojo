@@ -10,7 +10,7 @@ import {
     PuzzleRushResult,
     PuzzleRushSession,
     PuzzleRushStats,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     applyRushResult,
     computePuzzleRushStats,
@@ -21,7 +21,7 @@ import {
     PUZZLE_RUSH_DURATION_SECONDS,
     PUZZLE_RUSH_MAX_STRIKES,
     PuzzleRushLadder,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/rating';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown } from 'usehooks-ts';
 

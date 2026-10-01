@@ -2,7 +2,7 @@
 
 import { getPuzzleRushSession } from '@/api/puzzleApi';
 import { Request, useRequest } from '@/api/Request';
-import { PuzzleRushSession } from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+import { PuzzleRushSession } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import { useEffect } from 'react';
 
 /**

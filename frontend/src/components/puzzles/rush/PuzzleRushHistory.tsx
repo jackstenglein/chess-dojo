@@ -9,7 +9,7 @@ import { Link } from '@/components/navigation/Link';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import NotFoundPage from '@/NotFoundPage';
-import { PuzzleRushSession } from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+import { PuzzleRushSession } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     Button,
     Container,

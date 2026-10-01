@@ -6,7 +6,7 @@ import {
     PuzzleRushSession,
     getPuzzleRushSessionSchema,
     listPuzzleRushSessionsSchema,
-} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import {
     ApiError,
