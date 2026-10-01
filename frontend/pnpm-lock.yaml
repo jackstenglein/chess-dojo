@@ -162,8 +162,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-virtuoso:
-        specifier: ^4.18.12
-        version: 4.18.12(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^4.18.15
+        version: 4.18.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1(supports-color@7.2.0)
@@ -4465,8 +4465,8 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
-  react-virtuoso@4.18.12:
-    resolution: {integrity: sha512-6c1SnRicSBfG+WnbhcyJUxzDHvvxD3vsux/EpcfVbgB7clyP1Od2r81TAGTgwbL7U2qP889RR4u+CH6WjgpW0g==}
+  react-virtuoso@4.18.15:
+    resolution: {integrity: sha512-YvmOV0PThfObKUzXbZvlCfIO04yvZ6gRXkSiib472qEypDyT2ZSfNtqHr1F7XY3UsHp43hJkDo8WiFq3irHQZA==}
     peerDependencies:
       react: '>=16 || >=17 || >= 18 || >= 19'
       react-dom: '>=16 || >=17 || >= 18 || >=19'
@@ -9825,7 +9825,7 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  react-virtuoso@4.18.12(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-virtuoso@4.18.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
