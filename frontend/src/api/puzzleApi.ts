@@ -4,6 +4,15 @@ import {
     SubmitMateInOneSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/mateInOne/api';
 import {
+    GetPuzzleRushPuzzleRequest,
+    GetPuzzleRushPuzzleResponse,
+    GetPuzzleRushSessionResponse,
+    ListPuzzleRushSessionsRequest,
+    ListPuzzleRushSessionsResponse,
+    SubmitPuzzleRushSessionRequest,
+    SubmitPuzzleRushSessionResponse,
+} from '@jackstenglein/chess-dojo-common/src/puzzleRush/api';
+import {
     GetPuzzleHistoryRequest,
     GetPuzzleHistoryResponse,
     NextPuzzleRequest,
@@ -74,4 +83,58 @@ export function submitMateInOneSession(
         request,
         { functionName: 'submitMateInOneSession' },
     );
+}
+
+/**
+ * Fetches the next puzzle for a puzzle rush run.
+ * @param request The search rating and the ids of puzzles already used in the run.
+ * @returns A promise that resolves to the next puzzle.
+ */
+export function getPuzzleRushPuzzle(
+    request: GetPuzzleRushPuzzleRequest,
+): Promise<AxiosResponse<GetPuzzleRushPuzzleResponse>> {
+    return axiosService.post<GetPuzzleRushPuzzleResponse>(`/puzzle/rush/next`, request, {
+        functionName: 'getPuzzleRushPuzzle',
+    });
+}
+
+/**
+ * Submits a completed puzzle rush run.
+ * @param request The request containing the run's attempts.
+ * @returns A promise that resolves to the saved run.
+ */
+export function submitPuzzleRushSession(
+    request: SubmitPuzzleRushSessionRequest,
+): Promise<AxiosResponse<SubmitPuzzleRushSessionResponse>> {
+    return axiosService.post<SubmitPuzzleRushSessionResponse>(`/puzzle/rush/session`, request, {
+        functionName: 'submitPuzzleRushSession',
+    });
+}
+
+/**
+ * Fetches a single puzzle rush run belonging to the current user.
+ * @param createdAt The createdAt timestamp of the run.
+ * @returns A promise that resolves to the run.
+ */
+export function getPuzzleRushSession(
+    createdAt: string,
+): Promise<AxiosResponse<GetPuzzleRushSessionResponse>> {
+    return axiosService.get<GetPuzzleRushSessionResponse>(
+        `/puzzle/rush/session/${encodeURIComponent(createdAt)}`,
+        { functionName: 'getPuzzleRushSession' },
+    );
+}
+
+/**
+ * Lists the current user's puzzle rush runs, most recent first.
+ * @param request The optional pagination key.
+ * @returns A promise that resolves to the runs.
+ */
+export function listPuzzleRushSessions(
+    request: ListPuzzleRushSessionsRequest = {},
+): Promise<AxiosResponse<ListPuzzleRushSessionsResponse>> {
+    return axiosService.get<ListPuzzleRushSessionsResponse>(`/puzzle/rush/history`, {
+        params: request,
+        functionName: 'listPuzzleRushSessions',
+    });
 }
