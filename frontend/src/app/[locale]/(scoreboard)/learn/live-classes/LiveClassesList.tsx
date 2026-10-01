@@ -8,6 +8,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { Person, ShowChart, Troubleshoot } from '@mui/icons-material';
 import {
+    Box,
     Card,
     CardActionArea,
     CardContent,
@@ -27,7 +28,8 @@ import { useLiveClassPlayback } from './useLiveClassPlayback';
  * @param classes - The live classes to display.
  * @param onTagClick - The function to call when a tag is clicked.
  * @param selectedTags - The selected tags to filter the live classes by.
- * @param variant - The variant of the live classes list (grid or list).
+ * @param variant - The variant of the live classes list (grid, list, or scroll).
+ * @param cardCta - The CTA text to display on the card.
  * @returns The live classes list.
  */
 export function LiveClassesList({
@@ -35,38 +37,74 @@ export function LiveClassesList({
     onTagClick,
     selectedTags,
     variant,
+    cardCta,
 }: {
     classes: LiveClass[];
     onTagClick: (tag: string) => void;
     selectedTags: string[];
-    variant?: 'grid' | 'list';
+    variant?: 'grid' | 'list' | 'scroll';
+    cardCta?: string;
 }) {
     const { playingUrl, setPlayingUrl, showUpsell, setShowUpsell, playRecording } =
         useLiveClassPlayback();
 
+    const renderCard = (c: LiveClass) => (
+        <LiveClassCard
+            c={c}
+            onPlay={playRecording}
+            onTagClick={onTagClick}
+            selectedTags={selectedTags}
+            variant={variant === 'scroll' ? 'grid' : variant}
+            cardCta={cardCta}
+        />
+    );
+
     return (
-        <Grid
-            container
-            spacing={3}
-            sx={{
-                mt: 1,
-            }}
-        >
-            {classes.map((c) => (
-                <Grid
-                    key={c.name}
-                    size={variant === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}
-                    sx={variant === 'grid' ? { display: 'flex' } : undefined}
+        <>
+            {variant === 'scroll' ? (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: 3,
+                        overflowX: 'auto',
+                        mt: 1,
+                        pb: 2,
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch',
+                    }}
                 >
-                    <LiveClassCard
-                        c={c}
-                        onPlay={playRecording}
-                        onTagClick={onTagClick}
-                        selectedTags={selectedTags}
-                        variant={variant}
-                    />
+                    {classes.map((c) => (
+                        <Box
+                            key={c.id || c.name}
+                            sx={{
+                                flex: '0 0 20rem',
+                                display: 'flex',
+                                scrollSnapAlign: 'start',
+                            }}
+                        >
+                            {renderCard(c)}
+                        </Box>
+                    ))}
+                </Box>
+            ) : (
+                <Grid
+                    container
+                    spacing={3}
+                    sx={{
+                        mt: 1,
+                    }}
+                >
+                    {classes.map((c) => (
+                        <Grid
+                            key={c.id || c.name}
+                            size={variant === 'list' ? 12 : { xs: 12, sm: 6, lg: 4 }}
+                            sx={variant === 'grid' ? { display: 'flex' } : undefined}
+                        >
+                            {renderCard(c)}
+                        </Grid>
+                    ))}
                 </Grid>
-            ))}
+            )}
 
             <LiveClassVideoDialog
                 playingUrl={playingUrl}
@@ -74,7 +112,7 @@ export function LiveClassesList({
                 showUpsell={showUpsell}
                 onCloseUpsell={() => setShowUpsell(undefined)}
             />
-        </Grid>
+        </>
     );
 }
 
@@ -84,12 +122,14 @@ function LiveClassCard({
     onTagClick,
     selectedTags,
     variant = 'grid',
+    cardCta,
 }: {
     c: LiveClass;
     onPlay: (recording: LiveClassRecording, tier: SubscriptionTier) => void;
     onTagClick: (tag: string) => void;
     selectedTags: string[];
     variant?: 'grid' | 'list';
+    cardCta?: string;
 }) {
     const t = useTranslations('learn.liveClasses');
     const isList = variant === 'list';
@@ -320,6 +360,14 @@ function LiveClassCard({
                         >
                             {t('card.recordingCount', { count: c.recordings.length })}
                         </Typography>
+                    )}
+
+                    {cardCta && (
+                        <Stack sx={{ flexGrow: 1, justifyContent: 'flex-end', mt: 2 }}>
+                            <Typography variant='subtitle2' sx={{ color: 'primary.main' }}>
+                                {cardCta}
+                            </Typography>
+                        </Stack>
                     )}
                 </CardContent>
             </CardActionArea>

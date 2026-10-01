@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -23,6 +25,7 @@ import (
 
 var repository = database.DynamoDB
 var endpointSecret = ""
+var frontendHost = os.Getenv("frontendHost")
 
 func init() {
 	key, err := secrets.GetApiKey()
@@ -93,6 +96,8 @@ func handleCheckoutSessionCompleted(event *stripe.Event) api.Response {
 	str := spew.Sdump(checkoutSession)
 	log.Debugf("Got checkout session: %s", str)
 
+	notifyPurchase(&checkoutSession)
+
 	checkoutType := checkoutSession.Metadata["type"]
 	switch checkoutType {
 	case string(payment.CheckoutSessionType_Course):
@@ -106,6 +111,80 @@ func handleCheckoutSessionCompleted(event *stripe.Event) api.Response {
 	}
 
 	return api.Success(nil)
+}
+
+// Sends a Discord notification for every completed Stripe checkout session.
+// Failures are logged only so the webhook still returns success to Stripe.
+func notifyPurchase(checkoutSession *stripe.CheckoutSession) {
+	msg := formatPurchaseMessage(checkoutSession)
+	if err := discord.SendPurchaseNotification(msg); err != nil {
+		log.Errorf("Failed to send purchase Discord notification: %v", err)
+	}
+}
+
+// Formats a human-readable Discord message for the given checkout session.
+func formatPurchaseMessage(checkoutSession *stripe.CheckoutSession) string {
+	purchaseType := checkoutSession.Metadata["type"]
+	if purchaseType == "" {
+		purchaseType = "UNKNOWN"
+	}
+
+	username := checkoutSession.ClientReferenceID
+	if username == "" {
+		username = checkoutSession.Metadata["username"]
+	}
+
+	email := ""
+	if checkoutSession.CustomerDetails != nil {
+		email = checkoutSession.CustomerDetails.Email
+	}
+
+	amount := float32(checkoutSession.AmountTotal) / 100
+	currency := strings.ToUpper(string(checkoutSession.Currency))
+	if currency == "" {
+		currency = "USD"
+	}
+
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "💰 New purchase: **%s** — $%.2f %s", purchaseType, amount, currency)
+	fmt.Fprintf(&sb, "\n**User:** ")
+	if username == "" {
+		fmt.Fprintf(&sb, "anonymous")
+	} else {
+		fmt.Fprintf(&sb, "[%s](%s/profile/%s)", username, frontendHost, username)
+	}
+
+	if email != "" {
+		fmt.Fprintf(&sb, " (%s)", email)
+	}
+
+	switch purchaseType {
+	case string(payment.CheckoutSessionType_Subscription):
+		if tier := checkoutSession.Metadata["tier"]; tier != "" {
+			fmt.Fprintf(&sb, "\n**Tier:** %s", tier)
+		}
+	case string(payment.CheckoutSessionType_Course):
+		if ids := checkoutSession.Metadata["courseIds"]; ids != "" {
+			fmt.Fprintf(&sb, "\n**Courses:** %s", ids)
+		}
+	case string(payment.CheckoutSessionType_Coaching):
+		if eventId := checkoutSession.Metadata["eventId"]; eventId != "" {
+			fmt.Fprintf(&sb, "\n**Event:** %s", eventId)
+		}
+		if coach := checkoutSession.Metadata["coachUsername"]; coach != "" {
+			fmt.Fprintf(&sb, " with coach %s", coach)
+		}
+	case string(payment.CheckoutSessionType_GameReview):
+		if reviewType := checkoutSession.Metadata["reviewType"]; reviewType != "" {
+			fmt.Fprintf(&sb, "\n**Review type:** %s", reviewType)
+		}
+		if cohort, id := checkoutSession.Metadata["cohort"], checkoutSession.Metadata["id"]; cohort != "" || id != "" {
+			fmt.Fprintf(&sb, " (%s/%s)", cohort, id)
+		}
+	}
+
+	fmt.Fprintf(&sb, "\n**Session:** `%s`", checkoutSession.ID)
+	return sb.String()
 }
 
 // Saves the given courseIds in the provided user's PurchasedCourses map.

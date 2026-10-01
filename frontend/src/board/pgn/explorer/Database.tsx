@@ -15,6 +15,7 @@ import {
 } from '@/database/explorer';
 import { GameInfo } from '@/database/game';
 import { dojoCohorts, getCohortRange } from '@/database/user';
+import { DataGridContextMenu, useDataGridContextMenu } from '@/hooks/useDataGridContextMenu';
 import { PaginationResult } from '@/hooks/usePagination';
 import LoadingPage from '@/loading/LoadingPage';
 import Icon from '@/style/Icon';
@@ -49,6 +50,7 @@ import { useMemo } from 'react';
 import { useReconcile } from '../../Board';
 import { useChess } from '../PgnBoard';
 import { ExplorerDatabaseType } from './Explorer';
+import { GameContextMenu } from './GameContextMenu';
 import { PerformanceSummary } from './player/PerformanceSummary';
 
 export const getBackgroundColor = (color: string, mode: string) =>
@@ -92,7 +94,25 @@ interface DatabaseProps {
     onClickGame?: (game: GameInfo) => void;
 }
 
-function Database({
+function Database(props: DatabaseProps) {
+    const menu = useDataGridContextMenu();
+    const hasGameActions =
+        props.type === ExplorerDatabaseType.Dojo || props.type === ExplorerDatabaseType.Masters;
+    // Keep pending insertions mounted while selection changes reload the position results.
+    return (
+        <>
+            <DatabaseContent {...props} gameMenu={hasGameActions ? menu : undefined} />
+            {hasGameActions && (
+                <GameContextMenu
+                    menu={menu}
+                    source={props.pagination?.data.find((game) => game.id === menu.rowIds[0])}
+                />
+            )}
+        </>
+    );
+}
+
+function DatabaseContent({
     type,
     fen,
     position,
@@ -105,7 +125,8 @@ function Database({
     setTimeControls,
     pagination,
     onClickGame = defaultOnClickGame,
-}: DatabaseProps) {
+    gameMenu,
+}: DatabaseProps & { gameMenu?: DataGridContextMenu }) {
     const { chess } = useChess();
     const reconcile = useReconcile();
     const isFreeTier = useFreeTier();
@@ -501,6 +522,7 @@ function Database({
                     {pagination && (
                         <GameTable
                             namespace='explorer'
+                            contextMenu={gameMenu}
                             limitFreeTier
                             pagination={pagination}
                             onPaginationModelChange={onPaginationModelChange}

@@ -15,7 +15,7 @@ import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user
 import { fideDpTable } from '@jackstenglein/chess-dojo-common/src/ratings/performanceRating';
 import { getNormalizedRating } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { getAccessRole } from './access';
+import { fetchSubscriptionTier, getAccessRole } from './access';
 import {
     ApiError,
     errToApiGatewayProxyResultV2,
@@ -49,11 +49,16 @@ export const handlerV2: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         if (directory.visibility !== DirectoryVisibility.PUBLIC) {
+            const subscriptionTier =
+                userInfo.username === directory.owner
+                    ? undefined
+                    : await fetchSubscriptionTier(userInfo.username);
             const accessRole = await getAccessRole({
                 owner: directory.owner,
                 id: directory.id,
                 username: userInfo.username,
                 directory,
+                subscriptionTier,
             });
             const isViewer = compareRoles(DirectoryAccessRole.Viewer, accessRole);
             if (!isViewer) {

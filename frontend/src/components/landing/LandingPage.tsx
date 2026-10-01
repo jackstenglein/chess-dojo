@@ -1,22 +1,22 @@
 'use client';
 
 import { AuthStatus, useAuth } from '@/auth/Auth';
-import background3 from '@/components/landing/background3.webp';
-import { BackgroundImageContainer } from '@/components/landing/BackgroundImage';
 import { Community } from '@/components/landing/Community';
 import { Features } from '@/components/landing/Features';
 import { barlowCondensed } from '@/components/landing/fonts';
 import { Footer } from '@/components/landing/Footer';
 import { JoinDojoButton } from '@/components/landing/JoinDojoButton';
+import { LiveClasses } from '@/components/landing/LiveClasses';
 import { MainLanding } from '@/components/landing/MainLanding';
 import { Pricing } from '@/components/landing/Pricing';
 import { Senseis } from '@/components/landing/Senseis';
 import { TestimonialSection } from '@/components/landing/Testimonial';
+import { Link } from '@/components/navigation/Link';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { useRouter } from '@/hooks/useRouter';
 import LoadingPage from '@/loading/LoadingPage';
 import { fontFamily } from '@/style/font';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { Hub } from 'aws-amplify/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
@@ -51,52 +51,74 @@ export const LandingPage = () => {
         <Box sx={{ '--stats-height': '100px' }}>
             <MainLanding />
             <Features />
+            <LiveClasses />
             <TestimonialSection />
             <Community />
             <Pricing />
             <Senseis />
 
-            <BackgroundImageContainer
-                src={background3}
-                background='linear-gradient(270deg, #141422 0%, #06060B 100%)'
+            <Box
+                sx={{
+                    background:
+                        'linear-gradient(90deg, var(--mui-palette-darkBlue-main) 0%, var(--mui-palette-darkBlue-light) 100%)',
+                    py: '1.5rem',
+                }}
             >
-                <Stack
-                    sx={{
-                        alignItems: 'center',
-                    }}
-                >
-                    <Typography
+                <Container maxWidth='lg'>
+                    <Stack
                         sx={{
-                            fontFamily: (theme) => fontFamily(theme, barlowCondensed),
-                            fontWeight: '400',
-                            fontSize: '3rem',
-                            lineHeight: '3.5rem',
-                            letterSpacing: 0,
-                            textAlign: 'center',
+                            alignItems: 'center',
+                            gap: 3,
                         }}
                     >
-                        {t('joinCommunity')}
-                    </Typography>
-
-                    <JoinDojoButton sx={{ mt: '1.875rem' }}>{t('signUp')}</JoinDojoButton>
-
-                    {/* <Button
-                            variant='contained'
-                            component={Link}
-                            href='/signup'
+                        <Typography
                             sx={{
-                                fontSize: '1rem',
-                                fontWeight: '600',
-                                py: 1.5,
-                                px: 2.5,
-                                mt: '1.875rem',
+                                fontFamily: (theme) => fontFamily(theme, barlowCondensed),
+                                fontWeight: '400',
+                                fontSize: { xs: '1.75rem', md: '2.25rem' },
+                                lineHeight: 1.3,
+                                letterSpacing: 0,
+                                textAlign: 'center',
+                                maxWidth: '40rem',
                             }}
-                            color='dojoOrange'
                         >
-                            Sign Up
-                        </Button> */}
-                </Stack>
-            </BackgroundImageContainer>
+                            {t('joinCommunity')}
+                        </Typography>
+
+                        <Stack
+                            direction='row'
+                            sx={{
+                                gap: 2,
+                                flexWrap: 'wrap',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <JoinDojoButton />
+                            <Button
+                                variant='outlined'
+                                component={Link}
+                                href='/signup'
+                                color='inherit'
+                                sx={{
+                                    fontSize: '1rem',
+                                    fontWeight: '600',
+                                    py: '0.75rem',
+                                    px: '1.25rem',
+                                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                                    color: 'white',
+                                    '&:hover': {
+                                        borderColor: 'white',
+                                        backgroundColor: 'transparent',
+                                    },
+                                }}
+                            >
+                                {t('pricing.signUpFree')}
+                            </Button>
+                        </Stack>
+                    </Stack>
+                </Container>
+            </Box>
 
             <Footer />
         </Box>

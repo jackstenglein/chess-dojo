@@ -3,24 +3,22 @@ export interface BulletPointData {
     excluded?: boolean;
 }
 
-export const trainingPlanBulletPoints: BulletPointData[] = [
+export const featureTiles: BulletPointData[] = [
     { key: 'dailyTasks' },
-    { key: 'handpickedMaterial' },
     { key: 'progressTracking' },
-    { key: 'trainingPartners' },
-    { key: 'annotatedGames' },
     { key: 'openingSpy' },
+    { key: 'annotatedGames' },
 ];
 
 export const communityBulletPoints: BulletPointData[] = [
-    { key: 'studyGroups' },
     { key: 'classicalTournaments' },
-    { key: 'graduationStreams' },
+    { key: 'workshops' },
     { key: 'testsAndTactics' },
+    { key: 'studyGroups' },
+    { key: 'graduationStreams' },
     { key: 'chessCommunity' },
     { key: 'privateDiscord' },
     { key: 'clubs' },
-    { key: 'workshops' },
 ];
 
 export const membershipBulletPoints: BulletPointData[] = [

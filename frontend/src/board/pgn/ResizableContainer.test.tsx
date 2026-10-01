@@ -7,9 +7,15 @@ import { DefaultUnderboardTab } from './boardTools/underboard/underboardTabs';
 import { useImperativeHandle, type ReactNode, type Ref } from 'react';
 import type { UnderboardApi } from './boardTools/underboard/Underboard';
 
+const { redrawAll } = vi.hoisted(() => ({
+    redrawAll: vi.fn(),
+}));
+
 vi.mock('@/style/useLightMode', () => ({ useLightMode: () => true }));
 vi.mock('@/context/useGame', () => ({ default: () => ({}) }));
-vi.mock('./PgnBoard', () => ({ useChess: () => ({ chess: {}, toggleOrientation: () => null }) }));
+vi.mock('./PgnBoard', () => ({
+    useChess: () => ({ chess: {}, board: { redrawAll }, toggleOrientation: () => null }),
+}));
 vi.mock('./boardTools/boardButtons/StartButtons', () => ({ default: () => null }));
 vi.mock('./boardTools/boardButtons/StatusIcon', () => ({ default: () => null }));
 vi.mock('@/components/games/edit/UnpublishedGameBanner', () => ({ VisibilityIcon: () => null }));
@@ -154,6 +160,31 @@ describe('ResizableContainer side panels', () => {
         );
     });
 
+    it.each(['left', 'right'] as const)(
+        'redraws the board when the %s panel changes visibility',
+        (side) => {
+            render(board());
+            redrawAll.mockClear();
+
+            fireEvent.click(screen.getByRole('button', { name: `Hide ${side} panel` }));
+            expect(redrawAll).toHaveBeenCalledOnce();
+
+            fireEvent.click(screen.getByRole('button', { name: `Show ${side} panel` }));
+            expect(redrawAll).toHaveBeenCalledTimes(2);
+        },
+    );
+
+    it('redraws the board when player bars and controls change visibility', () => {
+        render(board());
+        redrawAll.mockClear();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hide player bars and controls' }));
+        expect(redrawAll).toHaveBeenCalledOnce();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show player bars and controls' }));
+        expect(redrawAll).toHaveBeenCalledTimes(2);
+    });
+
     it('fits without losing manual dimensions or board state, and moves focus to restoration', () => {
         const { unmount } = render(board());
         const position = screen.getByRole('textbox', { name: 'board state' });
@@ -262,6 +293,7 @@ describe('ResizableContainer side panels', () => {
     });
 
     beforeEach(() => {
+        redrawAll.mockClear();
         Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
             configurable: true,
             value: () => ({ width: 1200, height: 800, top: 0, left: 0, right: 1200, bottom: 800 }),
