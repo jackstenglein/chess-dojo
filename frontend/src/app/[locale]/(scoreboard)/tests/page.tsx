@@ -1,7 +1,7 @@
 import { ExamCard } from '@/components/exams/ExamCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
-import { EmojiEvents, Visibility } from '@mui/icons-material';
-import { Container, Grid } from '@mui/material';
+import { Bolt, EmojiEvents, Visibility } from '@mui/icons-material';
+import { Chip, Container, Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
 /**
@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
  */
 export default function ExamLandingPage() {
     const t = useTranslations('exams.landing');
+    const tNavbar = useTranslations('navbar');
     return (
         <Container maxWidth='lg' sx={{ py: 5 }}>
             <Grid container rowSpacing={2} columnSpacing={2}>
@@ -25,6 +26,14 @@ export default function ExamLandingPage() {
                     description={t('allRatings')}
                     href='/puzzles/checkmate'
                     icon={KingIcon}
+                />
+
+                <ExamCard
+                    name={t('puzzleRush')}
+                    description={t('allRatings')}
+                    href='/puzzles/rush'
+                    icon={Bolt}
+                    badge={<Chip label={tNavbar('new')} color='success' />}
                 />
 
                 <ExamCard

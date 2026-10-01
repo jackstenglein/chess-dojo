@@ -1,4 +1,5 @@
 import {
+    Box,
     Card,
     CardActionArea,
     CardContent,
@@ -20,9 +21,10 @@ interface ExamCardProps {
         | ((props: SvgIconProps) => JSX.Element)
         | (OverridableComponent<SvgIconTypeMap> & { muiName: string });
     disabled?: boolean;
+    badge?: JSX.Element;
 }
 
-export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardProps) => {
+export const ExamCard = ({ name, description, href, icon, disabled, badge }: ExamCardProps) => {
     const Icon = icon;
     return (
         <Grid
@@ -37,7 +39,7 @@ export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardPr
                 sx={{ opacity: disabled ? 0.8 : 1, height: 1 }}
             >
                 <CardActionArea component='a' disabled={disabled} href={href} sx={{ height: 1 }}>
-                    <CardContent>
+                    <CardContent sx={{ position: 'relative' }}>
                         <Stack
                             sx={{
                                 justifyContent: 'center',
@@ -64,6 +66,11 @@ export const ExamCard = ({ name, description, href, icon, disabled }: ExamCardPr
                                 {description}
                             </Typography>
                         </Stack>
+                        {badge && (
+                            <Box sx={{ position: 'absolute', top: '0.5rem', left: '0.5rem' }}>
+                                {badge}
+                            </Box>
+                        )}
                     </CardContent>
                 </CardActionArea>
             </Card>
