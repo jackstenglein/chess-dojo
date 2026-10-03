@@ -188,6 +188,20 @@ const pagesWithVideosRaw = [
     '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2',
     '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/0/0',
     '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/:chapter/1',
+
+    // Tactical Nimzo
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/0',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/1',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/2',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/3',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/4',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/5',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/6',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/7',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/8',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/9',
+    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/10',
 ];
 
 // Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',
