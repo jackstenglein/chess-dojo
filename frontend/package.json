@@ -81,7 +81,7 @@
         "luxon": "^3.7.2",
         "modern-screenshot": "^4.6.8",
         "moment": "^2.31.0",
-        "next": "^16.3.5",
+        "next": "^16.3.8",
         "next-intl": "^4.14.7",
         "next-navigation-guard": "^0.2.0",
         "react": "^19.2.4",
