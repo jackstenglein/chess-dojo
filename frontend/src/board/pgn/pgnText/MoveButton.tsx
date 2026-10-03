@@ -7,11 +7,12 @@ import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
 import { StockfishIcon } from '@/style/ChessIcons';
 import { Chess, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
-import { Backspace, Chat, Help, KeyboardReturn, Merge } from '@mui/icons-material';
+import { Backspace, Chat, ChevronRight, Help, KeyboardReturn, Merge } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import CheckIcon from '@mui/icons-material/Check';
 import {
     CircularProgress,
+    ClickAwayListener,
     Grid,
     ListItemIcon,
     ListItemText,
@@ -19,6 +20,8 @@ import {
     MenuItem,
     MenuList,
     Button as MuiButton,
+    Paper,
+    Popper,
     Stack,
     Tooltip,
     Typography,
@@ -36,7 +39,16 @@ import {
 import { DeletePrompt, useDeletePrompt } from '../boardTools/underboard/DeletePrompt';
 import { ShowMoveTimesInPgn } from '../boardTools/underboard/settings/ViewerSettings';
 import { MergeLineDialog } from '../boardTools/underboard/share/MergeLineDialog';
-import { compareNags, getStandardNag, nags } from '../Nag';
+import {
+    compareNags,
+    evalNags,
+    getNagInSet,
+    getStandardNag,
+    moveNags,
+    Nag,
+    nags,
+    setNagInSet,
+} from '../Nag';
 import { nagIcons } from '../NagIcon';
 import { useChess } from '../PgnBoard';
 
@@ -228,11 +240,16 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     const { game, onUpdateGame } = useGame();
     const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess, onClose);
     const [showMerge, setShowMerge] = useState(false);
+    const [symbolMenuAnchor, setSymbolMenuAnchor] = useState<HTMLElement>();
+    const [evalMenuAnchor, setEvalMenuAnchor] = useState<HTMLElement>();
+    const symbolCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const evalCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const { user } = useAuth();
     const api = useApi();
     const saveVariationRequest = useRequest();
     const t = useTranslations('analysisBoard.pgnText');
     const canDeleteMove = config?.allowMoveDeletion || isVariationSuggestor(user?.username, move);
+    const canAnnotateMove = canDeleteMove;
 
     if (!chess) {
         return null;
@@ -268,6 +285,49 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
         onClose();
     };
 
+    const onSetNag = (nagSet: Nag[], nag: Nag | null) => {
+        chess.setNags(setNagInSet(nag, nagSet, move.nags), move);
+        setSymbolMenuAnchor(undefined);
+        setEvalMenuAnchor(undefined);
+        onClose();
+    };
+
+    const openSymbolMenu = (event: React.MouseEvent<HTMLElement>) => {
+        if (symbolCloseTimeout.current) {
+            clearTimeout(symbolCloseTimeout.current);
+        }
+        setEvalMenuAnchor(undefined);
+        setSymbolMenuAnchor(event.currentTarget);
+    };
+
+    const scheduleCloseSymbolMenu = () => {
+        symbolCloseTimeout.current = setTimeout(() => setSymbolMenuAnchor(undefined), 200);
+    };
+
+    const cancelCloseSymbolMenu = () => {
+        if (symbolCloseTimeout.current) {
+            clearTimeout(symbolCloseTimeout.current);
+        }
+    };
+
+    const openEvalMenu = (event: React.MouseEvent<HTMLElement>) => {
+        if (evalCloseTimeout.current) {
+            clearTimeout(evalCloseTimeout.current);
+        }
+        setSymbolMenuAnchor(undefined);
+        setEvalMenuAnchor(event.currentTarget);
+    };
+
+    const scheduleCloseEvalMenu = () => {
+        evalCloseTimeout.current = setTimeout(() => setEvalMenuAnchor(undefined), 200);
+    };
+
+    const cancelCloseEvalMenu = () => {
+        if (evalCloseTimeout.current) {
+            clearTimeout(evalCloseTimeout.current);
+        }
+    };
+
     const onSaveVariationAsComment = async () => {
         try {
             saveVariationRequest.onStart();
@@ -284,9 +344,49 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
 
     return (
         <>
-            <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={onClose}>
+            <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={onClose} disableScrollLock>
                 <RequestSnackbar request={saveVariationRequest} />
                 <MenuList>
+                    {canAnnotateMove && [
+                        <MenuItem
+                            key='add-symbol'
+                            onClick={openSymbolMenu}
+                            onMouseEnter={openSymbolMenu}
+                            onMouseLeave={scheduleCloseSymbolMenu}
+                        >
+                            <ListItemIcon>
+                                {getNagInSet(moveNags, move.nags) ? (
+                                    <Typography sx={{ fontWeight: 'bold' }}>
+                                        {nags[getNagInSet(moveNags, move.nags)]?.label}
+                                    </Typography>
+                                ) : (
+                                    <Typography sx={{ fontWeight: 'bold' }}>!?</Typography>
+                                )}
+                            </ListItemIcon>
+                            <ListItemText>{t('addSymbol')}</ListItemText>
+                            <ChevronRight fontSize='small' sx={{ ml: 1 }} />
+                        </MenuItem>,
+
+                        <MenuItem
+                            key='add-eval'
+                            onClick={openEvalMenu}
+                            onMouseEnter={openEvalMenu}
+                            onMouseLeave={scheduleCloseEvalMenu}
+                        >
+                            <ListItemIcon>
+                                {getNagInSet(evalNags, move.nags) ? (
+                                    <Typography sx={{ fontWeight: 'bold' }}>
+                                        {nags[getNagInSet(evalNags, move.nags)]?.label}
+                                    </Typography>
+                                ) : (
+                                    <Typography sx={{ fontWeight: 'bold' }}>=</Typography>
+                                )}
+                            </ListItemIcon>
+                            <ListItemText>{t('addEval')}</ListItemText>
+                            <ChevronRight fontSize='small' sx={{ ml: 1 }} />
+                        </MenuItem>,
+                    ]}
+
                     {config?.allowMoveDeletion && [
                         <MenuItem key='mainline' disabled={isInMainline} onClick={onMakeMainline}>
                             <ListItemIcon>
@@ -369,6 +469,81 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                     )}
                 </MenuList>
             </Menu>
+
+            <Popper
+                open={Boolean(symbolMenuAnchor)}
+                anchorEl={symbolMenuAnchor}
+                placement='right-start'
+                sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+            >
+                <ClickAwayListener onClickAway={() => setSymbolMenuAnchor(undefined)}>
+                    <Paper
+                        onMouseEnter={cancelCloseSymbolMenu}
+                        onMouseLeave={scheduleCloseSymbolMenu}
+                    >
+                        <MenuList autoFocusItem={Boolean(symbolMenuAnchor)}>
+                            {moveNags.map((nag) => (
+                                <MenuItem
+                                    key={nag}
+                                    selected={getNagInSet(moveNags, move.nags) === nag}
+                                    onClick={() => onSetNag(moveNags, nag)}
+                                >
+                                    <ListItemIcon>
+                                        <Typography
+                                            sx={{ fontWeight: 'bold', color: nags[nag]?.color }}
+                                        >
+                                            {nags[nag]?.label}
+                                        </Typography>
+                                    </ListItemIcon>
+                                    <ListItemText>{nags[nag]?.description}</ListItemText>
+                                </MenuItem>
+                            ))}
+                            <MenuItem
+                                selected={!getNagInSet(moveNags, move.nags)}
+                                onClick={() => onSetNag(moveNags, null)}
+                            >
+                                <ListItemText>{t('noSymbol')}</ListItemText>
+                            </MenuItem>
+                        </MenuList>
+                    </Paper>
+                </ClickAwayListener>
+            </Popper>
+
+            <Popper
+                open={Boolean(evalMenuAnchor)}
+                anchorEl={evalMenuAnchor}
+                placement='right-start'
+                sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+            >
+                <ClickAwayListener onClickAway={() => setEvalMenuAnchor(undefined)}>
+                    <Paper onMouseEnter={cancelCloseEvalMenu} onMouseLeave={scheduleCloseEvalMenu}>
+                        <MenuList autoFocusItem={Boolean(evalMenuAnchor)}>
+                            {evalNags.map((nag) => (
+                                <MenuItem
+                                    key={nag}
+                                    selected={getNagInSet(evalNags, move.nags) === nag}
+                                    onClick={() => onSetNag(evalNags, nag)}
+                                >
+                                    <ListItemIcon>
+                                        <Typography
+                                            sx={{ fontWeight: 'bold', color: nags[nag]?.color }}
+                                        >
+                                            {nags[nag]?.label}
+                                        </Typography>
+                                    </ListItemIcon>
+                                    <ListItemText>{nags[nag]?.description}</ListItemText>
+                                </MenuItem>
+                            ))}
+                            <MenuItem
+                                selected={!getNagInSet(evalNags, move.nags)}
+                                onClick={() => onSetNag(evalNags, null)}
+                            >
+                                <ListItemText>{t('noEval')}</ListItemText>
+                            </MenuItem>
+                        </MenuList>
+                    </Paper>
+                </ClickAwayListener>
+            </Popper>
 
             {deleteAction && <DeletePrompt deleteAction={deleteAction} onClose={onCloseDelete} />}
             <MergeLineDialog open={showMerge} onClose={() => setShowMerge(false)} move={move} />
