@@ -19,7 +19,7 @@
         "ml-regression-simple-linear": "^3.0.1",
         "stripe": "^17.5.0",
         "uuid": "^14.0.2",
-        "zod": "^4.5.4"
+        "zod": "^4.6.5"
     },
     "devDependencies": {
         "eslint": "^10.11.0",
