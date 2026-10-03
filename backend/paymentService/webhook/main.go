@@ -235,7 +235,7 @@ func handleSubscriptionPurchase(checkoutSession *stripe.CheckoutSession) api.Res
 	update := database.UserUpdate{
 		PaymentInfo:        &paymentInfo,
 		SubscriptionStatus: stripe.String(string(database.SubscriptionStatus_Subscribed)),
-		SubscriptionTier:   stripe.String(string(tier)),
+		SubscriptionTier:   new(string(tier)),
 	}
 
 	user, shouldSendGameReviewSignup, err := updateSubscriptionAndDetectGameReviewSignup(
@@ -328,7 +328,7 @@ func handleGameReviewPurchase(checkoutSession *stripe.CheckoutSession) api.Respo
 	status := database.GameReviewStatus_Pending
 	update := database.GameUpdate{
 		ReviewStatus:      &status,
-		ReviewRequestedAt: stripe.String(time.Now().Format(time.RFC3339)),
+		ReviewRequestedAt: new(time.Now().Format(time.RFC3339)),
 		Review: &database.GameReview{
 			Type:     reviewType,
 			StripeId: checkoutSession.ID,
@@ -469,7 +469,7 @@ func handleSubscriptionUpdated(event *stripe.Event) api.Response {
 	update := database.UserUpdate{
 		PaymentInfo:        &paymentInfo,
 		SubscriptionStatus: stripe.String(string(database.SubscriptionStatus_Subscribed)),
-		SubscriptionTier:   stripe.String(string(tier)),
+		SubscriptionTier:   new(string(tier)),
 	}
 
 	user, shouldSendGameReviewSignup, err := updateSubscriptionAndDetectGameReviewSignup(

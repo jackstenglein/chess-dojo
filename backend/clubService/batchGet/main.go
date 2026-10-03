@@ -40,10 +40,3 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	return api.Success(clubs), nil
 }
-
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-	return b
-}

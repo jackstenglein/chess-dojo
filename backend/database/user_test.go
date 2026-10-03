@@ -260,8 +260,8 @@ func TestBatchStatementsError(t *testing.T) {
 			responses: []*dynamodb.BatchStatementResponse{
 				{},
 				{Error: &dynamodb.BatchStatementError{
-					Code:    aws.String("ValidationError"),
-					Message: aws.String("Item size exceeded"),
+					Code:    new("ValidationError"),
+					Message: new("Item size exceeded"),
 				}},
 			},
 			wantErr: true,

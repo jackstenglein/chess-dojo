@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -89,7 +88,7 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	if len(lastKeys) == 0 && info.Username != "" && event.QueryStringParameters["skipLastFetched"] == "" {
 		update := &database.UserUpdate{
-			LastFetchedNewsfeed: aws.String(time.Now().Format(time.RFC3339)),
+			LastFetchedNewsfeed: new(time.Now().Format(time.RFC3339)),
 		}
 		_, err := repository.UpdateUser(info.Username, update)
 		if err != nil {

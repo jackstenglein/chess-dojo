@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
@@ -85,8 +86,8 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	lastActiveRound := 0
-	for idx := len(section.Rounds) - 1; idx >= 0; idx-- {
-		for _, pairing := range section.Rounds[idx].Pairings {
+	for idx, v := range slices.Backward(section.Rounds) {
+		for _, pairing := range v.Pairings {
 			if pairing.White.Username == request.Username || pairing.Black.Username == request.Username {
 				lastActiveRound = idx + 1
 				break

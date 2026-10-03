@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -83,8 +82,8 @@ func (repo *dynamoRepository) CreateFollower(poster, follower *User) (*FollowerE
 
 	input := &dynamodb.PutItemInput{
 		Item:                item,
-		ConditionExpression: aws.String("attribute_not_exists(follower)"),
-		TableName:           aws.String(followersTable),
+		ConditionExpression: new("attribute_not_exists(follower)"),
+		TableName:           new(followersTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	if err != nil {
@@ -113,15 +112,15 @@ func (repo *dynamoRepository) updateFollowCount(username, field string, incremen
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
-		UpdateExpression: aws.String("ADD #v :v"),
+		UpdateExpression: new("ADD #v :v"),
 		ExpressionAttributeNames: map[string]*string{
 			"#v": &field,
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":v": {N: aws.String(fmt.Sprintf("%d", incrementalCount))},
+			":v": {N: new(fmt.Sprintf("%d", incrementalCount))},
 		},
 		TableName: &userTable,
 	}
@@ -137,8 +136,8 @@ func (repo *dynamoRepository) DeleteFollower(poster, follower string) error {
 			"poster":   {S: &poster},
 			"follower": {S: &follower},
 		},
-		ConditionExpression: aws.String("attribute_exists(follower)"),
-		TableName:           aws.String(followersTable),
+		ConditionExpression: new("attribute_exists(follower)"),
+		TableName:           new(followersTable),
 	}
 	_, err := repo.svc.DeleteItem(input)
 	if err != nil {
@@ -188,14 +187,14 @@ func (repo *dynamoRepository) GetFollowerEntry(poster, follower string) (*Follow
 // The next start key is also returned.
 func (repo *dynamoRepository) ListFollowers(username, startKey string) ([]FollowerEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#poster = :poster"),
+		KeyConditionExpression: new("#poster = :poster"),
 		ExpressionAttributeNames: map[string]*string{
-			"#poster": aws.String("poster"),
+			"#poster": new("poster"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":poster": {S: aws.String(username)},
+			":poster": {S: new(username)},
 		},
-		TableName: aws.String(followersTable),
+		TableName: new(followersTable),
 	}
 
 	var followers []FollowerEntry
@@ -217,15 +216,15 @@ func (repo *dynamoRepository) ListFollowing(username, startKey string) ([]Follow
 // number of results returned. If non-positive, it is ignored.
 func (repo *dynamoRepository) ListFollowingLimit(username, startKey string, limit int) ([]FollowerEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#follower = :follower"),
+		KeyConditionExpression: new("#follower = :follower"),
 		ExpressionAttributeNames: map[string]*string{
-			"#follower": aws.String("follower"),
+			"#follower": new("follower"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":follower": {S: aws.String(username)},
+			":follower": {S: new(username)},
 		},
-		IndexName: aws.String("FollowingIndex"),
-		TableName: aws.String(followersTable),
+		IndexName: new("FollowingIndex"),
+		TableName: new(followersTable),
 	}
 
 	if limit > 0 {

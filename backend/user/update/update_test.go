@@ -72,8 +72,8 @@ func TestUpdateUser(t *testing.T) {
 			name:     "SuccessfulRequest",
 			username: testUsername,
 			update: &database.UserUpdate{
-				DisplayName:  aws.String("testDisplayName"),
-				Bio:          aws.String("testBio"),
+				DisplayName:  new("testDisplayName"),
+				Bio:          new("testBio"),
 				RatingSystem: (*database.RatingSystem)(aws.String(string(database.Fide))),
 				// ChesscomUsername:                 aws.String("JackStenglein"),
 				// LichessUsername:                  aws.String("JackStenglein"),
@@ -83,7 +83,7 @@ func TestUpdateUser(t *testing.T) {
 				// StartLichessRating:               aws.Int(2),
 				// StartFideRating:                  aws.Int(3),
 				// StartUscfRating:                  aws.Int(4),
-				DojoCohort: (*database.DojoCohort)(aws.String("2400+")),
+				DojoCohort: (*database.DojoCohort)(new("2400+")),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -108,16 +108,16 @@ func TestUpdateUser(t *testing.T) {
 			name:     "ProfaneBio",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("This bio is shit"),
+				Bio: new("This bio is shit"),
 			},
 			wantCode: 400,
 			wantErr:  true,
 		},
 		{
-			name: "cleanBio",
+			name:     "cleanBio",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("This bio is clean"),
+				Bio: new("This bio is clean"),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -127,14 +127,14 @@ func TestUpdateUser(t *testing.T) {
 				DisplayName:  "testDisplayName",
 				Bio:          "This bio is clean",
 				RatingSystem: database.Fide,
-				DojoCohort: "2400+",
+				DojoCohort:   "2400+",
 			},
 		},
 		{
 			name:     "BioWithAsSuch",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("As such, I enjoy chess."),
+				Bio: new("As such, I enjoy chess."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -151,7 +151,7 @@ func TestUpdateUser(t *testing.T) {
 			name:     "BioWithAsSold",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("Sold as sold."),
+				Bio: new("Sold as sold."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -168,7 +168,7 @@ func TestUpdateUser(t *testing.T) {
 			name:     "BioWithCommonAssSubstrings",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("I enjoy classroom assessment and passage analysis."),
+				Bio: new("I enjoy classroom assessment and passage analysis."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{

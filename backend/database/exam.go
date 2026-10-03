@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -126,10 +125,10 @@ type ExamAnswer struct {
 func (repo *dynamoRepository) GetExam(examType string, id string) (*Exam, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String(examType)},
-			"id":   {S: aws.String(id)},
+			"type": {S: new(examType)},
+			"id":   {S: new(id)},
 		},
-		TableName: aws.String(examsTable),
+		TableName: new(examsTable),
 	}
 
 	exam := Exam{}
@@ -138,16 +137,16 @@ func (repo *dynamoRepository) GetExam(examType string, id string) (*Exam, error)
 }
 
 // ListExams returns a paginated list of exams with the provided type.
-func (repo *dynamoRepository) ListExams(examType ExamType, startKey string, out interface{}) (string, error) {
+func (repo *dynamoRepository) ListExams(examType ExamType, startKey string, out any) (string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#type = :type"),
+		KeyConditionExpression: new("#type = :type"),
 		ExpressionAttributeNames: map[string]*string{
-			"#type": aws.String("type"),
+			"#type": new("type"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":type": {S: aws.String(string(examType))},
+			":type": {S: new(string(examType))},
 		},
-		TableName: aws.String(examsTable),
+		TableName: new(examsTable),
 	}
 
 	lastKey, err := repo.query(input, startKey, out)
@@ -177,21 +176,21 @@ func (repo *dynamoRepository) PutExamAnswerSummary(answer *ExamAnswer, score int
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression:    aws.String("SET #answers.#user = :a"),
-		ConditionExpression: aws.String("attribute_exists(#answers) AND attribute_not_exists(#answers.#user)"),
+		UpdateExpression:    new("SET #answers.#user = :a"),
+		ConditionExpression: new("attribute_exists(#answers) AND attribute_not_exists(#answers.#user)"),
 		ExpressionAttributeNames: map[string]*string{
-			"#answers": aws.String("answers"),
-			"#user":    aws.String(string(answer.Type)),
+			"#answers": new("answers"),
+			"#user":    new(string(answer.Type)),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":a": {M: item},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String(string(answer.ExamType))},
-			"id":   {S: aws.String(answer.Id)},
+			"type": {S: new(string(answer.ExamType))},
+			"id":   {S: new(answer.Id)},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(examsTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(examsTable),
 	}
 
 	exam := &Exam{}
@@ -216,14 +215,14 @@ func (repo *dynamoRepository) PutExamAttempt(username string, examId string, exa
 
 	var updateExpr string
 	exprAttrNames := map[string]*string{
-		"#a": aws.String("attempts"),
+		"#a": new("attempts"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{}
 
 	if index == nil {
 		updateExpr = "SET #et = :et, #a = list_append(if_not_exists(#a, :empty_list), :a)"
-		exprAttrNames["#et"] = aws.String("examType")
-		exprAttrValues[":et"] = &dynamodb.AttributeValue{S: aws.String(string(examType))}
+		exprAttrNames["#et"] = new("examType")
+		exprAttrValues[":et"] = &dynamodb.AttributeValue{S: new(string(examType))}
 		exprAttrValues[":empty_list"] = &dynamodb.AttributeValue{L: []*dynamodb.AttributeValue{}}
 		exprAttrValues[":a"] = &dynamodb.AttributeValue{L: []*dynamodb.AttributeValue{{M: item}}}
 	} else {
@@ -233,14 +232,14 @@ func (repo *dynamoRepository) PutExamAttempt(username string, examId string, exa
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String(username)},
-			"id":   {S: aws.String(examId)},
+			"type": {S: new(username)},
+			"id":   {S: new(examId)},
 		},
-		UpdateExpression:          aws.String(updateExpr),
+		UpdateExpression:          new(updateExpr),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
-		TableName:                 aws.String(examsTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 new(examsTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 
 	answer := &ExamAnswer{}
@@ -254,10 +253,10 @@ func (repo *dynamoRepository) PutExamAttempt(username string, examId string, exa
 func (repo *dynamoRepository) GetExamAnswer(username, id string) (*ExamAnswer, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String(username)},
-			"id":   {S: aws.String(id)},
+			"type": {S: new(username)},
+			"id":   {S: new(id)},
 		},
-		TableName: aws.String(examsTable),
+		TableName: new(examsTable),
 	}
 
 	answer := ExamAnswer{}
@@ -284,13 +283,13 @@ func (repo *dynamoRepository) UpdateUserExamRatings(examId string, updates []Use
 
 		for j := i; j < len(updates) && j < i+25; j++ {
 			update := updates[j]
-			params, err := dynamodbattribute.MarshalList([]interface{}{update.Summary, update.Username})
+			params, err := dynamodbattribute.MarshalList([]any{update.Summary, update.Username})
 			if err != nil {
 				return errors.Wrap(500, "Temporary server error", "Failed to marshal exam update", err)
 			}
 
 			statements = append(statements, &dynamodb.BatchStatementRequest{
-				Statement:  aws.String(fmt.Sprintf("UPDATE \"%s\" SET exams.\"%s\"=? WHERE username=?", userTable, examId)),
+				Statement:  new(fmt.Sprintf("UPDATE \"%s\" SET exams.\"%s\"=? WHERE username=?", userTable, examId)),
 				Parameters: params,
 			})
 		}

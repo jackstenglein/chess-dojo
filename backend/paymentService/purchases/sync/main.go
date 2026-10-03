@@ -56,8 +56,8 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 			return api.Failure(errors.New(400, "Invalid request: only paid checkout sessions can be synced", "")), nil
 		}
 
-		courseIds := strings.Split(checkoutSession.Metadata["courseIds"], ",")
-		for _, courseId := range courseIds {
+		courseIds := strings.SplitSeq(checkoutSession.Metadata["courseIds"], ",")
+		for courseId := range courseIds {
 			user.PurchasedCourses[courseId] = true
 		}
 	}

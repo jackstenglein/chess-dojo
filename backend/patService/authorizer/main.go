@@ -68,7 +68,7 @@ func Handler(ctx context.Context, event events.APIGatewayV2CustomAuthorizerV2Req
 
 	return events.APIGatewayV2CustomAuthorizerSimpleResponse{
 		IsAuthorized: true,
-		Context: map[string]interface{}{
+		Context: map[string]any{
 			"username": pat.Username,
 			"email":    pat.Email,
 			"patId":    pat.Id,

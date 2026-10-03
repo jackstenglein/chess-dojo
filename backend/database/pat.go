@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/google/uuid"
@@ -88,12 +88,7 @@ func (pat *PersonalAccessToken) IsExpired() bool {
 
 // HasScope returns true if the token grants the provided scope.
 func (pat *PersonalAccessToken) HasScope(scope PatScope) bool {
-	for _, s := range pat.Scopes {
-		if s == scope {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(pat.Scopes, scope)
 }
 
 // HashPatToken returns the hex-encoded SHA-256 hash of the provided raw token.
@@ -179,8 +174,8 @@ func (repo *dynamoRepository) CreatePat(pat *PersonalAccessToken) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:                item,
-		ConditionExpression: aws.String("attribute_not_exists(tokenHash)"),
-		TableName:           aws.String(patTable),
+		ConditionExpression: new("attribute_not_exists(tokenHash)"),
+		TableName:           new(patTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed DynamoDB PutItem call", err)
@@ -190,9 +185,9 @@ func (repo *dynamoRepository) CreatePat(pat *PersonalAccessToken) error {
 func (repo *dynamoRepository) GetPatByHash(tokenHash string) (*PersonalAccessToken, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"tokenHash": {S: aws.String(tokenHash)},
+			"tokenHash": {S: new(tokenHash)},
 		},
-		TableName: aws.String(patTable),
+		TableName: new(patTable),
 	}
 
 	pat := PersonalAccessToken{}
@@ -205,15 +200,15 @@ func (repo *dynamoRepository) GetPatByHash(tokenHash string) (*PersonalAccessTok
 // ListPats returns all tokens owned by the provided username.
 func (repo *dynamoRepository) ListPats(username string) ([]*PersonalAccessToken, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#username = :username"),
+		KeyConditionExpression: new("#username = :username"),
 		ExpressionAttributeNames: map[string]*string{
-			"#username": aws.String("username"),
+			"#username": new("username"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":username": {S: aws.String(username)},
+			":username": {S: new(username)},
 		},
-		IndexName: aws.String(patTableUsernameIndex),
-		TableName: aws.String(patTable),
+		IndexName: new(patTableUsernameIndex),
+		TableName: new(patTable),
 	}
 
 	var pats []*PersonalAccessToken
@@ -239,13 +234,13 @@ func (repo *dynamoRepository) DeletePat(username, id string) error {
 
 		input := &dynamodb.DeleteItemInput{
 			Key: map[string]*dynamodb.AttributeValue{
-				"tokenHash": {S: aws.String(pat.TokenHash)},
+				"tokenHash": {S: new(pat.TokenHash)},
 			},
-			ConditionExpression: aws.String("username = :username"),
+			ConditionExpression: new("username = :username"),
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-				":username": {S: aws.String(username)},
+				":username": {S: new(username)},
 			},
-			TableName: aws.String(patTable),
+			TableName: new(patTable),
 		}
 		_, err := repo.svc.DeleteItem(input)
 		return errors.Wrap(500, "Temporary server error", "Failed DynamoDB DeleteItem call", err)
@@ -259,14 +254,14 @@ func (repo *dynamoRepository) DeletePat(username, id string) error {
 func (repo *dynamoRepository) UpdatePatLastUsed(tokenHash string) error {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"tokenHash": {S: aws.String(tokenHash)},
+			"tokenHash": {S: new(tokenHash)},
 		},
-		ConditionExpression: aws.String("attribute_exists(tokenHash)"),
-		UpdateExpression:    aws.String("SET lastUsedAt = :lastUsedAt"),
+		ConditionExpression: new("attribute_exists(tokenHash)"),
+		UpdateExpression:    new("SET lastUsedAt = :lastUsedAt"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":lastUsedAt": {S: aws.String(time.Now().Format(time.RFC3339))},
+			":lastUsedAt": {S: new(time.Now().Format(time.RFC3339))},
 		},
-		TableName: aws.String(patTable),
+		TableName: new(patTable),
 	}
 	_, err := repo.svc.UpdateItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed DynamoDB UpdateItem call", err)
