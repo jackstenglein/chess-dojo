@@ -3,7 +3,6 @@ package database
 import (
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
@@ -152,9 +151,9 @@ func (repo *dynamoRepository) CreateClub(club *Club) error {
 	item["joinRequests"] = &dynamodb.AttributeValue{M: emptyMap}
 
 	input := &dynamodb.PutItemInput{
-		ConditionExpression: aws.String("attribute_not_exists(id)"),
+		ConditionExpression: new("attribute_not_exists(id)"),
 		Item:                item,
-		TableName:           aws.String(clubTable),
+		TableName:           new(clubTable),
 	}
 	if _, err := repo.svc.PutItem(input); err != nil {
 		return errors.Wrap(500, "Temporary server error", "DynamoDB PutItem failure", err)
@@ -168,7 +167,7 @@ func (repo *dynamoRepository) CreateClub(club *Club) error {
 
 // Applies the given update to the given club. The club after the update is returned.
 func (repo *dynamoRepository) UpdateClub(id string, caller string, update *ClubUpdate) (*Club, error) {
-	update.UpdatedAt = aws.String(time.Now().Format(time.RFC3339))
+	update.UpdatedAt = new(time.Now().Format(time.RFC3339))
 
 	av, err := dynamodbattribute.Marshal(update)
 	if err != nil {
@@ -186,21 +185,21 @@ func (repo *dynamoRepository) UpdateClub(id string, caller string, update *ClubU
 	}
 
 	exprAttrNames := expr.Names()
-	exprAttrNames["#owner"] = aws.String("owner")
+	exprAttrNames["#owner"] = new("owner")
 
 	exprAttrValues := expr.Values()
-	exprAttrValues[":caller"] = &dynamodb.AttributeValue{S: aws.String(caller)}
+	exprAttrValues[":caller"] = &dynamodb.AttributeValue{S: new(caller)}
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
 		UpdateExpression:          expr.Update(),
-		ConditionExpression:       aws.String("attribute_exists(id) AND #owner = :caller"),
-		TableName:                 aws.String(clubTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		ConditionExpression:       new("attribute_exists(id) AND #owner = :caller"),
+		TableName:                 new(clubTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 	club := &Club{}
 	if err := repo.updateItem(input, club); err != nil {
@@ -215,18 +214,18 @@ func (repo *dynamoRepository) UpdateClub(id string, caller string, update *ClubU
 // Returns a list of clubs, excluding the promo code, members and join requests. The next start key is also returned.
 func (repo *dynamoRepository) ListClubs(startKey string) ([]Club, string, error) {
 	input := &dynamodb.ScanInput{
-		FilterExpression:     aws.String("#unlisted <> :true"),
-		ProjectionExpression: aws.String("id,#name,description,shortDescription,#owner,externalUrl,#location,memberCount,approvalRequired,createdAt,updatedAt"),
+		FilterExpression:     new("#unlisted <> :true"),
+		ProjectionExpression: new("id,#name,description,shortDescription,#owner,externalUrl,#location,memberCount,approvalRequired,createdAt,updatedAt"),
 		ExpressionAttributeNames: map[string]*string{
-			"#unlisted": aws.String("unlisted"),
-			"#name":     aws.String("name"),
-			"#owner":    aws.String("owner"),
-			"#location": aws.String("location"),
+			"#unlisted": new("unlisted"),
+			"#name":     new("name"),
+			"#owner":    new("owner"),
+			"#location": new("location"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true": {BOOL: aws.Bool(true)},
+			":true": {BOOL: new(true)},
 		},
-		TableName: aws.String(clubTable),
+		TableName: new(clubTable),
 	}
 
 	var clubs []Club
@@ -241,9 +240,9 @@ func (repo *dynamoRepository) ListClubs(startKey string) ([]Club, string, error)
 func (repo *dynamoRepository) GetClub(id string) (*Club, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		TableName: aws.String(clubTable),
+		TableName: new(clubTable),
 	}
 
 	club := Club{}
@@ -266,11 +265,11 @@ func (repo *dynamoRepository) BatchGetClubs(ids []string) ([]Club, error) {
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
 			clubTable: {
 				Keys:                 []map[string]*dynamodb.AttributeValue{},
-				ProjectionExpression: aws.String("id,#name,shortDescription,description,#owner,promoCode,externalUrl,#location,memberCount,unlisted,approvalRequired,createdAt,updatedAt"),
+				ProjectionExpression: new("id,#name,shortDescription,description,#owner,promoCode,externalUrl,#location,memberCount,unlisted,approvalRequired,createdAt,updatedAt"),
 				ExpressionAttributeNames: map[string]*string{
-					"#name":     aws.String("name"),
-					"#owner":    aws.String("owner"),
-					"#location": aws.String("location"),
+					"#name":     new("name"),
+					"#owner":    new("owner"),
+					"#location": new("location"),
 				},
 			},
 		},
@@ -278,7 +277,7 @@ func (repo *dynamoRepository) BatchGetClubs(ids []string) ([]Club, error) {
 
 	for _, id := range ids {
 		key := map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		}
 		input.RequestItems[clubTable].Keys = append(input.RequestItems[clubTable].Keys, key)
 	}
@@ -302,33 +301,33 @@ func (repo *dynamoRepository) BatchGetClubs(ids []string) ([]Club, error) {
 func (repo *dynamoRepository) JoinClub(id string, username string, isFreeTier bool) (*Club, error) {
 	conditionExpr := "attribute_exists(id) AND #approvalRequired <> :true AND attribute_not_exists(#members.#username)"
 	exprAttrNames := map[string]*string{
-		"#approvalRequired": aws.String("approvalRequired"),
-		"#members":          aws.String("members"),
-		"#username":         aws.String(username),
-		"#memberCount":      aws.String("memberCount"),
+		"#approvalRequired": new("approvalRequired"),
+		"#members":          new("members"),
+		"#username":         new(username),
+		"#memberCount":      new("memberCount"),
 	}
 	if isFreeTier {
 		conditionExpr += " AND #free = :true"
-		exprAttrNames["#free"] = aws.String("allowFreeTier")
+		exprAttrNames["#free"] = new("allowFreeTier")
 	}
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ConditionExpression:      aws.String(conditionExpr),
-		UpdateExpression:         aws.String("SET #members.#username = :member ADD #memberCount :q"),
+		ConditionExpression:      new(conditionExpr),
+		UpdateExpression:         new("SET #members.#username = :member ADD #memberCount :q"),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true": {BOOL: aws.Bool(true)},
+			":true": {BOOL: new(true)},
 			":member": {M: map[string]*dynamodb.AttributeValue{
-				"username": {S: aws.String(username)},
-				"joinedAt": {S: aws.String(time.Now().Format(time.RFC3339))},
+				"username": {S: new(username)},
+				"joinedAt": {S: new(time.Now().Format(time.RFC3339))},
 			}},
-			":q": {N: aws.String("1")},
+			":q": {N: new("1")},
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -358,28 +357,28 @@ func (repo *dynamoRepository) RequestToJoinClub(id string, request *ClubJoinRequ
 
 	conditionExpr := "attribute_exists(id) AND #approvalRequired = :true AND attribute_not_exists(#requests.#username)"
 	exprAttrNames := map[string]*string{
-		"#requests":         aws.String("joinRequests"),
-		"#username":         aws.String(request.Username),
-		"#approvalRequired": aws.String("approvalRequired"),
+		"#requests":         new("joinRequests"),
+		"#username":         new(request.Username),
+		"#approvalRequired": new("approvalRequired"),
 	}
 	if isFreeTier {
 		conditionExpr += " AND #free = :true"
-		exprAttrNames["#free"] = aws.String("allowFreeTier")
+		exprAttrNames["#free"] = new("allowFreeTier")
 	}
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ConditionExpression:      aws.String(conditionExpr),
-		UpdateExpression:         aws.String("SET #requests.#username = :request"),
+		ConditionExpression:      new(conditionExpr),
+		UpdateExpression:         new("SET #requests.#username = :request"),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":request": {M: item},
-			":true":    {BOOL: aws.Bool(true)},
+			":true":    {BOOL: new(true)},
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -397,27 +396,27 @@ func (repo *dynamoRepository) RequestToJoinClub(id string, request *ClubJoinRequ
 func (repo *dynamoRepository) ApproveClubJoinRequest(id, username, caller string) (*Club, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ConditionExpression: aws.String("attribute_exists(#requests.#username) AND #owner = :caller"),
-		UpdateExpression:    aws.String("REMOVE #requests.#username SET #members.#username = :member ADD #memberCount :q"),
+		ConditionExpression: new("attribute_exists(#requests.#username) AND #owner = :caller"),
+		UpdateExpression:    new("REMOVE #requests.#username SET #members.#username = :member ADD #memberCount :q"),
 		ExpressionAttributeNames: map[string]*string{
-			"#requests":    aws.String("joinRequests"),
-			"#username":    aws.String(username),
-			"#owner":       aws.String("owner"),
-			"#members":     aws.String("members"),
-			"#memberCount": aws.String("memberCount"),
+			"#requests":    new("joinRequests"),
+			"#username":    new(username),
+			"#owner":       new("owner"),
+			"#members":     new("members"),
+			"#memberCount": new("memberCount"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":caller": {S: aws.String(caller)},
-			":q":      {N: aws.String("1")},
+			":caller": {S: new(caller)},
+			":q":      {N: new("1")},
 			":member": {M: map[string]*dynamodb.AttributeValue{
-				"username": {S: aws.String(username)},
-				"joinedAt": {S: aws.String(time.Now().Format(time.RFC3339))},
+				"username": {S: new(username)},
+				"joinedAt": {S: new(time.Now().Format(time.RFC3339))},
 			}},
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -439,15 +438,15 @@ func (repo *dynamoRepository) ApproveClubJoinRequest(id, username, caller string
 func (repo *dynamoRepository) DeleteClubJoinRequest(id string, username string) (*Club, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		UpdateExpression: aws.String("REMOVE #requests.#username"),
+		UpdateExpression: new("REMOVE #requests.#username"),
 		ExpressionAttributeNames: map[string]*string{
-			"#requests": aws.String("joinRequests"),
-			"#username": aws.String(username),
+			"#requests": new("joinRequests"),
+			"#username": new(username),
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -462,22 +461,22 @@ func (repo *dynamoRepository) DeleteClubJoinRequest(id string, username string) 
 func (repo *dynamoRepository) RejectClubJoinRequest(id, username, caller string) (*Club, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ConditionExpression: aws.String("attribute_exists(#requests.#username) AND #owner = :caller"),
-		UpdateExpression:    aws.String("SET #requests.#username.#status = :rejected"),
+		ConditionExpression: new("attribute_exists(#requests.#username) AND #owner = :caller"),
+		UpdateExpression:    new("SET #requests.#username.#status = :rejected"),
 		ExpressionAttributeNames: map[string]*string{
-			"#requests": aws.String("joinRequests"),
-			"#username": aws.String(username),
-			"#status":   aws.String("status"),
-			"#owner":    aws.String("owner"),
+			"#requests": new("joinRequests"),
+			"#username": new(username),
+			"#status":   new("status"),
+			"#owner":    new("owner"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":rejected": {S: aws.String(ClubJoinRequestStatus_Rejected)},
-			":caller":   {S: aws.String(caller)},
+			":rejected": {S: new(ClubJoinRequestStatus_Rejected)},
+			":caller":   {S: new(caller)},
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -494,22 +493,22 @@ func (repo *dynamoRepository) RejectClubJoinRequest(id, username, caller string)
 func (repo *dynamoRepository) RemoveClubMember(id string, username string) (*Club, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ConditionExpression: aws.String("attribute_exists(#members.#username) AND #owner <> :username"),
-		UpdateExpression:    aws.String("REMOVE #members.#username ADD #memberCount :q"),
+		ConditionExpression: new("attribute_exists(#members.#username) AND #owner <> :username"),
+		UpdateExpression:    new("REMOVE #members.#username ADD #memberCount :q"),
 		ExpressionAttributeNames: map[string]*string{
-			"#owner":       aws.String("owner"),
-			"#members":     aws.String("members"),
-			"#username":    aws.String(username),
-			"#memberCount": aws.String("memberCount"),
+			"#owner":       new("owner"),
+			"#members":     new("members"),
+			"#username":    new(username),
+			"#memberCount": new("memberCount"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":username": {S: aws.String(username)},
-			":q":        {N: aws.String("-1")},
+			":username": {S: new(username)},
+			":q":        {N: new("-1")},
 		},
-		TableName:    aws.String(clubTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(clubTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	club := &Club{}
@@ -522,32 +521,32 @@ func (repo *dynamoRepository) RemoveClubMember(id string, username string) (*Clu
 
 	input = &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
+			"username": {S: new(username)},
 		},
-		UpdateExpression: aws.String("DELETE clubs :id"),
+		UpdateExpression: new("DELETE clubs :id"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": {SS: []*string{aws.String(id)}},
+			":id": {SS: []*string{new(id)}},
 		},
-		TableName:    aws.String(userTable),
-		ReturnValues: aws.String("NONE"),
+		TableName:    new(userTable),
+		ReturnValues: new("NONE"),
 	}
 	if _, err := repo.svc.UpdateItem(input); err != nil {
 		return nil, errors.Wrap(500, "Temporary server error", "Failed to update user", err)
 	}
 	input = &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
+			"username": {S: new(username)},
 		},
-		ConditionExpression: aws.String("#mainClubId = :id"),
-		UpdateExpression:    aws.String("REMOVE #mainClubId"),
+		ConditionExpression: new("#mainClubId = :id"),
+		UpdateExpression:    new("REMOVE #mainClubId"),
 		ExpressionAttributeNames: map[string]*string{
-			"#mainClubId": aws.String("mainClubId"),
+			"#mainClubId": new("mainClubId"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": {S: aws.String(id)},
+			":id": {S: new(id)},
 		},
-		TableName:    aws.String(userTable),
-		ReturnValues: aws.String("NONE"),
+		TableName:    new(userTable),
+		ReturnValues: new("NONE"),
 	}
 	if _, err := repo.svc.UpdateItem(input); err != nil {
 		if _, ok := err.(*dynamodb.ConditionalCheckFailedException); !ok {
@@ -562,14 +561,14 @@ func (repo *dynamoRepository) RemoveClubMember(id string, username string) (*Clu
 func (repo *dynamoRepository) AddClubToUser(clubId string, username string) error {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
+			"username": {S: new(username)},
 		},
-		UpdateExpression: aws.String("ADD clubs :id"),
+		UpdateExpression: new("ADD clubs :id"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": {SS: []*string{aws.String(clubId)}},
+			":id": {SS: []*string{new(clubId)}},
 		},
-		TableName:    aws.String(userTable),
-		ReturnValues: aws.String("NONE"),
+		TableName:    new(userTable),
+		ReturnValues: new("NONE"),
 	}
 
 	_, err := repo.svc.UpdateItem(input)

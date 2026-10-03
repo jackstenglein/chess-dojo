@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
 	apierrors "github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
@@ -25,31 +24,31 @@ func TestValidateMainClubId(t *testing.T) {
 		{
 			name:         "empty",
 			user:         &database.User{Clubs: []string{"club-a", "club-b"}},
-			update:       &database.UserUpdate{MainClubId: aws.String("")},
-			wantMainClub: aws.String(""),
+			update:       &database.UserUpdate{MainClubId: new("")},
+			wantMainClub: new(""),
 		},
 		{
 			name:         "whitespace",
 			user:         &database.User{Clubs: []string{"club-a", "club-b"}},
-			update:       &database.UserUpdate{MainClubId: aws.String("  ")},
-			wantMainClub: aws.String(""),
+			update:       &database.UserUpdate{MainClubId: new("  ")},
+			wantMainClub: new(""),
 		},
 		{
 			name:         "member",
 			user:         &database.User{Clubs: []string{"club-a", "club-b"}},
-			update:       &database.UserUpdate{MainClubId: aws.String("club-a")},
-			wantMainClub: aws.String("club-a"),
+			update:       &database.UserUpdate{MainClubId: new("club-a")},
+			wantMainClub: new("club-a"),
 		},
 		{
 			name:          "nonMember",
 			user:          &database.User{Clubs: []string{"club-a", "club-b"}},
-			update:        &database.UserUpdate{MainClubId: aws.String("club-c")},
+			update:        &database.UserUpdate{MainClubId: new("club-c")},
 			wantErrorCode: 400,
 		},
 		{
 			name:          "noClubs",
 			user:          &database.User{},
-			update:        &database.UserUpdate{MainClubId: aws.String("club-a")},
+			update:        &database.UserUpdate{MainClubId: new("club-a")},
 			wantErrorCode: 400,
 		},
 	}

@@ -3,7 +3,6 @@ package database
 import (
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -62,20 +61,20 @@ func (repo *dynamoRepository) ListScoreboardSummaries(startKey string) ([]Scoreb
 	monthAgo := time.Now().Add(ONE_MONTH_AGO).Format(time.RFC3339)
 
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#status = :subscribed"),
-		FilterExpression:       aws.String("#u >= :u AND #cohort <> :none"),
+		KeyConditionExpression: new("#status = :subscribed"),
+		FilterExpression:       new("#u >= :u AND #cohort <> :none"),
 		ExpressionAttributeNames: map[string]*string{
-			"#status": aws.String("subscriptionStatus"),
-			"#u":      aws.String("updatedAt"),
-			"#cohort": aws.String("dojoCohort"),
+			"#status": new("subscriptionStatus"),
+			"#u":      new("updatedAt"),
+			"#cohort": new("dojoCohort"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":subscribed": {S: aws.String(string(SubscriptionStatus_Subscribed))},
-			":u":          {S: aws.String(monthAgo)},
-			":none":       {S: aws.String(string(NoCohort))},
+			":subscribed": {S: new(string(SubscriptionStatus_Subscribed))},
+			":u":          {S: new(monthAgo)},
+			":none":       {S: new(string(NoCohort))},
 		},
-		IndexName: aws.String("ScoreboardSummaryIdx"),
-		TableName: aws.String(userTable),
+		IndexName: new("ScoreboardSummaryIdx"),
+		TableName: new(userTable),
 	}
 
 	var summaries []ScoreboardSummary
@@ -102,14 +101,14 @@ func (repo *dynamoRepository) GetScoreboardSummaries(usernames []string) ([]Scor
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
 			userTable: {
 				Keys:                 []map[string]*dynamodb.AttributeValue{},
-				ProjectionExpression: aws.String(scoreboardSummaryProjection),
+				ProjectionExpression: new(scoreboardSummaryProjection),
 			},
 		},
 	}
 
 	for _, u := range usernames {
 		key := map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(u)},
+			"username": {S: new(u)},
 		}
 		input.RequestItems[userTable].Keys = append(input.RequestItems[userTable].Keys, key)
 	}
@@ -134,20 +133,20 @@ func (repo *dynamoRepository) GetScoreboardSummaries(usernames []string) ([]Scor
 func (repo *dynamoRepository) GetCohort(cohort, startKey string) ([]User, string, error) {
 	monthAgo := time.Now().Add(ONE_MONTH_AGO).Format(time.RFC3339)
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#cohort = :cohort"),
-		FilterExpression:       aws.String("#u >= :u AND #status = :subscribed"),
+		KeyConditionExpression: new("#cohort = :cohort"),
+		FilterExpression:       new("#u >= :u AND #status = :subscribed"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohort": aws.String("dojoCohort"),
-			"#u":      aws.String("updatedAt"),
-			"#status": aws.String("subscriptionStatus"),
+			"#cohort": new("dojoCohort"),
+			"#u":      new("updatedAt"),
+			"#status": new("subscriptionStatus"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":cohort":     {S: aws.String(string(cohort))},
-			":u":          {S: aws.String(monthAgo)},
-			":subscribed": {S: aws.String(string(SubscriptionStatus_Subscribed))},
+			":cohort":     {S: new(string(cohort))},
+			":u":          {S: new(monthAgo)},
+			":subscribed": {S: new(string(SubscriptionStatus_Subscribed))},
 		},
-		IndexName: aws.String("CohortIdx"),
-		TableName: aws.String(userTable),
+		IndexName: new("CohortIdx"),
+		TableName: new(userTable),
 	}
 
 	var users []User

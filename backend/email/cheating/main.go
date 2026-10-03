@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 )
@@ -41,16 +40,16 @@ func main() {
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Text: &ses.Content{
-					Charset: aws.String("UTF-8"),
-					Data:    aws.String(content),
+					Charset: new("UTF-8"),
+					Data:    new(content),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String("UTF-8"),
-				Data:    aws.String("ChessDojo Subscription Terminated"),
+				Charset: new("UTF-8"),
+				Data:    new("ChessDojo Subscription Terminated"),
 			},
 		},
-		Source: aws.String("chessdojotwitch@gmail.com"),
+		Source: new("chessdojotwitch@gmail.com"),
 	}
 
 	_, err = svc.SendEmail(input)

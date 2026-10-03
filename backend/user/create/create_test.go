@@ -21,10 +21,8 @@ func setupTest(t *testing.T) func(t *testing.T) {
 
 func getEvent(triggerSource, username, email, name string) Event {
 	return Event{
-		CognitoEventUserPoolsHeader: events.CognitoEventUserPoolsHeader{
-			TriggerSource: triggerSource,
-			UserName:      username,
-		},
+		TriggerSource: triggerSource,
+		UserName:      username,
 		Request: events.CognitoEventUserPoolsPostConfirmationRequest{
 			UserAttributes: map[string]string{
 				"email": email,

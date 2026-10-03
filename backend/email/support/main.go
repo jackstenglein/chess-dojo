@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/google/uuid"
@@ -65,12 +64,12 @@ func handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	input := &ses.SendTemplatedEmailInput{
 		Destination: &ses.Destination{
-			ToAddresses: []*string{aws.String(supportEmail)},
-			CcAddresses: []*string{aws.String(request.Email)},
+			ToAddresses: []*string{new(supportEmail)},
+			CcAddresses: []*string{new(request.Email)},
 		},
-		Source:       aws.String("ChessDojo Support <no-reply@mail.chessdojo.club>"),
-		Template:     aws.String("supportTicket"),
-		TemplateData: aws.String(string(templateDataStr)),
+		Source:       new("ChessDojo Support <no-reply@mail.chessdojo.club>"),
+		Template:     new("supportTicket"),
+		TemplateData: new(string(templateDataStr)),
 	}
 	if _, err := sesInstance.SendTemplatedEmail(input); err != nil {
 		return api.Failure(errors.Wrap(500, "Temporary server error", "Failed to send email", err)), nil

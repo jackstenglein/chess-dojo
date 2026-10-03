@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
@@ -60,8 +59,8 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		// Cache the user's subscription status, that way future reloads of the
 		// frontend immediately show the correct version of the site
 		_, err := repository.UpdateUser(info.Username, &database.UserUpdate{
-			SubscriptionStatus: aws.String(string(subscriptionStatus)),
-			SubscriptionTier:   aws.String(string(subscriptionTier)),
+			SubscriptionStatus: new(string(subscriptionStatus)),
+			SubscriptionTier:   new(string(subscriptionTier)),
 		})
 		if err != nil {
 			log.Error("Failed UpdateUser: ", err)
@@ -122,8 +121,8 @@ func handlerV2(event api.Request) api.Response {
 		// Cache the user's subscription status, that way future reloads of the
 		// frontend immediately show the correct version of the site
 		user, err = repository.UpdateUser(info.Username, &database.UserUpdate{
-			SubscriptionStatus: aws.String(string(subscriptionStatus)),
-			SubscriptionTier:   aws.String(string(subscriptionTier)),
+			SubscriptionStatus: new(string(subscriptionStatus)),
+			SubscriptionTier:   new(string(subscriptionTier)),
 		})
 		if err != nil {
 			log.Error("Failed UpdateUser: ", err)

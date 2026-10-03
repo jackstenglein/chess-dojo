@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -192,7 +191,7 @@ func (repo *dynamoRepository) PutTimelineEntry(entry *TimelineEntry) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(timelineTable),
+		TableName: new(timelineTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "DynamoDB PutItem failure", err)
@@ -237,15 +236,15 @@ func (repo *dynamoRepository) ListTimelineEntries(owner string, startKey string)
 // is returned. startKey can be passed to perform pagination.
 func (repo *dynamoRepository) listTimelineEntriesWithLimit(owner, startKey string, limit int64) ([]*TimelineEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#owner = :owner"),
+		KeyConditionExpression: new("#owner = :owner"),
 		ExpressionAttributeNames: map[string]*string{
-			"#owner": aws.String("owner"),
+			"#owner": new("owner"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(owner)},
+			":owner": {S: new(owner)},
 		},
-		TableName:        aws.String(timelineTable),
-		ScanIndexForward: aws.Bool(false),
+		TableName:        new(timelineTable),
+		ScanIndexForward: new(false),
 	}
 
 	if limit > 0 {
@@ -270,8 +269,8 @@ func (repo *dynamoRepository) DeleteTimelineEntries(entries []*TimelineEntry) (i
 		req := &dynamodb.WriteRequest{
 			DeleteRequest: &dynamodb.DeleteRequest{
 				Key: map[string]*dynamodb.AttributeValue{
-					"owner": {S: aws.String(e.Owner)},
-					"id":    {S: aws.String(e.Id)},
+					"owner": {S: new(e.Owner)},
+					"id":    {S: new(e.Id)},
 				},
 			},
 		}
@@ -314,8 +313,8 @@ func (repo *dynamoRepository) BatchGetTimelineEntries(entries map[string]Timelin
 
 	for _, e := range entries {
 		key := map[string]*dynamodb.AttributeValue{
-			"owner": {S: aws.String(e.Owner)},
-			"id":    {S: aws.String(e.Id)},
+			"owner": {S: new(e.Owner)},
+			"id":    {S: new(e.Id)},
 		}
 		input.RequestItems[timelineTable].Keys = append(input.RequestItems[timelineTable].Keys, key)
 	}
@@ -341,15 +340,15 @@ func (repo *dynamoRepository) CreateTimelineComment(owner, id string, comment *C
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression: aws.String("attribute_exists(#owner)"),
+		ConditionExpression: new("attribute_exists(#owner)"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"owner": {S: aws.String(owner)},
-			"id":    {S: aws.String(id)},
+			"owner": {S: new(owner)},
+			"id":    {S: new(id)},
 		},
-		UpdateExpression: aws.String("SET #c = list_append(if_not_exists(#c, :empty_list), :c)"),
+		UpdateExpression: new("SET #c = list_append(if_not_exists(#c, :empty_list), :c)"),
 		ExpressionAttributeNames: map[string]*string{
-			"#c":     aws.String("comments"),
-			"#owner": aws.String("owner"),
+			"#c":     new("comments"),
+			"#owner": new("owner"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":c": {
@@ -359,8 +358,8 @@ func (repo *dynamoRepository) CreateTimelineComment(owner, id string, comment *C
 			},
 			":empty_list": {L: []*dynamodb.AttributeValue{}},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(timelineTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(timelineTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -386,22 +385,22 @@ func (repo *dynamoRepository) SetTimelineReaction(owner, id string, reaction *Re
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression: aws.String("attribute_exists(#owner)"),
+		ConditionExpression: new("attribute_exists(#owner)"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"owner": {S: aws.String(owner)},
-			"id":    {S: aws.String(id)},
+			"owner": {S: new(owner)},
+			"id":    {S: new(id)},
 		},
-		UpdateExpression: aws.String("SET #reactions.#username = :r"),
+		UpdateExpression: new("SET #reactions.#username = :r"),
 		ExpressionAttributeNames: map[string]*string{
-			"#owner":     aws.String("owner"),
-			"#reactions": aws.String("reactions"),
-			"#username":  aws.String(reaction.Username),
+			"#owner":     new("owner"),
+			"#reactions": new("reactions"),
+			"#username":  new(reaction.Username),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":r": {M: item},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(timelineTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(timelineTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)

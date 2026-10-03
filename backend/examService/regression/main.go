@@ -119,7 +119,7 @@ func processExam(record events.DynamoDBEventRecord) error {
 
 // unmarshalStreamImage converts events.DynamoDBAttributeValue to struct
 // TODO: replace this with dynamodbstreams/attributevalue after updating to go aws sdk v2.
-func unmarshalStreamImage(attribute map[string]events.DynamoDBAttributeValue, out interface{}) error {
+func unmarshalStreamImage(attribute map[string]events.DynamoDBAttributeValue, out any) error {
 	dbAttrMap := make(map[string]*dynamodb.AttributeValue)
 
 	for k, v := range attribute {

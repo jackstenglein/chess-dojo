@@ -64,11 +64,11 @@ func PurchaseCourseUrl(user *database.User, course *database.Course, purchaseOpt
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
-					Currency:   stripe.String("usd"),
-					UnitAmount: stripe.Int64(int64(price)),
+					Currency:   new("usd"),
+					UnitAmount: new(int64(price)),
 					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
-						Name:        stripe.String(purchaseOption.Name),
-						Description: stripe.String(course.Description),
+						Name:        new(purchaseOption.Name),
+						Description: new(course.Description),
 					},
 				},
 				Quantity: stripe.Int64(1),
@@ -80,12 +80,12 @@ func PurchaseCourseUrl(user *database.User, course *database.Course, purchaseOpt
 				"type":      string(CheckoutSessionType_Course),
 				"courseIds": courseIds,
 			},
-			Description:         stripe.String("Course"),
-			StatementDescriptor: stripe.String("ChessDojo Course"),
+			Description:         new("Course"),
+			StatementDescriptor: new("ChessDojo Course"),
 		},
-		SuccessURL:          stripe.String(fmt.Sprintf("%s?checkout={CHECKOUT_SESSION_ID}", courseUrl)),
-		CancelURL:           stripe.String(cancelUrl),
-		AllowPromotionCodes: stripe.Bool(true),
+		SuccessURL:          new(fmt.Sprintf("%s?checkout={CHECKOUT_SESSION_ID}", courseUrl)),
+		CancelURL:           new(cancelUrl),
+		AllowPromotionCodes: new(true),
 		Metadata: map[string]string{
 			"type":      string(CheckoutSessionType_Course),
 			"courseIds": courseIds,
@@ -93,12 +93,12 @@ func PurchaseCourseUrl(user *database.User, course *database.Course, purchaseOpt
 	}
 
 	if user != nil {
-		params.ClientReferenceID = stripe.String(user.Username)
+		params.ClientReferenceID = new(user.Username)
 		params.AddMetadata("username", user.Username)
 		params.PaymentIntentData.AddMetadata("username", user.Username)
 
 		if strings.HasPrefix(user.PaymentInfo.GetCustomerId(), "cus_") {
-			params.Customer = stripe.String(user.PaymentInfo.GetCustomerId())
+			params.Customer = new(user.PaymentInfo.GetCustomerId())
 		}
 	}
 
@@ -175,15 +175,15 @@ func PurchaseSubscriptionUrl(user *database.User, request *PurchaseSubscriptionR
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				Price:    stripe.String(priceId),
+				Price:    new(priceId),
 				Quantity: stripe.Int64(1),
 			},
 		},
 		Mode:                stripe.String(string(stripe.CheckoutSessionModeSubscription)),
-		SuccessURL:          stripe.String(successUrl),
-		CancelURL:           stripe.String(cancelUrl),
-		ClientReferenceID:   stripe.String(user.Username),
-		AllowPromotionCodes: stripe.Bool(true),
+		SuccessURL:          new(successUrl),
+		CancelURL:           new(cancelUrl),
+		ClientReferenceID:   new(user.Username),
+		AllowPromotionCodes: new(true),
 		Metadata: map[string]string{
 			"type":      string(CheckoutSessionType_Subscription),
 			"userAgent": userAgent,
@@ -206,7 +206,7 @@ func PurchaseSubscriptionUrl(user *database.User, request *PurchaseSubscriptionR
 	}
 
 	if customerId := user.PaymentInfo.GetCustomerId(); customerId != "" && customerId != "WIX" && customerId != "OVERRIDE" {
-		params.Customer = stripe.String(customerId)
+		params.Customer = new(customerId)
 	}
 
 	checkoutSession, err := session.New(params)
@@ -226,15 +226,15 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 	expiration := time.Now().Add(31 * time.Minute).Unix()
 
 	params := &stripe.CheckoutSessionParams{
-		ClientReferenceID: stripe.String(user.Username),
+		ClientReferenceID: new(user.Username),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
-					Currency:   stripe.String("usd"),
-					UnitAmount: stripe.Int64(int64(price)),
+					Currency:   new("usd"),
+					UnitAmount: new(int64(price)),
 					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
-						Name:        stripe.String(fmt.Sprintf("Coaching Session with %s", event.OwnerDisplayName)),
-						Description: stripe.String(event.Description),
+						Name:        new(fmt.Sprintf("Coaching Session with %s", event.OwnerDisplayName)),
+						Description: new(event.Description),
 					},
 				},
 				Quantity: stripe.Int64(1),
@@ -242,9 +242,9 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 		},
 		Mode: stripe.String(string(stripe.CheckoutSessionModePayment)),
 		PaymentIntentData: &stripe.CheckoutSessionPaymentIntentDataParams{
-			ApplicationFeeAmount: stripe.Int64(int64(fee)),
+			ApplicationFeeAmount: new(int64(fee)),
 			TransferData: &stripe.CheckoutSessionPaymentIntentDataTransferDataParams{
-				Destination: stripe.String(event.Coaching.StripeId),
+				Destination: new(event.Coaching.StripeId),
 			},
 			Metadata: map[string]string{
 				"type":          string(CheckoutSessionType_Coaching),
@@ -253,13 +253,13 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 				"coachUsername": event.Owner,
 				"username":      user.Username,
 			},
-			Description:         stripe.String("Coaching Session"),
-			StatementDescriptor: stripe.String("ChessDojo Coaching"),
+			Description:         new("Coaching Session"),
+			StatementDescriptor: new("ChessDojo Coaching"),
 		},
-		ExpiresAt:  stripe.Int64(expiration),
+		ExpiresAt:  new(expiration),
 		SubmitType: stripe.String(string(stripe.CheckoutSessionSubmitTypeBook)),
-		SuccessURL: stripe.String(fmt.Sprintf("%s/meeting/%s", frontendHost, event.Id)),
-		CancelURL:  stripe.String(fmt.Sprintf("%s/meeting/%s/cancel", frontendHost, event.Id)),
+		SuccessURL: new(fmt.Sprintf("%s/meeting/%s", frontendHost, event.Id)),
+		CancelURL:  new(fmt.Sprintf("%s/meeting/%s/cancel", frontendHost, event.Id)),
 		Metadata: map[string]string{
 			"type":          string(CheckoutSessionType_Coaching),
 			"eventId":       event.Id,
@@ -270,7 +270,7 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 	}
 
 	if user.PaymentInfo.GetCustomerId() != "" {
-		params.Customer = stripe.String(user.PaymentInfo.GetCustomerId())
+		params.Customer = new(user.PaymentInfo.GetCustomerId())
 	}
 
 	checkoutSession, err := session.New(params)
@@ -291,16 +291,16 @@ func GameReviewCheckoutSession(user *database.User, cohort, id string, reviewTyp
 	}
 
 	params := &stripe.CheckoutSessionParams{
-		ClientReferenceID: stripe.String(user.Username),
+		ClientReferenceID: new(user.Username),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				Price:    stripe.String(priceId),
+				Price:    new(priceId),
 				Quantity: stripe.Int64(1),
 			},
 		},
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(fmt.Sprintf("%s/games/%s/%s", frontendHost, cohort, id)),
-		CancelURL:  stripe.String(fmt.Sprintf("%s/games/%s/%s", frontendHost, cohort, id)),
+		SuccessURL: new(fmt.Sprintf("%s/games/%s/%s", frontendHost, cohort, id)),
+		CancelURL:  new(fmt.Sprintf("%s/games/%s/%s", frontendHost, cohort, id)),
 		Metadata: map[string]string{
 			"type":       string(CheckoutSessionType_GameReview),
 			"reviewType": string(reviewType),
@@ -311,7 +311,7 @@ func GameReviewCheckoutSession(user *database.User, cohort, id string, reviewTyp
 	}
 
 	if user.PaymentInfo.GetCustomerId() != "" {
-		params.Customer = stripe.String(user.PaymentInfo.GetCustomerId())
+		params.Customer = new(user.PaymentInfo.GetCustomerId())
 	}
 
 	checkoutSession, err := session.New(params)
@@ -331,8 +331,8 @@ func GetCheckoutSession(id string) (*stripe.CheckoutSession, error) {
 
 func GetBillingPortalSession(paymentInfo *database.PaymentInfo, tier database.SubscriptionTier, interval string) (*stripe.BillingPortalSession, error) {
 	params := &stripe.BillingPortalSessionParams{
-		Customer:  stripe.String(paymentInfo.GetCustomerId()),
-		ReturnURL: stripe.String(fmt.Sprintf("%s/profile/edit", frontendHost)),
+		Customer:  new(paymentInfo.GetCustomerId()),
+		ReturnURL: new(fmt.Sprintf("%s/profile/edit", frontendHost)),
 	}
 
 	if tier != "" && interval != "" {
@@ -342,27 +342,27 @@ func GetBillingPortalSession(paymentInfo *database.PaymentInfo, tier database.Su
 		}
 
 		params.FlowData = &stripe.BillingPortalSessionFlowDataParams{
-			Type: stripe.String("subscription_update_confirm"),
+			Type: new("subscription_update_confirm"),
 			SubscriptionUpdateConfirm: &stripe.BillingPortalSessionFlowDataSubscriptionUpdateConfirmParams{
-				Subscription: stripe.String(paymentInfo.GetSubscriptionId()),
+				Subscription: new(paymentInfo.GetSubscriptionId()),
 				Items: []*stripe.BillingPortalSessionFlowDataSubscriptionUpdateConfirmItemParams{
 					{
-						ID:       stripe.String(result.Items.Data[0].ID),
+						ID:       new(result.Items.Data[0].ID),
 						Quantity: stripe.Int64(1),
-						Price:    stripe.String(subscriptionPriceIds[tier][interval]),
+						Price:    new(subscriptionPriceIds[tier][interval]),
 					},
 				},
 			},
 		}
-		params.ReturnURL = stripe.String(fmt.Sprintf("%s/profile", frontendHost))
+		params.ReturnURL = new(fmt.Sprintf("%s/profile", frontendHost))
 	}
 
 	session, err := bpsession.New(params)
 	if err != nil && strings.Contains(err.Error(), "does not include the price") {
 		params.FlowData = &stripe.BillingPortalSessionFlowDataParams{
-			Type: stripe.String("subscription_update"),
+			Type: new("subscription_update"),
 			SubscriptionUpdate: &stripe.BillingPortalSessionFlowDataSubscriptionUpdateParams{
-				Subscription: stripe.String(paymentInfo.GetSubscriptionId()),
+				Subscription: new(paymentInfo.GetSubscriptionId()),
 			},
 		}
 		session, err = bpsession.New(params)
@@ -378,9 +378,9 @@ func CreateConnectedAccount(username, email string) (*stripe.Account, error) {
 		Type:         stripe.String(string(stripe.AccountTypeExpress)),
 		BusinessType: stripe.String(string(stripe.AccountBusinessTypeIndividual)),
 		BusinessProfile: &stripe.AccountBusinessProfileParams{
-			ProductDescription: stripe.String("Chess courses and coaching"),
+			ProductDescription: new("Chess courses and coaching"),
 		},
-		Email: stripe.String(email),
+		Email: new(email),
 		Metadata: map[string]string{
 			"username": username,
 		},
@@ -408,9 +408,9 @@ func GetConnectedAccount(stripeId string) (*stripe.Account, error) {
 
 func AccountLink(id string) (*stripe.AccountLink, error) {
 	params := &stripe.AccountLinkParams{
-		Account:    stripe.String(id),
-		RefreshURL: stripe.String(frontendHost + "/coach"),
-		ReturnURL:  stripe.String(frontendHost + "/coach"),
+		Account:    new(id),
+		RefreshURL: new(frontendHost + "/coach"),
+		ReturnURL:  new(frontendHost + "/coach"),
 		Type:       stripe.String(string(stripe.AccountLinkTypeAccountOnboarding)),
 	}
 	accountLink, err := accountlink.New(params)
@@ -422,7 +422,7 @@ func AccountLink(id string) (*stripe.AccountLink, error) {
 
 func LoginLink(stripeId string) (*stripe.LoginLink, error) {
 	params := &stripe.LoginLinkParams{
-		Account: stripe.String(stripeId),
+		Account: new(stripeId),
 	}
 	link, err := loginlink.New(params)
 	if err != nil {
@@ -441,10 +441,10 @@ func CreateEventRefund(event *database.Event, participant *database.Participant,
 
 	amount := participant.CheckoutSession.AmountTotal * percentage / 100
 	params := &stripe.RefundParams{
-		PaymentIntent:        stripe.String(participant.CheckoutSession.PaymentIntent.ID),
-		Amount:               stripe.Int64(amount),
-		ReverseTransfer:      stripe.Bool(true),
-		RefundApplicationFee: stripe.Bool(true),
+		PaymentIntent:        new(participant.CheckoutSession.PaymentIntent.ID),
+		Amount:               new(amount),
+		ReverseTransfer:      new(true),
+		RefundApplicationFee: new(true),
 		Metadata: map[string]string{
 			"type":          string(CheckoutSessionType_Coaching),
 			"eventId":       event.Id,

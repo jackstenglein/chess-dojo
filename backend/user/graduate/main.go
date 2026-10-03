@@ -135,10 +135,8 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	timelineEntry := database.TimelineEntry{
-		TimelineEntryKey: database.TimelineEntryKey{
-			Owner: info.Username,
-			Id:    fmt.Sprintf("%s_%s", now.Format(time.DateOnly), uuid.NewString()),
-		},
+		Owner:               info.Username,
+		Id:                  fmt.Sprintf("%s_%s", now.Format(time.DateOnly), uuid.NewString()),
 		OwnerDisplayName:    user.DisplayName,
 		RequirementId:       "Graduation",
 		RequirementName:     fmt.Sprintf("Graduated from %s", user.DojoCohort),
