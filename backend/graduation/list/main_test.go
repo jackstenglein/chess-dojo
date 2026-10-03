@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy/privacytest"
 )
 
 type listGraduationsFakeRepo struct {
@@ -208,4 +209,15 @@ func TestByCohortAndByOwnerHandlersKeepStoredGamesAnnotated(t *testing.T) {
 	if len(fake.gameCalls) != 0 {
 		t.Fatalf("non-date handlers should not query games, got calls: %#v", fake.gameCalls)
 	}
+}
+
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyUser(username string) (*database.User, error) {
+	return &database.User{Username: username}, nil
+}
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyFollower(poster, follower string) (*database.FollowerEntry, error) {
+	return nil, nil
+}
+
+func (r *listGraduationsFakeRepo) GetTrainingPrivacyUsers(names []string) ([]*database.User, error) {
+	return privacytest.Users(names, r.GetTrainingPrivacyUser)
 }

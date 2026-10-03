@@ -63,8 +63,10 @@ export type NewsfeedApiContextType = {
  * @param id The id of the timeline entry.
  * @returns An AxiosResponse containing the timeline entry.
  */
-export function getNewsfeedItem(owner: string, id: string) {
-    return axios.get<TimelineEntry>(`${BASE_URL}/public/newsfeed/${owner}/${id}`);
+export function getNewsfeedItem(idToken: string, owner: string, id: string) {
+    return axios.get<TimelineEntry>(`${BASE_URL}/newsfeed/${owner}/${id}`, {
+        headers: { Authorization: 'Bearer ' + idToken },
+    });
 }
 
 /**

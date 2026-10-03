@@ -7,7 +7,7 @@ const fixedDate = new Date(2023, 8, 6); // month is 0-indexed
 test.describe('Graduations', () => {
     test.beforeEach(async ({ page }) => {
         await page.clock.install({ time: fixedDate });
-        await interceptApi(page, 'GET', '/public/graduations', {
+        await interceptApi(page, 'GET', '/graduations', {
             fixture: 'recent/graduations.json',
         });
         await page.goto('/recent');
@@ -59,7 +59,7 @@ test.describe('Graduations', () => {
 
 test.describe('No Graduations', () => {
     test('displays correct message when no graduations', async ({ page }) => {
-        await interceptApi(page, 'GET', '/public/graduations', {
+        await interceptApi(page, 'GET', '/graduations', {
             fixture: 'recent/noGraduations.json',
         });
         await page.goto('/recent');

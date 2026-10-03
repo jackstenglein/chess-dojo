@@ -192,8 +192,10 @@ export function getUser(idToken: string) {
  * @param username The user to fetch public information for.
  * @returns An AxiosResponse containing the requested user.
  */
-export function getUserPublic(username: string) {
-    return axios.get<User>(BASE_URL + '/public/user/' + username);
+export function getUserPublic(idToken: string, username: string) {
+    return axios.get<User>(BASE_URL + '/user/profile/' + username, {
+        headers: { Authorization: 'Bearer ' + idToken },
+    });
 }
 
 export interface ListUserTimelineResponse {

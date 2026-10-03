@@ -35,10 +35,15 @@ export const useTimelineContext = () => {
 
 interface TimelineProviderProps {
     owner: string;
+    enabled?: boolean;
     children: ReactNode;
 }
 
-export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, children }) => {
+export const TimelineProvider: React.FC<TimelineProviderProps> = ({
+    owner,
+    enabled = true,
+    children,
+}) => {
     const [entries, setEntries] = useState<TimelineEntry[]>([]);
     const [startKey, setStartKey] = useState<string>();
     const request = useRequest();
@@ -84,10 +89,10 @@ export const TimelineProvider: React.FC<TimelineProviderProps> = ({ owner, child
     );
 
     useEffect(() => {
-        if (owner && !request.isSent()) {
+        if (enabled && owner && !request.isSent()) {
             void fetchEntriesForLastYear(owner, startKey);
         }
-    }, [owner, request, fetchEntriesForLastYear, startKey]);
+    }, [enabled, owner, request, fetchEntriesForLastYear, startKey]);
 
     const reset = request.reset;
 

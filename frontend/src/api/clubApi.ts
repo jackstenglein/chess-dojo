@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios';
 import { Club, ClubDetails, ClubJoinRequestStatus } from '../database/club';
 import { ScoreboardSummary } from '../database/scoreboard';
 import { User } from '../database/user';
-import { axiosService } from './axiosService';
+import { axiosService, viewerPath } from './axiosService';
 
 /** Provides an API for interacting with clubs. */
 export interface ClubApiContextType {
@@ -145,8 +145,8 @@ export interface GetClubResponse {
  * @param id The id of the club to fetch.
  * @returns An AxiosResponse containing the requested club.
  */
-export function getClub(id: string, scoreboard?: boolean) {
-    return axiosService.get<GetClubResponse>(`/public/clubs/${id}`, {
+export async function getClub(id: string, scoreboard?: boolean) {
+    return axiosService.get<GetClubResponse>(await viewerPath(`/public/clubs/${id}`), {
         params: { scoreboard },
         functionName: 'getClub',
     });

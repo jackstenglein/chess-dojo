@@ -148,6 +148,9 @@ export function getCohortScore(
         return 0;
     }
 
+    if ('canViewTraining' in row && row.canViewTraining === false) {
+        return 'cohortDojoScore' in row ? (row.cohortDojoScore ?? 0) : 0;
+    }
     const progress = getProgress(row);
     let score = 0;
     for (const requirement of requirements) {

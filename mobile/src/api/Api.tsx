@@ -123,7 +123,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
         return {
             checkUserAccess: () => checkUserAccess(idToken),
             getUser: () => getUser(idToken),
-            getUserPublic: (username: string) => getUserPublic(username),
+            getUserPublic: (username: string) => getUserPublic(idToken, username),
             listUserTimeline: (owner: string, startKey?: string) =>
                 listUserTimeline(idToken, owner, startKey),
             listUsersByCohort: (cohort: string, startKey?: string) =>
@@ -262,7 +262,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
                 listNotifications(idToken, startKey),
             deleteNotification: (id: string) => deleteNotification(idToken, id),
 
-            getNewsfeedItem: (owner: string, id: string) => getNewsfeedItem(owner, id),
+            getNewsfeedItem: (owner: string, id: string) => getNewsfeedItem(idToken, owner, id),
             listNewsfeed: (
                 newsfeedIds: string[],
                 skipLastFetch?: boolean,

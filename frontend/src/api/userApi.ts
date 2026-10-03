@@ -8,7 +8,7 @@ import { Graduation } from '../database/graduation';
 import { UserStatistics } from '../database/statistics';
 import { TimelineEntry } from '../database/timeline';
 import { User, UserSummary } from '../database/user';
-import { axiosService } from './axiosService';
+import { axiosService, viewerPath } from './axiosService';
 
 /**
  * UserApiContextType provides an API for interacting with the current signed-in user.
@@ -214,10 +214,13 @@ export function getUser(idToken: string) {
  * @param username The user to fetch public information for.
  * @returns An AxiosResponse containing the requested user.
  */
-export function getUserPublic(username: string) {
-    return axiosService.get<User>('/public/user/' + username, {
-        functionName: 'getUserPublic',
-    });
+export async function getUserPublic(username: string) {
+    return axiosService.get<User>(
+        await viewerPath('/public/user/' + username, '/user/profile/' + username),
+        {
+            functionName: 'getUserPublic',
+        },
+    );
 }
 
 /** The billing path hint for an admin-only user. */
@@ -313,7 +316,7 @@ export interface ListUserTimelineResponse {
 export async function listUserTimeline(owner: string, startKey?: string) {
     const params = { startKey };
     const resp = await axiosService.get<ListUserTimelineResponse>(
-        `/public/user/${owner}/timeline`,
+        await viewerPath(`/public/user/${owner}/timeline`),
         {
             params,
             functionName: 'listUserTimeline',

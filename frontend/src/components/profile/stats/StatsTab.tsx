@@ -146,9 +146,11 @@ const StatsTab: React.FC<StatsTabProps> = ({ user }) => {
                 );
             })}
 
-            <DrillRatingsCard mateInOneRating={user.mateInOneRating} />
+            {user.canViewTraining !== false && (
+                <DrillRatingsCard mateInOneRating={user.mateInOneRating} />
+            )}
 
-            <TacticsScoreCard user={user} />
+            {user.canViewTraining !== false && <TacticsScoreCard user={user} />}
         </Stack>
     );
 };

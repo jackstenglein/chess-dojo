@@ -2,6 +2,7 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
+import { isGraduation } from '@/database/graduation';
 import { User } from '@/database/user';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
@@ -28,7 +29,7 @@ import { useEffect, useState } from 'react';
  * @returns True if the row is a valid User profile.
  */
 const isUser = (row: ScoreboardRow): row is User => {
-    return 'username' in row && 'displayName' in row && 'progress' in row;
+    return 'username' in row && 'displayName' in row && !isGraduation(row);
 };
 
 /**
@@ -47,7 +48,7 @@ const getScore = (user: User): number => {
  */
 const getTime = (user: User): number => {
     if (!user.minutesSpent) return 0;
-    return Object.values(user.minutesSpent).reduce((total, mins) => total + mins, 0);
+    return user.minutesSpent.ALL_COHORTS_ALL_TIME ?? 0;
 };
 
 /**
@@ -88,6 +89,14 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
     }
 
     let allPlayers = (request.data || [])
+        .filter(
+            (row) =>
+                !(
+                    'canViewTraining' in row &&
+                    row.canViewTraining === false &&
+                    row.canViewTrainingTotals !== true
+                ),
+        )
         .filter(isUser)
         .map((p) => p as User & { isCurrent?: boolean; actualRank?: number });
 

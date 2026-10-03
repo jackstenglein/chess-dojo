@@ -67,3 +67,12 @@ axiosService.interceptors.response.use(
         return Promise.reject(err);
     },
 );
+
+/** Selects a verified-auth route for signed-in viewers and the public route otherwise. */
+export async function viewerPath(
+    publicPath: string,
+    authenticatedPath = publicPath.replace('/public/', '/'),
+) {
+    const session = await fetchAuthSession();
+    return session.tokens?.idToken ? authenticatedPath : publicPath;
+}

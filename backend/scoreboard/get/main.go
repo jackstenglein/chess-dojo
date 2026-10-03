@@ -10,6 +10,7 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/trainingprivacy"
 )
 
 const (
@@ -17,7 +18,11 @@ const (
 	requestType_Following = "following"
 )
 
+var privacyRepository trainingprivacy.Repository = database.DynamoDB
+
 var repository database.ScoreboardSummaryLister = database.DynamoDB
+var requirementsRepository database.RequirementLister = database.DynamoDB
+
 var stage = os.Getenv("stage")
 
 type GetScoreboardResponse struct {
@@ -32,7 +37,10 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, event api.Request) (api.Response, error) {
+func handler(ctx context.Context, event api.Request) (response api.Response, handlerErr error) {
+	defer func() {
+		response = trainingprivacy.New(privacyRepository, api.GetUserInfo(event).Username).ProtectUsers(response)
+	}()
 	log.SetRequestId(event.RequestContext.RequestID)
 	log.Infof("Event: %#v", event)
 
@@ -103,6 +111,22 @@ func handleCohort(cohort, startKey string) api.Response {
 		return api.Failure(err)
 	}
 
+	var requirements []*database.Requirement
+	for startKey := ""; ; {
+		batch, next, err := requirementsRepository.ListRequirements(database.DojoCohort(cohort), false, startKey)
+		if err != nil {
+			return api.Failure(err)
+		}
+		requirements = append(requirements, batch...)
+		if next == "" {
+			break
+		}
+		startKey = next
+	}
+	for i := range users {
+		score := users[i].CalculateScore(requirements)
+		users[i].CohortDojoScore = &score
+	}
 	return api.Success(&GetScoreboardResponse{
 		Data:             users,
 		LastEvaluatedKey: lastKey,
