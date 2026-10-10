@@ -122,7 +122,7 @@ export function TimerButton() {
  * Returns the short name or full name of a task.
  * @param task The task to get the name for.
  */
-function getTaskName(task: Requirement | CustomTask): string {
+export function getTaskName(task: Requirement | CustomTask): string {
     if (isRequirement(task)) {
         return task.shortName || task.name;
     }

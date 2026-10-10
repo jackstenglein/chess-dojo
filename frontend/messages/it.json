@@ -239,7 +239,13 @@
                 "startCountPositive": "Deve essere un numero intero positivo oppure vuoto",
                 "countPositive": "Deve essere un numero intero positivo oppure vuoto",
                 "startCountLessThanGoal": "Deve essere inferiore all'obiettivo",
-                "otherTypeRequired": "Questo campo è obbligatorio"
+                "otherTypeRequired": "Questo campo è obbligatorio",
+                "material": "Study material",
+                "materialHelper": "Optional. The folder or course this task's games come from.",
+                "materialNone": "None",
+                "materialCurrent": "Current selection",
+                "materialFolders": "Your folders",
+                "materialCourses": "Courses"
             },
             "deleteCustomTask": {
                 "title": "Eliminare {name}?",
@@ -322,6 +328,7 @@
                 "completed": "Completato",
                 "editTask": "Modifica compito",
                 "deleteTask": "Elimina compito",
+                "study": "Study",
                 "pauseTimer": "Metti in pausa il timer ({time})",
                 "dojoPointsTotal": "Questo compito assegna {score, plural, =1 {# Punto Dojo} other {# Punti Dojo}} al completamento.",
                 "dojoPointsNone": "Questo compito non assegna Punti Dojo.",
@@ -924,6 +931,7 @@
         "learn": "Impara",
         "puzzles": "Problemi",
         "courses": "Corsi",
+        "reader": "Reader",
         "books": "Libri",
         "sparringPositions": "Posizioni di sparring",
         "modelAnnotations": "Annotazioni modello",
@@ -4294,5 +4302,54 @@
         "playAsWhite": "Gioca con il Bianco",
         "playAsBlack": "Gioca con il Nero",
         "randomColor": "Colore casuale"
+    },
+    "study": {
+        "browse": {
+            "notice": "You are browsing. Your notes are saved to your copies; progress counts only on your own cohort's task."
+        },
+        "noMaterial": "This task has no study material.",
+        "backToPlan": "Back to the training plan",
+        "yourCopy": "Your copy",
+        "catalog": {
+            "studied": "{done} of {total} studied",
+            "browsing": "{total} games, browsing",
+            "historyLoading": "Your history is still loading, so some done marks may be missing.",
+            "skipped": "{count, plural, =1 {# game in this folder is not yours and is not listed.} other {# games in this folder are not yours and are not listed.}}",
+            "empty": "{count, plural, =1 {The one game in this folder is not yours, so there is nothing to study here.} other {None of the # games in this folder are yours, so there is nothing to study here.}}",
+            "collapse": "Collapse the catalog",
+            "expand": "Expand the catalog",
+            "studiedUnit": "{done} of {total} {unit}"
+        },
+        "session": {
+            "startTimer": "Start timer",
+            "pauseTimer": "Pause timer ({time})",
+            "resumeTimer": "Resume timer ({time})",
+            "timerOtherTask": "The timer is running on {name}.",
+            "done": "Done",
+            "previous": "Previous",
+            "next": "Next",
+            "undo": "Undo",
+            "savingTitle": "Saving your copy",
+            "savingBody": "Your edits are still being saved. Try again in a moment.",
+            "unsavedBody": "Your edits could not be saved yet. Make another edit to retry, or reload the page to discard them.",
+            "targetReached": "Target reached: {total} {unit}"
+        },
+        "solve": {
+            "whiteToMove": "White to move",
+            "blackToMove": "Black to move",
+            "prompt": "Find the mate and play it on the board. The moves stay hidden until you solve it.",
+            "showSolution": "Show solution",
+            "wrong": "Not that one. Try again.",
+            "correct": "Correct.",
+            "solved": "Solved.",
+            "modeSwitch": "Read or solve",
+            "read": "Read",
+            "solve": "Solve"
+        },
+        "board": {
+            "engine": "Engine",
+            "playBot": "Play this position against the bot",
+            "analyze": "Open this position in the analysis board"
+        }
     }
 }

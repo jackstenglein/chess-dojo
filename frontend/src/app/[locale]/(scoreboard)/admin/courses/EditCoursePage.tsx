@@ -310,6 +310,17 @@ export function EditCoursePage({ type, id }: { type?: string; id?: string }) {
                             }
                             label='Available for free-tier users to purchase'
                         />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={course.allowExport ?? false}
+                                    onChange={(e) =>
+                                        setCourse({ ...course, allowExport: e.target.checked })
+                                    }
+                                />
+                            }
+                            label='Allow cloning and PGN export of the games'
+                        />
                         <PurchaseOptionsEditor
                             options={course.purchaseOptions ?? []}
                             onChange={(purchaseOptions) =>

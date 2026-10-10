@@ -13,6 +13,7 @@ const (
 	Endgame  CourseType = "ENDGAME"
 	Workshop CourseType = "WORKSHOP"
 	Other    CourseType = "OTHER"
+	Study    CourseType = "STUDY"
 )
 
 type CourseStatus string
@@ -98,6 +99,9 @@ type Course struct {
 
 	// Whether to hide the module indices in the table of contents.
 	HideModuleIndices bool `dynamodbav:"hideModuleIndices,omitempty" json:"hideModuleIndices,omitempty"`
+
+	// Whether the course's games may be cloned, downloaded or copied as PGN.
+	AllowExport bool `dynamodbav:"allowExport,omitempty" json:"allowExport,omitempty"`
 }
 
 // IsPublished returns true if the course should be visible to non-admin users.

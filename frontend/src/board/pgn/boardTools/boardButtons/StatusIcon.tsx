@@ -133,6 +133,8 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     };
 
     const debouncedOnSave = useDebounce(onSave);
+    // Start any pending save before the board unmounts.
+    useEffect(() => () => debouncedOnSave.flush(), [debouncedOnSave]);
 
     const onSaveUndo = (pgnText: string) => {
         // Drop the pending autosave of the state we are undoing.

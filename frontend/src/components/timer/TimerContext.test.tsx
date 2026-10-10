@@ -84,7 +84,7 @@ function makeUser(overrides: Partial<User> = {}): User {
     } as User;
 }
 
-function TimerConsumer({ taskId }: { taskId?: string }) {
+function TimerConsumer({ taskId, restartFrom }: { taskId?: string; restartFrom?: number }) {
     const timer = use(TimerContext);
     const taskName =
         timer.task && 'shortName' in timer.task
@@ -109,14 +109,21 @@ function TimerConsumer({ taskId }: { taskId?: string }) {
             <button type='button' data-testid='toggle' onClick={() => timer.onToggle(taskId)}>
                 Toggle
             </button>
+            <button
+                type='button'
+                data-testid='restart'
+                onClick={() => timer.onRestart(taskId ?? '', restartFrom)}
+            >
+                Restart
+            </button>
         </div>
     );
 }
 
-function renderTimer(taskId?: string) {
+function renderTimer(taskId?: string, restartFrom?: number) {
     return renderWithIntl(
         <TimerContextProvider>
-            <TimerConsumer taskId={taskId} />
+            <TimerConsumer taskId={taskId} restartFrom={restartFrom} />
         </TimerContextProvider>,
     );
 }
@@ -240,6 +247,29 @@ describe('TimerContextProvider', () => {
         expect(apiUpdateUser).toHaveBeenCalledWith(
             expect.objectContaining({ timerSeconds: 0, timerTaskId: 'task-b' }),
         );
+    });
+
+    it('restarts on a task from the seconds given, or zero, in one write', () => {
+        authState.user = makeUser({ timerTaskId: 'task-a', timerSeconds: 479, timerStartedAt: '' });
+        renderTimer('task-b', 59);
+        fireEvent.click(screen.getByTestId('restart'));
+
+        const update = {
+            timerSeconds: 59,
+            timerStartedAt: '2026-05-27T12:00:00.000Z',
+            timerTaskId: 'task-b',
+        };
+        expect(apiUpdateUser.mock.calls).toEqual([[update]]);
+        expect(updateUserImpl).toHaveBeenCalledWith(update);
+        expect(screen.getByTestId('seconds')).toHaveTextContent('59');
+        expect(screen.getByTestId('isRunning')).toHaveTextContent('true');
+
+        cleanup();
+        apiUpdateUser.mockReset();
+        renderTimer('task-b');
+        fireEvent.click(screen.getByTestId('restart'));
+        expect(apiUpdateUser.mock.calls).toEqual([[{ ...update, timerSeconds: 0 }]]);
+        expect(screen.getByTestId('seconds')).toHaveTextContent('0');
     });
 
     it('pauses the timer and saves elapsed seconds', () => {

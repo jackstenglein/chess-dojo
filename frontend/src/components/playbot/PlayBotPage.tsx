@@ -16,7 +16,7 @@ import { useMaiaGame } from './useMaiaGame';
 
 type PageView = 'setup' | 'playing';
 
-function parseQueryOpts(searchParams: URLSearchParams): PlayBotStartOpts | null {
+export function parseQueryOpts(searchParams: URLSearchParams): PlayBotStartOpts | null {
     const fen = searchParams.get('fen');
     if (!fen) return null;
 
@@ -27,8 +27,9 @@ function parseQueryOpts(searchParams: URLSearchParams): PlayBotStartOpts | null 
     const mins = parseFloat(minsStr ?? '0') || 0;
     const inc = parseFloat(incStr ?? '0') || 0;
 
+    // No clock in the query means unlimited, as it does on the setup page.
     const timeControl: TimeControl = {
-        initialMs: mins * 60 * 1000,
+        initialMs: mins > 0 ? mins * 60 * 1000 : null,
         incrementMs: inc * 1000,
     };
 

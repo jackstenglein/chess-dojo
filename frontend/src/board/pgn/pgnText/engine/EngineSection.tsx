@@ -16,8 +16,9 @@ import { Color } from '@jackstenglein/chess';
 import { Cloud } from '@mui/icons-material';
 import { Box, Paper, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { EngineControlContext } from './EngineControl';
 import { EvaluationSection } from './EvaluationSection';
 import { formatLineEval } from './LineEval';
 import Settings from './Settings';
@@ -37,7 +38,10 @@ export default function EngineSection() {
         PERSIST_ENGINE_LINES.Default,
     );
 
-    const [enabled, setEnabled] = useState(false);
+    const control = useContext(EngineControlContext);
+    const [ownEnabled, setOwnEnabled] = useState(false);
+    const enabled = control?.enabled ?? ownEnabled;
+    const setEnabled = control?.setEnabled ?? setOwnEnabled;
     const [cloudEvalEnabled] = useLocalStorage(CLOUD_EVAL_ENABLED.Key, CLOUD_EVAL_ENABLED.Default);
     const evaluation = useEval(enabled, engineInfo.name);
 
@@ -70,6 +74,10 @@ export default function EngineSection() {
         ? engineLines.length > 0 && engineLines[0].pv.length > 0 && !isGameOver
         : enabled && !isGameOver;
 
+    if (control && !enabled) {
+        return null;
+    }
+
     return (
         <Paper
             elevation={6}
@@ -91,7 +99,7 @@ export default function EngineSection() {
                         <Switch
                             checked={enabled}
                             onChange={(e) => {
-                                setEnabled((prev) => !prev);
+                                setEnabled(!enabled);
                                 e.currentTarget.blur();
                             }}
                             sx={{ mr: 1 }}

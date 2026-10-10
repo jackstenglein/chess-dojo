@@ -8,7 +8,7 @@ import { DefaultUnderboardTab } from 'src/board/pgn/boardTools/underboard/underb
 import { ModuleProps } from './Module';
 import PgnSelector from './PgnSelector';
 
-const ModelGamesModule: React.FC<ModuleProps> = ({ module }) => {
+const ModelGamesModule: React.FC<ModuleProps> = ({ module, course }) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const t = useTranslations('learn.modelGames');
 
@@ -24,6 +24,7 @@ const ModelGamesModule: React.FC<ModuleProps> = ({ module }) => {
                     pgn={module.pgns[selectedIndex]}
                     showPlayerHeaders={true}
                     startOrientation={module.boardOrientation}
+                    disableExport={!course.allowExport}
                     initialUnderboardTab='selector'
                     underboardTabs={[
                         {

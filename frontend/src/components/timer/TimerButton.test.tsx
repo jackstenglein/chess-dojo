@@ -41,6 +41,7 @@ function createTimer(overrides: Partial<Timer> = {}): Timer {
         onPause: vi.fn(),
         onToggle: vi.fn(),
         onClear: vi.fn(),
+        onRestart: vi.fn(),
         getLabel: () => 'Start Timer',
         ...overrides,
     };

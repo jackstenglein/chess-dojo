@@ -48,6 +48,8 @@ interface ChessConfig {
     disableTakebacks?: Color | 'both';
     disableNullMoves?: boolean;
     disableEngine?: boolean;
+    /** Hides Copy PGN, Download PGN and Clone in the Share tab. */
+    disableExport?: boolean;
     showElapsedMoveTimes?: boolean;
 }
 
@@ -84,6 +86,8 @@ export interface PgnBoardApi {
 export interface PgnBoardSlots {
     moveButtonExtras?: React.JSXElementConstructor<MoveButtonProps>;
     afterPgnText?: JSX.Element;
+    /** Rendered at the right end of the row under the board. */
+    boardButtons?: JSX.Element;
 }
 
 export interface PgnBoardSlotProps {
@@ -133,6 +137,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             disableTakebacks,
             disableNullMoves: disableNullMovesProp,
             disableEngine,
+            disableExport,
             showElapsedMoveTimes,
             slots,
             slotProps,
@@ -215,6 +220,11 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             }
         }, [acceptNavigation, hasUnsavedBoardChanges, navGuard.active, pendingGameNavigation]);
 
+        // A page that saves on its own may pass a setter to learn about the board's unsaved edits.
+        const reportUnsaved = gameContext.setHasUnsavedGameChanges;
+        useEffect(() => {
+            reportUnsaved?.(hasUnsavedGameChanges);
+        }, [reportUnsaved, hasUnsavedGameChanges]);
         const guardedGameContext = useMemo(
             () => ({
                 ...gameContext,
@@ -251,6 +261,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                     allowDeleteBefore,
                     disableTakebacks,
                     disableEngine,
+                    disableExport,
                     showElapsedMoveTimes,
                 },
                 toggleOrientation,
@@ -283,6 +294,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                 slotProps,
                 disableTakebacks,
                 disableEngine,
+                disableExport,
                 initKey,
                 showElapsedMoveTimes,
                 solitaire,

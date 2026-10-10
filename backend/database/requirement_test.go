@@ -1,7 +1,10 @@
 package database
 
 import (
+	"reflect"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 func TestCalculateScore(t *testing.T) {
@@ -387,5 +390,54 @@ func TestGetPercentComplete(t *testing.T) {
 				t.Errorf("GetPercentComplete(...) got %f; want %f", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestRequirementMaterialRoundTrip(t *testing.T) {
+	requirement := &Requirement{
+		Id:     "test-requirement",
+		Status: Active,
+		Name:   "Study Master Games",
+		Counts: map[DojoCohort]int{"1500-1600": 45},
+		Material: []*TaskMaterial{
+			{Kind: "COURSE", CourseType: "STUDY", CourseId: "study-master-games-1500-1600"},
+		},
+	}
+
+	item, err := dynamodbattribute.MarshalMap(requirement)
+	if err != nil {
+		t.Fatalf("MarshalMap: %v", err)
+	}
+
+	// GetRequirement and ListRequirements unmarshal these attribute names off the
+	// stored item, so the tags themselves are part of the contract.
+	material := item["material"].L[0].M
+	for _, key := range []string{"kind", "courseType", "courseId"} {
+		if _, ok := material[key]; !ok {
+			t.Errorf("expected material attribute %q, got %v", key, material)
+		}
+	}
+	for _, key := range []string{"owner", "directoryId"} {
+		if attr, ok := material[key]; ok {
+			t.Errorf("expected no %q attribute on a COURSE entry, got %v", key, attr)
+		}
+	}
+
+	got := &Requirement{}
+	if err := dynamodbattribute.UnmarshalMap(item, got); err != nil {
+		t.Fatalf("UnmarshalMap: %v", err)
+	}
+	if !reflect.DeepEqual(got, requirement) {
+		t.Errorf("round trip changed the requirement:\n got: %#v\nwant: %#v", got, requirement)
+	}
+}
+
+func TestRequirementWithoutMaterialOmitsAttribute(t *testing.T) {
+	item, err := dynamodbattribute.MarshalMap(&Requirement{Id: "test-requirement"})
+	if err != nil {
+		t.Fatalf("MarshalMap: %v", err)
+	}
+	if attr, ok := item["material"]; ok {
+		t.Errorf("expected no material attribute, got %v", attr)
 	}
 }
