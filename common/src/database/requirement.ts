@@ -27,6 +27,16 @@ export type CustomTaskCategory = Extract<
     | RequirementCategory.Opening
 >;
 
+/** The study material a task points at: a course, or a directory of the member's games. */
+export type TaskMaterial =
+    | {
+          kind: 'COURSE';
+          /** Stays a plain string, so a task survives a course type this build does not know. */
+          courseType: string;
+          courseId: string;
+      }
+    | { kind: 'DIRECTORY'; owner: string; directoryId: string };
+
 /** A custom non-dojo task created by a user. */
 export interface CustomTask {
     /** The id of the CustomTask. */
@@ -77,6 +87,9 @@ export interface CustomTask {
      * perform operations on objects of type Requirement|CustomTask.
      */
     startCount?: number;
+
+    /** The study material the task points at, if any. */
+    material?: TaskMaterial[];
 }
 
 /** Defines how the requirement is displayed on the scoreboard. */

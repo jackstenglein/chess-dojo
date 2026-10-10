@@ -59,6 +59,7 @@ export function CourseContentPreview({ course }: { course: Course }) {
                         <Module
                             key={`${safeChapterIndex}-${safeModuleIndex}-${courseModule.id}`}
                             module={courseModule}
+                            course={course}
                             preview
                         />
                     </Box>

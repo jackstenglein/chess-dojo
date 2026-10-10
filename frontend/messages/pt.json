@@ -239,7 +239,13 @@
                 "startCountPositive": "Deve ser um número inteiro positivo ou estar vazio",
                 "countPositive": "Deve ser um número inteiro positivo ou estar vazio",
                 "startCountLessThanGoal": "Deve ser menor que o objetivo",
-                "otherTypeRequired": "Este campo é obrigatório"
+                "otherTypeRequired": "Este campo é obrigatório",
+                "material": "Study material",
+                "materialHelper": "Optional. The folder or course this task's games come from.",
+                "materialNone": "None",
+                "materialCurrent": "Current selection",
+                "materialFolders": "Your folders",
+                "materialCourses": "Courses"
             },
             "deleteCustomTask": {
                 "title": "Excluir {name}?",

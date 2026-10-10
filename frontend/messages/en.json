@@ -239,7 +239,13 @@
                 "startCountPositive": "Must be a positive integer or empty",
                 "countPositive": "Must be a positive integer or empty",
                 "startCountLessThanGoal": "Must be less than Goal",
-                "otherTypeRequired": "This field is required"
+                "otherTypeRequired": "This field is required",
+                "material": "Study material",
+                "materialHelper": "Optional. The folder or course this task's games come from.",
+                "materialNone": "None",
+                "materialCurrent": "Current selection",
+                "materialFolders": "Your folders",
+                "materialCourses": "Courses"
             },
             "deleteCustomTask": {
                 "title": "Delete {name}?",

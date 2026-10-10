@@ -2,7 +2,13 @@
 
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { Link } from '@/components/navigation/Link';
-import { Course, CourseStatus, displayCourseType, isCoursePublished } from '@/database/course';
+import {
+    Course,
+    CourseStatus,
+    CourseType,
+    displayCourseType,
+    isCoursePublished,
+} from '@/database/course';
 import LoadingPage from '@/loading/LoadingPage';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -33,6 +39,7 @@ export default function AdminCourseListPage() {
     }, [request]);
 
     const courses = request.data ?? [];
+    const groups = groupByType(courses);
 
     return (
         <Container sx={{ py: 5 }}>
@@ -67,55 +74,61 @@ export default function AdminCourseListPage() {
                 ) : courses.length === 0 ? (
                     <Typography sx={{ color: 'text.secondary' }}>No courses yet.</Typography>
                 ) : (
-                    <Stack spacing={2}>
-                        {courses.map((course) => (
-                            <Card key={`${course.type}-${course.id}`} variant='outlined'>
-                                <CardActionArea
-                                    component={Link}
-                                    href={`/admin/courses/${course.type}/${course.id}`}
-                                    sx={{ flex: 1, borderRadius: 1 }}
-                                >
-                                    <CardContent>
-                                        <Stack
-                                            direction='row'
-                                            sx={{
-                                                justifyContent: 'space-between',
-                                                alignItems: 'flex-start',
-                                                flexWrap: 'wrap',
-                                                gap: 1,
-                                            }}
+                    <Stack spacing={4}>
+                        {groups.map(([type, typeCourses]) => (
+                            <Stack key={type} spacing={2}>
+                                <Typography variant='h6' component='h2'>
+                                    {displayCourseType(type)}
+                                </Typography>
+                                {typeCourses.map((course) => (
+                                    <Card key={`${course.type}-${course.id}`} variant='outlined'>
+                                        <CardActionArea
+                                            component={Link}
+                                            href={`/admin/courses/${course.type}/${course.id}`}
+                                            sx={{ flex: 1, borderRadius: 1 }}
                                         >
-                                            <Stack sx={{ py: 0.5 }}>
-                                                <Typography variant='h6' component='h2'>
-                                                    {course.name || 'Untitled course'}
-                                                </Typography>
-                                                <Typography
-                                                    variant='body2'
-                                                    sx={{ color: 'text.secondary' }}
+                                            <CardContent>
+                                                <Stack
+                                                    direction='row'
+                                                    sx={{
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'flex-start',
+                                                        flexWrap: 'wrap',
+                                                        gap: 1,
+                                                    }}
                                                 >
-                                                    {displayCourseType(course.type)}
-                                                    {course.cohortRange
-                                                        ? ` • ${course.cohortRange}`
-                                                        : ''}
-                                                </Typography>
-                                            </Stack>
-                                            <Chip
-                                                variant='filled'
-                                                color={
-                                                    isCoursePublished(course)
-                                                        ? 'success'
-                                                        : 'warning'
-                                                }
-                                                label={
-                                                    isCoursePublished(course)
-                                                        ? CourseStatus.Published
-                                                        : CourseStatus.Draft
-                                                }
-                                            />
-                                        </Stack>
-                                    </CardContent>
-                                </CardActionArea>
-                            </Card>
+                                                    <Stack sx={{ py: 0.5 }}>
+                                                        <Typography variant='h6' component='h3'>
+                                                            {course.name || 'Untitled course'}
+                                                        </Typography>
+                                                        {course.cohortRange && (
+                                                            <Typography
+                                                                variant='body2'
+                                                                sx={{ color: 'text.secondary' }}
+                                                            >
+                                                                {course.cohortRange}
+                                                            </Typography>
+                                                        )}
+                                                    </Stack>
+                                                    <Chip
+                                                        variant='filled'
+                                                        color={
+                                                            isCoursePublished(course)
+                                                                ? 'success'
+                                                                : 'warning'
+                                                        }
+                                                        label={
+                                                            isCoursePublished(course)
+                                                                ? CourseStatus.Published
+                                                                : CourseStatus.Draft
+                                                        }
+                                                    />
+                                                </Stack>
+                                            </CardContent>
+                                        </CardActionArea>
+                                    </Card>
+                                ))}
+                            </Stack>
                         ))}
                     </Stack>
                 )}
@@ -124,4 +137,21 @@ export default function AdminCourseListPage() {
             </Stack>
         </Container>
     );
+}
+
+/** Groups courses under their type, in the enum's order, with unknown types last. */
+function groupByType(courses: Course[]): [CourseType, Course[]][] {
+    const known = Object.values(CourseType);
+    const types = [...new Set(courses.map((course) => course.type))].sort((a, b) => {
+        const ai = known.indexOf(a);
+        const bi = known.indexOf(b);
+        if (ai === -1 && bi === -1) {
+            return a.localeCompare(b);
+        }
+        if (ai === -1 || bi === -1) {
+            return ai === -1 ? 1 : -1;
+        }
+        return ai - bi;
+    });
+    return types.map((type) => [type, courses.filter((course) => course.type === type)]);
 }

@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { DefaultUnderboardTab } from 'src/board/pgn/boardTools/underboard/underboardTabs';
 import { ModuleProps } from './Module';
 
-const PgnViewerModule: React.FC<ModuleProps> = ({ module }) => {
+const PgnViewerModule: React.FC<ModuleProps> = ({ module, course }) => {
     if (!module.pgns || module.pgns.length < 1) {
         return null;
     }
@@ -21,6 +21,7 @@ const PgnViewerModule: React.FC<ModuleProps> = ({ module }) => {
                     DefaultUnderboardTab.Settings,
                 ]}
                 disableNullMoves={false}
+                disableExport={!course.allowExport}
                 initialUnderboardTab={DefaultUnderboardTab.Explorer}
             />
         </Box>

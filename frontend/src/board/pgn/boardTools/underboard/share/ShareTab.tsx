@@ -7,6 +7,7 @@ import { useAuth } from '@/auth/Auth';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { DirectorySelectButton } from '@/components/directories/select/DirectorySelectButton';
 import { DirectoryCacheProvider } from '@/components/profile/directories/DirectoryCache';
+import { exportBlocked } from '@/components/profile/trainingPlan/study/copies';
 import { getConfig } from '@/config';
 import useGame from '@/context/useGame';
 import { pgnExportOptions, usePgnExportOptions } from '@/hooks/usePgnExportOptions';
@@ -48,7 +49,7 @@ const config = getConfig();
 
 export function ShareTab() {
     const t = useTranslations('analysisBoard.underboard.share');
-    const { chess, board } = useChess();
+    const { chess, board, config: chessConfig } = useChess();
     const { game } = useGame();
     const [copied, setCopied] = useState('');
     const api = useApi();
@@ -81,6 +82,8 @@ export function ShareTab() {
         plyBetweenDiagrams,
         setPlyBetweenDiagrams,
     } = usePgnExportOptions();
+
+    const exportDisabled = exportBlocked(chessConfig, game?.headers);
 
     const pdfRequest = useRequest();
     const cloneRequest = useRequest();
@@ -544,18 +547,26 @@ export function ShareTab() {
                         justifyContent: 'center',
                     }}
                 >
-                    <CopyButton
-                        name='pgn'
-                        startIcon={<ContentPaste />}
-                        onClick={onCopyPgn}
-                        copied={copied}
-                    >
-                        {t('copyPgn')}
-                    </CopyButton>
+                    {!exportDisabled && (
+                        <>
+                            <CopyButton
+                                name='pgn'
+                                startIcon={<ContentPaste />}
+                                onClick={onCopyPgn}
+                                copied={copied}
+                            >
+                                {t('copyPgn')}
+                            </CopyButton>
 
-                    <Button variant='contained' startIcon={<Download />} onClick={onDownloadPgn}>
-                        {t('downloadPgn')}
-                    </Button>
+                            <Button
+                                variant='contained'
+                                startIcon={<Download />}
+                                onClick={onDownloadPgn}
+                            >
+                                {t('downloadPgn')}
+                            </Button>
+                        </>
+                    )}
 
                     <Button
                         variant='contained'
@@ -589,13 +600,15 @@ export function ShareTab() {
                                 onClose={() => setShowMergeDialog(false)}
                             />
 
-                            <Button
-                                variant='contained'
-                                loading={cloneRequest.isLoading()}
-                                onClick={onCloneGame}
-                            >
-                                {t('cloneGame')}
-                            </Button>
+                            {!exportDisabled && (
+                                <Button
+                                    variant='contained'
+                                    loading={cloneRequest.isLoading()}
+                                    onClick={onCloneGame}
+                                >
+                                    {t('cloneGame')}
+                                </Button>
+                            )}
                         </>
                     )}
                 </Stack>
