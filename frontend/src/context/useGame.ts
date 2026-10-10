@@ -6,6 +6,8 @@ export interface GameContextType {
     onUpdateGame?: (g: Game) => void;
     isOwner?: boolean;
     unsaved?: boolean;
+    /** Hides the unsaved-game banner and icon because the page saves on its own. */
+    silentUnsaved?: boolean;
     hasUnsavedGameChanges?: boolean;
     setHasUnsavedGameChanges?: (hasChanges: boolean) => void;
     /** If defined, the Directories tab calls this instead of router.push when clicking a game. */

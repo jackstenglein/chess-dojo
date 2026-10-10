@@ -32,8 +32,8 @@ const BoardButtons = ({
 }) => {
     const t = useTranslations('analysisBoard.boardButtons');
     const light = useLightMode();
-    const { game, isOwner: isGameOwner, unsaved } = useGame();
-    const { chess } = useChess();
+    const { game, isOwner: isGameOwner, unsaved, silentUnsaved } = useGame();
+    const { chess, slots } = useChess();
 
     return (
         <Paper
@@ -91,11 +91,12 @@ const BoardButtons = ({
                             <VisibilityIcon underboardRef={underboardRef} />
                             <StatusIcon game={game} />
                         </Stack>
-                    ) : unsaved ? (
+                    ) : unsaved && !silentUnsaved ? (
                         <UnsavedGameIcon />
                     ) : (
                         <Box sx={{ width: '40px' }}></Box>
                     )}
+                    {slots?.boardButtons}
                     <PanelToggle side='right' panelControls={panelControls} />
                 </Stack>
             </Stack>

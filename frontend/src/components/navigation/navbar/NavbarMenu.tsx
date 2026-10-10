@@ -32,6 +32,7 @@ import {
     ImportContacts,
     Info,
     LocalFireDepartment,
+    LocalLibrary,
     Logout,
     MenuBook,
     Menu as MenuIcon,
@@ -244,6 +245,12 @@ function allStartItems(
                     name: t('courses'),
                     icon: <ImportContacts />,
                     href: '/courses',
+                },
+                {
+                    id: 'reader',
+                    name: t('reader'),
+                    icon: <LocalLibrary />,
+                    href: '/study',
                 },
                 {
                     id: 'books',

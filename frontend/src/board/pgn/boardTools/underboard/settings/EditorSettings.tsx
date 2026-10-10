@@ -32,7 +32,7 @@ const EditorSettings = () => {
         ClockFieldFormat.SingleField,
     );
 
-    const { unsaved } = useGame();
+    const { unsaved, silentUnsaved } = useGame();
     const [warnBeforeDelete, setWarnBeforeDelete] = useLocalStorage<number>(
         WarnBeforeDelete.key,
         WarnBeforeDelete.default,
@@ -40,7 +40,7 @@ const EditorSettings = () => {
 
     return (
         <Stack spacing={3}>
-            {unsaved && <UnsavedGameBanner />}
+            {unsaved && !silentUnsaved && <UnsavedGameBanner />}
             <Typography variant='h5'>{t('editorSettingsTitle')}</Typography>
             <TextField
                 select

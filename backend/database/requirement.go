@@ -94,6 +94,9 @@ type CustomTask struct {
 
 	// The time the task was most recently updated
 	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
+
+	// The study material the task points at, if any.
+	Material []*TaskMaterial `dynamodbav:"material,omitempty" json:"material,omitempty"`
 }
 
 func (t *CustomTask) CalculateScore(cohort DojoCohort, progress *RequirementProgress) float32 {
@@ -243,6 +246,23 @@ type Requirement struct {
 
 	// The subscription tiers that have access to this task.
 	SubscriptionTiers []SubscriptionTier `dynamodbav:"subscriptionTiers,omitempty" json:"subscriptionTiers,omitempty"`
+
+	// The study material the requirement points at, if any.
+	Material []*TaskMaterial `dynamodbav:"material,omitempty" json:"material,omitempty"`
+}
+
+// TaskMaterial points a task at a course or at a directory whose games the
+// user studies. Kind is COURSE or DIRECTORY and decides which fields are set.
+type TaskMaterial struct {
+	Kind string `dynamodbav:"kind" json:"kind"`
+
+	// CourseType is a plain string so a requirement still unmarshals when it
+	// names a course type this build does not know.
+	CourseType string `dynamodbav:"courseType,omitempty" json:"courseType,omitempty"`
+	CourseId   string `dynamodbav:"courseId,omitempty" json:"courseId,omitempty"`
+
+	Owner       string `dynamodbav:"owner,omitempty" json:"owner,omitempty"`
+	DirectoryId string `dynamodbav:"directoryId,omitempty" json:"directoryId,omitempty"`
 }
 
 func (r *Requirement) clampCount(cohort DojoCohort, count int) int {

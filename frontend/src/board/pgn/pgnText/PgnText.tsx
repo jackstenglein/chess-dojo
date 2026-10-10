@@ -1,10 +1,11 @@
 import { SolitaireAfterPgnText } from '@/board/pgn/solitaire/SolitaireAfterPgnText';
 import { UnpublishedGameBanner } from '@/components/games/edit/UnpublishedGameBanner';
 import { UnsavedGameBanner } from '@/components/games/edit/UnsavedGameBanner';
+import { isWorkingCopy } from '@/components/profile/trainingPlan/study/copies';
 import useGame from '@/context/useGame';
 import { useLightMode } from '@/style/useLightMode';
 import { Card, Stack } from '@mui/material';
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../PgnBoard';
@@ -23,7 +24,9 @@ const PgnTextBody = () => {
     const { config, slots, slotProps, solitaire } = useChess();
     const [hideEngine] = useLocalStorage(HideEngine.Key, HideEngine.Default);
 
-    const handleScroll = (child: HTMLElement | null) => {
+    // The list keeps one handler for its whole life. The move buttons re-centre the selected move
+    // whenever the handler changes, and the panel above re-renders for reasons that are not moves.
+    const handleScroll = useCallback((child: HTMLElement | null) => {
         const scrollParent = ref.current;
         if (child && scrollParent) {
             const parentRect = scrollParent.getBoundingClientRect();
@@ -35,7 +38,7 @@ const PgnTextBody = () => {
                 scrollParent.scrollTop -
                 scrollParent.clientHeight / 2;
         }
-    };
+    }, []);
 
     return (
         <>
@@ -66,12 +69,14 @@ const PgnTextBody = () => {
 };
 
 export function PgnTextBanners() {
-    const { unsaved, game, isOwner } = useGame();
+    const { unsaved, silentUnsaved, game, isOwner } = useGame();
 
     return (
         <>
-            {game?.unlisted && isOwner && <UnpublishedGameBanner dismissable />}
-            {unsaved && <UnsavedGameBanner dismissable />}
+            {game?.unlisted && isOwner && !isWorkingCopy(game.headers) && (
+                <UnpublishedGameBanner dismissable />
+            )}
+            {unsaved && !silentUnsaved && <UnsavedGameBanner dismissable />}
             <SaveAllVariationsButton />
         </>
     );

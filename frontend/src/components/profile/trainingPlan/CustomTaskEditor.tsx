@@ -2,16 +2,23 @@ import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { useTimelineContext } from '@/components/profile/activity/useTimeline';
+import { useOptionalTimelineContext } from '@/components/profile/activity/useTimeline';
 import { CohortSelect } from '@/components/ui/CohortSelect';
+import { canOpenCourse, Course, CourseType } from '@/database/course';
 import {
     CustomTask,
     CustomTaskCategory,
     isCustomTaskCategory,
     RequirementCategory,
     ScoreboardDisplay,
+    TaskMaterial,
 } from '@/database/requirement';
-import { ALL_COHORTS, dojoCohorts } from '@/database/user';
+import { ALL_COHORTS, dojoCohorts, User } from '@/database/user';
+import {
+    Directory,
+    DirectoryItemTypes,
+    HOME_DIRECTORY_ID,
+} from '@jackstenglein/chess-dojo-common/src/database/directory';
 import {
     Button,
     Checkbox,
@@ -20,12 +27,13 @@ import {
     DialogContent,
     DialogTitle,
     FormControlLabel,
+    ListSubheader,
     MenuItem,
     Stack,
     TextField,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const OTHER_COUNT_TYPE = 'Other';
@@ -41,11 +49,73 @@ const DEFAULT_COUNT_TYPES = [
     'Problems',
 ];
 
+/** A folder or course the task can point at, keyed by the select's value. */
+interface MaterialOption {
+    value: string;
+    label: string;
+    material: TaskMaterial;
+}
+
+function materialValue(material?: TaskMaterial): string {
+    if (!material) {
+        return '';
+    }
+    if (material.kind === 'COURSE') {
+        return `course:${material.courseType}/${material.courseId}`;
+    }
+    return `directory:${material.owner}/${material.directoryId}`;
+}
+
+/** The subfolders of the directory, in the directory's own order. */
+function folderOptions(directory: Directory): MaterialOption[] {
+    return directory.itemIds.flatMap((id) => {
+        const item = directory.items[id];
+        if (item?.type !== DirectoryItemTypes.DIRECTORY) {
+            return [];
+        }
+        const material: TaskMaterial = {
+            kind: 'DIRECTORY',
+            owner: directory.owner,
+            directoryId: item.id,
+        };
+        return [{ value: materialValue(material), label: item.metadata.name, material }];
+    });
+}
+
+/**
+ * The courses the user can open, by name. Study courses are left out. They are
+ * task material, not courses to the member.
+ */
+function courseOptions(courses: Course[], user: User): MaterialOption[] {
+    return courses
+        .filter((course) => course.type !== CourseType.Study && canOpenCourse(user, course))
+        .sort(
+            (a, b) =>
+                a.name.localeCompare(b.name) ||
+                a.cohortRange.localeCompare(b.cohortRange, undefined, { numeric: true }),
+        )
+        .map((course) => {
+            const material: TaskMaterial = {
+                kind: 'COURSE',
+                courseType: course.type,
+                courseId: course.id,
+            };
+            return {
+                value: materialValue(material),
+                label: `${course.name} (${course.cohortRange})`,
+                material,
+            };
+        });
+}
+
 interface CustomTaskEditorProps {
     task?: CustomTask;
     open: boolean;
     onClose: () => void;
     initialCategory: CustomTaskCategory;
+    /** Prefills a new task's material, for a course chosen elsewhere. Ignored when editing. */
+    initialMaterial?: TaskMaterial;
+    initialName?: string;
 }
 
 const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
@@ -53,16 +123,18 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
     open,
     onClose,
     initialCategory,
+    initialMaterial,
+    initialName,
 }) => {
     const t = useTranslations('profile.trainingPlan.customTask');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const request = useRequest();
     const api = useApi();
     const { user } = useAuth();
-    const { resetRequest: resetTimeline } = useTimelineContext();
+    const resetTimeline = useOptionalTimelineContext()?.resetRequest;
 
     const [category, setCategory] = useState(task?.category ?? initialCategory);
-    const [name, setName] = useState(task?.name ?? '');
+    const [name, setName] = useState(task?.name ?? initialName ?? '');
     const [description, setDescription] = useState(task?.description ?? '');
     const [cohorts, setCohorts] = useState([ALL_COHORTS]);
     const [startCount, setStartCount] = useState(
@@ -82,12 +154,77 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
         isOtherCountType ? task?.progressBarSuffix || '' : '',
     );
     const [trackCountPerCohort, setTrackCountPerCohort] = useState(false);
+    const [material, setMaterial] = useState<TaskMaterial | undefined>(
+        task ? task.material?.[0] : initialMaterial,
+    );
+    const [homeDirectory, setHomeDirectory] = useState<Directory>();
+    const [courses, setCourses] = useState<Course[]>([]);
+    const materialRequest = useRequest();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const username = user?.username;
+    const { onFailure: onMaterialFailure } = materialRequest;
+    useEffect(() => {
+        if (!open || !username) {
+            return;
+        }
+        let cancelled = false;
+        api.getDirectory(username, HOME_DIRECTORY_ID)
+            .then((response) => {
+                if (!cancelled) {
+                    setHomeDirectory(response.data.directory);
+                }
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) {
+                    onMaterialFailure(err);
+                }
+            });
+        api.listAllCourses()
+            .then((allCourses) => {
+                if (!cancelled) {
+                    setCourses(allCourses);
+                }
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) {
+                    onMaterialFailure(err);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [open, username, api, onMaterialFailure]);
+
+    const materialOptions = useMemo(
+        () => ({
+            folders: homeDirectory ? folderOptions(homeDirectory) : [],
+            courses: user ? courseOptions(courses, user) : [],
+        }),
+        [homeDirectory, courses, user],
+    );
 
     if (!user) {
         return null;
     }
+
+    const selectedMaterial = materialValue(material);
+    const knownMaterial =
+        selectedMaterial === '' ||
+        [...materialOptions.folders, ...materialOptions.courses].some(
+            (option) => option.value === selectedMaterial,
+        );
+
+    const onChangeMaterial = (value: string) => {
+        if (value === selectedMaterial) {
+            return;
+        }
+        const option = [...materialOptions.folders, ...materialOptions.courses].find(
+            (o) => o.value === value,
+        );
+        setMaterial(option?.material);
+    };
 
     const onCreate = () => {
         const newErrors: Record<string, string> = {};
@@ -146,6 +283,12 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             numberOfCohorts: trackCountPerCohort ? -1 : 1,
             progressBarSuffix: countType === OTHER_COUNT_TYPE ? otherType.trim() : countType,
             updatedAt: new Date().toISOString(),
+            // When the selection is unchanged, keep all of the task's entries, not only the first.
+            material: !material
+                ? undefined
+                : task?.material && materialValue(material) === materialValue(task.material[0])
+                  ? task.material
+                  : [material],
         };
 
         let newTasks: CustomTask[] = [];
@@ -172,7 +315,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                 });
                 request.onSuccess();
                 if (task && task.category !== category) {
-                    resetTimeline();
+                    resetTimeline?.();
                 }
                 onClose();
             })
@@ -191,6 +334,7 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             fullWidth
         >
             <RequestSnackbar request={request} />
+            <RequestSnackbar request={materialRequest} />
 
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
@@ -297,6 +441,37 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
                             fullWidth
                         />
                     )}
+
+                    <TextField
+                        select
+                        label={t('material')}
+                        value={selectedMaterial}
+                        onChange={(e) => onChangeMaterial(e.target.value)}
+                        fullWidth
+                        helperText={t('materialHelper')}
+                        data-testid='custom-task-material-select'
+                    >
+                        <MenuItem value=''>{t('materialNone')}</MenuItem>
+                        {!knownMaterial && (
+                            <MenuItem value={selectedMaterial}>{t('materialCurrent')}</MenuItem>
+                        )}
+                        {materialOptions.folders.length > 0 && (
+                            <ListSubheader>{t('materialFolders')}</ListSubheader>
+                        )}
+                        {materialOptions.folders.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                        {materialOptions.courses.length > 0 && (
+                            <ListSubheader>{t('materialCourses')}</ListSubheader>
+                        )}
+                        {materialOptions.courses.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
 
                     <FormControlLabel
                         control={

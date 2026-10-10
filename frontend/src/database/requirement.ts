@@ -4,6 +4,7 @@ import {
     RequirementCategory,
     RequirementProgress,
     ScoreboardDisplay,
+    TaskMaterial,
 } from '@jackstenglein/chess-dojo-common/src/database/requirement';
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { isObject } from './scoreboard';
@@ -12,7 +13,7 @@ import { isFree, User } from './user';
 
 export { RequirementCategory, ScoreboardDisplay };
 
-export type { CustomTask, CustomTaskCategory, RequirementProgress };
+export type { CustomTask, CustomTaskCategory, RequirementProgress, TaskMaterial };
 
 /** The status of a requirement. */
 export enum RequirementStatus {
@@ -167,6 +168,17 @@ export interface Requirement {
 
     /** The subscription tiers that can view this requirement. */
     subscriptionTiers?: SubscriptionTier[];
+
+    /** The study material the requirement points at, if any. */
+    material?: TaskMaterial[];
+}
+
+/**
+ * Returns whether the task points at study material.
+ * @param task The requirement or custom task to check.
+ */
+export function hasMaterial(task: Requirement | CustomTask): boolean {
+    return (task.material?.length ?? 0) > 0;
 }
 
 /**

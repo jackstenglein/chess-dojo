@@ -1,6 +1,7 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { Link } from '@/components/navigation/Link';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import DeleteCustomTaskModal from '@/components/profile/trainingPlan/DeleteCustomTaskModal';
 import Position from '@/components/profile/trainingPlan/Position';
@@ -12,6 +13,7 @@ import {
     CustomTask,
     getTotalCount,
     getUnitScore,
+    hasMaterial,
     isComplete,
     isRequirement,
     Requirement,
@@ -369,6 +371,15 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                 </Box>
 
                 <Button onClick={onClose}>{tCommon('cancel')}</Button>
+                {hasMaterial(task) && (
+                    <Button
+                        component={Link}
+                        href={`/study/${task.id}`}
+                        data-testid='task-study-button'
+                    >
+                        {t('study')}
+                    </Button>
+                )}
                 <Button onClick={() => setView(TaskDialogView.Progress)}>
                     {tCommon('updateProgress')}
                 </Button>

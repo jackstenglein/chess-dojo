@@ -26,12 +26,15 @@ export interface UseTimelineResponse {
 
 const TimelineContext = createContext<UseTimelineResponse | undefined>(undefined);
 export const useTimelineContext = () => {
-    const context = useContext(TimelineContext);
+    const context = useOptionalTimelineContext();
     if (!context) {
         throw new Error('useTimelineContext must be used within a TimelineProvider');
     }
     return context;
 };
+
+/** The timeline when a provider is mounted above, for pages that only sometimes have one. */
+export const useOptionalTimelineContext = () => useContext(TimelineContext);
 
 interface TimelineProviderProps {
     owner: string;

@@ -24,6 +24,11 @@ export interface Timer {
     onPause: (taskId?: string, showDialog?: boolean) => void;
     onToggle: (taskId?: string) => void;
     onClear: () => void;
+    /**
+     * Starts the timer for the task from the given seconds, zero by default, in one write. Logs
+     * nothing itself.
+     */
+    onRestart: (taskId: string, seconds?: number) => void;
     getLabel: (taskId?: string) => string;
 }
 
@@ -105,6 +110,19 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
         setTimerSeconds(0);
     };
 
+    // A clear followed by a start would be two writes that can land in either order.
+    const onRestart = (taskId: string, seconds = 0) => {
+        const update = {
+            timerSeconds: seconds,
+            timerStartedAt: new Date().toISOString(),
+            timerTaskId: taskId,
+        };
+        setTimerSeconds(seconds);
+        setIsRunning(true);
+        updateUser(update);
+        void api.updateUser(update);
+    };
+
     const getLabel = (taskId?: string) => {
         if (!user?.timerTaskId || taskId === user?.timerTaskId) {
             if (isRunning) {
@@ -139,6 +157,7 @@ export function TimerContextProvider({ children }: { children: ReactNode }) {
                 onStart,
                 onPause,
                 onClear,
+                onRestart,
                 getLabel,
                 onToggle,
             }}
