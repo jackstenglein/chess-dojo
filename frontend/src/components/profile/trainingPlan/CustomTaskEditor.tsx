@@ -146,6 +146,8 @@ const CustomTaskEditor: React.FC<CustomTaskEditorProps> = ({
             numberOfCohorts: trackCountPerCohort ? -1 : 1,
             progressBarSuffix: countType === OTHER_COUNT_TYPE ? otherType.trim() : countType,
             updatedAt: new Date().toISOString(),
+            // Not editable here yet, so an edit must keep what the task already points at.
+            material: task?.material,
         };
 
         let newTasks: CustomTask[] = [];

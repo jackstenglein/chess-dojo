@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { FollowerEntry } from '../database/follower';
 import { Graduation } from '../database/graduation';
 import { UserStatistics } from '../database/statistics';
-import { TimelineEntry } from '../database/timeline';
+import { TimelineEntry, TimelineStudyInfo } from '../database/timeline';
 import { User, UserSummary } from '../database/user';
 import { axiosService } from './axiosService';
 
@@ -442,6 +442,8 @@ export interface UpdateUserProgressRequest {
     date: DateTime | null;
     /** The user's optional comments for the progress update. */
     notes: string;
+    /** The study item this update is for, if the study page posted it. */
+    studyInfo?: TimelineStudyInfo;
 }
 
 /**

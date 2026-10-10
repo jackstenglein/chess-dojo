@@ -61,6 +61,8 @@ export interface TimelineEntry {
     graduationInfo?: TimelineGraduationInfo;
     /** Information on a published game, if this timeline entry is for a published game. */
     gameInfo?: TimelineGameInfo;
+    /** The study item this entry is for, if the study page posted it. */
+    studyInfo?: TimelineStudyInfo;
     /** The notes the user left on the activity. */
     notes: string;
     /** Comments left by users on the timeline entry. */
@@ -91,6 +93,14 @@ export interface TimelineGameInfo {
     id: string;
     /** The headers of the game. */
     headers: Record<string, string>;
+}
+
+/** The study item a progress update is for. */
+export interface TimelineStudyInfo {
+    /** The key of the item within the task's material. */
+    itemKey: string;
+    /** The display name of the item. */
+    itemName: string;
 }
 
 /** A reaction on a timeline entry. */

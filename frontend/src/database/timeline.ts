@@ -4,7 +4,14 @@ import {
     TimelineGameInfo,
     TimelineGraduationInfo,
     TimelineSpecialRequirementId,
+    TimelineStudyInfo,
 } from '@jackstenglein/chess-dojo-common/src/database/timeline';
 
 export { TimelineSpecialRequirementId };
-export type { Reaction, TimelineEntry, TimelineGameInfo, TimelineGraduationInfo };
+export type {
+    Reaction,
+    TimelineEntry,
+    TimelineGameInfo,
+    TimelineGraduationInfo,
+    TimelineStudyInfo,
+};
