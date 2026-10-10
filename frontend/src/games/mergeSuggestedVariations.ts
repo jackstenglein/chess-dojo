@@ -40,7 +40,21 @@ export function mergeSuggestedVariations(game: Game) {
         move = stack.pop() ?? null;
     } while (move);
 
+    // A position comment can leave an empty variation node in the move tree. The PGN
+    // serializer renders that node as `()`, which is not valid PGN and prevents the
+    // board from loading the entire game.
+    removeEmptyVariations(chess.history());
     game.pgn = chess.renderPgn();
+}
+
+/** Removes empty variation branches before serializing a move tree to PGN. */
+export function removeEmptyVariations(moves: Move[]) {
+    for (const move of moves) {
+        move.variations = move.variations.filter((variation) => variation.length > 0);
+        for (const variation of move.variations) {
+            removeEmptyVariations(variation);
+        }
+    }
 }
 
 function mergeFromMove(chess: Chess, move: Move | null, comments: PositionComment[]) {
@@ -67,6 +81,9 @@ function recursiveMergeLine(
             return;
         }
 
+        if (move.nags?.length) {
+            target.setNags(move.nags, newTargetMove);
+        }
         target.setCommand(
             'dojoComment',
             `${comment.owner.username},${comment.owner.displayName},${comment.id}`,
