@@ -1,4 +1,5 @@
 import { useFreeTier } from '@/auth/Auth';
+import { CompactListViewCell } from '@/components/games/list/GameListItem';
 import GameTable from '@/components/games/list/GameTable';
 import { Link } from '@/components/navigation/Link';
 import MultipleSelectChip from '@/components/ui/MultipleSelectChip';
@@ -40,6 +41,7 @@ import {
 import {
     DataGridPro,
     GridColDef,
+    GridListViewColDef,
     GridPaginationModel,
     GridRenderCellParams,
     GridRowModel,
@@ -52,6 +54,11 @@ import { useChess } from '../PgnBoard';
 import { ExplorerDatabaseType } from './Explorer';
 import { GameContextMenu } from './GameContextMenu';
 import { PerformanceSummary } from './player/PerformanceSummary';
+
+const compactGameListColumn: GridListViewColDef<GameInfo> = {
+    field: 'listColumn',
+    renderCell: CompactListViewCell,
+};
 
 export const getBackgroundColor = (color: string, mode: string) =>
     mode === 'dark' ? darken(color, 0.65) : lighten(color, 0.65);
@@ -532,6 +539,7 @@ function DatabaseContent({
                                 owner: false,
                             }}
                             listView={true}
+                            listViewColumn={compactGameListColumn}
                             disableRowSelectionOnClick
                             onRowClick={(params) => onClickGame(params.row)}
                         />
