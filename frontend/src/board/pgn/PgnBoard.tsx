@@ -29,6 +29,7 @@ import {
     saveSuggestedVariation,
 } from './boardTools/underboard/comments/suggestVariation';
 import { AutoSaveVariations } from './boardTools/underboard/settings/ViewerSettings';
+import { CoordinateSize } from './boardTools/underboard/settings/viewerSettingsConstants';
 import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { ButtonProps as MoveButtonProps } from './pgnText/MoveButton';
 import { CONTAINER_ID } from './resize';
@@ -82,15 +83,27 @@ export interface PgnBoardApi {
 
 export interface PgnBoardSlots {
     moveButtonExtras?: React.JSXElementConstructor<MoveButtonProps>;
+    /** Extra items at the end of the menu that opens when a move is right-clicked. */
+    moveMenuItems?: React.JSXElementConstructor<{ move: Move; onClose: () => void }>;
+    /** Shown above the engine and the PGN text, at the top of the PGN panel. */
+    beforePgnText?: JSX.Element;
     afterPgnText?: JSX.Element;
+    /** Pinned under the PGN text, outside its scrolling, so it is always in view. */
+    pgnFooter?: JSX.Element;
+    /** Shown over the middle of the PGN panel, halfway down it. It does not catch clicks. */
+    overPgnText?: JSX.Element;
 }
 
 export interface PgnBoardSlotProps {
     pgnText?: {
         hideResult?: boolean;
+        /** Keep the result, but leave out the line above it. */
+        hideResultDivider?: boolean;
     };
     board?: {
         onMove?: onMoveFunc;
+        /** How big the coordinates are for someone who has not chosen. Standard if not given. */
+        defaultCoordinateSize?: CoordinateSize;
     };
 }
 
@@ -102,6 +115,8 @@ interface PgnBoardProps extends ChessConfig {
     initialRightTab?: string;
     tabStorageKeyPrefix?: string;
     sidePanelTabs?: DefaultUnderboardTab[];
+    /** Start with the board as big as the window allows, with narrower side panels. */
+    largeBoard?: boolean;
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
@@ -121,6 +136,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
             initialRightTab,
             tabStorageKeyPrefix,
             sidePanelTabs,
+            largeBoard,
             pgn,
             fen,
             showPlayerHeaders = true,
@@ -258,6 +274,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                 slotProps: {
                     ...slotProps,
                     board: {
+                        ...slotProps?.board,
                         onMove: slotProps?.board?.onMove
                             ? slotProps.board.onMove
                             : solitaire.enabled
@@ -384,6 +401,7 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                                     initialRightTab,
                                     tabStorageKeyPrefix,
                                     sidePanelTabs,
+                                    largeBoard,
                                     showPlayerHeaders,
                                     pgn,
                                     fen,

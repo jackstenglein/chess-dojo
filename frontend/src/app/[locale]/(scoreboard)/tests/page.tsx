@@ -1,4 +1,5 @@
 import { ExamCard } from '@/components/exams/ExamCard';
+import { PuzzleBaseCard } from '@/components/puzzles/base/PuzzleBaseCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
 import { EmojiEvents, Visibility } from '@mui/icons-material';
 import { Container, Grid } from '@mui/material';
@@ -47,6 +48,8 @@ export default function ExamLandingPage() {
                     href='/puzzles/mate-in-one'
                     icon={EmojiEvents}
                 />
+
+                <PuzzleBaseCard />
             </Grid>
         </Container>
     );

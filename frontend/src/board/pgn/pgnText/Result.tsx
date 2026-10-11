@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useChess } from '../PgnBoard';
 
 const Result = () => {
-    const { chess } = useChess();
+    const { chess, slotProps } = useChess();
     const t = useTranslations('analysisBoard.pgnText');
     const [, setForceRender] = useState(0);
 
@@ -51,7 +51,7 @@ const Result = () => {
                 alignItems: 'center',
             }}
         >
-            <Divider sx={{ width: 1 }} />
+            {!slotProps?.pgnText?.hideResultDivider && <Divider sx={{ width: 1 }} />}
             <Typography
                 sx={{
                     fontWeight: 'bold',

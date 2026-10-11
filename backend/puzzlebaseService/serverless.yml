@@ -1,0 +1,636 @@
+# Deploys the Dojo PuzzleBase: a curated collection of puzzles that Puzzle Contributors can add to.
+
+service: chess-dojo-puzzlebase
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+    # Set to 'true' when deploying to let every signed-in member train. Until then only Puzzle
+    # Contributors and admins can.
+    PUZZLEBASE_TRAINING_OPEN: ${env:PUZZLEBASE_TRAINING_OPEN, 'false'}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  list:
+    handler: list.handler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  get:
+    handler: get.handler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles/{id}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  getTaxonomy:
+    handler: taxonomy.getHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/taxonomy
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  leaderboard:
+    handler: contributors.leaderboardHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/leaderboard
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  create:
+    handler: create.handler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  importStudy:
+    handler: importStudy.handler
+    timeout: 30
+    events:
+      - httpApi:
+          path: /puzzlebase/import
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  update:
+    handler: update.handler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles/{id}
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  createTheme:
+    handler: taxonomy.createThemeHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/taxonomy/themes
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  deleteTheme:
+    handler: taxonomy.deleteThemeHandler
+    timeout: 30
+    events:
+      - httpApi:
+          path: /puzzlebase/taxonomy/themes/delete
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  listAdminLog:
+    handler: audit.listHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/admin-log
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  apply:
+    handler: contributors.applyHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/apply
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  me:
+    handler: contributors.meHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/me
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  listContributors:
+    handler: contributors.listHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  approve:
+    handler: contributors.approveHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/{username}/approve
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  trainingTags:
+    handler: training.trainingTagsHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/train/tags
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  vote:
+    handler: votes.voteHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/votes
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRunsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  addContributor:
+    handler: contributors.addContributorHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/{username}/add
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  deny:
+    handler: contributors.denyHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/{username}/deny
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  revoke:
+    handler: contributors.revokeHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/contributors/{username}/revoke
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  contributorProfile:
+    handler: contributors.profileHandler
+    events:
+      - httpApi:
+          path: /public/puzzlebase/contributors/{username}
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+
+  # Training and stats. Any signed-in member can train, not only Puzzle Contributors.
+  train:
+    handler: training.trainHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/train
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRunsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  submitAttempt:
+    handler: training.submitAttemptHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/attempts
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzleRunsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  stats:
+    handler: stats.statsHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/stats/{username}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRunsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  runs:
+    handler: stats.runsHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/runs/{username}
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRunsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  suggestTags:
+    handler: suggestions.suggestHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles/{id}/suggestions
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:DeleteItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  listSuggestions:
+    handler: suggestions.listSuggestionsHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/suggestions
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  resolveSuggestions:
+    handler: suggestions.resolveSuggestionsHandler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles/{id}/suggestions/resolve
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:DeleteItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+
+  Resources:
+    # One table holds puzzles, contributors, the taxonomy and the id counter. See database.ts.
+    PuzzlebaseTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-puzzlebase
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+
+    # How people solve puzzles: attempts, sessions and running totals. See runsDatabase.ts.
+    PuzzleRunsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-puzzlebase-runs
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+
+  Outputs:
+    PuzzlebaseTableArn:
+      Value: !GetAtt PuzzlebaseTable.Arn
+    PuzzleRunsTableArn:
+      Value: !GetAtt PuzzleRunsTable.Arn

@@ -18,6 +18,7 @@ import { UserCard } from '@/components/profile/info/UserCard';
 import { LiveClassesTab } from '@/components/profile/liveClasses/LiveClassesTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
 import { TrainingPlanTab } from '@/components/profile/trainingPlan/TrainingPlanTab';
+import { PuzzleStatsTab } from '@/components/puzzles/stats/PuzzleStatsTab';
 import { hasCreatedProfile, User } from '@/database/user';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
@@ -32,6 +33,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import {
     AdminPanelSettings,
+    Extension,
     Groups,
     PieChart,
     RocketLaunch,
@@ -89,6 +91,8 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
     }, [api, currentUserProfile, request, username]);
 
     const user = currentUserProfile ? currentUser : request.data;
+    // Puzzle stats are private: only the member, coaches and admins can see them.
+    const canSeePuzzleStats = currentUserProfile || currentUser.isAdmin || currentUser.isCoach;
 
     if (currentUserProfile && !hasCreatedProfile(currentUser)) {
         return <ProfileCreatorPage />;
@@ -221,6 +225,13 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     value='games'
                                     icon={<PawnIcon fontSize='small' />}
                                 />
+                                {canSeePuzzleStats && (
+                                    <ProfileTab
+                                        label='Puzzle Stats'
+                                        value='puzzles'
+                                        icon={<Extension fontSize='small' />}
+                                    />
+                                )}
                                 <ProfileTab
                                     label={t('tabClubs')}
                                     value='clubs'
@@ -260,6 +271,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                 />
                             </DirectoryCacheProvider>
                         </TabPanel>
+                        {canSeePuzzleStats && (
+                            <TabPanel value='puzzles' sx={{ px: 0, pl: { lg: 1 } }}>
+                                <PuzzleStatsTab username={user.username} />
+                            </TabPanel>
+                        )}
                         <TabPanel value='clubs' sx={{ px: 0, pl: { lg: 1 } }}>
                             <ClubsTab user={user} />
                         </TabPanel>

@@ -18,7 +18,15 @@ const margin = 64;
 export interface PanelLayoutOptions {
     showPgn?: boolean;
     showPanelControls?: boolean;
+    /**
+     * Start with the board as big as the window allows, leaving the side panels only the width they
+     * need. Without it the board takes at most 40% of the width (66% with one panel).
+     */
+    largeBoard?: boolean;
 }
+
+/** The narrowest a side panel is made when the board is given as much room as it can have. */
+const largeBoardPanelWidth = 200;
 
 export const RESTORE_GUTTER_WIDTH = 36;
 
@@ -214,14 +222,16 @@ function mdSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPgn = true, showPanelControls }: PanelLayoutOptions = {},
+    { showPgn = true, showPanelControls, largeBoard }: PanelLayoutOptions = {},
 ): AreaSizes {
     const padding = 24;
     const spacing = 8;
 
     const panelCount = Number(Boolean(showUnderboard)) + Number(showPgn);
     const availableWidth = parentWidth - padding - (showPanelControls ? panelCount : 2) * spacing;
-    const maxBoardWidth = availableWidth * (panelCount === 2 ? 0.4 : panelCount === 1 ? 0.66 : 1);
+    const maxBoardWidth = largeBoard
+        ? Math.max(minBoardSize, availableWidth - panelCount * largeBoardPanelWidth)
+        : availableWidth * (panelCount === 2 ? 0.4 : panelCount === 1 ? 0.66 : 1);
     const maxBoardHeight = getMaxBoardHeight(hidePlayerHeaders, showPanelControls);
     const boardSize = Math.min(maxBoardWidth, maxBoardHeight);
 
