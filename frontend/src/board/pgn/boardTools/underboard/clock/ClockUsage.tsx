@@ -19,9 +19,19 @@ import {
     Typography,
 } from '@mui/material';
 import { green, grey, lime, orange, pink } from '@mui/material/colors';
+import {
+    AxisValueFormatterContext,
+    BarChart,
+    ChartsReferenceLine,
+    getValueToPositionMapper,
+    LineChart,
+    useChartsLayerContainerRef,
+    useDrawingArea,
+    useXScale,
+    useYAxes,
+} from '@mui/x-charts';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AxisOptions, Chart, Datum as ChartDatum, Series } from 'react-charts';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { TimeControlEditor } from '../tags/TimeControlEditor';
 import ClockEditor from './ClockEditor';
@@ -73,100 +83,60 @@ const plyToMoveNumber = (ply: number): number => {
 };
 
 export interface Datum {
-    secondaryAxisId?: string;
-    label?: string;
     moveNumber: number;
     seconds: number;
     move: Move | null;
     eval?: number;
 }
 
-function getPrimaryAxis(
-    t: (key: string, values?: Record<string, string | number>) => string,
-): AxisOptions<Datum> {
-    return {
-        getValue: (datum) => datum.moveNumber,
-        scaleType: 'linear',
-        formatters: {
-            scale: (value) => (value % 1 === 0 ? `${value}` : ''),
-            tooltip: (value) => (value % 1 === 0 ? t('moveTooltip', { value }) : ''),
-        },
-    };
+function formatEval(value: number): string {
+    switch (value) {
+        case -3:
+            return '−+';
+        case -2:
+            return '∓';
+        case -1:
+            return '⩱';
+        case 0:
+            return '= / ∞';
+        case 1:
+            return '⩲';
+        case 2:
+            return '±';
+        case 3:
+            return '+−';
+        default:
+            return `${value}`;
+    }
 }
 
-const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        getValue: (datum: Datum) => datum.seconds as unknown as Date,
-        min: 0 as unknown as Date,
-        formatters: {
-            scale: formatTime,
-        },
-        tickCount: 6,
-        // This is necessary to make the tick marks line up with the eval, but requires the gross
-        // type assertions.
-        scaleType: 'time',
-    } as unknown as AxisOptions<Datum>,
-    {
-        id: 'eval',
-        getValue: (datum) => datum.eval,
-        scaleType: 'linear',
-        elementType: 'line',
-        min: -3,
-        max: 3,
-        formatters: {
-            scale: (value: number) => {
-                switch (value) {
-                    case -3:
-                        return '−+';
-                    case -2:
-                        return '∓';
-                    case -1:
-                        return '⩱';
-                    case 0:
-                        return '= / ∞';
-                    case 1:
-                        return '⩲';
-                    case 2:
-                        return '±';
-                    case 3:
-                        return '+−';
-                    default:
-                        return `${value}`;
-                }
-            },
-        },
-        tickCount: 6,
-    },
-];
-
-function getBarAxis(
-    t: (key: string, values?: Record<string, string | number>) => string,
-): AxisOptions<Datum> {
-    return {
-        getValue: (datum) => datum.moveNumber,
-        scaleType: 'band',
-        position: 'left',
-        formatters: {
-            tooltip: (value) => t('moveTooltip', { value: (value as number)?.toString() }),
-        },
-    };
+interface RemainingSeries {
+    id: string;
+    label: string;
+    color: string;
+    yAxisId: 'clock' | 'eval';
+    values: (number | null)[];
+    moves: (Move | null)[];
 }
 
-const secondaryBarAxis: AxisOptions<Datum>[] = [
-    {
-        getValue: (datum: Datum) => datum.seconds,
-        min: 0,
-        formatters: {
-            scale: formatTime,
-        },
-        position: 'bottom',
-    },
-];
-
-const totalTimePrimaryAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.label,
-    position: 'left',
-};
+function getRemainingSeries(
+    id: string,
+    label: string,
+    color: string,
+    data: Datum[],
+    moveNumbers: number[],
+): RemainingSeries {
+    const byMoveNumber = new Map(data.map((d) => [d.moveNumber, d]));
+    const aligned = moveNumbers.map((moveNumber) => byMoveNumber.get(moveNumber));
+    return {
+        id,
+        label,
+        color,
+        yAxisId: id === 'eval' ? 'eval' : 'clock',
+        values: aligned.map((d) => (id === 'eval' ? d?.eval : d?.seconds) ?? null),
+        moves: aligned.map((d) => d?.move ?? null),
+    };
+}
 
 export function formatTime(value: number): string {
     let result = '';
@@ -254,8 +224,6 @@ interface ClockUsageProps {
 const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
     const { chess } = useChess();
     const t = useTranslations('analysisBoard.underboard.clock');
-    const primaryAxis = useMemo(() => getPrimaryAxis(t), [t]);
-    const barAxis = useMemo(() => getBarAxis(t), [t]);
     const light = useLightMode();
     const [forceRender, setForceRender] = useState(0);
     const reconcile = useReconcile();
@@ -277,58 +245,26 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
             black: t('blackLabel'),
             ideal: t('idealClockSeriesLabel'),
             eval: t('evalSeriesLabel'),
-            currentMove: t('currentMoveSeriesLabel'),
             totalTime: t('totalTimeLabel'),
         }),
         [t],
     );
 
-    const getSeriesStyle = useCallback(
-        (series: Series<Datum>) => {
-            if (series.label === seriesLabels.currentMove) {
-                if (light) {
-                    return { fill: grey[600], stroke: grey[600], strokeDasharray: '3 10' };
-                }
-                return { fill: lime[100], stroke: lime[100], strokeDasharray: '3 10' };
-            }
-            if (series.label === seriesLabels.ideal) {
-                return { fill: green[500], stroke: green[500] };
-            }
-            if (series.label === seriesLabels.white) {
-                if (light) {
-                    return { fill: pink[200], stroke: pink[200] };
-                }
-                return { fill: 'white', stroke: 'white' };
-            }
-            if (series.label === seriesLabels.eval) {
-                if (light) {
-                    return { fill: orange[300], stroke: orange[300] };
-                }
-                return { fill: pink[200], stroke: pink[200] };
-            }
-            if (light) {
-                return { fill: '#212121', stroke: '#212121' };
-            }
-            return { fill: 'rgb(15, 131, 171)', stroke: 'rgb(15, 131, 171)' };
-        },
-        [light, seriesLabels],
-    );
-
-    const getDatumStyle = useCallback(
-        (datum: ChartDatum<Datum>) => {
-            if (datum.originalDatum.label === seriesLabels.white) {
-                if (light) {
-                    return { fill: pink[200] };
-                }
-                return { fill: 'white' };
-            }
-            if (light) {
-                return { fill: '#212121' };
-            }
-            return { fill: 'rgb(15, 131, 171)' };
-        },
-        [light, seriesLabels],
-    );
+    const colors = light
+        ? {
+              white: pink[200],
+              black: '#212121',
+              ideal: green[500],
+              eval: orange[300],
+              currentMove: grey[600],
+          }
+        : {
+              white: 'white',
+              black: 'rgb(15, 131, 171)',
+              ideal: green[500],
+              eval: pink[200],
+              currentMove: lime[100],
+          };
 
     useEffect(() => {
         if (chess && showEditor) {
@@ -361,9 +297,15 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                 blackClockRating: -1,
                 blackClockArea: 0,
                 timeRatingEnabled: false,
-                total: [],
-                remainingPerMove: [],
-                usedPerMove: [],
+                whiteClock: [],
+                blackClock: [],
+                idealClock: [],
+                evalData: [],
+                currentMoveNumber: undefined,
+                whiteTimePerMove: [],
+                blackTimePerMove: [],
+                whiteSecTotal: 0,
+                blackSecTotal: 0,
             };
         }
 
@@ -399,16 +341,6 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
         ];
 
         const currentLineMoveNumber = plyToMoveNumber(chess.currentMove()?.ply ?? 0);
-        const currentLine = timeControl
-            ? [
-                  { moveNumber: currentLineMoveNumber, seconds: 0, move: chess.currentMove() },
-                  {
-                      moveNumber: currentLineMoveNumber,
-                      seconds: timeControl.seconds ?? 0,
-                      move: chess.currentMove(),
-                  },
-              ]
-            : [];
         const whiteTimePerMove: Datum[] = [];
         const blackTimePerMove: Datum[] = [];
 
@@ -531,51 +463,25 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
             blackClockRating,
             blackClockArea,
             timeRatingEnabled: whiteClockRating >= 0 || blackClockRating >= 0,
-            total: [
-                {
-                    label: seriesLabels.totalTime,
-                    data: [
-                        {
-                            label: seriesLabels.black,
-                            seconds: blackSecTotal,
-                            move: null,
-                            moveNumber: 0,
-                        },
-                        {
-                            label: seriesLabels.white,
-                            seconds: whiteSecTotal,
-                            move: null,
-                            moveNumber: 0,
-                        },
-                    ],
-                },
-            ],
-            remainingPerMove: [
-                { label: seriesLabels.white, data: whiteClockDisplay },
-                { label: seriesLabels.black, data: blackClockDisplay },
-                { label: seriesLabels.ideal, data: perfectLine },
-                { label: seriesLabels.eval, data: evalData, secondaryAxisId: 'eval' },
-                {
-                    label: seriesLabels.currentMove,
-                    data: chess.isInMainline() ? currentLine : [],
-                },
-            ],
-            usedPerMove: [
-                { label: seriesLabels.white, data: whiteTimePerMove.reverse() },
-                { label: seriesLabels.black, data: blackTimePerMove.reverse() },
-            ],
+            whiteClock: whiteClockDisplay,
+            blackClock: blackClockDisplay,
+            idealClock: perfectLine,
+            evalData,
+            currentMoveNumber: chess.isInMainline() ? currentLineMoveNumber : undefined,
+            whiteTimePerMove,
+            blackTimePerMove,
+            whiteSecTotal,
+            blackSecTotal,
         };
-    }, [chess, timeControls, forceRender, seriesLabels]);
+    }, [chess, timeControls, forceRender]);
 
     if (!chess) {
         return null;
     }
 
-    const onClickDatum = (datum: ChartDatum<Datum> | null) => {
-        if (datum) {
-            chess.seek(datum.originalDatum.move ?? null);
-            reconcile();
-        }
+    const onClickMove = (move: Move | null) => {
+        chess.seek(move);
+        reconcile();
     };
 
     const onUpdateTimeControl = (value: string) => {
@@ -583,17 +489,30 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
         setShowTimeControlEditor(false);
     };
 
-    let remainingPerMoveData = data.remainingPerMove;
-    if (!showIdealClock) {
-        remainingPerMoveData = remainingPerMoveData.filter(
-            (series) => series.label !== seriesLabels.ideal,
+    const moveNumbers = data.whiteClock.map((d) => d.moveNumber);
+    const remainingSeries = [
+        getRemainingSeries('white', seriesLabels.white, colors.white, data.whiteClock, moveNumbers),
+        getRemainingSeries('black', seriesLabels.black, colors.black, data.blackClock, moveNumbers),
+    ];
+    if (showIdealClock) {
+        remainingSeries.push(
+            getRemainingSeries(
+                'ideal',
+                seriesLabels.ideal,
+                colors.ideal,
+                data.idealClock,
+                moveNumbers,
+            ),
         );
     }
-    if (!showEval) {
-        remainingPerMoveData = remainingPerMoveData.filter(
-            (series) => series.label !== seriesLabels.eval,
+    if (showEval) {
+        remainingSeries.push(
+            getRemainingSeries('eval', seriesLabels.eval, colors.eval, data.evalData, moveNumbers),
         );
     }
+
+    const moveValueFormatter = (value: number, context: AxisValueFormatterContext) =>
+        context.location === 'tooltip' ? t('moveTooltip', { value }) : `${value}`;
 
     return (
         <CardContent sx={{ height: 1 }}>
@@ -683,29 +602,74 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     >
                         {t('remainingClockLabel')}
                     </Typography>
-                    <Box
-                        sx={{
-                            width: 1,
-                            height: 300,
-                        }}
-                    >
-                        <Chart
-                            options={{
-                                data: remainingPerMoveData,
-                                primaryAxis,
-                                secondaryAxes: showEval
-                                    ? secondaryAxes
-                                    : secondaryAxes.slice(0, -1),
-                                dark: !light,
-                                onClickDatum,
-                                getSeriesStyle,
-                                tooltip: {
-                                    showDatumInTooltip: (datum) =>
-                                        (showEval || datum.secondaryAxisId !== 'eval') &&
-                                        datum.seriesLabel !== seriesLabels.currentMove,
+                    <Box sx={{ width: 1 }}>
+                        <LineChart
+                            height={300}
+                            hideLegend
+                            grid={{ horizontal: true, vertical: true }}
+                            xAxis={[
+                                {
+                                    data: moveNumbers,
+                                    tickMinStep: 1,
+                                    valueFormatter: moveValueFormatter,
+                                    tickLabelStyle: { fontSize: 10 },
                                 },
-                            }}
-                        />
+                            ]}
+                            yAxis={[
+                                {
+                                    id: 'clock',
+                                    min: 0,
+                                    valueFormatter: formatTime,
+                                    tickNumber: 6,
+                                    width: 'auto',
+                                    tickLabelStyle: { fontSize: 10 },
+                                },
+                                ...(showEval
+                                    ? [
+                                          {
+                                              id: 'eval',
+                                              position: 'right' as const,
+                                              min: -3,
+                                              max: 3,
+                                              tickInterval: [-3, -2, -1, 0, 1, 2, 3],
+                                              valueFormatter: formatEval,
+                                              width: 40,
+                                              tickLabelStyle: { fontSize: 10 },
+                                          },
+                                      ]
+                                    : []),
+                            ]}
+                            series={remainingSeries.map((series) => ({
+                                id: series.id,
+                                label: series.label,
+                                color: series.color,
+                                yAxisId: series.yAxisId,
+                                data: series.values,
+                                showMark: false,
+                                valueFormatter: (value: number | null) => {
+                                    if (value === null) {
+                                        return null;
+                                    }
+                                    return series.yAxisId === 'eval'
+                                        ? formatEval(value)
+                                        : formatTime(value);
+                                },
+                            }))}
+                        >
+                            {data.currentMoveNumber !== undefined && (
+                                <ChartsReferenceLine
+                                    x={data.currentMoveNumber}
+                                    lineStyle={{
+                                        stroke: colors.currentMove,
+                                        strokeDasharray: '3 10',
+                                    }}
+                                />
+                            )}
+                            <ClosestMoveClickHandler
+                                series={remainingSeries}
+                                onClick={onClickMove}
+                            />
+                        </LineChart>
                     </Box>
 
                     <Stack direction='row' sx={{ alignSelf: 'start', flexWrap: 'wrap' }}>
@@ -765,21 +729,50 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     >
                         {t('timeUsedPerMoveLabel')}
                     </Typography>
-                    <Box
-                        sx={{
-                            width: 1,
-                            height: 20 * Math.ceil(chess.plyCount() / 2) + 10,
-                            minHeight: 70,
-                        }}
-                    >
-                        <Chart
-                            options={{
-                                data: data.usedPerMove,
-                                primaryAxis: barAxis,
-                                secondaryAxes: secondaryBarAxis,
-                                dark: !light,
-                                onClickDatum,
-                                getSeriesStyle,
+                    <Box sx={{ width: 1 }}>
+                        <BarChart
+                            layout='horizontal'
+                            height={Math.max(70, 20 * Math.ceil(chess.plyCount() / 2) + 40)}
+                            hideLegend
+                            margin={{ top: 5, bottom: 5 }}
+                            grid={{ horizontal: true, vertical: true }}
+                            yAxis={[
+                                {
+                                    scaleType: 'band',
+                                    data: data.whiteTimePerMove.map((d) => d.moveNumber),
+                                    valueFormatter: moveValueFormatter,
+                                    tickLabelStyle: { fontSize: 10 },
+                                },
+                            ]}
+                            xAxis={[
+                                {
+                                    min: 0,
+                                    valueFormatter: formatTime,
+                                    tickLabelStyle: { fontSize: 10 },
+                                },
+                            ]}
+                            series={[
+                                {
+                                    id: 'white',
+                                    label: seriesLabels.white,
+                                    color: colors.white,
+                                    data: data.whiteTimePerMove.map((d) => d.seconds),
+                                    valueFormatter: (value) => formatTime(value ?? 0),
+                                },
+                                {
+                                    id: 'black',
+                                    label: seriesLabels.black,
+                                    color: colors.black,
+                                    data: data.blackTimePerMove.map((d) => d.seconds),
+                                    valueFormatter: (value) => formatTime(value ?? 0),
+                                },
+                            ]}
+                            onItemClick={(_, item) => {
+                                const moves =
+                                    item.seriesId === 'white'
+                                        ? data.whiteTimePerMove
+                                        : data.blackTimePerMove;
+                                onClickMove(moves[item.dataIndex]?.move ?? null);
                             }}
                         />
                     </Box>
@@ -799,20 +792,36 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
                     >
                         {t('totalTimeUsedLabel')}
                     </Typography>
-                    <Box
-                        sx={{
-                            width: 1,
-                            height: 120,
-                        }}
-                    >
-                        <Chart
-                            options={{
-                                data: data.total,
-                                primaryAxis: totalTimePrimaryAxis,
-                                secondaryAxes: secondaryBarAxis,
-                                dark: !light,
-                                getDatumStyle,
-                            }}
+                    <Box sx={{ width: 1 }}>
+                        <BarChart
+                            layout='horizontal'
+                            height={120}
+                            hideLegend
+                            margin={{ top: 5, bottom: 5 }}
+                            grid={{ horizontal: true, vertical: true }}
+                            yAxis={[
+                                {
+                                    scaleType: 'band',
+                                    data: [seriesLabels.white, seriesLabels.black],
+                                    tickLabelStyle: { fontSize: 10 },
+                                },
+                            ]}
+                            xAxis={[
+                                {
+                                    min: 0,
+                                    valueFormatter: formatTime,
+                                    tickLabelStyle: { fontSize: 10 },
+                                },
+                            ]}
+                            series={[
+                                {
+                                    label: seriesLabels.totalTime,
+                                    data: [data.whiteSecTotal, data.blackSecTotal],
+                                    colorGetter: ({ dataIndex }) =>
+                                        dataIndex === 0 ? colors.white : colors.black,
+                                    valueFormatter: (value) => formatTime(value ?? 0),
+                                },
+                            ]}
                         />
                     </Box>
                 </Stack>
@@ -831,6 +840,59 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
         </CardContent>
     );
 };
+
+/** Seeks to the move of the series point closest to a click on the chart. */
+function ClosestMoveClickHandler({
+    series,
+    onClick,
+}: {
+    series: RemainingSeries[];
+    onClick: (move: Move | null) => void;
+}) {
+    const containerRef = useChartsLayerContainerRef();
+    const drawingArea = useDrawingArea();
+    const xScale = useXScale<'linear'>();
+    const { yAxis } = useYAxes();
+
+    useEffect(() => {
+        const element = containerRef.current;
+        if (!element) {
+            return;
+        }
+
+        const onClickChart = (event: MouseEvent) => {
+            const rect = element.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const { left, top, width, height } = drawingArea;
+            if (x < left || x > left + width || y < top || y > top + height) {
+                return;
+            }
+
+            const index = Math.round(xScale.invert(x));
+            let closest: { distance: number; move: Move | null } | undefined;
+            for (const s of series) {
+                const value = s.values[index];
+                const axis = yAxis[s.yAxisId];
+                if (value === null || value === undefined || !axis) {
+                    continue;
+                }
+                const distance = Math.abs(getValueToPositionMapper(axis.scale)(value) - y);
+                if (!closest || distance < closest.distance) {
+                    closest = { distance, move: s.moves[index] };
+                }
+            }
+            if (closest) {
+                onClick(closest.move);
+            }
+        };
+
+        element.addEventListener('click', onClickChart);
+        return () => element.removeEventListener('click', onClickChart);
+    }, [containerRef, drawingArea, xScale, yAxis, series, onClick]);
+
+    return null;
+}
 
 function TimeRatingCard({
     backgroundColor,

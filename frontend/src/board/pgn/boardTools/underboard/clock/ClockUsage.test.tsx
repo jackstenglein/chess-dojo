@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import messages from '~/messages/en.json';
-import ClockUsage, { Datum } from './ClockUsage';
+import ClockUsage from './ClockUsage';
 
 const mocks = vi.hoisted(() => ({ chess: undefined as Chess | undefined }));
 
@@ -20,13 +20,22 @@ vi.mock('usehooks-ts', () => ({
         vi.fn(),
     ],
 }));
-vi.mock('react-charts', () => ({
-    Chart: ({ options }: { options: { data: { label: string; data: Datum[] }[] } }) => (
+vi.mock('@mui/x-charts', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@mui/x-charts')>()),
+    LineChart: ({
+        xAxis,
+        series,
+    }: {
+        xAxis: { data: number[] }[];
+        series: { label: string; data: (number | null)[] }[];
+    }) => (
         <pre data-testid='clock-chart'>
             {JSON.stringify(
-                options.data.map(({ label, data }) => ({
+                series.map(({ label, data }) => ({
                     label,
-                    data: data.map(({ moveNumber, seconds }) => ({ moveNumber, seconds })),
+                    data: xAxis[0].data
+                        .map((moveNumber, i) => ({ moveNumber, seconds: data[i] }))
+                        .filter(({ seconds }) => seconds !== null),
                 })),
             )}
         </pre>

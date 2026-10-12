@@ -1,8 +1,7 @@
+import { ChartColors } from '@/style/ThemeProvider';
 import CircleIcon from '@mui/icons-material/Circle';
-import { Box, Chip, Stack, Typography } from '@mui/material';
-import { AxisOptions, Chart as ReactChart } from 'react-charts';
-
-import { useAuth } from '../../auth/Auth';
+import { Chip, Stack, Typography } from '@mui/material';
+import { BarChart } from '@mui/x-charts';
 
 export interface Datum {
     cohort: string;
@@ -17,33 +16,22 @@ export interface Series {
 interface ChartProps {
     title: string;
     series: Series[];
-    primaryAxis: AxisOptions<Datum>;
-    secondaryAxes: AxisOptions<Datum>[];
+    valueFormatter?: (value: number) => string;
+    integerValues?: boolean;
+    stacked?: boolean;
     hideSums?: boolean;
     sumFormatter?: (sum: number) => string;
 }
 
-const colors = [
-    'rgb(15, 131, 171)',
-    'rgb(250, 164, 58)',
-    'rgb(253, 104, 104)',
-    'rgb(83, 207, 201)',
-    'rgb(162, 217, 37)',
-    'rgb(222, 207, 63)',
-    'rgb(115, 79, 233)',
-    'rgb(205, 130, 173)',
-];
-
 const Chart: React.FC<ChartProps> = ({
     title,
     series,
-    primaryAxis,
-    secondaryAxes,
+    valueFormatter,
+    integerValues,
+    stacked,
     hideSums,
     sumFormatter,
 }) => {
-    const user = useAuth().user;
-
     return (
         <Stack>
             <Typography data-testid='chart-title' variant='subtitle1'>
@@ -70,7 +58,7 @@ const Chart: React.FC<ChartProps> = ({
                                 icon={
                                     <CircleIcon
                                         sx={{
-                                            color: `${colors[i % colors.length]} !important`,
+                                            color: `${ChartColors[i % ChartColors.length]} !important`,
                                         }}
                                     />
                                 }
@@ -79,20 +67,39 @@ const Chart: React.FC<ChartProps> = ({
                     })}
                 </Stack>
             )}
-            <Box
-                sx={{
-                    height: '200px',
-                }}
-            >
-                <ReactChart
-                    options={{
-                        data: series,
-                        primaryAxis,
-                        secondaryAxes,
-                        dark: !user?.enableLightMode,
-                    }}
-                />
-            </Box>
+            <BarChart
+                height={200}
+                colors={ChartColors}
+                hideLegend
+                margin={{ top: 10 }}
+                grid={{ horizontal: true, vertical: true }}
+                xAxis={[
+                    {
+                        scaleType: 'band',
+                        data: series[0]?.data.map((d) => d.cohort) ?? [],
+                        height: 60,
+                        tickLabelStyle: { angle: -60, textAnchor: 'end', fontSize: 10 },
+                    },
+                ]}
+                yAxis={[
+                    {
+                        valueFormatter,
+                        width: 'auto',
+                        tickNumber: 5,
+                        tickMinStep: integerValues ? 1 : undefined,
+                        tickLabelStyle: { fontSize: 10 },
+                    },
+                ]}
+                series={series.map((s) => ({
+                    label: s.label,
+                    data: s.data.map((d) => d.value),
+                    stack: stacked ? 'total' : undefined,
+                    ...(valueFormatter && {
+                        valueFormatter: (value: number | null) =>
+                            value === null ? '' : valueFormatter(value),
+                    }),
+                }))}
+            />
         </Stack>
     );
 };

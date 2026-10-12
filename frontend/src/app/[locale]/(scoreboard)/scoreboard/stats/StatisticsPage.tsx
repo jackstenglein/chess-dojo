@@ -8,54 +8,10 @@ import { formatTime } from '@/database/requirement';
 import { UserStatistics } from '@/database/statistics';
 import { RatingSystem, dojoCohorts, formatRatingSystem } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
-import Chart, { Datum, Series } from '@/scoreboard/statistics/Chart';
+import Chart, { Series } from '@/scoreboard/statistics/Chart';
 import { Container, Stack } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
-import { AxisOptions } from 'react-charts';
-
-const primaryAxis: AxisOptions<Datum> = {
-    getValue: (datum) => datum.cohort,
-};
-const participantsSecondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.value,
-        stacked: true,
-        formatters: {
-            scale: (value) => (value % 1 === 0 ? `${value}` : ''),
-        },
-    },
-];
-const ratingSystemsSecondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.value,
-        formatters: {
-            scale: (value) => (value % 1 === 0 ? `${value}` : ''),
-        },
-    },
-];
-const decimalSecondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.value,
-    },
-];
-
-function getTimeSecondaryAxes(
-    t: (key: string, values?: Record<string, string | number>) => string,
-): AxisOptions<Datum>[] {
-    return [
-        {
-            scaleType: 'linear',
-            getValue: (datum) => datum.value,
-            formatters: {
-                scale: (value: number) => formatTime(value, t),
-            },
-        },
-    ];
-}
 
 function getSeries(
     label: string,
@@ -136,7 +92,6 @@ export function StatisticsPage() {
     const t = useTranslations('scoreboard.stats');
     const tCommon = useTranslations('common');
     const tRating = useTranslations('enums.ratingSystem');
-    const timeSecondaryAxes = useMemo(() => getTimeSecondaryAxes(tCommon), [tCommon]);
     const api = useApi();
     const request = useRequest<UserStatistics>();
     const { user } = useAuth();
@@ -330,105 +285,69 @@ export function StatisticsPage() {
             <ScoreboardViewSelector value='stats' />
 
             <Stack spacing={3}>
-                <Chart
-                    title={t('totalRatingChange')}
-                    series={totalRatingChangeData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
-                />
-                <Chart
-                    title={t('avgRatingChange')}
-                    series={avgRatingChangeData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
-                    hideSums
-                />
+                <Chart title={t('totalRatingChange')} series={totalRatingChangeData} />
+                <Chart title={t('avgRatingChange')} series={avgRatingChangeData} hideSums />
 
                 <Chart
                     title={t('totalTimeSpent')}
                     series={totalTimeData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={timeSecondaryAxes}
+                    valueFormatter={(v) => formatTime(v, tCommon)}
                     sumFormatter={(v) => formatTime(v, tCommon)}
                 />
                 <Chart
                     title={t('avgTimeSpent')}
                     series={avgTimeData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={timeSecondaryAxes}
+                    valueFormatter={(v) => formatTime(v, tCommon)}
                     hideSums
                 />
 
                 <Chart
                     title={t('avgRatingChangePerHour')}
                     series={avgRatingChangePerHourData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
                     hideSums
                 />
 
                 <Chart
                     title={t('numberOfGraduations')}
                     series={numGraduationsData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={participantsSecondaryAxes}
+                    stacked
+                    integerValues
                 />
 
                 <Chart
                     title={t('avgTimeToGraduate')}
                     series={graduationTimeData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={timeSecondaryAxes}
+                    valueFormatter={(v) => formatTime(v, tCommon)}
                     hideSums
                 />
 
                 <Chart
                     title={t('totalDojoScore')}
                     series={totalDojoScoreData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
                     sumFormatter={(sum) => `${Math.round(sum)}`}
                 />
-                <Chart
-                    title={t('avgDojoScore')}
-                    series={avgDojoScoreData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
-                    hideSums
-                />
+                <Chart title={t('avgDojoScore')} series={avgDojoScoreData} hideSums />
 
                 <Chart
                     title={t('avgRatingChangePerDojoPointTitle')}
                     series={avgRatingChangePerDojoScoreData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={decimalSecondaryAxes}
                     sumFormatter={() =>
                         `${Math.round((100 * totalRatingChange) / totalDojoPoints) / 100}`
                     }
                 />
 
-                <Chart
-                    title={t('participants')}
-                    series={participantsData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={participantsSecondaryAxes}
-                />
+                <Chart title={t('participants')} series={participantsData} stacked integerValues />
 
                 {user?.isAdmin && (
                     <Chart
                         title={t('subscriptionChanges')}
                         series={subscriptionChangesData}
-                        primaryAxis={primaryAxis}
-                        secondaryAxes={participantsSecondaryAxes}
+                        stacked
+                        integerValues
                     />
                 )}
 
-                <Chart
-                    title={t('ratingSystems')}
-                    series={ratingSystemsData}
-                    primaryAxis={primaryAxis}
-                    secondaryAxes={ratingSystemsSecondaryAxes}
-                />
+                <Chart title={t('ratingSystems')} series={ratingSystemsData} integerValues />
             </Stack>
         </Container>
     );
