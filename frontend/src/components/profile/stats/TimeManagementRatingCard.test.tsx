@@ -10,9 +10,22 @@ const mocks = vi.hoisted(() => ({ user: undefined as User | undefined, chart: vi
 vi.mock('@/auth/Auth', () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock('@/api/Api', () => ({ useApi: () => ({}) }));
 vi.mock('./TacticsScoreCard', () => ({ default: () => null }));
-vi.mock('react-charts', () => ({
-    Chart: ({ options }: { options: unknown }) => {
-        mocks.chart(options);
+vi.mock('@mui/x-charts', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@mui/x-charts')>()),
+    LineChart: ({
+        xAxis,
+        series,
+    }: {
+        xAxis: { data: Date[] }[];
+        series: { label: string; data: number[]; showMark: boolean }[];
+    }) => {
+        mocks.chart(
+            series.map(({ label, data, showMark }) => ({
+                label,
+                showMark,
+                data: xAxis[0].data.map((date, i) => ({ date, rating: data[i] })),
+            })),
+        );
         return <div data-testid='time-management-chart' />;
     },
 }));
@@ -70,17 +83,13 @@ describe('TimeManagementRatingCard', () => {
         expect(screen.getByText('1900')).toBeInTheDocument();
         expect(screen.getByText('12 games')).toBeInTheDocument();
         expect(screen.getByRole('img', { name: 'Time Management' })).toBeInTheDocument();
-        expect(mocks.chart).toHaveBeenCalledWith(
-            expect.objectContaining({
-                dark: false,
-                data: [
-                    {
-                        label: 'Rating',
-                        data: history.map((point) => ({ ...point, date: new Date(point.date) })),
-                    },
-                ],
-            }),
-        );
+        expect(mocks.chart).toHaveBeenCalledWith([
+            {
+                label: 'Rating',
+                showMark: false,
+                data: history.map((point) => ({ ...point, date: new Date(point.date) })),
+            },
+        ]);
     });
 
     it('marks provisional ratings and displays a single recorded point', () => {
@@ -95,11 +104,7 @@ describe('TimeManagementRatingCard', () => {
         expect(screen.getByText('1800?')).toBeInTheDocument();
         expect(screen.getByText('1 game')).toBeInTheDocument();
         expect(screen.getByTestId('time-management-chart')).toBeInTheDocument();
-        expect(mocks.chart).toHaveBeenCalledWith(
-            expect.objectContaining({
-                secondaryAxes: [expect.objectContaining({ showDatumElements: true })],
-            }),
-        );
+        expect(mocks.chart).toHaveBeenCalledWith([expect.objectContaining({ showMark: true })]);
     });
 
     it('shows the existing rating without a fake graph for profiles awaiting history backfill', () => {
@@ -122,12 +127,6 @@ describe('TimeManagementRatingCard', () => {
             />,
         );
         expect(screen.queryByText('Time Management')).not.toBeInTheDocument();
-    });
-
-    it('uses the viewer light-mode preference even on another member profile', () => {
-        mocks.user = makeUser({ username: 'viewer', enableLightMode: false });
-        renderWithIntl(<TimeManagementRatingCard user={profile()} />);
-        expect(mocks.chart).toHaveBeenCalledWith(expect.objectContaining({ dark: true }));
     });
 
     it('stays behind the Ratings tab Zen Mode gate', () => {

@@ -35,7 +35,7 @@ export function RatingHistoryChart({ data, label }: RatingHistoryChartProps) {
                 {
                     label,
                     data: data.map((d) => d.rating),
-                    showMark: false,
+                    showMark: data.length === 1,
                     valueFormatter: (value) => `${value ?? ''}`,
                 },
             ]}

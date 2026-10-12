@@ -1,9 +1,5 @@
-import {
-    getChartData,
-    getMemberLink,
-    primaryAxis,
-    secondaryAxes,
-} from '@/components/profile/stats/RatingCard';
+import { getChartData, getMemberLink } from '@/components/profile/stats/RatingCard';
+import { RatingHistoryChart } from '@/components/profile/stats/RatingHistoryChart';
 import { RatingSystem, formatRatingSystem, getNormalizedRating, isCustom } from '@/database/user';
 import { YearReviewRatingData } from '@/database/yearReview';
 import { ArrowDownward, ArrowUpward, Help, OpenInNew } from '@mui/icons-material';
@@ -20,17 +16,15 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { Chart } from 'react-charts';
 
 interface RatingCardProps {
     cohort: string;
     system: RatingSystem;
     data: YearReviewRatingData;
-    dark: boolean;
     period: string;
 }
 
-const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, period }) => {
+const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, period }) => {
     const t = useTranslations('profile.yearReview.ratingCard');
     const tRating = useTranslations('enums.ratingSystem');
     const endDateByPeriod = useMemo<Record<string, string>>(
@@ -462,15 +456,9 @@ const RatingCard: React.FC<RatingCardProps> = ({ cohort, system, data, dark, per
                             mt: 2,
                         }}
                     >
-                        <Chart
-                            options={{
-                                data: historyData,
-                                primaryAxis,
-                                secondaryAxes,
-                                interactionMode: 'closest',
-                                tooltip: false,
-                                dark,
-                            }}
+                        <RatingHistoryChart
+                            data={historyData[0]?.data ?? []}
+                            label={historyData[0]?.label}
                         />
                     </Box>
                 </Stack>
