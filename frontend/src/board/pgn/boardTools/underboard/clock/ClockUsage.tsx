@@ -110,7 +110,7 @@ function formatEval(value: number): string {
     }
 }
 
-interface RemainingSeries {
+export interface RemainingSeries {
     id: string;
     label: string;
     color: string;
@@ -119,7 +119,7 @@ interface RemainingSeries {
     moves: (Move | null)[];
 }
 
-function getRemainingSeries(
+export function getRemainingSeries(
     id: string,
     label: string,
     color: string,
@@ -136,6 +136,40 @@ function getRemainingSeries(
         values: aligned.map((d) => (id === 'eval' ? d?.eval : d?.seconds) ?? null),
         moves: aligned.map((d) => d?.move ?? null),
     };
+}
+
+/**
+ * Returns the series point closest to a click at (x, y), in pixels from the top left of the
+ * chart. The series values must be indexed by move number. Returns undefined if the click is
+ * outside the drawing area or no series has a point at the clicked move.
+ */
+export function getClosestMove(
+    series: RemainingSeries[],
+    { x, y }: { x: number; y: number },
+    drawingArea: { left: number; top: number; width: number; height: number },
+    xToMoveNumber: (x: number) => number,
+    valueToY: (yAxisId: RemainingSeries['yAxisId'], value: number) => number | undefined,
+): { distance: number; move: Move | null } | undefined {
+    const { left, top, width, height } = drawingArea;
+    if (x < left || x > left + width || y < top || y > top + height) {
+        return undefined;
+    }
+
+    const index = Math.round(xToMoveNumber(x));
+    let closest: { distance: number; move: Move | null } | undefined;
+    for (const s of series) {
+        const value = s.values[index];
+        const position =
+            value === null || value === undefined ? undefined : valueToY(s.yAxisId, value);
+        if (position === undefined) {
+            continue;
+        }
+        const distance = Math.abs(position - y);
+        if (!closest || distance < closest.distance) {
+            closest = { distance, move: s.moves[index] };
+        }
+    }
+    return closest;
 }
 
 export function formatTime(value: number): string {
@@ -862,26 +896,16 @@ function ClosestMoveClickHandler({
 
         const onClickChart = (event: MouseEvent) => {
             const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            const { left, top, width, height } = drawingArea;
-            if (x < left || x > left + width || y < top || y > top + height) {
-                return;
-            }
-
-            const index = Math.round(xScale.invert(x));
-            let closest: { distance: number; move: Move | null } | undefined;
-            for (const s of series) {
-                const value = s.values[index];
-                const axis = yAxis[s.yAxisId];
-                if (value === null || value === undefined || !axis) {
-                    continue;
-                }
-                const distance = Math.abs(getValueToPositionMapper(axis.scale)(value) - y);
-                if (!closest || distance < closest.distance) {
-                    closest = { distance, move: s.moves[index] };
-                }
-            }
+            const closest = getClosestMove(
+                series,
+                { x: event.clientX - rect.left, y: event.clientY - rect.top },
+                drawingArea,
+                (x) => xScale.invert(x),
+                (yAxisId, value) => {
+                    const axis = yAxis[yAxisId];
+                    return axis ? getValueToPositionMapper(axis.scale)(value) : undefined;
+                },
+            );
             if (closest) {
                 onClick(closest.move);
             }
