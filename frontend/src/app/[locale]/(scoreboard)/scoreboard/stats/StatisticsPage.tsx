@@ -96,6 +96,10 @@ export function StatisticsPage() {
     const request = useRequest<UserStatistics>();
     const { user } = useAuth();
 
+    // The time charts are in hours so that their axes tick at whole hours. Ticks in minutes,
+    // like 16h 40m, can be longer than the end labels that MUI X sizes the axis by.
+    const formatHours = (hours: number) => formatTime(Math.round(hours * 60), tCommon);
+
     useEffect(() => {
         if (!request.isSent()) {
             request.onStart();
@@ -131,7 +135,7 @@ export function StatisticsPage() {
         return getSeries(
             t('totalTime'),
             request.data,
-            (d, c) => d.cohorts[c].activeMinutesSpent + d.cohorts[c].inactiveMinutesSpent,
+            (d, c) => (d.cohorts[c].activeMinutesSpent + d.cohorts[c].inactiveMinutesSpent) / 60,
         );
     }, [request.data, t]);
 
@@ -141,7 +145,8 @@ export function StatisticsPage() {
             request.data,
             (d, c) =>
                 (d.cohorts[c].activeMinutesSpent + d.cohorts[c].inactiveMinutesSpent) /
-                (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants),
+                (d.cohorts[c].activeParticipants + d.cohorts[c].inactiveParticipants) /
+                60,
         );
     }, [request.data, t]);
 
@@ -164,7 +169,7 @@ export function StatisticsPage() {
         return getSeries(
             t('avgTimeToGraduate'),
             request.data,
-            (d, c) => d.cohorts[c].graduationMinutes / d.cohorts[c].numGraduations,
+            (d, c) => d.cohorts[c].graduationMinutes / d.cohorts[c].numGraduations / 60,
         );
     }, [request.data, t]);
 
@@ -291,13 +296,15 @@ export function StatisticsPage() {
                 <Chart
                     title={t('totalTimeSpent')}
                     series={totalTimeData}
-                    valueFormatter={(v) => formatTime(v, tCommon)}
-                    sumFormatter={(v) => formatTime(v, tCommon)}
+                    valueFormatter={formatHours}
+                    integerTicks
+                    sumFormatter={formatHours}
                 />
                 <Chart
                     title={t('avgTimeSpent')}
                     series={avgTimeData}
-                    valueFormatter={(v) => formatTime(v, tCommon)}
+                    valueFormatter={formatHours}
+                    integerTicks
                     hideSums
                 />
 
@@ -311,13 +318,14 @@ export function StatisticsPage() {
                     title={t('numberOfGraduations')}
                     series={numGraduationsData}
                     stacked
-                    integerValues
+                    integerTicks
                 />
 
                 <Chart
                     title={t('avgTimeToGraduate')}
                     series={graduationTimeData}
-                    valueFormatter={(v) => formatTime(v, tCommon)}
+                    valueFormatter={formatHours}
+                    integerTicks
                     hideSums
                 />
 
@@ -336,18 +344,18 @@ export function StatisticsPage() {
                     }
                 />
 
-                <Chart title={t('participants')} series={participantsData} stacked integerValues />
+                <Chart title={t('participants')} series={participantsData} stacked integerTicks />
 
                 {user?.isAdmin && (
                     <Chart
                         title={t('subscriptionChanges')}
                         series={subscriptionChangesData}
                         stacked
-                        integerValues
+                        integerTicks
                     />
                 )}
 
-                <Chart title={t('ratingSystems')} series={ratingSystemsData} integerValues />
+                <Chart title={t('ratingSystems')} series={ratingSystemsData} integerTicks />
             </Stack>
         </Container>
     );

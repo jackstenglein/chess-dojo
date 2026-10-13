@@ -27,6 +27,7 @@ export function RatingHistoryChart({ data, label }: RatingHistoryChartProps) {
                 {
                     valueFormatter: (value: number) => `${value}`,
                     tickNumber: 8,
+                    tickMinStep: 1,
                     width: 'auto',
                     tickLabelStyle: { fontSize: 10 },
                 },

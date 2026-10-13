@@ -17,7 +17,7 @@ interface ChartProps {
     title: string;
     series: Series[];
     valueFormatter?: (value: number) => string;
-    integerValues?: boolean;
+    integerTicks?: boolean;
     stacked?: boolean;
     hideSums?: boolean;
     sumFormatter?: (sum: number) => string;
@@ -27,7 +27,7 @@ const Chart: React.FC<ChartProps> = ({
     title,
     series,
     valueFormatter,
-    integerValues,
+    integerTicks,
     stacked,
     hideSums,
     sumFormatter,
@@ -86,7 +86,7 @@ const Chart: React.FC<ChartProps> = ({
                         valueFormatter,
                         width: 'auto',
                         tickNumber: 5,
-                        tickMinStep: integerValues ? 1 : undefined,
+                        tickMinStep: integerTicks ? 1 : undefined,
                         tickLabelStyle: { fontSize: 10 },
                     },
                 ]}
