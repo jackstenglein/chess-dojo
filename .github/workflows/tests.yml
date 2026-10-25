@@ -112,6 +112,7 @@ jobs:
         run: pnpm test:playwright
         env:
           CI: true
+          LICHESS_API_TOKEN: ${{ secrets.LICHESS_API_TOKEN }}
 
       - name: Save Playwright Report
         uses: actions/upload-artifact@v5
