@@ -42,6 +42,7 @@ export function EditTimelinEntryDialog({
     );
 
     const requirement = isCustom ? customTask : fetchedRequirement;
+    const isOrphanedEntry = isCustom && !customTask;
 
     const {
         errors,
@@ -64,6 +65,28 @@ export function EditTimelinEntryDialog({
     });
 
     const index = items.findIndex((v) => v.entry.id === entry.id);
+
+    const onDeleteOrphanedEntry = async () => {
+        deleteRequest.onStart();
+        try {
+            await api.updateUserTimeline({
+                requirementId: entry.requirementId,
+                progress: {
+                    requirementId: entry.requirementId,
+                    counts: {},
+                    minutesSpent: {},
+                    updatedAt: '',
+                },
+                updated: [],
+                deleted: [entry],
+            });
+            onDeleteEntry(entry);
+            deleteRequest.onSuccess(t('entryDeleted'));
+            onClose();
+        } catch (err) {
+            deleteRequest.onFailure(err);
+        }
+    };
 
     const onClearRestDay = async () => {
         deleteRequest.onStart();
@@ -105,6 +128,36 @@ export function EditTimelinEntryDialog({
                     </Button>
                     <Button loading={deleteRequest.isLoading()} onClick={onClearRestDay}>
                         {t('clearRestDay')}
+                    </Button>
+                </DialogActions>
+
+                <RequestSnackbar request={deleteRequest} />
+            </Dialog>
+        );
+    }
+
+    if (isOrphanedEntry) {
+        return (
+            <Dialog
+                open
+                onClose={deleteRequest.isLoading() ? undefined : onClose}
+                fullWidth
+                maxWidth='sm'
+            >
+                <DialogTitle>{t('deletedTaskTitle')}</DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ mt: 1 }}>{t('deletedTaskDescription')}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button disabled={deleteRequest.isLoading()} onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button
+                        color='error'
+                        loading={deleteRequest.isLoading()}
+                        onClick={onDeleteOrphanedEntry}
+                    >
+                        {t('deleteEntry')}
                     </Button>
                 </DialogActions>
 
