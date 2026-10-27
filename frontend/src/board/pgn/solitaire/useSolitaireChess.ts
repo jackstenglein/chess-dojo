@@ -333,7 +333,7 @@ function waitForOpponentMove({
     delay?: number;
 }) {
     board?.set({
-        movable: {},
+        movable: { color: 'both', dests: new Map() },
         premovable: { enabled: false },
     });
     setCurrentMove(move);

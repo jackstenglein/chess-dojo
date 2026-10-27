@@ -3238,7 +3238,8 @@
             "historyEmpty": "Du hast noch keine Dojo Rush-Läufe abgeschlossen.",
             "loadMore": "Mehr laden",
             "incorrectMoveComment": "Falsche Vermutung",
-            "incorrectMoveCommentDuringRun": "Falsche Vermutung während des Laufs"
+            "incorrectMoveCommentDuringRun": "Falsche Vermutung während des Laufs",
+            "tooltipSettings": "Einstellungen"
         },
         "squareColors": {
             "title": "Feldfarbe Drill",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "Flucht",
                 "keyTab": "Registerkarte",
                 "keyBackspace": "Rücktaste",
-                "fieldRequired": "Dieses Feld ist erforderlich"
+                "fieldRequired": "Dieses Feld ist erforderlich",
+                "solitaire": {
+                    "correctSoundLabel": "Bei korrekter Bewegung Ton abspielen.",
+                    "incorrectSoundLabel": "Bei falscher Bewegung einen Ton abspielen",
+                    "none": "Keiner",
+                    "bell": "Glocke",
+                    "rising5th": "Aufsteigender Fünfter",
+                    "rising6th": "Aufsteigender 6.",
+                    "warmChord": "Warmer Akkord",
+                    "boss": "Bauss",
+                    "buzz": "Summen"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Kommentare anzeigen von",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "Zug {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Bei korrekter Bewegung Ton abspielen.",
+                    "incorrectSoundLabel": "Bei falscher Bewegung einen Ton abspielen",
+                    "none": "Keiner",
+                    "bell": "Glocke",
+                    "rising5th": "Aufsteigender Fünfter",
+                    "rising6th": "Aufsteigender 6.",
+                    "warmChord": "Warmer Akkord",
+                    "boss": "Bauss",
+                    "buzz": "Summen"
+                },
                 "solitaireChessTitle": "Solitaire Schach (Zug erraten)",
                 "solitaireChessDescription": "Teste dein Verständnis (oder Gedächtnis) dieses Spiels, indem du die Züge errätst. Das Starten dieses Modus verbirgt den PGN-Text, bis du den nächsten Zug richtig auswählst.",
                 "playAsLabel": "Spiele als",

@@ -3238,7 +3238,8 @@
             "historyEmpty": "[T] You haven't completed any Dojo Rush runs yet.",
             "loadMore": "[T] Load More",
             "incorrectMoveComment": "[T] Incorrect guess",
-            "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run"
+            "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run",
+            "tooltipSettings": "[T] Settings"
         },
         "squareColors": {
             "title": "[T] Square Color Drill",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "[T] Escape",
                 "keyTab": "[T] Tab",
                 "keyBackspace": "[T] Backspace",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                }
             },
             "comments": {
                 "showCommentsLabel": "[T] Show Comments From",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "[T] Move {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                },
                 "solitaireChessTitle": "[T] Solitaire Chess (Guess the Move)",
                 "solitaireChessDescription": "[T] Test your understanding (or memory) of this game by guessing the moves. Starting this mode will hide the PGN text until you correctly pick the next move.",
                 "playAsLabel": "[T] Play As",

@@ -3238,7 +3238,8 @@
             "historyEmpty": "Todavía no has completado ninguna partida de Dojo Rush.",
             "loadMore": "Cargar más",
             "incorrectMoveComment": "Suposición incorrecta",
-            "incorrectMoveCommentDuringRun": "Suposición incorrecta durante la carrera."
+            "incorrectMoveCommentDuringRun": "Suposición incorrecta durante la carrera.",
+            "tooltipSettings": "Ajustes"
         },
         "squareColors": {
             "title": "Ejercicio de colores de casillas",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "Escape",
                 "keyTab": "Tab",
                 "keyBackspace": "Retroceso",
-                "fieldRequired": "Este campo es obligatorio"
+                "fieldRequired": "Este campo es obligatorio",
+                "solitaire": {
+                    "correctSoundLabel": "Reproducir sonido en el movimiento correcto",
+                    "incorrectSoundLabel": "Reproducir sonido en movimiento incorrecto",
+                    "none": "Ninguno",
+                    "bell": "Campana",
+                    "rising5th": "Ascendiendo al 5.º puesto",
+                    "rising6th": "Ascendiendo al 6º puesto",
+                    "warmChord": "Acorde cálido",
+                    "boss": "Bauss",
+                    "buzz": "Zumbido"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Mostrar comentarios de",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "Jugada {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Reproducir sonido en el movimiento correcto",
+                    "incorrectSoundLabel": "Reproducir sonido en movimiento incorrecto",
+                    "none": "Ninguno",
+                    "bell": "Campana",
+                    "rising5th": "Ascendiendo al 5.º puesto",
+                    "rising6th": "Ascendiendo al 6º puesto",
+                    "warmChord": "Acorde cálido",
+                    "boss": "Bauss",
+                    "buzz": "Zumbido"
+                },
                 "solitaireChessTitle": "Ajedrez solitario (adivina la jugada)",
                 "solitaireChessDescription": "Pon a prueba tu comprensión (o memoria) de esta partida adivinando las jugadas. Al iniciar este modo se ocultará el texto PGN hasta que aciertes la siguiente jugada.",
                 "playAsLabel": "Jugar con",

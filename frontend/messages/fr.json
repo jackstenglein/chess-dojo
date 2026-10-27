@@ -3238,7 +3238,8 @@
             "historyEmpty": "Vous n'avez encore terminé aucune partie de Dojo Rush.",
             "loadMore": "Charger plus",
             "incorrectMoveComment": "Mauvaise supposition",
-            "incorrectMoveCommentDuringRun": "Mauvaise réponse pendant la course"
+            "incorrectMoveCommentDuringRun": "Mauvaise réponse pendant la course",
+            "tooltipSettings": "Paramètres"
         },
         "squareColors": {
             "title": "Exercice de couleur des cases",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "Échap",
                 "keyTab": "Tab",
                 "keyBackspace": "Retour arrière",
-                "fieldRequired": "Ce champ est obligatoire"
+                "fieldRequired": "Ce champ est obligatoire",
+                "solitaire": {
+                    "correctSoundLabel": "Jouer un son lors du bon mouvement",
+                    "incorrectSoundLabel": "Émettre un son en cas de mouvement incorrect",
+                    "none": "Aucun",
+                    "bell": "Cloche",
+                    "rising5th": "5e en hausse",
+                    "rising6th": "6ème en hausse",
+                    "warmChord": "Accord chaleureux",
+                    "boss": "Bauss",
+                    "buzz": "Bourdonner"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Afficher les commentaires de",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "Coup {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Jouer un son lors du bon mouvement",
+                    "incorrectSoundLabel": "Émettre un son en cas de mouvement incorrect",
+                    "none": "Aucun",
+                    "bell": "Cloche",
+                    "rising5th": "5e en hausse",
+                    "rising6th": "6ème en hausse",
+                    "warmChord": "Accord chaleureux",
+                    "boss": "Bauss",
+                    "buzz": "Bourdonner"
+                },
                 "solitaireChessTitle": "Échecs en solitaire (devine le coup)",
                 "solitaireChessDescription": "Teste ta compréhension (ou ta mémoire) de cette partie en devinant les coups. Démarrer ce mode masquera le texte PGN jusqu'à ce que tu choisisses correctement le prochain coup.",
                 "playAsLabel": "Jouer avec",

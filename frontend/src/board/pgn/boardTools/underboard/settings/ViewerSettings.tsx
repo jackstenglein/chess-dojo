@@ -1,4 +1,9 @@
 import {
+    SOLITAIRE_DEFAULT_CORRECT_SOUND,
+    SOLITAIRE_DEFAULT_INCORRECT_SOUND,
+    SolitaireSound,
+} from '@/board/pgn/solitaire/useSolitaireChess';
+import {
     CORRECT_SOUND_KEY,
     INCORRECT_SOUND_KEY,
 } from '@/components/puzzles/settings/puzzleSettingsKeys';
@@ -13,11 +18,6 @@ import {
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import {
-    SOLITAIRE_DEFAULT_CORRECT_SOUND,
-    SOLITAIRE_DEFAULT_INCORRECT_SOUND,
-    SolitaireSound,
-} from 'src/board/pgn/solitaire/useSolitaireChess';
 import { useLocalStorage } from 'usehooks-ts';
 import KeyboardShortcuts, { KeyboardShortcutsProps } from './KeyboardShortcuts';
 import { CoordinateSize, CoordinateSizeKey } from './viewerSettingsConstants';

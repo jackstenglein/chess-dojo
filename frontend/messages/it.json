@@ -3238,7 +3238,8 @@
             "historyEmpty": "Non hai ancora completato nessuna partita di Dojo Rush.",
             "loadMore": "Carica altro",
             "incorrectMoveComment": "Tentativo errato",
-            "incorrectMoveCommentDuringRun": "Ipotesi errata durante la corsa"
+            "incorrectMoveCommentDuringRun": "Ipotesi errata durante la corsa",
+            "tooltipSettings": "Impostazioni"
         },
         "squareColors": {
             "title": "Esercizio sul colore delle case",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "Esc",
                 "keyTab": "Tab",
                 "keyBackspace": "Backspace",
-                "fieldRequired": "Questo campo è obbligatorio"
+                "fieldRequired": "Questo campo è obbligatorio",
+                "solitaire": {
+                    "correctSoundLabel": "Riproduci il suono al movimento corretto",
+                    "incorrectSoundLabel": "Riproduci un suono in caso di mossa errata",
+                    "none": "Nessuno",
+                    "bell": "Campana",
+                    "rising5th": "Rising 5th",
+                    "rising6th": "Rising 6th",
+                    "warmChord": "Accordo caldo",
+                    "boss": "Bauss",
+                    "buzz": "Buzz"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Mostra commenti da",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "Mossa {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Riproduci il suono al movimento corretto",
+                    "incorrectSoundLabel": "Riproduci un suono in caso di mossa errata",
+                    "none": "Nessuno",
+                    "bell": "Campana",
+                    "rising5th": "Rising 5th",
+                    "rising6th": "Rising 6th",
+                    "warmChord": "Accordo caldo",
+                    "boss": "Bauss",
+                    "buzz": "Buzz"
+                },
                 "solitaireChessTitle": "Scacchi solitari (Indovina la mossa)",
                 "solitaireChessDescription": "Metti alla prova la tua comprensione (o memoria) di questa partita indovinando le mosse. Avviando questa modalità il testo PGN verrà nascosto finché non scegli correttamente la mossa successiva.",
                 "playAsLabel": "Gioca come",

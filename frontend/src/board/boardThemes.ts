@@ -14,7 +14,7 @@ interface CoordinateSx {
     '--coordinate-opacity': number;
 }
 
-interface PieceSx {
+export interface PieceSx {
     '--white-pawn': string;
     '--white-bishop': string;
     '--white-knight': string;

@@ -3238,7 +3238,8 @@
             "historyEmpty": "Você ainda não concluiu nenhuma partida de Dojo Rush.",
             "loadMore": "Carregar mais",
             "incorrectMoveComment": "Palpite incorreto",
-            "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida"
+            "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida",
+            "tooltipSettings": "Configurações"
         },
         "squareColors": {
             "title": "Treino de cor das casas",
@@ -3932,7 +3933,18 @@
                 "keyEscape": "Escape",
                 "keyTab": "Tab",
                 "keyBackspace": "Backspace",
-                "fieldRequired": "Este campo é obrigatório"
+                "fieldRequired": "Este campo é obrigatório",
+                "solitaire": {
+                    "correctSoundLabel": "Reproduza o som ao fazer o movimento correto.",
+                    "incorrectSoundLabel": "Reproduza um som ao fazer um movimento incorreto.",
+                    "none": "Nenhum",
+                    "bell": "Sino",
+                    "rising5th": "Subindo para o 5º",
+                    "rising6th": "Subindo para o 6º",
+                    "warmChord": "Acorde quente",
+                    "boss": "Bauss",
+                    "buzz": "Zumbido"
+                }
             },
             "comments": {
                 "showCommentsLabel": "Mostrar comentários de",
@@ -4112,6 +4124,17 @@
                 "moveTooltip": "Lance {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "Reproduza o som ao fazer o movimento correto.",
+                    "incorrectSoundLabel": "Reproduza um som ao fazer um movimento incorreto.",
+                    "none": "Nenhum",
+                    "bell": "Sino",
+                    "rising5th": "Subindo para o 5º",
+                    "rising6th": "Subindo para o 6º",
+                    "warmChord": "Acorde quente",
+                    "boss": "Bauss",
+                    "buzz": "Zumbido"
+                },
                 "solitaireChessTitle": "Xadrez solitário (adivinhe o lance)",
                 "solitaireChessDescription": "Teste sua compreensão (ou memória) desta partida adivinhando os lances. Ao iniciar este modo, o texto PGN ficará oculto até você escolher corretamente o próximo lance.",
                 "playAsLabel": "Jogar com",
