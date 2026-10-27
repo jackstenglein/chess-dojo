@@ -137,6 +137,7 @@ function RetryBoard({
                         onComplete: () => setComplete(true),
                         addWrongMoves: true,
                         incorrectMoveComment: t('incorrectMoveComment'),
+                        enableEngine: true,
                     })
                 }
                 slots={{
@@ -330,17 +331,19 @@ function RetryAfterPgnText({ nextHref, reviewHref }: { nextHref?: string; review
     const t = useTranslations('puzzles.rush');
     const { solitaire } = useChess();
 
-    if (solitaire?.complete) {
+    if (solitaire?.complete || !solitaire?.enabled) {
         return (
             <Stack>
                 <Divider sx={{ width: 1 }} />
+                {solitaire?.complete && (
+                    <Typography color='success' sx={{ fontWeight: 'bold', ml: 2, mt: 1.5 }}>
+                        {t('solved')}
+                    </Typography>
+                )}
                 <Stack
                     direction='row'
                     sx={{ my: 1, px: 1, gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
                 >
-                    <Typography color='success' sx={{ fontWeight: 'bold', mr: 1 }}>
-                        {t('solved')}
-                    </Typography>
                     {nextHref && (
                         <Button component={Link} href={nextHref}>
                             {t('nextPuzzle')}

@@ -72,10 +72,12 @@ export interface UseSolitaireChessResponse {
     onMove: (board: BoardApi, chess: Chess, primMove: PrimitiveMove) => void;
     /** The results of the solitaire mode. */
     results: SolitaireResults;
+    /** Whether to display the engine in solitaire mode. If displayed, turning on the engine will turn off solitare mode. */
+    enableEngine: boolean;
 }
 
 export type SolitaireChessOptions = Partial<
-    Pick<UseSolitaireChessResponse, 'playAs' | 'addWrongMoves'>
+    Pick<UseSolitaireChessResponse, 'playAs' | 'addWrongMoves' | 'enableEngine'>
 > & {
     /** The delay before the first move is played by the computer, if applicable. */
     firstMoveDelayMs?: number;
@@ -116,6 +118,7 @@ export function useSolitaireChess(
     );
     const t = useTranslations('analysisBoard.underboard.tools');
     const [incorrectMoveComment, setIncorrectMoveComment] = useState(t('incorrectMoveComment'));
+    const [enableEngine, setEnableEngine] = useState(false);
 
     const start = useCallback(
         (move: Move | null, opts?: SolitaireChessOptions) => {
@@ -125,6 +128,7 @@ export function useSolitaireChess(
             if (opts?.addWrongMoves !== undefined) {
                 setAddWrongMoves(opts.addWrongMoves);
             }
+            setEnableEngine(opts?.enableEngine ?? false);
             setIncorrectMoveComment(opts?.incorrectMoveComment ?? t('incorrectMoveComment'));
             allowDifferentMates.current = opts?.allowDifferentMates ?? false;
             onWrongMove.current = opts?.onWrongMove;
@@ -262,8 +266,20 @@ export function useSolitaireChess(
             stop,
             onMove,
             results,
+            enableEngine,
         }),
-        [addWrongMoves, enabled, onMove, start, stop, currentMove, playAs, results, complete],
+        [
+            addWrongMoves,
+            enabled,
+            onMove,
+            start,
+            stop,
+            currentMove,
+            playAs,
+            results,
+            complete,
+            enableEngine,
+        ],
     );
 }
 
