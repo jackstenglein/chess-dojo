@@ -10,15 +10,15 @@ import { useTranslations } from 'next-intl';
  */
 export default function ExamLandingPage() {
     const t = useTranslations('exams.landing');
-    const tNavbar = useTranslations('navbar');
     return (
         <Container maxWidth='lg' sx={{ py: 5 }}>
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <ExamCard
-                    name={t('tacticsTests')}
+                    name={t('puzzleRush')}
                     description={t('allRatings')}
-                    href='/tests/tactics'
-                    icon={QueenIcon}
+                    href='/puzzles/rush'
+                    icon={Bolt}
+                    badge={<Chip label={t('beta')} color='success' />}
                 />
 
                 <ExamCard
@@ -29,11 +29,10 @@ export default function ExamLandingPage() {
                 />
 
                 <ExamCard
-                    name={t('puzzleRush')}
+                    name={t('tacticsTests')}
                     description={t('allRatings')}
-                    href='/puzzles/rush'
-                    icon={Bolt}
-                    badge={<Chip label={tNavbar('new')} color='success' />}
+                    href='/tests/tactics'
+                    icon={QueenIcon}
                 />
 
                 <ExamCard

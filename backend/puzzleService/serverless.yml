@@ -146,6 +146,32 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRushResultsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzleRushSummariesTable.Arn
+
+  getPuzzleRushSummary:
+    handler: puzzleRush/summary.getHandler
+    events:
+      - httpApi:
+          path: /puzzle/rush/summary
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzleRushSummariesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
         Resource: !GetAtt PuzzleRushResultsTable.Arn
 
   listPuzzleRushSessions:
@@ -270,3 +296,21 @@ resources:
             KeyType: HASH
           - AttributeName: createdAt
             KeyType: RANGE
+
+    PuzzleRushSummariesTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-puzzle-rush-summaries
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH

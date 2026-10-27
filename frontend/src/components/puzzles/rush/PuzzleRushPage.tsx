@@ -40,6 +40,7 @@ import { ShortcutAction } from 'src/board/pgn/boardTools/underboard/settings/Sho
 import ViewerSettings, {
     ViewerSetting,
 } from 'src/board/pgn/boardTools/underboard/settings/ViewerSettings';
+import { PuzzleRushBests, PuzzleRushIndexes } from './PuzzleRushStanding';
 import {
     PuzzleRushAttemptsTable,
     puzzleRushRetryHref,
@@ -47,6 +48,7 @@ import {
     PuzzleRushStatsGrid,
 } from './PuzzleRushSummary';
 import { usePuzzleRush, UsePuzzleRushResponse } from './usePuzzleRush';
+import { usePuzzleRushBests } from './usePuzzleRushBests';
 
 /** Renders the puzzle rush page. Requires authentication. */
 export function PuzzleRushPage() {
@@ -96,6 +98,7 @@ function PuzzleRush() {
 /** The landing screen shown before a run begins. */
 function IdleScreen({ onStart }: { onStart: () => void }) {
     const t = useTranslations('puzzles.rush');
+    const bestsRequest = usePuzzleRushBests();
 
     return (
         <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
@@ -132,6 +135,12 @@ function IdleScreen({ onStart }: { onStart: () => void }) {
                     </Typography>
                 </Stack>
             </Stack>
+
+            {bestsRequest.data && (
+                <Box sx={{ my: 4 }}>
+                    <PuzzleRushBests bests={bestsRequest.data} />
+                </Box>
+            )}
 
             <Stack direction='row' spacing={2} sx={{ justifyContent: 'center' }}>
                 <Button variant='contained' size='large' onClick={onStart} sx={{ px: 6, py: 1.5 }}>
@@ -422,6 +431,7 @@ function FinishedScreen({ rush }: { rush: UsePuzzleRushResponse }) {
     const t = useTranslations('puzzles.rush');
     const { stats, attempts, endReason, createdAt, submitRequest, start, retrySubmit } = rush;
     const saved = submitRequest.data !== undefined;
+    const standing = submitRequest.data?.standing;
     const totalTimeSeconds = PUZZLE_RUSH_DURATION_SECONDS - rush.secondsRemaining;
 
     return (
@@ -432,10 +442,17 @@ function FinishedScreen({ rush }: { rush: UsePuzzleRushResponse }) {
                 </Typography>
 
                 <PuzzleRushStatsGrid
-                    stats={submitRequest.data ?? stats}
+                    stats={submitRequest.data?.session ?? stats}
                     endReason={endReason}
                     totalTimeSeconds={totalTimeSeconds}
                 />
+
+                {standing && (
+                    <Stack spacing={3} sx={{ alignItems: 'center', width: 1 }}>
+                        <PuzzleRushIndexes standing={standing} />
+                        <PuzzleRushBests bests={standing.bests} />
+                    </Stack>
+                )}
 
                 <Stack
                     direction='row'

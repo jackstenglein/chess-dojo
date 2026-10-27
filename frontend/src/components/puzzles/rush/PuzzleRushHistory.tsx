@@ -11,6 +11,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import NotFoundPage from '@/NotFoundPage';
 import { PuzzleRushSession } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
+    Box,
     Button,
     Container,
     Paper,
@@ -26,7 +27,9 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { PuzzleRushBests } from './PuzzleRushStanding';
 import { puzzleRushReviewHref } from './PuzzleRushSummary';
+import { usePuzzleRushBests } from './usePuzzleRushBests';
 
 /** Renders a paginated list of the current user's puzzle rush runs. */
 export function PuzzleRushHistory() {
@@ -50,6 +53,7 @@ function PuzzleRushHistoryTable() {
     const { user } = useAuth();
     const router = useRouter();
     const request = useRequest<HistoryData>();
+    const bestsRequest = usePuzzleRushBests();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -100,6 +104,12 @@ function PuzzleRushHistoryTable() {
                     {t('newRun')}
                 </Button>
             </Stack>
+
+            {bestsRequest.data && (
+                <Box sx={{ mb: 3 }}>
+                    <PuzzleRushBests bests={bestsRequest.data} />
+                </Box>
+            )}
 
             {sessions.length === 0 ? (
                 <Typography

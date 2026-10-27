@@ -76,6 +76,11 @@ export const submitPuzzleRushSessionSchema = z.object({
      * page immediately after submitting.
      */
     createdAt: z.iso.datetime().optional(),
+    /**
+     * IANA timezone used to decide which calendar day and week the run belongs to.
+     * This is the player's timezone, or their browser timezone when they have not chosen one.
+     */
+    timeZone: z.string().min(1),
 });
 
 /** A request to submit a puzzle rush run. */
@@ -105,10 +110,75 @@ export interface PuzzleRushSession extends SubmitPuzzleRushSessionRequest, Puzzl
     createdAt: string;
 }
 
+/** A player's best solved-puzzle count in one window, and the run that set it. */
+export interface PuzzleRushScoreSlot {
+    /** The number of puzzles solved in the run. */
+    score: number;
+    /** The createdAt timestamp of the run that set this best. */
+    sessionCreatedAt: string;
+}
+
+/** The player's best solved-puzzle counts for the windows that are still current. */
+export interface PuzzleRushBests {
+    /** Best run among every saved run. */
+    allTime?: PuzzleRushScoreSlot;
+    /** Best run during the current ISO week in the player's timezone. */
+    week?: PuzzleRushScoreSlot;
+    /** Best run during the current calendar day in the player's timezone. */
+    day?: PuzzleRushScoreSlot;
+}
+
+/**
+ * Where a solved-puzzle count sits among the current player's own runs.
+ * The index is 1 plus the number of that player's runs in the window with a higher score.
+ * Tied scores share an index.
+ */
+export interface PuzzleRushStanding {
+    /** The number of puzzles solved in the run these standings describe. */
+    score: number;
+    /** 1-based index of this score among the player's runs in each window. */
+    index: {
+        allTime: number;
+        week: number;
+        day: number;
+    };
+    /** Personal bests after this run is included. */
+    bests: {
+        allTime: PuzzleRushScoreSlot;
+        week: PuzzleRushScoreSlot;
+        day: PuzzleRushScoreSlot;
+    };
+    /** True when this run holds the best score in that window. */
+    newBest: {
+        allTime: boolean;
+        week: boolean;
+        day: boolean;
+    };
+}
+
 /** The response to a request to submit a puzzle rush run. */
 export interface SubmitPuzzleRushSessionResponse {
     /** The saved run. */
     session: PuzzleRushSession;
+    /** This run's score, its index among the player's runs, and the player's bests. */
+    standing: PuzzleRushStanding;
+}
+
+/** Verifies the type of a request to read the current player's puzzle rush bests. */
+export const getPuzzleRushSummarySchema = z.object({
+    /**
+     * IANA timezone used to decide whether the stored week and day bests are still current.
+     */
+    timeZone: z.string().min(1),
+});
+
+/** A request to read the current player's puzzle rush bests. */
+export type GetPuzzleRushSummaryRequest = z.infer<typeof getPuzzleRushSummarySchema>;
+
+/** The response to a request to read the current player's puzzle rush bests. */
+export interface GetPuzzleRushSummaryResponse {
+    /** Bests for all time, the current week, and the current day. */
+    bests: PuzzleRushBests;
 }
 
 /** Verifies the type of a request to get a single puzzle rush run. */

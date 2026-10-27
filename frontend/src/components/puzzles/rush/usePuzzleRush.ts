@@ -2,14 +2,15 @@
 
 import { getPuzzleRushPuzzle, submitPuzzleRushSession } from '@/api/puzzleApi';
 import { Request, useRequest } from '@/api/Request';
+import { useAuth } from '@/auth/Auth';
 import { logger } from '@/logging/logger';
 import {
     PuzzleRushAttempt,
     PuzzleRushEndReason,
     PuzzleRushPuzzle,
     PuzzleRushResult,
-    PuzzleRushSession,
     PuzzleRushStats,
+    SubmitPuzzleRushSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     applyRushResult,
@@ -24,6 +25,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown } from 'usehooks-ts';
+import { puzzleRushTimeZone } from './usePuzzleRushBests';
 
 /** The phase of a puzzle rush run. */
 export type PuzzleRushPhase = 'idle' | 'loading' | 'running' | 'finished';
@@ -81,8 +83,8 @@ export interface UsePuzzleRushResponse {
     createdAt: string;
     /** The locally computed statistics for the run. */
     stats: PuzzleRushStats;
-    /** The request tracker for saving the run. Data is the server-saved session. */
-    submitRequest: Request<PuzzleRushSession>;
+    /** The request tracker for saving the run. Data includes the saved session and its standing. */
+    submitRequest: Request<SubmitPuzzleRushSessionResponse>;
     /** The request tracker for fetching puzzles. */
     fetchRequest: Request;
     /** Starts a new run. */
@@ -118,6 +120,8 @@ async function fetchPuzzle(
  * rating ladder, puzzle prefetching and saving the finished run.
  */
 export function usePuzzleRush(): UsePuzzleRushResponse {
+    const { user } = useAuth();
+    const timeZone = puzzleRushTimeZone(user?.timezoneOverride);
     const [phase, setPhase] = useState<PuzzleRushPhase>('idle');
     const [attempts, setAttempts] = useState<PuzzleRushAttempt[]>([]);
     const [strikes, setStrikes] = useState(0);
@@ -126,7 +130,7 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
     const [flash, setFlash] = useState<PuzzleRushResult>();
     const [endReason, setEndReason] = useState<PuzzleRushEndReason>();
     const [createdAt, setCreatedAt] = useState('');
-    const submitRequest = useRequest<PuzzleRushSession>();
+    const submitRequest = useRequest<SubmitPuzzleRushSessionResponse>();
     const fetchRequest = useRequest();
 
     const [secondsRemaining, { startCountdown, stopCountdown, resetCountdown }] = useCountdown({
@@ -163,11 +167,12 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
                 totalTimeSeconds: PUZZLE_RUSH_DURATION_SECONDS - secondsRef.current,
                 endReason: reason,
                 createdAt: state.createdAt,
+                timeZone,
             })
-                .then((response) => submitRequest.onSuccess(response.data.session))
+                .then((response) => submitRequest.onSuccess(response.data))
                 .catch((err: unknown) => submitRequest.onFailure(err));
         },
-        [submitRequest],
+        [submitRequest, timeZone],
     );
 
     const finish = useCallback(

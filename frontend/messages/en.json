@@ -3203,6 +3203,16 @@
             "statPercentage": "Accuracy",
             "statPerformanceRating": "Performance Rating",
             "statPeakRating": "Peak Rating",
+            "bestAllTime": "All-time best",
+            "bestThisWeek": "This week's best",
+            "bestToday": "Today's best",
+            "indexAllTime": "All time",
+            "indexThisWeek": "This week",
+            "indexToday": "Today",
+            "scoreIndex": "#{index}",
+            "newBestAllTime": "New all-time best",
+            "newBestThisWeek": "New best this week",
+            "newBestToday": "New best today",
             "totalTime": "Time: {time}",
             "endReason": {
                 "time": "Time ran out",
@@ -3326,7 +3336,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Endgame Tests",
             "squareColorDrill": "Square Color Drill",
-            "allRatings": "All Ratings"
+            "allRatings": "All Ratings",
+            "beta": "Beta"
         },
         "tactics": {
             "heading": "Tactics Tests"

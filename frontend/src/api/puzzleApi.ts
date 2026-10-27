@@ -4,20 +4,21 @@ import {
     SubmitMateInOneSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/mateInOne/api';
 import {
-    GetPuzzleRushPuzzleRequest,
-    GetPuzzleRushPuzzleResponse,
-    GetPuzzleRushSessionResponse,
-    ListPuzzleRushSessionsRequest,
-    ListPuzzleRushSessionsResponse,
-    SubmitPuzzleRushSessionRequest,
-    SubmitPuzzleRushSessionResponse,
-} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
-import {
     GetPuzzleHistoryRequest,
     GetPuzzleHistoryResponse,
     NextPuzzleRequest,
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
+import {
+    GetPuzzleRushPuzzleRequest,
+    GetPuzzleRushPuzzleResponse,
+    GetPuzzleRushSessionResponse,
+    GetPuzzleRushSummaryResponse,
+    ListPuzzleRushSessionsRequest,
+    ListPuzzleRushSessionsResponse,
+    SubmitPuzzleRushSessionRequest,
+    SubmitPuzzleRushSessionResponse,
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
     SubmitSquareColorSessionRequest,
     SubmitSquareColorSessionResponse,
@@ -108,6 +109,20 @@ export function submitPuzzleRushSession(
 ): Promise<AxiosResponse<SubmitPuzzleRushSessionResponse>> {
     return axiosService.post<SubmitPuzzleRushSessionResponse>(`/puzzle/rush/session`, request, {
         functionName: 'submitPuzzleRushSession',
+    });
+}
+
+/**
+ * Fetches the current user's puzzle rush bests.
+ * @param timeZone IANA timezone used to decide which week and day are current.
+ * @returns The all-time, weekly, and daily best solved-puzzle counts.
+ */
+export function getPuzzleRushSummary(
+    timeZone: string,
+): Promise<AxiosResponse<GetPuzzleRushSummaryResponse>> {
+    return axiosService.get<GetPuzzleRushSummaryResponse>(`/puzzle/rush/summary`, {
+        params: { timeZone },
+        functionName: 'getPuzzleRushSummary',
     });
 }
 
