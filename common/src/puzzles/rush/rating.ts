@@ -29,7 +29,7 @@ const MAX_RATING_INCREASE = 100;
  * The maximum rating increase after a correct puzzle, if the user
  * already has a strike.
  */
-const MAX_RATING_INCREASE_WITH_STRIKE = 50;
+const MAX_RATING_INCREASE_WITH_STRIKE = 100;
 
 /**
  * The state of the puzzle rush rating ladder. Each correct puzzle pushes a new

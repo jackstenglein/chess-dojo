@@ -91,14 +91,14 @@ describe('applyRushResult', () => {
         expect(currentRushRating(ladder)).toBe(300);
     });
 
-    it('caps the streak bonus after a loss', () => {
+    it('does not cap the streak bonus after a loss', () => {
         let ladder = initialRushLadder();
         ladder = applyRushResult(ladder, 'win');
         ladder = applyRushResult(ladder, 'win');
         ladder = applyRushResult(ladder, 'loss');
         ladder = applyRushResult(ladder, 'win');
         ladder = applyRushResult(ladder, 'win');
-        expect(currentRushRating(ladder)).toBe(450);
+        expect(currentRushRating(ladder)).toBe(460);
     });
 });
 
