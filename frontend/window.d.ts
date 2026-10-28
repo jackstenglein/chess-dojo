@@ -1,4 +1,4 @@
-import { Api } from 'chessground/api';
+import { Api } from '@lichess-org/chessground/api';
 
 export {}; // This makes the file a module, preventing global scope pollution if not intended.
 

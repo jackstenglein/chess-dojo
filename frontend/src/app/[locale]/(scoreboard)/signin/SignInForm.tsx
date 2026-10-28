@@ -2,6 +2,8 @@
 
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { Link } from '@/components/navigation/Link';
 import { useRouter } from '@/i18n/navigation';
 import { sanitizeRedirectUri } from '@/i18n/sanitizeRedirectUri';
@@ -56,6 +58,14 @@ export const SignInForm = () => {
 
     const onSocialSignIn = (provider: 'Google' | 'Apple') => {
         auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent) => {
@@ -195,6 +205,8 @@ export const SignInForm = () => {
                     />
 
                     <AppleButton onClick={() => onSocialSignIn('Apple')} />
+                    <ChesscomSignInButton onClick={onChesscomSignIn} />
+                    <LichessSignInButton onClick={onLichessSignIn} />
                 </Stack>
             </Stack>
         </Stack>
