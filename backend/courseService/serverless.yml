@@ -136,11 +136,69 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  reviews:
+    handler: reviews/main.go
+    events:
+      - httpApi:
+          path: /public/courses/{type}/{id}/reviews
+          method: get
+      - httpApi:
+          path: /courses/{type}/{id}/reviews
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /courses/{type}/{id}/reviews
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /courses/{type}/{id}/reviews
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+      - httpApi:
+          path: /courses/{type}/{id}/reviews
+          method: patch
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action: [dynamodb:GetItem]
+        Resource:
+          - !GetAtt CoursesTable.Arn
+          - ${param:UsersTableArn}
+      - Effect: Allow
+        Action: [dynamodb:GetItem, dynamodb:Query, dynamodb:PutItem, dynamodb:DeleteItem, dynamodb:UpdateItem]
+        Resource: !GetAtt CourseReviewsTable.Arn
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']
 
   Resources:
+    CourseReviewsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-course-reviews
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: courseKey
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: courseKey
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: RANGE
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If [IsProd, true, false]
     CoursesTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain

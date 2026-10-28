@@ -1,5 +1,6 @@
 'use client';
 
+import CourseReviews from '@/components/courses/CourseReviews';
 import { Link } from '@/components/navigation/Link';
 import { Course, displayCourseType } from '@/database/course';
 import { useRouter } from '@/hooks/useRouter';
@@ -168,6 +169,13 @@ const PurchaseCoursePage: React.FC<PurchaseCoursePageProps> = ({
                         )}
                 </Grid>
             </Stack>
+            {!preview && (
+                <CourseReviews
+                    key={`${course.type}/${course.id}`}
+                    type={course.type}
+                    id={course.id}
+                />
+            )}
         </Container>
     );
 };

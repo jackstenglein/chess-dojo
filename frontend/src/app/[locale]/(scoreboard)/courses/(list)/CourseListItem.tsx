@@ -1,6 +1,7 @@
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
+import CourseRatingSummary from '@/components/courses/CourseRatingSummary';
 import { Link } from '@/components/navigation/Link';
 import { Course, CoursePurchaseOption } from '@/database/course';
 import { RequirementCategory } from '@/database/requirement';
@@ -265,6 +266,14 @@ const CourseListItem: React.FC<CourseListItemProps> = ({
                     >
                         {course.name}
                     </Typography>
+
+                    {!preview && (
+                        <CourseRatingSummary
+                            key={`${course.type}/${course.id}`}
+                            type={course.type}
+                            id={course.id}
+                        />
+                    )}
 
                     <Stack
                         direction='row'

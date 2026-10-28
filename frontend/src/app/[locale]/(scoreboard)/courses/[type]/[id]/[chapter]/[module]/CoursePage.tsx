@@ -5,6 +5,7 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GetCourseResponse } from '@/api/courseApi';
 import { AuthStatus, useAuth, useFreeTier } from '@/auth/Auth';
+import CourseReviews from '@/components/courses/CourseReviews';
 import { Link } from '@/components/navigation/Link';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
@@ -199,6 +200,7 @@ export const CoursePage = ({
                     />
                 </Grid>
             </Grid>
+            <CourseReviews key={`${course.type}/${course.id}`} type={course.type} id={course.id} />
             <RequestSnackbar request={request} />
         </Container>
     );
