@@ -1,5 +1,6 @@
 'use client';
 
+import { RatingHistoryChart } from '@/components/profile/stats/RatingHistoryChart';
 import { Graduation } from '@/database/graduation';
 import { formatRatingSystem } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
@@ -10,38 +11,21 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useMemo } from 'react';
-import { AxisOptions, Chart, UserSerie } from 'react-charts';
 
 interface Datum {
     date: Date;
     rating: number;
 }
 
-export const primaryAxis: AxisOptions<Datum> = {
-    scaleType: 'time',
-    getValue: (datum) => datum.date,
-};
-
-export const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.rating,
-        formatters: {
-            scale: (value) => `${value}`,
-        },
-    },
-];
-
-function getChartData(graduation: Graduation): UserSerie<Datum>[] {
+function getChartData(graduation: Graduation): Datum[] {
     const { ratingSystem: preferredSystem } = graduation;
 
-    const ratingHistory =
+    return (
         graduation.ratingHistories?.[preferredSystem]?.map(({ date, rating }) => ({
             rating,
             date: new Date(date),
-        })) ?? [];
-
-    return [{ label: 'Rating', data: ratingHistory }];
+        })) ?? []
+    );
 }
 
 function StatLabel({ children }: { children: ReactNode }) {
@@ -234,16 +218,7 @@ export default function GraduationCard({ graduation }: GraduationCardProps) {
                     gridArea: 'chart',
                 }}
             >
-                <Chart
-                    options={{
-                        data: historyData,
-                        primaryAxis,
-                        secondaryAxes,
-                        dark: true,
-                        interactionMode: 'closest',
-                        tooltip: false,
-                    }}
-                />
+                <RatingHistoryChart data={historyData} />
             </Box>
             <Stack
                 spacing={2}
