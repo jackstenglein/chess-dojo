@@ -45,10 +45,10 @@ test.describe('Graduations', () => {
 
     test('displays correct graduations for other timeframes', async ({ page }) => {
         await expect(page.getByTestId('graduates-timeframe-select')).toContainText(
-            'Graduation of 9/6/2023',
+            'Graduation of Sep 6, 2023',
         );
         await page.getByTestId('graduates-timeframe-select').click();
-        await page.getByText('Graduation of 8/30/2023').click();
+        await page.getByText('Graduation of Aug 30, 2023').click();
 
         await expect(
             page.getByTestId('recent-graduates-table').getByText('1–9 of 9'),
