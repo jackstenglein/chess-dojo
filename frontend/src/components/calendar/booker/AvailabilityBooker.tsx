@@ -259,7 +259,7 @@ const AvailabilityBooker: React.FC<AvailabilityBookerProps> = ({ availability })
                             <Field
                                 iconName='cohort'
                                 title={t('cohorts')}
-                                body={availability.cohorts.join(', ')}
+                                body={availability.cohorts?.join(', ') ?? t('allCohorts')}
                             />
 
                             <Field
