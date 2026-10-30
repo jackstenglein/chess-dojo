@@ -1,6 +1,6 @@
 import { Chess, Move } from '@jackstenglein/chess';
 import { describe, expect, it } from 'vitest';
-import { timeControlForMove } from './clock';
+import { maxClockSeconds, timeControlForMove } from './clock';
 
 function loadChess(timeControl: string | undefined, body: string): Chess {
     const header = timeControl === undefined ? '' : `[TimeControl "${timeControl}"]\n`;
@@ -61,5 +61,58 @@ describe('timeControlForMove', () => {
         expect(timeControlForMove(chess, moveAtPly(chess, 2))?.value).toBe('1/60');
         expect(timeControlForMove(chess, moveAtPly(chess, 3))?.value).toBe('2/120');
         expect(timeControlForMove(chess, moveAtPly(chess, 7))?.value).toBe('2/120');
+    });
+});
+
+/** Builds a PGN body of the given number of full moves, shuffling knights back and forth. */
+function shuffleKnights(fullMoves: number, clocks: Record<number, string> = {}): string {
+    const white = ['Nf3', 'Ng1'];
+    const black = ['Nf6', 'Ng8'];
+    let body = '';
+    for (let i = 0; i < fullMoves * 2; i++) {
+        const san = i % 2 === 0 ? white[(i / 2) % 2] : black[((i - 1) / 2) % 2];
+        body += i % 2 === 0 ? `${i / 2 + 1}. ${san} ` : `${san} `;
+        if (clocks[i + 1]) {
+            body += `{ [%clk ${clocks[i + 1]}] } `;
+        }
+    }
+    return `${body}*`;
+}
+
+describe('maxClockSeconds', () => {
+    it('returns undefined for every move without a time control or clocks', () => {
+        const chess = loadChess(undefined, '1. e4 e5 2. Nf3 *');
+        expect(maxClockSeconds(chess, chess.history())).toEqual([undefined, undefined, undefined]);
+    });
+
+    it('adds the increment to the previous clock of the same player', () => {
+        const chess = loadChess('600+5', shuffleKnights(2, { 1: '0:09:50', 2: '0:09:40' }));
+        expect(maxClockSeconds(chess, chess.history())).toEqual([605, 605, 595, 585]);
+    });
+
+    it('accumulates increments across moves without a clock (issue #2773)', () => {
+        const chess = loadChess('40/5400+30:1800+30', shuffleKnights(5, { 9: '1:32:00' }));
+        const max = maxClockSeconds(chess, chess.history());
+        // White's 5th move (ply 9) can have at most 1:30:00 + 5 * 30s = 1:32:30.
+        expect(max[8]).toBe(5400 + 5 * 30);
+        expect(max[9]).toBe(5400 + 5 * 30);
+    });
+
+    it('adds the next period time on the last move of a period', () => {
+        const chess = loadChess('40/5400+30:1800+30', shuffleKnights(41, { 77: '0:10:00' }));
+        const max = maxClockSeconds(chess, chess.history());
+        // White's 39th move had 10 minutes, so after move 40 white can have 10:00 + 30s + 30:00.
+        expect(max[78]).toBe(600 + 30 + 1800);
+        // Black never entered a clock, so has at most 1:30:00 + 40 * 30s + 30:00 after move 40.
+        expect(max[79]).toBe(5400 + 40 * 30 + 1800);
+        // The second period's increment applies from move 41.
+        expect(max[80]).toBe(600 + 30 + 1800 + 30);
+    });
+
+    it('repeats a final period that has a move limit', () => {
+        const chess = loadChess('2/600', shuffleKnights(4));
+        expect(maxClockSeconds(chess, chess.history())).toEqual([
+            600, 600, 1200, 1200, 1200, 1200, 1800, 1800,
+        ]);
     });
 });

@@ -88,3 +88,72 @@ export function timeControlForMove(chess: Chess, move: Move | undefined): TimeCo
     }
     return timeControls[timeControls.length - 1];
 }
+
+/**
+ * Returns the maximum clock time in seconds that each of the given moves can have,
+ * based on the time control and the earlier clock times of the same player. Moves
+ * without a clock time are assumed to have taken no time, so the increments and the
+ * time added at the start of a new period still accumulate across them. The clock
+ * of the last move of a period may include the time added for the next period.
+ * @param chess The chess instance containing the time control.
+ * @param moves The mainline moves of the game, starting from the first move.
+ * @returns The maximum clock time in seconds for each move, or undefined if unknown.
+ */
+export function maxClockSeconds(chess: Chess, moves: Move[]): (number | undefined)[] {
+    const timeControls = chess.header().tags.TimeControl?.items ?? [];
+    const initialSeconds = timeControls[0]?.seconds;
+    const prevSeconds = [initialSeconds, initialSeconds];
+
+    return moves.map((move, i) => {
+        const color = i % 2;
+        const { timeControl, nextTimeControl } = timeControlPeriodForMoveNumber(
+            timeControls,
+            Math.floor(i / 2) + 1,
+        );
+
+        let max = prevSeconds[color];
+        if (max !== undefined) {
+            max +=
+                Math.max(0, timeControl?.increment ?? 0) +
+                Math.max(0, nextTimeControl?.seconds ?? 0);
+        }
+
+        prevSeconds[color] = clockToSeconds(move.commentDiag?.clk) || max;
+        return max;
+    });
+}
+
+/**
+ * Returns the time control period that applies to the given full-move number. If the
+ * move is the last move of its period, the period that follows it is also returned.
+ * A final period with a move limit repeats until the end of the game.
+ * @param timeControls The time control periods of the game.
+ * @param moveNumber The 1-based full-move number.
+ */
+function timeControlPeriodForMoveNumber(
+    timeControls: TimeControl[],
+    moveNumber: number,
+): { timeControl?: TimeControl; nextTimeControl?: TimeControl } {
+    let moveCount = 0;
+    let idx = 0;
+    while (idx < timeControls.length) {
+        const timeControl = timeControls[idx];
+        if (!timeControl.moves || timeControl.moves <= 0) {
+            return { timeControl };
+        }
+        if (moveNumber <= moveCount + timeControl.moves) {
+            if (moveNumber === moveCount + timeControl.moves) {
+                return {
+                    timeControl,
+                    nextTimeControl: timeControls[Math.min(idx + 1, timeControls.length - 1)],
+                };
+            }
+            return { timeControl };
+        }
+        moveCount += timeControl.moves;
+        if (idx + 1 < timeControls.length) {
+            idx++;
+        }
+    }
+    return {};
+}
