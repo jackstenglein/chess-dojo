@@ -749,7 +749,10 @@
                 "ratingsUpdatedTooltip": "Os ratings são atualizados a cada 24 horas",
                 "graphsUpdatedNote": "*Os gráficos são atualizados semanalmente",
                 "ratingChartLabel": "Rating",
-                "customRatingDisplayName": " ({name})"
+                "customRatingDisplayName": " ({name})",
+                "graduationLegend": "Graduação",
+                "cohortProgress": "Progresso da coorte",
+                "ratingHistory": "Histórico de rating"
             },
             "tacticsCard": {
                 "tacticsRating": "Rating de tática",
