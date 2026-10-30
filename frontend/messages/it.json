@@ -411,6 +411,7 @@
             "classicalGames": "Partite classiche (ultimo anno)",
             "nextGraduation": "Prossimo passaggio: da {cohort} a {nextCohort}",
             "allTasks": "Tutti i compiti",
+            "progressTitle": "Progressi",
             "metrics": "Metriche",
             "tacticsRating": "Punteggio tattico",
             "tacticsRatingTooltip": "Per U1700, è una combinazione dei progressi in Polgar Mates, Puzzle Rush 5 min e Puzzle Rush Survival. Per 1700-2100, è una combinazione di Polgar Mates, Puzzle Rush Survival e del Dojo Tactics Test. Per 2100+, si basa esclusivamente sul Dojo Tactics Test.",

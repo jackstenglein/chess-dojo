@@ -18,17 +18,20 @@ import {
     User,
 } from '@/database/user';
 import CohortIcon from '@/scoreboard/CohortIcon';
-import ScoreboardProgress from '@/scoreboard/ScoreboardProgress';
+import { categoryTextColor } from '@/style/categoryText';
 import { CrossedSwordIcon } from '@/style/CrossedSwordIcon';
 import { RatingSystemIcon } from '@/style/RatingSystemIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { getSubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
-import { Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { BarChart, TaskAlt } from '@mui/icons-material';
+import { Box, Card, CardContent, Grid, LinearProgress, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
 import { CLASSICAL_GAMES_TASK_ID } from '../trainingPlan/suggestedTasks';
+import { TrainingPlanIcon } from '../trainingPlan/TrainingPlanIcon';
+import { CardTitle } from './CardTitle';
 import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 
 const categories = [
@@ -39,111 +42,81 @@ const categories = [
     RequirementCategory.Opening,
 ] as const;
 
-interface DojoScoreCardProgressBarProps {
-    title: string;
-    value: number;
-    min: number;
-    max: number;
-    label?: string;
-    color: string;
-}
-
-const DojoScoreCardProgressBar: React.FC<DojoScoreCardProgressBarProps> = ({
-    title,
-    value,
-    min,
-    max,
+/**
+ * One row of the progress panel, styled like the weekly plan's category bars: an
+ * icon and label on the left, the value on the right, and a slim bar beneath.
+ */
+function ProgressRow({
+    icon,
     label,
-    color,
-}) => {
-    return (
-        <Grid
-            size={{ xs: 12 }}
-            sx={{
-                display: 'flex',
-
-                justifyContent: {
-                    xs: 'start',
-                },
-            }}
-        >
-            <Stack
-                sx={{
-                    alignItems: 'start',
-                    width: { xs: 1 },
-                    color: color,
-                }}
-            >
-                <Typography
-                    variant='subtitle2'
-                    sx={{
-                        color: 'text.secondary',
-                        mb: -0.5,
-                    }}
-                >
-                    {title}
-                </Typography>
-                <ScoreboardProgress
-                    value={value}
-                    min={min}
-                    max={max}
-                    label={label}
-                    color='inherit'
-                />
-            </Stack>
-        </Grid>
-    );
-};
-
-function ClassicalGamesProgressBar({
-    color,
-    max,
     value,
+    percent,
+    color,
+    trailing,
 }: {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    percent: number;
     color: string;
-    max: number;
-    value: number;
+    /** Shown after the bar, e.g. the next cohort's badge. */
+    trailing?: React.ReactNode;
 }) {
-    const t = useTranslations('profile.info');
     return (
-        <Grid
-            size={{ xs: 12 }}
-            sx={{
-                display: 'flex',
-
-                justifyContent: {
-                    xs: 'start',
-                },
-            }}
-        >
-            <Stack
-                sx={{
-                    alignItems: 'start',
-                    width: { xs: 1 },
-                    color: color,
-                }}
-            >
+        <Stack spacing={0.75} data-testid='progress-row'>
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 1 }}>
+                <Box
+                    sx={(theme) => ({
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.75,
+                        minWidth: 0,
+                        ...categoryTextColor(theme, color),
+                    })}
+                >
+                    <Box sx={{ display: 'flex', '& svg': { fontSize: '1rem' } }}>{icon}</Box>
+                    <Typography
+                        variant='caption'
+                        noWrap
+                        sx={{
+                            color: 'inherit',
+                            fontWeight: 600,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            lineHeight: 1,
+                        }}
+                    >
+                        {label}
+                    </Typography>
+                </Box>
+                <Box sx={{ flexGrow: 1 }} />
                 <Typography
-                    variant='subtitle2'
+                    variant='body2'
                     sx={{
+                        fontWeight: 600,
+                        fontVariantNumeric: 'tabular-nums',
+                        whiteSpace: 'nowrap',
                         color: 'text.secondary',
-                        mb: -0.5,
                     }}
                 >
-                    <CrossedSwordIcon
-                        sx={{ fontSize: 'inherit', position: 'relative', top: '2px' }}
-                    />{' '}
-                    {t('classicalGames')}
+                    {value}
                 </Typography>
-                <ScoreboardProgress
-                    value={value}
-                    min={0}
-                    max={max}
-                    label={`${value} / ${max}`}
-                    color='inherit'
-                />
             </Stack>
-        </Grid>
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 1 }}>
+                <LinearProgress
+                    variant='determinate'
+                    value={Math.max(0, Math.min(100, percent))}
+                    sx={{
+                        flexGrow: 1,
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: 'action.hover',
+                        '& .MuiLinearProgress-bar': { borderRadius: 4, backgroundColor: color },
+                    }}
+                />
+                {trailing}
+            </Stack>
+        </Stack>
     );
 }
 
@@ -166,7 +139,8 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
 
     const totalScore = getTotalScore(cohort, requirements);
     const cohortScore = getCohortScore(user, cohort, requirements, timeline);
-    const percentComplete = Math.round((100 * cohortScore) / totalScore);
+    // Zero until the cohort's tasks have loaded, rather than NaN.
+    const percentComplete = totalScore > 0 ? Math.round((100 * cohortScore) / totalScore) : 0;
 
     const classicalGamesTask = requirements.find((r) => r.id === CLASSICAL_GAMES_TASK_ID);
     const classicalGamesPlayed = getCurrentCount({
@@ -190,111 +164,92 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
 
     const timeManagementRating = user.timeManagementRating;
 
+    // A custom rating's own name is shown only when it adds something: a system
+    // named "Custom" reads "Custom", not "Custom (Custom)".
+    const ratingSystemLabel = formatRatingSystem(user.ratingSystem, tRating);
+    const ratingLabel =
+        isCustom(user.ratingSystem) &&
+        ratingSystemName &&
+        ratingSystemName.trim().toLowerCase() !== ratingSystemLabel.trim().toLowerCase()
+            ? `${ratingSystemLabel} (${ratingSystemName})`
+            : ratingSystemLabel;
+
+    const ratingPercent =
+        showRatingProgress && graduationBoundary > minRatingBoundary
+            ? (100 * (currentRating - minRatingBoundary)) / (graduationBoundary - minRatingBoundary)
+            : 0;
+
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
             <CardContent>
-                <Grid
-                    container
-                    columnSpacing={3}
-                    sx={{
-                        rowGap: 2,
-                        alignItems: 'center',
-                    }}
-                >
+                <Box sx={{ mb: 2 }}>
+                    <CardTitle icon={<BarChart sx={{ color: 'primary.main' }} aria-hidden />}>
+                        {t('progressTitle')}
+                    </CardTitle>
+                </Box>
+
+                <Stack spacing={2}>
                     {showRatingProgress && (
-                        <Grid size={12}>
-                            <Stack
-                                sx={{
-                                    width: 1,
-                                }}
-                            >
-                                <Stack
-                                    direction='row'
-                                    sx={{
-                                        alignItems: 'center',
-                                        gap: 0.5,
-                                    }}
-                                >
-                                    <RatingSystemIcon system={user.ratingSystem} size='small' />
-                                    <Typography
-                                        variant='body2'
-                                        sx={{
-                                            color: 'text.secondary',
-                                            fontWeight: 'bold',
-                                        }}
-                                    >
-                                        {formatRatingSystem(user.ratingSystem, tRating)}
-                                        {isCustom(user.ratingSystem) &&
-                                            ratingSystemName &&
-                                            ` (${ratingSystemName})`}
-                                    </Typography>
-                                </Stack>
-
-                                <Stack
-                                    direction='row'
-                                    sx={{
-                                        alignItems: 'center',
-                                        gap: 0.5,
-                                    }}
-                                >
-                                    <ScoreboardProgress
-                                        value={currentRating}
-                                        min={minRatingBoundary}
-                                        max={graduationBoundary}
-                                        color='primary'
-                                        sx={{ height: '8px', borderRadius: '2px' }}
-                                        label={`${currentRating} / ${graduationBoundary}`}
-                                    />
-
-                                    <CohortIcon
-                                        cohort={nextCohort}
-                                        tooltip={t('nextGraduation', { cohort, nextCohort })}
-                                        size={20}
-                                        sx={{ marginTop: '-3px' }}
-                                    />
-                                </Stack>
-                            </Stack>
-                        </Grid>
+                        <ProgressRow
+                            icon={<RatingSystemIcon system={user.ratingSystem} size='small' />}
+                            label={ratingLabel}
+                            value={`${currentRating} / ${graduationBoundary}`}
+                            percent={ratingPercent}
+                            color='primary.main'
+                            trailing={
+                                <CohortIcon
+                                    cohort={nextCohort}
+                                    tooltip={t('nextGraduation', { cohort, nextCohort })}
+                                    size={20}
+                                />
+                            }
+                        />
                     )}
 
+                    <ProgressRow
+                        icon={<TaskAlt />}
+                        label={t('allTasks')}
+                        value={`${percentComplete}%`}
+                        percent={percentComplete}
+                        color='text.primary'
+                    />
+
                     {classicalGamesTask && (
-                        <ClassicalGamesProgressBar
-                            value={classicalGamesPlayed}
-                            max={classicalGamesGoal ?? 0}
+                        <ProgressRow
+                            icon={<CrossedSwordIcon />}
+                            label={t('classicalGames')}
+                            value={`${classicalGamesPlayed} / ${classicalGamesGoal ?? 0}`}
+                            percent={
+                                classicalGamesGoal
+                                    ? (100 * classicalGamesPlayed) / classicalGamesGoal
+                                    : 0
+                            }
                             color='secondary.main'
                         />
                     )}
 
-                    <DojoScoreCardProgressBar
-                        title={t('allTasks')}
-                        value={percentComplete}
-                        min={0}
-                        max={100}
-                        label={`${percentComplete}%`}
-                        color='inherit'
-                    />
-
-                    {categories.map((c, idx) => {
+                    {categories.map((c) => {
                         const value = getCategoryScore(user, cohort, c, requirements, timeline);
                         const total = getTotalCategoryScore(cohort, c, requirements);
-                        const percent = Math.round((100 * value) / total);
+                        const percent = total > 0 ? Math.round((100 * value) / total) : 0;
                         return (
-                            <DojoScoreCardProgressBar
-                                key={idx}
-                                title={tCategory.has(c) ? tCategory(c) : c}
-                                value={percent}
-                                min={0}
-                                max={100}
-                                label={`${percent}%`}
+                            <ProgressRow
+                                key={c}
+                                icon={<TrainingPlanIcon category={c} />}
+                                label={tCategory.has(c) ? tCategory(c) : c}
+                                value={`${percent}%`}
+                                percent={percent}
                                 color={CategoryColors[c]}
                             />
                         );
                     })}
 
                     {timeManagementRating && timeManagementRating.currentRating > 0 && (
-                        <TimeManagementRatingRow timeManagementRating={timeManagementRating} />
+                        <Grid container>
+                            <TimeManagementRatingRow timeManagementRating={timeManagementRating} />
+                        </Grid>
                     )}
-                </Grid>
+                </Stack>
             </CardContent>
         </Card>
     );

@@ -21,7 +21,6 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Bio from './Bio';
 import CoachChip from './CoachChip';
-import CountChip from './CountChip';
 import CreatedAtChip from './CreatedAtChip';
 import DiscordChip from './DiscordChip';
 import InactiveChip from './InactiveChip';
@@ -144,10 +143,13 @@ export function UserCard({
                 >
                     <Avatar user={user} />
                     <Typography
-                        variant='h4'
+                        component='h1'
                         sx={{
-                            fontWeight: 'bold',
+                            fontSize: '1.5rem',
+                            fontWeight: 700,
+                            lineHeight: 1.25,
                             textAlign: 'center',
+                            mt: 1.5,
                         }}
                     >
                         {user.displayName}
@@ -155,18 +157,21 @@ export function UserCard({
 
                     <Stack
                         direction='row'
-                        spacing={1}
+                        spacing={0.75}
                         sx={{
                             alignItems: 'center',
+                            mt: 0.5,
                         }}
                     >
                         <CohortIcon
                             cohort={user.dojoCohort}
+                            size={22}
                             tooltip={t('memberOfCohort', { cohort: user.dojoCohort })}
                         />
                         <Typography
-                            variant='h5'
                             sx={{
+                                fontSize: '1rem',
+                                fontWeight: 600,
                                 color: 'text.secondary',
                             }}
                         >
@@ -174,16 +179,42 @@ export function UserCard({
                         </Typography>
                     </Stack>
 
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            mt: 1,
+                            color: 'text.secondary',
+                            '& a': { color: 'inherit', textDecoration: 'none' },
+                            '& a:hover': { color: 'text.primary' },
+                            '& strong': { color: 'text.primary', fontWeight: 600 },
+                        }}
+                        data-testid='follow-counts'
+                    >
+                        <Link href={`/profile/${user.username}/followers`}>
+                            <strong>{user.followerCount}</strong>{' '}
+                            {user.followerCount === 1 ? t('follower') : t('followers')}
+                        </Link>
+                        {' · '}
+                        <Link href={`/profile/${user.username}/following`}>
+                            <strong>{user.followingCount}</strong> {t('following')}
+                        </Link>
+                    </Typography>
+
                     <Stack
                         direction='row'
                         sx={{
                             flexWrap: 'wrap',
-                            rowGap: 1,
-                            columnGap: 1,
+                            gap: 0.75,
                             alignItems: 'center',
                             justifyContent: 'center',
-                            mt: 3,
-                            mb: 3,
+                            mt: 2,
+                            mb: 2,
+                            // Quiet, neutral chips rather than coloured ones.
+                            '& .MuiChip-root': {
+                                borderColor: 'divider',
+                                color: 'text.secondary',
+                            },
+                            '& .MuiChip-icon': { color: 'text.secondary' },
                         }}
                     >
                         <CoachChip user={user} />
@@ -191,17 +222,6 @@ export function UserCard({
                         <DiscordChip username={user.discordUsername} id={user.discordId} />
                         <TimezoneChip timezone={user.timezoneOverride} />
                         <CreatedAtChip createdAt={user.createdAt} />
-                        <CountChip
-                            count={user.followerCount}
-                            label={t('followers')}
-                            singularLabel={t('follower')}
-                            link={`/profile/${user.username}/followers`}
-                        />
-                        <CountChip
-                            count={user.followingCount}
-                            label={t('following')}
-                            link={`/profile/${user.username}/following`}
-                        />
                     </Stack>
 
                     <Bio bio={user.bio} />
