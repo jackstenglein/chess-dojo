@@ -157,6 +157,17 @@
                 "progressCount": "Conteggio dei progressi",
                 "count": "Conteggio"
             },
+            "verbs": {
+                "read": "Leggere",
+                "watch": "Guardare",
+                "solve": "Risolvere",
+                "study": "Studiare",
+                "play": "Giocare",
+                "spar": "Sparring",
+                "annotate": "Annotare",
+                "review": "Rivedere",
+                "guide": "Leggi la guida"
+            },
             "daily": {
                 "today": "Oggi",
                 "progressCompleted": "{current} / {total} {suffix} completati"
@@ -171,7 +182,15 @@
                 "Fri": "Ven",
                 "Sat": "Sab",
                 "activeOnlyTooltip": "Mostra solo i compiti che hai aggiornato questa settimana",
-                "activeOnlyLabel": "Solo attivi"
+                "activeOnlyLabel": "Solo attivi",
+                "empty": "Niente in programma questa settimana.",
+                "cellPlanned": "Previsto: {goal}",
+                "cellPartial": "{worked} di {goal} finora",
+                "cellDone": "Fatto: {worked} di {goal}",
+                "cellMissed": "Saltato: {worked} di {goal}",
+                "cellExtra": "Extra: {worked} registrati, non previsto",
+                "restDay": "Giorno di riposo",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Piano di allenamento completo",

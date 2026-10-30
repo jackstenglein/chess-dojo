@@ -157,6 +157,17 @@
                 "progressCount": "Progress count",
                 "count": "Count"
             },
+            "verbs": {
+                "read": "Read",
+                "watch": "Watch",
+                "solve": "Solve",
+                "study": "Study",
+                "play": "Play",
+                "spar": "Spar",
+                "annotate": "Annotate",
+                "review": "Review",
+                "guide": "Read guide"
+            },
             "daily": {
                 "today": "Today",
                 "progressCompleted": "{current} / {total} {suffix} completed"
@@ -171,7 +182,15 @@
                 "Fri": "Fri",
                 "Sat": "Sat",
                 "activeOnlyTooltip": "Only show tasks you have updated this week",
-                "activeOnlyLabel": "Active Only"
+                "activeOnlyLabel": "Active Only",
+                "empty": "Nothing planned this week.",
+                "cellPlanned": "Planned: {goal}",
+                "cellPartial": "{worked} of {goal} so far",
+                "cellDone": "Done: {worked} of {goal}",
+                "cellMissed": "Missed: {worked} of {goal}",
+                "cellExtra": "Extra: {worked} logged, not planned",
+                "restDay": "Rest day",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Full Training Plan",

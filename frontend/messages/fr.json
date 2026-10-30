@@ -157,6 +157,17 @@
                 "progressCount": "Nombre de progression",
                 "count": "Nombre"
             },
+            "verbs": {
+                "read": "Lire",
+                "watch": "Regarder",
+                "solve": "Résoudre",
+                "study": "Étudier",
+                "play": "Jouer",
+                "spar": "Sparring",
+                "annotate": "Annoter",
+                "review": "Analyser",
+                "guide": "Lire le guide"
+            },
             "daily": {
                 "today": "Aujourd'hui",
                 "progressCompleted": "{current} / {total} {suffix} terminé(s)"
@@ -171,7 +182,15 @@
                 "Fri": "Ven",
                 "Sat": "Sam",
                 "activeOnlyTooltip": "Afficher uniquement les tâches que tu as mises à jour cette semaine",
-                "activeOnlyLabel": "Actives uniquement"
+                "activeOnlyLabel": "Actives uniquement",
+                "empty": "Rien de prévu cette semaine.",
+                "cellPlanned": "Prévu : {goal}",
+                "cellPartial": "{worked} sur {goal} jusqu'ici",
+                "cellDone": "Fait : {worked} sur {goal}",
+                "cellMissed": "Manqué : {worked} sur {goal}",
+                "cellExtra": "En plus : {worked} enregistré, non prévu",
+                "restDay": "Jour de repos",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Plan d'entraînement complet",

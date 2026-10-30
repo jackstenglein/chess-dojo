@@ -157,6 +157,17 @@
                 "progressCount": "Contador de progreso",
                 "count": "Cantidad"
             },
+            "verbs": {
+                "read": "Leer",
+                "watch": "Ver",
+                "solve": "Resolver",
+                "study": "Estudiar",
+                "play": "Jugar",
+                "spar": "Sparring",
+                "annotate": "Anotar",
+                "review": "Revisar",
+                "guide": "Leer guía"
+            },
             "daily": {
                 "today": "Hoy",
                 "progressCompleted": "Completado: {current} / {total} {suffix}"
@@ -171,7 +182,15 @@
                 "Fri": "Vie",
                 "Sat": "Sáb",
                 "activeOnlyTooltip": "Mostrar solo las tareas que has actualizado esta semana",
-                "activeOnlyLabel": "Solo activas"
+                "activeOnlyLabel": "Solo activas",
+                "empty": "No hay nada planificado esta semana.",
+                "cellPlanned": "Planificado: {goal}",
+                "cellPartial": "{worked} de {goal} hasta ahora",
+                "cellDone": "Hecho: {worked} de {goal}",
+                "cellMissed": "Perdido: {worked} de {goal}",
+                "cellExtra": "Extra: {worked} registrados, no planificado",
+                "restDay": "Día de descanso",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Plan de entrenamiento completo",
