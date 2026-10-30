@@ -157,6 +157,17 @@
                 "progressCount": "Contador de progresso",
                 "count": "Quantidade"
             },
+            "verbs": {
+                "read": "Ler",
+                "watch": "Assistir",
+                "solve": "Resolver",
+                "study": "Estudar",
+                "play": "Jogar",
+                "spar": "Sparring",
+                "annotate": "Anotar",
+                "review": "Revisar",
+                "guide": "Ler guia"
+            },
             "daily": {
                 "today": "Hoje",
                 "progressCompleted": "{current} / {total} {suffix} concluídos"
@@ -1489,7 +1500,9 @@
         "myCohort": "Minha coorte",
         "graduations": "Graduações",
         "viewAll": "Ver tudo",
+        "comment": "Comentar",
         "showPostsFrom": "Mostrar publicações de",
+        "showMyPosts": "Mostrar minhas publicações",
         "categories": "Categorias",
         "allCategories": "Todas as categorias",
         "annotations": "Anotações",
@@ -1498,6 +1511,8 @@
         "completedRequirement": "Concluiu <strong>{name}</strong>",
         "updated": "Atualizado",
         "updatedRequirement": "Atualizou <strong>{name}</strong>",
+        "dojoPointsGained": "+{count} pontos Dojo",
+        "markedNotDone": "Marcada como não feita",
         "dojoPoints": "Pontos Dojo:",
         "totalTime": "Tempo total:",
         "customTask": "Tarefa personalizada",
@@ -1516,7 +1531,9 @@
             "players": "Jogadores:",
             "date": "Data:",
             "result": "Resultado:",
-            "moves": "Lances:"
+            "moves": "Lances:",
+            "versus": "{white} x {black}",
+            "newAnalysis": "Nova análise de partida"
         },
         "graduation": {
             "graduated": "Graduou-se de <strong>{oldCohort}</strong> para <strong>{newCohort}</strong>",

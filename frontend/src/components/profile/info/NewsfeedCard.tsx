@@ -4,7 +4,8 @@ import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { ListNewsfeedResponse } from '@/api/newsfeedApi';
 import { useAuth } from '@/auth/Auth';
-import NewsfeedItem, { isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
+import { CompactNewsfeedItem } from '@/components/newsfeed/CompactNewsfeedItem';
+import { isNegativeEntry, isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
 import { TimelineEntry } from '@/database/timeline';
 import { Feed, OpenInNew } from '@mui/icons-material';
 import { Button, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material';
@@ -22,7 +23,11 @@ export function NewsfeedCard() {
     const [entries, setEntries] = useState<TimelineEntry[]>([]);
 
     const handleResponse = useCallback((resp: ListNewsfeedResponse) => {
-        setEntries(resp.entries.filter((entry) => !isRestDayEntry(entry)).slice(0, MAX_ITEMS));
+        setEntries(
+            resp.entries
+                .filter((entry) => !isRestDayEntry(entry) && !isNegativeEntry(entry))
+                .slice(0, MAX_ITEMS),
+        );
     }, []);
 
     useEffect(() => {
@@ -85,12 +90,16 @@ export function NewsfeedCard() {
                     )}
 
                     {entries.map((entry) => (
-                        <NewsfeedItem
-                            key={entry.id}
-                            entry={entry}
-                            onEdit={onEdit}
-                            maxComments={MAX_COMMENTS}
-                        />
+                        <Card key={entry.id} variant='outlined'>
+                            <CardContent sx={{ p: 2, '&:last-child': { pb: 1 } }}>
+                                <CompactNewsfeedItem
+                                    entry={entry}
+                                    onEdit={onEdit}
+                                    maxComments={MAX_COMMENTS}
+                                    simple
+                                />
+                            </CardContent>
+                        </Card>
                     ))}
 
                     {!request.isLoading() && entries.length === 0 && (

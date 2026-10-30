@@ -3,16 +3,18 @@
 import { useApi } from '@/api/Api';
 import { useRequest } from '@/api/Request';
 import { ListNewsfeedResponse } from '@/api/newsfeedApi';
+import { useAuth } from '@/auth/Auth';
 import LoadMoreButton from '@/components/newsfeed/LoadMoreButton';
-import NewsfeedItem, { isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
+import NewsfeedItem, { isNegativeEntry, isRestDayEntry } from '@/components/newsfeed/NewsfeedItem';
 import MultipleSelectChip, { MultipleSelectChipOption } from '@/components/ui/MultipleSelectChip';
 import { RequirementCategory } from '@/database/requirement';
 import { TimelineEntry, TimelineSpecialRequirementId } from '@/database/timeline';
 import LoadingPage from '@/loading/LoadingPage';
 import Icon, { icons } from '@/style/Icon';
-import { Stack } from '@mui/material';
+import { FormControlLabel, Stack, Switch } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 
 type FilterMap = Record<string, (entry: TimelineEntry) => boolean>;
 
@@ -98,6 +100,8 @@ function useNewsfeedIds(initialNewsfeedIds: string[]): [string[], (v: string[]) 
 }
 
 const MAX_COMMENTS = 3;
+/** Remembers, per browser, whether the viewer's own posts are shown. */
+const SHOW_OWN_POSTS_KEY = 'newsfeedShowOwnPosts';
 
 interface NewsfeedListProps {
     initialNewsfeedIds: string[];
@@ -129,6 +133,8 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
     const request = useRequest<ListNewsfeedResponse>();
     const [newsfeedIds, setNewsfeedIds] = useNewsfeedIds(initialNewsfeedIds);
     const [filters, setFilters] = useState<string[]>([AllCategoriesFilterName]);
+    const { user } = useAuth();
+    const [showOwnPosts, setShowOwnPosts] = useLocalStorage(SHOW_OWN_POSTS_KEY, true);
     const [data, setData] = useState<ListNewsfeedResponse>();
     const [lastStartKey, setLastStartKey] = useState<Record<string, string>>({});
     const handleResponse = useCallback(
@@ -142,7 +148,7 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
                         (rhs.date || rhs.createdAt).localeCompare(lhs.date || lhs.createdAt),
                     ),
                 )
-                .filter((e) => !isRestDayEntry(e))
+                .filter((e) => !isRestDayEntry(e) && !isNegativeEntry(e))
                 .filter((e) => {
                     return seen[e.id] ? false : (seen[e.id] = true);
                 });
@@ -226,6 +232,9 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
     };
 
     let shownEntries = data?.entries ?? [];
+    if (!showOwnPosts && user) {
+        shownEntries = shownEntries.filter((entry) => entry.owner !== user.username);
+    }
     if (showAdditionalFilters) {
         shownEntries = shownEntries.filter((entry) =>
             filters.some((filterKey) => Filters[filterKey]?.(entry)),
@@ -251,6 +260,21 @@ const NewsfeedList: React.FC<NewsfeedListProps> = ({
                     options={translatedFilterOptions}
                     label={t('categories')}
                     error={filters.length === 0}
+                />
+            )}
+
+            {user && newsfeedIdOptions !== undefined && (
+                <FormControlLabel
+                    control={
+                        <Switch
+                            size='small'
+                            checked={showOwnPosts}
+                            onChange={(e) => setShowOwnPosts(e.target.checked)}
+                        />
+                    }
+                    label={t('showMyPosts')}
+                    sx={{ ml: 0, alignSelf: 'flex-start' }}
+                    data-testid='newsfeed-show-own-posts'
                 />
             )}
 

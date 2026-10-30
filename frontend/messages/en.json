@@ -157,6 +157,17 @@
                 "progressCount": "Progress count",
                 "count": "Count"
             },
+            "verbs": {
+                "read": "Read",
+                "watch": "Watch",
+                "solve": "Solve",
+                "study": "Study",
+                "play": "Play",
+                "spar": "Spar",
+                "annotate": "Annotate",
+                "review": "Review",
+                "guide": "Read guide"
+            },
             "daily": {
                 "today": "Today",
                 "progressCompleted": "{current} / {total} {suffix} completed"
@@ -1489,7 +1500,9 @@
         "myCohort": "My Cohort",
         "graduations": "Graduations",
         "viewAll": "View All",
+        "comment": "Comment",
         "showPostsFrom": "Show Posts From",
+        "showMyPosts": "Show my posts",
         "categories": "Categories",
         "allCategories": "All Categories",
         "annotations": "Annotations",
@@ -1498,6 +1511,8 @@
         "completedRequirement": "Completed <strong>{name}</strong>",
         "updated": "Updated",
         "updatedRequirement": "Updated <strong>{name}</strong>",
+        "dojoPointsGained": "+{count} Dojo Points",
+        "markedNotDone": "Marked not done",
         "dojoPoints": "Dojo Points:",
         "totalTime": "Total Time:",
         "customTask": "Custom Task",
@@ -1516,7 +1531,9 @@
             "players": "Players:",
             "date": "Date:",
             "result": "Result:",
-            "moves": "Moves:"
+            "moves": "Moves:",
+            "versus": "{white} vs {black}",
+            "newAnalysis": "New game analysis"
         },
         "graduation": {
             "graduated": "Graduated from <strong>{oldCohort}</strong> into <strong>{newCohort}</strong>",
