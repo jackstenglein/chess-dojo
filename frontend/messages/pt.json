@@ -186,16 +186,12 @@
                 "addCustomTask": "Adicionar tarefa personalizada",
                 "unlockTasks": "{count, plural, =1 {Desbloqueie # tarefa a mais atualizando para uma conta completa} other {Desbloqueie # tarefas a mais atualizando para uma conta completa}}",
                 "viewPrices": "Ver preços",
-                "nextGraduation": "Próxima graduação: de {cohort} para {nextCohort}",
-                "reachRatingToUnlock": "Alcance o rating exigido para a sua coorte para desbloquear a graduação",
                 "renewTooltip": "É hora de renovar esta tarefa!",
                 "renewLabel": "Renovar",
                 "minimumReachedTooltip": "Você atingiu o mínimo, continue assim!",
                 "minimumReachedLabel": "Mínimo atingido",
                 "checkboxAriaLabel": "Caixa de seleção {name}",
-                "updateAriaLabel": "Atualizar {name}",
-                "graduateName": "Forme-se em {cohort}",
-                "graduateDescription": "Avance para a próxima coorte e apareça no programa de graduação."
+                "updateAriaLabel": "Atualizar {name}"
             },
             "graduation": {
                 "title": "Graduar-se em {cohort}?",
@@ -348,7 +344,7 @@
                 "taskLockedUntil": "Esta tarefa está bloqueada até você concluir {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini placar",
+                "heading": "Placar",
                 "type": "Tipo",
                 "dojoScore": "Pontuação Dojo",
                 "trainingTime": "Tempo de treino",

@@ -6,16 +6,18 @@ import { User } from '@/database/user';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { ScoreboardRow } from '@/scoreboard/scoreboardData';
+import { ArrowForward } from '@mui/icons-material';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import {
+    Box,
     Button,
     Card,
     CardContent,
     CircularProgress,
     Divider,
-    MenuItem,
     Stack,
-    TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -150,94 +152,80 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
         );
     } else {
         content = (
-            <Stack spacing={2}>
-                <Stack
-                    direction='row'
-                    data-testid='mini-scoreboard-headers'
-                    sx={{
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        px: 0.5,
-                        mb: -1,
-                    }}
-                >
-                    <Typography
-                        variant='caption'
-                        sx={{
-                            color: 'text.secondary',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        {t('name')}
-                    </Typography>
-                </Stack>
-
+            <Stack spacing={0.5} data-testid='mini-scoreboard-rows'>
                 {topPlayers.map(
                     (player: User & { isCurrent?: boolean; actualRank?: number }, index) => {
-                        const displayScore = getScore(player);
                         const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-
-                        let rankDisplay: React.ReactNode = `#${index + 1}`;
-
-                        if (player.isCurrent && player.actualRank !== undefined) {
-                            rankDisplay = `#${player.actualRank + 1}`;
-                        } else if (index < 3) {
-                            rankDisplay = (
-                                <WorkspacePremiumIcon
-                                    sx={{ color: medalColors[index], fontSize: 20 }}
-                                />
-                            );
-                        }
+                        const rank =
+                            player.isCurrent && player.actualRank !== undefined
+                                ? player.actualRank
+                                : index;
 
                         return (
-                            <Stack key={player.username} spacing={1}>
-                                <Stack
-                                    direction='row'
+                            <Stack
+                                key={player.username}
+                                direction='row'
+                                sx={{
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    px: 1,
+                                    py: 0.75,
+                                    borderRadius: 2,
+                                    // The viewer's own row stands out a little.
+                                    backgroundColor: player.isCurrent
+                                        ? 'action.selected'
+                                        : 'transparent',
+                                }}
+                            >
+                                <Box
                                     sx={{
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
+                                        width: 24,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    <Stack
-                                        direction='row'
-                                        spacing={1.5}
-                                        sx={{
-                                            alignItems: 'center',
-                                        }}
-                                    >
+                                    {rank < 3 ? (
+                                        <WorkspacePremiumIcon
+                                            sx={{ color: medalColors[rank], fontSize: 20 }}
+                                        />
+                                    ) : (
                                         <Typography
                                             variant='body2'
                                             sx={{
                                                 color: 'text.secondary',
-                                                width: 20,
-                                                textAlign: 'center',
+                                                fontVariantNumeric: 'tabular-nums',
                                             }}
                                         >
-                                            {rankDisplay}
+                                            {rank + 1}
                                         </Typography>
-                                        <Avatar
-                                            username={player.username}
-                                            displayName={player.displayName}
-                                            size={32}
-                                        />
-                                        <Link href={`/profile/${player.username}`}>
-                                            <Typography variant='subtitle2'>
-                                                {player.displayName}
-                                            </Typography>
-                                        </Link>
-                                    </Stack>
-                                    <Typography
-                                        variant='body2'
-                                        color='primary'
-                                        sx={{
-                                            fontWeight: 'bold',
-                                        }}
+                                    )}
+                                </Box>
+                                <Avatar
+                                    username={player.username}
+                                    displayName={player.displayName}
+                                    size={28}
+                                />
+                                <Typography
+                                    variant='body2'
+                                    noWrap
+                                    sx={{ fontWeight: 600, flexGrow: 1, minWidth: 0 }}
+                                >
+                                    <Link
+                                        href={`/profile/${player.username}`}
+                                        sx={{ color: 'inherit' }}
                                     >
-                                        {metric === 'score'
-                                            ? displayScore
-                                            : formatTime(getTime(player))}
-                                    </Typography>
-                                </Stack>
+                                        {player.displayName}
+                                    </Link>
+                                </Typography>
+                                <Typography
+                                    variant='body2'
+                                    sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}
+                                >
+                                    {metric === 'score'
+                                        ? getScore(player)
+                                        : formatTime(getTime(player))}
+                                </Typography>
                             </Stack>
                         );
                     },
@@ -247,65 +235,70 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
     }
 
     return (
-        <Stack
-            spacing={2}
-            sx={{
-                width: 1,
-                mt: 4,
-            }}
-        >
-            <Typography
-                variant='h5'
-                sx={{
-                    fontWeight: 'bold',
-                }}
-            >
+        <Stack spacing={2} sx={{ width: 1, mt: 4 }}>
+            <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
                 {t('heading')}
             </Typography>
-            <Card variant='outlined' sx={{ width: 1 }}>
-                <CardContent>
+            <Card
+                variant='outlined'
+                sx={{
+                    width: 1,
+                    borderRadius: 3,
+                    backgroundColor: 'background.default',
+                    backgroundImage: 'none',
+                }}
+            >
+                <CardContent sx={{ '&:last-child': { pb: 1.5 } }}>
                     <Stack
                         direction='row'
                         sx={{
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            mb: 2,
+                            flexWrap: 'wrap',
+                            gap: 1.5,
+                            mb: 1.5,
                         }}
                     >
-                        <Stack
-                            direction='row'
-                            spacing={1.5}
+                        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                            <CohortIcon cohort={cohort} size={24} />
+                            <Typography sx={{ fontWeight: 600 }}>{cohort}</Typography>
+                        </Stack>
+                        <ToggleButtonGroup
+                            exclusive
+                            size='small'
+                            value={metric}
+                            onChange={(_, value: 'score' | 'time' | null) =>
+                                value && setMetric(value)
+                            }
+                            aria-label={t('type')}
+                            data-testid='scoreboard-metric-select'
                             sx={{
-                                alignItems: 'center',
+                                '& .MuiToggleButton-root': {
+                                    textTransform: 'none',
+                                    px: 1.5,
+                                    py: 0.25,
+                                    color: 'text.secondary',
+                                    borderColor: 'divider',
+                                },
+                                '& .Mui-selected': { color: 'text.primary !important' },
                             }}
                         >
-                            <CohortIcon cohort={cohort} size={32} />
-                            <Typography variant='h6' sx={{ mb: 0 }}>
-                                {cohort}
-                            </Typography>
-                        </Stack>
-                        <TextField
-                            select
-                            label={t('type')}
-                            value={metric}
-                            onChange={(e) => setMetric(e.target.value as 'score' | 'time')}
-                            size='small'
-                            sx={{ minWidth: 140 }}
-                            data-testid='scoreboard-metric-select'
-                        >
-                            <MenuItem value='score'>{t('dojoScore')}</MenuItem>
-                            <MenuItem value='time'>{t('trainingTime')}</MenuItem>
-                        </TextField>
+                            <ToggleButton value='score'>{t('dojoScore')}</ToggleButton>
+                            <ToggleButton value='time'>{t('trainingTime')}</ToggleButton>
+                        </ToggleButtonGroup>
                     </Stack>
+
                     {content}
 
-                    <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ mt: 1.5, mb: 1 }} />
 
                     <Button
                         component={Link}
                         href={`/scoreboard/${cohort}`}
                         fullWidth
                         variant='text'
+                        endIcon={<ArrowForward fontSize='small' />}
+                        sx={{ textTransform: 'none' }}
                     >
                         {t('viewFullScoreboard')}
                     </Button>

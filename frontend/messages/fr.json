@@ -186,16 +186,12 @@
                 "addCustomTask": "Ajouter une tâche personnalisée",
                 "unlockTasks": "{count, plural, =1 {Débloque # tâche supplémentaire en passant à un compte complet} other {Débloque # tâches supplémentaires en passant à un compte complet}}",
                 "viewPrices": "Voir les tarifs",
-                "nextGraduation": "Prochain passage au niveau supérieur : de {cohort} à {nextCohort}",
-                "reachRatingToUnlock": "Atteins le classement requis pour ta cohorte afin de débloquer le passage au niveau supérieur",
                 "renewTooltip": "C'est le moment de renouveler cette tâche !",
                 "renewLabel": "Renouveler",
                 "minimumReachedTooltip": "Tu as atteint le minimum, continue comme ça !",
                 "minimumReachedLabel": "Minimum atteint",
                 "checkboxAriaLabel": "Case à cocher {name}",
-                "updateAriaLabel": "Mettre à jour {name}",
-                "graduateName": "Passer au niveau supérieur depuis {cohort}",
-                "graduateDescription": "Passe à la cohorte suivante et sois mis en avant dans l'émission de passage au niveau supérieur."
+                "updateAriaLabel": "Mettre à jour {name}"
             },
             "graduation": {
                 "title": "Passer au niveau supérieur depuis {cohort} ?",
@@ -348,7 +344,7 @@
                 "taskLockedUntil": "Cette tâche est verrouillée jusqu'à ce que tu termines {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini tableau de score",
+                "heading": "Tableau de score",
                 "type": "Type",
                 "dojoScore": "Score Dojo",
                 "trainingTime": "Temps d'entraînement",

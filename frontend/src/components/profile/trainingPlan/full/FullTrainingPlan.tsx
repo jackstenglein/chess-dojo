@@ -6,15 +6,8 @@ import {
     isRequirementAvailableForSubscriptionTier,
     Requirement,
     RequirementCategory,
-    RequirementStatus,
-    ScoreboardDisplay,
 } from '@/database/requirement';
-import {
-    dojoCohorts,
-    getCurrentRating,
-    getMinRatingBoundary,
-    getRatingBoundary,
-} from '@/database/user';
+import { dojoCohorts } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
@@ -46,35 +39,7 @@ import {
     SCHEDULE_CLASSICAL_GAME_TASK_ID,
 } from '../suggestedTasks';
 import { TrainingPlanContext } from '../TrainingPlanTab';
-import { FullTrainingPlanSection, GRADUATION_TASK_ID, Section } from './FullTrainingPlanSection';
-
-/** Builds a minimal fake requirement for the "Graduate from {cohort}" task. */
-function getGraduationFakeTask(
-    cohort: string,
-    t: (key: string, values?: Record<string, string>) => string,
-): Requirement {
-    return {
-        id: GRADUATION_TASK_ID,
-        status: RequirementStatus.Active,
-        category: RequirementCategory.Graduation,
-        name: t('graduateName', { cohort }),
-        description: t('graduateDescription'),
-        freeDescription: '',
-        counts: { [cohort]: 1 },
-        startCount: 0,
-        numberOfCohorts: 1,
-        unitScore: 0,
-        totalScore: 0,
-        scoreboardDisplay: ScoreboardDisplay.Checkbox,
-        progressBarSuffix: '',
-        updatedAt: new Date().toISOString(),
-        sortPriority: 'zz-graduation',
-        expirationDays: -1,
-        isFree: false,
-        atomic: true,
-        expectedMinutes: 0,
-    };
-}
+import { FullTrainingPlanSection, Section } from './FullTrainingPlanSection';
 
 /** Renders the full training plan view of the training plan tab. */
 export function FullTrainingPlan({
@@ -150,43 +115,9 @@ export function FullTrainingPlan({
             }
         }
 
-        // Add a Graduation section when viewing the user's current cohort (they can only graduate from it).
-        if (cohort === user.dojoCohort) {
-            const graduationTask = getGraduationFakeTask(cohort, t);
-            const gradComplete = user.graduationCohorts?.includes(cohort) ?? false;
-            const minBoundary = getMinRatingBoundary(cohort, user.ratingSystem);
-            const graduationBoundary = getRatingBoundary(cohort, user.ratingSystem);
-            const currentRating = getCurrentRating(user);
-            let graduationPercent = 0;
-            if (gradComplete) {
-                graduationPercent = 100;
-            } else if (
-                graduationBoundary != null &&
-                graduationBoundary > 0 &&
-                minBoundary != null &&
-                graduationBoundary > minBoundary
-            ) {
-                const range = graduationBoundary - minBoundary;
-                const progress = (currentRating - minBoundary) / range;
-                graduationPercent = Math.round(100 * Math.min(1, Math.max(0, progress)));
-            }
-            const existing = sections.find((s) => s.category === RequirementCategory.Graduation);
-            if (existing) {
-                if (gradComplete) existing.completedTasks.push(graduationTask);
-                else existing.uncompletedTasks.push(graduationTask);
-                existing.progressBar = graduationPercent;
-            } else {
-                sections.push({
-                    category: RequirementCategory.Graduation,
-                    uncompletedTasks: gradComplete ? [] : [graduationTask],
-                    completedTasks: gradComplete ? [graduationTask] : [],
-                    progressBar: graduationPercent,
-                    color: CategoryColors[RequirementCategory.Graduation],
-                });
-            }
-        }
-
-        return sections;
+        // Graduating is prompted from Today and tracked in the sidebar's rating bar,
+        // so it isn't a section of the full plan.
+        return sections.filter((section) => section.category !== RequirementCategory.Graduation);
     }, [allRequirements, user, cohort, timeline, t]);
 
     if (requirementRequest.isLoading() || sections.length === 0) {
@@ -251,8 +182,8 @@ export function FullTrainingPlan({
                         width: 1,
                         flexWrap: 'wrap',
                         alignItems: 'end',
-                        mt: 3,
-                        mb: expanded[sections[0].category] ? -2 : 0,
+                        mt: 1,
+                        mb: 1.5,
                     }}
                 >
                     <TextField
@@ -296,18 +227,24 @@ export function FullTrainingPlan({
                                 >
                                     <IconButton
                                         onClick={() => setShowCompleted(!showCompleted)}
-                                        color='primary'
+                                        sx={{ color: 'text.secondary' }}
                                     >
                                         {showCompleted ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('expandAll')}>
-                                    <IconButton onClick={onExpandAll} color='primary'>
+                                    <IconButton
+                                        onClick={onExpandAll}
+                                        sx={{ color: 'text.secondary' }}
+                                    >
                                         <KeyboardDoubleArrowDown />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('collapseAll')}>
-                                    <IconButton onClick={onCollapseAll} color='primary'>
+                                    <IconButton
+                                        onClick={onCollapseAll}
+                                        sx={{ color: 'text.secondary' }}
+                                    >
                                         <KeyboardDoubleArrowUp />
                                     </IconButton>
                                 </Tooltip>
@@ -316,6 +253,8 @@ export function FullTrainingPlan({
                             <>
                                 <Button
                                     onClick={() => setShowCompleted(!showCompleted)}
+                                    color='inherit'
+                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
                                     startIcon={
                                         showCompleted ? <CheckBox /> : <CheckBoxOutlineBlank />
                                     }
@@ -324,12 +263,16 @@ export function FullTrainingPlan({
                                 </Button>
                                 <Button
                                     onClick={onExpandAll}
+                                    color='inherit'
+                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
                                     startIcon={<KeyboardDoubleArrowDown />}
                                 >
                                     {t('expandAll')}
                                 </Button>
                                 <Button
                                     onClick={onCollapseAll}
+                                    color='inherit'
+                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
                                     startIcon={<KeyboardDoubleArrowUp />}
                                 >
                                     {t('collapseAll')}

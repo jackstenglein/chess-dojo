@@ -186,16 +186,12 @@
                 "addCustomTask": "Add Custom Task",
                 "unlockTasks": "{count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "View Prices",
-                "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "It's time for you to renew this task!",
                 "renewLabel": "Renew",
                 "minimumReachedTooltip": "You've reached the minimum, keep going!",
                 "minimumReachedLabel": "Minimum Reached",
                 "checkboxAriaLabel": "Checkbox {name}",
-                "updateAriaLabel": "Update {name}",
-                "graduateName": "Graduate from {cohort}",
-                "graduateDescription": "Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "Update {name}"
             },
             "graduation": {
                 "title": "Graduate from {cohort}?",
@@ -348,7 +344,7 @@
                 "taskLockedUntil": "This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini Scoreboard",
+                "heading": "Scoreboard",
                 "type": "Type",
                 "dojoScore": "Dojo Score",
                 "trainingTime": "Training Time",
