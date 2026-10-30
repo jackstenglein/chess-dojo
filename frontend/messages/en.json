@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "close": "Close",
                 "cancel": "Cancel",
                 "save": "Save",
                 "update": "Update",
@@ -154,7 +155,7 @@
             "inputSlider": {
                 "decrement": "Decrement",
                 "increment": "Increment",
-                "progressCount": "Progress count",
+                "progressCount": "Progress",
                 "count": "Count"
             },
             "daily": {
@@ -289,8 +290,14 @@
                 "deleteAriaLabel": "delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "Total {before} → {after}",
+                "timeSpent": "Time spent",
+                "removeTime": "Remove 5 minutes",
+                "minutesShort": "min",
+                "lastCompleted": "Last {unit} completed",
+                "doneOf": "{done} of {total} done",
+                "addTime": "Add 5 minutes",
                 "markComplete": "Mark as Completed?",
-                "totalTime": "Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -315,9 +322,7 @@
                 "deleteEntry": "Delete"
             },
             "taskDialog": {
-                "historyTitle": "{name} History",
-                "addTimeTitle": "Add time to {name}?",
-                "updateTitle": "Update {name}?",
+                "historyCaption": "History",
                 "locked": "Locked",
                 "completed": "Completed",
                 "editTask": "Edit Task",

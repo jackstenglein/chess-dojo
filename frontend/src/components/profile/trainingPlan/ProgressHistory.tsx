@@ -8,20 +8,13 @@ import { ALL_COHORTS, compareCohorts, dojoCohorts, User } from '@/database/user'
 import LoadingPage from '@/loading/LoadingPage';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import AddIcon from '@mui/icons-material/Add';
-import {
-    Button,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    Stack,
-    Typography,
-} from '@mui/material';
+import { Button, DialogContent, DialogContentText, Stack, Typography } from '@mui/material';
 import { AxiosResponse } from 'axios';
-import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     createNewEntry,
+    getHistoryItems,
     getProgressSummary,
     getTimelineUpdate,
     type HistoryItem,
@@ -30,6 +23,7 @@ import {
 } from './progressHistoryEditor';
 import { ProgressHistoryList } from './ProgressHistoryList';
 import { TaskDialogView } from './TaskDialog';
+import { TaskDialogFooter, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
 
 function mergeDraftItems(
     items: HistoryItem[],
@@ -73,26 +67,10 @@ export function useProgressHistoryEditor({
         requirement?.scoreboardDisplay === ScoreboardDisplay.NonDojo ||
         requirement?.scoreboardDisplay === ScoreboardDisplay.Minutes;
 
-    const initialItems: HistoryItem[] = useMemo(() => {
-        // Older timeline entries in the database may have previousCount < startCount.
-        // It's important to make sure that count will be newCount - startCount
-        // in these cases, so we take Math.max(previousCount, startCount || 0).
-        return entries
-            .filter((t) => t.requirementId === requirement?.id)
-            .sort((a, b) => (a.date || a.createdAt).localeCompare(b.date || b.createdAt))
-            .map((t, idx) => ({
-                date: DateTime.fromISO(t.date || t.createdAt),
-                count: `${t.newCount - Math.max(t.previousCount, requirement?.startCount || 0)}`,
-                hours: `${Math.floor(t.minutesSpent / 60)}`,
-                minutes: `${t.minutesSpent % 60}`,
-                notes: t.notes,
-                cohort: t.cohort,
-                entry: t,
-                index: idx,
-                deleted: false,
-                isNew: false,
-            }));
-    }, [requirement, entries]);
+    const initialItems: HistoryItem[] = useMemo(
+        () => getHistoryItems(requirement, entries),
+        [requirement, entries],
+    );
 
     const [items, setItems] = useState(initialItems);
     const draftItemsRef = useRef<Record<number, HistoryItem | undefined>>({});
@@ -265,9 +243,10 @@ const ProgressHistory = ({
                         data-testid='task-history-add-new-button'
                         onClick={addItem}
                         disabled={request.isLoading()}
-                        variant='contained'
+                        variant='outlined'
                         size='small'
                         startIcon={<AddIcon />}
+                        sx={{ textTransform: 'none' }}
                     >
                         {t('addNew')}
                     </Button>
@@ -293,9 +272,10 @@ const ProgressHistory = ({
                 </Stack>
             </DialogContent>
 
-            <Stack sx={{ flexGrow: 1, px: 2, pt: 1.5 }}>
+            <Stack sx={{ px: 3, pt: 1.5 }}>
                 {!isTimeOnly && (
                     <Typography
+                        variant='body2'
                         data-testid='total-count-summary'
                         sx={{
                             color: 'text.secondary',
@@ -309,6 +289,7 @@ const ProgressHistory = ({
                     </Typography>
                 )}
                 <Typography
+                    variant='body2'
                     sx={{
                         color: 'text.secondary',
                     }}
@@ -322,34 +303,30 @@ const ProgressHistory = ({
                 </Typography>
             </Stack>
 
-            <DialogActions sx={{ flexWrap: 'wrap' }}>
-                <Button onClick={onClose} disabled={request.isLoading()}>
+            <TaskDialogFooter
+                view={TaskDialogView.History}
+                setView={setView}
+                disabled={request.isLoading()}
+            >
+                <Button
+                    color='inherit'
+                    onClick={onClose}
+                    disabled={request.isLoading()}
+                    sx={{ textTransform: 'none' }}
+                >
                     {tCommon('cancel')}
                 </Button>
-                {setView && (
-                    <>
-                        <Button
-                            onClick={() => setView(TaskDialogView.Details)}
-                            disabled={request.isLoading()}
-                        >
-                            {tCommon('taskDetails')}
-                        </Button>
-                        <Button
-                            onClick={() => setView(TaskDialogView.Progress)}
-                            disabled={request.isLoading()}
-                        >
-                            {tCommon('updateProgress')}
-                        </Button>
-                    </>
-                )}
                 <Button
+                    variant='contained'
+                    disableElevation
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}
+                    sx={taskDialogPrimaryButtonSx}
                 >
                     {tCommon('save')}
                 </Button>
-            </DialogActions>
+            </TaskDialogFooter>
 
             <RequestSnackbar request={request} />
             <RequestSnackbar request={timelineRequest} />

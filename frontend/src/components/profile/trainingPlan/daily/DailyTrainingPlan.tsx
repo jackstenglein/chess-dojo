@@ -262,6 +262,11 @@ function DailyTrainingPlanItem({
         progress: user.progress[task.id],
         timeline,
     });
+    // Counts start at the task's start (Polgar at #306), so progress means going past
+    // it, or having logged time on the task.
+    const hasProgress =
+        currentCount > (task.startCount || 0) ||
+        (user.progress[task.id]?.minutesSpent?.[user.dojoCohort] ?? 0) > 0;
 
     const isComplete = timeWorkedMinutes >= goalMinutes;
     return (
@@ -280,7 +285,7 @@ function DailyTrainingPlanItem({
                     onClick={() =>
                         onOpenTask(
                             task,
-                            isCurrentUser && currentCount > 0
+                            isCurrentUser && hasProgress
                                 ? TaskDialogView.Progress
                                 : TaskDialogView.Details,
                         )
