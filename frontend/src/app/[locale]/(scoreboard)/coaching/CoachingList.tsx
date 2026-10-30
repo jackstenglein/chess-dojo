@@ -166,10 +166,10 @@ const CoachingListItem: React.FC<{ event: Event }> = ({ event }) => {
                     <Field
                         title={t('cohorts')}
                         body={
-                            dojoCohorts.length === event.cohorts.length ||
-                            event.cohorts.length === 0
+                            dojoCohorts.length === event.cohorts?.length ||
+                            (event.cohorts?.length ?? 0) === 0
                                 ? t('allCohorts')
-                                : event.cohorts.join(', ')
+                                : event.cohorts?.join(', ')
                         }
                     />
                 </Stack>
