@@ -1,5 +1,5 @@
 import { getPublicBlog } from '@/api/blogApi';
-import { Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BlogMarkdown } from '../../../(scoreboard)/admin/blog/[...id]/MarkdownEditor';
@@ -48,6 +48,18 @@ export default async function BlogPage({ params }: PageProps<'/[locale]/blog/[..
     return (
         <Container>
             <Header title={blog.title} subtitle={blog.subtitle} />
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+                {blog.date} · {Math.max(1, Math.ceil(blog.content.split(/\s+/).length / 220))} min
+                read
+            </Typography>
+            {blog.coverImage && (
+                <Box
+                    component='img'
+                    src={blog.coverImage}
+                    alt={blog.title}
+                    sx={{ width: '100%', height: 'auto', borderRadius: 2, display: 'block', mb: 4 }}
+                />
+            )}
             <Stack
                 sx={{
                     mt: 3,

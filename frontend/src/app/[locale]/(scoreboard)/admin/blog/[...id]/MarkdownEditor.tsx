@@ -4,10 +4,13 @@ import { BlogListItem } from '@/app/[locale]/(blog)/blog/BlogListItem';
 import { GameViewer } from '@/app/[locale]/(blog)/blog/player-spotlight/GameViewer';
 import { Link } from '@/components/navigation/Link';
 import { Box, Container, Stack, Tab, Tabs, TextField, Typography, useTheme } from '@mui/material';
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Container as BlogContainer } from '../../../../(blog)/blog/common/Container';
 import { Header } from '../../../../(blog)/blog/common/Header';
+
+import { BlogImageUpload } from './BlogImageUpload';
 
 const GAME_LINK_PREFIX = '/game:';
 
@@ -52,6 +55,10 @@ export function MarkdownEditor({
     coverImage,
     date,
 }: MarkdownEditorProps) {
+    const latestValue = useRef(value);
+    useEffect(() => {
+        latestValue.current = value;
+    }, [value]);
     const [mode, setMode] = useState<EditorMode>('write');
     const theme = useTheme();
 
@@ -68,6 +75,14 @@ export function MarkdownEditor({
                 <Tab label='Syntax' value='syntax' />
             </Tabs>
 
+            {mode === 'write' && !disabled && (
+                <BlogImageUpload
+                    label='Upload image into post'
+                    onUpload={(url) =>
+                        onChange?.(`${latestValue.current}\n\n![Image description](${url})\n`)
+                    }
+                />
+            )}
             {mode === 'write' ? (
                 <TextField
                     data-testid='markdown-editor'
@@ -143,8 +158,16 @@ export function MarkdownEditor({
                         overflow: 'auto',
                     }}
                 >
-                    <Container maxWidth='md'>
+                    <BlogContainer>
                         <Header title={title} subtitle={subtitle} />
+                        {coverImage && (
+                            <Box
+                                component='img'
+                                src={coverImage}
+                                alt={title ?? ''}
+                                sx={{ width: '100%', borderRadius: 2, mb: 3 }}
+                            />
+                        )}
 
                         {value.trim() ? (
                             <BlogMarkdown>{value}</BlogMarkdown>
@@ -158,7 +181,7 @@ export function MarkdownEditor({
                                 Nothing to preview. Switch to Write to add content.
                             </Typography>
                         )}
-                    </Container>
+                    </BlogContainer>
                 </Box>
             )}
         </Stack>
@@ -494,288 +517,361 @@ function getYouTubeVideoId(href: string | undefined): string | null {
 /** Renders markdown with typography and links styled to match published blog posts. */
 export function BlogMarkdown({ children }: { children: string }) {
     return (
-        <ReactMarkdown
-            skipHtml={true}
-            remarkPlugins={[remarkGfm]}
-            components={{
-                p: (props) => (
-                    <Typography
-                        variant='body1'
-                        component='p'
-                        sx={{
-                            mt: 2,
-                            lineHeight: 1.7,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h1: (props) => (
-                    <Typography
-                        variant='h4'
-                        component='h1'
-                        sx={{
-                            mt: 3,
-                            mb: 1,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h2: (props) => (
-                    <Typography
-                        variant='h5'
-                        component='h2'
-                        sx={{
-                            mt: 3,
-                            mb: 1,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h3: (props) => (
-                    <Typography
-                        variant='h6'
-                        component='h3'
-                        sx={{
-                            mt: 2,
-                            mb: 1,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h4: (props) => (
-                    <Typography
-                        variant='subtitle1'
-                        component='h4'
-                        sx={{
-                            mt: 2,
-                            mb: 0.5,
-                            fontWeight: 600,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h5: (props) => (
-                    <Typography
-                        variant='subtitle2'
-                        component='h5'
-                        sx={{
-                            mt: 2,
-                            mb: 0.5,
-                            fontWeight: 600,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                h6: (props) => (
-                    <Typography
-                        variant='body2'
-                        component='h6'
-                        sx={{
-                            mt: 1.5,
-                            mb: 0.5,
-                            fontWeight: 600,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                a: (props) => {
-                    const gameViewerParams = getGameViewerParams(props.href);
-                    if (gameViewerParams) {
-                        return (
-                            <Box sx={{ my: 2 }}>
-                                <GameViewer
-                                    cohort={gameViewerParams.cohort}
-                                    id={gameViewerParams.id}
-                                />
-                            </Box>
-                        );
-                    }
-                    const videoId = getYouTubeVideoId(props.href);
-                    if (videoId) {
-                        return (
-                            <Box
-                                sx={{
-                                    position: 'relative',
-                                    width: '100%',
-                                    paddingBottom: '56.25%',
-                                    height: 0,
-                                    overflow: 'hidden',
-                                    my: 2,
-                                    borderRadius: 1,
-                                }}
-                            >
-                                <Box
-                                    component='iframe'
-                                    src={`https://www.youtube.com/embed/${videoId}`}
-                                    title='YouTube video'
-                                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                    allowFullScreen
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        border: 0,
-                                    }}
-                                />
-                            </Box>
-                        );
-                    }
-                    return (
-                        <Link href={props.href ?? '#'} target='_blank' rel='noopener noreferrer'>
-                            {props.children}
-                        </Link>
-                    );
+        <Box
+            sx={{
+                fontSize: { xs: '1rem', sm: '1.125rem' },
+                overflowWrap: 'anywhere',
+                '& p, & li': { fontSize: 'inherit', lineHeight: 1.85 },
+                '& h1, & h2, & h3, & h4, & h5, & h6': {
+                    color: 'text.primary',
+                    fontWeight: 800,
+                    lineHeight: 1.25,
+                    letterSpacing: '-0.02em',
+                    mt: 5,
+                    mb: 2,
+                    '& strong, & em, & a': { fontSize: 'inherit', fontWeight: 'inherit' },
                 },
-                ul: (props) => (
-                    <Box component='ul' sx={{ mt: 1.5, mb: 1.5, pl: 3 }}>
-                        {props.children}
-                    </Box>
-                ),
-                ol: (props) => (
-                    <Box component='ol' sx={{ mt: 1.5, mb: 1.5, pl: 3 }}>
-                        {props.children}
-                    </Box>
-                ),
-                li: (props) => (
-                    <Typography component='li' variant='body1' sx={{ mb: 0.5, lineHeight: 1.7 }}>
-                        {props.children}
-                    </Typography>
-                ),
-                blockquote: (props) => (
-                    <Box
-                        component='blockquote'
-                        sx={{
-                            my: 2,
-                            pl: 2,
-                            borderLeft: 4,
-                            borderColor: 'divider',
-                            color: 'text.secondary',
-                        }}
-                    >
-                        <Typography variant='body1' component='span' sx={{ lineHeight: 1.7 }}>
-                            {props.children}
-                        </Typography>
-                    </Box>
-                ),
-                code: (props) => {
-                    const isInline = !props.className;
-                    if (isInline) {
-                        return (
-                            <Box
-                                component='code'
-                                sx={{
-                                    px: 0.5,
-                                    py: 0.25,
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.85em',
-                                    bgcolor: 'action.hover',
-                                    borderRadius: 0.5,
-                                }}
-                            >
-                                {props.children}
-                            </Box>
-                        );
-                    }
-                    return (
-                        <Box
-                            component='pre'
+                '& h1': { fontSize: { xs: '2rem', sm: '2.5rem' } },
+                '& h2': {
+                    fontSize: { xs: '1.75rem', sm: '2rem' },
+                    pb: 1.25,
+                    borderBottom: '2px solid',
+                    borderColor: 'divider',
+                },
+                '& h3': { fontSize: { xs: '1.4rem', sm: '1.6rem' } },
+                '& h4': { fontSize: '1.3rem' },
+                '& h5, & h6': { fontSize: '1.15rem' },
+                '& a': {
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '3px',
+                    textDecorationThickness: '1px',
+                },
+                '& a:hover': { textDecorationThickness: '2px' },
+                '& a:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: 3,
+                },
+                '& table': {
+                    display: 'block',
+                    overflowX: 'auto',
+                    borderCollapse: 'collapse',
+                    my: 3,
+                },
+                '& th, & td': {
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    p: 1.5,
+                    textAlign: 'left',
+                },
+                '& th': { bgcolor: 'action.hover' },
+                '& pre': { overflowX: 'auto' },
+            }}
+        >
+            <ReactMarkdown
+                skipHtml={true}
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    p: (props) => (
+                        <Typography
+                            variant='body1'
+                            component='p'
                             sx={{
-                                overflow: 'auto',
-                                p: 2,
-                                my: 2,
-                                bgcolor: 'action.hover',
-                                borderRadius: 1,
-                                border: '1px solid',
-                                borderColor: 'divider',
+                                mt: 2,
+                                lineHeight: 1.7,
                             }}
                         >
-                            <Typography
-                                component='code'
-                                variant='body2'
-                                sx={{ fontFamily: 'monospace', display: 'block' }}
+                            {props.children}
+                        </Typography>
+                    ),
+                    h1: (props) => (
+                        <Typography
+                            variant='h4'
+                            component='h1'
+                            sx={{
+                                mt: 3,
+                                mb: 1,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    h2: (props) => (
+                        <Typography
+                            variant='h5'
+                            component='h2'
+                            sx={{
+                                mt: 3,
+                                mb: 1,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    h3: (props) => (
+                        <Typography
+                            variant='h6'
+                            component='h3'
+                            sx={{
+                                mt: 2,
+                                mb: 1,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    h4: (props) => (
+                        <Typography
+                            variant='subtitle1'
+                            component='h4'
+                            sx={{
+                                mt: 2,
+                                mb: 0.5,
+                                fontWeight: 600,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    h5: (props) => (
+                        <Typography
+                            variant='subtitle2'
+                            component='h5'
+                            sx={{
+                                mt: 2,
+                                mb: 0.5,
+                                fontWeight: 600,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    h6: (props) => (
+                        <Typography
+                            variant='body2'
+                            component='h6'
+                            sx={{
+                                mt: 1.5,
+                                mb: 0.5,
+                                fontWeight: 600,
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    a: (props) => {
+                        const gameViewerParams = getGameViewerParams(props.href);
+                        if (gameViewerParams) {
+                            return (
+                                <Box sx={{ my: 2 }}>
+                                    <GameViewer
+                                        cohort={gameViewerParams.cohort}
+                                        id={gameViewerParams.id}
+                                    />
+                                </Box>
+                            );
+                        }
+                        const videoId = getYouTubeVideoId(props.href);
+                        if (videoId) {
+                            return (
+                                <Box
+                                    sx={{
+                                        position: 'relative',
+                                        width: '100%',
+                                        paddingBottom: '56.25%',
+                                        height: 0,
+                                        overflow: 'hidden',
+                                        my: 2,
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    <Box
+                                        component='iframe'
+                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                        title='YouTube video'
+                                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                        allowFullScreen
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            border: 0,
+                                        }}
+                                    />
+                                </Box>
+                            );
+                        }
+                        return (
+                            <Link
+                                href={props.href ?? '#'}
+                                target={
+                                    props.href?.startsWith('#') || props.href?.startsWith('/')
+                                        ? undefined
+                                        : '_blank'
+                                }
+                                rel='noopener noreferrer'
                             >
+                                {props.children}
+                            </Link>
+                        );
+                    },
+                    ul: (props) => (
+                        <Box component='ul' sx={{ mt: 1.5, mb: 1.5, pl: 3 }}>
+                            {props.children}
+                        </Box>
+                    ),
+                    ol: (props) => (
+                        <Box component='ol' sx={{ mt: 1.5, mb: 1.5, pl: 3 }}>
+                            {props.children}
+                        </Box>
+                    ),
+                    li: (props) => (
+                        <Typography
+                            component='li'
+                            variant='body1'
+                            sx={{ mb: 0.5, lineHeight: 1.7 }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    blockquote: (props) => (
+                        <Box
+                            component='blockquote'
+                            sx={{
+                                my: 2,
+                                pl: 2,
+                                borderLeft: 4,
+                                borderColor: 'primary.main',
+                                bgcolor: 'action.hover',
+                                py: 1,
+                                pr: 2,
+                                mx: 0,
+                                borderRadius: 1,
+                                color: 'text.secondary',
+                            }}
+                        >
+                            <Typography variant='body1' component='span' sx={{ lineHeight: 1.7 }}>
                                 {props.children}
                             </Typography>
                         </Box>
-                    );
-                },
-                hr: () => (
-                    <Box
-                        component='hr'
-                        sx={{ my: 3, border: 'none', borderTop: 1, borderColor: 'divider' }}
-                    />
-                ),
-                strong: (props) => (
-                    <Typography
-                        component='strong'
-                        sx={{
-                            fontWeight: 700,
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                em: (props) => (
-                    <Typography
-                        component='em'
-                        sx={{
-                            fontStyle: 'italic',
-                        }}
-                    >
-                        {props.children}
-                    </Typography>
-                ),
-                img: (props) => {
-                    const dims = parseImageDimensions(props.title);
-                    const { width, height, title } = dims;
-                    const sx: Record<string, string | number> = {
-                        borderRadius: 2,
-                        maxWidth: '100%',
-                    };
-                    if (width && height) {
-                        sx.width = width;
-                        sx.height = height;
-                        sx.objectFit = 'contain';
-                    } else if (width) {
-                        sx.width = width;
-                        sx.height = 'auto';
-                    } else if (height) {
-                        sx.width = 'auto';
-                        sx.height = height;
-                    } else {
-                        sx.width = '100%';
-                        sx.height = 'auto';
-                    }
-                    return (
-                        <Stack
+                    ),
+                    code: (props) => {
+                        const isInline = !props.className;
+                        if (isInline) {
+                            return (
+                                <Box
+                                    component='code'
+                                    sx={{
+                                        px: 0.5,
+                                        py: 0.25,
+                                        fontFamily: 'monospace',
+                                        fontSize: '0.85em',
+                                        bgcolor: 'action.hover',
+                                        borderRadius: 0.5,
+                                    }}
+                                >
+                                    {props.children}
+                                </Box>
+                            );
+                        }
+                        return (
+                            <Box
+                                component='pre'
+                                sx={{
+                                    overflow: 'auto',
+                                    p: 2,
+                                    my: 2,
+                                    bgcolor: 'action.hover',
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Typography
+                                    component='code'
+                                    variant='body2'
+                                    sx={{ fontFamily: 'monospace', display: 'block' }}
+                                >
+                                    {props.children}
+                                </Typography>
+                            </Box>
+                        );
+                    },
+                    hr: () => (
+                        <Box
+                            component='hr'
+                            sx={{ my: 3, border: 'none', borderTop: 1, borderColor: 'divider' }}
+                        />
+                    ),
+                    strong: (props) => (
+                        <Typography
+                            component='strong'
                             sx={{
-                                width: 1,
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                fontWeight: 700,
+                                fontSize: 'inherit',
                             }}
                         >
-                            <Box
-                                component='img'
-                                src={props.src}
-                                alt={props.alt}
-                                title={title}
-                                sx={sx}
-                            />
-                        </Stack>
-                    );
-                },
-            }}
-        >
-            {children}
-        </ReactMarkdown>
+                            {props.children}
+                        </Typography>
+                    ),
+                    em: (props) => (
+                        <Typography
+                            component='em'
+                            sx={{
+                                fontStyle: 'italic',
+                                fontSize: 'inherit',
+                            }}
+                        >
+                            {props.children}
+                        </Typography>
+                    ),
+                    img: (props) => {
+                        const dims = parseImageDimensions(props.title);
+                        const { width, height, title } = dims;
+                        const sx: Record<string, string | number> = {
+                            borderRadius: 2,
+                            maxWidth: '100%',
+                        };
+                        if (width && height) {
+                            sx.width = width;
+                            sx.height = height;
+                            sx.objectFit = 'contain';
+                        } else if (width) {
+                            sx.width = width;
+                            sx.height = 'auto';
+                        } else if (height) {
+                            sx.width = 'auto';
+                            sx.height = height;
+                        } else {
+                            sx.width = '100%';
+                            sx.height = 'auto';
+                        }
+                        return (
+                            <Stack
+                                sx={{
+                                    width: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Box
+                                    component='img'
+                                    src={props.src}
+                                    alt={props.alt}
+                                    title={title}
+                                    sx={sx}
+                                />
+                            </Stack>
+                        );
+                    },
+                }}
+            >
+                {children}
+            </ReactMarkdown>
+        </Box>
     );
 }

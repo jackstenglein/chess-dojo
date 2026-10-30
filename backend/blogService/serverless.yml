@@ -21,6 +21,42 @@ provider:
   deploymentMethod: direct
 
 functions:
+  delete:
+    handler: delete.handler
+    events:
+      - httpApi:
+          path: /blog/{owner}/{id+}
+          method: delete
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action: dynamodb:DeleteItem
+        Resource: !GetAtt BlogsTable.Arn
+
+  uploadImage:
+    handler: uploadImage.handler
+    environment:
+      blogImagesBucket: !Ref BlogImagesBucket
+    events:
+      - httpApi:
+          path: /blog/images
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action: s3:PutObject
+        Resource: !Sub '${BlogImagesBucket.Arn}/images/*'
+
   list:
     handler: list.handler
     events:
@@ -183,6 +219,31 @@ resources:
     IsProd: !Equals ['${sls:stage}', 'prod']
 
   Resources:
+    BlogImagesBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          IgnorePublicAcls: true
+          BlockPublicPolicy: false
+          RestrictPublicBuckets: false
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+    BlogImagesBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref BlogImagesBucket
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action: s3:GetObject
+              Resource: !Sub '${BlogImagesBucket.Arn}/images/*'
+
     BlogsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
