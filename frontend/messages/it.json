@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Fissata",
                 "cancel": "Annulla",
                 "save": "Salva",
                 "update": "Aggiorna",
@@ -149,7 +150,8 @@
                 "commentsPlaceholder": "Commenti facoltativi sui tuoi progressi o sul compito stesso. Visibili agli altri nel feed di notizie.",
                 "mustBeNumeric": "Sono accettati solo caratteri numerici",
                 "mustBeInteger": "Questo campo deve essere un numero intero",
-                "fieldRequired": "Questo campo è obbligatorio"
+                "fieldRequired": "Questo campo è obbligatorio",
+                "moreActions": "Altre azioni"
             },
             "inputSlider": {
                 "decrement": "Riduci",
@@ -157,9 +159,34 @@
                 "progressCount": "Conteggio dei progressi",
                 "count": "Conteggio"
             },
+            "verbs": {
+                "read": "Leggere",
+                "watch": "Guardare",
+                "solve": "Risolvere",
+                "study": "Studiare",
+                "play": "Giocare",
+                "spar": "Sparring",
+                "annotate": "Annotare",
+                "review": "Rivedere",
+                "guide": "Leggi la guida"
+            },
+            "quickLog": {
+                "logTraining": "Registra allenamento",
+                "logTooltip": "Registra progressi e tempo per questa attività",
+                "undo": "Annulla"
+            },
             "daily": {
                 "today": "Oggi",
-                "progressCompleted": "{current} / {total} {suffix} completati"
+                "summary": "{done} di {total} attività fatte · {worked} di {goal}",
+                "allDone": "Finito per oggi · {worked} registrati",
+                "goalMet": "Obiettivo di tempo raggiunto",
+                "skippedHeading": "Saltate questa settimana ({count})",
+                "restore": "Ripristina {name}",
+                "skippedToast": "{name} saltata per il resto della settimana",
+                "swapTooltip": "Scambia con un’altra attività di {category}",
+                "swapNone": "Nessun’altra attività di {category} da scambiare",
+                "swapHeading": "Scambia con un’altra attività di {category}",
+                "swapped": "{from} scambiata con {to}"
             },
             "weekly": {
                 "thisWeek": "Questa settimana",
@@ -312,7 +339,8 @@
                 "countRequired": "Questo campo è obbligatorio",
                 "countNumeric": "Sono accettati solo caratteri numerici",
                 "countMinOne": "È richiesta almeno una partita",
-                "deleteEntry": "Elimina"
+                "deleteEntry": "Elimina",
+                "scheduleAction": "Pianifica"
             },
             "taskDialog": {
                 "historyTitle": "Cronologia di {name}",

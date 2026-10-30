@@ -5,9 +5,11 @@ import { useAuth } from '@/auth/Auth';
 import { CustomTask, Requirement } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, User, WeeklyPlan, WorkGoalSettings } from '@/database/user';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
+import { clearUpcomingDays, toggleSkippedIds } from './skippedTasks';
 import { SuggestedTask, TaskSuggestionAlgorithm } from './suggestedTasks';
+import { swapInPlan } from './swapTask';
 
 export interface UseTrainingPlanResponse {
     /** The request for fetching requirements. */
@@ -26,8 +28,28 @@ export interface UseTrainingPlanResponse {
     isCurrentUser: boolean;
     /** The ids of tasks the user has skipped for the current week. */
     skippedTaskIds?: string[];
-    /** A callback function to toggle whether a task is skipped. */
+    /**
+     * Toggles whether the given ids are skipped for the week. If all of them are
+     * already skipped they are restored; otherwise they are skipped.
+     */
     toggleSkip: (...ids: string[]) => void;
+    /** The ids skipped most recently, while an undo is still on offer. */
+    lastSkipped?: string[];
+    /** Undoes the most recent skip, putting the week back exactly as it was. */
+    undoSkip: () => void;
+    /** Dismisses the undo for the most recent skip. */
+    clearLastSkipped: () => void;
+    /**
+     * Replaces a task on today's plan with another, keeping its time. Returns false
+     * when the task is not on today's saved plan, so there was nothing to swap.
+     */
+    swapTask: (fromId: string, toId: string) => boolean;
+    /** The most recent swap, while an undo is still on offer. */
+    lastSwap?: { fromId: string; toId: string };
+    /** Undoes the most recent swap, putting today back exactly as it was. */
+    undoSwap: () => void;
+    /** Dismisses the undo for the most recent swap. */
+    clearLastSwap: () => void;
 }
 
 /**
@@ -63,14 +85,61 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         void api.updateUser({ pinnedTasks: newIds });
     };
 
+    const [lastSkip, setLastSkip] = useState<{ ids: string[]; previousPlan: WeeklyPlan }>();
+
+    const savePlan = (weeklyPlan: WeeklyPlan) => {
+        updateUser({ weeklyPlan });
+        void api.updateUser({ weeklyPlan });
+    };
+
     const toggleSkip = (...ids: string[]) => {
-        if (!user.weeklyPlan) {
+        const plan = user.weeklyPlan;
+        if (!plan) {
             return;
         }
-        const skippedTasks = [...(user.weeklyPlan.skippedTasks ?? []), ...ids];
-        const newPlan = { ...user.weeklyPlan, skippedTasks };
-        updateUser({ weeklyPlan: newPlan });
-        void api.updateUser({ weeklyPlan: newPlan });
+        const current = plan.skippedTasks ?? [];
+        const skippedTasks = toggleSkippedIds(current, ids);
+        const isSkipping = skippedTasks.length > current.length;
+
+        // A restore also clears the rest of the week so it gets rebuilt; otherwise
+        // whatever replaced the task when it was skipped would stay in its place.
+        savePlan(
+            isSkipping
+                ? { ...plan, skippedTasks }
+                : { ...plan, skippedTasks, tasks: clearUpcomingDays(plan) },
+        );
+        setLastSkip(isSkipping ? { ids, previousPlan: plan } : undefined);
+    };
+
+    const [lastSwap, setLastSwap] = useState<{
+        fromId: string;
+        toId: string;
+        previousPlan: WeeklyPlan;
+    }>();
+
+    const swapTask = (fromId: string, toId: string) => {
+        const plan = user.weeklyPlan;
+        const dayIndex = new Date().getDay();
+        if (!plan?.tasks[dayIndex]?.some((t) => t.id === fromId)) {
+            return false;
+        }
+        savePlan(swapInPlan(plan, dayIndex, fromId, toId));
+        setLastSwap({ fromId, toId, previousPlan: plan });
+        return true;
+    };
+
+    const undoSwap = () => {
+        if (lastSwap) {
+            savePlan(lastSwap.previousPlan);
+            setLastSwap(undefined);
+        }
+    };
+
+    const undoSkip = () => {
+        if (lastSkip) {
+            savePlan(lastSkip.previousPlan);
+            setLastSkip(undefined);
+        }
     };
 
     return {
@@ -83,6 +152,13 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         isCurrentUser: currentUser?.username === user.username,
         skippedTaskIds: user.weeklyPlan?.skippedTasks,
         toggleSkip,
+        lastSkipped: lastSkip?.ids,
+        undoSkip,
+        clearLastSkipped: () => setLastSkip(undefined),
+        swapTask,
+        lastSwap: lastSwap && { fromId: lastSwap.fromId, toId: lastSwap.toId },
+        undoSwap,
+        clearLastSwap: () => setLastSwap(undefined),
     };
 }
 

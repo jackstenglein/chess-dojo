@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Fixada",
                 "cancel": "Cancelar",
                 "save": "Salvar",
                 "update": "Atualizar",
@@ -149,7 +150,8 @@
                 "commentsPlaceholder": "Comentários opcionais sobre seu progresso ou sobre a própria tarefa. Visíveis para os outros no feed de novidades.",
                 "mustBeNumeric": "Apenas caracteres numéricos são aceitos",
                 "mustBeInteger": "Este campo deve ser um número inteiro",
-                "fieldRequired": "Este campo é obrigatório"
+                "fieldRequired": "Este campo é obrigatório",
+                "moreActions": "Mais ações"
             },
             "inputSlider": {
                 "decrement": "Diminuir",
@@ -157,9 +159,34 @@
                 "progressCount": "Contador de progresso",
                 "count": "Quantidade"
             },
+            "verbs": {
+                "read": "Ler",
+                "watch": "Assistir",
+                "solve": "Resolver",
+                "study": "Estudar",
+                "play": "Jogar",
+                "spar": "Sparring",
+                "annotate": "Anotar",
+                "review": "Revisar",
+                "guide": "Ler guia"
+            },
+            "quickLog": {
+                "logTraining": "Registrar treino",
+                "logTooltip": "Registrar progresso e tempo desta tarefa",
+                "undo": "Desfazer"
+            },
             "daily": {
                 "today": "Hoje",
-                "progressCompleted": "{current} / {total} {suffix} concluídos"
+                "summary": "{done} de {total} tarefas feitas · {worked} de {goal}",
+                "allDone": "Concluído por hoje · {worked} registrados",
+                "goalMet": "Meta de tempo atingida",
+                "skippedHeading": "Puladas nesta semana ({count})",
+                "restore": "Restaurar {name}",
+                "skippedToast": "{name} pulada pelo resto da semana",
+                "swapTooltip": "Trocar por outra tarefa de {category}",
+                "swapNone": "Nenhuma outra tarefa de {category} para trocar",
+                "swapHeading": "Trocar por outra tarefa de {category}",
+                "swapped": "{from} trocada por {to}"
             },
             "weekly": {
                 "thisWeek": "Esta semana",
@@ -312,7 +339,8 @@
                 "countRequired": "Este campo é obrigatório",
                 "countNumeric": "Só são aceitos caracteres numéricos",
                 "countMinOne": "É necessária pelo menos uma partida",
-                "deleteEntry": "Excluir"
+                "deleteEntry": "Excluir",
+                "scheduleAction": "Agendar"
             },
             "taskDialog": {
                 "historyTitle": "Histórico de {name}",

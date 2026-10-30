@@ -249,9 +249,10 @@ test.describe('Training Plan', () => {
         await mockEmptyTimeline(page);
         await gotoTrainingPlan(page);
 
-        await expect(
-            page.getByTestId('training-plan-today').getByText('Read Tal-Botvinnik 1960').first(),
-        ).toBeVisible();
+        // The task's verb shows as an icon, so the name reads without "Read".
+        const today = page.getByTestId('training-plan-today');
+        await expect(today.getByText('Tal-Botvinnik 1960').first()).toBeVisible();
+        await expect(today.getByTestId('task-verb-read').first()).toBeVisible();
     });
 
     test('displays correct progress text in daily card for task with min goal', async ({
@@ -292,8 +293,8 @@ test.describe('Training Plan', () => {
         await gotoTrainingPlan(page);
 
         const today = page.getByTestId('training-plan-today');
-        await expect(today.getByText('0 / 75 pages completed')).toBeVisible();
-        await expect(today.getByText('5 / 75 pages completed')).toBeVisible();
+        await expect(today.getByText('0 / 75 pages')).toBeVisible();
+        await expect(today.getByText('5 / 75 pages')).toBeVisible();
     });
 
     test('displays correct progress text in daily card for task with no min goal', async ({
@@ -316,7 +317,7 @@ test.describe('Training Plan', () => {
         await gotoTrainingPlan(page);
 
         await expect(
-            page.getByTestId('training-plan-today').getByText('0 / 100 pages completed'),
+            page.getByTestId('training-plan-today').getByText('0 / 100 pages'),
         ).toBeVisible();
     });
 

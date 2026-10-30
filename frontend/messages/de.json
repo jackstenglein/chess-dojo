@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Angeheftet",
                 "cancel": "Abbrechen",
                 "save": "Speichern",
                 "update": "Aktualisieren",
@@ -149,7 +150,8 @@
                 "commentsPlaceholder": "Optionale Kommentare zu deinem Fortschritt oder der Aufgabe selbst. Für andere im Newsfeed sichtbar.",
                 "mustBeNumeric": "Nur Ziffern sind erlaubt",
                 "mustBeInteger": "Dieses Feld muss eine Ganzzahl sein",
-                "fieldRequired": "Dieses Feld ist erforderlich"
+                "fieldRequired": "Dieses Feld ist erforderlich",
+                "moreActions": "Weitere Aktionen"
             },
             "inputSlider": {
                 "decrement": "Verringern",
@@ -157,9 +159,34 @@
                 "progressCount": "Fortschrittsanzahl",
                 "count": "Anzahl"
             },
+            "verbs": {
+                "read": "Lesen",
+                "watch": "Ansehen",
+                "solve": "Lösen",
+                "study": "Studieren",
+                "play": "Spielen",
+                "spar": "Sparring",
+                "annotate": "Kommentieren",
+                "review": "Analysieren",
+                "guide": "Leitfaden lesen"
+            },
+            "quickLog": {
+                "logTraining": "Training eintragen",
+                "logTooltip": "Fortschritt und Zeit für diese Aufgabe eintragen",
+                "undo": "Rückgängig"
+            },
             "daily": {
                 "today": "Heute",
-                "progressCompleted": "{current} / {total} {suffix} abgeschlossen"
+                "summary": "{done} von {total} Aufgaben erledigt · {worked} von {goal}",
+                "allDone": "Fertig für heute · {worked} eingetragen",
+                "goalMet": "Zeitziel erreicht",
+                "skippedHeading": "Diese Woche übersprungen ({count})",
+                "restore": "{name} wiederherstellen",
+                "skippedToast": "{name} für den Rest der Woche übersprungen",
+                "swapTooltip": "Gegen eine andere {category}-Aufgabe tauschen",
+                "swapNone": "Keine andere {category}-Aufgabe zum Tauschen",
+                "swapHeading": "Gegen eine andere {category}-Aufgabe tauschen",
+                "swapped": "{from} gegen {to} getauscht"
             },
             "weekly": {
                 "thisWeek": "Diese Woche",
@@ -312,7 +339,8 @@
                 "countRequired": "Dieses Feld ist erforderlich",
                 "countNumeric": "Nur numerische Zeichen werden akzeptiert",
                 "countMinOne": "Mindestens ein Spiel ist erforderlich",
-                "deleteEntry": "Löschen"
+                "deleteEntry": "Löschen",
+                "scheduleAction": "Planen"
             },
             "taskDialog": {
                 "historyTitle": "{name} Verlauf",

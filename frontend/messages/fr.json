@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Épinglée",
                 "cancel": "Annuler",
                 "save": "Enregistrer",
                 "update": "Mettre à jour",
@@ -149,7 +150,8 @@
                 "commentsPlaceholder": "Commentaires facultatifs sur ta progression ou sur la tâche elle-même. Visibles par les autres dans le fil d'actualité.",
                 "mustBeNumeric": "Seuls les chiffres sont acceptés",
                 "mustBeInteger": "Ce champ doit être un nombre entier",
-                "fieldRequired": "Ce champ est obligatoire"
+                "fieldRequired": "Ce champ est obligatoire",
+                "moreActions": "Plus d'actions"
             },
             "inputSlider": {
                 "decrement": "Diminuer",
@@ -157,9 +159,34 @@
                 "progressCount": "Nombre de progression",
                 "count": "Nombre"
             },
+            "verbs": {
+                "read": "Lire",
+                "watch": "Regarder",
+                "solve": "Résoudre",
+                "study": "Étudier",
+                "play": "Jouer",
+                "spar": "Sparring",
+                "annotate": "Annoter",
+                "review": "Analyser",
+                "guide": "Lire le guide"
+            },
+            "quickLog": {
+                "logTraining": "Enregistrer l'entraînement",
+                "logTooltip": "Enregistrer la progression et le temps pour cette tâche",
+                "undo": "Annuler"
+            },
             "daily": {
                 "today": "Aujourd'hui",
-                "progressCompleted": "{current} / {total} {suffix} terminé(s)"
+                "summary": "{done} sur {total} tâches faites · {worked} sur {goal}",
+                "allDone": "Terminé pour aujourd'hui · {worked} enregistré",
+                "goalMet": "Objectif de temps atteint",
+                "skippedHeading": "Ignorées cette semaine ({count})",
+                "restore": "Rétablir {name}",
+                "skippedToast": "{name} ignorée pour le reste de la semaine",
+                "swapTooltip": "Échanger contre une autre tâche {category}",
+                "swapNone": "Aucune autre tâche {category} à échanger",
+                "swapHeading": "Échanger contre une autre tâche {category}",
+                "swapped": "{from} échangée contre {to}"
             },
             "weekly": {
                 "thisWeek": "Cette semaine",
@@ -312,7 +339,8 @@
                 "countRequired": "Ce champ est obligatoire",
                 "countNumeric": "Seuls les caractères numériques sont acceptés",
                 "countMinOne": "Au moins une partie est requise",
-                "deleteEntry": "Supprimer"
+                "deleteEntry": "Supprimer",
+                "scheduleAction": "Planifier"
             },
             "taskDialog": {
                 "historyTitle": "Historique de {name}",
