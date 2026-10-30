@@ -112,6 +112,7 @@
         "@playwright/test": "^1.63.0",
         "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.3",
+        "@testing-library/user-event": "^14.6.8",
         "@types/deep-equal": "^1.0.4",
         "@types/lodash.debounce": "^4.0.9",
         "@types/luxon": "^3.7.5",
