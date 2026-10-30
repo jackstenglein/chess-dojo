@@ -655,6 +655,7 @@
             "tabTrainingPlan": "Plan de entrenamiento",
             "tabActivity": "Actividad",
             "tabGames": "Partidas",
+            "tabResults": "Resultados",
             "tabClubs": "Clubes"
         },
         "yearReview": {
@@ -851,6 +852,34 @@
             "upcomingSessions": "Próximas sesiones",
             "viewAsList": "Ver como lista",
             "viewInCalendar": "Ver en el calendario"
+        },
+        "resultsTab": {
+            "rapid": "Rápidas",
+            "classical": "Clásicas",
+            "record": "Balance (V-D-T)",
+            "winRate": "Porcentaje de victorias",
+            "streakWin": "{count, plural, one {# victoria} other {# victorias}}",
+            "avgOpponent": "Rival promedio",
+            "bestWin": "Mejor victoria",
+            "date": "Fecha",
+            "opponent": "Rival",
+            "color": "Color",
+            "white": "Blancas",
+            "black": "Negras",
+            "result": "Resultado",
+            "win": "Victoria",
+            "loss": "Derrota",
+            "draw": "Tablas",
+            "emptyNoAccounts": "No se encontró ninguna cuenta de Lichess o Chess.com conectada.",
+            "emptyConnectAccounts": "<link>Conecta tu cuenta de Lichess o Chess.com</link> para ver tus resultados aquí.",
+            "emptyNoGames": "No se encontraron partidas en este período.",
+            "bestStreak": "Mejor racha de victorias",
+            "resultsFor": "Resultados de:",
+            "performanceByMonth": "Rendimiento por mes",
+            "performanceWhite": "Rendimiento con blancas",
+            "performanceBlack": "Rendimiento con negras",
+            "sessionSummary": "{count, plural, one {# partida} other {# partidas}} · Puntuación: {score}/{count}",
+            "sessionPerformance": "Rendimiento {rating}"
         },
         "graduationShare": {
             "title": "¡Comparte tu progreso!",
