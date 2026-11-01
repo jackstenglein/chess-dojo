@@ -29,6 +29,13 @@ const mongoClient = new MongoClient(process.env.MONGODB_URI ?? '', {
         strict: true,
         deprecationErrors: true,
     },
+    monitorCommands: true,
+});
+
+mongoClient.on('commandSucceeded', (event) => {
+    if (event.duration > 100) {
+        console.warn(`Slow Query Detected (${event.duration}ms):`, JSON.stringify(event.reply));
+    }
 });
 
 /**
@@ -125,14 +132,11 @@ async function findRandomPuzzle(
     };
 
     const pivot = Math.random();
-    const document = await collection.findOne(
-        { ...base, random: { $gte: pivot } },
-        { sort: { random: 1 } },
-    );
+    const document = await collection.findOne({ ...base, random: { $gte: pivot } });
     if (document) {
         return document;
     }
-    return collection.findOne({ ...base, random: { $gte: 0 } }, { sort: { random: 1 } });
+    return collection.findOne({ ...base, random: { $gte: 0 } });
 }
 
 async function findRandomPuzzleDev(
