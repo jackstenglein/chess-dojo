@@ -114,7 +114,7 @@
         "@testing-library/react": "^16.3.3",
         "@types/deep-equal": "^1.0.4",
         "@types/lodash.debounce": "^4.0.9",
-        "@types/luxon": "^3.7.5",
+        "@types/luxon": "^3.7.6",
         "@types/node": "^26.6.3",
         "@vitejs/plugin-react": "^6.1.1",
         "command-line-args": "^6.0.2",
