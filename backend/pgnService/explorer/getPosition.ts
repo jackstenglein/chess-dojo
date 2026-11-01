@@ -1,6 +1,7 @@
 'use strict';
 
 import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { Chess } from '@jackstenglein/chess';
 import { ExplorerPositionFollower } from '@jackstenglein/chess-dojo-common/src/explorer/follower';
@@ -10,11 +11,15 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/explorer/types';
 import { APIGatewayProxyHandlerV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import axios from 'axios';
+import { ApiError } from '../../directoryService/api';
 import { ExplorerPosition, LichessExplorerPosition } from './types';
 
 const dynamo = new DynamoDBClient({ region: 'us-east-1' });
 const explorerTable = `${process.env.stage}-explorer`;
 const mastersTable = process.env.stage === 'prod' ? 'prod-masters-explorer' : explorerTable;
+
+const secretsManager = new SecretsManagerClient({ region: 'us-east-1' });
+let lichessToken: string | undefined;
 
 /**
  * Gets an ExplorerPosition for the provided FEN.
@@ -111,10 +116,12 @@ async function fetchFromMasters(fen: string): Promise<ExplorerPosition | null> {
  */
 async function fetchFromLichess(fen: string): Promise<LichessExplorerPosition | null> {
     try {
+        const token = await getLichessToken();
         const response = await axios.get<LichessExplorerPosition>(
             'https://explorer.lichess.ovh/lichess',
             {
                 params: { fen, topGames: 0, recentGames: 0 },
+                headers: { Authorization: `Bearer ${token}` },
             },
         );
         return response.data;
@@ -135,15 +142,48 @@ async function fetchFromTablebase(fen: string): Promise<LichessTablebasePosition
     }
 
     try {
+        const token = await getLichessToken();
         const response = await axios.get<LichessTablebasePosition>(
             'https://tablebase.lichess.ovh/standard',
-            { params: { fen: fen.replaceAll(' ', '_') }, headers: { Accept: '*/*' } },
+            {
+                params: { fen: fen.replaceAll(' ', '_') },
+                headers: { Accept: '*/*', Authorization: `Bearer ${token}` },
+            },
         );
         return response.data;
     } catch (err) {
         console.error('Failed to get Lichess tablebase position: ', err);
         return null;
     }
+}
+
+/**
+ * Fetches and caches the Lichess API token from secrets manager.
+ */
+async function getLichessToken(): Promise<string> {
+    if (lichessToken) {
+        return lichessToken;
+    }
+
+    lichessToken = await secretsManager
+        .send(
+            new GetSecretValueCommand({
+                SecretId: `chess-dojo-${process.env.stage}-lichessApiToken`,
+            }),
+        )
+        .then((output) => output.SecretString || undefined)
+        .catch((err: unknown) => {
+            console.error('Failed to get the Lichess API token: ', err);
+            return undefined;
+        });
+    if (!lichessToken) {
+        throw new ApiError({
+            statusCode: 500,
+            publicMessage: 'Internal server error',
+            privateMessage: 'Failed to fetch Lichess API token (or it was empty)',
+        });
+    }
+    return lichessToken;
 }
 
 /**
