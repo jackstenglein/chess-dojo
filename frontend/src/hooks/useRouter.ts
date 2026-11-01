@@ -20,6 +20,7 @@ export const pagesWithVideos = [
     /^\/learn\/live-classes$/,
     /^\/learn\/live-classes\/.+$/,
     /^\/live-classes$/,
+    /^\/class$/,
     /^\/admin\/courses/,
 
     // Blog

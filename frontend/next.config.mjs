@@ -120,6 +120,7 @@ const pagesWithVideosRaw = [
     '/learn/live-classes/:path*',
     '/learn/sparring',
     '/live-classes',
+    '/class',
 
     // Admin course editor
     '/admin/courses/:path*',

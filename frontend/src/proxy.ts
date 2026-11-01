@@ -45,6 +45,7 @@ const publicPaths = [
     /^\/profile\/.*\/postmortem\/.*$/,
     /^\/calendar.*$/,
     /^\/live-classes$/,
+    /^\/class$/,
     /^\/privacy-policy$/,
 ];
 
