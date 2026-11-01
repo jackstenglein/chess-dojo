@@ -180,11 +180,30 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
             if (phaseRef.current !== 'running' && phaseRef.current !== 'loading') {
                 return;
             }
+
+            const state = run.current;
+            if (state.current) {
+                const attempt: PuzzleRushAttempt = {
+                    puzzleId: state.current.id,
+                    fen: state.current.fen,
+                    moves: state.current.moves,
+                    puzzleRating: state.current.rating,
+                    searchRating: currentRushRating(state.ladder),
+                    result: 'loss',
+                    timeSpentSeconds: Math.round(
+                        (performance.now() - state.puzzleStartedAt) / 1000,
+                    ),
+                };
+                state.attempts = [...state.attempts, attempt];
+                state.ladder = applyRushResult(state.ladder, 'loss');
+            }
+
             stopCountdown();
             run.current.resolved = true;
             run.current.prefetch = {};
             setEndReason(reason);
             setFlash(undefined);
+            setAttempts(state.attempts);
             setPhaseSynced('finished');
             submit(run.current, reason);
         },
