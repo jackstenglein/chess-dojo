@@ -97,6 +97,7 @@ import {
 import {
     DeleteCommentRequest,
     GameApiContextType,
+    ListGamesByPositionOptions,
     UpdateCommentRequest,
     createComment,
     createGame,
@@ -314,8 +315,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
                 player?: string,
                 color?: string,
             ) => listGamesByOwner(idToken, owner, startKey, startDate, endDate, player, color),
-            listGamesByPosition: (fen: string, mastersOnly: boolean, startKey?: string) =>
-                listGamesByPosition(idToken, fen, mastersOnly, startKey),
+            listGamesByPosition: (
+                fen: string,
+                mastersOnly: boolean,
+                startKey?: string,
+                options?: ListGamesByPositionOptions,
+            ) => listGamesByPosition(idToken, fen, mastersOnly, startKey, options),
             listFeaturedGames: (startKey?: string) => listFeaturedGames(idToken, startKey),
             listGamesForReview: (startKey?: string) => listGamesForReview(idToken, startKey),
             createComment: (

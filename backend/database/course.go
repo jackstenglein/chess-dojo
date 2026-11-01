@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -217,10 +216,10 @@ type CourseGetter interface {
 func (repo *dynamoRepository) GetCourse(courseType, id string) (*Course, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String(courseType)},
-			"id":   {S: aws.String(id)},
+			"type": {S: new(courseType)},
+			"id":   {S: new(id)},
 		},
-		TableName: aws.String(courseTable),
+		TableName: new(courseTable),
 	}
 
 	course := Course{}
@@ -240,28 +239,28 @@ type CourseLister interface {
 }
 
 func applyPublishedOnlyFilter(names map[string]*string, values map[string]*dynamodb.AttributeValue) (string, map[string]*string, map[string]*dynamodb.AttributeValue) {
-	values[":published"] = &dynamodb.AttributeValue{S: aws.String(string(CourseStatusPublished))}
-	names["#status"] = aws.String("status")
+	values[":published"] = &dynamodb.AttributeValue{S: new(string(CourseStatusPublished))}
+	names["#status"] = new("status")
 	return "attribute_not_exists(#status) OR #status = :published", names, values
 }
 
 // ListCourses returns a list of courses with the provided type.
 func (repo *dynamoRepository) ListCourses(courseType, startKey string, publishedOnly bool) ([]Course, string, error) {
 	values := map[string]*dynamodb.AttributeValue{
-		":type": {S: aws.String(courseType)},
+		":type": {S: new(courseType)},
 	}
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#type = :type"),
+		KeyConditionExpression: new("#type = :type"),
 		ExpressionAttributeNames: map[string]*string{
-			"#type": aws.String("type"),
+			"#type": new("type"),
 		},
 		ExpressionAttributeValues: values,
-		IndexName:                 aws.String("SummaryIndex"),
-		TableName:                 aws.String(courseTable),
+		IndexName:                 new("SummaryIndex"),
+		TableName:                 new(courseTable),
 	}
 	if publishedOnly {
 		filter, filterNames, filterValues := applyPublishedOnlyFilter(input.ExpressionAttributeNames, values)
-		input.FilterExpression = aws.String(filter)
+		input.FilterExpression = new(filter)
 		input.ExpressionAttributeNames = filterNames
 		input.ExpressionAttributeValues = filterValues
 	}
@@ -276,12 +275,12 @@ func (repo *dynamoRepository) ListCourses(courseType, startKey string, published
 // ScanCourses returns a list of all courses.
 func (repo *dynamoRepository) ScanCourses(startKey string, publishedOnly bool) ([]Course, string, error) {
 	input := &dynamodb.ScanInput{
-		IndexName: aws.String("SummaryIndex"),
-		TableName: aws.String(courseTable),
+		IndexName: new("SummaryIndex"),
+		TableName: new(courseTable),
 	}
 	if publishedOnly {
 		filter, filterNames, filterValues := applyPublishedOnlyFilter(map[string]*string{}, map[string]*dynamodb.AttributeValue{})
-		input.FilterExpression = aws.String(filter)
+		input.FilterExpression = new(filter)
 		input.ExpressionAttributeNames = filterNames
 		input.ExpressionAttributeValues = filterValues
 	}
@@ -324,15 +323,15 @@ func (repo *dynamoRepository) putCourse(course *Course, requireOwner bool) error
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(courseTable),
+		TableName: new(courseTable),
 	}
 	if requireOwner {
-		input.ConditionExpression = aws.String("attribute_not_exists(id) OR #owner = :owner")
+		input.ConditionExpression = new("attribute_not_exists(id) OR #owner = :owner")
 		input.ExpressionAttributeNames = map[string]*string{
-			"#owner": aws.String("owner"),
+			"#owner": new("owner"),
 		}
 		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
-			":owner": {S: aws.String(course.Owner)},
+			":owner": {S: new(course.Owner)},
 		}
 	}
 	_, err = repo.svc.PutItem(input)

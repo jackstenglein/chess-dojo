@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -56,8 +55,8 @@ func (ms *s3MediaStore) UploadImage(key, imageData string) error {
 	}
 
 	_, err = ms.uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(picturesBucket),
-		Key:    aws.String(key),
+		Bucket: new(picturesBucket),
+		Key:    new(key),
 		Body:   bytes.NewReader(decoded),
 	})
 	return errors.Wrap(500, "Temporary server error", "Failed to upload image", err)
@@ -74,8 +73,8 @@ func (ms *s3MediaStore) CopyImageFromURL(url, key string) error {
 	defer response.Body.Close()
 
 	_, err = ms.uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(picturesBucket),
-		Key:    aws.String(key),
+		Bucket: new(picturesBucket),
+		Key:    new(key),
 		Body:   response.Body,
 	})
 	return errors.Wrap(500, "Temporary server error", "Failed to upload image", err)
@@ -85,8 +84,8 @@ func (ms *s3MediaStore) CopyImageFromURL(url, key string) error {
 // The default picture bucket is used.
 func (ms *s3MediaStore) DeleteImage(key string) error {
 	_, err := ms.uploader.S3.DeleteObject(&s3.DeleteObjectInput{
-		Bucket: aws.String(picturesBucket),
-		Key:    aws.String(key),
+		Bucket: new(picturesBucket),
+		Key:    new(key),
 	})
 	return errors.Wrap(500, "Temporary server error", "Failed to delete image", err)
 }
@@ -95,8 +94,8 @@ func (ms *s3MediaStore) DeleteImage(key string) error {
 // and writes it to the given file.
 func (ms *s3MediaStore) Download(bucket, key string, file *os.File) error {
 	_, err := ms.downloader.Download(file, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
+		Bucket: new(bucket),
+		Key:    new(key),
 	})
 	return errors.Wrap(500, "Temporary server error", "Failed to download file", err)
 }

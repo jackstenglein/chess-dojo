@@ -10,7 +10,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -60,8 +59,8 @@ func uploadFile(archive *os.File) error {
 	archive.Seek(0, 0)
 	uploader := s3manager.NewUploader(session.Must(session.NewSession()))
 	_, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(fmt.Sprintf("chess-dojo-%s-game-database", stage)),
-		Key:    aws.String("dojo_database.zip"),
+		Bucket: new(fmt.Sprintf("chess-dojo-%s-game-database", stage)),
+		Key:    new("dojo_database.zip"),
 		Body:   archive,
 	})
 	return err

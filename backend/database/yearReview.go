@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -84,10 +83,10 @@ func (repo *dynamoRepository) PutYearReviews(reviews []*YearReview) (int, error)
 func (repo *dynamoRepository) GetYearReview(username, year string) (*YearReview, error) {
 	input := dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
-			"period":   {S: aws.String(year)},
+			"username": {S: new(username)},
+			"period":   {S: new(year)},
 		},
-		TableName: aws.String(yearReviewTable),
+		TableName: new(yearReviewTable),
 	}
 
 	review := YearReview{}

@@ -1,7 +1,8 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { useApi } from '@/api/Api';
-import { searchGames } from '@/api/gameApi';
+import { PositionGamesSortDirection, searchGames } from '@/api/gameApi';
 import { useAuth, useFreeTier } from '@/auth/Auth';
+import { getGameTableSortModelKey } from '@/components/games/list/gameTableSort';
 import { Link } from '@/components/navigation/Link';
 import { MastersCohort } from '@/database/game';
 import { RequirementCategory } from '@/database/requirement';
@@ -35,10 +36,12 @@ import {
     Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { GridSortModel } from '@mui/x-data-grid-pro';
 import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useReadLocalStorage } from 'usehooks-ts';
 
 const Accordion = styled((props: AccordionProps) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -577,6 +580,18 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
     const fen = searchParams.get('fen') || '';
     const mastersOnly = searchParams.get('masters') === 'true';
 
+    // The table only sorts the loaded games, so masters games are fetched in the order of the
+    // Played column and searched again when it changes. Other searches ignore the sort.
+    const sortModel = useReadLocalStorage<GridSortModel>(
+        getGameTableSortModelKey('games-list-page'),
+    );
+    const mastersSortDirection: PositionGamesSortDirection | undefined =
+        type === SearchType.Position && mastersOnly
+            ? sortModel?.[0]?.field === 'date' && sortModel[0].sort === 'asc'
+                ? 'asc'
+                : 'desc'
+            : undefined;
+
     let startDateStr: string | undefined = undefined;
     let endDateStr: string | undefined = undefined;
     if (isValid(new Date(paramsStartDate || ''))) {
@@ -632,8 +647,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ isLoading, onSearch }) =>
     );
 
     const searchByPosition = useCallback(
-        (startKey: string) => api.listGamesByPosition(fen, mastersOnly, startKey),
-        [api, fen, mastersOnly],
+        (startKey: string) =>
+            api.listGamesByPosition(
+                fen,
+                mastersOnly,
+                startKey,
+                mastersSortDirection ? { sortDirection: mastersSortDirection } : undefined,
+            ),
+        [api, fen, mastersOnly, mastersSortDirection],
     );
 
     // Search is called every time the above functions change, which should

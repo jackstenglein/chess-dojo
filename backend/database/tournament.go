@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -100,7 +99,7 @@ func (repo *dynamoRepository) SetLeaderboard(leaderboard Leaderboard) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(tournamentTable),
+		TableName: new(tournamentTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed DynamoDB PutItem request", err)
@@ -121,13 +120,13 @@ func (repo *dynamoRepository) GetLeaderboard(site LeaderboardSite, timePeriod, t
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"type": {
-				S: aws.String(leaderboardType),
+				S: new(leaderboardType),
 			},
 			"startsAt": {
-				S: aws.String(startsAt),
+				S: new(startsAt),
 			},
 		},
-		TableName: aws.String(tournamentTable),
+		TableName: new(tournamentTable),
 	}
 
 	leaderboard := Leaderboard{
@@ -305,7 +304,7 @@ func (repo *dynamoRepository) SetOpenClassical(openClassical *OpenClassical) err
 
 	input := &dynamodb.PutItemInput{
 		Item:      item.M,
-		TableName: aws.String(tournamentTable),
+		TableName: new(tournamentTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed DynamoDB PutItem request", err)
@@ -316,13 +315,13 @@ func (repo *dynamoRepository) GetOpenClassical(startsAt string) (*OpenClassical,
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"type": {
-				S: aws.String(string(LeaderboardType_OpenClassical)),
+				S: new(string(LeaderboardType_OpenClassical)),
 			},
 			"startsAt": {
-				S: aws.String(startsAt),
+				S: new(startsAt),
 			},
 		},
-		TableName: aws.String(tournamentTable),
+		TableName: new(tournamentTable),
 	}
 
 	openClassical := OpenClassical{}
@@ -340,43 +339,43 @@ func (repo *dynamoRepository) UpdateOpenClassicalRegistration(openClassical *Ope
 
 	updateExpr := "REMOVE "
 	exprAttrNames := map[string]*string{
-		"#acceptingRegistrations": aws.String("acceptingRegistrations"),
-		"#sections":               aws.String("sections"),
-		"#players":                aws.String("players"),
-		"#username":               aws.String(player.Username),
+		"#acceptingRegistrations": new("acceptingRegistrations"),
+		"#sections":               new("sections"),
+		"#players":                new("players"),
+		"#username":               new(player.Username),
 	}
 
 	for key, section := range openClassical.Sections {
 		if section.Region != player.Region || section.Section != player.Section {
 			sectionName := fmt.Sprintf("#%s", key)
 			updateExpr += fmt.Sprintf("#sections.%s.#players.#username, ", sectionName)
-			exprAttrNames[sectionName] = aws.String(key)
+			exprAttrNames[sectionName] = new(key)
 		}
 	}
 	updateExpr = updateExpr[0 : len(updateExpr)-2]
 
 	sectionName := fmt.Sprintf("#%s_%s", player.Region, player.Section)
 	updateExpr += fmt.Sprintf(" SET #sections.%s.#players.#username = :player", sectionName)
-	exprAttrNames[sectionName] = aws.String(fmt.Sprintf("%s_%s", player.Region, player.Section))
+	exprAttrNames[sectionName] = new(fmt.Sprintf("%s_%s", player.Region, player.Section))
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"type": {
-				S: aws.String(string(openClassical.Type)),
+				S: new(string(openClassical.Type)),
 			},
 			"startsAt": {
-				S: aws.String(openClassical.StartsAt),
+				S: new(openClassical.StartsAt),
 			},
 		},
-		UpdateExpression:         aws.String(updateExpr),
-		ConditionExpression:      aws.String("#acceptingRegistrations = :true"),
+		UpdateExpression:         new(updateExpr),
+		ConditionExpression:      new("#acceptingRegistrations = :true"),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":player": {M: item},
-			":true":   {BOOL: aws.Bool(true)},
+			":true":   {BOOL: new(true)},
 		},
-		TableName:    aws.String(tournamentTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(tournamentTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -398,16 +397,16 @@ func (repo *dynamoRepository) UpdateOpenClassicalRegistration(openClassical *Ope
 // The list is sorted in descending order by name.
 func (repo *dynamoRepository) ListPreviousOpenClassicals(startKey string) ([]OpenClassical, string, error) {
 	input := dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#type = :openClassical"),
+		KeyConditionExpression: new("#type = :openClassical"),
 		ExpressionAttributeNames: map[string]*string{
-			"#type": aws.String("type"),
+			"#type": new("type"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":openClassical": {S: aws.String("OPEN_CLASSICAL")},
+			":openClassical": {S: new("OPEN_CLASSICAL")},
 		},
-		IndexName:        aws.String(tournamentTableOpenClassicalIndex),
-		TableName:        aws.String(tournamentTable),
-		ScanIndexForward: aws.Bool(false),
+		IndexName:        new(tournamentTableOpenClassicalIndex),
+		TableName:        new(tournamentTable),
+		ScanIndexForward: new(false),
 	}
 
 	var openClassicals []OpenClassical
@@ -431,10 +430,10 @@ func (repo *dynamoRepository) UpdateOpenClassicalResult(update *OpenClassicalPai
 
 	updateExpr := fmt.Sprintf("SET %s = :item", pairingPath)
 	exprAttrNames := map[string]*string{
-		"#sections": aws.String("sections"),
-		sectionName: aws.String(fmt.Sprintf("%s_%s", update.Region, update.Section)),
-		"#rounds":   aws.String("rounds"),
-		"#pairings": aws.String("pairings"),
+		"#sections": new("sections"),
+		sectionName: new(fmt.Sprintf("%s_%s", update.Region, update.Section)),
+		"#rounds":   new("rounds"),
+		"#pairings": new("pairings"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
 		":item": {M: item},
@@ -443,21 +442,21 @@ func (repo *dynamoRepository) UpdateOpenClassicalResult(update *OpenClassicalPai
 	conditionExpr := fmt.Sprintf("attribute_exists(%s)", pairingPath)
 	if !update.OverwriteVerified {
 		conditionExpr += fmt.Sprintf(" AND %s.#verified <> :true", pairingPath)
-		exprAttrNames["#verified"] = aws.String("verified")
-		exprAttrValues[":true"] = &dynamodb.AttributeValue{BOOL: aws.Bool(true)}
+		exprAttrNames["#verified"] = new("verified")
+		exprAttrValues[":true"] = &dynamodb.AttributeValue{BOOL: new(true)}
 	}
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(string(CurrentLeaderboard))},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(string(CurrentLeaderboard))},
 		},
-		UpdateExpression:          aws.String(updateExpr),
-		ConditionExpression:       aws.String(conditionExpr),
+		UpdateExpression:          new(updateExpr),
+		ConditionExpression:       new(conditionExpr),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
-		TableName:                 aws.String(tournamentTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 new(tournamentTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -479,31 +478,31 @@ func (repo *dynamoRepository) UpdateOpenClassicalResult(update *OpenClassicalPai
 // Round is a 1-based index.
 func (repo *dynamoRepository) SetPairingEmailsSent(openClassical *OpenClassical, round int) (*OpenClassical, error) {
 	exprAttrNames := map[string]*string{
-		"#sections": aws.String("sections"),
-		"#rounds":   aws.String("rounds"),
-		"#emails":   aws.String("pairingEmailsSent"),
+		"#sections": new("sections"),
+		"#rounds":   new("rounds"),
+		"#emails":   new("pairingEmailsSent"),
 	}
 
 	updateExpr := "SET "
 	for key := range openClassical.Sections {
 		sectionName := fmt.Sprintf("#%s", key)
 		updateExpr += fmt.Sprintf("#sections.%s.#rounds[%d].#emails = :true, ", sectionName, round-1)
-		exprAttrNames[sectionName] = aws.String(key)
+		exprAttrNames[sectionName] = new(key)
 	}
 	updateExpr = updateExpr[0 : len(updateExpr)-2]
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(openClassical.Type))},
-			"startsAt": {S: aws.String(openClassical.StartsAt)},
+			"type":     {S: new(string(openClassical.Type))},
+			"startsAt": {S: new(openClassical.StartsAt)},
 		},
-		UpdateExpression:         aws.String(updateExpr),
+		UpdateExpression:         new(updateExpr),
 		ExpressionAttributeNames: exprAttrNames,
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true": {BOOL: aws.Bool(true)},
+			":true": {BOOL: new(true)},
 		},
-		TableName:    aws.String(tournamentTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(tournamentTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 	log.Debugf("Input: %#v", input)
 
@@ -523,11 +522,11 @@ func (repo *dynamoRepository) BanPlayer(player *OpenClassicalPlayer) (*OpenClass
 
 	updateExpr := "SET #bannedPlayers.#username = :item, #sections.#sectionName.#players.#username = :item"
 	exprAttrNames := map[string]*string{
-		"#bannedPlayers": aws.String("bannedPlayers"),
-		"#username":      aws.String(player.Username),
-		"#sections":      aws.String("sections"),
-		"#sectionName":   aws.String(fmt.Sprintf("%s_%s", player.Region, player.Section)),
-		"#players":       aws.String("players"),
+		"#bannedPlayers": new("bannedPlayers"),
+		"#username":      new(player.Username),
+		"#sections":      new("sections"),
+		"#sectionName":   new(fmt.Sprintf("%s_%s", player.Region, player.Section)),
+		"#players":       new("players"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
 		":item": {M: item},
@@ -535,14 +534,14 @@ func (repo *dynamoRepository) BanPlayer(player *OpenClassicalPlayer) (*OpenClass
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		UpdateExpression:          aws.String(updateExpr),
+		UpdateExpression:          new(updateExpr),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
-		TableName:                 aws.String(tournamentTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 new(tournamentTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}
@@ -556,19 +555,19 @@ func (repo *dynamoRepository) BanPlayer(player *OpenClassicalPlayer) (*OpenClass
 func (repo *dynamoRepository) UnbanPlayer(username string) (*OpenClassical, error) {
 	updateExpr := "REMOVE #bannedPlayers.#username"
 	exprAttrNames := map[string]*string{
-		"#bannedPlayers": aws.String("bannedPlayers"),
-		"#username":      aws.String(username),
+		"#bannedPlayers": new("bannedPlayers"),
+		"#username":      new(username),
 	}
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		UpdateExpression:         aws.String(updateExpr),
+		UpdateExpression:         new(updateExpr),
 		ExpressionAttributeNames: exprAttrNames,
-		TableName:                aws.String(tournamentTable),
-		ReturnValues:             aws.String("ALL_NEW"),
+		TableName:                new(tournamentTable),
+		ReturnValues:             new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}
@@ -588,10 +587,10 @@ func (repo *dynamoRepository) SetPlayer(player *OpenClassicalPlayer) (*OpenClass
 
 	updateExpr := "SET #sections.#sectionName.#players.#username = :item"
 	exprAttrNames := map[string]*string{
-		"#sections":    aws.String("sections"),
-		"#sectionName": aws.String(fmt.Sprintf("%s_%s", player.Region, player.Section)),
-		"#players":     aws.String("players"),
-		"#username":    aws.String(player.Username),
+		"#sections":    new("sections"),
+		"#sectionName": new(fmt.Sprintf("%s_%s", player.Region, player.Section)),
+		"#players":     new("players"),
+		"#username":    new(player.Username),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
 		":item": {M: item},
@@ -599,15 +598,15 @@ func (repo *dynamoRepository) SetPlayer(player *OpenClassicalPlayer) (*OpenClass
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		ConditionExpression:       aws.String("attribute_exists(#sections.#sectionName.#players.#username)"),
-		UpdateExpression:          aws.String(updateExpr),
+		ConditionExpression:       new("attribute_exists(#sections.#sectionName.#players.#username)"),
+		UpdateExpression:          new(updateExpr),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
-		TableName:                 aws.String(tournamentTable),
-		ReturnValues:              aws.String("ALL_NEW"),
+		TableName:                 new(tournamentTable),
+		ReturnValues:              new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}
@@ -624,21 +623,21 @@ func (repo *dynamoRepository) SetPlayer(player *OpenClassicalPlayer) (*OpenClass
 func (repo *dynamoRepository) OpenClassicalCloseRegistrations() (*OpenClassical, error) {
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		UpdateExpression: aws.String("SET #acceptingRegistrations = :false, #startMonth = :startMonth REMOVE #registrationClose"),
+		UpdateExpression: new("SET #acceptingRegistrations = :false, #startMonth = :startMonth REMOVE #registrationClose"),
 		ExpressionAttributeNames: map[string]*string{
-			"#acceptingRegistrations": aws.String("acceptingRegistrations"),
-			"#startMonth":             aws.String("startMonth"),
-			"#registrationClose":      aws.String("registrationClose"),
+			"#acceptingRegistrations": new("acceptingRegistrations"),
+			"#startMonth":             new("startMonth"),
+			"#registrationClose":      new("registrationClose"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":false":      {BOOL: aws.Bool(false)},
-			":startMonth": {S: aws.String(time.Now().Format("2006-01"))},
+			":false":      {BOOL: new(false)},
+			":startMonth": {S: new(time.Now().Format("2006-01"))},
 		},
-		TableName:    aws.String(tournamentTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(tournamentTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}
@@ -662,21 +661,21 @@ func (repo *dynamoRepository) OpenClassicalAddRound(region, section string, pair
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		UpdateExpression: aws.String("SET #sections.#s.#rounds = list_append(if_not_exists(#sections.#s.#rounds, :empty_list), :r)"),
+		UpdateExpression: new("SET #sections.#s.#rounds = list_append(if_not_exists(#sections.#s.#rounds, :empty_list), :r)"),
 		ExpressionAttributeNames: map[string]*string{
-			"#sections": aws.String("sections"),
-			"#s":        aws.String(fmt.Sprintf("%s_%s", region, section)),
-			"#rounds":   aws.String("rounds"),
+			"#sections": new("sections"),
+			"#s":        new(fmt.Sprintf("%s_%s", region, section)),
+			"#rounds":   new("rounds"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":empty_list": {L: []*dynamodb.AttributeValue{}},
 			":r":          {L: []*dynamodb.AttributeValue{{M: item}}},
 		},
-		TableName:    aws.String(tournamentTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(tournamentTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}
@@ -695,21 +694,21 @@ func (repo *dynamoRepository) OpenClassicalSetRound(region, section string, roun
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type":     {S: aws.String(string(LeaderboardType_OpenClassical))},
-			"startsAt": {S: aws.String(CurrentLeaderboard)},
+			"type":     {S: new(string(LeaderboardType_OpenClassical))},
+			"startsAt": {S: new(CurrentLeaderboard)},
 		},
-		UpdateExpression: aws.String(fmt.Sprintf("SET #sections.#s.#rounds[%d].#pairings = :pairings", round)),
+		UpdateExpression: new(fmt.Sprintf("SET #sections.#s.#rounds[%d].#pairings = :pairings", round)),
 		ExpressionAttributeNames: map[string]*string{
-			"#sections": aws.String("sections"),
-			"#s":        aws.String(fmt.Sprintf("%s_%s", region, section)),
-			"#rounds":   aws.String("rounds"),
-			"#pairings": aws.String("pairings"),
+			"#sections": new("sections"),
+			"#s":        new(fmt.Sprintf("%s_%s", region, section)),
+			"#rounds":   new("rounds"),
+			"#pairings": new("pairings"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":pairings": {L: list},
 		},
-		TableName:    aws.String(tournamentTable),
-		ReturnValues: aws.String("ALL_NEW"),
+		TableName:    new(tournamentTable),
+		ReturnValues: new("ALL_NEW"),
 	}
 
 	result := &OpenClassical{}

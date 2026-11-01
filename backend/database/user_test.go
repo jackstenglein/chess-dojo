@@ -139,6 +139,15 @@ func TestGetNextCohort(t *testing.T) {
 	}
 }
 
+func testRatings() map[RatingSystem]*Rating {
+	return map[RatingSystem]*Rating{
+		Chesscom: {StartRating: 1500, CurrentRating: 1572},
+		Lichess:  {StartRating: 1400, CurrentRating: 1472},
+		Fide:     {StartRating: 1300, CurrentRating: 1372},
+		Uscf:     {StartRating: 1200, CurrentRating: 1272},
+	}
+}
+
 func TestGetRatings(t *testing.T) {
 	table := []struct {
 		name        string
@@ -153,14 +162,7 @@ func TestGetRatings(t *testing.T) {
 			name: "Chesscom",
 			user: &User{
 				RatingSystem: Chesscom,
-				// StartChesscomRating:   1500,
-				// CurrentChesscomRating: 1572,
-				// StartLichessRating:    1400,
-				// CurrentLichessRating:  1472,
-				// StartFideRating:       1300,
-				// CurrentFideRating:     1372,
-				// StartUscfRating:       1200,
-				// CurrentUscfRating:     1272,
+				Ratings:      testRatings(),
 			},
 			wantStart:   1500,
 			wantCurrent: 1572,
@@ -169,14 +171,7 @@ func TestGetRatings(t *testing.T) {
 			name: "Lichess",
 			user: &User{
 				RatingSystem: Lichess,
-				// StartChesscomRating:   1500,
-				// CurrentChesscomRating: 1572,
-				// StartLichessRating:    1400,
-				// CurrentLichessRating:  1472,
-				// StartFideRating:       1300,
-				// CurrentFideRating:     1372,
-				// StartUscfRating:       1200,
-				// CurrentUscfRating:     1272,
+				Ratings:      testRatings(),
 			},
 			wantStart:   1400,
 			wantCurrent: 1472,
@@ -185,14 +180,7 @@ func TestGetRatings(t *testing.T) {
 			name: "Fide",
 			user: &User{
 				RatingSystem: Fide,
-				// StartChesscomRating:   1500,
-				// CurrentChesscomRating: 1572,
-				// StartLichessRating:    1400,
-				// CurrentLichessRating:  1472,
-				// StartFideRating:       1300,
-				// CurrentFideRating:     1372,
-				// StartUscfRating:       1200,
-				// CurrentUscfRating:     1272,
+				Ratings:      testRatings(),
 			},
 			wantStart:   1300,
 			wantCurrent: 1372,
@@ -201,14 +189,7 @@ func TestGetRatings(t *testing.T) {
 			name: "Uscf",
 			user: &User{
 				RatingSystem: Uscf,
-				// StartChesscomRating:   1500,
-				// CurrentChesscomRating: 1572,
-				// StartLichessRating:    1400,
-				// CurrentLichessRating:  1472,
-				// StartFideRating:       1300,
-				// CurrentFideRating:     1372,
-				// StartUscfRating:       1200,
-				// CurrentUscfRating:     1272,
+				Ratings:      testRatings(),
 			},
 			wantStart:   1200,
 			wantCurrent: 1272,
@@ -217,14 +198,7 @@ func TestGetRatings(t *testing.T) {
 			name: "Nonexistent",
 			user: &User{
 				RatingSystem: "Nonexistent",
-				// StartChesscomRating:   1500,
-				// CurrentChesscomRating: 1572,
-				// StartLichessRating:    1400,
-				// CurrentLichessRating:  1472,
-				// StartFideRating:       1300,
-				// CurrentFideRating:     1372,
-				// StartUscfRating:       1200,
-				// CurrentUscfRating:     1272,
+				Ratings:      testRatings(),
 			},
 		},
 	}
@@ -260,8 +234,8 @@ func TestBatchStatementsError(t *testing.T) {
 			responses: []*dynamodb.BatchStatementResponse{
 				{},
 				{Error: &dynamodb.BatchStatementError{
-					Code:    aws.String("ValidationError"),
-					Message: aws.String("Item size exceeded"),
+					Code:    new("ValidationError"),
+					Message: new("Item size exceeded"),
 				}},
 			},
 			wantErr: true,

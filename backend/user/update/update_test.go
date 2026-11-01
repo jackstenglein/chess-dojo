@@ -10,25 +10,66 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
+
+type mockUserRepository struct {
+	users map[string]*database.User
+}
+
+func (m *mockUserRepository) GetUser(username string) (*database.User, error) {
+	user, ok := m.users[username]
+	if !ok {
+		return nil, errors.New(404, "Invalid request: user not found", "")
+	}
+	clone := *user
+	return &clone, nil
+}
+
+func (m *mockUserRepository) UpdateUser(username string, update *database.UserUpdate) (*database.User, error) {
+	user, ok := m.users[username]
+	if !ok {
+		return nil, errors.New(404, "Invalid request: user not found", "")
+	}
+	raw, err := json.Marshal(update)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(raw, user); err != nil {
+		return nil, err
+	}
+	clone := *user
+	return &clone, nil
+}
+
+func (m *mockUserRepository) ListTimelineEntries(owner string, startKey string) ([]*database.TimelineEntry, string, error) {
+	return nil, "", nil
+}
+
+func (m *mockUserRepository) PutTimelineEntries(entries []*database.TimelineEntry) (int, error) {
+	return len(entries), nil
+}
 
 const testUsername = "test-updateUser"
 const testEmail = "test@chess-dojo-scheduler.com"
 const testName = "Test Name"
 
-func setupSuite(t *testing.T) func(t *testing.T) {
-	_, err := database.DynamoDB.CreateUser(testUsername, testEmail, testName, nil)
-	if err != nil {
-		t.Errorf("Failed to create test user: %v", err)
+func setupSuite(t *testing.T) *mockUserRepository {
+	t.Helper()
+	repo := &mockUserRepository{
+		users: map[string]*database.User{
+			testUsername: {
+				Username: testUsername,
+				Email:    testEmail,
+				Name:     testName,
+			},
+		},
 	}
-
-	return func(t *testing.T) {
-		err := database.DynamoDB.DeleteUser(testUsername)
-		if err != nil {
-			t.Errorf("Failed to delete user: %v", err)
-		}
-	}
+	original := repository
+	repository = repo
+	t.Cleanup(func() { repository = original })
+	return repo
 }
 
 func getEvent(testName string, username string, update *database.UserUpdate) api.Request {
@@ -50,8 +91,7 @@ func getEvent(testName string, username string, update *database.UserUpdate) api
 }
 
 func TestUpdateUser(t *testing.T) {
-	teardownSuite := setupSuite(t)
-	defer teardownSuite(t)
+	repo := setupSuite(t)
 
 	ctx := context.Background()
 
@@ -72,8 +112,8 @@ func TestUpdateUser(t *testing.T) {
 			name:     "SuccessfulRequest",
 			username: testUsername,
 			update: &database.UserUpdate{
-				DisplayName:  aws.String("testDisplayName"),
-				Bio:          aws.String("testBio"),
+				DisplayName:  new("testDisplayName"),
+				Bio:          new("testBio"),
 				RatingSystem: (*database.RatingSystem)(aws.String(string(database.Fide))),
 				// ChesscomUsername:                 aws.String("JackStenglein"),
 				// LichessUsername:                  aws.String("JackStenglein"),
@@ -83,7 +123,7 @@ func TestUpdateUser(t *testing.T) {
 				// StartLichessRating:               aws.Int(2),
 				// StartFideRating:                  aws.Int(3),
 				// StartUscfRating:                  aws.Int(4),
-				DojoCohort: (*database.DojoCohort)(aws.String("2400+")),
+				DojoCohort: (*database.DojoCohort)(new("2400+")),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -108,16 +148,16 @@ func TestUpdateUser(t *testing.T) {
 			name:     "ProfaneBio",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("This bio is shit"),
+				Bio: new("This bio is shit"),
 			},
 			wantCode: 400,
 			wantErr:  true,
 		},
 		{
-			name: "cleanBio",
+			name:     "cleanBio",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("This bio is clean"),
+				Bio: new("This bio is clean"),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -127,14 +167,14 @@ func TestUpdateUser(t *testing.T) {
 				DisplayName:  "testDisplayName",
 				Bio:          "This bio is clean",
 				RatingSystem: database.Fide,
-				DojoCohort: "2400+",
+				DojoCohort:   "2400+",
 			},
 		},
 		{
 			name:     "BioWithAsSuch",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("As such, I enjoy chess."),
+				Bio: new("As such, I enjoy chess."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -151,7 +191,7 @@ func TestUpdateUser(t *testing.T) {
 			name:     "BioWithAsSold",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("Sold as sold."),
+				Bio: new("Sold as sold."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -168,7 +208,7 @@ func TestUpdateUser(t *testing.T) {
 			name:     "BioWithCommonAssSubstrings",
 			username: testUsername,
 			update: &database.UserUpdate{
-				Bio: aws.String("I enjoy classroom assessment and passage analysis."),
+				Bio: new("I enjoy classroom assessment and passage analysis."),
 			},
 			wantCode: 200,
 			wantUser: &database.User{
@@ -198,12 +238,12 @@ func TestUpdateUser(t *testing.T) {
 			}
 
 			if !tc.wantErr {
-				gotUser, err := database.DynamoDB.GetUser(tc.username)
+				gotUser, err := repo.GetUser(tc.username)
 				if err != nil {
 					t.Errorf("GetUser(%s) got err: %v", tc.username, err)
 				}
 
-				if diff := cmp.Diff(tc.wantUser, gotUser, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(database.User{}, "CreatedAt", "UpdatedAt", "CurrentChesscomRating", "CurrentLichessRating", "CurrentFideRating", "CurrentUscfRating")); diff != "" {
+				if diff := cmp.Diff(tc.wantUser, gotUser, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(database.User{}, "CreatedAt", "UpdatedAt", "SearchKey")); diff != "" {
 					t.Errorf("GetUser(%v) diff (-want +got):\n%s", event, diff)
 				}
 			}

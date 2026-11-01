@@ -2196,6 +2196,7 @@
         },
         "view": {
             "pgnErrorBoundary": {
+                "copyPgn": "[T] Copy PGN",
                 "invalidPgn": "[T] Invalid PGN",
                 "invalidPgnDescription": "[T] Unfortunately, this game's PGN cannot be displayed by our PGN viewer (see the error message below). This most likely happened due to a malformed PGN. If you manually produced your PGN, it is likely incorrect. If you believe your PGN is correct or are otherwise unable to correct it, please send a Discord DM to @JackStenglein with the link to this page.",
                 "resubmitPgn": "[T] Resubmit PGN",
@@ -3772,6 +3773,8 @@
             "delete": "[T] Delete",
             "deleteMovesTitle": "[T] {count, plural, =1 {Delete # move} other {Delete # moves}}",
             "deleteCommentsAppend": "[T] and {count, plural, =1 {# comment} other {# comments}}",
+            "deletedMoves": "[T] {count, plural, =1 {Deleted # move} other {Deleted # moves}}",
+            "undo": "[T] Undo",
             "settings": {
                 "editorSettingsTitle": "[T] Editor Settings",
                 "clockFieldFormatLabel": "[T] Clock Field Format",

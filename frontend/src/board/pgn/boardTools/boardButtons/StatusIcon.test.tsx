@@ -6,7 +6,7 @@ import { useChess } from '@/board/pgn/PgnBoard';
 import useGame from '@/context/useGame';
 import { Game } from '@/database/game';
 import { EventType as ChessEventType, Observer } from '@jackstenglein/chess';
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import StatusIcon from './StatusIcon';
 
@@ -27,19 +27,26 @@ vi.mock('@/components/calendar/displayDate', () => ({
     toDojoTimeString: vi.fn(() => 'time'),
 }));
 vi.mock('@/context/useGame', () => ({ default: vi.fn() }));
+const savePgnRef: { current: ((pgn: string) => void) | null } = { current: null };
+vi.mock('@/board/pgn/UndoDelete', () => ({
+    useUndoDelete: () => ({ onMovesDeleted: vi.fn(), savePgnRef }),
+}));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
 interface Deferred<T> {
     promise: Promise<T>;
     resolve: (value: T) => void;
+    reject: (reason: unknown) => void;
 }
 
 function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
-    const promise = new Promise<T>((res) => {
+    let reject!: (reason: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
         resolve = res;
+        reject = rej;
     });
-    return { promise, resolve };
+    return { promise, resolve, reject };
 }
 
 const game = {
@@ -69,6 +76,7 @@ describe('StatusIcon autosave', () => {
         pgn = 'PGN 0';
         requests = [];
         updatedAtRef.current = game.updatedAt;
+        request.isFailure.mockReturnValue(false);
         updateGame.mockImplementation(() => {
             const result = deferred<{ data: { updatedAt: string } }>();
             requests.push(result);
@@ -153,6 +161,63 @@ describe('StatusIcon autosave', () => {
         await act(async () => {
             requests[1].resolve({ data: { updatedAt: 'timestamp-b' } });
             await Promise.resolve();
+        });
+        expect(setHasUnsavedGameChanges).toHaveBeenLastCalledWith(false);
+    });
+
+    it('does not autosave the deleted PGN when the delete is undone', () => {
+        render(<StatusIcon game={game} />);
+
+        pgn = 'PGN deleted';
+        act(() => observer.handler({ type: ChessEventType.DeleteMove }));
+        expect(setHasUnsavedGameChanges).toHaveBeenLastCalledWith(true);
+
+        act(() => {
+            savePgnRef.current?.('PGN 0');
+            pgn = 'PGN 0';
+            observer.handler({ type: ChessEventType.Initialized });
+        });
+        runDebounce();
+
+        expect(updateGame).not.toHaveBeenCalled();
+        expect(setHasUnsavedGameChanges).toHaveBeenLastCalledWith(false);
+    });
+
+    it('keeps a failed restore unsaved so retry can save it', async () => {
+        const { rerender } = render(<StatusIcon game={game} />);
+
+        pgn = 'PGN deleted';
+        act(() => observer.handler({ type: ChessEventType.DeleteMove }));
+        runDebounce();
+        await act(async () => {
+            requests[0].resolve({ data: { updatedAt: 'timestamp-a' } });
+            await Promise.resolve();
+        });
+
+        act(() => {
+            savePgnRef.current?.('PGN 0');
+            pgn = 'PGN 0';
+            observer.handler({ type: ChessEventType.Initialized });
+        });
+        await act(async () => {
+            requests[1].reject(new Error('offline'));
+            await Promise.resolve();
+        });
+        expect(setHasUnsavedGameChanges).toHaveBeenLastCalledWith(true);
+
+        request.isFailure.mockReturnValue(true);
+        rerender(<StatusIcon game={game} />);
+        fireEvent.click(screen.getByRole('button', { name: 'failedToSave' }));
+        await act(async () => {
+            requests[2].resolve({ data: { updatedAt: 'timestamp-c' } });
+            await Promise.resolve();
+        });
+
+        expect(updateGame).toHaveBeenCalledTimes(3);
+        expect(updateGame).toHaveBeenLastCalledWith(game.cohort, game.id, {
+            type: 'editor',
+            pgnText: 'PGN 0',
+            updatedAt: 'timestamp-a',
         });
         expect(setHasUnsavedGameChanges).toHaveBeenLastCalledWith(false);
     });

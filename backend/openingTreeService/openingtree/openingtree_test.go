@@ -1,7 +1,7 @@
 package openingtree
 
 import (
-"os"
+	"os"
 	"strings"
 	"testing"
 
@@ -395,13 +395,12 @@ func BenchmarkIndexGame(b *testing.B) {
 	}
 }
 
-
 // splitPGNGames splits a multi-game PGN string into individual game strings.
 func splitPGNGames(data string) []string {
 	var games []string
 	var current strings.Builder
 
-	for _, line := range strings.Split(data, "\n") {
+	for line := range strings.SplitSeq(data, "\n") {
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "[Event ") && current.Len() > 0 {
 			games = append(games, current.String())
@@ -418,7 +417,7 @@ func splitPGNGames(data string) []string {
 
 // extractResult parses the Result tag from a PGN string.
 func extractResult(pgn string) game.Result {
-	for _, line := range strings.Split(pgn, "\n") {
+	for line := range strings.SplitSeq(pgn, "\n") {
 		if strings.HasPrefix(line, "[Result ") {
 			val := strings.TrimPrefix(line, "[Result \"")
 			val = strings.TrimSuffix(val, "\"]")

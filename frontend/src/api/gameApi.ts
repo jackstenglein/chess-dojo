@@ -86,12 +86,14 @@ export interface GameApiContextType {
      * @param fen The FEN to search for.
      * @param mastersOnly Whether to only search for master games.
      * @param startKey The optional start key to use for pagination.
+     * @param options Optional masters time control filter and date sort direction.
      * @returns A list of games matching the provided FEN.
      */
     listGamesByPosition: (
         fen: string,
         mastersOnly: boolean,
         startKey?: string,
+        options?: ListGamesByPositionOptions,
     ) => Promise<AxiosResponse<ListGamesResponse>>;
 
     /**
@@ -272,6 +274,16 @@ export interface ListGamesResponse {
     lastEvaluatedKey?: string;
 }
 
+export type PositionGamesSortDirection = 'asc' | 'desc';
+
+/** Options for listing masters games by position. Ignored for the Dojo database. */
+export interface ListGamesByPositionOptions {
+    /** The masters time controls to include. Defaults to all time controls. */
+    timeControls?: string[];
+    /** The direction to order the games by date. Defaults to newest first. */
+    sortDirection?: PositionGamesSortDirection;
+}
+
 /** A request to the game search API. */
 export interface SearchGamesRequest {
     /**
@@ -420,6 +432,7 @@ export function listGamesByOpening(
  * @param fen The FEN to search for.
  * @param mastersOnly Whether to only search the masters DB.
  * @param startKey The optional start key to use for pagination.
+ * @param options Optional masters time control filter and date sort direction.
  * @returns A list of games matching the provided FEN.
  */
 export function listGamesByPosition(
@@ -427,8 +440,16 @@ export function listGamesByPosition(
     fen: string,
     mastersOnly: boolean,
     startKey?: string,
+    options?: ListGamesByPositionOptions,
 ) {
-    const params = { fen, startKey, masters: mastersOnly };
+    const params = {
+        fen,
+        startKey,
+        masters: mastersOnly,
+        // Joined rather than an array, which axios would serialize as timeControls[]=.
+        timeControls: options?.timeControls?.join(','),
+        sortDirection: options?.sortDirection,
+    };
     return axiosService.get<ListGamesResponse>('/game/position', {
         params,
         headers: {

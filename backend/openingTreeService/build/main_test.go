@@ -14,10 +14,10 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 	treeapi "github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/game"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/openingTreeService/openingtree"
-	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
 // mockUserGetter implements database.UserGetter for tests.
@@ -231,7 +231,7 @@ func TestHandler_TooManySources(t *testing.T) {
 
 	// Build a request with 11 sources (exceeds maxSources=10).
 	sources := `[`
-	for i := 0; i < 11; i++ {
+	for i := range 11 {
 		if i > 0 {
 			sources += ","
 		}
@@ -1061,7 +1061,7 @@ func TestMeasureResponseSize_UnderBudget(t *testing.T) {
 	results := []game.Result{game.ResultWhite, game.ResultBlack, game.ResultDraw, game.ResultWhite}
 
 	const numGames = 2500
-	for i := 0; i < numGames; i++ {
+	for i := range numGames {
 		pgn := fmt.Sprintf(`[Event "Game %d"]
 [Site "Test"]
 [Date "2024.01.01"]

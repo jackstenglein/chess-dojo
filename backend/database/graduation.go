@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
@@ -105,7 +104,7 @@ func (repo *dynamoRepository) PutGraduation(graduation *Graduation) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(graduationTable),
+		TableName: new(graduationTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "DynamoDB PutItem failure", err)
@@ -114,15 +113,15 @@ func (repo *dynamoRepository) PutGraduation(graduation *Graduation) error {
 // ListGraduationsByCohort returns a list of graduations matching the provided cohort.
 func (repo *dynamoRepository) ListGraduationsByCohort(cohort DojoCohort, startKey string) ([]Graduation, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#previousCohort = :cohort"),
+		KeyConditionExpression: new("#previousCohort = :cohort"),
 		ExpressionAttributeNames: map[string]*string{
-			"#previousCohort": aws.String("previousCohort"),
+			"#previousCohort": new("previousCohort"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":cohort": {S: aws.String(string(cohort))},
+			":cohort": {S: new(string(cohort))},
 		},
-		IndexName: aws.String(graduationTableCohortIndex),
-		TableName: aws.String(graduationTable),
+		IndexName: new(graduationTableCohortIndex),
+		TableName: new(graduationTable),
 	}
 
 	var graduations []Graduation
@@ -136,14 +135,14 @@ func (repo *dynamoRepository) ListGraduationsByCohort(cohort DojoCohort, startKe
 // ListGraduationsByOwner returns a list of graduations matching the provided username.
 func (repo *dynamoRepository) ListGraduationsByOwner(username, startKey string) ([]Graduation, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#username = :username"),
+		KeyConditionExpression: new("#username = :username"),
 		ExpressionAttributeNames: map[string]*string{
-			"#username": aws.String("username"),
+			"#username": new("username"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":username": {S: aws.String(username)},
+			":username": {S: new(username)},
 		},
-		TableName: aws.String(graduationTable),
+		TableName: new(graduationTable),
 	}
 
 	var graduations []Graduation
@@ -157,17 +156,17 @@ func (repo *dynamoRepository) ListGraduationsByOwner(username, startKey string) 
 // ListGraduationsByDate returns a list of graduations more recent than the provided date.
 func (repo *dynamoRepository) ListGraduationsByDate(date, startKey string) ([]Graduation, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#type = :type AND #date >= :date"),
+		KeyConditionExpression: new("#type = :type AND #date >= :date"),
 		ExpressionAttributeNames: map[string]*string{
-			"#type": aws.String("type"),
-			"#date": aws.String("createdAt"),
+			"#type": new("type"),
+			"#date": new("createdAt"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":type": {S: aws.String("GRADUATION")},
-			":date": {S: aws.String(date)},
+			":type": {S: new("GRADUATION")},
+			":date": {S: new(date)},
 		},
-		IndexName: aws.String("DateIndex"),
-		TableName: aws.String(graduationTable),
+		IndexName: new("DateIndex"),
+		TableName: new(graduationTable),
 	}
 
 	var graduations []Graduation
@@ -181,7 +180,7 @@ func (repo *dynamoRepository) ListGraduationsByDate(date, startKey string) ([]Gr
 // ScanGraduations returns a list of all graduations in the table, paginated by the startKey.
 func (repo *dynamoRepository) ScanGraduations(startKey string) ([]Graduation, string, error) {
 	input := &dynamodb.ScanInput{
-		TableName: aws.String(graduationTable),
+		TableName: new(graduationTable),
 	}
 
 	var graduations []Graduation

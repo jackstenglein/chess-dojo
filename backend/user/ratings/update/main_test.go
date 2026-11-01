@@ -590,7 +590,7 @@ func TestHandler_ContinuationChainProcessesAllUsers(t *testing.T) {
 
 	event := scheduledEvent(t, RatingUpdateRequest{Cohorts: []database.DojoCohort{"1000-1100"}})
 	delivered := 0
-	for i := 0; i < maxContinuations+1; i++ {
+	for i := range maxContinuations + 1 {
 		if _, err := Handler(context.Background(), event); err != nil {
 			t.Fatalf("invocation %d failed: %v", i, err)
 		}
@@ -721,7 +721,7 @@ func failingFideFuncs() map[database.RatingSystem]ratings.RatingFetchFunc {
 
 func fideUsers(n int) []*database.User {
 	users := make([]*database.User, 0, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		users = append(users, fideUser(fmt.Sprintf("user%02d", i)))
 	}
 	return users
@@ -795,7 +795,7 @@ func TestHandler_ContinuationCarriesMonthlyStateWithoutError(t *testing.T) {
 	inv := &fakeInvoker{}
 	// Plenty of time for all 12 users of chunk 1, out of time between chunks.
 	remaining := make([]time.Duration, 0, 14)
-	for i := 0; i < 12; i++ {
+	for range 12 {
 		remaining = append(remaining, time.Hour)
 	}
 	remaining = append(remaining, time.Minute)

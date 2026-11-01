@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 )
@@ -59,22 +58,22 @@ func main() {
 		input := &ses.SendEmailInput{
 			Destination: &ses.Destination{
 				ToAddresses: []*string{
-					aws.String(email),
+					new(email),
 				},
 			},
 			Message: &ses.Message{
 				Body: &ses.Body{
 					Text: &ses.Content{
-						Charset: aws.String("UTF-8"),
-						Data:    aws.String(content),
+						Charset: new("UTF-8"),
+						Data:    new(content),
 					},
 				},
 				Subject: &ses.Content{
-					Charset: aws.String("UTF-8"),
-					Data:    aws.String("ChessDojo Discount for OTB Groups"),
+					Charset: new("UTF-8"),
+					Data:    new("ChessDojo Discount for OTB Groups"),
 				},
 			},
-			Source: aws.String("ChessDojo <chessdojotwitch@gmail.com>"),
+			Source: new("ChessDojo <chessdojotwitch@gmail.com>"),
 		}
 
 		_, err = svc.SendEmail(input)

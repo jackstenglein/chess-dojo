@@ -9,7 +9,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	cognito "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 
@@ -49,8 +48,8 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 	svc := cognito.New(session)
 
 	listUsersInput := cognito.ListUsersInput{
-		Filter:     aws.String(fmt.Sprintf(`email = "%s"`, email)),
-		UserPoolId: aws.String(userPoolId),
+		Filter:     new(fmt.Sprintf(`email = "%s"`, email)),
+		UserPoolId: new(userPoolId),
 	}
 
 	listUsersOutput, err := svc.ListUsers(&listUsersInput)
@@ -70,15 +69,15 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 
 	linkUserInput := cognito.AdminLinkProviderForUserInput{
 		DestinationUser: &cognito.ProviderUserIdentifierType{
-			ProviderName:           aws.String("Cognito"),
+			ProviderName:           new("Cognito"),
 			ProviderAttributeValue: listUsersOutput.Users[0].Username,
 		},
 		SourceUser: &cognito.ProviderUserIdentifierType{
-			ProviderName:           aws.String(strings.Title(tokens[0])),
-			ProviderAttributeName:  aws.String("Cognito_Subject"),
-			ProviderAttributeValue: aws.String(tokens[1]),
+			ProviderName:           new(strings.Title(tokens[0])),
+			ProviderAttributeName:  new("Cognito_Subject"),
+			ProviderAttributeValue: new(tokens[1]),
 		},
-		UserPoolId: aws.String(userPoolId),
+		UserPoolId: new(userPoolId),
 	}
 	if _, err := svc.AdminLinkProviderForUser(&linkUserInput); err != nil {
 		return handleError(event, err)

@@ -261,6 +261,11 @@ functions:
           - dynamodb:UpdateItem
           - dynamodb:GetItem
         Resource: ${param:DirectoriesTableArn}
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-lichessApiToken-*
 
   updateGame:
     timeout: 28

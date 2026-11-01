@@ -106,7 +106,7 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 
 	update := &database.UserUpdate{
 		SubscriptionStatus: aws.String(string(database.SubscriptionStatus_Subscribed)),
-		SubscriptionTier:   aws.String(string(tier)),
+		SubscriptionTier:   new(string(tier)),
 		PaymentInfo:        &pi,
 	}
 

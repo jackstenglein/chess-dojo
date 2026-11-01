@@ -94,7 +94,7 @@ func getSheetsClient(ctx context.Context) (*sheets.Service, error) {
 func getAppendCall(ctx context.Context, client *sheets.Service, req *UnsubscribeRequest) *sheets.SpreadsheetsValuesAppendCall {
 	valueRange := &sheets.ValueRange{
 		MajorDimension: "ROWS",
-		Values: [][]interface{}{
+		Values: [][]any{
 			{
 				time.Now().Format(time.RFC3339), // submission time
 				req.Email,                       // email

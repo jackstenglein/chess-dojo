@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -38,9 +37,9 @@ func main() {
 
 	input := &ses.UpdateTemplateInput{
 		Template: &ses.Template{
-			SubjectPart:  aws.String("Your ChessDojo Open Classical Pairing"),
-			HtmlPart:     aws.String(content),
-			TemplateName: aws.String("openClassicalPairing"),
+			SubjectPart:  new("Your ChessDojo Open Classical Pairing"),
+			HtmlPart:     new(content),
+			TemplateName: new("openClassicalPairing"),
 		},
 	}
 	output, err := svc.UpdateTemplate(input)

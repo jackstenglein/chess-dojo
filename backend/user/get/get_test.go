@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
@@ -16,17 +17,47 @@ const testUsername = "test-getUser"
 const testEmail = "test@chess-dojo-scheduler.com"
 const testName = "Test Name"
 
-func setupSuite(t *testing.T) func(t *testing.T) {
-	_, err := database.DynamoDB.CreateUser(testUsername, testEmail, testName, nil)
-	if err != nil {
-		t.Errorf("Failed to create user: %v", err)
-	}
+type mockUserStore struct {
+	users map[string]*database.User
+}
 
-	return func(t *testing.T) {
-		err := database.DynamoDB.DeleteUser(testUsername)
-		if err != nil {
-			t.Errorf("Failed to delete user: %v", err)
-		}
+func (m *mockUserStore) GetUser(username string) (*database.User, error) {
+	user, ok := m.users[username]
+	if !ok {
+		return nil, errors.New(404, "Invalid request: user not found", "")
+	}
+	clone := *user
+	return &clone, nil
+}
+
+func (m *mockUserStore) CreateUser(username, email, name string, paymentInfo *database.PaymentInfo) (*database.User, error) {
+	user := &database.User{
+		Username:   username,
+		Email:      email,
+		Name:       name,
+		DojoCohort: database.NoCohort,
+		Progress:   map[string]*database.RequirementProgress{},
+	}
+	m.users[username] = user
+	return user, nil
+}
+
+func setupSuite(t *testing.T) func() {
+	t.Helper()
+	original := repository
+	repository = &mockUserStore{
+		users: map[string]*database.User{
+			testUsername: {
+				Username:   testUsername,
+				Email:      testEmail,
+				Name:       testName,
+				DojoCohort: database.NoCohort,
+				Progress:   map[string]*database.RequirementProgress{},
+			},
+		},
+	}
+	return func() {
+		repository = original
 	}
 }
 
@@ -58,7 +89,7 @@ func getEvent(testName string, username string, public bool) api.Request {
 
 func TestGetUser(t *testing.T) {
 	teardownSuite := setupSuite(t)
-	defer teardownSuite(t)
+	defer teardownSuite()
 
 	ctx := context.Background()
 

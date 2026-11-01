@@ -24,6 +24,7 @@ import React, {
 import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi, onMoveFunc } from '../Board';
 import ResizableContainer from './ResizableContainer';
+import { UndoDeleteProvider } from './UndoDelete';
 import {
     getUnsavedSuggestedVariationRoots,
     saveSuggestedVariation,
@@ -377,23 +378,25 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                     <ChessContext.Provider value={chessContext}>
                         <RequestSnackbar request={autoSaveRequest} />
                         <GameContext.Provider value={guardedGameContext}>
-                            <ResizableContainer
-                                {...{
-                                    allowPanelHiding,
-                                    underboardTabs,
-                                    initialUnderboardTab,
-                                    rightTabs,
-                                    initialRightTab,
-                                    tabStorageKeyPrefix,
-                                    sidePanelTabs,
-                                    showPlayerHeaders,
-                                    pgn,
-                                    fen,
-                                    startOrientation: gameOrientation,
-                                    onInitialize,
-                                    hideBoardButtons,
-                                }}
-                            />
+                            <UndoDeleteProvider>
+                                <ResizableContainer
+                                    {...{
+                                        allowPanelHiding,
+                                        underboardTabs,
+                                        initialUnderboardTab,
+                                        rightTabs,
+                                        initialRightTab,
+                                        tabStorageKeyPrefix,
+                                        sidePanelTabs,
+                                        showPlayerHeaders,
+                                        pgn,
+                                        fen,
+                                        startOrientation: gameOrientation,
+                                        onInitialize,
+                                        hideBoardButtons,
+                                    }}
+                                />
+                            </UndoDeleteProvider>
                         </GameContext.Provider>
                     </ChessContext.Provider>
                 )}

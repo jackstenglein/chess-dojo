@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -65,11 +66,9 @@ func processTimelineRecord(record events.DynamoDBEventRecord) (int, error) {
 		return processGraduationRecord(record)
 	}
 
-	for _, id := range database.NewsfeedBlockedRequirements {
-		if requirementId == id {
-			log.Infof("Skipping record due to blocked requirement id: %s", requirementId)
-			return 0, nil
-		}
+	if slices.Contains(database.NewsfeedBlockedRequirements, requirementId) {
+		log.Infof("Skipping record due to blocked requirement id: %s", requirementId)
+		return 0, nil
 	}
 
 	poster := record.Change.Keys["owner"].String()

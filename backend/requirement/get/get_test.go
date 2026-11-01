@@ -8,8 +8,18 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
+
+type mockRequirementGetter struct{}
+
+func (mockRequirementGetter) GetRequirement(id string) (*database.Requirement, error) {
+	if id == testRequirementId {
+		return goldenRequirement, nil
+	}
+	return nil, errors.New(404, "Invalid request: requirement not found", "")
+}
 
 const testRequirementId = "test-requirement-id"
 
@@ -43,6 +53,10 @@ func getEvent(testName, id string) api.Request {
 }
 
 func TestGetRequirement(t *testing.T) {
+	original := repository
+	repository = mockRequirementGetter{}
+	t.Cleanup(func() { repository = original })
+
 	ctx := context.Background()
 
 	table := []struct {

@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -19,11 +18,11 @@ type GameReviewCohort struct {
 	// The id of the calendar event for the peer review session.
 	PeerReviewEventId string `dynamodbav:"peerReviewEventId" json:"peerReviewEventId"`
 	// The peer review event. Output only, will not be saved to the database.
-	PeerReviewEvent Event `dynamodbav:"-" json:"peerReviewEvent,omitempty"`
+	PeerReviewEvent Event `dynamodbav:"-" json:"peerReviewEvent"`
 	// The id of the calendar event for the sensei review session
 	SenseiReviewEventId string `dynamodbav:"senseiReviewEventId" json:"senseiReviewEventId"`
 	// The sensei review event. Output only, will not be saved to the database.
-	SenseiReviewEvent Event `dynamodbav:"-" json:"senseiReviewEvent,omitempty"`
+	SenseiReviewEvent Event `dynamodbav:"-" json:"senseiReviewEvent"`
 	// The date the queue order of a member was last reset.
 	QueueLastResetAt string `dynamodbav:"queueLastResetAt" json:"queueLastResetAt"`
 }
@@ -40,10 +39,10 @@ type GameReviewCohortMember struct {
 func (repo *dynamoRepository) GetGameReviewCohort(id string) (*GameReviewCohort, error) {
 	input := dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"type": {S: aws.String("GAME_REVIEW_COHORT")},
-			"id":   {S: aws.String(id)},
+			"type": {S: new("GAME_REVIEW_COHORT")},
+			"id":   {S: new(id)},
 		},
-		TableName: aws.String(liveClassesTable),
+		TableName: new(liveClassesTable),
 	}
 	var output GameReviewCohort
 	err := repo.getItem(&input, &output)

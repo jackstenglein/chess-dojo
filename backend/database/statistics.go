@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
@@ -139,10 +138,10 @@ func (repo *dynamoRepository) GetUserStatistics() (*UserStatistics, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 
 	userStats := UserStatistics{}
@@ -159,12 +158,12 @@ func (repo *dynamoRepository) SetUserStatistics(stats *UserStatistics) error {
 	if err != nil {
 		return errors.Wrap(500, "Temporary server error", "Unable to marshal users stats", err)
 	}
-	item["username"] = &dynamodb.AttributeValue{S: aws.String("STATISTICS")}
-	item["dojoCohort"] = &dynamodb.AttributeValue{S: aws.String("STATISTICS")}
+	item["username"] = &dynamodb.AttributeValue{S: new("STATISTICS")}
+	item["dojoCohort"] = &dynamodb.AttributeValue{S: new("STATISTICS")}
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 	_, err = repo.svc.PutItem(input)
 	return errors.Wrap(500, "Temporary server error", "DynamoDB PutItem failure", err)
@@ -175,10 +174,10 @@ func (repo *dynamoRepository) GetEventStatistics() (*EventStatistics, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	eventStats := EventStatistics{}
@@ -231,10 +230,10 @@ func (repo *dynamoRepository) RecordEventCreation(event *Event) error {
 		ExpressionAttributeValues: expr.Values(),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	_, err = repo.svc.UpdateItem(input)
@@ -250,18 +249,18 @@ func (repo *dynamoRepository) RecordEventBooking(event *Event) error {
 	updateExpression := "SET availabilitiesBooked = availabilitiesBooked + :v"
 
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression: aws.String(updateExpression),
+		UpdateExpression: new(updateExpression),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":v": {
-				N: aws.String("1"),
+				N: new("1"),
 			},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	_, err := repo.svc.UpdateItem(input)
@@ -275,18 +274,18 @@ func (repo *dynamoRepository) RecordEventDeletion(event *Event) error {
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression: aws.String("SET availabilitiesDeleted = availabilitiesDeleted + :v"),
+		UpdateExpression: new("SET availabilitiesDeleted = availabilitiesDeleted + :v"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":v": {
-				N: aws.String("1"),
+				N: new("1"),
 			},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	_, err := repo.svc.UpdateItem(input)
@@ -300,18 +299,18 @@ func (repo *dynamoRepository) RecordEventCancelation(event *Event) error {
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression: aws.String("SET availabilitiesCanceled = availabilitiesCanceled + :v"),
+		UpdateExpression: new("SET availabilitiesCanceled = availabilitiesCanceled + :v"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":v": {
-				N: aws.String("1"),
+				N: new("1"),
 			},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 	_, err := repo.svc.UpdateItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed to update event statistics record", err)
@@ -321,19 +320,19 @@ func (repo *dynamoRepository) RecordEventCancelation(event *Event) error {
 // the given cohort.
 func (repo *dynamoRepository) RecordSubscriptionCancelation(cohort DojoCohort) error {
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression: aws.String("ADD #cohorts.#c.#cancelations :q"),
+		UpdateExpression: new("ADD #cohorts.#c.#cancelations :q"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohorts":      aws.String("cohorts"),
-			"#c":            aws.String(string(cohort)),
-			"#cancelations": aws.String("subscriptionCancelations"),
+			"#cohorts":      new("cohorts"),
+			"#c":            new(string(cohort)),
+			"#cancelations": new("subscriptionCancelations"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":q": {N: aws.String("1")},
+			":q": {N: new("1")},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String("STATISTICS")},
+			"username": {S: new("STATISTICS")},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 	_, err := repo.svc.UpdateItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed to update user statistics record", err)
@@ -343,19 +342,19 @@ func (repo *dynamoRepository) RecordSubscriptionCancelation(cohort DojoCohort) e
 // the given cohort.
 func (repo *dynamoRepository) RecordFreeTierConversion(cohort DojoCohort) error {
 	input := &dynamodb.UpdateItemInput{
-		UpdateExpression: aws.String("ADD #cohorts.#c.#conversions :q"),
+		UpdateExpression: new("ADD #cohorts.#c.#conversions :q"),
 		ExpressionAttributeNames: map[string]*string{
-			"#cohorts":     aws.String("cohorts"),
-			"#c":           aws.String(string(cohort)),
-			"#conversions": aws.String("freeTierConversions"),
+			"#cohorts":     new("cohorts"),
+			"#c":           new(string(cohort)),
+			"#conversions": new("freeTierConversions"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":q": {N: aws.String("1")},
+			":q": {N: new("1")},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String("STATISTICS")},
+			"username": {S: new("STATISTICS")},
 		},
-		TableName: aws.String(userTable),
+		TableName: new(userTable),
 	}
 	_, err := repo.svc.UpdateItem(input)
 	return errors.Wrap(500, "Temporary server error", "Failed to update user statistics record", err)

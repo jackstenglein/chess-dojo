@@ -103,12 +103,14 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             renderCell: (params: GridRenderCellParams<Graduation>) => {
                 const graduationCohorts = [...params.row.graduationCohorts]
                     .sort(compareCohorts)
-                    .filter((cohort, i, array) => i === array.indexOf(cohort))
-                    .slice(-3);
+                    .filter((cohort, i, array) => i === array.indexOf(cohort));
                 return (
                     <Stack
                         direction='row'
                         sx={{
+                            width: 1,
+                            flexWrap: 'wrap',
+                            gap: 0.5,
                             justifyContent: 'center',
                         }}
                     >

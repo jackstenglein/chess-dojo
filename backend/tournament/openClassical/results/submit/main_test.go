@@ -325,8 +325,6 @@ func TestGetScreenshotKey(t *testing.T) {
 }
 
 func TestUploadScreenshots(t *testing.T) {
-	t.Parallel()
-
 	openClassical := testOpenClassical()
 	update := &database.OpenClassicalPairingUpdate{
 		Region:  "A",
@@ -350,8 +348,8 @@ func TestUploadScreenshots(t *testing.T) {
 			name:            "UploadsNonEmptyScreenshots",
 			screenshotsData: []string{"dGVzdDE=", "dGVzdDI="},
 			wantKeys: []string{
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_2",
 			},
 			wantUploads: 2,
 		},
@@ -359,8 +357,8 @@ func TestUploadScreenshots(t *testing.T) {
 			name:            "SkipsEmptyScreenshots",
 			screenshotsData: []string{"dGVzdDE=", "  ", "dGVzdDI="},
 			wantKeys: []string{
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_3",
 			},
 			wantUploads: 2,
 		},
@@ -374,8 +372,6 @@ func TestUploadScreenshots(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			restore := resetDependencies(t)
 			defer restore()
 
@@ -441,8 +437,6 @@ func TestGetGameUrl(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 
 	tests := []struct {
@@ -537,8 +531,8 @@ func TestHandler(t *testing.T) {
 					Notes:    "Good game",
 					Verified: false,
 					Screenshots: []string{
-						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_2",
 					},
 				},
 			},

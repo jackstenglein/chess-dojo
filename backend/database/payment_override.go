@@ -3,8 +3,6 @@ package database
 import (
 	"strings"
 	"time"
-
-	"github.com/aws/aws-sdk-go/aws"
 )
 
 const (
@@ -93,8 +91,8 @@ func BuildUserUpdateEndPaymentOverride(user *User, revokedBy string) *UserUpdate
 	}
 
 	return &UserUpdate{
-		SubscriptionStatus: aws.String(string(status)),
-		SubscriptionTier:   aws.String(string(tier)),
+		SubscriptionStatus: new(string(status)),
+		SubscriptionTier:   new(string(tier)),
 		PaymentInfo:        &pi,
 	}
 }

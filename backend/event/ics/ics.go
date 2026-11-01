@@ -246,8 +246,8 @@ func icsRRule(stored string) string {
 		return ""
 	}
 
-	lines := strings.Split(stored, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(stored, "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		line = strings.TrimPrefix(line, "\r")
 		upper := strings.ToUpper(line)

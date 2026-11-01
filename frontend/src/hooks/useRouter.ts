@@ -58,6 +58,14 @@ export const pagesWithVideos = [
     /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2$/,
     /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2\/0\/0/,
     /^\/courses\/WORKSHOP\/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2\/.+\/1/,
+
+    // Tactical Nimzo
+    /^\/courses\/WORKSHOP\/a1149366-ee03-46b9-b609-d6f51e8a2fe4$/,
+    /^\/courses\/WORKSHOP\/a1149366-ee03-46b9-b609-d6f51e8a2fe4\/0\/(0|1|2|3|4|5|6|7|8|9|10)$/,
+
+    // Accelerated Dragon
+    /^\/courses\/WORKSHOP\/d8f16797-4183-4edb-8831-02e36b38f784/,
+    /^\/courses\/WORKSHOP\/d8f16797-4183-4edb-8831-02e36b38f784\/0/,
 ];
 
 /**

@@ -17,6 +17,8 @@ type Event events.CognitoEventUserPoolsPostConfirmation
 
 var repository database.UserCreator = database.DynamoDB
 
+var isEmailForbidden = access.IsForbidden
+
 const triggerSource = "PostConfirmation_ConfirmSignUp"
 
 func handleError(event Event, err error) (Event, error) {
@@ -48,7 +50,7 @@ func Handler(ctx context.Context, event Event) (Event, error) {
 	}
 
 	var paymentInfo *database.PaymentInfo
-	if isForbidden, _ := access.IsForbidden(email, 3*time.Second); !isForbidden {
+	if isForbidden, _ := isEmailForbidden(email, 3*time.Second); !isForbidden {
 		paymentInfo = &database.PaymentInfo{
 			CustomerId:     "WIX",
 			SubscriptionId: "WIX",

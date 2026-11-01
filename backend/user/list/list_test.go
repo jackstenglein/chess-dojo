@@ -9,8 +9,24 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
+	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
+
+type mockUserLister struct {
+	usersByCohort map[database.DojoCohort][]*database.User
+}
+
+func (m *mockUserLister) ListUsersByCohort(cohort database.DojoCohort, startKey string) ([]*database.User, string, error) {
+	if cohort == "STATISTICS" {
+		return nil, "", errors.New(403, "Invalid request: cannot get cohort `STATISTICS`", "")
+	}
+	return m.usersByCohort[cohort], "", nil
+}
+
+func (m *mockUserLister) SearchUsers(query string, fields []string, startKey string) ([]*database.User, string, error) {
+	return nil, "", nil
+}
 
 var goldenUser1 = &database.User{
 	Username:        "test-listusers-golden1",
@@ -62,6 +78,14 @@ func getEvent(testName, cohort, startKey string) api.Request {
 }
 
 func TestListUser(t *testing.T) {
+	original := repository
+	repository = &mockUserLister{
+		usersByCohort: map[database.DojoCohort][]*database.User{
+			"2200-2300": {goldenUser1, goldenUser2},
+		},
+	}
+	t.Cleanup(func() { repository = original })
+
 	ctx := context.Background()
 
 	table := []struct {

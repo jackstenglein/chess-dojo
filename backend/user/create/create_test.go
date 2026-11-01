@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
@@ -10,21 +12,37 @@ import (
 
 const testUsername = "test-createUser"
 
-func setupTest(t *testing.T) func(t *testing.T) {
-	return func(t *testing.T) {
-		err := database.DynamoDB.DeleteUser(testUsername)
-		if err != nil {
-			t.Errorf("Failed teardown: %v", err)
-		}
+type mockUserCreator struct {
+	users map[string]*database.User
+}
+
+func (m *mockUserCreator) CreateUser(username, email, name string, paymentInfo *database.PaymentInfo) (*database.User, error) {
+	if _, ok := m.users[username]; ok {
+		return nil, errors.New("user already exists")
 	}
+	user := &database.User{Username: username, Email: email, Name: name, PaymentInfo: paymentInfo}
+	m.users[username] = user
+	return user, nil
+}
+
+func setupTest(t *testing.T) {
+	t.Helper()
+	originalRepo := repository
+	originalCheck := isEmailForbidden
+	repository = &mockUserCreator{users: map[string]*database.User{}}
+	isEmailForbidden = func(email string, timeout time.Duration) (bool, error) {
+		return true, nil
+	}
+	t.Cleanup(func() {
+		repository = originalRepo
+		isEmailForbidden = originalCheck
+	})
 }
 
 func getEvent(triggerSource, username, email, name string) Event {
 	return Event{
-		CognitoEventUserPoolsHeader: events.CognitoEventUserPoolsHeader{
-			TriggerSource: triggerSource,
-			UserName:      username,
-		},
+		TriggerSource: triggerSource,
+		UserName:      username,
 		Request: events.CognitoEventUserPoolsPostConfirmationRequest{
 			UserAttributes: map[string]string{
 				"email": email,
@@ -75,8 +93,7 @@ func TestMissingName(t *testing.T) {
 }
 
 func TestSuccessfulCreate(t *testing.T) {
-	teardownTest := setupTest(t)
-	defer teardownTest(t)
+	setupTest(t)
 
 	ctx := context.Background()
 	event := getEvent(triggerSource, testUsername, "test@chess-dojo-scheduler.com", "Test Name")
@@ -88,8 +105,7 @@ func TestSuccessfulCreate(t *testing.T) {
 }
 
 func TestDoubleCreate(t *testing.T) {
-	teardownTest := setupTest(t)
-	defer teardownTest(t)
+	setupTest(t)
 
 	ctx := context.Background()
 	event := getEvent(triggerSource, testUsername, "test@chess-dojo-scheduler.com", "Test Name")

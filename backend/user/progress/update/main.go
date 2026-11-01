@@ -145,10 +145,8 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 	newScore := task.CalculateScoreCount(request.Cohort, request.NewCount)
 
 	timelineEntry := &database.TimelineEntry{
-		TimelineEntryKey: database.TimelineEntryKey{
-			Owner: user.Username,
-			Id:    fmt.Sprintf("%s_%s", date.Format(time.DateOnly), uuid.NewString()),
-		},
+		Owner:               user.Username,
+		Id:                  fmt.Sprintf("%s_%s", date.Format(time.DateOnly), uuid.NewString()),
 		OwnerDisplayName:    user.DisplayName,
 		RequirementId:       request.RequirementId,
 		RequirementName:     task.GetName(),

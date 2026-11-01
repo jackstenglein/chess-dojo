@@ -38,6 +38,7 @@ import {
     RenderRatingHeader,
     RenderTimeControl,
 } from './GameListItem';
+import { getGameTableSortModelKey, getPlayedDateSortComparator } from './gameTableSort';
 
 const listColDef: GridListViewColDef<GameInfo> = {
     field: 'listColumn',
@@ -150,6 +151,7 @@ export default function GameTable({
             {
                 field: 'date',
                 headerName: t('played'),
+                getSortComparator: getPlayedDateSortComparator,
                 align: 'right',
                 headerAlign: 'right',
             },
@@ -253,7 +255,7 @@ export default function GameTable({
     }, [isListView, density]);
 
     const [sortModel, setSortModel] = useLocalStorage<GridSortModel>(
-        `/GameTable/${namespace}/sortModel`,
+        getGameTableSortModelKey(namespace),
         [
             {
                 field: 'date',

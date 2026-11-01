@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -402,8 +401,8 @@ func sendSqsEvent(event any) error {
 		return errors.Wrap(500, "Temporary server error", "Failed to marshal notification event", err)
 	}
 	_, err = sqsService.SendMessage(&sqs.SendMessageInput{
-		MessageBody: aws.String(string(body)),
-		QueueUrl:    aws.String(sqsUrl),
+		MessageBody: new(string(body)),
+		QueueUrl:    new(sqsUrl),
 	})
 	return errors.Wrap(500, "Temporary server error", "Failed to send SQS message", err)
 }
@@ -411,17 +410,17 @@ func sendSqsEvent(event any) error {
 // ListNotifications returns a list of notifications for the provided username.
 func (repo *dynamoRepository) ListNotifications(username string, startKey string) ([]Notification, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#username = :username"),
+		KeyConditionExpression: new("#username = :username"),
 		ExpressionAttributeNames: map[string]*string{
-			"#username": aws.String("username"),
+			"#username": new("username"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
-		ScanIndexForward: aws.Bool(false),
-		TableName:        aws.String(notificationTable),
+		ScanIndexForward: new(false),
+		TableName:        new(notificationTable),
 	}
 
 	var notifications []Notification
@@ -437,17 +436,17 @@ func (repo *dynamoRepository) DeleteAllNotifications(username string) error {
 	var deleteRequests []*dynamodb.WriteRequest
 
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#username = :username"),
+		KeyConditionExpression: new("#username = :username"),
 		ExpressionAttributeNames: map[string]*string{
-			"#username": aws.String("username"),
+			"#username": new("username"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":username": {
-				S: aws.String(username),
+				S: new(username),
 			},
 		},
-		ProjectionExpression: aws.String("#username, id"),
-		TableName:            aws.String(notificationTable),
+		ProjectionExpression: new("#username, id"),
+		TableName:            new(notificationTable),
 	}
 
 	var lastEvaluatedKey map[string]*dynamodb.AttributeValue
@@ -496,10 +495,10 @@ func (repo *dynamoRepository) DeleteAllNotifications(username string) error {
 func (repo *dynamoRepository) DeleteNotification(username, id string) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"username": {S: aws.String(username)},
-			"id":       {S: aws.String(id)},
+			"username": {S: new(username)},
+			"id":       {S: new(id)},
 		},
-		TableName: aws.String(notificationTable),
+		TableName: new(notificationTable),
 	}
 
 	_, err := repo.svc.DeleteItem(input)

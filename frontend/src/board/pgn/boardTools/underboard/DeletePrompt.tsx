@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useChess } from '../../PgnBoard';
+import { useUndoDelete } from '../../UndoDelete';
 import {
     getSuggestedVariationRoot,
     isSuggestedVariation,
@@ -191,6 +192,7 @@ export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
     const { game, onUpdateGame } = useGame();
     const api = useApi();
     const syncRequest = useRequest();
+    const { onMovesDeleted } = useUndoDelete();
 
     const onDelete = () => {
         if (!chess) {
@@ -211,6 +213,8 @@ export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
             }
         }
 
+        const pgnBeforeDelete = chess.renderPgn();
+
         if (deleteAction.type === 'before') {
             chess.deleteBefore(deleteAction.move);
         } else {
@@ -229,6 +233,10 @@ export function DeletePrompt({ deleteAction, onClose }: DeletePromptProps) {
                 onUpdateGame,
                 syncRequest.onFailure,
             );
+        }
+
+        if (!shouldSyncBackend) {
+            onMovesDeleted({ moves: deleteAction.moves, pgn: pgnBeforeDelete });
         }
 
         onClose();
@@ -266,6 +274,7 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
     );
     const [deleteAction, setDeleteAction] = useState<DeleteAction>();
     const reconcile = useReconcile();
+    const { onMovesDeleted } = useUndoDelete();
 
     const onDelete = (move: Move | null, type: 'before' | 'after') => {
         if (!move || !chess) {
@@ -289,6 +298,8 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
         }
 
         if (deleteStats.moves < warnBeforeDelete) {
+            const pgnBeforeDelete = chess.renderPgn();
+
             if (type === 'before') {
                 chess.deleteBefore(move);
             } else {
@@ -307,6 +318,10 @@ export function useDeletePrompt(chess: Chess | undefined, onCloseParent?: () => 
                     onUpdateGame,
                     syncRequest.onFailure,
                 );
+            }
+
+            if (!shouldSyncBackend) {
+                onMovesDeleted({ moves: deleteStats.moves, pgn: pgnBeforeDelete });
             }
 
             onCloseParent?.();

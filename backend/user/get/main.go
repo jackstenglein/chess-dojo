@@ -11,7 +11,12 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
-var repository = database.DynamoDB
+type userStore interface {
+	GetUser(username string) (*database.User, error)
+	CreateUser(username, email, name string, paymentInfo *database.PaymentInfo) (*database.User, error)
+}
+
+var repository userStore = database.DynamoDB
 
 func main() {
 	lambda.Start(Handler)

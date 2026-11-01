@@ -62,6 +62,18 @@ jobs:
         env:
           CI: true
 
+      - name: Setup Go
+        if: steps.filter.outputs.backend == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Run Backend Go Tests
+        if: steps.filter.outputs.backend == 'true'
+        working-directory: backend
+        run: go test ./...
+
       # Copied from https://nextjs.org/docs/pages/building-your-application/deploying/ci-build-caching#github-actions
       - name: NextJS Cache
         if: steps.filter.outputs.frontend == 'true'
@@ -100,6 +112,7 @@ jobs:
         run: pnpm test:playwright
         env:
           CI: true
+          LICHESS_API_TOKEN: ${{ secrets.LICHESS_API_TOKEN }}
 
       - name: Save Playwright Report
         uses: actions/upload-artifact@v5

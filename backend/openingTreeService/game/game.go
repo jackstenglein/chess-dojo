@@ -36,8 +36,8 @@ const (
 type Game struct {
 	PGN           string     `json:"pgn"`
 	PlayerColor   string     `json:"playerColor"`
-	WhiteUsername  string     `json:"whiteUsername"`
-	BlackUsername  string     `json:"blackUsername"`
+	WhiteUsername string     `json:"whiteUsername"`
+	BlackUsername string     `json:"blackUsername"`
 	WhiteRating   int        `json:"whiteRating"`
 	BlackRating   int        `json:"blackRating"`
 	Result        Result     `json:"result"`
@@ -45,5 +45,5 @@ type Game struct {
 	Rated         bool       `json:"rated"`
 	URL           string     `json:"url"`
 	Source        SourceType `json:"source"`
-	EndTime       time.Time  `json:"endTime,omitempty"`
+	EndTime       time.Time  `json:"endTime"`
 }
