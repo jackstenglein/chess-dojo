@@ -128,9 +128,7 @@ function PuzzleRushHistoryTable() {
                                     <TableCell>{t('columnDate')}</TableCell>
                                     <TableCell align='center'>{t('statCorrect')}</TableCell>
                                     <TableCell align='center'>{t('statPercentage')}</TableCell>
-                                    <TableCell align='center'>
-                                        {t('statPerformanceRating')}
-                                    </TableCell>
+                                    <TableCell align='center'>{t('statHighestSolved')}</TableCell>
                                     <TableCell align='center'>{t('columnTime')}</TableCell>
                                     <TableCell>{t('columnEndReason')}</TableCell>
                                 </TableRow>

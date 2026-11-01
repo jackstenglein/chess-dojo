@@ -3201,8 +3201,7 @@
             "attemptsHintUnsaved": "Quando a partida for salva, você poderá clicar em um problema para tentá-lo novamente sem pressão de tempo.",
             "statCorrect": "Corretos",
             "statPercentage": "Precisão",
-            "statPerformanceRating": "Rating de desempenho",
-            "statPeakRating": "Nível máximo",
+            "statHighestSolved": "Quebra-cabeça mais complexo resolvido",
             "bestAllTime": "Melhor de todos os tempos",
             "bestThisWeek": "Melhor da semana",
             "bestToday": "Melhor de hoje",
@@ -3336,7 +3335,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Testes de finais",
             "squareColorDrill": "Exercício de cor de casas",
-            "allRatings": "Todos os ratings"
+            "allRatings": "Todos os ratings",
+            "beta": "Beta"
         },
         "tactics": {
             "heading": "Provas de tática"

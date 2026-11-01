@@ -3201,8 +3201,7 @@
             "attemptsHintUnsaved": "Une fois la partie enregistrée, vous pourrez cliquer sur un problème pour le réessayer sans pression de temps.",
             "statCorrect": "Corrects",
             "statPercentage": "Précision",
-            "statPerformanceRating": "Performance",
-            "statPeakRating": "Niveau max",
+            "statHighestSolved": "Casse-tête le plus élevé résolu",
             "bestAllTime": "Meilleur score absolu",
             "bestThisWeek": "Meilleur de la semaine",
             "bestToday": "Meilleur du jour",
@@ -3336,7 +3335,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Tests de finale",
             "squareColorDrill": "Exercice de couleur des cases",
-            "allRatings": "Tous les classements"
+            "allRatings": "Tous les classements",
+            "beta": "Bêta"
         },
         "tactics": {
             "heading": "Tests de tactique"

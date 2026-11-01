@@ -136,11 +136,9 @@ function IdleScreen({ onStart }: { onStart: () => void }) {
                 </Stack>
             </Stack>
 
-            {bestsRequest.data && (
-                <Box sx={{ my: 4 }}>
-                    <PuzzleRushBests bests={bestsRequest.data} />
-                </Box>
-            )}
+            <Box sx={{ my: 4 }}>
+                <PuzzleRushBests bests={bestsRequest.data} />
+            </Box>
 
             <Stack direction='row' spacing={2} sx={{ justifyContent: 'center' }}>
                 <Button variant='contained' size='large' onClick={onStart} sx={{ px: 6, py: 1.5 }}>
@@ -450,7 +448,6 @@ function FinishedScreen({ rush }: { rush: UsePuzzleRushResponse }) {
                 {standing && (
                     <Stack spacing={3} sx={{ alignItems: 'center', width: 1 }}>
                         <PuzzleRushIndexes standing={standing} />
-                        <PuzzleRushBests bests={standing.bests} />
                     </Stack>
                 )}
 

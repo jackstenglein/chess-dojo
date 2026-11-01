@@ -3201,8 +3201,7 @@
             "attemptsHintUnsaved": "Sobald der Lauf gespeichert ist, kannst du auf ein Rätsel klicken, um es ohne Zeitdruck erneut zu versuchen.",
             "statCorrect": "Richtig",
             "statPercentage": "Genauigkeit",
-            "statPerformanceRating": "Performance-Wertung",
-            "statPeakRating": "Höchste Stufe",
+            "statHighestSolved": "Höchstes Rätsel gelöst",
             "bestAllTime": "Allzeit-Bestwert",
             "bestThisWeek": "Bestwert dieser Woche",
             "bestToday": "Bestwert heute",
@@ -3336,7 +3335,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Endspiel-Tests",
             "squareColorDrill": "Feldfarben-Übung",
-            "allRatings": "Alle Bewertungen"
+            "allRatings": "Alle Bewertungen",
+            "beta": "Beta"
         },
         "tactics": {
             "heading": "Taktiktests"

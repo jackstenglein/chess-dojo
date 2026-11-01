@@ -3201,8 +3201,7 @@
             "attemptsHintUnsaved": "Una volta salvata la partita, potrai cliccare su un problema per riprovarlo senza pressione di tempo.",
             "statCorrect": "Corretti",
             "statPercentage": "Precisione",
-            "statPerformanceRating": "Rating di performance",
-            "statPeakRating": "Livello massimo",
+            "statHighestSolved": "Il puzzle più difficile risolto",
             "bestAllTime": "Migliore di sempre",
             "bestThisWeek": "Migliore della settimana",
             "bestToday": "Migliore di oggi",
@@ -3336,7 +3335,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Test sui finali",
             "squareColorDrill": "Esercizio sul colore delle case",
-            "allRatings": "Tutti i punteggi"
+            "allRatings": "Tutti i punteggi",
+            "beta": "Beta"
         },
         "tactics": {
             "heading": "Test tattici"

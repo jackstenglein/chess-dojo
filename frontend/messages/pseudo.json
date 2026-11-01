@@ -3201,8 +3201,7 @@
             "attemptsHintUnsaved": "[T] Once the run is saved, you can click a puzzle to retry it with no time pressure.",
             "statCorrect": "[T] Correct",
             "statPercentage": "[T] Accuracy",
-            "statPerformanceRating": "[T] Performance Rating",
-            "statPeakRating": "[T] Peak Rating",
+            "statHighestSolved": "[T] Highest Puzzle Solved",
             "bestAllTime": "[T] All-time best",
             "bestThisWeek": "[T] This week's best",
             "bestToday": "[T] Today's best",
@@ -3336,7 +3335,8 @@
             "puzzleRush": "[T] Dojo Rush",
             "endgameTests": "[T] Endgame Tests",
             "squareColorDrill": "[T] Square Color Drill",
-            "allRatings": "[T] All Ratings"
+            "allRatings": "[T] All Ratings",
+            "beta": "[T] Beta"
         },
         "tactics": {
             "heading": "[T] Tactics Tests"

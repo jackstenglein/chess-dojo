@@ -57,11 +57,7 @@ export function PuzzleRushStatsGrid({
                     value={`${stats.correctCount} / ${stats.totalCount}`}
                 />
                 <Stat label={t('statPercentage')} value={`${stats.percentage}%`} />
-                <Stat
-                    label={t('statPerformanceRating')}
-                    value={stats.peakCompletedRating || '0'}
-                    highlight
-                />
+                <Stat label={t('statHighestSolved')} value={stats.peakCompletedRating || '0'} />
             </Stack>
 
             {(endReason || totalTimeSeconds !== undefined) && (

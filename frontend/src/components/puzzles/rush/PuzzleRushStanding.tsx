@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
 /** Renders the player's all-time, weekly, and daily best solved-puzzle counts. */
-export function PuzzleRushBests({ bests }: { bests: PuzzleRushBestScores }) {
+export function PuzzleRushBests({ bests }: { bests?: PuzzleRushBestScores }) {
     const t = useTranslations('puzzles.rush');
 
     return (
@@ -23,9 +23,9 @@ export function PuzzleRushBests({ bests }: { bests: PuzzleRushBestScores }) {
                 rowGap: 2,
             }}
         >
-            <Stat label={t('bestAllTime')} value={bests.allTime?.score ?? '—'} />
-            <Stat label={t('bestThisWeek')} value={bests.week?.score ?? '—'} />
-            <Stat label={t('bestToday')} value={bests.day?.score ?? '—'} />
+            <Stat label={t('bestAllTime')} value={bests?.allTime?.score ?? '—'} />
+            <Stat label={t('bestThisWeek')} value={bests?.week?.score ?? '—'} />
+            <Stat label={t('bestToday')} value={bests?.day?.score ?? '—'} />
         </Stack>
     );
 }
