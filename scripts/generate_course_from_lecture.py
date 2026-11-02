@@ -153,6 +153,7 @@ def lecture_to_course(lecture: dict) -> dict:
                 'currentPrice': 0,
             }
         ],
+        'status': 'DRAFT',
     }
 
 
