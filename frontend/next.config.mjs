@@ -206,6 +206,9 @@ const pagesWithVideosRaw = [
     // Accelerated Dragon
     '/courses/WORKSHOP/d8f16797-4183-4edb-8831-02e36b38f784',
     '/courses/WORKSHOP/d8f16797-4183-4edb-8831-02e36b38f784/0/:module',
+
+    // Evaluation for Beginners
+    '/courses/WORKSHOP/c83cdfc4-aa00-4a85-9da7-540fe8cfca45/:path*',
 ];
 
 // Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',
