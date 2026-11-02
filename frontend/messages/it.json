@@ -749,7 +749,10 @@
                 "ratingsUpdatedTooltip": "I punteggi vengono aggiornati ogni 24 ore",
                 "graphsUpdatedNote": "*I grafici vengono aggiornati ogni settimana",
                 "ratingChartLabel": "Punteggio",
-                "customRatingDisplayName": " ({name})"
+                "customRatingDisplayName": " ({name})",
+                "graduationLegend": "Passaggio di livello",
+                "cohortProgress": "Progresso della coorte",
+                "ratingHistory": "Cronologia del punteggio"
             },
             "tacticsCard": {
                 "tacticsRating": "Punteggio tattica",
