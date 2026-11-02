@@ -62,7 +62,11 @@ export function PromotionDialog({
                 zIndex: 205,
             }}
         >
-            <ClickAwayListener onClickAway={onCancelPromotion}>
+            <ClickAwayListener
+                onClickAway={onCancelPromotion}
+                mouseEvent='onPointerDown'
+                touchEvent='onTouchStart'
+            >
                 <Box
                     sx={{
                         position: 'absolute',
