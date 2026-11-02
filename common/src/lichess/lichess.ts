@@ -120,7 +120,7 @@ export class LichessFetcher {
             return chapterIdResp;
         }
 
-        const exportUrl = `https://lichess.org/api/study/${studyIdResp.data}/${chapterIdResp.data}.pgn?source=true`;
+        const exportUrl = `https://lichess.org/api/study/${studyIdResp.data}/${chapterIdResp.data}.pgn`;
 
         try {
             const response = await axios.get<string>(exportUrl, this.getLichessConfig());
@@ -141,7 +141,7 @@ export class LichessFetcher {
             return studyIdResp;
         }
 
-        const exportUrl = `https://lichess.org/api/study/${studyIdResp.data}.pgn?source=true`;
+        const exportUrl = `https://lichess.org/api/study/${studyIdResp.data}.pgn`;
         try {
             const response = await axios.get<string>(exportUrl, this.getLichessConfig());
             return { data: splitPgns(response.data) };
