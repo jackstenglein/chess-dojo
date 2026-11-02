@@ -109,7 +109,7 @@ describe('getLichessChapter', () => {
         await getLichessChapter('https://lichess.org/study/W67VW7nM/3wugVXBW');
 
         expect(axiosGetMock).toHaveBeenCalledWith(
-            'https://lichess.org/api/study/W67VW7nM/3wugVXBW.pgn?source=true',
+            'https://lichess.org/api/study/W67VW7nM/3wugVXBW.pgn',
             { headers: {}, maxRedirects: 0 },
         );
     });
@@ -123,9 +123,9 @@ describe('getLichessStudy', () => {
 
         await getLichessStudy('https://lichess.org/study/W67VW7nM');
 
-        expect(axiosGetMock).toHaveBeenCalledWith(
-            'https://lichess.org/api/study/W67VW7nM.pgn?source=true',
-            { headers: {}, maxRedirects: 0 },
-        );
+        expect(axiosGetMock).toHaveBeenCalledWith('https://lichess.org/api/study/W67VW7nM.pgn', {
+            headers: {},
+            maxRedirects: 0,
+        });
     });
 });
