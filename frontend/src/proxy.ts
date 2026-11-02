@@ -4,6 +4,7 @@ import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { embedderPolicyForPath } from './coep/courseCoep';
 import { getCourseVideoIndex } from './coep/courseVideoIndex';
+import { COURSE_LANDING_PATH } from './app/[locale]/(scoreboard)/courses/courseLandingPath';
 import { DEFAULT_LOCALE, LOCALE_PREFIX_REGEX } from './i18n/locales';
 import { routing } from './i18n/routing';
 import { logger } from './logging/logger';
@@ -31,6 +32,9 @@ const publicPaths = [
     /^\/tournaments\/open-classical\/info$/,
     /^\/tournaments\/open-classical\/previous$/,
     /^\/courses$/,
+    // Sales page. Logged-out visitors and crawlers must get the course HTML,
+    // not a redirect to sign-in. Chapter/module URLs stay signed-in only.
+    COURSE_LANDING_PATH,
     /^\/learn\/books$/,
     /^\/learn\/ratings$/,
     /^\/learn\/guides$/,

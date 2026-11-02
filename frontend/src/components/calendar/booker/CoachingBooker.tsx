@@ -182,10 +182,10 @@ const CoachingBooker: React.FC<CoachingBookerProps> = ({ event }) => {
                         iconName='cohort'
                         title={t('cohorts')}
                         body={
-                            dojoCohorts.length === event.cohorts.length ||
-                            event.cohorts.length === 0
+                            dojoCohorts.length === event.cohorts?.length ||
+                            (event.cohorts?.length ?? 0) === 0
                                 ? t('allCohorts')
-                                : event.cohorts.join(', ')
+                                : event.cohorts?.join(', ')
                         }
                     />
                     <Stack spacing={0.5}>

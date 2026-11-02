@@ -95,9 +95,10 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({ processedEvent 
                     iconName='cohort'
                     title={t('cohorts')}
                     body={
-                        dojoCohorts.length === event.cohorts.length
+                        dojoCohorts.length === event.cohorts?.length ||
+                        (event.cohorts?.length ?? 0) === 0
                             ? t('allCohorts')
-                            : event.cohorts.join(', ')
+                            : event.cohorts?.join(', ')
                     }
                 />
             )}
