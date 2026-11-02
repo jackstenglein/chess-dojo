@@ -655,6 +655,7 @@
             "tabTrainingPlan": "[T] Training Plan",
             "tabActivity": "[T] Activity",
             "tabGames": "[T] Games",
+            "tabResults": "[T] Results",
             "tabClubs": "[T] Clubs"
         },
         "yearReview": {
@@ -851,6 +852,34 @@
             "upcomingSessions": "[T] Upcoming Sessions",
             "viewAsList": "[T] View as list",
             "viewInCalendar": "[T] View in calendar"
+        },
+        "resultsTab": {
+            "rapid": "[T] Rapid",
+            "classical": "[T] Classical",
+            "record": "[T] Record (W-L-D)",
+            "winRate": "[T] Win Rate",
+            "streakWin": "[T] {count, plural, one {# Win} other {# Wins}}",
+            "avgOpponent": "[T] Avg Opponent",
+            "bestWin": "[T] Best Win",
+            "date": "[T] Date",
+            "opponent": "[T] Opponent",
+            "color": "[T] Color",
+            "white": "[T] White",
+            "black": "[T] Black",
+            "result": "[T] Result",
+            "win": "[T] Win",
+            "loss": "[T] Loss",
+            "draw": "[T] Draw",
+            "emptyNoAccounts": "[T] No connected Lichess or Chess.com account found.",
+            "emptyConnectAccounts": "<link>[T] Connect your Lichess or Chess.com account</link> [T] to see your results here.",
+            "emptyNoGames": "[T] No games found in this time period.",
+            "bestStreak": "[T] Best Win Streak",
+            "resultsFor": "[T] Results for:",
+            "performanceByMonth": "[T] Performance by Month",
+            "performanceWhite": "[T] Performance White",
+            "performanceBlack": "[T] Performance Black",
+            "sessionSummary": "[T] {count, plural, one {# game} other {# games}} · Score: {score}/{count}",
+            "sessionPerformance": "[T] Performance {rating}"
         },
         "graduationShare": {
             "title": "[T] Share your progress!",
