@@ -61,7 +61,7 @@ describe('useCoepMode', () => {
         setIsolated(true);
         const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => undefined);
         const hook = renderHook(({ mode }) => useCoepMode(mode), {
-            initialProps: { mode: 'pending' as const },
+            initialProps: { mode: 'pending' as 'pending' | 'video' },
         });
 
         expect(reload).not.toHaveBeenCalled();
