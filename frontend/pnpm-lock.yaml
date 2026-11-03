@@ -37,7 +37,7 @@ importers:
         version: 2.2.21
       '@jackstenglein/chess-dojo-common':
         specifier: file:../common
-        version: file:../common
+        version: file:../common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       '@jackstenglein/pgn-parser':
         specifier: ^2.0.13
         version: 2.0.13
@@ -6148,14 +6148,18 @@ snapshots:
 
   '@istanbuljs/schema@0.1.6': {}
 
-  '@jackstenglein/chess-dojo-common@file:../common':
+  '@jackstenglein/chess-dojo-common@file:../common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
     dependencies:
       '@jackstenglein/chess': 2.2.21
+      axios: 1.20.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       globals: 17.12.0
       ml-regression-simple-linear: 3.0.1
       stripe: 17.7.0
       uuid: 14.0.2
       zod: 4.6.5
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@jackstenglein/chess@2.2.21':
     dependencies:

@@ -8,9 +8,11 @@ import { verifyGame } from './helpers';
 const testUrls = {
     lichessChapter: 'https://lichess.org/study/W67VW7nM/3wugVXBW',
     lichessStudy: 'https://lichess.org/study/W67VW7nM',
-    lichessGame: 'https://lichess.org/mN1qj7pP/black',
-    lichessGameNoColor: 'https://lichess.org/mN1qj7pP/',
+    // Without an API token, Lichess only exports older games if their players average 2200+.
+    lichessGame: 'https://lichess.org/tDGABnVf/black',
+    lichessGameNoColor: 'https://lichess.org/tDGABnVf/',
     lichessChapterMissingData: 'https://lichess.org/study/W67VW7nM/lsJkNwwR',
+    // Lichess only exports this one with an API token, so it tests that the token is sent.
     lichessGameFromPosition: 'https://lichess.org/XdWMCVrNX6No',
     chesscomAnalysisA: 'https://www.chess.com/a/2eUTHynZc2Jtfx?tab=analysis',
     chesscomAnalysisB: 'https://www.chess.com/analysis/game/pgn/3PQmunBaE2?tab=analysis',
@@ -56,28 +58,28 @@ test.describe('Import Games Page - Import Online Games', () => {
     test('submits from Lichess game URL', async ({ page }) => {
         await importUrl(page, testUrls.lichessGame);
         await verifyGame(page, {
-            white: 'Sokrates1975',
-            black: 'bestieboots',
-            lastMove: 'Rxd6#',
+            white: 'lwierenga',
+            black: 'FinodoChess',
+            lastMove: 'R1f7#',
             lastMoveClock: {
-                white: '0:17:37',
-                black: '0:10:28',
+                white: '0:05:06',
+                black: '0:06:37',
             },
-            lastMoveEmt: '00:17',
+            lastMoveEmt: '00:00',
         });
     });
 
     test('submits from Lichess game URL without color', async ({ page }) => {
         await importUrl(page, testUrls.lichessGameNoColor);
         await verifyGame(page, {
-            white: 'Sokrates1975',
-            black: 'bestieboots',
-            lastMove: 'Rxd6#',
+            white: 'lwierenga',
+            black: 'FinodoChess',
+            lastMove: 'R1f7#',
             lastMoveClock: {
-                white: '0:17:37',
-                black: '0:10:28',
+                white: '0:05:06',
+                black: '0:06:37',
             },
-            lastMoveEmt: '00:17',
+            lastMoveEmt: '00:00',
         });
     });
 
@@ -169,6 +171,7 @@ test.describe('Import Games Page - Import Online Games', () => {
     });
 
     test('submits Lichess game from position', async ({ page }) => {
+        test.skip(!process.env.LICHESS_API_TOKEN, 'Lichess only exports this game with a token');
         await importUrl(page, testUrls.lichessGameFromPosition);
         await verifyGame(page, {
             white: 'lwierenga',
