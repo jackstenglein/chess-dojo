@@ -162,6 +162,10 @@ func fideUser(name string) *database.User {
 }
 
 func TestUpdateUser_SkipsMonthlySystemsWhenNotIncluded(t *testing.T) {
+	origNow := now
+	t.Cleanup(func() { now = origNow })
+	now = time.Date(2026, 1, 6, 0, 0, 0, 0, time.UTC) // a Tuesday, to avoid rating history being saved
+
 	fetcher := &fakeFetcher{rating: &database.Rating{CurrentRating: 1600}}
 	user := fideUser("a")
 	fetchFuncs := map[database.RatingSystem]ratings.RatingFetchFunc{database.Fide: fetcher.fetch}

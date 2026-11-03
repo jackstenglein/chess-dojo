@@ -20,17 +20,28 @@ export function setCheckoutSessionId(courseId?: string, checkoutId?: string) {
     }
 
     const courseCheckoutStr = localStorage.getItem(COURSE_STORAGE_KEY);
-    const checkoutSessionIds = (courseCheckoutStr ? JSON.parse(courseCheckoutStr) : {}) as Record<
-        string,
-        string
-    >;
+    let checkoutSessionIds: Record<string, string> = {};
+    try {
+        if (courseCheckoutStr) {
+            checkoutSessionIds = JSON.parse(courseCheckoutStr) as Record<string, string>;
+        }
+    } catch {
+        // Continue with empty checkout session IDs object
+    }
     checkoutSessionIds[courseId] = checkoutId;
     localStorage.setItem(COURSE_STORAGE_KEY, JSON.stringify(checkoutSessionIds));
 }
 
 export function getAllCheckoutSessionIds(): Record<string, string> {
     const courseCheckoutStr = localStorage.getItem(COURSE_STORAGE_KEY);
-    return (courseCheckoutStr ? JSON.parse(courseCheckoutStr) : {}) as Record<string, string>;
+    if (!courseCheckoutStr) {
+        return {};
+    }
+    try {
+        return JSON.parse(courseCheckoutStr) as Record<string, string>;
+    } catch {
+        return {};
+    }
 }
 
 export function clearCheckoutSessionIds() {

@@ -39,7 +39,11 @@ const PgnTextBody = () => {
 
     return (
         <>
-            {!config?.disableEngine && !hideEngine && !solitaire?.enabled && <EngineSection />}
+            {!config?.disableEngine &&
+                !hideEngine &&
+                (!solitaire?.enabled || solitaire?.complete || solitaire?.enableEngine) && (
+                    <EngineSection onToggle={solitaire?.stop} />
+                )}
             <Stack
                 ref={ref}
                 sx={{

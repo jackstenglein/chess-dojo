@@ -1,7 +1,34 @@
-import { splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
-import axios from 'axios';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { LichessFetcher } from '@jackstenglein/chess-dojo-common/src/lichess/lichess';
 import { ApiError } from '../../directoryService/api';
-import { getPathSegment } from './helpers';
+
+const secretsManager = new SecretsManagerClient({ region: 'us-east-1' });
+let lichessFetcher: LichessFetcher | undefined;
+
+/**
+ * Returns ChessDojo's Lichess API token, or undefined if it is not configured. Without it,
+ * Lichess only exports games that are recent or between players rated 2200+ on average.
+ */
+async function getLichessFetcher(): Promise<LichessFetcher> {
+    if (lichessFetcher) {
+        return lichessFetcher;
+    }
+
+    const lichessToken = await secretsManager
+        .send(
+            new GetSecretValueCommand({
+                SecretId: `chess-dojo-${process.env.stage}-lichessApiToken`,
+            }),
+        )
+        .then((output) => output.SecretString || undefined)
+        .catch((err: unknown) => {
+            console.error('Failed to get the Lichess API token: ', err);
+            return undefined;
+        });
+
+    lichessFetcher = new LichessFetcher(lichessToken);
+    return lichessFetcher;
+}
 
 /**
  * Fetches the PGN of the given Lichess game.
@@ -9,21 +36,12 @@ import { getPathSegment } from './helpers';
  * @returns The PGN of the Lichess game.
  */
 export async function getLichessGame(url?: string): Promise<string> {
-    // Lichess has a weird URL format for games, where the players get a special game ID
-    // with extra characters at the end. Fetching this special game ID from the API results
-    // in a 404, whereas truncating to only the first 8 characters will return the game.
-    const gameId = getPathSegment(url, 0).substring(0, 8);
-
-    try {
-        const exportUrl = `https://lichess.org/game/export/${gameId}?evals=0&clocks=1`;
-        const response = await axios.get<string>(exportUrl, {
-            headers: { Accept: 'application/x-chess-pgn' },
-        });
-        return response.data;
-    } catch (err: unknown) {
-        handleError('Lichess Game', err);
-        throw err;
+    const fetcher = await getLichessFetcher();
+    const result = await fetcher.getLichessGame(url);
+    if (result.error) {
+        throw new ApiError({ ...result.error });
     }
+    return result.data;
 }
 
 /**
@@ -32,18 +50,12 @@ export async function getLichessGame(url?: string): Promise<string> {
  * @returns The PGN of the chapter.
  */
 export async function getLichessChapter(url?: string): Promise<string> {
-    const studyId = getPathSegment(url, 1);
-    const chapterId = getPathSegment(url, 2);
-
-    const exportUrl = `https://lichess.org/study/${studyId}/${chapterId}.pgn?source=true`;
-
-    try {
-        const response = await axios.get<string>(exportUrl);
-        return response.data;
-    } catch (err) {
-        handleError('Lichess Study Chapter', err);
-        throw err;
+    const fetcher = await getLichessFetcher();
+    const result = await fetcher.getLichessChapter(url);
+    if (result.error) {
+        throw new ApiError({ ...result.error });
     }
+    return result.data;
 }
 
 /**
@@ -52,39 +64,10 @@ export async function getLichessChapter(url?: string): Promise<string> {
  * @returns A list of the PGNs in the study.
  */
 export async function getLichessStudy(url?: string): Promise<string[]> {
-    const studyId = getPathSegment(url, 1);
-
-    const exportUrl = `https://lichess.org/study/${studyId}.pgn?source=true`;
-    try {
-        const response = await axios.get<string>(exportUrl);
-        return splitPgns(response.data);
-    } catch (err) {
-        handleError('Lichess Study', err);
-        throw err;
+    const fetcher = await getLichessFetcher();
+    const result = await fetcher.getLichessStudy(url);
+    if (result.error) {
+        throw new ApiError({ ...result.error });
     }
-}
-
-/**
- * Throws a descriptive ApiError based on the error received when fetching
- * data from Lichess.
- * @param requested A description of the requested Lichess entity.
- * @param err The error thrown when fetching the Lichess entity.
- */
-function handleError(requested: string, err: unknown) {
-    if (axios.isAxiosError(err) && err.response !== undefined) {
-        const status = err.response.status;
-        if (status === 403 || status == 401) {
-            throw new ApiError({
-                statusCode: 400,
-                publicMessage: `${requested} settings forbid exporting.`,
-                cause: err,
-            });
-        } else if (status === 404) {
-            throw new ApiError({
-                statusCode: 400,
-                publicMessage: `${requested} not found.`,
-                cause: err,
-            });
-        }
-    }
+    return result.data;
 }

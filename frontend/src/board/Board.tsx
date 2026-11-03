@@ -4,10 +4,11 @@ import { Api as BoardApi } from '@lichess-org/chessground/api';
 import { Config } from '@lichess-org/chessground/config';
 import { DrawShape } from '@lichess-org/chessground/draw';
 import { Color, Key } from '@lichess-org/chessground/types';
-import { Box, Button, Dialog, DialogContent, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
+import { PromotionDialog, type PrePromotionMove } from './PromotionDialog';
 import './board.css';
 import { getBoardSx, getCoordinateSx, getPieceSx } from './boardThemes';
 import { compareNags, getNagGlyph } from './pgn/Nag';
@@ -221,12 +222,6 @@ export function checkPromotion(
     onMove(board, chess, { orig, dest });
 }
 
-interface PrePromotionMove {
-    orig: Square;
-    dest: Square;
-    color: Color;
-}
-
 export interface PrimitiveMove {
     orig: Square;
     dest: Square;
@@ -252,27 +247,8 @@ interface BoardProps {
     onMove?: onMoveFunc;
 }
 
-const promotionPieces = [
-    {
-        key: 'q',
-        name: 'queen',
-    },
-    {
-        key: 'n',
-        name: 'knight',
-    },
-    {
-        key: 'r',
-        name: 'rook',
-    },
-    {
-        key: 'b',
-        name: 'bishop',
-    },
-] as const;
-
 const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, onMove }) => {
-    const { chess, config: chessConfig } = useChess();
+    const { chess, config: chessConfig, orientation } = useChess();
     const [board, setBoard] = useState<BoardApi | null>(null);
     const boardRef = useRef<HTMLDivElement>(null);
     // Last initialized key, fen and pgn. A ref rather than state, so a changed
@@ -334,6 +310,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
 
         if (boardRef.current && !board) {
             const chessgroundApi = Chessground(boardRef.current, config);
+            chessgroundApi.set({ addDimensionsCssVarsTo: boardRef.current });
             setBoard(chessgroundApi);
             window.chessground = chessgroundApi;
         } else if (boardRef.current && board && chess && needsInit) {
@@ -469,29 +446,16 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
             <div
                 data-testid='chessground-board'
                 ref={boardRef}
-                style={{ width: '100%', height: '100%' }}
-            />
-
-            <Dialog open={promotion !== null} onClose={onCancelPromotion}>
-                <DialogContent>
-                    <Stack direction='row'>
-                        {promotionPieces.map((piece) => (
-                            <Button key={piece.key} onClick={() => onFinishPromotion(piece.key)}>
-                                <Box
-                                    sx={{
-                                        width: '75px',
-                                        aspectRatio: 1,
-                                        backgroundSize: 'cover',
-                                        backgroundImage: promotion
-                                            ? pieceSx[`--${promotion.color}-${piece.name}`]
-                                            : '',
-                                    }}
-                                />
-                            </Button>
-                        ))}
-                    </Stack>
-                </DialogContent>
-            </Dialog>
+                style={{ width: '100%', height: '100%', position: 'relative' }}
+            >
+                <PromotionDialog
+                    promotion={promotion}
+                    orientation={orientation}
+                    onFinishPromotion={onFinishPromotion}
+                    onCancelPromotion={onCancelPromotion}
+                    pieceSx={pieceSx}
+                />
+            </div>
         </Box>
     );
 };

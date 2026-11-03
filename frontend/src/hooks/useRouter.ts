@@ -66,6 +66,9 @@ export const pagesWithVideos = [
     // Accelerated Dragon
     /^\/courses\/WORKSHOP\/d8f16797-4183-4edb-8831-02e36b38f784/,
     /^\/courses\/WORKSHOP\/d8f16797-4183-4edb-8831-02e36b38f784\/0/,
+
+    // Evaluation for Beginners
+    /^\/courses\/WORKSHOP\/c83cdfc4-aa00-4a85-9da7-540fe8cfca45/,
 ];
 
 /**
