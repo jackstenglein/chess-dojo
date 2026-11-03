@@ -16,8 +16,8 @@ export const STATS = [
 
 export const STUCK_WEEK = [
     { title: 'Twenty blitz games', note: 'None of them reviewed' },
-    { title: 'Another GM video', note: 'Gone by your next game' },
-    { title: 'Puzzle rush', note: 'No link to your real mistakes' },
+    { title: 'A random YouTube lesson', note: 'Gone by your next game' },
+    { title: 'Three-minute puzzle rush', note: 'Every miss forgotten by the next run' },
     { title: 'A new opening', note: 'The third one this year' },
 ];
 
@@ -50,11 +50,12 @@ export const DOJO_WEEK: { day: string; tasks: WeekTask[] }[] = [
                 description: 'Join IM Tatev Abrahamyan live and ask questions as the class goes.',
             },
             {
-                title: 'Solve your cohort’s tactics',
-                short: 'Cohort tactics',
+                title: 'One Dojo Rush run, then retry every miss',
+                short: 'Dojo Rush + retries',
                 category: 'Tactics',
                 color: TACTICS_COLOR,
-                description: 'The plan picks the material for your rating, so you know what to do.',
+                description:
+                    'Ten minutes and three strikes. Then redo each puzzle you missed with no timer.',
             },
         ],
     },
@@ -528,8 +529,8 @@ export const OBJECTIONS = [
         answer: 'You can find the ideas there. The Dojo adds the order to learn them in, players at your level to train with, and a sensei who answers your question in the room.',
     },
     {
-        question: '“I don’t have time for live classes.”',
-        answer: 'Every class is recorded, and the plan tells you what matters today. We ask for three hard training sessions a week. A long game counts as one.',
+        question: '“I work full-time. I can’t make live classes.”',
+        answer: 'Every class is recorded, and the plan tells you what matters today. We ask for three hard training sessions a week, and a long game counts as one.',
     },
     {
         question: '“I’m not strong enough for this.”',
@@ -585,8 +586,8 @@ export const DOJO_FEATURES: { icon: DojoFeatureIcon; title: string; description:
     },
     {
         icon: 'tests',
-        title: 'Tests and unlimited puzzles',
-        description: "ChessDojo's own tests pinpoint your tactics strength.",
+        title: 'Dojo Rush, tests and puzzles',
+        description: 'Ten-minute Rush runs where every miss comes back for a retry.',
     },
     {
         icon: 'tournaments',
@@ -704,7 +705,7 @@ const workshopItems: ValueItem[] = [
     {
         title: 'ChessDojo Core',
         description:
-            'The full training plan, all opening courses, the game database, unlimited puzzles and the community.',
+            'The full training plan, all opening courses, the game database, Dojo Rush and the community.',
         value: CORE_MONTHLY_PRICE,
     },
 ];

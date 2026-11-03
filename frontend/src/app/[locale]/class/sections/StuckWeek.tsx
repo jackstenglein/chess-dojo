@@ -57,7 +57,7 @@ export function StuckWeek() {
     return (
         <Section>
             <Heading description='In the Dojo, work counts when it leaves you tired: a long game, the analysis of that game, hard exercises. We call it sweat work, and we ask for at least three sessions a week. Compare the two weeks, then tick off the Dojo one.'>
-                Blitz, videos and puzzle rush don’t count as work
+                A busy chess week can still go nowhere
             </Heading>
 
             <Box
