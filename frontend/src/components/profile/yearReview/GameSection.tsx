@@ -1,16 +1,12 @@
-import { useAuth } from '@/auth/Auth';
 import { Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { Chart } from 'react-charts';
-import { months, primaryAxis, secondaryAxes } from './DojoPointSection';
+import { HorizontalBarChart, months } from './DojoPointSection';
 import Percentiles from './Percentiles';
 import { SectionProps } from './section';
 
 const GameSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.games');
-    const viewer = useAuth().user;
-    const dark = !viewer?.enableLightMode;
 
     const data = review.total.games;
 
@@ -19,7 +15,7 @@ const GameSection = ({ review }: SectionProps) => {
             {
                 label: t('published'),
                 data: Object.entries(months)
-                    .sort((lhs, rhs) => rhs[1].localeCompare(lhs[1]))
+                    .sort((lhs, rhs) => lhs[1].localeCompare(rhs[1]))
                     .map((month) => ({
                         primary: month[0],
                         secondary: data.byPeriod?.[month[1]] || 0,
@@ -28,7 +24,7 @@ const GameSection = ({ review }: SectionProps) => {
             {
                 label: t('unpublished'),
                 data: Object.entries(months)
-                    .sort((lhs, rhs) => rhs[1].localeCompare(lhs[1]))
+                    .sort((lhs, rhs) => lhs[1].localeCompare(rhs[1]))
                     .map((month) => ({
                         primary: month[0],
                         secondary: data.byPeriod?.[`${month[1]}-hidden`] || 0,
@@ -43,24 +39,24 @@ const GameSection = ({ review }: SectionProps) => {
                 label: t('published'),
                 data: [
                     {
-                        primary: t('analysis'),
-                        secondary: data.analysis?.value || 0,
-                        style: { fill: 'var(--mui-palette-info-dark)' },
-                    },
-                    {
-                        primary: t('loss'),
-                        secondary: data.loss?.value || 0,
-                        style: { fill: 'var(--mui-palette-error-dark' },
+                        primary: t('win'),
+                        secondary: data.win?.value || 0,
+                        color: 'var(--mui-palette-success-dark)',
                     },
                     {
                         primary: t('draw'),
                         secondary: data.draw?.value || 0,
-                        style: { fill: 'var(--mui-palette-warning-dark)' },
+                        color: 'var(--mui-palette-warning-dark)',
                     },
                     {
-                        primary: t('win'),
-                        secondary: data.win?.value || 0,
-                        style: { fill: 'var(--mui-palette-success-dark)' },
+                        primary: t('loss'),
+                        secondary: data.loss?.value || 0,
+                        color: 'var(--mui-palette-error-dark)',
+                    },
+                    {
+                        primary: t('analysis'),
+                        secondary: data.analysis?.value || 0,
+                        color: 'var(--mui-palette-info-dark)',
                     },
                 ],
             },
@@ -68,24 +64,24 @@ const GameSection = ({ review }: SectionProps) => {
                 label: t('unpublished'),
                 data: [
                     {
-                        primary: t('analysis'),
-                        secondary: data.analysisHidden || 0,
-                        style: { fill: 'var(--mui-palette-info-light)' },
-                    },
-                    {
-                        primary: t('loss'),
-                        secondary: data.lossHidden || 0,
-                        style: { fill: 'var(--mui-palette-error-light' },
+                        primary: t('win'),
+                        secondary: data.winHidden || 0,
+                        color: 'var(--mui-palette-success-light)',
                     },
                     {
                         primary: t('draw'),
                         secondary: data.drawHidden || 0,
-                        style: { fill: 'var(--mui-palette-warning-light)' },
+                        color: 'var(--mui-palette-warning-light)',
                     },
                     {
-                        primary: t('win'),
-                        secondary: data.winHidden || 0,
-                        style: { fill: 'var(--mui-palette-success-light)' },
+                        primary: t('loss'),
+                        secondary: data.lossHidden || 0,
+                        color: 'var(--mui-palette-error-light)',
+                    },
+                    {
+                        primary: t('analysis'),
+                        secondary: data.analysisHidden || 0,
+                        color: 'var(--mui-palette-info-light)',
                     },
                 ],
             },
@@ -218,29 +214,8 @@ const GameSection = ({ review }: SectionProps) => {
                             }}
                         >
                             <Typography>{t('byResult')}</Typography>
-                            <Box
-                                sx={{
-                                    width: 1,
-                                    height: 400,
-                                    mt: 2,
-                                }}
-                            >
-                                <Chart
-                                    options={{
-                                        data: resultData,
-                                        primaryAxis,
-                                        secondaryAxes: [
-                                            {
-                                                ...secondaryAxes[0],
-                                                stacked: true,
-                                            },
-                                        ],
-                                        dark,
-                                        getDatumStyle(datum) {
-                                            return datum.originalDatum.style;
-                                        },
-                                    }}
-                                />
+                            <Box sx={{ width: 1, mt: 2 }}>
+                                <HorizontalBarChart series={resultData} height={400} stacked />
                             </Box>
                         </Stack>
                     </Stack>
@@ -258,26 +233,8 @@ const GameSection = ({ review }: SectionProps) => {
                             }}
                         >
                             <Typography>{t('byMonth')}</Typography>
-                            <Box
-                                sx={{
-                                    width: 1,
-                                    height: 400,
-                                    mt: 2,
-                                }}
-                            >
-                                <Chart
-                                    options={{
-                                        data: monthData,
-                                        primaryAxis,
-                                        secondaryAxes: [
-                                            {
-                                                ...secondaryAxes[0],
-                                                stacked: true,
-                                            },
-                                        ],
-                                        dark,
-                                    }}
-                                />
+                            <Box sx={{ width: 1, mt: 2 }}>
+                                <HorizontalBarChart series={monthData} height={400} stacked />
                             </Box>
                         </Stack>
                     </Stack>
