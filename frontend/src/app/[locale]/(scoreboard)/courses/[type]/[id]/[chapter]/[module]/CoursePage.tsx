@@ -5,6 +5,8 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { GetCourseResponse } from '@/api/courseApi';
 import { AuthStatus, useAuth, useFreeTier } from '@/auth/Auth';
+import { coursePageNeedsVideo } from '@/coep/courseCoep';
+import { useCoepMode } from '@/coep/syncCrossOriginIsolation';
 import { Link } from '@/components/navigation/Link';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import LoadingPage from '@/loading/LoadingPage';
@@ -93,6 +95,20 @@ export const CoursePage = ({
             return chapter?.modules[moduleIndex];
         }
     }, [chapter, moduleIndex]);
+
+    const coepWaiting =
+        auth.status === AuthStatus.Loading || !request.isSent() || request.isLoading();
+    useCoepMode(
+        coepWaiting
+            ? 'pending'
+            : coursePageNeedsVideo({
+                    isBlocked: Boolean(isBlocked),
+                    introVideoUrl: rawCourse?.videoUrl,
+                    moduleVideoUrls: courseModule?.videoUrls,
+                })
+              ? 'video'
+              : 'engine',
+    );
 
     if (isBlocked) {
         // Pass rawCourse so PurchaseCoursePage runs useTranslatedCourse once
