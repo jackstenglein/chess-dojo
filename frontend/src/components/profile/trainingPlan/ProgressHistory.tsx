@@ -318,7 +318,6 @@ const ProgressHistory = ({
                 </Button>
                 <Button
                     variant='contained'
-                    disableElevation
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}

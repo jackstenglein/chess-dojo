@@ -85,8 +85,7 @@ export const ProgressUpdater = ({
     const shownValue = startsPartway ? value + startCount : value;
     const shownMin = startsPartway ? startCount : 0;
     const shownMax = startsPartway ? totalCount : maxValue;
-    const setShownValue = (shown: number) =>
-        setValue(Math.min(Math.max(shown, shownMin), shownMax) - shownMin);
+    const setShownValue = (shown: number) => setValue(Math.max(shown, shownMin) - shownMin);
     const countLabel =
         startsPartway && unit
             ? t('lastCompleted', { unit: singularUnit(unit).toLowerCase() })
@@ -202,7 +201,6 @@ export const ProgressUpdater = ({
                                 onDecrement={() => setValue((v) => Math.max(v - 1, 0))}
                                 onIncrement={() => setValue((v) => Math.min(v + 1, maxValue))}
                                 decrementDisabled={shownValue <= shownMin}
-                                incrementDisabled={shownValue >= shownMax}
                                 unit={`/ ${shownMax}`}
                                 label={countLabel}
                                 decrementLabel={tSlider('decrement')}
@@ -245,7 +243,12 @@ export const ProgressUpdater = ({
                         aside={
                             <Box
                                 component='span'
-                                sx={{ color: subtract ? 'warning.main' : undefined }}
+                                sx={{
+                                    color:
+                                        subtract || enteredTime > TIME_WARNING_THRESHOLD_MINS
+                                            ? 'warning.main'
+                                            : undefined,
+                                }}
                                 data-testid='task-updater-total-time'
                             >
                                 {t('totalTimeChange', {
@@ -351,7 +354,6 @@ export const ProgressUpdater = ({
                 </Button>
                 <Button
                     variant='contained'
-                    disableElevation
                     data-testid='task-updater-save-button'
                     loading={request.isLoading()}
                     onClick={onSubmit}

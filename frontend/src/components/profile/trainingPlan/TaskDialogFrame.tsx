@@ -18,9 +18,6 @@ import { TaskDialogView } from './TaskDialog';
 
 /** The style of a task dialog's main action, the same in every view. */
 export const taskDialogPrimaryButtonSx: SxProps<Theme> = {
-    borderRadius: 1.5,
-    px: 2.5,
-    textTransform: 'none',
     fontWeight: 600,
 };
 

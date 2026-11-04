@@ -272,7 +272,7 @@ test.describe('InputSlider', () => {
         await expect(page.getByRole('textbox', { name: /page/i })).toHaveValue('30');
     });
 
-    test('inputs greater than the goal are capped at the goal', async ({ page }) => {
+    test('inputs greater than the goal are okay', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal' })
@@ -282,7 +282,7 @@ test.describe('InputSlider', () => {
         await input.fill('200');
         await input.blur();
 
-        await expect(input).toHaveValue('100');
+        await expect(input).toHaveValue('200');
     });
 
     test('left spinner decrements input value by 1', async ({ page }) => {
@@ -307,7 +307,7 @@ test.describe('InputSlider', () => {
         await expect(page.getByRole('textbox', { name: /page/i })).toHaveValue('31');
     });
 
-    test('right spinner is disabled at the goal', async ({ page }) => {
+    test('right spinner allows values greater than goal', async ({ page }) => {
         await page
             .getByTestId('Nonzero-Min-Goal-with-Progress-training-plan-entry')
             .getByRole('button', { name: 'Update Nonzero Min Goal with Progress' })
@@ -317,8 +317,9 @@ test.describe('InputSlider', () => {
         await input.fill('200');
         await input.blur();
 
-        await expect(input).toHaveValue('100');
-        await expect(page.getByRole('button', { name: 'Increment' })).toBeDisabled();
+        await page.getByRole('button', { name: 'Increment' }).click();
+
+        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('201');
     });
 
     test('normal inputs are not changed on blur', async ({ page }) => {
