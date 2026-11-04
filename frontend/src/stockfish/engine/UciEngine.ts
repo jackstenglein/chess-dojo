@@ -33,8 +33,19 @@ export abstract class UciEngine {
      * @returns An EngineWorker using the given stockfish.js path.
      */
     public static workerFromPath(path: string): EngineWorker {
-        const worker = new Worker(path);
+        return UciEngine.workerFromWorker(new Worker(path));
+    }
 
+    /**
+     * Wraps an existing Worker as an EngineWorker.
+     * @param worker The worker to wrap.
+     * @param intercept Returns true when the message should not be treated as UCI output.
+     * @returns An EngineWorker using the given worker.
+     */
+    public static workerFromWorker(
+        worker: Worker,
+        intercept?: (data: unknown) => boolean,
+    ): EngineWorker {
         const engineWorker: EngineWorker = {
             uci(command) {
                 worker.postMessage(command);
@@ -50,7 +61,8 @@ export abstract class UciEngine {
             },
         };
 
-        worker.onmessage = (event) => {
+        worker.onmessage = (event: MessageEvent<unknown>) => {
+            if (intercept?.(event.data)) return;
             engineWorker.listen(event.data as string);
         };
         worker.onerror = (err) => {

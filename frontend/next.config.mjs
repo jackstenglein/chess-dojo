@@ -5,8 +5,7 @@ const withNextIntl = createNextIntlPlugin();
 
 // Keep in sync with SUPPORTED_LOCALES and LOCALE_PREFIX_REGEX in
 // src/i18n/locales.ts. When a new locale lands, extend the alternation here or
-// legacy redirects and video-embed COEP headers will silently stop matching
-// the new locale's URLs.
+// legacy redirects will silently stop matching the new locale's URLs.
 const LOCALE_PATTERN = ':locale(en|pseudo|de|es|pt|fr|it)';
 
 // chess-dojo-common is linked via file:../common. Turbopack only resolves
@@ -41,14 +40,13 @@ const nextConfig = {
         ],
     },
     headers() {
-        const headers = [
-            {
-                source: '/play-bot/:path*',
-                headers: ENGINE_HEADERS,
-            },
+        // COEP is chosen in src/proxy.ts. Headers from this file are applied
+        // after the proxy and would overwrite a per-course value. /static
+        // skips the proxy, so those assets keep require-corp here.
+        return [
             {
                 source: '/:path*',
-                headers: ENGINE_HEADERS,
+                headers: COOP_HEADERS,
             },
             {
                 source: '/static/:path*',
@@ -57,16 +55,14 @@ const nextConfig = {
                     value: 'public, max-age=2592000, immutable',
                 }),
             },
+            {
+                source: '/_next/static/:path*',
+                headers: ENGINE_HEADERS.concat({
+                    key: 'Cache-Control',
+                    value: 'public, max-age=2592000, immutable',
+                }),
+            },
         ];
-
-        headers.push(
-            ...pagesWithVideos.map((page) => ({
-                source: page,
-                headers: VIDEO_EMBED_HEADERS,
-            })),
-        );
-
-        return headers;
     },
     redirects: () => [
         // SEO: permanent redirect for default-locale prefix removal under
@@ -93,129 +89,19 @@ const nextConfig = {
     ],
 };
 
-const ENGINE_HEADERS = [
-    {
-        key: 'Cross-Origin-Embedder-Policy',
-        value: 'require-corp',
-    },
+const COOP_HEADERS = [
     {
         key: 'Cross-Origin-Opener-Policy',
         value: 'same-origin',
     },
 ];
 
-const VIDEO_EMBED_HEADERS = [
+const ENGINE_HEADERS = [
     {
         key: 'Cross-Origin-Embedder-Policy',
-        value: 'unsafe-none',
+        value: 'require-corp',
     },
+    ...COOP_HEADERS,
 ];
-
-const pagesWithVideosRaw = [
-    '/',
-    '/profile/:path*',
-    '/scoreboard/:path*',
-    '/learn/guides',
-    '/learn/live-classes',
-    '/learn/live-classes/:path*',
-    '/learn/sparring',
-    '/live-classes',
-
-    // Admin course editor
-    '/admin/courses/:path*',
-
-    // Blog
-    '/blog/:path*',
-    '/admin/blog/:path*',
-
-    // K+P Endings
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/1/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/2/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/4/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/5/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/6/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/7/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/8/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/9/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/10/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/11/1',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/3/2',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/4/2',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/5/2',
-    '/courses/ENDGAME/34241b4d-3a8f-4d5f-9a15-b26cf718a0d0/7/2',
-
-    // French Defense Starter
-    '/courses/OPENING/0e144cc9-be12-48f2-a3b0-92596fa2559d',
-    '/courses/OPENING/0e144cc9-be12-48f2-a3b0-92596fa2559d/0/0',
-
-    // Aggressive e4 Repertoire
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a',
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a/0/0',
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a/1/0',
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a/2/0',
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a/3/0',
-    '/courses/OPENING/2402cb47-d65a-4914-bc11-8f60eb32e41a/5/0',
-
-    // Caro Kann Starter
-    '/courses/OPENING/37dd0c09-7622-4e87-b0df-7d3e6b37e410',
-    '/courses/OPENING/37dd0c09-7622-4e87-b0df-7d3e6b37e410/0/0',
-
-    // Najdorf Sicilian Starter
-    '/courses/OPENING/b042a392-e285-4466-9bc0-deeecc2ce16c',
-    '/courses/OPENING/b042a392-e285-4466-9bc0-deeecc2ce16c/0/0',
-
-    // KID Expert
-    '/courses/OPENING/d30581c8-f2c4-4d1c-8a5e-f303a83cc193',
-    '/courses/OPENING/d30581c8-f2c4-4d1c-8a5e-f303a83cc193/0/0',
-    '/courses/OPENING/d30581c8-f2c4-4d1c-8a5e-f303a83cc193/1/0',
-    '/courses/OPENING/d30581c8-f2c4-4d1c-8a5e-f303a83cc193/2/0',
-    '/courses/OPENING/d30581c8-f2c4-4d1c-8a5e-f303a83cc193/3/0',
-
-    // Play against the caro kann
-    '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/1',
-    '/courses/OPENING/179bf457-05fa-4405-9b61-4c12b6687932/0/2',
-
-    // Basic Board Visualization
-    '/courses/WORKSHOP/6746ee1a-d029-4ff0-89e2-962a5c64a6b6/:path*',
-
-    // Endgame Fundamentals
-    '/courses/WORKSHOP/7ab589de-becd-4450-932e-dfc8a1f45a1b/:path*',
-
-    // Logical Chess Move by Move
-    '/courses/WORKSHOP/d461daae-a554-460a-83e5-54d53b93c4de/:path*',
-
-    // Calculation Training
-    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2',
-    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/0/0',
-    '/courses/WORKSHOP/acc594b7-f2fa-4b84-b53d-76c5a6bc14c2/:chapter/1',
-
-    // Tactical Nimzo
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/0',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/1',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/2',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/3',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/4',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/5',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/6',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/7',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/8',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/9',
-    '/courses/WORKSHOP/a1149366-ee03-46b9-b609-d6f51e8a2fe4/0/10',
-
-    // Accelerated Dragon
-    '/courses/WORKSHOP/d8f16797-4183-4edb-8831-02e36b38f784',
-    '/courses/WORKSHOP/d8f16797-4183-4edb-8831-02e36b38f784/0/:module',
-];
-
-// Under localePrefix: 'as-needed', default-locale URLs are bare ('/profile',
-// '/blog/...'). Emit BOTH bare and prefixed variants so COEP overrides land
-// for English visitors as well — otherwise bare URLs fall through to the
-// catch-all '/:path*' ENGINE_HEADERS rule (require-corp), breaking video
-// embeds and the stockfish engine.
-const pagesWithVideos = pagesWithVideosRaw.flatMap((p) => {
-    const prefixed = p === '/' ? `/${LOCALE_PATTERN}` : `/${LOCALE_PATTERN}${p}`;
-    return [p, prefixed];
-});
 
 export default withNextIntl(nextConfig);

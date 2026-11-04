@@ -90,6 +90,9 @@ func PurchaseCourseUrl(user *database.User, course *database.Course, purchaseOpt
 			"type":      string(CheckoutSessionType_Course),
 			"courseIds": courseIds,
 		},
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{
+			Enabled: new(true),
+		},
 	}
 
 	if user != nil {
@@ -203,6 +206,9 @@ func PurchaseSubscriptionUrl(user *database.User, request *PurchaseSubscriptionR
 			},
 		},
 		PaymentMethodCollection: stripe.String(string(stripe.CheckoutSessionPaymentMethodCollectionIfRequired)),
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{
+			Enabled: new(true),
+		},
 	}
 
 	if customerId := user.PaymentInfo.GetCustomerId(); customerId != "" && customerId != "WIX" && customerId != "OVERRIDE" {
@@ -267,6 +273,9 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 			"coachUsername": event.Owner,
 			"username":      user.Username,
 		},
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{
+			Enabled: new(true),
+		},
 	}
 
 	if user.PaymentInfo.GetCustomerId() != "" {
@@ -282,11 +291,12 @@ func CoachingCheckoutSession(user *database.User, event *database.Event) (*strip
 
 func GameReviewCheckoutSession(user *database.User, cohort, id string, reviewType database.GameReviewType) (*stripe.CheckoutSession, error) {
 	var priceId string
-	if reviewType == database.GameReviewType_Quick {
+	switch reviewType {
+	case database.GameReviewType_Quick:
 		priceId = quickGameReviewPriceId
-	} else if reviewType == database.GameReviewType_DeepDive {
+	case database.GameReviewType_DeepDive:
 		priceId = deepGameReviewPriceId
-	} else {
+	default:
 		return nil, errors.New(400, fmt.Sprintf("Invalid review type %q", reviewType), "")
 	}
 
@@ -307,6 +317,9 @@ func GameReviewCheckoutSession(user *database.User, cohort, id string, reviewTyp
 			"cohort":     cohort,
 			"id":         id,
 			"username":   user.Username,
+		},
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{
+			Enabled: new(true),
 		},
 	}
 

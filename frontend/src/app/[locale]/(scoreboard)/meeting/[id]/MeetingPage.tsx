@@ -324,9 +324,10 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
                                 <Field
                                     title={t('cohorts')}
                                     body={
-                                        meeting.cohorts.length === dojoCohorts.length
+                                        (meeting.cohorts?.length ?? 0) === 0 ||
+                                        meeting.cohorts?.length === dojoCohorts.length
                                             ? t('allCohorts')
-                                            : meeting.cohorts.join(', ')
+                                            : meeting.cohorts?.join(', ')
                                     }
                                 />
                             )}
