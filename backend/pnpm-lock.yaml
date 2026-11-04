@@ -49,7 +49,7 @@ importers:
         version: 2.2.21
       '@jackstenglein/chess-dojo-common':
         specifier: file:../common
-        version: file:../common
+        version: file:../common(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@opensearch-project/opensearch':
         specifier: ^3.9.0
         version: 3.9.0(supports-color@8.1.1)
@@ -4789,14 +4789,18 @@ snapshots:
       chardet: 2.1.0
       iconv-lite: 0.6.3
 
-  '@jackstenglein/chess-dojo-common@file:../common':
+  '@jackstenglein/chess-dojo-common@file:../common(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@jackstenglein/chess': 2.2.21
+      axios: 1.20.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       globals: 17.12.0
       ml-regression-simple-linear: 3.0.1
       stripe: 17.7.0
       uuid: 14.0.2
       zod: 4.5.4
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@jackstenglein/chess@2.2.21':
     dependencies:

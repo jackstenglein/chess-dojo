@@ -131,6 +131,7 @@
         "trainingPlan": {
             "common": {
                 "pinned": "[T] Pinned",
+                "close": "[T] Close",
                 "cancel": "[T] Cancel",
                 "save": "[T] Save",
                 "update": "[T] Update",
@@ -156,7 +157,7 @@
             "inputSlider": {
                 "decrement": "[T] Decrement",
                 "increment": "[T] Increment",
-                "progressCount": "[T] Progress count",
+                "progressCount": "[T] Progress",
                 "count": "[T] Count"
             },
             "verbs": {
@@ -198,7 +199,15 @@
                 "Fri": "[T] Fri",
                 "Sat": "[T] Sat",
                 "activeOnlyTooltip": "[T] Only show tasks you have updated this week",
-                "activeOnlyLabel": "[T] Active Only"
+                "activeOnlyLabel": "[T] Active Only",
+                "empty": "[T] Nothing planned this week.",
+                "cellPlanned": "[T] Planned: {goal}",
+                "cellPartial": "[T] {worked} of {goal} so far",
+                "cellDone": "[T] Done: {worked} of {goal}",
+                "cellMissed": "[T] Missed: {worked} of {goal}",
+                "cellExtra": "[T] Extra: {worked} logged, not planned",
+                "restDay": "[T] Rest day",
+                "partialTime": "[T] {worked} / {goal}"
             },
             "full": {
                 "heading": "[T] Full Training Plan",
@@ -213,16 +222,12 @@
                 "addCustomTask": "[T] Add Custom Task",
                 "unlockTasks": "[T] {count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "[T] View Prices",
-                "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "[T] Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "[T] It's time for you to renew this task!",
                 "renewLabel": "[T] Renew",
                 "minimumReachedTooltip": "[T] You've reached the minimum, keep going!",
                 "minimumReachedLabel": "[T] Minimum Reached",
                 "checkboxAriaLabel": "[T] Checkbox {name}",
-                "updateAriaLabel": "[T] Update {name}",
-                "graduateName": "[T] Graduate from {cohort}",
-                "graduateDescription": "[T] Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "[T] Update {name}"
             },
             "graduation": {
                 "title": "[T] Graduate from {cohort}?",
@@ -316,8 +321,14 @@
                 "deleteAriaLabel": "[T] delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "[T] Total {before} → {after}",
+                "timeSpent": "[T] Time spent",
+                "removeTime": "[T] Remove 5 minutes",
+                "minutesShort": "[T] min",
+                "lastCompleted": "[T] Last {unit} completed",
+                "doneOf": "[T] {done} of {total} done",
+                "addTime": "[T] Add 5 minutes",
                 "markComplete": "[T] Mark as Completed?",
-                "totalTime": "[T] Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "[T] You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -343,9 +354,7 @@
                 "scheduleAction": "[T] Schedule"
             },
             "taskDialog": {
-                "historyTitle": "[T] {name} History",
-                "addTimeTitle": "[T] Add time to {name}?",
-                "updateTitle": "[T] Update {name}?",
+                "historyCaption": "[T] History",
                 "locked": "[T] Locked",
                 "completed": "[T] Completed",
                 "editTask": "[T] Edit Task",
@@ -376,7 +385,7 @@
                 "taskLockedUntil": "[T] This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "[T] Mini Scoreboard",
+                "heading": "[T] Scoreboard",
                 "type": "[T] Type",
                 "dojoScore": "[T] Dojo Score",
                 "trainingTime": "[T] Training Time",
@@ -435,15 +444,16 @@
             "goal": "[T] Goal",
             "goalPoints": "[T] {value} {value, plural, =1 {point} other {points}}",
             "goalHours": "[T] {value} {value, plural, =1 {hour} other {hours}}",
-            "popOutView": "[T] Pop out view",
             "classicalGames": "[T] Classical Games (Past Year)",
             "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "[T] All Tasks",
+            "progressTitle": "[T] Progress",
             "metrics": "[T] Metrics",
             "tacticsRating": "[T] Tactics Rating",
             "tacticsRatingTooltip": "[T] For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "[T] close",
             "pastYear": "[T] in the past year",
+            "timeManagement": "[T] Time Management",
             "chip": {
                 "coach": "[T] Coach",
                 "coachTooltip": "[T] This member is a Dojo coach",
@@ -490,6 +500,19 @@
                 "noActivity": "[T] No recent activity from your follows or cohort."
             },
             "heatmap": {
+                "yearlyTotals": "[T] Yearly totals",
+                "year": "[T] Year",
+                "total": "[T] Total",
+                "loadingHistory": "[T] Loading your training history…",
+                "historyError": "[T] Couldn't load your training history.",
+                "noTimeLogged": "[T] No time logged yet.",
+                "lastTwelveMonths": "[T] Last 12 Months: {total}",
+                "legend": "[T] What the colors mean",
+                "settings": "[T] Heatmap settings",
+                "title": "[T] Heatmap",
+                "dailyGoal": "[T] Daily goal {time}",
+                "nothingLogged": "[T] Nothing logged this day",
+                "dayTotal": "[T] Total {time}",
                 "weekdaySun": "[T] Sun",
                 "weekdayMon": "[T] Mon",
                 "weekdayTue": "[T] Tue",
@@ -3209,6 +3232,76 @@
             "shortcut": "[T] Shortcut: {keys}",
             "nextPuzzle": "[T] Next Puzzle"
         },
+        "rush": {
+            "title": "[T] Dojo Rush",
+            "introTime": "[T] {minutes} minutes",
+            "introStrikes": "[T] {strikes} strikes",
+            "startButton": "[T] Start",
+            "viewHistory": "[T] View Past Runs",
+            "whiteToMove": "[T] White to move",
+            "blackToMove": "[T] Black to move",
+            "correctLabel": "[T] correct",
+            "streakRow": "[T] {streak} in a row!",
+            "endRunButton": "[T] End Run",
+            "runComplete": "[T] Run Complete!",
+            "playAgain": "[T] Play Again",
+            "reviewPuzzles": "[T] Review Puzzles",
+            "retrySave": "[T] Retry Save",
+            "saving": "[T] Saving...",
+            "attemptsHeading": "[T] Puzzles",
+            "attemptsHintSaved": "[T] Click a puzzle to retry it with no time pressure.",
+            "attemptsHintUnsaved": "[T] Once the run is saved, you can click a puzzle to retry it with no time pressure.",
+            "statCorrect": "[T] Correct",
+            "statPercentage": "[T] Accuracy",
+            "statHighestSolved": "[T] Highest Puzzle Solved",
+            "bestAllTime": "[T] All-time best",
+            "bestThisWeek": "[T] This week's best",
+            "bestToday": "[T] Today's best",
+            "indexAllTime": "[T] All time",
+            "indexThisWeek": "[T] This week",
+            "indexToday": "[T] Today",
+            "scoreIndex": "[T] #{index}",
+            "newBestAllTime": "[T] New all-time best",
+            "newBestThisWeek": "[T] New best this week",
+            "newBestToday": "[T] New best today",
+            "totalTime": "[T] Time: {time}",
+            "endReason": {
+                "time": "[T] Time ran out",
+                "strikes": "[T] Out of strikes",
+                "aborted": "[T] Ended early"
+            },
+            "columnPuzzle": "[T] Puzzle",
+            "columnPuzzleRating": "[T] Puzzle Rating",
+            "columnSearchRating": "[T] Level",
+            "columnTime": "[T] Time",
+            "columnResult": "[T] Result",
+            "columnDate": "[T] Date",
+            "columnEndReason": "[T] Ended",
+            "resultCorrect": "[T] Correct",
+            "resultWrong": "[T] Wrong",
+            "reviewTitle": "[T] Dojo Rush Review",
+            "newRun": "[T] New Run",
+            "previous": "[T] Previous",
+            "next": "[T] Next",
+            "puzzleIndex": "[T] Puzzle {index} of {total}",
+            "retryHint": "[T] No timer, no strikes. Take your time and find the mate.",
+            "puzzleId": "[T] Puzzle ID",
+            "originalTime": "[T] Time in Run",
+            "originalResult": "[T] Result in Run",
+            "retryResult": "[T] Retry",
+            "retrySolvedClean": "[T] Solved",
+            "retrySolvedWithMistakes": "[T] Solved after {count, plural, =1 {# mistake} other {# mistakes}}",
+            "originalMoves": "[T] Your moves during the run",
+            "backToRun": "[T] Back to Run",
+            "solved": "[T] Solved!",
+            "nextPuzzle": "[T] Next Puzzle",
+            "historyTitle": "[T] Dojo Rush History",
+            "historyEmpty": "[T] You haven't completed any Dojo Rush runs yet.",
+            "loadMore": "[T] Load More",
+            "incorrectMoveComment": "[T] Incorrect guess",
+            "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run",
+            "tooltipSettings": "[T] Settings"
+        },
         "squareColors": {
             "title": "[T] Square Color Drill",
             "intro": "[T] You'll see a square name (like \"g7\") and choose whether it's a white or black square.",
@@ -3291,9 +3384,11 @@
         "landing": {
             "tacticsTests": "[T] Tactics Tests",
             "checkmatePuzzles": "[T] Checkmate Puzzles",
+            "puzzleRush": "[T] Dojo Rush",
             "endgameTests": "[T] Endgame Tests",
             "squareColorDrill": "[T] Square Color Drill",
-            "allRatings": "[T] All Ratings"
+            "allRatings": "[T] All Ratings",
+            "beta": "[T] Beta"
         },
         "tactics": {
             "heading": "[T] Tactics Tests"
@@ -3902,7 +3997,18 @@
                 "keyEscape": "[T] Escape",
                 "keyTab": "[T] Tab",
                 "keyBackspace": "[T] Backspace",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                }
             },
             "comments": {
                 "showCommentsLabel": "[T] Show Comments From",
@@ -4082,6 +4188,17 @@
                 "moveTooltip": "[T] Move {value}"
             },
             "tools": {
+                "solitaire": {
+                    "correctSoundLabel": "[T] Play sound on correct move",
+                    "incorrectSoundLabel": "[T] Play sound on incorrect move",
+                    "none": "[T] None",
+                    "bell": "[T] Bell",
+                    "rising5th": "[T] Rising 5th",
+                    "rising6th": "[T] Rising 6th",
+                    "warmChord": "[T] Warm Chord",
+                    "boss": "[T] Bauss",
+                    "buzz": "[T] Buzz"
+                },
                 "solitaireChessTitle": "[T] Solitaire Chess (Guess the Move)",
                 "solitaireChessDescription": "[T] Test your understanding (or memory) of this game by guessing the moves. Starting this mode will hide the PGN text until you correctly pick the next move.",
                 "playAsLabel": "[T] Play As",

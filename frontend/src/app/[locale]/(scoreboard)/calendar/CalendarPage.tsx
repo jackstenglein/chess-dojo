@@ -178,6 +178,8 @@ function processAvailability(
         user &&
         !user.isAdmin &&
         !event.inviteOnly &&
+        event.cohorts &&
+        event.cohorts.length > 0 &&
         event.cohorts.every((c) => c !== user.dojoCohort)
     ) {
         return null;

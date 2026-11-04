@@ -86,9 +86,10 @@ const CoachingViewer: React.FC<CoachingViewerProps> = ({ processedEvent }) => {
                 title={t('cohorts')}
                 iconName='cohort'
                 body={
-                    dojoCohorts.length === event.cohorts.length || event.cohorts.length === 0
+                    dojoCohorts.length === event.cohorts?.length ||
+                    (event.cohorts?.length ?? 0) === 0
                         ? t('allCohorts')
-                        : event.cohorts.join(', ')
+                        : event.cohorts?.join(', ')
                 }
             />
 

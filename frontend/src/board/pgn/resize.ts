@@ -14,10 +14,13 @@ const playerHeaderHeight = 27.9833;
 const controlsHeight = 40;
 const controlsMargin = 8;
 const margin = 64;
+const defaultMaxPanelWidth = 470;
 
-export interface PanelLayoutOptions {
+export interface BoardLayoutOptions {
     showPgn?: boolean;
     showPanelControls?: boolean;
+    /** Whether the buttons under the board are hidden. */
+    hideBoardButtons?: boolean;
 }
 
 export const RESTORE_GUTTER_WIDTH = 36;
@@ -92,7 +95,7 @@ export function getSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    options: PanelLayoutOptions = {},
+    options: BoardLayoutOptions = {},
 ): AreaSizes {
     let sizes: AreaSizes;
     if (parentWidth < breakpoints.sm) {
@@ -110,7 +113,7 @@ function xsSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPanelControls }: PanelLayoutOptions = {},
+    { showPanelControls }: BoardLayoutOptions = {},
 ): AreaSizes {
     const padding = 6;
     const boardSize = parentWidth - padding;
@@ -163,17 +166,20 @@ function smSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPgn = true, showPanelControls }: PanelLayoutOptions = {},
+    { showPgn = true, showPanelControls, hideBoardButtons }: BoardLayoutOptions = {},
 ): AreaSizes {
     const padding = 6;
     const spacing = 4;
     const availableWidth = parentWidth - padding - (showPgn ? spacing : 0);
     const preferredBoardSize = availableWidth * (showPgn ? 0.66 : 1);
     const boardSize = showPanelControls
-        ? Math.min(preferredBoardSize, getMaxBoardHeight(hidePlayerHeaders, showPanelControls))
+        ? Math.min(
+              preferredBoardSize,
+              getMaxBoardHeight(hidePlayerHeaders, showPanelControls, hideBoardButtons),
+          )
         : preferredBoardSize;
     const pgnWidth = availableWidth - boardSize;
-    const boardAreaHeight = getBoardAreaHeight(boardSize, hidePlayerHeaders);
+    const boardAreaHeight = getBoardAreaHeight(boardSize, hidePlayerHeaders, hideBoardButtons);
 
     return {
         breakpoint: 'sm',
@@ -214,7 +220,7 @@ function mdSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPgn = true, showPanelControls }: PanelLayoutOptions = {},
+    { showPgn = true, showPanelControls, hideBoardButtons }: BoardLayoutOptions = {},
 ): AreaSizes {
     const padding = 24;
     const spacing = 8;
@@ -222,10 +228,17 @@ function mdSizes(
     const panelCount = Number(Boolean(showUnderboard)) + Number(showPgn);
     const availableWidth = parentWidth - padding - (showPanelControls ? panelCount : 2) * spacing;
     const maxBoardWidth = availableWidth * (panelCount === 2 ? 0.4 : panelCount === 1 ? 0.66 : 1);
-    const maxBoardHeight = getMaxBoardHeight(hidePlayerHeaders, showPanelControls);
+    const maxBoardHeight = getMaxBoardHeight(
+        hidePlayerHeaders,
+        showPanelControls,
+        hideBoardButtons,
+    );
     const boardSize = Math.min(maxBoardWidth, maxBoardHeight);
 
-    const panelWidth = panelCount ? (availableWidth - boardSize) / panelCount : 0;
+    let panelWidth = panelCount ? (availableWidth - boardSize) / panelCount : 0;
+    if (panelCount == 1) {
+        panelWidth = Math.min(panelWidth, defaultMaxPanelWidth);
+    }
     const pgnWidth = showPgn ? panelWidth : 0;
     const underboardWidth = showUnderboard ? panelWidth : 0;
 
@@ -270,13 +283,17 @@ function mdSizes(
 export function getNewSizes(
     currentSizes: AreaSizes,
     hidePlayerHeaders?: boolean,
-    options: PanelLayoutOptions = {},
+    options: BoardLayoutOptions = {},
 ): AreaSizes {
     if (currentSizes.breakpoint === 'xs') {
         return currentSizes;
     }
 
-    const maxBoardHeight = getMaxBoardHeight(hidePlayerHeaders, options.showPanelControls);
+    const maxBoardHeight = getMaxBoardHeight(
+        hidePlayerHeaders,
+        options.showPanelControls,
+        options.hideBoardButtons,
+    );
     let maxBoardWidth = currentSizes.availableWidth - currentSizes.pgn.width;
 
     if (currentSizes.breakpoint === 'sm') {
@@ -328,21 +345,26 @@ export function getNewSizes(
     };
 }
 
-function getBoardAreaHeight(boardSize: number, hidePlayerHeaders?: boolean): number {
+function getBoardAreaHeight(
+    boardSize: number,
+    hidePlayerHeaders?: boolean,
+    hideBoardButtons?: boolean,
+): number {
     const playerHeadersHeight = hidePlayerHeaders ? 0 : 2 * playerHeaderHeight;
-    return boardSize + playerHeadersHeight + controlsHeight + controlsMargin;
+    const boardButtonHeight = hideBoardButtons ? 0 : controlsHeight + controlsMargin;
+    return boardSize + playerHeadersHeight + boardButtonHeight;
 }
 
-function getMaxBoardHeight(hidePlayerHeaders?: boolean, showPanelControls?: boolean): number {
+function getMaxBoardHeight(
+    hidePlayerHeaders?: boolean,
+    showPanelControls?: boolean,
+    hideBoardButtons?: boolean,
+): number {
     const playerHeadersHeight = hidePlayerHeaders ? 0 : 2 * playerHeaderHeight;
+    const effectiveControlsHeight = hideBoardButtons ? 0 : controlsHeight + controlsMargin;
     return Math.max(
         showPanelControls ? 1 : -Infinity,
-        window.innerHeight -
-            navbarHeight -
-            playerHeadersHeight -
-            controlsHeight -
-            controlsMargin -
-            margin,
+        window.innerHeight - navbarHeight - playerHeadersHeight - effectiveControlsHeight - margin,
     );
 }
 

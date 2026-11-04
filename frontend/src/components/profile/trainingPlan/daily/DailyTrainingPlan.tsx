@@ -456,9 +456,12 @@ function DailyTrainingPlanItem({
                     }}
                     // A task already started opens straight to logging; others show details first.
                     onClick={() =>
-                        isCurrentUser && hasProgress
-                            ? onOpenTask(task, TaskDialogView.Progress)
-                            : onOpenTask(task, TaskDialogView.Details)
+                        onOpenTask(
+                            task,
+                            isCurrentUser && hasProgress
+                                ? TaskDialogView.Progress
+                                : TaskDialogView.Details,
+                        )
                     }
                 >
                     <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
