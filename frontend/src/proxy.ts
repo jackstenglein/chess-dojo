@@ -3,6 +3,8 @@ import { fetchAuthSession } from 'aws-amplify/auth/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { COURSE_LANDING_PATH } from './app/[locale]/(scoreboard)/courses/courseLandingPath';
+import { embedderPolicyForPath } from './coep/courseCoep';
+import { getCourseVideoIndex } from './coep/courseVideoIndex';
 import { DEFAULT_LOCALE, LOCALE_PREFIX_REGEX } from './i18n/locales';
 import { routing } from './i18n/routing';
 import { logger } from './logging/logger';
@@ -111,6 +113,18 @@ export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname.replace(LOCALE_PREFIX_REGEX, '') || '/';
 
     const response = NextResponse.next();
+    // Set before any early return. next.config does not set COEP on document
+    // routes, because that header is applied after the proxy and would
+    // overwrite this value.
+    try {
+        response.headers.set(
+            'Cross-Origin-Embedder-Policy',
+            await embedderPolicyForPath(pathname, getCourseVideoIndex),
+        );
+    } catch (error) {
+        logger.error?.('failed to choose Cross-Origin-Embedder-Policy', error);
+        response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+    }
 
     for (const path of publicPaths) {
         if (pathname.match(path)) {
