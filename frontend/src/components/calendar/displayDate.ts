@@ -52,11 +52,22 @@ export function getTimeZonedDate(
     return result;
 }
 
+/**
+ * The default options used when formatting dates. The month is written out
+ * so that dates are unambiguous regardless of the user's locale (Ex: 05/03/2025
+ * could be read as either March 5 or May 3).
+ */
+export const DEFAULT_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+};
+
 export function toDojoDateString(
     date: Date,
     timezone: string | undefined,
     timezoneDirection: 'forward' | 'backward' = 'backward',
-    options?: Intl.DateTimeFormatOptions,
+    options: Intl.DateTimeFormatOptions = DEFAULT_DATE_FORMAT_OPTIONS,
 ): string {
     date = getTimeZonedDate(date, timezone, timezoneDirection);
     return date.toLocaleDateString(undefined, options);
