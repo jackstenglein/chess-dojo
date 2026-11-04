@@ -319,7 +319,7 @@ test.describe('InputSlider', () => {
 
         await page.getByRole('button', { name: 'Increment' }).click();
 
-        await expect(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('201');
+        await expect(page.getByRole('textbox', { name: /page/i })).toHaveValue('201');
     });
 
     test('normal inputs are not changed on blur', async ({ page }) => {

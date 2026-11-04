@@ -199,7 +199,7 @@ export const ProgressUpdater = ({
                                     setShownValue(parseInt(text.replace(/[^0-9-]/g, '')) || 0)
                                 }
                                 onDecrement={() => setValue((v) => Math.max(v - 1, 0))}
-                                onIncrement={() => setValue((v) => Math.min(v + 1, maxValue))}
+                                onIncrement={() => setValue((v) => v + 1)}
                                 decrementDisabled={shownValue <= shownMin}
                                 unit={`/ ${shownMax}`}
                                 label={countLabel}
