@@ -9,11 +9,9 @@ import {
     Box,
     ButtonBase,
     Collapse,
-    FormControlLabel,
     IconButton,
     LinearProgress,
     Stack,
-    Switch,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -72,10 +70,6 @@ export function WeeklyTrainingPlan() {
     });
 
     const [expanded, setExpanded] = useLocalStorage<boolean>('training-plan-weekly-expanded', true);
-    const [activeOnly, setActiveOnly] = useLocalStorage<boolean>(
-        'training-plan-weekly-active-only',
-        false,
-    );
 
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
     const [taskDialogView, setTaskDialogView] = useState<TaskDialogView>();
@@ -98,10 +92,6 @@ export function WeeklyTrainingPlan() {
             }),
         [weekDays, suggestionsByDay, timeline, pinnedTasks, user.customTasks, allRequirements],
     );
-
-    const visibleRows = activeOnly
-        ? rows.filter((row) => row.cells.some((c) => c.workedMinutes > 0))
-        : rows;
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
@@ -133,7 +123,7 @@ export function WeeklyTrainingPlan() {
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
                     workGoalHistory={user.workGoalHistory}
-                    variant='icon'
+                    variant='chip'
                 />
             </Stack>
 
@@ -141,30 +131,12 @@ export function WeeklyTrainingPlan() {
                 <Stack spacing={1.5}>
                     {!isLoading && <CategoryTotals totals={getCategoryTotals(rows)} />}
 
-                    <Tooltip title={t('activeOnlyTooltip')} placement='right'>
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={activeOnly}
-                                    onChange={(e) => setActiveOnly(e.target.checked)}
-                                    size='small'
-                                />
-                            }
-                            label={
-                                <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-                                    {t('activeOnlyLabel')}
-                                </Typography>
-                            }
-                            sx={{ ml: 1, width: 'fit-content' }}
-                        />
-                    </Tooltip>
-
                     {isLoading ? (
                         <LoadingPage />
                     ) : (
                         <WeekCalendar
                             weekDays={weekDays}
-                            rows={visibleRows}
+                            rows={rows}
                             isCurrentUser={isCurrentUser}
                             cohort={user.dojoCohort}
                             onOpenTask={onOpenTask}
