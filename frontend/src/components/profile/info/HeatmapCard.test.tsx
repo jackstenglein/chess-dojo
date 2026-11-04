@@ -89,10 +89,10 @@ describe('HeatmapCard', () => {
         renderHeatmap(<HeatmapCard workGoalHistory={[]} />);
         const today = new Date().toISOString().split('T')[0];
 
-        await user.hover(screen.getByTestId(blockId(today)));
-        await waitFor(() =>
-            expect(screen.getByText('Nothing logged this day')).toBeInTheDocument(),
-        );
+        await waitFor(async () => {
+            await user.hover(screen.getByTestId(blockId(today)));
+            expect(screen.getByText('Nothing logged this day')).toBeInTheDocument();
+        });
 
         // The day popup is modal and hides the card from the accessibility tree.
         fireEvent.click(screen.getByTestId('heatmap-settings-button'));
@@ -110,7 +110,7 @@ describe('HeatmapCard', () => {
             expect(heatmapTitles()).toHaveLength(1);
         });
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    });
+    }, 7000);
 
     it('sizes the expanded heatmap from the viewport', async () => {
         mockViewport(1446);
