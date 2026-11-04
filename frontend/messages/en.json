@@ -417,6 +417,7 @@
             "tacticsRatingTooltip": "For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "close",
             "pastYear": "in the past year",
+            "timeManagement": "Time Management",
             "chip": {
                 "coach": "Coach",
                 "coachTooltip": "This member is a Dojo coach",

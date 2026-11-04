@@ -84,6 +84,7 @@ function ProgressRow({
                             letterSpacing: '0.04em',
                             textTransform: 'uppercase',
                             lineHeight: 1,
+                            marginTop: '3px',
                         }}
                     >
                         {label}
@@ -182,13 +183,13 @@ const DojoScoreCard: React.FC<DojoScoreCardProps> = ({ user, cohort }) => {
     return (
         <Card id='cohort-score-card' sx={{ height: 1 }}>
             <CardContent>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ mb: 3 }}>
                     <CardTitle icon={<BarChart sx={{ color: 'primary.main' }} aria-hidden />}>
                         {t('progressTitle')}
                     </CardTitle>
                 </Box>
 
-                <Stack spacing={2}>
+                <Stack spacing={2.75}>
                     {showRatingProgress && (
                         <ProgressRow
                             icon={<RatingSystemIcon system={user.ratingSystem} size='small' />}
