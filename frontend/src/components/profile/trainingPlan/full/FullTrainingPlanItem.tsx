@@ -69,7 +69,8 @@ export const FullTrainingPlanItem = ({
     const totalCount = getTotalCount(cohort, requirement, true);
     const currentCount = getCurrentCount({ cohort, requirement, progress, timeline: entries });
     const time = formatTime(getTotalTime(cohort, progress), tTime);
-    // Counts start at the task's start (Polgar at #306), so progress means going past it.
+    // Counts start at the task's start (Polgar at #306), so progress means going past
+    // it, or having logged time on the task.
     const hasProgress =
         currentCount > (requirement.startCount || 0) || getTotalTime(cohort, progress) > 0;
     const expired = isExpired(requirement, progress);
