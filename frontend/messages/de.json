@@ -186,16 +186,12 @@
                 "addCustomTask": "Benutzerdefinierte Aufgabe hinzufügen",
                 "unlockTasks": "{count, plural, =1 {Entsperre # weitere Aufgabe durch ein Upgrade zu einem vollständigen Konto} other {Entsperre # weitere Aufgaben durch ein Upgrade zu einem vollständigen Konto}}",
                 "viewPrices": "Preise ansehen",
-                "nextGraduation": "Nächster Aufstieg: von {cohort} zu {nextCohort}",
-                "reachRatingToUnlock": "Erreiche das erforderliche Rating für deine Kohorte, um deine Graduierung freizuschalten",
                 "renewTooltip": "Es ist Zeit für dich, diese Aufgabe zu erneuern!",
                 "renewLabel": "Erneuern",
                 "minimumReachedTooltip": "Du hast das Minimum erreicht, mach weiter!",
                 "minimumReachedLabel": "Minimum erreicht",
                 "checkboxAriaLabel": "Kontrollkästchen {name}",
-                "updateAriaLabel": "Aktualisieren {name}",
-                "graduateName": "Absolviere {cohort}",
-                "graduateDescription": "Gehe zur nächsten Kohorte über und werde in der Abschlussshow vorgestellt."
+                "updateAriaLabel": "Aktualisieren {name}"
             },
             "graduation": {
                 "title": "Von {cohort} absolvieren?",
@@ -348,7 +344,7 @@
                 "taskLockedUntil": "Diese Aufgabe ist gesperrt, bis du {category} - {name} abgeschlossen hast."
             },
             "miniScoreboard": {
-                "heading": "Mini-Anzeigetafel",
+                "heading": "Anzeigetafel",
                 "type": "Typ",
                 "dojoScore": "Dojo Bewertung",
                 "trainingTime": "Trainingszeit",

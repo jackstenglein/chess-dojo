@@ -186,16 +186,12 @@
                 "addCustomTask": "Aggiungi compito personalizzato",
                 "unlockTasks": "{count, plural, =1 {Sblocca # altro compito passando a un account completo} other {Sblocca # altri compiti passando a un account completo}}",
                 "viewPrices": "Vedi i prezzi",
-                "nextGraduation": "Prossimo passaggio di livello: da {cohort} a {nextCohort}",
-                "reachRatingToUnlock": "Raggiungi il punteggio richiesto per la tua coorte per sbloccare il passaggio al livello successivo",
                 "renewTooltip": "È ora di rinnovare questo compito!",
                 "renewLabel": "Rinnova",
                 "minimumReachedTooltip": "Hai raggiunto il minimo, continua così!",
                 "minimumReachedLabel": "Minimo raggiunto",
                 "checkboxAriaLabel": "Casella di controllo {name}",
-                "updateAriaLabel": "Aggiorna {name}",
-                "graduateName": "Passa al livello successivo da {cohort}",
-                "graduateDescription": "Passa alla coorte successiva e vieni presentato nello show dei passaggi di livello."
+                "updateAriaLabel": "Aggiorna {name}"
             },
             "graduation": {
                 "title": "Passare al livello successivo da {cohort}?",
@@ -348,7 +344,7 @@
                 "taskLockedUntil": "Questo compito è bloccato finché non completi {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini tabellone dei punteggi",
+                "heading": "Tabellone dei punteggi",
                 "type": "Tipo",
                 "dojoScore": "Punteggio Dojo",
                 "trainingTime": "Tempo di allenamento",
