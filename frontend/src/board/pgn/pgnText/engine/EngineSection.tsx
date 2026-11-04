@@ -22,7 +22,12 @@ import { EvaluationSection } from './EvaluationSection';
 import { formatLineEval } from './LineEval';
 import Settings from './Settings';
 
-export default function EngineSection() {
+export default function EngineSection({
+    onToggle,
+}: {
+    /** Callback invoked when the engine is toggled on or off. */
+    onToggle?: (enabled: boolean) => void;
+}) {
     const t = useTranslations('analysisBoard.engine');
     const [engineName] = useLocalStorage(ENGINE_NAME.Key, ENGINE_NAME.Default);
     let engineInfo = engines.find((e) => e.name === engineName);
@@ -91,6 +96,7 @@ export default function EngineSection() {
                         <Switch
                             checked={enabled}
                             onChange={(e) => {
+                                onToggle?.(!enabled);
                                 setEnabled((prev) => !prev);
                                 e.currentTarget.blur();
                             }}
