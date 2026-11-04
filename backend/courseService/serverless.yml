@@ -89,6 +89,19 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  videoIndex:
+    handler: videoIndex/main.go
+    timeout: 30
+    events:
+      - httpApi:
+          path: /public/courses/video-index
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: !GetAtt CoursesTable.Arn
+
   purchase:
     handler: purchase/main.go
     environment:

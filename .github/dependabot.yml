@@ -21,6 +21,9 @@ updates:
       mui:
         patterns:
           - "@mui/*"
+      googleapis:
+        patterns:
+          - "@googleapis/*"
   - package-ecosystem: 'gomod' # See documentation for possible values
     directory: '/backend' # Location of package manifests
     schedule:
