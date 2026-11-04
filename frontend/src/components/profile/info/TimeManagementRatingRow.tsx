@@ -1,4 +1,5 @@
 import { RabbitIcon } from '@/style/RabbitIcon';
+import { TurtleIcon } from '@/style/TurtleIcon';
 import {
     MIN_GAMES_FOR_ELO,
     TimeManagementRating,
@@ -6,7 +7,6 @@ import {
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { TurtleIcon } from 'src/style/TurtleIcon';
 
 function gameCountLabel(numGames: number): string {
     return `(${numGames} ${numGames === 1 ? 'game' : 'games'})`;
