@@ -23,6 +23,7 @@ import React, {
 } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { BoardApi, onMoveFunc } from '../Board';
+import { InlineCommentProvider } from './InlineCommentEditor';
 import ResizableContainer from './ResizableContainer';
 import { UndoDeleteProvider } from './UndoDelete';
 import {
@@ -152,6 +153,24 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
         );
 
         const autoSaveRequest = useRequest();
+        useEffect(() => {
+            if (!allowPanelHiding) return;
+            const desktop = window.matchMedia('(min-width: 900px)');
+            const bodyOverflow = document.body.style.overflow;
+            const rootOverflow = document.documentElement.style.overflow;
+            const update = () => {
+                document.body.style.overflow = desktop.matches ? 'hidden' : bodyOverflow;
+                document.documentElement.style.overflow = desktop.matches ? 'hidden' : rootOverflow;
+            };
+            update();
+            desktop.addEventListener('change', update);
+            return () => {
+                desktop.removeEventListener('change', update);
+                document.body.style.overflow = bodyOverflow;
+                document.documentElement.style.overflow = rootOverflow;
+            };
+        }, [allowPanelHiding]);
+
         const [board, setBoard] = useState<BoardApi>();
         const [boardRef, setBoardRef] = useState<RefObject<HTMLDivElement | null>>();
 
@@ -378,25 +397,27 @@ const PgnBoard = forwardRef<PgnBoardApi, PgnBoardProps>(
                     <ChessContext.Provider value={chessContext}>
                         <RequestSnackbar request={autoSaveRequest} />
                         <GameContext.Provider value={guardedGameContext}>
-                            <UndoDeleteProvider>
-                                <ResizableContainer
-                                    {...{
-                                        allowPanelHiding,
-                                        underboardTabs,
-                                        initialUnderboardTab,
-                                        rightTabs,
-                                        initialRightTab,
-                                        tabStorageKeyPrefix,
-                                        sidePanelTabs,
-                                        showPlayerHeaders,
-                                        pgn,
-                                        fen,
-                                        startOrientation: gameOrientation,
-                                        onInitialize,
-                                        hideBoardButtons,
-                                    }}
-                                />
-                            </UndoDeleteProvider>
+                            <InlineCommentProvider>
+                                <UndoDeleteProvider>
+                                    <ResizableContainer
+                                        {...{
+                                            allowPanelHiding,
+                                            underboardTabs,
+                                            initialUnderboardTab,
+                                            rightTabs,
+                                            initialRightTab,
+                                            tabStorageKeyPrefix,
+                                            sidePanelTabs,
+                                            showPlayerHeaders,
+                                            pgn,
+                                            fen,
+                                            startOrientation: gameOrientation,
+                                            onInitialize,
+                                            hideBoardButtons,
+                                        }}
+                                    />
+                                </UndoDeleteProvider>
+                            </InlineCommentProvider>
                         </GameContext.Provider>
                     </ChessContext.Provider>
                 )}

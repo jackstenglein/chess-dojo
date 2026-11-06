@@ -399,7 +399,6 @@ export const InProgressExam: React.FC<InProgressExamProps> = ({
                             />
                         ),
                     },
-                    DefaultUnderboardTab.Editor,
                     DefaultUnderboardTab.Settings,
                 ]}
                 initialUnderboardTab='examInfo'

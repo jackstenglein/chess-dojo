@@ -1,4 +1,4 @@
-import { Chess, Move } from '@jackstenglein/chess';
+import { Chess, CommentType, Move } from '@jackstenglein/chess';
 import { Help } from '@mui/icons-material';
 import {
     Button,
@@ -59,6 +59,7 @@ interface ShortcutHandlerOptions {
      * Whether to insert the next engine's move when hitting the keybind.
      */
     addEngineMove?: () => void;
+    deleteRemainingMoves?: () => void;
 }
 
 interface ShortcutHandlerProps {
@@ -150,6 +151,22 @@ function handleFirstVariation({ chess, reconcile }: ShortcutHandlerProps) {
     }
     if (nextMove) {
         chess?.seek(nextMove);
+        reconcile?.();
+    }
+}
+
+function handleNextVariation({ chess, reconcile }: ShortcutHandlerProps) {
+    if (!chess) return;
+    const move = chess.currentMove();
+    let next = move?.variations[0]?.[0];
+    if (!next && move) {
+        const parent = chess.getVariantParent(move);
+        const index = parent?.variations.findIndex((line) => line === move.variation) ?? -1;
+        next = parent?.variations[index + 1]?.[0];
+    }
+    if (!next) next = chess.nextMove()?.variations[0]?.[0];
+    if (next) {
+        chess.seek(next);
         reconcile?.();
     }
 }
@@ -263,12 +280,13 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.LastMove]: handleLastMove,
     [ShortcutAction.ToggleOrientation]: handleToggleOrientation,
     [ShortcutAction.FirstVariation]: handleFirstVariation,
+    [ShortcutAction.NextVariation]: handleNextVariation,
     [ShortcutAction.FirstMoveVariation]: handleFirstMoveVariation,
     [ShortcutAction.LastMoveVariation]: handleLastMoveVariation,
     [ShortcutAction.OpenFiles]: handleOpenTab(DefaultUnderboardTab.Directories),
     [ShortcutAction.OpenTags]: handleOpenTab(DefaultUnderboardTab.Tags),
     [ShortcutAction.OpenPgnText]: handleOpenTab(DefaultUnderboardTab.PgnText),
-    [ShortcutAction.OpenEditor]: handleOpenTab(DefaultUnderboardTab.Editor),
+    [ShortcutAction.OpenEditor]: handleFocusMainTextField,
     [ShortcutAction.OpenComments]: handleOpenTab(DefaultUnderboardTab.Comments),
     [ShortcutAction.OpenDatabase]: handleOpenTab(DefaultUnderboardTab.Explorer),
     [ShortcutAction.OpenClocks]: handleOpenTab(DefaultUnderboardTab.Clocks),
@@ -277,6 +295,9 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.FocusMainTextField]: handleFocusMainTextField,
     [ShortcutAction.FocusCommentTextField]: handleFocusCommentTextField,
     [ShortcutAction.UnfocusTextField]: handleUnfocusTextField,
+    [ShortcutAction.DeleteRemainingMoves]: ({ opts }) => opts?.deleteRemainingMoves?.(),
+    [ShortcutAction.TextAfterMove]: ({ opts }) =>
+        opts?.underboardApi?.focusEditor(CommentType.After),
     [ShortcutAction.InsertNullMove]: handleInsertNullMove,
     [ShortcutAction.InsertEngineMove]: handleInsertEngineMove,
     [ShortcutAction.ViewShortcuts]: handleViewShortcuts,
@@ -353,6 +374,7 @@ const KeyboardShortcuts = ({
             Escape: t('keyEscape'),
             Tab: t('keyTab'),
             Backspace: t('keyBackspace'),
+            BracketRight: ']',
         }),
         [t],
     );
@@ -410,6 +432,12 @@ const KeyboardShortcuts = ({
                         return t('shortcutFocusCommentTextField');
                     case ShortcutAction.UnfocusTextField:
                         return t('shortcutUnfocusTextField');
+                    case ShortcutAction.DeleteRemainingMoves:
+                        return 'Delete remaining moves';
+                    case ShortcutAction.TextAfterMove:
+                        return 'Add text after move';
+                    case ShortcutAction.NextVariation:
+                        return 'Next variation';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMove');
                     case ShortcutAction.InsertEngineMove:
@@ -467,6 +495,12 @@ const KeyboardShortcuts = ({
                         return t('shortcutFocusCommentTextFieldDesc');
                     case ShortcutAction.UnfocusTextField:
                         return t('shortcutUnfocusTextFieldDesc');
+                    case ShortcutAction.DeleteRemainingMoves:
+                        return 'Delete all moves after the current position. The current move is kept.';
+                    case ShortcutAction.TextAfterMove:
+                        return 'Open the editor to add text after the selected move.';
+                    case ShortcutAction.NextVariation:
+                        return 'Go to the next variation without scrolling the page.';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMoveDesc');
                     case ShortcutAction.InsertEngineMove:

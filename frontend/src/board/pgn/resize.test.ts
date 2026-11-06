@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getFittedSizes, getNewSizes, getSizes, RESTORE_GUTTER_WIDTH } from './resize';
+import {
+    getFittedSizes,
+    getNewSizes,
+    getSizes,
+    resizeSidePanel,
+    RESTORE_GUTTER_WIDTH,
+} from './resize';
 
 describe('collapsible panel sizing', () => {
     beforeEach(() => {
@@ -121,7 +127,8 @@ describe('board fitting with hidden bars', () => {
 
     it('shrinks when a panel is revealed and expands when a visible panel is resized smaller', () => {
         window.innerHeight = 2000;
-        const normal = getSizes(1200, true, false, { showPanelControls: true });
+        const initial = getSizes(1200, true, false, { showPanelControls: true });
+        const normal = { ...initial, underboard: { ...initial.underboard, width: 300 } };
         const hidden = getFittedSizes(normal, 1200, false, false);
         const revealed = getFittedSizes(normal, 1200, true, false);
         expect(revealed.board.width).toBeLessThan(hidden.board.width);
@@ -133,4 +140,29 @@ describe('board fitting with hidden bars', () => {
         );
         expect(resized.board.width).toBeGreaterThan(revealed.board.width);
     });
+});
+
+it('keeps side panels tall and grows the board when panel width is freed', () => {
+    const sizes = getSizes(1800, true, false, { showPanelControls: true });
+    const resized = resizeSidePanel(sizes, 'underboard', sizes.underboard.width - 100, false, {
+        showPanelControls: true,
+    });
+    expect(resized.underboard.height).toBe(sizes.underboard.height);
+    expect(resized.pgn.height).toBe(sizes.pgn.height);
+    expect(resized.board.width).toBeGreaterThanOrEqual(sizes.board.width);
+    expect(resized.board.width).toBe(resized.board.height);
+    expect(resized.board.height).toBeLessThanOrEqual(resized.board.maxHeight);
+});
+
+it('uses the available vertical space for the board when side panels can fit', () => {
+    Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        writable: true,
+        value: 1000,
+    });
+    const sizes = getSizes(1800, true, false, { showPanelControls: true });
+    expect(sizes.board.height).toBe(sizes.board.maxHeight);
+    expect(sizes.board.width).toBe(sizes.board.height);
+    expect(sizes.underboard.width).toBeGreaterThanOrEqual(100);
+    expect(sizes.pgn.width).toBeGreaterThanOrEqual(100);
 });

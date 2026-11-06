@@ -9,10 +9,13 @@ import { useChess } from './PgnBoard';
 import PlayerHeader from './PlayerHeader';
 import BoardButtons, { PanelControls, PanelToggle } from './boardTools/boardButtons/BoardButtons';
 import { FlipBoardButton } from './boardTools/boardButtons/ControlButtons';
+import NagControls from './boardTools/underboard/NagControls';
 import { UnderboardApi } from './boardTools/underboard/Underboard';
 import { ResizableData, RESTORE_GUTTER_WIDTH } from './resize';
 
 interface ResizableBoardAreaProps {
+    showNagControls?: boolean;
+    onHeightChange?: (height: number) => void;
     barsHidden?: boolean;
     onToggleBars?: () => void;
     panelControls?: PanelControls;
@@ -29,6 +32,8 @@ interface ResizableBoardAreaProps {
 }
 
 const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
+    showNagControls = false,
+    onHeightChange,
     barsHidden = false,
     onToggleBars,
     panelControls,
@@ -44,6 +49,16 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
     underboardRef,
 }) => {
     const { board, slotProps } = useChess();
+    const areaRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const area = areaRef.current;
+        if (!area || !onHeightChange) return;
+        const measure = () => onHeightChange(area.getBoundingClientRect().height);
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(area);
+        return () => observer.disconnect();
+    }, [onHeightChange]);
     const t = useTranslations('analysisBoard.boardButtons');
     const hideButton = useRef<HTMLButtonElement>(null);
     const restoreButton = useRef<HTMLButtonElement>(null);
@@ -68,6 +83,7 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
 
     return (
         <Stack
+            ref={areaRef}
             direction='row'
             sx={{
                 width: `${resizeData.width + (barsHidden ? RESTORE_GUTTER_WIDTH : 0)}px`,
@@ -92,7 +108,12 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
                 {showPlayerHeaders && !barsHidden && <PlayerHeader type='footer' />}
 
                 {!hideBoardButtons && (
-                    <Box sx={{ display: barsHidden ? 'none' : undefined }}>
+                    <Box
+                        sx={{
+                            display: barsHidden ? 'none' : undefined,
+                            ...(showNagControls && { '& > .MuiPaper-root': { mb: 0 } }),
+                        }}
+                    >
                         <BoardButtons
                             underboardRef={underboardRef}
                             panelControls={panelControls}
@@ -102,6 +123,7 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
                         />
                     </Box>
                 )}
+                {showNagControls && !barsHidden && <NagControls underboardRef={underboardRef} />}
             </Stack>
             {barsHidden && (
                 <Stack sx={{ width: RESTORE_GUTTER_WIDTH, pl: '4px', rowGap: 0.5 }}>

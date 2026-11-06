@@ -23,6 +23,9 @@ export enum ShortcutAction {
     /** Go to the first variation of the next move, or the next move if it has no variations. */
     FirstVariation = 'FIRST_VARIATION',
 
+    /** Go to the next sibling variation. */
+    NextVariation = 'NEXT_VARIATION',
+
     /** Open the files tab. */
     OpenFiles = 'OPEN_FILES',
 
@@ -62,6 +65,12 @@ export enum ShortcutAction {
     /** Unfocuses any currently-focused text field. */
     UnfocusTextField = 'UNFOCUS_TEXTFIELD',
 
+    /** Deletes moves after the current position. */
+    DeleteRemainingMoves = 'DELETE_REMAINING_MOVES',
+
+    /** Opens the text editor after the selected move. */
+    TextAfterMove = 'TEXT_AFTER_MOVE',
+
     /** Inserts a null move. */
     InsertNullMove = 'INSERT_NULL_MOVE',
 
@@ -92,6 +101,7 @@ export const ShortcutBindings = {
         [ShortcutAction.NextMove]: { modifier: '', key: 'ArrowRight' },
         [ShortcutAction.LastMove]: { modifier: '', key: '' },
         [ShortcutAction.ToggleOrientation]: { modifier: '', key: 'f' },
+        [ShortcutAction.NextVariation]: { modifier: '', key: 'ArrowDown' },
         [ShortcutAction.FirstVariation]: { modifier: 'Shift', key: 'ArrowRight' },
         [ShortcutAction.FirstMoveVariation]: { modifier: '', key: '' },
         [ShortcutAction.LastMoveVariation]: { modifier: '', key: '' },
@@ -107,6 +117,8 @@ export const ShortcutBindings = {
         [ShortcutAction.FocusMainTextField]: { modifier: '', key: '' },
         [ShortcutAction.FocusCommentTextField]: { modifier: '', key: '' },
         [ShortcutAction.UnfocusTextField]: { modifier: '', key: '' },
+        [ShortcutAction.DeleteRemainingMoves]: { modifier: '', key: 'BracketRight' },
+        [ShortcutAction.TextAfterMove]: { modifier: '', key: 'Enter' },
         [ShortcutAction.InsertNullMove]: { modifier: '', key: '' },
         [ShortcutAction.InsertEngineMove]: { modifier: '', key: 'Space' },
         [ShortcutAction.NextPuzzle]: { modifier: '', key: 'Space' },

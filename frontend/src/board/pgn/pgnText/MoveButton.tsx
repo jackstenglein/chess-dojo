@@ -5,7 +5,7 @@ import { useReconcile } from '@/board/Board';
 import useGame from '@/context/useGame';
 import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
 import { StockfishIcon } from '@/style/ChessIcons';
-import { Chess, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
+import { Chess, CommentType, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Backspace, Chat, Help, KeyboardReturn, Merge } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -36,6 +36,7 @@ import {
 import { DeletePrompt, useDeletePrompt } from '../boardTools/underboard/DeletePrompt';
 import { ShowMoveTimesInPgn } from '../boardTools/underboard/settings/ViewerSettings';
 import { MergeLineDialog } from '../boardTools/underboard/share/MergeLineDialog';
+import { useInlineComment } from '../InlineCommentEditor';
 import { compareNags, getStandardNag, nags } from '../Nag';
 import { nagIcons } from '../NagIcon';
 import { useChess } from '../PgnBoard';
@@ -84,6 +85,8 @@ export interface ButtonProps {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+    const { start: startComment } = useInlineComment();
+    const { isOwner } = useGame();
     const { chess } = useChess();
     const { isCurrentMove, inline, move, onClickMove, onRightClick, text, time } = props;
     const { slots } = useChess();
@@ -158,6 +161,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                 display: inline ? 'inline-block' : undefined,
             }}
             onClick={() => onClickMove(move)}
+            onDoubleClick={(event) => {
+                if (!isOwner) return;
+                event.preventDefault();
+                event.stopPropagation();
+                startComment(CommentType.After);
+            }}
             onContextMenu={onRightClick}
             {...longPress()}
         >
