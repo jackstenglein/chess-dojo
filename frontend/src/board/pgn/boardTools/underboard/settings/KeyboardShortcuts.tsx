@@ -157,6 +157,31 @@ function handleFirstVariation({ chess, reconcile }: ShortcutHandlerProps) {
 
 function handleNextVariation({ chess, reconcile }: ShortcutHandlerProps) {
     if (!chess) return;
+    // Follow rendered rows, including wrapped and nested variation lines.
+    const pane = document.getElementById('resize-container');
+    const buttons = Array.from(
+        pane?.querySelectorAll<HTMLButtonElement>('[data-testid="pgn-text-move-button"]') ?? [],
+    ).filter((button) => button.getBoundingClientRect().height > 0);
+    const current = buttons.find((button) => button.dataset.currentMove === 'true');
+    if (current) {
+        const rect = current.getBoundingClientRect();
+        const below = buttons.filter((button) => button.getBoundingClientRect().top > rect.top + 4);
+        const top = Math.min(...below.map((button) => button.getBoundingClientRect().top));
+        const row = below.filter(
+            (button) => Math.abs(button.getBoundingClientRect().top - top) < 4,
+        );
+        row.sort(
+            (a, b) =>
+                Math.abs(a.getBoundingClientRect().left - rect.left) -
+                Math.abs(b.getBoundingClientRect().left - rect.left),
+        );
+        row[0]?.click();
+        return;
+    }
+    if (buttons.length) {
+        buttons[0].click();
+        return;
+    }
     const move = chess.currentMove();
     let next = move?.variations[0]?.[0];
     if (!next && move) {
@@ -437,7 +462,7 @@ const KeyboardShortcuts = ({
                     case ShortcutAction.TextAfterMove:
                         return 'Add text after move';
                     case ShortcutAction.NextVariation:
-                        return 'Next variation';
+                        return 'Next notation line';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMove');
                     case ShortcutAction.InsertEngineMove:
@@ -500,7 +525,7 @@ const KeyboardShortcuts = ({
                     case ShortcutAction.TextAfterMove:
                         return 'Open the editor to add text after the selected move.';
                     case ShortcutAction.NextVariation:
-                        return 'Go to the next variation without scrolling the page.';
+                        return 'Go down one line in the notation, including variations.';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMoveDesc');
                     case ShortcutAction.InsertEngineMove:

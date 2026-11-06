@@ -65,3 +65,29 @@ describe('next variation shortcut', () => {
         expect(chess.currentMove()?.san).toBe('c4');
     });
 });
+
+it('moves down through rendered notation rows, including variations and back to the main line', () => {
+    const pane = document.createElement('div');
+    pane.id = 'resize-container';
+    document.body.appendChild(pane);
+    const buttons = [0, 24, 48, 72].map((top) => {
+        const button = document.createElement('button');
+        button.dataset.testid = 'pgn-text-move-button';
+        button.getBoundingClientRect = () => ({ top, left: 0, height: 24 }) as DOMRect;
+        button.onclick = () => {
+            for (const item of pane.querySelectorAll('button')) delete item.dataset.currentMove;
+            button.dataset.currentMove = 'true';
+        };
+        pane.appendChild(button);
+        return button;
+    });
+    buttons[0].click();
+    const chess = new Chess({ pgn: '1. e4 e5' });
+    for (const index of [1, 2, 3]) {
+        keyboardShortcutHandlers[ShortcutAction.NextVariation]({ chess });
+        expect(buttons[index].dataset.currentMove).toBe('true');
+    }
+    keyboardShortcutHandlers[ShortcutAction.NextVariation]({ chess });
+    expect(buttons[3].dataset.currentMove).toBe('true');
+    pane.remove();
+});

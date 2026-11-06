@@ -135,6 +135,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     return (
         <MuiButton
             data-testid='pgn-text-move-button'
+            data-current-move={isCurrentMove ? 'true' : undefined}
             ref={ref}
             variant={isCurrentMove ? 'contained' : 'text'}
             disableElevation
