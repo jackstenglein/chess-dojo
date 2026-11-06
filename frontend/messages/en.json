@@ -130,6 +130,7 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Pinned",
                 "close": "Close",
                 "cancel": "Cancel",
                 "save": "Save",
@@ -150,7 +151,8 @@
                 "commentsPlaceholder": "Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "Only numeric characters are accepted",
                 "mustBeInteger": "This field must be an integer",
-                "fieldRequired": "This field is required"
+                "fieldRequired": "This field is required",
+                "moreActions": "More actions"
             },
             "inputSlider": {
                 "decrement": "Decrement",
@@ -169,9 +171,23 @@
                 "review": "Review",
                 "guide": "Read guide"
             },
+            "quickLog": {
+                "logTraining": "Log training",
+                "logTooltip": "Log progress and time for this task",
+                "undo": "Undo"
+            },
             "daily": {
                 "today": "Today",
-                "progressCompleted": "{current} / {total} {suffix} completed"
+                "summary": "{done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "Done for today · {worked} logged",
+                "goalMet": "Time goal met",
+                "skippedHeading": "Skipped this week ({count})",
+                "restore": "Restore {name}",
+                "skippedToast": "Skipped {name} for the rest of the week",
+                "swapTooltip": "Swap for another {category} task",
+                "swapNone": "No other {category} tasks to swap in",
+                "swapHeading": "Swap for another {category} task",
+                "swapped": "Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "This Week",
@@ -334,7 +350,8 @@
                 "countRequired": "This field is required",
                 "countNumeric": "Only numeric characters are accepted",
                 "countMinOne": "At least one game is required",
-                "deleteEntry": "Delete"
+                "deleteEntry": "Delete",
+                "scheduleAction": "Schedule"
             },
             "taskDialog": {
                 "historyCaption": "History",
