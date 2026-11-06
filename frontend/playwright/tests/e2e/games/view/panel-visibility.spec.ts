@@ -343,3 +343,26 @@ test('keeps puzzle boards unchanged', async ({ page }) => {
         page.getByRole('button', { name: /(?:Hide|Show) (?:left|right) panel/ }),
     ).toHaveCount(0);
 });
+
+for (const san of ['d4', 'd5']) {
+    test(`immediately displays a forced nested variation at ${san}`, async ({ page }) => {
+        await page.addInitScript(() => {
+            sessionStorage.setItem(
+                'useSaveGame:stageCreateGame',
+                JSON.stringify({
+                    pgnText: '1. e4 (1. d4 d5 2. c4) e5 *',
+                }),
+            );
+        });
+        await page.goto('/games/analysis');
+        const notation = page.getByTestId('right-underboard-tab-content');
+        const moves = notation.getByTestId('pgn-text-move-button').filter({ hasText: san });
+        await expect(moves).toHaveCount(1);
+        await moves.first().click({ button: 'right' });
+        await page.getByRole('menuitem', { name: 'Force Variation', exact: true }).click();
+        await expect(moves).toHaveCount(2);
+        const first = await moves.nth(0).boundingBox();
+        const second = await moves.nth(1).boundingBox();
+        expect(second!.y).toBeGreaterThan(first!.y + 10);
+    });
+}

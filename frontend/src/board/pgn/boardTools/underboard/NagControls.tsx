@@ -289,29 +289,31 @@ export default function NagControls({
                         <ListItemText>Enter Null Move</ListItemText>
                     </MenuItem>
                 )}
-                {positionalNags.map((nag) => (
-                    <MenuItem
-                        key={nag}
-                        disabled={!move}
-                        selected={getNagsInSet(positionalNags, move?.nags).includes(nag)}
-                        onClick={() => {
-                            const current = getNagsInSet(positionalNags, move?.nags);
-                            chess.setNags(
-                                setNagsInSet(
-                                    current.includes(nag)
-                                        ? current.filter((n) => n !== nag)
-                                        : [...current, nag],
-                                    positionalNags,
-                                    move?.nags,
-                                ),
-                            );
-                            reconcile();
-                        }}
-                    >
-                        <ListItemIcon>{nagIcons[nag] ?? nags[nag].label}</ListItemIcon>
-                        <ListItemText>{nags[nag].description}</ListItemText>
-                    </MenuItem>
-                ))}
+                {positionalNags
+                    .filter((nag) => nag !== '$1304')
+                    .map((nag) => (
+                        <MenuItem
+                            key={nag}
+                            disabled={!move}
+                            selected={getNagsInSet(positionalNags, move?.nags).includes(nag)}
+                            onClick={() => {
+                                const current = getNagsInSet(positionalNags, move?.nags);
+                                chess.setNags(
+                                    setNagsInSet(
+                                        current.includes(nag)
+                                            ? current.filter((n) => n !== nag)
+                                            : [...current, nag],
+                                        positionalNags,
+                                        move?.nags,
+                                    ),
+                                );
+                                reconcile();
+                            }}
+                        >
+                            <ListItemIcon>{nagIcons[nag] ?? nags[nag].label}</ListItemIcon>
+                            <ListItemText>{nags[nag].description}</ListItemText>
+                        </MenuItem>
+                    ))}
             </Menu>
         </Paper>
     );

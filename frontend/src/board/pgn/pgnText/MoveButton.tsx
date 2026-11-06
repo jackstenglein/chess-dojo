@@ -41,6 +41,7 @@ import { useInlineComment } from '../InlineCommentEditor';
 import { compareNags, getStandardNag, nags } from '../Nag';
 import { nagIcons } from '../NagIcon';
 import { useChess } from '../PgnBoard';
+import { forceVariation } from '../variationEditing';
 
 export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?: boolean): string {
     if (highlightEngineLines && move.commentDiag?.dojoEngine) {
@@ -253,7 +254,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
 
     const nullMoveStatus = getNullMoveStatus(chess, underboardT, move);
     const isInMainline = chess.isInMainline(move);
-    const canPromote = chess.canPromoteVariation(move);
+    const canPromote = chess.canPromoteVariation(move, true);
     const canDeleteBefore = config?.allowDeleteBefore && isInMainline && !!move.previous;
 
     const onMakeMainline = () => {
@@ -262,12 +263,13 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     };
 
     const onForceVariation = () => {
-        chess.forceVariation(move, { skipSeek: true });
+        forceVariation(chess, move);
+        reconcile();
         onClose();
     };
 
     const onPromote = () => {
-        chess.promoteVariation(move);
+        chess.promoteVariation(move, !chess.canPromoteVariation(move));
         onClose();
     };
 
@@ -324,11 +326,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemText>{t('makeMainLine')}</ListItemText>
                         </MenuItem>,
 
-                        <MenuItem
-                            key='force-variation'
-                            disabled={!isInMainline}
-                            onClick={onForceVariation}
-                        >
+                        <MenuItem key='force-variation' onClick={onForceVariation}>
                             <ListItemIcon>
                                 <KeyboardReturn sx={{ transform: 'scale(-1, 1)' }} />
                             </ListItemIcon>
