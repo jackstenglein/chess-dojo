@@ -50,10 +50,14 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
 }) => {
     const { board, slotProps } = useChess();
     const areaRef = useRef<HTMLDivElement>(null);
+    const pixelRatio = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
+    const renderedBoardWidth = (Math.floor((resizeData.width * pixelRatio) / 8) * 8) / pixelRatio;
     useEffect(() => {
         const area = areaRef.current;
-        if (!area || !onHeightChange) return;
-        const measure = () => onHeightChange(area.getBoundingClientRect().height);
+        if (!area) return;
+        const measure = () => {
+            onHeightChange?.(area.getBoundingClientRect().height);
+        };
         measure();
         const observer = new ResizeObserver(measure);
         observer.observe(area);
@@ -111,13 +115,14 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
                     <Box
                         sx={{
                             display: barsHidden ? 'none' : undefined,
+                            width: renderedBoardWidth ?? resizeData.width,
                             ...(showNagControls && { '& > .MuiPaper-root': { mb: 0 } }),
                         }}
                     >
                         <BoardButtons
                             underboardRef={underboardRef}
                             panelControls={panelControls}
-                            boardWidth={resizeData.width}
+                            boardWidth={renderedBoardWidth ?? resizeData.width}
                             onHideBars={onToggleBars}
                             hideBarsRef={hideButton}
                         />

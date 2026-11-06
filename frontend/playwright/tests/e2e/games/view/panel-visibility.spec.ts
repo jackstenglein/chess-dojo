@@ -83,7 +83,7 @@ for (const width of [2463, 1400, 390]) {
             expect(rightToggle.x + rightToggle.width).toBeLessThanOrEqual(
                 boardRect.x + boardRect.width + 1,
             );
-            if (originalWidth >= 480) {
+            if (originalWidth >= 360) {
                 expect(
                     Math.abs(
                         nextButton.y + nextButton.height / 2 - leftToggle.y - leftToggle.height / 2,
@@ -269,26 +269,29 @@ for (const viewport of [
     }
 }
 
-test('restores editor focus and draft through the existing shortcut', async ({ page }) => {
+test('restores inline comment focus and draft through the existing shortcut', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 1000 });
     await page.goto('/games/analysis');
-    await page.getByTestId('underboard-button-editor').click();
-    const editor = page
-        .getByTestId('underboard-tab-content')
-        .getByRole('textbox', { name: 'Comments', exact: true });
-    await editor.fill('Workshop notes in progress');
-    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
-    await expect(editor).toBeHidden();
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
     await page.keyboard.press('e');
-    await expect(editor).toBeVisible();
+    const editor = page.getByRole('textbox', { name: 'Text after move', exact: true });
+    await expect(editor).toBeFocused();
+    await editor.fill('Workshop notes in progress');
+    await page.keyboard.press('Enter');
+    await expect(editor).toHaveCount(0);
+    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
+    await page.keyboard.press('e');
     await expect(editor).toBeFocused();
     await expect(editor).toHaveValue('Workshop notes in progress');
+    await page.keyboard.press('Enter');
     await page.getByRole('button', { name: 'Hide right panel', exact: true }).click();
     await page.setViewportSize({ width: 700, height: 900 });
     await page.getByRole('button', { name: 'Show right panel', exact: true }).click();
     await expect(page.getByTestId('right-underboard-tab-content')).toBeVisible();
+    await page.keyboard.press('e');
+    await expect(editor).toBeFocused();
     await expect(editor).toHaveValue('Workshop notes in progress');
-    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
+    await page.keyboard.press('Escape');
     await page.reload();
     await expect(page.getByRole('button', { name: 'Hide left panel', exact: true })).toBeVisible();
 });
