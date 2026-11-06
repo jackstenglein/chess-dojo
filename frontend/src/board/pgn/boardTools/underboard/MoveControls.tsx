@@ -1,4 +1,4 @@
-import { Chess, EventType } from '@jackstenglein/chess';
+import { Chess, EventType, Move } from '@jackstenglein/chess';
 import { Backspace } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Button, Stack, SvgIcon, Tooltip } from '@mui/material';
@@ -134,20 +134,21 @@ export default function MoveControls() {
 export function getNullMoveStatus(
     chess: Chess,
     t: EditorT,
+    move: Move | null = chess.currentMove(),
 ): { disabled: boolean; tooltip: string } {
-    if (chess.isCheck()) {
+    if (chess.isCheck(move)) {
         return {
             disabled: true,
             tooltip: t('nullMoveCheckWarning'),
         };
     }
-    if (chess.isGameOver()) {
+    if (chess.isGameOver(move)) {
         return {
             disabled: true,
             tooltip: t('nullMoveGameOverWarning'),
         };
     }
-    if (chess.currentMove()?.san === 'Z0') {
+    if (move?.san === 'Z0') {
         return {
             disabled: true,
             tooltip: t('nullMoveMultipleWarning'),

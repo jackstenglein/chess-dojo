@@ -296,6 +296,27 @@ test('restores inline comment focus and draft through the existing shortcut', as
     await expect(page.getByRole('button', { name: 'Hide left panel', exact: true })).toBeVisible();
 });
 
+test('inserts a null move after the right-clicked move, not the selected move', async ({
+    page,
+}) => {
+    await page.goto('/games/analysis');
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
+    const notation = page.getByTestId('right-underboard-tab-content');
+    const firstMove = notation
+        .getByTestId('pgn-text-move-button')
+        .filter({ hasText: 'e4' })
+        .first();
+    await firstMove.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Insert Null Move', exact: true }).click();
+    const selected = notation.locator('[data-current-move="true"]');
+    await expect(selected).toContainText('Z0');
+    await selected.click({ button: 'right' });
+    await expect(
+        page.getByRole('menuitem', { name: 'Insert Null Move', exact: true }),
+    ).toBeDisabled();
+});
+
 test('keeps puzzle boards unchanged', async ({ page }) => {
     await page.route('**/puzzle/next', (route) =>
         route.fulfill({
