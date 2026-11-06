@@ -7,7 +7,6 @@ import Position from '@/components/profile/trainingPlan/Position';
 import ProgressHistory from '@/components/profile/trainingPlan/ProgressHistory';
 import { ProgressUpdater } from '@/components/profile/trainingPlan/ProgressUpdater';
 import { TimerContext } from '@/components/timer/TimerContext';
-import ModalTitle from '@/components/ui/ModalTitle';
 import {
     CustomTask,
     getTotalCount,
@@ -21,23 +20,12 @@ import {
 import { ALL_COHORTS, compareCohorts, dojoCohorts } from '@/database/user';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
 import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@mui/icons-material';
-import {
-    Box,
-    Button,
-    Chip,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, Grid, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import CustomTaskEditor from './CustomTaskEditor';
 import { TaskDescription } from './TaskDescription';
+import { TaskDialogFooter, TaskDialogHeader, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
 
 export enum TaskDialogView {
     Details = 'DETAILS',
@@ -52,6 +40,8 @@ interface TaskDialogProps {
     initialView: TaskDialogView;
     progress: RequirementProgress | undefined;
     cohort: string;
+    /** Time to prefill in the progress form, in minutes. */
+    initialMinutes?: number;
 }
 
 function getRequirementName(task: Requirement | CustomTask, cohort: string) {
@@ -70,7 +60,12 @@ export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskD
         <Dialog
             open={open}
             onClose={props.onClose}
-            maxWidth={view === TaskDialogView.Details ? 'lg' : 'md'}
+            // One look for every view; only the width changes, to fit what each shows:
+            // history needs room for a row of fields per entry.
+            maxWidth='md'
+            slotProps={{
+                paper: { sx: view === TaskDialogView.Progress ? { maxWidth: 480 } : undefined },
+            }}
             fullWidth
         >
             {view === TaskDialogView.Details && (
@@ -88,7 +83,15 @@ type ProgressDialogProps = Omit<TaskDialogProps, 'open' | 'initialView'> & {
     setView: (v: TaskDialogView) => void;
 };
 
-function ProgressDialog({ onClose, task, progress, cohort, view, setView }: ProgressDialogProps) {
+function ProgressDialog({
+    onClose,
+    task,
+    progress,
+    cohort,
+    view,
+    setView,
+    initialMinutes,
+}: ProgressDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const { user } = useAuth();
 
@@ -104,20 +107,15 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
     }
 
     const requirementName = getRequirementName(task, selectedCohort);
-    const isNonDojo = task.scoreboardDisplay === ScoreboardDisplay.NonDojo;
-
-    let dialogTitle = '';
-    if (view === TaskDialogView.History) {
-        dialogTitle = t('historyTitle', { name: requirementName });
-    } else if (isNonDojo) {
-        dialogTitle = t('addTimeTitle', { name: requirementName });
-    } else {
-        dialogTitle = t('updateTitle', { name: requirementName });
-    }
 
     return (
         <>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <TaskDialogHeader
+                category={task.category}
+                title={requirementName}
+                caption={view === TaskDialogView.History ? t('historyCaption') : undefined}
+                onClose={onClose}
+            />
 
             {view === TaskDialogView.History && (
                 <ProgressHistory requirement={task} onClose={onClose} setView={setView} />
@@ -129,6 +127,7 @@ function ProgressDialog({ onClose, task, progress, cohort, view, setView }: Prog
                     cohort={selectedCohort}
                     onClose={onClose}
                     setView={setView}
+                    initialMinutes={initialMinutes}
                 />
             )}
         </>
@@ -142,7 +141,6 @@ type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort'> &
 function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const tCommon = useTranslations('profile.trainingPlan.common');
-    const tCategory = useTranslations('enums.requirementCategory');
     const { user } = useAuth();
     const { entries: timeline } = useTimelineContext();
     const [showEditor, setShowEditor] = useState(false);
@@ -230,24 +228,9 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
 
     return (
         <>
-            <DialogContent>
+            <TaskDialogHeader category={task.category} title={requirementName} onClose={onClose} />
+            <DialogContent sx={{ pt: '4px !important' }}>
                 <Stack spacing={3}>
-                    <ModalTitle onClose={onClose}>
-                        <Stack>
-                            <Typography variant='h4'>{requirementName}</Typography>
-                            <Typography
-                                variant='h5'
-                                sx={{
-                                    color: 'text.secondary',
-                                }}
-                            >
-                                {tCategory.has(task.category)
-                                    ? tCategory(task.category)
-                                    : task.category}
-                            </Typography>
-                        </Stack>
-                    </ModalTitle>
-
                     <Stack
                         direction='row'
                         sx={{
@@ -344,38 +327,48 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         ))}
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ flexWrap: 'wrap' }}>
-                <Box sx={{ flexGrow: 1 }}>
-                    {timerRunning ? (
+            <TaskDialogFooter
+                view={TaskDialogView.Details}
+                setView={setView}
+                extra={
+                    timerRunning ? (
                         <Button
                             color='warning'
+                            size='small'
                             startIcon={<Pause />}
                             onClick={() => {
                                 onPauseTimer();
                                 setView(TaskDialogView.Progress);
                             }}
+                            sx={{ textTransform: 'none', ml: 1 }}
                         >
                             {t('pauseTimer', { time: formatTime(timerSeconds) })}
                         </Button>
                     ) : (
                         <Button
                             color={timerIsOtherTask ? 'error' : 'warning'}
+                            size='small'
                             startIcon={<PlayArrow />}
                             onClick={() => onStartTimer(task.id)}
+                            sx={{ textTransform: 'none', ml: 1 }}
                         >
                             {getTimerLabel(task.id)}
                         </Button>
-                    )}
-                </Box>
-
-                <Button onClick={onClose}>{tCommon('cancel')}</Button>
-                <Button onClick={() => setView(TaskDialogView.Progress)}>
+                    )
+                }
+            >
+                <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
+                    {tCommon('cancel')}
+                </Button>
+                <Button
+                    variant='contained'
+                    disableElevation
+                    onClick={() => setView(TaskDialogView.Progress)}
+                    sx={taskDialogPrimaryButtonSx}
+                >
                     {tCommon('updateProgress')}
                 </Button>
-                <Button onClick={() => setView(TaskDialogView.History)}>
-                    {tCommon('showHistory')}
-                </Button>
-            </DialogActions>
+            </TaskDialogFooter>
         </>
     );
 }

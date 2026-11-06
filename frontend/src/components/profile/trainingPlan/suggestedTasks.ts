@@ -76,6 +76,32 @@ export const SCHEDULE_CLASSICAL_GAME_TASK: Requirement = {
     id: SCHEDULE_CLASSICAL_GAME_TASK_ID,
 } as Requirement;
 
+/** Task times are rounded to multiples of this many minutes. */
+const MINUTES_ROUNDING = 5;
+
+/**
+ * Splits a number of minutes across tasks as evenly as possible in multiples of 5,
+ * so a day reads "50m, 45m, 45m" rather than "46m, 46m, 46m". The earlier tasks
+ * take the extra 5-minute steps, and the parts always add up to the total: if the
+ * total itself is not a multiple of 5, the first task takes the odd minutes.
+ * @param total The minutes to split.
+ * @param count The number of tasks to split them across.
+ */
+export function splitMinutes(total: number, count: number): number[] {
+    if (count <= 0) {
+        return [];
+    }
+    const minutes = Math.max(0, Math.floor(total));
+    const steps = Math.floor(minutes / MINUTES_ROUNDING);
+    const base = Math.floor(steps / count);
+    const extraSteps = steps % count;
+    const parts = new Array(count)
+        .fill(0)
+        .map((_, i) => (base + (i < extraSteps ? 1 : 0)) * MINUTES_ROUNDING);
+    parts[0] += minutes - steps * MINUTES_ROUNDING;
+    return parts;
+}
+
 /** The maximum number of suggested tasks returned by the suggestion algorithm. */
 const MAX_SUGGESTED_TASKS = 3;
 
@@ -451,7 +477,7 @@ export class TaskSuggestionAlgorithm {
             Math.max(1, Math.floor(otherTaskMinutes / DEFAULT_MINUTES_PER_TASK)),
             tasksMissingTime,
         );
-        const minutesPerTask = Math.max(0, Math.floor(otherTaskMinutes / maxTasksWithTime));
+        const minutesPerTask = splitMinutes(otherTaskMinutes, maxTasksWithTime);
 
         let tasksWithTime = 0;
         for (const suggestion of suggestions) {
@@ -464,7 +490,7 @@ export class TaskSuggestionAlgorithm {
             ) {
                 suggestion.goalMinutes = 0;
             } else {
-                suggestion.goalMinutes = minutesPerTask;
+                suggestion.goalMinutes = minutesPerTask[tasksWithTime];
                 tasksWithTime++;
             }
         }

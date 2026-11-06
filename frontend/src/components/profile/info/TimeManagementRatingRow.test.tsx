@@ -1,4 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { renderWithIntl } from '@/i18n/intl.test';
+import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TimeManagementRatingRow } from './TimeManagementRatingRow';
 
@@ -8,7 +9,7 @@ afterEach(() => {
 
 describe('TimeManagementRatingRow', () => {
     it('shows a bunny for positive average area', () => {
-        render(
+        renderWithIntl(
             <TimeManagementRatingRow
                 timeManagementRating={{ currentRating: 2100, numGames: 12, area: 25 }}
             />,
@@ -23,7 +24,7 @@ describe('TimeManagementRatingRow', () => {
     });
 
     it('shows a sloth for negative average area', () => {
-        render(
+        renderWithIntl(
             <TimeManagementRatingRow
                 timeManagementRating={{ currentRating: 1800, numGames: 11, area: -40 }}
             />,
@@ -36,7 +37,7 @@ describe('TimeManagementRatingRow', () => {
     });
 
     it('shows no direction icon for neutral or missing area', () => {
-        render(
+        renderWithIntl(
             <TimeManagementRatingRow
                 timeManagementRating={{ currentRating: 2000, numGames: 10 }}
             />,
@@ -47,7 +48,7 @@ describe('TimeManagementRatingRow', () => {
     });
 
     it('marks ratings with fewer than 10 games as provisional', () => {
-        render(
+        renderWithIntl(
             <TimeManagementRatingRow
                 timeManagementRating={{ currentRating: 1900, numGames: 4, area: 10 }}
             />,
