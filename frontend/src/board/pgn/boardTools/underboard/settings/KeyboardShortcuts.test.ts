@@ -89,5 +89,14 @@ it('moves down through rendered notation rows, including variations and back to 
     }
     keyboardShortcutHandlers[ShortcutAction.NextVariation]({ chess });
     expect(buttons[3].dataset.currentMove).toBe('true');
+    expect(matchAction(ShortcutBindings.default, 'ArrowUp', {})).toBe(
+        ShortcutAction.PreviousNotationLine,
+    );
+    for (const index of [2, 1, 0]) {
+        keyboardShortcutHandlers[ShortcutAction.PreviousNotationLine]({ chess });
+        expect(buttons[index].dataset.currentMove).toBe('true');
+    }
+    keyboardShortcutHandlers[ShortcutAction.PreviousNotationLine]({ chess });
+    expect(buttons[0].dataset.currentMove).toBe('true');
     pane.remove();
 });

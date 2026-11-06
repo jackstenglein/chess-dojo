@@ -155,6 +155,27 @@ function handleFirstVariation({ chess, reconcile }: ShortcutHandlerProps) {
     }
 }
 
+function handlePreviousNotationLine({ chess }: ShortcutHandlerProps) {
+    if (!chess) return;
+    const buttons = Array.from(
+        document
+            .getElementById('resize-container')
+            ?.querySelectorAll<HTMLButtonElement>('[data-testid="pgn-text-move-button"]') ?? [],
+    ).filter((button) => button.getBoundingClientRect().height > 0);
+    const current = buttons.find((button) => button.dataset.currentMove === 'true');
+    if (!current) return;
+    const rect = current.getBoundingClientRect();
+    const above = buttons.filter((button) => button.getBoundingClientRect().top < rect.top - 4);
+    const top = Math.max(...above.map((button) => button.getBoundingClientRect().top));
+    const row = above.filter((button) => Math.abs(button.getBoundingClientRect().top - top) < 4);
+    row.sort(
+        (a, b) =>
+            Math.abs(a.getBoundingClientRect().left - rect.left) -
+            Math.abs(b.getBoundingClientRect().left - rect.left),
+    );
+    row[0]?.click();
+}
+
 function handleNextVariation({ chess, reconcile }: ShortcutHandlerProps) {
     if (!chess) return;
     // Follow rendered rows, including wrapped and nested variation lines.
@@ -306,6 +327,7 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.ToggleOrientation]: handleToggleOrientation,
     [ShortcutAction.FirstVariation]: handleFirstVariation,
     [ShortcutAction.NextVariation]: handleNextVariation,
+    [ShortcutAction.PreviousNotationLine]: handlePreviousNotationLine,
     [ShortcutAction.FirstMoveVariation]: handleFirstMoveVariation,
     [ShortcutAction.LastMoveVariation]: handleLastMoveVariation,
     [ShortcutAction.OpenFiles]: handleOpenTab(DefaultUnderboardTab.Directories),
@@ -461,6 +483,8 @@ const KeyboardShortcuts = ({
                         return 'Delete remaining moves';
                     case ShortcutAction.TextAfterMove:
                         return 'Add text after move';
+                    case ShortcutAction.PreviousNotationLine:
+                        return 'Previous notation line';
                     case ShortcutAction.NextVariation:
                         return 'Next notation line';
                     case ShortcutAction.InsertNullMove:
@@ -524,6 +548,8 @@ const KeyboardShortcuts = ({
                         return 'Delete all moves after the current position. The current move is kept.';
                     case ShortcutAction.TextAfterMove:
                         return 'Open the editor to add text after the selected move.';
+                    case ShortcutAction.PreviousNotationLine:
+                        return 'Go up one line in the notation, including variations.';
                     case ShortcutAction.NextVariation:
                         return 'Go down one line in the notation, including variations.';
                     case ShortcutAction.InsertNullMove:

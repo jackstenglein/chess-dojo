@@ -26,6 +26,9 @@ export enum ShortcutAction {
     /** Go to the next sibling variation. */
     NextVariation = 'NEXT_VARIATION',
 
+    /** Go to the previous visible notation line. */
+    PreviousNotationLine = 'PREVIOUS_NOTATION_LINE',
+
     /** Open the files tab. */
     OpenFiles = 'OPEN_FILES',
 
@@ -101,6 +104,7 @@ export const ShortcutBindings = {
         [ShortcutAction.NextMove]: { modifier: '', key: 'ArrowRight' },
         [ShortcutAction.LastMove]: { modifier: '', key: '' },
         [ShortcutAction.ToggleOrientation]: { modifier: '', key: 'f' },
+        [ShortcutAction.PreviousNotationLine]: { modifier: '', key: 'ArrowUp' },
         [ShortcutAction.NextVariation]: { modifier: '', key: 'ArrowDown' },
         [ShortcutAction.FirstVariation]: { modifier: 'Shift', key: 'ArrowRight' },
         [ShortcutAction.FirstMoveVariation]: { modifier: '', key: '' },
