@@ -123,7 +123,7 @@ export function WeeklyTrainingPlan() {
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
                     workGoalHistory={user.workGoalHistory}
-                    variant='chip'
+                    variant='icon'
                 />
             </Stack>
 

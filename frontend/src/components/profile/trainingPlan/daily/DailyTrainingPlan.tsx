@@ -144,7 +144,7 @@ export function DailyTrainingPlan() {
                     initialWeekStart={user.weekStart}
                     workGoal={user.workGoal}
                     workGoalHistory={user.workGoalHistory}
-                    variant={taskCount > 0 ? 'icon' : 'chip'}
+                    variant='icon'
                 />
             </Stack>
 

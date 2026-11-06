@@ -57,10 +57,7 @@ const nextConfig = {
             },
             {
                 source: '/_next/static/:path*',
-                headers: ENGINE_HEADERS.concat({
-                    key: 'Cache-Control',
-                    value: 'public, max-age=2592000, immutable',
-                }),
+                headers: ENGINE_HEADERS,
             },
         ];
     },
