@@ -3,14 +3,14 @@ import {
     Biotech,
     CrisisAlert,
     LiveTv,
-    MenuBook,
     PushPin,
     School,
     Speed,
     SportsScore,
     WavingHand,
 } from '@mui/icons-material';
-import { SvgIconProps } from '@mui/material';
+import { SvgIcon, SvgIconProps } from '@mui/material';
+import { GiBookPile } from 'react-icons/gi';
 
 interface TrainingPlanIconProps extends SvgIconProps {
     /** The category to render the icon for. */
@@ -27,7 +27,8 @@ export function TrainingPlanIcon({ category, ...rest }: TrainingPlanIconProps) {
         case RequirementCategory.Tactics:
             return <Speed {...rest} />;
         case RequirementCategory.Middlegames:
-            return <MenuBook {...rest} />;
+            // A pile of books, so it isn't mistaken for the open book of a reading task.
+            return <SvgIcon component={GiBookPile} viewBox='0 0 512 512' {...rest} />;
         case RequirementCategory.Endgame:
             return <SportsScore {...rest} />;
         case RequirementCategory.Opening:

@@ -1540,7 +1540,9 @@
         "myCohort": "[T] My Cohort",
         "graduations": "[T] Graduations",
         "viewAll": "[T] View All",
+        "comment": "[T] Comment",
         "showPostsFrom": "[T] Show Posts From",
+        "showMyPosts": "[T] Show my posts",
         "categories": "[T] Categories",
         "allCategories": "[T] All Categories",
         "annotations": "[T] Annotations",
@@ -1549,6 +1551,8 @@
         "completedRequirement": "[T] Completed <strong>{name}</strong>",
         "updated": "[T] Updated",
         "updatedRequirement": "[T] Updated <strong>{name}</strong>",
+        "dojoPointsGained": "[T] +{count} Dojo Points",
+        "markedNotDone": "[T] Marked not done",
         "dojoPoints": "[T] Dojo Points:",
         "totalTime": "[T] Total Time:",
         "customTask": "[T] Custom Task",
@@ -1567,7 +1571,9 @@
             "players": "[T] Players:",
             "date": "[T] Date:",
             "result": "[T] Result:",
-            "moves": "[T] Moves:"
+            "moves": "[T] Moves:",
+            "versus": "[T] {white} vs {black}",
+            "newAnalysis": "[T] New game analysis"
         },
         "graduation": {
             "graduated": "[T] Graduated from <strong>{oldCohort}</strong> into <strong>{newCohort}</strong>",
