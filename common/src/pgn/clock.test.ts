@@ -115,4 +115,26 @@ describe('maxClockSeconds', () => {
             600, 600, 1200, 1200, 1200, 1200, 1800, 1800,
         ]);
     });
+
+    it('uses the move numbers of a game starting from a FEN', () => {
+        const chess = new Chess({
+            pgn: `[TimeControl "40/5400+30:1800+30"]
+[SetUp "1"]
+[FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 39"]
+
+39. Nf3 Nf6 40. Ng1 Ng8 41. Nf3 *`,
+        });
+        expect(maxClockSeconds(chess, chess.history())).toEqual([5430, 5430, 7260, 7260, 7290]);
+    });
+
+    it('uses the correct player for a game starting from a FEN with black to move', () => {
+        const chess = new Chess({
+            pgn: `[TimeControl "40/5400+30:1800+30"]
+[SetUp "1"]
+[FEN "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 39"]
+
+39... Nf6 { [%clk 0:50:00] } 40. Nf3 Ng8 *`,
+        });
+        expect(maxClockSeconds(chess, chess.history())).toEqual([5430, 7230, 4830]);
+    });
 });

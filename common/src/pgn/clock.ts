@@ -96,7 +96,7 @@ export function timeControlForMove(chess: Chess, move: Move | undefined): TimeCo
  * time added at the start of a new period still accumulate across them. The clock
  * of the last move of a period may include the time added for the next period.
  * @param chess The chess instance containing the time control.
- * @param moves The mainline moves of the game, starting from the first move.
+ * @param moves The mainline moves of the game, in order.
  * @returns The maximum clock time in seconds for each move, or undefined if unknown.
  */
 export function maxClockSeconds(chess: Chess, moves: Move[]): (number | undefined)[] {
@@ -104,11 +104,12 @@ export function maxClockSeconds(chess: Chess, moves: Move[]): (number | undefine
     const initialSeconds = timeControls[0]?.seconds;
     const prevSeconds = [initialSeconds, initialSeconds];
 
-    return moves.map((move, i) => {
-        const color = i % 2;
+    return moves.map((move) => {
+        // Use the ply rather than the index, as the game may start from a FEN
+        const color = move.ply % 2;
         const { timeControl, nextTimeControl } = timeControlPeriodForMoveNumber(
             timeControls,
-            Math.floor(i / 2) + 1,
+            Math.ceil(move.ply / 2),
         );
 
         let max = prevSeconds[color];
