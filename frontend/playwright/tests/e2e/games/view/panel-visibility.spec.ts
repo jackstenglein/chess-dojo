@@ -363,6 +363,9 @@ for (const san of ['d4', 'd5']) {
         await expect(moves).toHaveCount(2);
         const first = await moves.nth(0).boundingBox();
         const second = await moves.nth(1).boundingBox();
-        expect(second!.y).toBeGreaterThan(first!.y + 10);
+        if (!first || !second) {
+            throw new Error(`Expected both ${san} move buttons to have bounding boxes`);
+        }
+        expect(second.y).toBeGreaterThan(first.y + 10);
     });
 }
