@@ -36,6 +36,8 @@ interface ResizableContainerProps {
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
+    /** Whether the control buttons under the board are hidden. */
+    hideBoardButtons?: boolean;
     startOrientation?: Color;
     onInitialize: onInitializeFunc;
 }
@@ -49,6 +51,7 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     tabStorageKeyPrefix,
     sidePanelTabs,
     showPlayerHeaders,
+    hideBoardButtons,
     pgn,
     fen,
     startOrientation,
@@ -72,10 +75,11 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
         // Visibility only changes which panels occupy the layout, not their saved dimensions.
         return getSizes(parentWidth, hasLeftPanel, !showPlayerHeaders, {
+            hideBoardButtons,
             showPgn: hasRightPanel,
             showPanelControls,
         });
-    }, [hasLeftPanel, showPlayerHeaders, hasRightPanel, showPanelControls]);
+    }, [hasLeftPanel, showPlayerHeaders, hasRightPanel, showPanelControls, hideBoardButtons]);
 
     const onWindowResize = useCallback(() => {
         const nextSizes = calcSizes();
@@ -102,11 +106,19 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                         [area]: { ...sizes[area], width, height },
                     },
                     !showPlayerHeaders,
-                    { showPgn: hasRightPanel, showPanelControls },
+                    { showPgn: hasRightPanel, showPanelControls, hideBoardButtons },
                 );
             });
         },
-        [setSizes, calcSizes, showPlayerHeaders, hasRightPanel, showPanelControls, barsHidden],
+        [
+            setSizes,
+            calcSizes,
+            showPlayerHeaders,
+            hasRightPanel,
+            showPanelControls,
+            barsHidden,
+            hideBoardButtons,
+        ],
     );
 
     if (!sizes) {
@@ -158,6 +170,7 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                         ? () => setFittedBase((current) => (current ? null : sizes))
                         : undefined,
                     showPlayerHeaders,
+                    hideBoardButtons,
                     pgn,
                     fen,
                     startOrientation,
