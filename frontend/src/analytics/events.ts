@@ -47,6 +47,9 @@ export enum EventType {
     CreateSparringLink = 'create_sparring_link',
     CopyFen = 'copy_fen',
 
+    // Class landing page
+    ClassLead = 'class_lead',
+
     // Upsell
     ViewUpsellDialog = 'view_upsell_dialog',
 

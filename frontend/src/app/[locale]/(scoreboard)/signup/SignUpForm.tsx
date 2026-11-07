@@ -218,7 +218,14 @@ export const SignUpForm = () => {
 
                 <Typography variant='body2' component='div' gutterBottom>
                     {t('signup.alreadyHaveAccount')}{' '}
-                    <Link href='/signin' data-testid='signin-button'>
+                    <Link
+                        href={
+                            redirectUri
+                                ? `/signin?redirectUri=${encodeURIComponent(redirectUri)}`
+                                : '/signin'
+                        }
+                        data-testid='signin-button'
+                    >
                         {t('signup.signIn')}
                     </Link>
                 </Typography>
