@@ -10,7 +10,7 @@ export type ClassId = 'logical-chess' | 'calculation' | 'game-review';
 
 export const STATS = [
     { target: 200000, label: 'Rating points gained' },
-    { target: 4700, label: 'Graduations' },
+    { target: 4900, label: 'Graduations' },
     { target: 99800, label: 'Training hours logged' },
 ];
 
@@ -232,7 +232,7 @@ export const CLASS_COVERS = [
     {
         name: 'Calculation 1000+',
         teacher: 'IM Kostya Kavutskiy',
-        detail: '30+ recordings',
+        detail: '42 recordings',
         imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
     },
     {
@@ -252,14 +252,14 @@ export const CLASS_COVERS = [
     {
         name: 'Intermediate Endgames',
         teacher: 'IM Tatev Abrahamyan',
-        detail: '4 recordings',
+        detail: '37 recordings',
         imageUrl:
             'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/endgame-intermediate-2.webp',
     },
     {
         name: 'The Accelerated Dragon',
         teacher: 'GM Eugene Perelshteyn',
-        detail: '4 recordings',
+        detail: '12 recordings',
         imageUrl:
             'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/Accelerated_Dragon.webp',
     },
@@ -623,140 +623,179 @@ export const DOJO_FEATURES: { icon: DojoFeatureIcon; title: string; description:
 
 export const FAQ = [
     {
-        question: 'Is this right for my level?',
-        answer: 'The plan runs from 0 to 2400+. Each workshop lists a recommended rating range, and you can join any of them. Game & Profile Review teams are split by rating, from 0-800 up to 2000+.',
+        question: 'How much time do I need?',
+        answer: 'Three hard training sessions a week. A long game counts as one, and going through that game afterward counts as another. Classes come on top of that, and every class is recorded, so a busy week doesn’t cost you the lesson.',
+    },
+    {
+        question: 'I’m rated 600, or I don’t have a rating yet. Is this for me?',
+        answer: 'Yes. The plan starts at 0, and every class lists its rating range. This week, Tactics Bootcamp with GM Jesse Kraai and Checkmate Patterns with GM Josh Friedel are both for players under 1200. Review teams are split by rating, so you’d look at games with players near your level.',
+    },
+    {
+        question: 'I can learn chess free on YouTube. Why pay?',
+        answer: 'Free videos are good for ideas, and we post them too. A video can’t see your games. In the Dojo you get a plan that says what to work on this week, homework you actually do, and a sensei who answers your question in the room.',
+    },
+    {
+        question: 'Will I actually improve?',
+        answer: 'That depends on the work you put in, so we won’t promise you a number. Dojo members have moved up a rating group more than 4,900 times, and a graduation only happens once a member’s rating passes the top of their cohort. We ask for three hard sessions a week.',
+    },
+    {
+        question: 'What does it cost?',
+        answer: 'Core is $12 a month billed yearly ($144) or $20 month to month. Workshops is $67 a month billed yearly ($804) or $75 month to month. Game & Profile Review is $180 a month billed yearly ($2,160) or $200 month to month. On yearly Workshops, one class a week works out to about $15 a class.',
+    },
+    {
+        question: 'What if it isn’t for me?',
+        answer: 'Cancel anytime from your profile, and you keep access until the end of the period you paid for.',
     },
     {
         question: 'Which plan should I pick?',
-        answer: 'Pick Workshops if you want live lessons on calculation, endgames and openings. Pick Game & Profile Review if you want a small team and a sensei looking at how you actually play and train. It includes every workshop too.',
+        answer: 'Core if you want the plan and the community. Workshops if you want to learn live every week. Game & Profile Review if you want a sensei looking at your own games and training habits; it includes every workshop. Not sure? Start with Workshops. You can move up later.',
     },
     {
-        question: 'How much time do I need?',
-        answer: 'We ask for at least three hard training sessions a week: a long game, the analysis of that game, or hard exercises. Classes are extra, and the recordings let you fit them in when you can.',
-    },
-    {
-        question: "What if I can't make a class?",
-        answer: 'Watch the recording. All classes are recorded and available to subscribers on demand.',
-    },
-    {
-        question: 'Do I have to play long games?',
-        answer: "Yes. A long game gives you the pressure that builds your skills and a game you can analyze deeply afterward. If you don't have a club, the Dojo's tournaments give you opponents.",
-    },
-    {
-        question: 'What do I need to join a class?',
-        answer: 'A standard web browser. The Google Meet links appear in the ChessDojo calendar once you subscribe.',
-    },
-    {
-        question: 'Do I have to register for each class?',
-        answer: 'No. Subscribers can join any workshop from the calendar. Game & Profile Review members get their team’s link there too.',
-    },
-    {
-        question: 'How do I cancel?',
-        answer: 'From your profile, whenever you want. Plans renew automatically until canceled, and access continues until the end of the billing period.',
+        question: 'What happens in a live class?',
+        answer: 'About an hour on Google Meet, in your browser. Most classes come with homework positions. The sensei teaches, goes through the homework and takes questions. Every class is recorded and has its own Discord channel.',
     },
 ];
 
 export interface ValueItem {
     title: string;
     description: string;
-    /** Dollar value, or undefined when the item is included without a price. */
-    value?: number;
-    /** Smaller priced lines shown under the item. */
-    details?: { name: string; price: number }[];
+    /** What the line is worth, in words. Undefined shows "Included". */
+    value?: string;
 }
 
-export type ClassOfferTier = SubscriptionTier.Lecture | SubscriptionTier.GameReview;
+export type ClassOfferTier =
+    SubscriptionTier.Basic | SubscriptionTier.Lecture | SubscriptionTier.GameReview;
 
 export interface Offer {
     tier: ClassOfferTier;
     name: string;
+    /** Who the plan is for. */
     tagline: string;
-    seats: string;
+    badge?: string;
+    seats?: string;
     cta: string;
     accent: string;
     price: { month: number; year: number };
     items: ValueItem[];
+    /** A plain comparison shown under the list. There is no summed "total value". */
+    note?: string;
 }
 
-/** Shop prices checked Oct 31, 2026. Update these when a course sale starts or ends. */
-export const WORKSHOP_COURSE_PRICES = [
-    { name: 'Learn to Play Blindfolded', price: 40 },
-    { name: 'Endgame Fundamentals', price: 40 },
-    { name: 'The Tactical Nimzo', price: 80 },
-    { name: 'Calculation Training', price: 100 },
-    { name: 'Strategy for Beginners', price: 80 },
-    { name: 'Logical Chess Move by Move', price: 100 },
-    { name: 'The Accelerated Dragon', price: 80 },
-];
-
-const CORE_MONTHLY_PRICE = 20;
-
-const workshopItems: ValueItem[] = [
-    {
-        title: 'Weekly live workshops',
-        description: 'Calculation, endgames and openings with GMs and IMs, plus Q&A and homework.',
-    },
-    {
-        title: 'The recorded workshop library',
-        description: 'Seven courses at today’s one-time shop prices.',
-        value: WORKSHOP_COURSE_PRICES.reduce((sum, c) => sum + c.price, 0),
-        details: WORKSHOP_COURSE_PRICES,
-    },
-    {
-        title: 'ChessDojo Core',
-        description:
-            'The full training plan, all opening courses, the game database, Dojo Rush and the community.',
-        value: CORE_MONTHLY_PRICE,
-    },
-];
-
-export function totalValue(items: ValueItem[]): number {
-    return items.reduce((sum, item) => sum + (item.value ?? 0), 0);
-}
+export const CORE_OFFER: Offer = {
+    tier: SubscriptionTier.Basic,
+    name: 'Core',
+    tagline: 'For players who want the plan and the community, without live classes.',
+    cta: 'Start the training plan',
+    accent: '#8DA5FF',
+    price: { month: 20, year: 12 },
+    items: [
+        {
+            title: 'A training plan for your rating, 0 to 2500',
+            description: 'Daily and weekly tasks that tell you what to work on.',
+        },
+        {
+            title: 'All opening courses',
+            description: 'Repertoires from the senseis, with sparring positions and exercises.',
+            value: '$225 in the shop',
+        },
+        {
+            title: 'The game database, Dojo Rush, tests and puzzles',
+            description: 'Ten-minute Rush runs where every miss comes back for a retry.',
+        },
+        {
+            title: 'Your cohort, tournaments and graduation streams',
+            description:
+                'Players at your level on Discord, study groups and classical games to review.',
+        },
+    ],
+};
 
 export const WORKSHOPS_OFFER: Offer = {
     tier: SubscriptionTier.Lecture,
     name: 'Workshops',
-    tagline: 'Learn live every week and work through the whole library.',
+    tagline: 'For players who want to learn live with GMs and IMs every week.',
+    badge: 'Best place to start live classes',
     seats: 'No seat limit. Join any workshop you want.',
-    cta: 'Join Workshops',
+    cta: 'Join this week’s live classes',
     accent: '#33b679',
     price: { month: 75, year: 67 },
-    items: workshopItems,
+    items: [
+        {
+            title: 'Six live classes a week with GMs and IMs',
+            description:
+                'This week: Attacking 101 (IM Tatev Abrahamyan), The London System (GM Eugene Perelshteyn), Checkmate Patterns (GM Josh Friedel), Tactics Bootcamp (GM Jesse Kraai), Calculation 1000+ and Typical Pawn Structures (IM Kostya Kavutskiy).',
+            value: 'About $15 a class',
+        },
+        {
+            title: 'Homework every week, gone through in class',
+            description: 'Positions to work on before class, so you arrive with your own answers.',
+        },
+        {
+            title: '200+ recorded classes, yours while you’re a member',
+            description: 'Seven of these workshops sell separately in our shop for $520.',
+            value: '$520 in the shop',
+        },
+        {
+            title: 'A Discord channel for every class',
+            description: 'Keep talking about the class after it ends.',
+        },
+        {
+            title: 'ChessDojo Core',
+            description:
+                'Your plan, daily tasks, opening courses, Dojo Rush, your cohort and tournaments.',
+            value: '$144 a year on its own',
+        },
+    ],
+    note: 'About $15 a class if you come once a week on the yearly plan. Under $3 if you come to all six.',
 };
 
 export const GAME_REVIEW_OFFER: Offer = {
     tier: SubscriptionTier.GameReview,
     name: 'Game & Profile Review',
-    tagline: 'A small team at your rating, and a sensei looking at your chess.',
-    seats: 'Teams are limited to about 10 players.',
-    cta: 'Join Game & Profile Review',
+    tagline: 'For players who want a sensei looking at their own games and habits.',
+    seats: 'Teams are capped at about 10 players, so your turn comes around.',
+    cta: 'Join a review team',
     accent: '#039be5',
     price: { month: 200, year: 180 },
     items: [
         {
-            title: 'Your game and profile reviewed by a sensei',
-            description: 'A private hour with a US GM costs about $150-200.',
-            value: 150,
+            title: 'A team of about 10 players at your rating',
+            description: 'From 0-800 up to 2000+, with a private channel.',
         },
         {
-            title: 'Weekly sessions with your team of about 10',
-            description: 'A peer review and a sensei review every week, with a private channel.',
-            value: 60,
+            title: 'A weekly peer review of your teammates’ games',
+            description: 'The team goes through its members’ games together.',
         },
         {
-            title: 'Recordings from every review team',
+            title: 'A weekly sensei review with a GM or IM',
+            description:
+                'The featured spot rotates, so your own games come up in turn, and you learn from the others in between.',
+            value: 'A private hour with a US GM: $150-200',
+        },
+        {
+            title: 'Recordings of every review team, at every rating',
             description: 'Watch how the senseis handle players at other ratings.',
         },
         {
             title: 'Everything in Workshops',
             description: 'Every live workshop, the recorded library and ChessDojo Core.',
-            value: totalValue(workshopItems),
+            value: '$804 a year on its own',
         },
     ],
+    note: 'About the price of one private hour with a US GM, for a month of team reviews and every workshop.',
 };
 
-export const OFFERS = [GAME_REVIEW_OFFER, WORKSHOPS_OFFER];
+/** Desktop order. Phones put Workshops first. */
+export const OFFERS = [CORE_OFFER, WORKSHOPS_OFFER, GAME_REVIEW_OFFER];
+
+export function offerForTier(tier: ClassOfferTier): Offer {
+    return OFFERS.find((offer) => offer.tier === tier) ?? WORKSHOPS_OFFER;
+}
+
+/** The biggest yearly saving across the plans, for the billing toggle. */
+export const MAX_YEARLY_SAVING = Math.max(
+    ...OFFERS.map((offer) => (offer.price.month - offer.price.year) * 12),
+);
 
 export const VALUE_FOOTNOTE =
-    "Values use today's one-time ChessDojo shop prices, the low end of a US GM's hourly rate, and our own estimate for the weekly team sessions. Recordings stay available while your plan is active. Prices are in USD. Plans renew automatically until canceled.";
+    'Shop prices checked Nov 7, 2026. Three workshop courses are 20% off right now and the values use the sale price. Recordings and courses stay available while your plan is active. Prices in USD. Tax may be added at checkout. Plans renew until you cancel.';

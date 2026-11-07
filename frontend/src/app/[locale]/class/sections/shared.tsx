@@ -16,6 +16,7 @@ export const BLUE_BAND =
     'linear-gradient(90deg, var(--mui-palette-darkBlue-main) 0%, var(--mui-palette-darkBlue-light) 100%)';
 export const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 export const OFFER_ELEMENT_ID = 'join';
+export const LIVE_CLASSES_ELEMENT_ID = 'live-classes';
 
 type StyleObject = Record<string, string | number | object | undefined>;
 

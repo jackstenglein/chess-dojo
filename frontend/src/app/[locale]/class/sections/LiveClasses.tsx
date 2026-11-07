@@ -8,7 +8,16 @@ import { Box, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import Image from 'next/image';
 import { CLASS_COVERS, CLASS_FACTS, ClassId } from '../content';
-import { Body, Condensed, HAIRLINE, Heading, MUTED, ORANGE, Section } from './shared';
+import {
+    Body,
+    Condensed,
+    HAIRLINE,
+    Heading,
+    LIVE_CLASSES_ELEMENT_ID,
+    MUTED,
+    ORANGE,
+    Section,
+} from './shared';
 import { VideoPlayer } from './VideoPlayer';
 import { WeekCalendar } from './WeekCalendar';
 
@@ -101,7 +110,7 @@ export function LiveClasses({
 }) {
     return (
         <Box>
-            <Section sx={{ pb: { xs: 3, md: 4 } }}>
+            <Section id={LIVE_CLASSES_ELEMENT_ID} sx={{ pb: { xs: 3, md: 4 } }}>
                 <Heading
                     sx={{ mb: { xs: 3, md: 4 }, maxWidth: '50rem' }}
                     description='Workshop members can join all six classes. Game & Profile Review members also meet their own team twice a week.'

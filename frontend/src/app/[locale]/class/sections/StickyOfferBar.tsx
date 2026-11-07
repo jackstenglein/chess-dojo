@@ -61,7 +61,7 @@ export function StickyOfferBar() {
                     onClick={scrollToOffer}
                     sx={{ minHeight: 44, px: 3, fontWeight: 600, width: { xs: 1, sm: 'auto' } }}
                 >
-                    See the plans
+                    See plans
                 </Button>
             </Stack>
         </Slide>

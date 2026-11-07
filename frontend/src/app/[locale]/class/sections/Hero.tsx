@@ -12,8 +12,17 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import posterImage from '../assets/logical-chess-poster.webp';
 import { rememberAttribution } from '../classLead';
-import { ClassId, WORKSHOPS_OFFER } from '../content';
-import { Body, Condensed, EASE_OUT, INK, ORANGE, riseIn, scrollToOffer } from './shared';
+import { ClassId, CORE_OFFER, WORKSHOPS_OFFER } from '../content';
+import {
+    Body,
+    Condensed,
+    EASE_OUT,
+    INK,
+    LIVE_CLASSES_ELEMENT_ID,
+    ORANGE,
+    riseIn,
+    scrollToOffer,
+} from './shared';
 import { VideoPlayer } from './VideoPlayer';
 
 const slowPush = keyframes`
@@ -107,27 +116,39 @@ export function Hero({
                         onClick={scrollToOffer}
                         sx={{ color: ORANGE, fontWeight: 600, minHeight: 44, px: 1.5 }}
                     >
-                        See the plans
+                        See plans
                     </Button>
                 </Stack>
 
                 <Box sx={{ textAlign: 'center', mt: { xs: 3.5, md: 5 } }}>
+                    <Condensed
+                        sx={{
+                            ...entranceSx(0),
+                            mb: 1.5,
+                            color: ORANGE,
+                            fontSize: { xs: '1.05rem', md: '1.3rem' },
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                        }}
+                    >
+                        Got mated? Free class with GM Jesse Kraai
+                    </Condensed>
                     <Typography
                         component='h1'
                         sx={{
                             ...entranceSx(0),
                             fontFamily: (theme) => fontFamily(theme, anton),
-                            fontSize: { xs: '2.6rem', sm: '3.75rem', md: '5.25rem' },
+                            fontSize: { xs: '2.4rem', sm: '3.4rem', md: '4.6rem' },
                             lineHeight: 1.08,
                             letterSpacing: '0.005em',
                         }}
                     >
-                        Got mated?
+                        Stuck at the same rating?
                         <br />
-                        Sit in on{' '}
+                        See how Dojo members{' '}
                         <Box component='span' sx={{ position: 'relative', whiteSpace: 'nowrap' }}>
                             <Box component='span' sx={{ color: ORANGE }}>
-                                a real Dojo class
+                                get moving again
                             </Box>
                             <Box
                                 component='svg'
@@ -169,8 +190,9 @@ export function Hero({
                             fontSize: { xs: '1.15rem', md: '1.4rem' },
                         }}
                     >
-                        GM Jesse Kraai takes real students through Logical Chess Move by Move. Free
-                        to watch.
+                        Start with a free 70-minute class: GM Jesse Kraai takes real students
+                        through two classic games, move by move. Then see the plan and the weekly
+                        live classes behind 4,900+ graduations.
                     </Body>
                 </Box>
 
@@ -222,7 +244,7 @@ export function Hero({
                                         whiteSpace: 'nowrap',
                                     }}
                                 >
-                                    70 min
+                                    Watch the free class (70 min)
                                 </Condensed>
                             </Stack>
                         }
@@ -239,35 +261,112 @@ export function Hero({
                         gap: 2.5,
                     }}
                 >
-                    <Condensed
-                        component='h2'
-                        sx={{
-                            fontWeight: 500,
-                            fontSize: { xs: '2.1rem', md: '3rem' },
-                            lineHeight: 1.08,
-                            textWrap: 'balance',
-                        }}
-                    >
-                        That’s one class. Members get six workshops a week.
-                    </Condensed>
-                    <Body sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
-                        Each one comes with a recording and its own Discord channel, on top of a
-                        training plan built for your rating.
-                    </Body>
-                    <Button
-                        variant='contained'
-                        color='dojoOrange'
-                        size='large'
-                        onClick={scrollToOffer}
-                        endIcon={
-                            <ArrowDownward
-                                sx={{ animation: `${nudge} 2.2s ease-in-out infinite` }}
-                            />
-                        }
-                        sx={{ fontWeight: 600, fontSize: '1.05rem', minHeight: 52, px: 4 }}
-                    >
-                        See the plans, from ${WORKSHOPS_OFFER.price.year}/month billed yearly
-                    </Button>
+                    {playing ? (
+                        <>
+                            <Condensed
+                                component='h2'
+                                sx={{
+                                    fontWeight: 500,
+                                    fontSize: { xs: '2.1rem', md: '3rem' },
+                                    lineHeight: 1.08,
+                                    textWrap: 'balance',
+                                }}
+                            >
+                                You’re in. The class is playing above.
+                            </Condensed>
+                            <Body sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+                                We’ve emailed you the link so you can finish it later. Try this
+                                while you watch: pause before each move and guess it before Jesse
+                                explains it.
+                            </Body>
+                            <Condensed
+                                component='h3'
+                                sx={{
+                                    mt: 1,
+                                    fontWeight: 500,
+                                    fontSize: { xs: '1.6rem', md: '2rem' },
+                                }}
+                            >
+                                Want to ask a question yourself?
+                            </Condensed>
+                            <Body sx={{ fontSize: { xs: '1.05rem', md: '1.15rem' } }}>
+                                There are six live classes on this week’s calendar, from Tactics
+                                Bootcamp (under 1200) to Typical Pawn Structures (1200+).
+                            </Body>
+                            <Stack
+                                direction='row'
+                                sx={{ gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}
+                            >
+                                <Button
+                                    variant='contained'
+                                    color='dojoOrange'
+                                    size='large'
+                                    onClick={() =>
+                                        document
+                                            .getElementById(LIVE_CLASSES_ELEMENT_ID)
+                                            ?.scrollIntoView({ behavior: 'smooth' })
+                                    }
+                                    sx={{
+                                        fontWeight: 600,
+                                        fontSize: '1.05rem',
+                                        minHeight: 52,
+                                        px: 4,
+                                    }}
+                                >
+                                    See this week’s classes
+                                </Button>
+                                <Button
+                                    variant='outlined'
+                                    color='inherit'
+                                    size='large'
+                                    onClick={scrollToOffer}
+                                    sx={{
+                                        fontWeight: 600,
+                                        minHeight: 52,
+                                        borderColor: 'rgba(255,255,255,0.6)',
+                                    }}
+                                >
+                                    See plans
+                                </Button>
+                            </Stack>
+                        </>
+                    ) : (
+                        <>
+                            <Condensed
+                                component='h2'
+                                sx={{
+                                    fontWeight: 500,
+                                    fontSize: { xs: '2.1rem', md: '3rem' },
+                                    lineHeight: 1.08,
+                                    textWrap: 'balance',
+                                }}
+                            >
+                                That’s one class. Members get six workshops a week.
+                            </Condensed>
+                            <Body sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+                                Each one comes with a recording and its own Discord channel, on top
+                                of a training plan built for your rating.
+                            </Body>
+                            <Button
+                                variant='contained'
+                                color='dojoOrange'
+                                size='large'
+                                onClick={scrollToOffer}
+                                endIcon={
+                                    <ArrowDownward
+                                        sx={{ animation: `${nudge} 2.2s ease-in-out infinite` }}
+                                    />
+                                }
+                                sx={{ fontWeight: 600, fontSize: '1.05rem', minHeight: 52, px: 4 }}
+                            >
+                                See plans and prices
+                            </Button>
+                            <Body sx={{ fontSize: '1rem' }}>
+                                Live classes from ${WORKSHOPS_OFFER.price.year}/month billed yearly.
+                                Training plan from ${CORE_OFFER.price.year}.
+                            </Body>
+                        </>
+                    )}
                 </Stack>
             </Container>
         </Box>

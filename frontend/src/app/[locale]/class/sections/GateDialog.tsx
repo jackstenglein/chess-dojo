@@ -65,7 +65,7 @@ export function GateDialog({
             setErrors({
                 email: fields.has('email') ? 'Enter a valid email address.' : undefined,
                 consent: fields.has('consent')
-                    ? 'Tick this box so we can send you the class.'
+                    ? 'Tick the box to get the class and our emails.'
                     : undefined,
             });
             return;
@@ -132,11 +132,11 @@ export function GateDialog({
                         component='h2'
                         sx={{ fontSize: '2.25rem', fontWeight: 500, lineHeight: 1.05 }}
                     >
-                        <span id='class-gate-title'>Enter your email to start the class</span>
+                        <span id='class-gate-title'>Enter your email and the class starts</span>
                     </Condensed>
                     <Body sx={{ mt: 1, fontSize: '1.05rem' }}>
-                        {CLASS_NAMES[lastClass]} starts right here, and we’ll email you the link for
-                        later.
+                        {CLASS_NAMES[lastClass]} plays right here. We’ll also email you the link so
+                        you can finish it later.
                     </Body>
                 </Box>
 
@@ -175,8 +175,8 @@ export function GateDialog({
                         }
                         label={
                             <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                                Send me this class and a few ChessDojo emails about classes and
-                                training. I can unsubscribe anytime. See the{' '}
+                                Send me the class link and a few ChessDojo emails about classes and
+                                training. Unsubscribe in one click. See the{' '}
                                 <Link href='/privacy-policy' target='_blank'>
                                     privacy policy
                                 </Link>
@@ -210,7 +210,7 @@ export function GateDialog({
                     variant='caption'
                     sx={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)' }}
                 >
-                    Free to watch. You don&apos;t need a ChessDojo account.
+                    Free. You don&apos;t need a ChessDojo account.
                 </Typography>
             </Stack>
         </Dialog>

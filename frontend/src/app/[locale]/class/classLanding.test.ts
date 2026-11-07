@@ -6,7 +6,13 @@ import {
     savePendingCheckout,
     takePendingCheckout,
 } from './classLead';
-import { GAME_REVIEW_OFFER, totalValue, WORKSHOPS_OFFER } from './content';
+import {
+    CORE_OFFER,
+    GAME_REVIEW_OFFER,
+    MAX_YEARLY_SAVING,
+    offerForTier,
+    WORKSHOPS_OFFER,
+} from './content';
 
 const validLead = {
     email: 'player@example.com',
@@ -41,10 +47,15 @@ describe('parseAttribution', () => {
     });
 });
 
-describe('offer values', () => {
-    it('adds up to the advertised totals', () => {
-        expect(totalValue(WORKSHOPS_OFFER.items)).toBe(540);
-        expect(totalValue(GAME_REVIEW_OFFER.items)).toBe(750);
+describe('offers', () => {
+    it('shows the biggest yearly saving on the toggle', () => {
+        expect(MAX_YEARLY_SAVING).toBe(240);
+    });
+
+    it('finds the offer for a saved tier', () => {
+        expect(offerForTier(CORE_OFFER.tier)).toBe(CORE_OFFER);
+        expect(offerForTier(GAME_REVIEW_OFFER.tier)).toBe(GAME_REVIEW_OFFER);
+        expect(offerForTier(WORKSHOPS_OFFER.tier)).toBe(WORKSHOPS_OFFER);
     });
 });
 

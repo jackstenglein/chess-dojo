@@ -15,10 +15,10 @@ import { RefObject, Suspense, useEffect, useRef, useState } from 'react';
 import { useOnSubscribe } from '../../(scoreboard)/prices/useOnSubscribe';
 import { savePendingCheckout, takePendingCheckout } from '../classLead';
 import {
-    GAME_REVIEW_OFFER,
+    MAX_YEARLY_SAVING,
     Offer,
+    offerForTier,
     OFFERS,
-    totalValue,
     VALUE_FOOTNOTE,
     WORKSHOPS_OFFER,
 } from '../content';
@@ -81,8 +81,7 @@ function SubscribeBridge({
         resumed.current = true;
         const pending = takePendingCheckout();
         if (pending) {
-            const offer =
-                pending.tier === GAME_REVIEW_OFFER.tier ? GAME_REVIEW_OFFER : WORKSHOPS_OFFER;
+            const offer = offerForTier(pending.tier);
             onSubscribe(pending.tier, pending.interval, {
                 currency: 'USD',
                 value: offer.price[pending.interval],
@@ -93,62 +92,17 @@ function SubscribeBridge({
     return <RequestSnackbar request={request} />;
 }
 
-/** Counts up to the total when it's on screen, including after a plan switch on a phone. */
-function useCountOnView(target: number, durationMs = 1000) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [value, setValue] = useState(target);
-    const previous = useRef(0);
-
-    useEffect(() => {
-        const element = ref.current;
-        if (!element || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            return;
-        }
-        let frame = 0;
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
-                observer.disconnect();
-                const from = previous.current;
-                const start = performance.now();
-                const step = (now: number) => {
-                    const t = Math.min(1, (now - start) / durationMs);
-                    setValue(Math.round(from + (target - from) * (1 - (1 - t) ** 4)));
-                    if (t < 1) {
-                        frame = requestAnimationFrame(step);
-                    } else {
-                        previous.current = target;
-                    }
-                };
-                frame = requestAnimationFrame(step);
-            },
-            { threshold: 0.8 },
-        );
-        observer.observe(element);
-        return () => {
-            observer.disconnect();
-            cancelAnimationFrame(frame);
-        };
-    }, [target, durationMs]);
-
-    return { ref, value };
-}
-
 export function OfferSection() {
     const router = useRouter();
     const { status, user } = useAuth();
-    const [selected, setSelected] = useState<Offer>(GAME_REVIEW_OFFER);
-    const [interval, setInterval] = useState<Interval>('month');
+    const [selected, setSelected] = useState<Offer>(WORKSHOPS_OFFER);
+    const [interval, setInterval] = useState<Interval>('year');
     const [loading, setLoading] = useState(false);
     const subscribeRef = useRef<Subscribe>(null);
 
     const currentTier = getSubscriptionTier(user);
     const isCurrent = currentTier === selected.tier;
-    const value = totalValue(selected.items);
     const price = selected.price[interval];
-    const { ref: totalRef, value: shownValue } = useCountOnView(value);
     const [receiptSeen, setReceiptSeen] = useState(false);
     const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -207,9 +161,9 @@ export function OfferSection() {
             <Section>
                 <Heading
                     center
-                    description='Pick your plan and see everything inside it, added up line by line.'
+                    description='Every plan includes the training plan for your rating. Live classes start with Workshops.'
                 >
-                    Join the Dojo. Here’s what you get.
+                    Pick how closely you want to train with the senseis
                 </Heading>
 
                 <Box
@@ -227,6 +181,7 @@ export function OfferSection() {
                     >
                         {OFFERS.map((offer) => {
                             const active = offer.tier === selected.tier;
+                            const phoneOrder = offer.tier === WORKSHOPS_OFFER.tier ? -1 : 0;
                             return (
                                 <Box
                                     key={offer.tier}
@@ -236,6 +191,7 @@ export function OfferSection() {
                                     aria-checked={active}
                                     onClick={() => setSelected(offer)}
                                     sx={{
+                                        order: { xs: phoneOrder, md: 0 },
                                         p: { xs: 2.5, md: 3 },
                                         font: 'inherit',
                                         textAlign: 'left',
@@ -249,6 +205,25 @@ export function OfferSection() {
                                         transition: `border-color 300ms ${EASE_OUT}, background-color 300ms ${EASE_OUT}`,
                                     }}
                                 >
+                                    {offer.badge && (
+                                        <Typography
+                                            component='span'
+                                            variant='caption'
+                                            sx={{
+                                                display: 'inline-block',
+                                                mb: 1,
+                                                px: 1,
+                                                py: 0.25,
+                                                borderRadius: 1,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.02em',
+                                                color: '#0b0b12',
+                                                bgcolor: offer.accent,
+                                            }}
+                                        >
+                                            {offer.badge}
+                                        </Typography>
+                                    )}
                                     <Stack
                                         direction='row'
                                         sx={{
@@ -284,12 +259,14 @@ export function OfferSection() {
                                     <Body sx={{ mt: 0.75, fontSize: '1.03rem' }}>
                                         {offer.tagline}
                                     </Body>
-                                    <Typography
-                                        variant='body2'
-                                        sx={{ mt: 1, color: offer.accent, fontWeight: 600 }}
-                                    >
-                                        {offer.seats}
-                                    </Typography>
+                                    {offer.seats && (
+                                        <Typography
+                                            variant='body2'
+                                            sx={{ mt: 1, color: offer.accent, fontWeight: 600 }}
+                                        >
+                                            {offer.seats}
+                                        </Typography>
+                                    )}
                                 </Box>
                             );
                         })}
@@ -299,13 +276,14 @@ export function OfferSection() {
                             aria-label='Billing'
                             direction='row'
                             sx={{
+                                order: { xs: -2, md: 0 },
                                 p: 0.5,
                                 gap: 0.5,
                                 borderRadius: 2,
                                 border: `1px solid ${HAIRLINE}`,
                             }}
                         >
-                            {(['month', 'year'] as const).map((option) => (
+                            {(['year', 'month'] as const).map((option) => (
                                 <Box
                                     key={option}
                                     component='button'
@@ -328,7 +306,7 @@ export function OfferSection() {
                                 >
                                     {option === 'month'
                                         ? 'Monthly'
-                                        : `Yearly, save $${yearlySaving}`}
+                                        : `Yearly, save up to $${MAX_YEARLY_SAVING}`}
                                 </Box>
                             ))}
                         </Stack>
@@ -375,57 +353,30 @@ export function OfferSection() {
                                         </Condensed>
                                         <Condensed
                                             sx={{
-                                                fontSize: '1.35rem',
-                                                whiteSpace: 'nowrap',
+                                                fontSize: item.value ? '1.1rem' : '1.35rem',
+                                                textAlign: 'right',
+                                                maxWidth: '45%',
+                                                flexShrink: 0,
                                                 color: item.value ? 'common.white' : '#7FD66B',
                                             }}
                                         >
-                                            {item.value ? `$${item.value}` : 'Included'}
+                                            {item.value ?? 'Included'}
                                         </Condensed>
                                     </Stack>
                                     <Body sx={{ mt: 0.5, fontSize: '0.98rem', pr: { sm: 8 } }}>
                                         {item.description}
                                     </Body>
-                                    {item.details && (
-                                        <Box
-                                            sx={{
-                                                mt: 1,
-                                                display: 'grid',
-                                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                                                columnGap: 3,
-                                            }}
-                                        >
-                                            {item.details.map((detail) => (
-                                                <Stack
-                                                    key={detail.name}
-                                                    direction='row'
-                                                    sx={{
-                                                        justifyContent: 'space-between',
-                                                        gap: 1,
-                                                        color: MUTED,
-                                                        fontSize: '0.88rem',
-                                                        py: 0.2,
-                                                    }}
-                                                >
-                                                    <span>{detail.name}</span>
-                                                    <span>${detail.price}</span>
-                                                </Stack>
-                                            ))}
-                                        </Box>
-                                    )}
                                 </Box>
                             ))}
                         </Box>
 
-                        <Box ref={totalRef} sx={{ px: { xs: 2.5, md: 4 }, py: 2.5 }}>
-                            <Stack
-                                direction='row'
-                                sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}
-                            >
-                                <Condensed sx={{ fontSize: '1.5rem' }}>Total value</Condensed>
-                                <Condensed sx={{ fontSize: '2rem' }}>${shownValue}</Condensed>
-                            </Stack>
-                        </Box>
+                        {selected.note && (
+                            <Box sx={{ px: { xs: 2.5, md: 4 }, py: 2.5 }}>
+                                <Body sx={{ fontSize: '1.02rem', color: 'common.white' }}>
+                                    {selected.note}
+                                </Body>
+                            </Box>
+                        )}
 
                         <Box
                             sx={{
@@ -464,13 +415,10 @@ export function OfferSection() {
                                     </Box>
                                 </Typography>
                             </Box>
-                            <Condensed sx={{ mt: 0.5, fontSize: '1.4rem' }}>
-                                ${value - price} less than the total value
-                            </Condensed>
                             <Body sx={{ mt: 0.5, fontSize: '1rem' }}>
                                 {interval === 'year'
-                                    ? `Billed $${(price * 12).toLocaleString('en-US')} a year. You save $${yearlySaving}.`
-                                    : `Or $${selected.price.year}/month billed yearly, saving $${yearlySaving}.`}
+                                    ? `Billed $${(price * 12).toLocaleString('en-US')} once a year. You save $${yearlySaving}.`
+                                    : `Billed monthly. Or $${selected.price.year}/month billed yearly, saving $${yearlySaving}.`}
                             </Body>
                             <Button
                                 fullWidth
@@ -496,7 +444,8 @@ export function OfferSection() {
                             >
                                 <Lock sx={{ fontSize: 16 }} />
                                 <Typography variant='body2'>
-                                    Secure checkout with Stripe. Cancel anytime from your profile.
+                                    Secure checkout with Stripe. Cancel anytime from your profile
+                                    and keep access until the period ends.
                                 </Typography>
                             </Stack>
                         </Box>

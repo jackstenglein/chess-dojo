@@ -82,7 +82,8 @@ describe('OfferSection', () => {
     it('sends a logged-out buyer to sign up and remembers the plan', () => {
         render(<OfferSection />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Join Game & Profile Review' }));
+        fireEvent.click(screen.getByRole('radio', { name: /Game & Profile Review/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Join a review team' }));
 
         expect(mocks.push).toHaveBeenCalledWith('/signup?redirectUri=%2Fclass');
         expect(mocks.onSubscribe).not.toHaveBeenCalled();
@@ -110,7 +111,7 @@ describe('OfferSection', () => {
         mocks.auth = { status: 'Loading', user: undefined };
         render(<OfferSection />);
 
-        const button = screen.getByRole('button', { name: 'Join Game & Profile Review' });
+        const button = screen.getByRole('button', { name: 'Join this week’s live classes' });
         expect((button as HTMLButtonElement).disabled).toBe(true);
     });
 });
@@ -133,7 +134,7 @@ describe('GateDialog', () => {
         fillAndSubmit('nope', false);
 
         expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
-        expect(screen.getByText('Tick this box so we can send you the class.')).toBeTruthy();
+        expect(screen.getByText('Tick the box to get the class and our emails.')).toBeTruthy();
         expect(fetchMock).not.toHaveBeenCalled();
         expect(onUnlocked).not.toHaveBeenCalled();
     });
