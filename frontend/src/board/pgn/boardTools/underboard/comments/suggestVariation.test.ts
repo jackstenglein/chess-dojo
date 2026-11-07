@@ -3,7 +3,13 @@ import { Game, GameResult } from '@/database/game';
 import { User } from '@/database/user';
 import { Chess, Move } from '@jackstenglein/chess';
 import { describe, expect, it, vi } from 'vitest';
-import { getUnsavedSuggestedVariationRoots, saveAllSuggestedVariations } from './suggestVariation';
+import {
+    getUnsavedSuggestedVariationRoots,
+    isUnsavedVariation,
+    markSuggestedVariationDirty,
+    saveAllSuggestedVariations,
+    saveSuggestedVariation,
+} from './suggestVariation';
 
 const user = {
     username: 'dojo-user',
@@ -217,6 +223,66 @@ describe('saveAllSuggestedVariations', () => {
         expect(api.updateComment).toHaveBeenCalledTimes(1);
         expect(result.savedCount).toBe(1);
         expect(result.game).toBe(updatedGame);
+        expect(nf3.commentDiag?.dojoComment).toBe(`${user.username},${user.displayName},comment-1`);
+    });
+});
+
+describe('saving annotations on an existing suggested variation', () => {
+    it('marks the variation unsaved and updates its existing comment with NAGs', async () => {
+        const chess = new Chess({ pgn: '[Event "?"]\n\n1. e4 e5 *' });
+        const e4 = chess.history()[0];
+        const c5 = requireMove(chess.move('c5', { previousMove: e4, skipSeek: true }));
+        const nf3 = requireMove(chess.move('Nf3', { previousMove: c5, skipSeek: true }));
+        markSaved(chess, c5, 'comment-1');
+        markSaved(chess, nf3, 'comment-1');
+        chess.setNags(['$1', '$13'], nf3);
+
+        markSuggestedVariationDirty(user, chess, nf3);
+
+        expect(isUnsavedVariation(c5)).toBe(true);
+        expect(isUnsavedVariation(nf3)).toBe(true);
+        expect(getUnsavedSuggestedVariationRoots(user, chess)).toEqual([c5]);
+
+        const updatedGame = makeGame();
+        const game = makeGame({
+            positionComments: {
+                [chess.normalizedFen(e4)]: {
+                    'comment-1': {
+                        id: 'comment-1',
+                        fen: chess.normalizedFen(e4),
+                        ply: e4.ply,
+                        san: e4.san,
+                        owner: {
+                            username: user.username,
+                            displayName: user.displayName,
+                            cohort: user.dojoCohort,
+                            previousCohort: user.previousCohort,
+                        },
+                        createdAt: '2026-06-01T00:00:00Z',
+                        updatedAt: '2026-06-01T00:00:00Z',
+                        content: '',
+                        parentIds: '',
+                        replies: {},
+                        suggestedVariation: '1... c5 *',
+                    },
+                },
+            },
+        });
+        const api = {
+            createComment: vi.fn(),
+            updateComment: vi.fn().mockResolvedValue({ data: updatedGame }),
+        } as unknown as GameApiContextType;
+
+        await saveSuggestedVariation(user, game, api, chess, nf3);
+
+        expect(api.createComment).not.toHaveBeenCalled();
+        expect(api.updateComment).toHaveBeenCalledTimes(1);
+        const updateRequest = vi.mocked(api.updateComment).mock.calls[0]?.[0];
+        expect(updateRequest?.id).toBe('comment-1');
+        expect(updateRequest?.suggestedVariation).toContain('2. Nf3 $1 $13');
+        expect(isUnsavedVariation(c5)).toBe(false);
+        expect(isUnsavedVariation(nf3)).toBe(false);
+        expect(c5.commentDiag?.dojoComment).toBe(`${user.username},${user.displayName},comment-1`);
         expect(nf3.commentDiag?.dojoComment).toBe(`${user.username},${user.displayName},comment-1`);
     });
 });
