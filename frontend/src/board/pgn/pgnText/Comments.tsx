@@ -2,6 +2,7 @@ import { PositionComment } from '@/database/game';
 import { CommentType, Event, EventType, Move } from '@jackstenglein/chess';
 import { Divider } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { commentTarget, InlineCommentInput, useInlineComment } from '../InlineCommentEditor';
 import { useChess } from '../PgnBoard';
 import InlinePositionComments from './InlinePositionComments';
 import Markdown from './Markdown';
@@ -15,6 +16,9 @@ interface CommentsProps {
 
 export function Comments({ move, type, inline, inlineComments }: CommentsProps) {
     const { chess } = useChess();
+    const { editing } = useInlineComment();
+    const target = chess && editing ? commentTarget(chess, editing) : null;
+    const isEditing = target?.move === move && target?.type === (type ?? CommentType.After);
     const [, setForceRender] = useState(0);
 
     useEffect(() => {
@@ -34,6 +38,8 @@ export function Comments({ move, type, inline, inlineComments }: CommentsProps) 
     }, [chess, move, setForceRender]);
 
     const text = type === CommentType.Before ? move.commentMove : move.commentAfter;
+
+    if (isEditing) return <InlineCommentInput key={`${editing?.move?.ply}-${editing?.type}`} />;
 
     if (!text && inlineComments.length === 0) {
         return null;

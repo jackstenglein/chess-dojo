@@ -83,7 +83,7 @@ for (const width of [2463, 1400, 390]) {
             expect(rightToggle.x + rightToggle.width).toBeLessThanOrEqual(
                 boardRect.x + boardRect.width + 1,
             );
-            if (originalWidth >= 480) {
+            if (originalWidth >= 360) {
                 expect(
                     Math.abs(
                         nextButton.y + nextButton.height / 2 - leftToggle.y - leftToggle.height / 2,
@@ -269,28 +269,52 @@ for (const viewport of [
     }
 }
 
-test('restores editor focus and draft through the existing shortcut', async ({ page }) => {
+test('restores inline comment focus and draft through the existing shortcut', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 1000 });
     await page.goto('/games/analysis');
-    await page.getByTestId('underboard-button-editor').click();
-    const editor = page
-        .getByTestId('underboard-tab-content')
-        .getByRole('textbox', { name: 'Comments', exact: true });
-    await editor.fill('Workshop notes in progress');
-    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
-    await expect(editor).toBeHidden();
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
     await page.keyboard.press('e');
-    await expect(editor).toBeVisible();
+    const editor = page.getByRole('textbox', { name: 'Text after move', exact: true });
+    await expect(editor).toBeFocused();
+    await editor.fill('Workshop notes in progress');
+    await page.keyboard.press('Enter');
+    await expect(editor).toHaveCount(0);
+    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
+    await page.keyboard.press('e');
     await expect(editor).toBeFocused();
     await expect(editor).toHaveValue('Workshop notes in progress');
+    await page.keyboard.press('Enter');
     await page.getByRole('button', { name: 'Hide right panel', exact: true }).click();
     await page.setViewportSize({ width: 700, height: 900 });
     await page.getByRole('button', { name: 'Show right panel', exact: true }).click();
     await expect(page.getByTestId('right-underboard-tab-content')).toBeVisible();
+    await page.keyboard.press('e');
+    await expect(editor).toBeFocused();
     await expect(editor).toHaveValue('Workshop notes in progress');
-    await page.getByRole('button', { name: 'Hide left panel', exact: true }).click();
+    await page.keyboard.press('Escape');
     await page.reload();
     await expect(page.getByRole('button', { name: 'Hide left panel', exact: true })).toBeVisible();
+});
+
+test('inserts a null move after the right-clicked move, not the selected move', async ({
+    page,
+}) => {
+    await page.goto('/games/analysis');
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
+    await page.getByRole('button', { name: 'next move', exact: true }).click();
+    const notation = page.getByTestId('right-underboard-tab-content');
+    const firstMove = notation
+        .getByTestId('pgn-text-move-button')
+        .filter({ hasText: 'e4' })
+        .first();
+    await firstMove.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Insert Null Move', exact: true }).click();
+    const selected = notation.locator('[data-current-move="true"]');
+    await expect(selected).toContainText('Z0');
+    await selected.click({ button: 'right' });
+    await expect(
+        page.getByRole('menuitem', { name: 'Insert Null Move', exact: true }),
+    ).toBeDisabled();
 });
 
 test('keeps puzzle boards unchanged', async ({ page }) => {
@@ -319,3 +343,29 @@ test('keeps puzzle boards unchanged', async ({ page }) => {
         page.getByRole('button', { name: /(?:Hide|Show) (?:left|right) panel/ }),
     ).toHaveCount(0);
 });
+
+for (const san of ['d4', 'd5']) {
+    test(`immediately displays a forced nested variation at ${san}`, async ({ page }) => {
+        await page.addInitScript(() => {
+            sessionStorage.setItem(
+                'useSaveGame:stageCreateGame',
+                JSON.stringify({
+                    pgnText: '1. e4 (1. d4 d5 2. c4) e5 *',
+                }),
+            );
+        });
+        await page.goto('/games/analysis');
+        const notation = page.getByTestId('right-underboard-tab-content');
+        const moves = notation.getByTestId('pgn-text-move-button').filter({ hasText: san });
+        await expect(moves).toHaveCount(1);
+        await moves.first().click({ button: 'right' });
+        await page.getByRole('menuitem', { name: 'Force Variation', exact: true }).click();
+        await expect(moves).toHaveCount(2);
+        const first = await moves.nth(0).boundingBox();
+        const second = await moves.nth(1).boundingBox();
+        if (!first || !second) {
+            throw new Error(`Expected both ${san} move buttons to have bounding boxes`);
+        }
+        expect(second.y).toBeGreaterThan(first.y + 10);
+    });
+}

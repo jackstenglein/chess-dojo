@@ -5,7 +5,7 @@ import { useReconcile } from '@/board/Board';
 import useGame from '@/context/useGame';
 import { HIGHLIGHT_ENGINE_LINES } from '@/stockfish/engine/engine';
 import { StockfishIcon } from '@/style/ChessIcons';
-import { Chess, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
+import { Chess, CommentType, Event, EventType, Move, TimeControl } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Backspace, Chat, Help, KeyboardReturn, Merge } from '@mui/icons-material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -34,11 +34,14 @@ import {
     saveSuggestedVariation,
 } from '../boardTools/underboard/comments/suggestVariation';
 import { DeletePrompt, useDeletePrompt } from '../boardTools/underboard/DeletePrompt';
+import { getNullMoveStatus } from '../boardTools/underboard/MoveControls';
 import { ShowMoveTimesInPgn } from '../boardTools/underboard/settings/ViewerSettings';
 import { MergeLineDialog } from '../boardTools/underboard/share/MergeLineDialog';
+import { useInlineComment } from '../InlineCommentEditor';
 import { compareNags, getStandardNag, nags } from '../Nag';
 import { nagIcons } from '../NagIcon';
 import { useChess } from '../PgnBoard';
+import { forceVariation } from '../variationEditing';
 
 export function getTextColor(move: Move, inline?: boolean, highlightEngineLines?: boolean): string {
     if (highlightEngineLines && move.commentDiag?.dojoEngine) {
@@ -84,6 +87,8 @@ export interface ButtonProps {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+    const { start: startComment } = useInlineComment();
+    const { isOwner } = useGame();
     const { chess } = useChess();
     const { isCurrentMove, inline, move, onClickMove, onRightClick, text, time } = props;
     const { slots } = useChess();
@@ -132,6 +137,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     return (
         <MuiButton
             data-testid='pgn-text-move-button'
+            data-current-move={isCurrentMove ? 'true' : undefined}
             ref={ref}
             variant={isCurrentMove ? 'contained' : 'text'}
             disableElevation
@@ -158,6 +164,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                 display: inline ? 'inline-block' : undefined,
             }}
             onClick={() => onClickMove(move)}
+            onDoubleClick={(event) => {
+                if (!isOwner) return;
+                event.preventDefault();
+                event.stopPropagation();
+                startComment(CommentType.After);
+            }}
             onContextMenu={onRightClick}
             {...longPress()}
         >
@@ -225,7 +237,9 @@ interface MoveMenuProps {
 
 const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     const { chess, config } = useChess();
-    const { game, onUpdateGame } = useGame();
+    const { game, onUpdateGame, isOwner } = useGame();
+    const reconcile = useReconcile();
+    const underboardT = useTranslations('analysisBoard.underboard');
     const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess, onClose);
     const [showMerge, setShowMerge] = useState(false);
     const { user } = useAuth();
@@ -238,8 +252,9 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
         return null;
     }
 
+    const nullMoveStatus = getNullMoveStatus(chess, underboardT, move);
     const isInMainline = chess.isInMainline(move);
-    const canPromote = chess.canPromoteVariation(move);
+    const canPromote = chess.canPromoteVariation(move, true);
     const canDeleteBefore = config?.allowDeleteBefore && isInMainline && !!move.previous;
 
     const onMakeMainline = () => {
@@ -248,12 +263,13 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
     };
 
     const onForceVariation = () => {
-        chess.forceVariation(move, { skipSeek: true });
+        forceVariation(chess, move);
+        reconcile();
         onClose();
     };
 
     const onPromote = () => {
-        chess.promoteVariation(move);
+        chess.promoteVariation(move, !chess.canPromoteVariation(move));
         onClose();
     };
 
@@ -287,6 +303,21 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
             <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={onClose}>
                 <RequestSnackbar request={saveVariationRequest} />
                 <MenuList>
+                    {!chess.disableNullMoves && (isOwner || config?.allowMoveDeletion) && (
+                        <MenuItem
+                            aria-label='Insert Null Move'
+                            disabled={nullMoveStatus.disabled}
+                            title={nullMoveStatus.tooltip}
+                            onClick={() => {
+                                chess.move('Z0', { previousMove: move });
+                                reconcile();
+                                onClose();
+                            }}
+                        >
+                            <ListItemIcon>∅</ListItemIcon>
+                            <ListItemText>Insert Null Move</ListItemText>
+                        </MenuItem>
+                    )}
                     {config?.allowMoveDeletion && [
                         <MenuItem key='mainline' disabled={isInMainline} onClick={onMakeMainline}>
                             <ListItemIcon>
@@ -295,11 +326,7 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                             <ListItemText>{t('makeMainLine')}</ListItemText>
                         </MenuItem>,
 
-                        <MenuItem
-                            key='force-variation'
-                            disabled={!isInMainline}
-                            onClick={onForceVariation}
-                        >
+                        <MenuItem key='force-variation' onClick={onForceVariation}>
                             <ListItemIcon>
                                 <KeyboardReturn sx={{ transform: 'scale(-1, 1)' }} />
                             </ListItemIcon>

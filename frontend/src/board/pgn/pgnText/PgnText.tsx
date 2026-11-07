@@ -137,6 +137,7 @@ export const ResizablePgnText: React.FC<ResizablePgnTextProps> = (props) => {
 
     return (
         <Resizable
+            axis='x'
             width={resizeData.width}
             height={resizeData.height}
             minConstraints={[resizeData.minWidth, resizeData.minHeight]}
