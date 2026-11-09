@@ -209,7 +209,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 tokens: authSession.tokens,
             });
         } catch (err) {
-            logger.error?.('Failed to get user: ', err);
+            // A logged-out visitor is the normal case, not an error worth reporting.
+            if ((err as { name?: string } | undefined)?.name !== 'UserUnAuthenticatedException') {
+                logger.error?.('Failed to get user: ', err);
+            }
             setStatus(AuthStatus.Unauthenticated);
         }
     }, [handleCognitoResponse]);

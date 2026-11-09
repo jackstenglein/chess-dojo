@@ -17,6 +17,7 @@ applications:
             - pwd
             # Server-side code only sees the Amplify variables written to .env.production.
             - if [ -n "$LICHESS_API_TOKEN" ]; then printf '\nLICHESS_API_TOKEN=%s\n' "$LICHESS_API_TOKEN" >> .env.production; fi
+            - if [ -n "$CLASS_LEAD_WEBHOOK_URL" ]; then printf '\nCLASS_LEAD_WEBHOOK_URL=%s\n' "$CLASS_LEAD_WEBHOOK_URL" >> .env.production; fi
             - pnpm build:$AMPLIFY_ENV
       artifacts:
         baseDirectory: .next
