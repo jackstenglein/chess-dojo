@@ -130,6 +130,8 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Pinned",
+                "close": "Close",
                 "cancel": "Cancel",
                 "save": "Save",
                 "update": "Update",
@@ -149,17 +151,43 @@
                 "commentsPlaceholder": "Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "Only numeric characters are accepted",
                 "mustBeInteger": "This field must be an integer",
-                "fieldRequired": "This field is required"
+                "fieldRequired": "This field is required",
+                "moreActions": "More actions"
             },
             "inputSlider": {
                 "decrement": "Decrement",
                 "increment": "Increment",
-                "progressCount": "Progress count",
+                "progressCount": "Progress",
                 "count": "Count"
+            },
+            "verbs": {
+                "read": "Read",
+                "watch": "Watch",
+                "solve": "Solve",
+                "study": "Study",
+                "play": "Play",
+                "spar": "Spar",
+                "annotate": "Annotate",
+                "review": "Review",
+                "guide": "Read guide"
+            },
+            "quickLog": {
+                "logTraining": "Log training",
+                "logTooltip": "Log progress and time for this task",
+                "undo": "Undo"
             },
             "daily": {
                 "today": "Today",
-                "progressCompleted": "{current} / {total} {suffix} completed"
+                "summary": "{done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "Done for today · {worked} logged",
+                "goalMet": "Time goal met",
+                "skippedHeading": "Skipped this week ({count})",
+                "restore": "Restore {name}",
+                "skippedToast": "Skipped {name} for the rest of the week",
+                "swapTooltip": "Swap for another {category} task",
+                "swapNone": "No other {category} tasks to swap in",
+                "swapHeading": "Swap for another {category} task",
+                "swapped": "Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "This Week",
@@ -171,7 +199,15 @@
                 "Fri": "Fri",
                 "Sat": "Sat",
                 "activeOnlyTooltip": "Only show tasks you have updated this week",
-                "activeOnlyLabel": "Active Only"
+                "activeOnlyLabel": "Active Only",
+                "empty": "Nothing planned this week.",
+                "cellPlanned": "Planned: {goal}",
+                "cellPartial": "{worked} of {goal} so far",
+                "cellDone": "Done: {worked} of {goal}",
+                "cellMissed": "Missed: {worked} of {goal}",
+                "cellExtra": "Extra: {worked} logged, not planned",
+                "restDay": "Rest day",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Full Training Plan",
@@ -186,16 +222,12 @@
                 "addCustomTask": "Add Custom Task",
                 "unlockTasks": "{count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "View Prices",
-                "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "It's time for you to renew this task!",
                 "renewLabel": "Renew",
                 "minimumReachedTooltip": "You've reached the minimum, keep going!",
                 "minimumReachedLabel": "Minimum Reached",
                 "checkboxAriaLabel": "Checkbox {name}",
-                "updateAriaLabel": "Update {name}",
-                "graduateName": "Graduate from {cohort}",
-                "graduateDescription": "Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "Update {name}"
             },
             "graduation": {
                 "title": "Graduate from {cohort}?",
@@ -289,8 +321,14 @@
                 "deleteAriaLabel": "delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "Total {before} → {after}",
+                "timeSpent": "Time spent",
+                "removeTime": "Remove 5 minutes",
+                "minutesShort": "min",
+                "lastCompleted": "Last {unit} completed",
+                "doneOf": "{done} of {total} done",
+                "addTime": "Add 5 minutes",
                 "markComplete": "Mark as Completed?",
-                "totalTime": "Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -312,12 +350,11 @@
                 "countRequired": "This field is required",
                 "countNumeric": "Only numeric characters are accepted",
                 "countMinOne": "At least one game is required",
-                "deleteEntry": "Delete"
+                "deleteEntry": "Delete",
+                "scheduleAction": "Schedule"
             },
             "taskDialog": {
-                "historyTitle": "{name} History",
-                "addTimeTitle": "Add time to {name}?",
-                "updateTitle": "Update {name}?",
+                "historyCaption": "History",
                 "locked": "Locked",
                 "completed": "Completed",
                 "editTask": "Edit Task",
@@ -348,7 +385,7 @@
                 "taskLockedUntil": "This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini Scoreboard",
+                "heading": "Scoreboard",
                 "type": "Type",
                 "dojoScore": "Dojo Score",
                 "trainingTime": "Training Time",
@@ -407,15 +444,16 @@
             "goal": "Goal",
             "goalPoints": "{value} {value, plural, =1 {point} other {points}}",
             "goalHours": "{value} {value, plural, =1 {hour} other {hours}}",
-            "popOutView": "Pop out view",
             "classicalGames": "Classical Games (Past Year)",
             "nextGraduation": "Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "All Tasks",
+            "progressTitle": "Progress",
             "metrics": "Metrics",
             "tacticsRating": "Tactics Rating",
             "tacticsRatingTooltip": "For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "close",
             "pastYear": "in the past year",
+            "timeManagement": "Time Management",
             "chip": {
                 "coach": "Coach",
                 "coachTooltip": "This member is a Dojo coach",
@@ -462,6 +500,19 @@
                 "noActivity": "No recent activity from your follows or cohort."
             },
             "heatmap": {
+                "yearlyTotals": "Yearly totals",
+                "year": "Year",
+                "total": "Total",
+                "loadingHistory": "Loading your training history…",
+                "historyError": "Couldn't load your training history.",
+                "noTimeLogged": "No time logged yet.",
+                "lastTwelveMonths": "Last 12 Months: {total}",
+                "legend": "What the colors mean",
+                "settings": "Heatmap settings",
+                "title": "Heatmap",
+                "dailyGoal": "Daily goal {time}",
+                "nothingLogged": "Nothing logged this day",
+                "dayTotal": "Total {time}",
                 "weekdaySun": "Sun",
                 "weekdayMon": "Mon",
                 "weekdayTue": "Tue",

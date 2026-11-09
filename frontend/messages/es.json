@@ -130,6 +130,8 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "Fijada",
+                "close": "Cerrar",
                 "cancel": "Cancelar",
                 "save": "Guardar",
                 "update": "Actualizar",
@@ -149,17 +151,43 @@
                 "commentsPlaceholder": "Comentarios opcionales sobre tu progreso o sobre la tarea en sí. Visibles para los demás en Novedades.",
                 "mustBeNumeric": "Solo se aceptan caracteres numéricos",
                 "mustBeInteger": "Este campo debe ser un número entero",
-                "fieldRequired": "Este campo es obligatorio"
+                "fieldRequired": "Este campo es obligatorio",
+                "moreActions": "Más acciones"
             },
             "inputSlider": {
                 "decrement": "Disminuir",
                 "increment": "Aumentar",
-                "progressCount": "Contador de progreso",
+                "progressCount": "Progreso",
                 "count": "Cantidad"
+            },
+            "verbs": {
+                "read": "Leer",
+                "watch": "Ver",
+                "solve": "Resolver",
+                "study": "Estudiar",
+                "play": "Jugar",
+                "spar": "Sparring",
+                "annotate": "Anotar",
+                "review": "Revisar",
+                "guide": "Leer guía"
+            },
+            "quickLog": {
+                "logTraining": "Registrar entrenamiento",
+                "logTooltip": "Registrar progreso y tiempo para esta tarea",
+                "undo": "Deshacer"
             },
             "daily": {
                 "today": "Hoy",
-                "progressCompleted": "Completado: {current} / {total} {suffix}"
+                "summary": "{done} de {total} tareas hechas · {worked} de {goal}",
+                "allDone": "Terminado por hoy · {worked} registrados",
+                "goalMet": "Meta de tiempo cumplida",
+                "skippedHeading": "Omitidas esta semana ({count})",
+                "restore": "Restaurar {name}",
+                "skippedToast": "{name} omitida el resto de la semana",
+                "swapTooltip": "Cambiar por otra tarea de {category}",
+                "swapNone": "No hay otras tareas de {category} para cambiar",
+                "swapHeading": "Cambiar por otra tarea de {category}",
+                "swapped": "{from} cambiada por {to}"
             },
             "weekly": {
                 "thisWeek": "Esta semana",
@@ -171,7 +199,15 @@
                 "Fri": "Vie",
                 "Sat": "Sáb",
                 "activeOnlyTooltip": "Mostrar solo las tareas que has actualizado esta semana",
-                "activeOnlyLabel": "Solo activas"
+                "activeOnlyLabel": "Solo activas",
+                "empty": "No hay nada planificado esta semana.",
+                "cellPlanned": "Planificado: {goal}",
+                "cellPartial": "{worked} de {goal} hasta ahora",
+                "cellDone": "Hecho: {worked} de {goal}",
+                "cellMissed": "Perdido: {worked} de {goal}",
+                "cellExtra": "Extra: {worked} registrados, no planificado",
+                "restDay": "Día de descanso",
+                "partialTime": "{worked} / {goal}"
             },
             "full": {
                 "heading": "Plan de entrenamiento completo",
@@ -186,16 +222,12 @@
                 "addCustomTask": "Añadir tarea personalizada",
                 "unlockTasks": "{count, plural, =1 {Desbloquea # tarea más actualizando a una cuenta completa} other {Desbloquea # tareas más actualizando a una cuenta completa}}",
                 "viewPrices": "Ver precios",
-                "nextGraduation": "Próxima graduación: de {cohort} a {nextCohort}",
-                "reachRatingToUnlock": "Alcanza el rating requerido de tu cohorte para desbloquear la graduación",
                 "renewTooltip": "¡Es hora de renovar esta tarea!",
                 "renewLabel": "Renovar",
                 "minimumReachedTooltip": "¡Has alcanzado el mínimo, sigue así!",
                 "minimumReachedLabel": "Mínimo alcanzado",
                 "checkboxAriaLabel": "Casilla de verificación {name}",
-                "updateAriaLabel": "Actualizar {name}",
-                "graduateName": "Graduarse de {cohort}",
-                "graduateDescription": "Pasa a la siguiente cohorte y aparece en el programa de graduación."
+                "updateAriaLabel": "Actualizar {name}"
             },
             "graduation": {
                 "title": "¿Graduarte de {cohort}?",
@@ -289,8 +321,14 @@
                 "deleteAriaLabel": "eliminar"
             },
             "progressUpdater": {
+                "totalTimeChange": "Total {before} → {after}",
+                "timeSpent": "Tiempo dedicado",
+                "removeTime": "Restar 5 minutos",
+                "minutesShort": "min",
+                "lastCompleted": "Último {unit} completado",
+                "doneOf": "{done} de {total} hechos",
+                "addTime": "Añadir 5 minutos",
                 "markComplete": "¿Marcar como completada?",
-                "totalTime": "Tiempo total: {hours}h {minutes}m",
                 "largeTimeWarning": "¡Estás añadiendo mucho tiempo! Revisa bien los datos antes de guardar."
             },
             "scheduleGame": {
@@ -312,12 +350,11 @@
                 "countRequired": "Este campo es obligatorio",
                 "countNumeric": "Solo se aceptan caracteres numéricos",
                 "countMinOne": "Se requiere al menos una partida",
-                "deleteEntry": "Eliminar"
+                "deleteEntry": "Eliminar",
+                "scheduleAction": "Programar"
             },
             "taskDialog": {
-                "historyTitle": "Historial de {name}",
-                "addTimeTitle": "¿Añadir tiempo a {name}?",
-                "updateTitle": "¿Actualizar {name}?",
+                "historyCaption": "Historial",
                 "locked": "Bloqueada",
                 "completed": "Completada",
                 "editTask": "Editar tarea",
@@ -348,7 +385,7 @@
                 "taskLockedUntil": "Esta tarea está bloqueada hasta que completes {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "Mini tabla de clasificación",
+                "heading": "Tabla de clasificación",
                 "type": "Tipo",
                 "dojoScore": "Puntuación Dojo",
                 "trainingTime": "Tiempo de entrenamiento",
@@ -407,15 +444,16 @@
             "goal": "Objetivo",
             "goalPoints": "{value} {value, plural, =1 {punto} other {puntos}}",
             "goalHours": "{value} {value, plural, =1 {hora} other {horas}}",
-            "popOutView": "Abrir vista emergente",
             "classicalGames": "Partidas clásicas (último año)",
             "nextGraduation": "Próxima graduación: de {cohort} a {nextCohort}",
             "allTasks": "Todas las tareas",
+            "progressTitle": "Progreso",
             "metrics": "Métricas",
             "tacticsRating": "Rating de táctica",
             "tacticsRatingTooltip": "Para sub-1700, es una combinación del progreso en los mates de Polgar, Puzzle Rush 5 min y Puzzle Rush Survival. Para 1700-2100, es una combinación de los mates de Polgar, Puzzle Rush Survival y la prueba de táctica del Dojo. Para 2100+, se basa únicamente en la prueba de táctica del Dojo.",
             "close": "cerrar",
             "pastYear": "en el último año",
+            "timeManagement": "Gestión del tiempo",
             "chip": {
                 "coach": "Entrenador",
                 "coachTooltip": "Este miembro es entrenador del Dojo",
@@ -462,6 +500,19 @@
                 "noActivity": "No hay actividad reciente de las personas que sigues ni de tu cohorte."
             },
             "heatmap": {
+                "yearlyTotals": "Totales por año",
+                "year": "Año",
+                "total": "Total",
+                "loadingHistory": "Cargando tu historial de entrenamiento…",
+                "historyError": "No se pudo cargar tu historial de entrenamiento.",
+                "noTimeLogged": "Aún no hay tiempo registrado.",
+                "lastTwelveMonths": "Últimos 12 meses: {total}",
+                "legend": "Qué significan los colores",
+                "settings": "Ajustes del mapa de calor",
+                "title": "Mapa de calor",
+                "dailyGoal": "Meta diaria {time}",
+                "nothingLogged": "Nada registrado este día",
+                "dayTotal": "Total {time}",
                 "weekdaySun": "Dom",
                 "weekdayMon": "Lun",
                 "weekdayTue": "Mar",

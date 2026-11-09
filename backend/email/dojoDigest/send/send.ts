@@ -218,7 +218,7 @@ async function sendEmail(address: string, html: string, subject: string) {
             Destination: {
                 ToAddresses: [address],
             },
-            FromEmailAddress: 'ChessDojo Digest <digest@mail.chessdojo.club>',
+            FromEmailAddress: 'ChessDojo Digest <digest@chessdojo.club>',
             Content: {
                 Simple: {
                     Subject: { Data: subject },
@@ -230,7 +230,7 @@ async function sendEmail(address: string, html: string, subject: string) {
                         },
                         {
                             Name: 'List-Unsubscribe',
-                            Value: `<https://g4shdaq6ug.execute-api.us-east-1.amazonaws.com/public/dojodigest/unsubscribe?email=${address}>`,
+                            Value: `<https://api.chessdojo.club/public/dojodigest/unsubscribe?email=${encodeURIComponent(address)}>`,
                         },
                     ],
                 },

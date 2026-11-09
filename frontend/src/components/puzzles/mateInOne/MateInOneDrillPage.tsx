@@ -24,14 +24,17 @@ import {
     Button,
     CircularProgress,
     Container,
+    MenuItem,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { computeSessionStats, isCorrectAnswer } from './mateInOneDrillUtils';
+import practicePuzzles from './practicePuzzles.json';
 
 type DrillState = 'loading' | 'ready' | 'in_progress' | 'block_complete' | 'paused';
+type PuzzleSet = '3' | '4' | 'rated';
 
 /** A puzzle with its pre-computed solution and display data. */
 interface PuzzleWithSolution {
@@ -42,7 +45,7 @@ interface PuzzleWithSolution {
     correctFrom: Key;
     /** The correct move's to square. */
     correctTo: Key;
-    /** The FEN after the setup move (the position the user must solve). */
+    /** The position to solve, after a setup move for Lichess puzzles only. */
     fenAfterSetup: string;
     /** 'White' or 'Black', the side that delivers mate. */
     sideToMove: string;
@@ -60,19 +63,26 @@ interface BlockSummary {
 }
 
 /**
- * Applies the setup move from a puzzle and computes display data for it.
+ * Applies the setup move, if present, and computes display data for a puzzle.
  *
- * @param puzzle - The raw puzzle from the API.
+ * @param puzzle - A puzzle from the API or a generated practice set.
+ * @param hasSetupMove - Whether the puzzle includes a Lichess setup move.
  * @returns The puzzle enriched with solution info and display strings.
  */
-function computeSolutionFromPuzzle(puzzle: MateInOnePuzzle): PuzzleWithSolution {
+function computeSolutionFromPuzzle(
+    puzzle: MateInOnePuzzle,
+    hasSetupMove = true,
+): PuzzleWithSolution {
     const chess = new Chess({ fen: puzzle.fen });
-    chess.move(puzzle.moves[0]);
+    if (hasSetupMove && !chess.move(puzzle.moves[0])) {
+        throw new Error(`Invalid setup move for puzzle ${puzzle.id}`);
+    }
     const fenAfterSetup = chess.fen();
     const sideToMove = chess.turn() === 'w' ? 'White' : 'Black';
-    const moveResult = chess.move(puzzle.moves[1]);
-    if (!moveResult) {
-        throw new Error(`Invalid mating move for puzzle ${puzzle.id}: ${puzzle.moves[1]}`);
+    const matingMove = puzzle.moves[hasSetupMove ? 1 : 0];
+    const moveResult = chess.move(matingMove);
+    if (!moveResult || !chess.isCheckmate()) {
+        throw new Error(`Invalid mating move for puzzle ${puzzle.id}: ${matingMove}`);
     }
     const correctSan = moveResult.san;
     return {
@@ -89,6 +99,7 @@ function computeSolutionFromPuzzle(puzzle: MateInOnePuzzle): PuzzleWithSolution 
 /** Root component: requires authentication. */
 export function MateInOneDrillPage() {
     const { user, status } = useAuth();
+    const [puzzleSet, setPuzzleSet] = useState<PuzzleSet>('3');
 
     if (status === AuthStatus.Loading) {
         return <LoadingPage />;
@@ -97,12 +108,21 @@ export function MateInOneDrillPage() {
         return <NotFoundPage />;
     }
 
-    return <MateInOneDrill />;
+    return (
+        <MateInOneDrill key={puzzleSet} puzzleSet={puzzleSet} onPuzzleSetChange={setPuzzleSet} />
+    );
 }
 
 /** Inner component: manages the full drill lifecycle. */
-function MateInOneDrill() {
+function MateInOneDrill({
+    puzzleSet,
+    onPuzzleSetChange,
+}: {
+    puzzleSet: PuzzleSet;
+    onPuzzleSetChange: (value: PuzzleSet) => void;
+}) {
     const { user, updateUser } = useAuth();
+    const isRated = puzzleSet === 'rated';
     const submitRequest = useRequest();
     const [drillState, setDrillState] = useState<DrillState>('loading');
     const [currentPuzzle, setCurrentPuzzle] = useState<PuzzleWithSolution | null>(null);
@@ -117,6 +137,7 @@ function MateInOneDrill() {
     const [submitting, setSubmitting] = useState(false);
 
     const attemptsRef = useRef<MateInOneAttempt[]>([]);
+    const usedPracticePuzzlesRef = useRef(new Set<string>());
     /** Total accumulated active solve time for the current block, in ms. Excludes paused time. */
     const accumulatedMsRef = useRef<number>(0);
     /**
@@ -146,9 +167,18 @@ function MateInOneDrill() {
 
     /** Fetches and computes a single puzzle. */
     const fetchPuzzle = useCallback(async (): Promise<PuzzleWithSolution> => {
+        if (puzzleSet !== 'rated') {
+            const puzzles = practicePuzzles[puzzleSet];
+            const used = usedPracticePuzzlesRef.current;
+            if (used.size === puzzles.length) used.clear();
+            const available = puzzles.filter((puzzle) => !used.has(puzzle.id));
+            const puzzle = available[Math.floor(Math.random() * available.length)];
+            used.add(puzzle.id);
+            return computeSolutionFromPuzzle(puzzle, false);
+        }
         const response = await getMateInOnePuzzle();
         return computeSolutionFromPuzzle(response.data.puzzle);
-    }, []);
+    }, [puzzleSet]);
 
     /** Kicks off a background prefetch for the next puzzle. */
     const prefetchNext = useCallback(() => {
@@ -227,11 +257,13 @@ function MateInOneDrill() {
                 correctCount: stats.correctCount,
                 totalTimeSeconds: stats.totalTimeSeconds,
                 avgResponseTimeMs: stats.avgResponseTimeMs,
-                rating,
+                rating: isRated ? rating : 0,
                 attempts: finalAttempts,
             };
             setBlockSummary(summary);
             setDrillState('block_complete');
+
+            if (!isRated) return;
 
             setSubmitting(true);
             submitRequest.onStart();
@@ -260,7 +292,7 @@ function MateInOneDrill() {
                 },
             );
         },
-        [submitRequest, user, updateUser],
+        [isRated, submitRequest, user, updateUser],
     );
 
     const advanceToNextPuzzle = useCallback(() => {
@@ -323,9 +355,8 @@ function MateInOneDrill() {
     }, [advanceToNextPuzzle]);
 
     /**
-     * Ends the session while paused. The most recent per-attempt save already wrote
-     * a partial-block row to the server (with attempts.length < 10, so no rating).
-     * We just navigate back to the landing screen, no extra request needed.
+     * Returns to the landing screen. Rated attempts were already saved as a partial
+     * block; practice attempts remain local and are discarded.
      */
     const handleEndSession = useCallback(() => {
         runningSinceMsRef.current = null;
@@ -373,17 +404,19 @@ function MateInOneDrill() {
         }
 
         // Partial block: save progress so an interrupted block isn't lost.
-        submitMateInOneSession({
-            totalPuzzles: updatedAttempts.length,
-            correctCount: stats.correctCount,
-            avgResponseTimeMs: stats.avgResponseTimeMs,
-            totalTimeSeconds: stats.totalTimeSeconds,
-            attempts: updatedAttempts,
-            createdAt: blockCreatedAtRef.current,
-        }).catch(() => undefined);
+        if (isRated) {
+            submitMateInOneSession({
+                totalPuzzles: updatedAttempts.length,
+                correctCount: stats.correctCount,
+                avgResponseTimeMs: stats.avgResponseTimeMs,
+                totalTimeSeconds: stats.totalTimeSeconds,
+                attempts: updatedAttempts,
+                createdAt: blockCreatedAtRef.current,
+            }).catch(() => undefined);
+        }
 
         setFeedback(correct ? 'correct' : 'incorrect');
-    }, [currentPuzzle, feedback, userInput, getElapsedMs, finalizeBlock]);
+    }, [currentPuzzle, feedback, userInput, getElapsedMs, finalizeBlock, isRated]);
 
     if (drillState === 'loading') {
         return (
@@ -398,7 +431,9 @@ function MateInOneDrill() {
             <ReadyScreen
                 onStart={startDrill}
                 fetchError={fetchError}
-                personalBest={user?.mateInOneRating}
+                personalBest={isRated ? user?.mateInOneRating : undefined}
+                puzzleSet={puzzleSet}
+                onPuzzleSetChange={onPuzzleSetChange}
             />
         );
     }
@@ -410,6 +445,7 @@ function MateInOneDrill() {
                 puzzlesAnswered={attemptsRef.current.length}
                 onResume={handleResume}
                 onEndSession={handleEndSession}
+                isRated={isRated}
             />
         );
     }
@@ -419,7 +455,8 @@ function MateInOneDrill() {
             <>
                 <BlockCompleteScreen
                     summary={blockSummary}
-                    personalBest={previousBestRef.current}
+                    personalBest={isRated ? previousBestRef.current : undefined}
+                    isRated={isRated}
                     submitting={submitting}
                     submitFailed={submitRequest.isFailure()}
                     onContinue={() => startBlock()}
@@ -453,15 +490,22 @@ function MateInOneDrill() {
  *
  * @param onStart - Callback invoked when the user confirms they want to start.
  * @param fetchError - Whether the initial puzzle fetch failed.
+ * @param personalBest - The user's best rated block score, shown only for the rated set.
+ * @param puzzleSet - The selected practice or rated puzzle set.
+ * @param onPuzzleSetChange - Callback to select a different puzzle set.
  */
 function ReadyScreen({
     onStart,
     fetchError,
     personalBest,
+    puzzleSet,
+    onPuzzleSetChange,
 }: {
     onStart: () => void;
     fetchError: boolean;
     personalBest?: number;
+    puzzleSet: PuzzleSet;
+    onPuzzleSetChange: (value: PuzzleSet) => void;
 }) {
     const [armed, setArmed] = useState(false);
 
@@ -470,6 +514,18 @@ function ReadyScreen({
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 2 }}>
                 Mate in One Visualization Drill
             </Typography>
+            <TextField
+                select
+                label='Puzzle set'
+                value={puzzleSet}
+                onChange={(event) => onPuzzleSetChange(event.target.value as PuzzleSet)}
+                fullWidth
+                sx={{ mb: 3 }}
+            >
+                <MenuItem value='3'>3 pieces (practice)</MenuItem>
+                <MenuItem value='4'>4 pieces (practice)</MenuItem>
+                <MenuItem value='rated'>Rated drill</MenuItem>
+            </TextField>
             {personalBest !== undefined && (
                 <Typography
                     variant='body1'
@@ -491,17 +547,19 @@ function ReadyScreen({
                 You will see a list of pieces and their squares. Type the mating move in SAN
                 notation (e.g. "Qh7#" or just "Qh7") and press Enter.
             </Typography>
-            <Typography
-                variant='body2'
-                sx={{
-                    color: 'warning.main',
-                    mb: 1,
-                    fontWeight: 'bold',
-                }}
-            >
-                This drill is very hard. Your rating is computed after {PUZZLES_PER_BLOCK} problems;
-                you can pause between problems with the Pause button.
-            </Typography>
+            {puzzleSet === 'rated' && (
+                <Typography
+                    variant='body2'
+                    sx={{
+                        color: 'warning.main',
+                        mb: 1,
+                        fontWeight: 'bold',
+                    }}
+                >
+                    This drill is very hard. Your rating is computed after {PUZZLES_PER_BLOCK}{' '}
+                    problems; you can pause between problems with the Pause button.
+                </Typography>
+            )}
             <Typography
                 variant='body1'
                 sx={{
@@ -729,6 +787,7 @@ interface PausedScreenProps {
     puzzlesAnswered: number;
     onResume: () => void;
     onEndSession: () => void;
+    isRated: boolean;
 }
 
 /**
@@ -741,8 +800,15 @@ interface PausedScreenProps {
  * @param puzzlesAnswered - Number of puzzles already answered in this block.
  * @param onResume - Callback to resume the block.
  * @param onEndSession - Callback to abort the session and return to the landing screen.
+ * @param isRated - Whether progress is saved to the server.
  */
-function PausedScreen({ elapsedMs, puzzlesAnswered, onResume, onEndSession }: PausedScreenProps) {
+function PausedScreen({
+    elapsedMs,
+    puzzlesAnswered,
+    onResume,
+    onEndSession,
+    isRated,
+}: PausedScreenProps) {
     const totalSeconds = Math.round(elapsedMs / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
@@ -769,8 +835,8 @@ function PausedScreen({ elapsedMs, puzzlesAnswered, onResume, onEndSession }: Pa
                     mb: 4,
                 }}
             >
-                The timer is frozen. Resume to continue, or end the session. Your progress so far is
-                already saved.
+                The timer is frozen. Resume to continue, or end the session.
+                {isRated && ' Your progress so far is already saved.'}
             </Typography>
             <Stack
                 direction='row'
@@ -798,6 +864,7 @@ interface BlockCompleteScreenProps {
     onContinue: () => void;
     onRetry: () => void;
     onEndSession: () => void;
+    isRated: boolean;
 }
 
 /**
@@ -810,6 +877,7 @@ interface BlockCompleteScreenProps {
  * @param onContinue - Callback to start a new drill.
  * @param onRetry - Callback to retry the failed submission.
  * @param onEndSession - Callback to end the session and return to the landing screen.
+ * @param isRated - Whether to show the block rating.
  */
 function BlockCompleteScreen({
     summary,
@@ -819,6 +887,7 @@ function BlockCompleteScreen({
     onContinue,
     onRetry,
     onEndSession,
+    isRated,
 }: BlockCompleteScreenProps) {
     const accuracy = Math.round((summary.correctCount / PUZZLES_PER_BLOCK) * 100);
     const avgTime = (summary.avgResponseTimeMs / 1000).toFixed(1);
@@ -834,9 +903,11 @@ function BlockCompleteScreen({
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 1 }}>
                 Drill Complete!
             </Typography>
-            <Typography variant='h2' sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
-                {summary.rating}
-            </Typography>
+            {isRated && (
+                <Typography variant='h2' sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+                    {summary.rating}
+                </Typography>
+            )}
             {ratingDiff !== null && (
                 <Stack
                     direction='row'

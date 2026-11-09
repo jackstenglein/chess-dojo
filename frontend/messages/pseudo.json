@@ -130,6 +130,8 @@
         },
         "trainingPlan": {
             "common": {
+                "pinned": "[T] Pinned",
+                "close": "[T] Close",
                 "cancel": "[T] Cancel",
                 "save": "[T] Save",
                 "update": "[T] Update",
@@ -149,17 +151,43 @@
                 "commentsPlaceholder": "[T] Optional comments about your progress or the task itself. Visible to others on the newsfeed.",
                 "mustBeNumeric": "[T] Only numeric characters are accepted",
                 "mustBeInteger": "[T] This field must be an integer",
-                "fieldRequired": "[T] This field is required"
+                "fieldRequired": "[T] This field is required",
+                "moreActions": "[T] More actions"
             },
             "inputSlider": {
                 "decrement": "[T] Decrement",
                 "increment": "[T] Increment",
-                "progressCount": "[T] Progress count",
+                "progressCount": "[T] Progress",
                 "count": "[T] Count"
+            },
+            "verbs": {
+                "read": "[T] Read",
+                "watch": "[T] Watch",
+                "solve": "[T] Solve",
+                "study": "[T] Study",
+                "play": "[T] Play",
+                "spar": "[T] Spar",
+                "annotate": "[T] Annotate",
+                "review": "[T] Review",
+                "guide": "[T] Read guide"
+            },
+            "quickLog": {
+                "logTraining": "[T] Log training",
+                "logTooltip": "[T] Log progress and time for this task",
+                "undo": "[T] Undo"
             },
             "daily": {
                 "today": "[T] Today",
-                "progressCompleted": "[T] {current} / {total} {suffix} completed"
+                "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
+                "allDone": "[T] Done for today · {worked} logged",
+                "goalMet": "[T] Time goal met",
+                "skippedHeading": "[T] Skipped this week ({count})",
+                "restore": "[T] Restore {name}",
+                "skippedToast": "[T] Skipped {name} for the rest of the week",
+                "swapTooltip": "[T] Swap for another {category} task",
+                "swapNone": "[T] No other {category} tasks to swap in",
+                "swapHeading": "[T] Swap for another {category} task",
+                "swapped": "[T] Swapped {from} for {to}"
             },
             "weekly": {
                 "thisWeek": "[T] This Week",
@@ -171,7 +199,15 @@
                 "Fri": "[T] Fri",
                 "Sat": "[T] Sat",
                 "activeOnlyTooltip": "[T] Only show tasks you have updated this week",
-                "activeOnlyLabel": "[T] Active Only"
+                "activeOnlyLabel": "[T] Active Only",
+                "empty": "[T] Nothing planned this week.",
+                "cellPlanned": "[T] Planned: {goal}",
+                "cellPartial": "[T] {worked} of {goal} so far",
+                "cellDone": "[T] Done: {worked} of {goal}",
+                "cellMissed": "[T] Missed: {worked} of {goal}",
+                "cellExtra": "[T] Extra: {worked} logged, not planned",
+                "restDay": "[T] Rest day",
+                "partialTime": "[T] {worked} / {goal}"
             },
             "full": {
                 "heading": "[T] Full Training Plan",
@@ -186,16 +222,12 @@
                 "addCustomTask": "[T] Add Custom Task",
                 "unlockTasks": "[T] {count, plural, =1 {Unlock # more task by upgrading to a full account} other {Unlock # more tasks by upgrading to a full account}}",
                 "viewPrices": "[T] View Prices",
-                "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
-                "reachRatingToUnlock": "[T] Reach the required rating for your cohort to unlock graduation",
                 "renewTooltip": "[T] It's time for you to renew this task!",
                 "renewLabel": "[T] Renew",
                 "minimumReachedTooltip": "[T] You've reached the minimum, keep going!",
                 "minimumReachedLabel": "[T] Minimum Reached",
                 "checkboxAriaLabel": "[T] Checkbox {name}",
-                "updateAriaLabel": "[T] Update {name}",
-                "graduateName": "[T] Graduate from {cohort}",
-                "graduateDescription": "[T] Move to the next cohort and get featured in the graduation show."
+                "updateAriaLabel": "[T] Update {name}"
             },
             "graduation": {
                 "title": "[T] Graduate from {cohort}?",
@@ -289,8 +321,14 @@
                 "deleteAriaLabel": "[T] delete"
             },
             "progressUpdater": {
+                "totalTimeChange": "[T] Total {before} → {after}",
+                "timeSpent": "[T] Time spent",
+                "removeTime": "[T] Remove 5 minutes",
+                "minutesShort": "[T] min",
+                "lastCompleted": "[T] Last {unit} completed",
+                "doneOf": "[T] {done} of {total} done",
+                "addTime": "[T] Add 5 minutes",
                 "markComplete": "[T] Mark as Completed?",
-                "totalTime": "[T] Total Time: {hours}h {minutes}m",
                 "largeTimeWarning": "[T] You're adding a lot of time! Please double-check your input before saving."
             },
             "scheduleGame": {
@@ -312,12 +350,11 @@
                 "countRequired": "[T] This field is required",
                 "countNumeric": "[T] Only numeric characters are accepted",
                 "countMinOne": "[T] At least one game is required",
-                "deleteEntry": "[T] Delete"
+                "deleteEntry": "[T] Delete",
+                "scheduleAction": "[T] Schedule"
             },
             "taskDialog": {
-                "historyTitle": "[T] {name} History",
-                "addTimeTitle": "[T] Add time to {name}?",
-                "updateTitle": "[T] Update {name}?",
+                "historyCaption": "[T] History",
                 "locked": "[T] Locked",
                 "completed": "[T] Completed",
                 "editTask": "[T] Edit Task",
@@ -348,7 +385,7 @@
                 "taskLockedUntil": "[T] This task is locked until you complete {category} - {name}."
             },
             "miniScoreboard": {
-                "heading": "[T] Mini Scoreboard",
+                "heading": "[T] Scoreboard",
                 "type": "[T] Type",
                 "dojoScore": "[T] Dojo Score",
                 "trainingTime": "[T] Training Time",
@@ -407,15 +444,16 @@
             "goal": "[T] Goal",
             "goalPoints": "[T] {value} {value, plural, =1 {point} other {points}}",
             "goalHours": "[T] {value} {value, plural, =1 {hour} other {hours}}",
-            "popOutView": "[T] Pop out view",
             "classicalGames": "[T] Classical Games (Past Year)",
             "nextGraduation": "[T] Next graduation: from {cohort} to {nextCohort}",
             "allTasks": "[T] All Tasks",
+            "progressTitle": "[T] Progress",
             "metrics": "[T] Metrics",
             "tacticsRating": "[T] Tactics Rating",
             "tacticsRatingTooltip": "[T] For U1700, this is a combination of progress in Polgar Mates, Puzzle Rush 5 min and Puzzle Rush Survival. For 1700-2100, this is a combination of Polgar Mates, Puzzle Rush Survival and the Dojo Tactics Test. For 2100+, this is based solely on the Dojo Tactics Test.",
             "close": "[T] close",
             "pastYear": "[T] in the past year",
+            "timeManagement": "[T] Time Management",
             "chip": {
                 "coach": "[T] Coach",
                 "coachTooltip": "[T] This member is a Dojo coach",
@@ -462,6 +500,19 @@
                 "noActivity": "[T] No recent activity from your follows or cohort."
             },
             "heatmap": {
+                "yearlyTotals": "[T] Yearly totals",
+                "year": "[T] Year",
+                "total": "[T] Total",
+                "loadingHistory": "[T] Loading your training history…",
+                "historyError": "[T] Couldn't load your training history.",
+                "noTimeLogged": "[T] No time logged yet.",
+                "lastTwelveMonths": "[T] Last 12 Months: {total}",
+                "legend": "[T] What the colors mean",
+                "settings": "[T] Heatmap settings",
+                "title": "[T] Heatmap",
+                "dailyGoal": "[T] Daily goal {time}",
+                "nothingLogged": "[T] Nothing logged this day",
+                "dayTotal": "[T] Total {time}",
                 "weekdaySun": "[T] Sun",
                 "weekdayMon": "[T] Mon",
                 "weekdayTue": "[T] Tue",
