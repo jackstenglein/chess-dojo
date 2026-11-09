@@ -3,6 +3,7 @@ import { getGameReviewCohort } from '@/api/liveClassesApi';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import { parseStoredRRule } from '@/components/calendar/recurrence';
 import { Link } from '@/components/navigation/Link';
 import { getConfig } from '@/config';
 import { Event, EventType } from '@/database/event';
@@ -16,7 +17,7 @@ import { GameReviewCohort } from '@jackstenglein/chess-dojo-common/src/liveClass
 import { Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useEffect } from 'react';
-import { datetime, RRule } from 'rrule';
+import { datetime } from 'rrule';
 import { GameReviewCohortQueue } from './GameReviewCohortQueue';
 
 export function LiveClassesTab({ user }: { user: User }) {
@@ -188,17 +189,10 @@ function WorkshopsSection() {
     const now = new Date();
     const nextEvents = events
         .filter((e) => e.type === EventType.LectureTier && e.rrule)
-        .map((e) => {
-            const rrule = RRule.fromString(e.rrule || '');
-            const date = rrule.after(
-                datetime(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate()),
-                true,
-            );
-            return {
-                event: e,
-                nextDate: date,
-            };
-        })
+        .map((e) => ({
+            event: e,
+            nextDate: getNextLectureDate(e.rrule || '', now),
+        }))
         .filter((e) => e.nextDate)
         .sort((lhs, rhs) => (lhs.nextDate?.getTime() ?? 0) - (rhs.nextDate?.getTime() ?? 0)) as {
         event: Event;
@@ -281,5 +275,17 @@ function WorkshopsSection() {
             </Typography>
             <Typography color='textSecondary'>{t('communicatingPeersText')}</Typography>
         </Stack>
+    );
+}
+
+/**
+ * Next lecture on or after the UTC calendar day of `now`.
+ * Includes extra dates from an RDATE line and skips EXDATE exceptions.
+ */
+export function getNextLectureDate(rrule: string, now: Date): Date | null {
+    const rule = parseStoredRRule(rrule);
+    return (
+        rule.after(datetime(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate()), true) ??
+        null
     );
 }

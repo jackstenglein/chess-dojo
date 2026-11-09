@@ -2,6 +2,7 @@ import { pauseQueueDate, resetQueueDate } from '@/api/liveClassesApi';
 import { useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import { parseStoredRRule } from '@/components/calendar/recurrence';
 import { Link } from '@/components/navigation/Link';
 import { logger } from '@/logging/logger';
 import Avatar from '@/profile/Avatar';
@@ -25,7 +26,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { datetime, RRule } from 'rrule';
+import { datetime } from 'rrule';
 
 export function GameReviewCohortQueue({
     gameReviewCohort,
@@ -262,8 +263,7 @@ function getDatesByUser(
         peerReviewStart.setDate(peerReviewStart.getDate() - 7);
     }
 
-    let options = RRule.parseString(gameReviewCohort.peerReviewEvent.rrule);
-    const peerReviewRRule = new RRule(options);
+    const peerReviewRRule = parseStoredRRule(gameReviewCohort.peerReviewEvent.rrule);
     const peerReviewDates = peerReviewRRule.between(
         peerReviewStart,
         datetime(2050, 1, 1),
@@ -271,8 +271,7 @@ function getDatesByUser(
         (_: Date, i: number) => i < reviewQueue.length,
     );
 
-    options = RRule.parseString(gameReviewCohort.senseiReviewEvent.rrule);
-    const senseiReviewRule = new RRule(options);
+    const senseiReviewRule = parseStoredRRule(gameReviewCohort.senseiReviewEvent.rrule);
     const senseiReviewDates = senseiReviewRule.between(
         new Date(),
         datetime(2050, 1, 1),

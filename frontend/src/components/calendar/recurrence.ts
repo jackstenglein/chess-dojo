@@ -14,6 +14,21 @@ export function isRecurringEvent(event: Event): boolean {
 }
 
 /**
+ * Parses a stored event rrule, including EXDATE and RDATE lines.
+ * `RRule.fromString` and `RRule.parseString` reject those lines.
+ */
+export function parseStoredRRule(rrule: string): RRuleSet {
+    const parsed = rrulestr(rrule, { forceset: true });
+    if (parsed instanceof RRuleSet) {
+        return parsed;
+    }
+
+    const set = new RRuleSet();
+    set.rrule(parsed);
+    return set;
+}
+
+/**
  * Builds the ProcessedEvent.recurring value for a stored event, preserving
  * EXDATE/RDATE entries when the rrule string is an RRuleSet.
  * Returns undefined for non-repeating events (DTSTART-only).
