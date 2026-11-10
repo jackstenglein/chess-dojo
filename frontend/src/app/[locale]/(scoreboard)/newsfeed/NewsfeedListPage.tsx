@@ -52,7 +52,9 @@ export function NewsfeedListPage() {
                     }}
                 >
                     <Stack spacing={3}>
-                        <Typography variant='h6'>{t('title')}</Typography>
+                        <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+                            {t('title')}
+                        </Typography>
 
                         {user?.clubs?.length &&
                         (clubRequest.isLoading() || !clubRequest.isSent()) ? (
@@ -96,7 +98,9 @@ export function NewsfeedListPage() {
                                     alignItems: 'center',
                                 }}
                             >
-                                <Typography variant='h6'>{t('graduations')}</Typography>
+                                <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+                                    {t('graduations')}
+                                </Typography>
 
                                 <Link href='/recent'>{t('viewAll')}</Link>
                             </Stack>
