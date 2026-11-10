@@ -3300,7 +3300,9 @@
             "loadMore": "Carica altro",
             "incorrectMoveComment": "Tentativo errato",
             "incorrectMoveCommentDuringRun": "Ipotesi errata durante la corsa",
-            "tooltipSettings": "Impostazioni"
+            "tooltipSettings": "Impostazioni",
+            "prevWrong": "Precedente puzzle errato",
+            "nextWrong": "Prossimo puzzle sbagliato"
         },
         "squareColors": {
             "title": "Esercizio sul colore delle case",

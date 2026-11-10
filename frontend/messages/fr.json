@@ -3300,7 +3300,9 @@
             "loadMore": "Charger plus",
             "incorrectMoveComment": "Mauvaise supposition",
             "incorrectMoveCommentDuringRun": "Mauvaise réponse pendant la course",
-            "tooltipSettings": "Paramètres"
+            "tooltipSettings": "Paramètres",
+            "prevWrong": "Puzzle précédent incorrect",
+            "nextWrong": "Prochain puzzle erroné"
         },
         "squareColors": {
             "title": "Exercice de couleur des cases",

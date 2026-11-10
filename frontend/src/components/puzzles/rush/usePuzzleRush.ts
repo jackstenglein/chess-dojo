@@ -182,7 +182,7 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
             }
 
             const state = run.current;
-            if (state.current) {
+            if (state.current && reason !== 'strikes') {
                 const attempt: PuzzleRushAttempt = {
                     puzzleId: state.current.id,
                     fen: state.current.fen,

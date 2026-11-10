@@ -3300,7 +3300,9 @@
             "loadMore": "Load More",
             "incorrectMoveComment": "Incorrect guess",
             "incorrectMoveCommentDuringRun": "Incorrect guess during the run",
-            "tooltipSettings": "Settings"
+            "tooltipSettings": "Settings",
+            "prevWrong": "Previous Wrong Puzzle",
+            "nextWrong": "Next Wrong Puzzle"
         },
         "squareColors": {
             "title": "Square Color Drill",

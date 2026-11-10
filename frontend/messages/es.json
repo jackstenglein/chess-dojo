@@ -3300,7 +3300,9 @@
             "loadMore": "Cargar más",
             "incorrectMoveComment": "Suposición incorrecta",
             "incorrectMoveCommentDuringRun": "Suposición incorrecta durante la carrera.",
-            "tooltipSettings": "Ajustes"
+            "tooltipSettings": "Ajustes",
+            "prevWrong": "Rompecabezas anterior incorrecto",
+            "nextWrong": "Siguiente rompecabezas equivocado"
         },
         "squareColors": {
             "title": "Ejercicio de colores de casillas",

@@ -3300,7 +3300,9 @@
             "loadMore": "Mehr laden",
             "incorrectMoveComment": "Falsche Vermutung",
             "incorrectMoveCommentDuringRun": "Falsche Vermutung während des Laufs",
-            "tooltipSettings": "Einstellungen"
+            "tooltipSettings": "Einstellungen",
+            "prevWrong": "Vorheriges falsches Rätsel",
+            "nextWrong": "Nächstes falsches Rätsel"
         },
         "squareColors": {
             "title": "Feldfarbe Drill",

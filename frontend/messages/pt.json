@@ -3300,7 +3300,9 @@
             "loadMore": "Carregar mais",
             "incorrectMoveComment": "Palpite incorreto",
             "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida",
-            "tooltipSettings": "Configurações"
+            "tooltipSettings": "Configurações",
+            "prevWrong": "Quebra-cabeça errado anterior",
+            "nextWrong": "Próximo quebra-cabeça errado"
         },
         "squareColors": {
             "title": "Treino de cor das casas",
