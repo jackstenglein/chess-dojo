@@ -28,7 +28,7 @@ import { useCountdown } from 'usehooks-ts';
 import { puzzleRushTimeZone } from './usePuzzleRushBests';
 
 /** The phase of a puzzle rush run. */
-export type PuzzleRushPhase = 'idle' | 'loading' | 'running' | 'finished';
+export type PuzzleRushPhase = 'idle' | 'countdown' | 'loading' | 'running' | 'finished';
 
 /** How long to show the result of a puzzle before advancing to the next one, in ms. */
 const ADVANCE_DELAY_MS: Record<PuzzleRushResult, number> = {
@@ -87,8 +87,10 @@ export interface UsePuzzleRushResponse {
     submitRequest: Request<SubmitPuzzleRushSessionResponse>;
     /** The request tracker for fetching puzzles. */
     fetchRequest: Request;
-    /** Starts a new run. */
+    /** Starts a new run. Plays the countdown, then begins once the first puzzle is loaded. */
     start: () => void;
+    /** Called when the start countdown animation finishes. */
+    completeCountdown: () => void;
     /** Ends the current run early. */
     abort: () => void;
     /** Retries saving a finished run. */
@@ -142,6 +144,10 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
     secondsRef.current = secondsRemaining;
 
     const phaseRef = useRef<PuzzleRushPhase>('idle');
+    /** True once the start countdown has finished for the current run. */
+    const countdownFinished = useRef(false);
+    /** The first puzzle, fetched during the countdown and shown when the countdown ends. */
+    const readyPuzzle = useRef<PuzzleRushPuzzle | undefined>(undefined);
     const run = useRef<RunState>({
         runId: 0,
         createdAt: '',
@@ -296,6 +302,30 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
         [advance, finish],
     );
 
+    /** Shows the first puzzle and starts the run clock. No-op unless the countdown is still active. */
+    const launchRun = useCallback(
+        (puzzle: PuzzleRushPuzzle) => {
+            if (phaseRef.current !== 'countdown') {
+                return;
+            }
+            setPhaseSynced('running');
+            showPuzzle(puzzle);
+            startCountdown();
+        },
+        [setPhaseSynced, showPuzzle, startCountdown],
+    );
+
+    const completeCountdown = useCallback(() => {
+        if (phaseRef.current !== 'countdown' || countdownFinished.current) {
+            return;
+        }
+        countdownFinished.current = true;
+        const puzzle = readyPuzzle.current;
+        if (puzzle) {
+            launchRun(puzzle);
+        }
+    }, [launchRun]);
+
     const start = useCallback(() => {
         const runId = run.current.runId + 1;
         const timestamp = new Date().toISOString();
@@ -310,6 +340,8 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
             resolved: true,
             prefetch: {},
         };
+        countdownFinished.current = false;
+        readyPuzzle.current = undefined;
         setAttempts([]);
         setLadder(run.current.ladder);
         setStrikes(0);
@@ -320,10 +352,10 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
         submitRequest.reset();
         fetchRequest.reset();
         resetCountdown();
-        setPhaseSynced('loading');
+        setPhaseSynced('countdown');
 
         void fetchPuzzle(currentRushRating(run.current.ladder), []).then((puzzle) => {
-            if (run.current.runId !== runId || phaseRef.current !== 'loading') {
+            if (run.current.runId !== runId || phaseRef.current !== 'countdown') {
                 return;
             }
             if (!puzzle) {
@@ -331,11 +363,12 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
                 setPhaseSynced('idle');
                 return;
             }
-            setPhaseSynced('running');
-            showPuzzle(puzzle);
-            startCountdown();
+            readyPuzzle.current = puzzle;
+            if (countdownFinished.current) {
+                launchRun(puzzle);
+            }
         });
-    }, [submitRequest, fetchRequest, resetCountdown, startCountdown, setPhaseSynced, showPuzzle]);
+    }, [submitRequest, fetchRequest, resetCountdown, setPhaseSynced, launchRun]);
 
     useEffect(() => {
         if (phase === 'running' && secondsRemaining <= 0) {
@@ -371,6 +404,7 @@ export function usePuzzleRush(): UsePuzzleRushResponse {
         submitRequest,
         fetchRequest,
         start,
+        completeCountdown,
         abort,
         retrySubmit,
         onWrongMove,

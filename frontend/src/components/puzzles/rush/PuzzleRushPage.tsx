@@ -40,6 +40,7 @@ import { ShortcutAction } from 'src/board/pgn/boardTools/underboard/settings/Sho
 import ViewerSettings, {
     ViewerSetting,
 } from 'src/board/pgn/boardTools/underboard/settings/ViewerSettings';
+import { PuzzleRushCountdown } from './PuzzleRushCountdown';
 import { PuzzleRushBests, PuzzleRushIndexes } from './PuzzleRushStanding';
 import {
     PuzzleRushAttemptsTable,
@@ -69,6 +70,15 @@ function PuzzleRush() {
         return (
             <>
                 <IdleScreen onStart={rush.start} />
+                <RequestSnackbar request={rush.fetchRequest} />
+            </>
+        );
+    }
+
+    if (rush.phase === 'countdown') {
+        return (
+            <>
+                <PuzzleRushCountdown key={rush.createdAt} onComplete={rush.completeCountdown} />
                 <RequestSnackbar request={rush.fetchRequest} />
             </>
         );
