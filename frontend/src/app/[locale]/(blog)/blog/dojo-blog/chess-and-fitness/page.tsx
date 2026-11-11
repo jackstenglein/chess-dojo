@@ -73,6 +73,7 @@ export default function CustomTasks() {
 
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}
@@ -98,6 +99,7 @@ export default function CustomTasks() {
                 </Typography>
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}
@@ -122,6 +124,7 @@ export default function CustomTasks() {
                 </Typography>
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}
@@ -148,6 +151,7 @@ export default function CustomTasks() {
                 </Typography>
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}
@@ -173,6 +177,7 @@ export default function CustomTasks() {
                 </Typography>
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}
@@ -193,6 +198,7 @@ export default function CustomTasks() {
                 </Typography>
                 <Typography
                     variant='h6'
+                    component='h2'
                     sx={{
                         mt: 2,
                     }}

@@ -27,9 +27,12 @@ import {
 import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
+import { DeleteBlogButton } from '../DeleteBlogButton';
+import { BlogImageUpload } from './BlogImageUpload';
 
 export function EditBlogPage({ id }: { id?: string }) {
-    const isCreate = !id?.trim();
+    const [savedId, setSavedId] = useState(id?.trim());
+    const isCreate = !savedId;
 
     const auth = useAuth();
     const router = useRouter();
@@ -76,7 +79,7 @@ export function EditBlogPage({ id }: { id?: string }) {
     }, [id, auth.user?.isAdmin, getRequest]);
 
     const handleSave = () => {
-        if (isInvalid) {
+        if (isInvalid || updateRequest.isLoading()) {
             return;
         }
 
@@ -84,7 +87,7 @@ export function EditBlogPage({ id }: { id?: string }) {
         const saveFunc = isCreate ? createBlog : updateBlog;
         saveFunc({
             owner: DOJO_BLOG_OWNER,
-            id: slug.trim(),
+            id: savedId ?? slug.trim(),
             title: title.trim(),
             subtitle: subtitle.trim(),
             description: description.trim(),
@@ -93,7 +96,10 @@ export function EditBlogPage({ id }: { id?: string }) {
             content,
             status,
         })
-            .then((resp) => updateRequest.onSuccess(resp.data))
+            .then((resp) => {
+                setSavedId(resp.data.id);
+                updateRequest.onSuccess(resp.data);
+            })
             .catch((err) => updateRequest.onFailure(err));
     };
 
@@ -194,6 +200,8 @@ export function EditBlogPage({ id }: { id?: string }) {
                     helperText='Optional URL of a cover image (used in list preview and when sharing on social media). Should be 1200x630 for best social media preview.'
                 />
 
+                <BlogImageUpload onUpload={setCoverImage} />
+
                 <DatePicker label='Date' value={date} onChange={(newValue) => setDate(newValue)} />
 
                 <FormControl fullWidth>
@@ -228,6 +236,14 @@ export function EditBlogPage({ id }: { id?: string }) {
                         justifyContent: 'flex-end',
                     }}
                 >
+                    {savedId && (
+                        <DeleteBlogButton
+                            owner={DOJO_BLOG_OWNER}
+                            id={savedId}
+                            title={title}
+                            onDeleted={() => router.replace('/admin/blog')}
+                        />
+                    )}
                     <Button component={Link} href='/admin/blog' variant='outlined'>
                         Cancel
                     </Button>
