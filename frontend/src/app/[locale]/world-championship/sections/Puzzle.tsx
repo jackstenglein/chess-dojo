@@ -69,8 +69,17 @@ const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const COLUMNS = [...FILES].reverse();
 const ROWS = [1, 2, 3, 4, 5, 6, 7, 8];
 const REPLY_DELAY_MS = 550;
-const LIGHT = '#C3C9D9';
-const DARK = '#59617C';
+/**
+ * The board and pieces a ChessDojo member sees by default (BoardStyle.Standard
+ * and PieceStyle.Standard in board/boardThemes.ts), with the same highlight
+ * colors the site's boards use for the last move and the selected square.
+ */
+const BOARD_IMAGE = "url('/static/board/backgrounds/standard.png')";
+const PIECE_PATH = '/static/board/pieces/standard/';
+const COORD_ON_LIGHT = '#7296ac';
+const COORD_ON_DARK = '#fff';
+const LAST_MOVE_TINT = 'rgba(155, 199, 0, 0.41)';
+const SELECTED_TINT = 'rgba(20, 85, 30, 0.5)';
 
 const shake = keyframes`
     0%, 100% { transform: translateX(0); }
@@ -205,6 +214,8 @@ export function Puzzle() {
                     sx={{
                         position: 'relative',
                         aspectRatio: '1',
+                        backgroundImage: BOARD_IMAGE,
+                        backgroundSize: 'cover',
                         borderRadius: 2,
                         overflow: 'hidden',
                         boxShadow: `0 0 0 1px ${HAIRLINE}, 0 40px 90px -30px rgba(0, 0, 0, 0.9)`,
@@ -243,14 +254,12 @@ export function Puzzle() {
                                             p: 0,
                                             border: 0,
                                             cursor: solved || busy ? 'default' : 'pointer',
-                                            bgcolor: dark ? DARK : LIGHT,
-                                            backgroundImage: moved
-                                                ? 'linear-gradient(rgba(247, 148, 31, 0.5), rgba(247, 148, 31, 0.5))'
-                                                : 'none',
-                                            boxShadow:
+                                            bgcolor:
                                                 selected === square
-                                                    ? `inset 0 0 0 3px ${ORANGE}`
-                                                    : 'none',
+                                                    ? SELECTED_TINT
+                                                    : moved
+                                                      ? LAST_MOVE_TINT
+                                                      : 'transparent',
                                             '&:focus-visible': {
                                                 outline: `2px solid ${ORANGE}`,
                                                 outlineOffset: '-2px',
@@ -270,7 +279,7 @@ export function Puzzle() {
                                                     fontSize: '0.62rem',
                                                     fontWeight: 600,
                                                     lineHeight: 1,
-                                                    color: dark ? LIGHT : DARK,
+                                                    color: dark ? COORD_ON_DARK : COORD_ON_LIGHT,
                                                 }}
                                             >
                                                 {column === 0 && row !== 7 ? rank : file}
@@ -288,7 +297,7 @@ export function Puzzle() {
                             <Box
                                 key={piece.id}
                                 component='img'
-                                src={`/static/board/pieces/cburnett/${piece.code}.svg`}
+                                src={`${PIECE_PATH}${piece.code}.webp`}
                                 alt=''
                                 draggable={false}
                                 sx={{
