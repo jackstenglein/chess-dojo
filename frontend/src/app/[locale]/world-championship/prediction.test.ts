@@ -1,15 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { BF_OFFER, BlackFridayOffer, CONTEST, getOfferStatus, getPhase, Results } from './config';
+import {
+    BF_OFFER,
+    BlackFridayOffer,
+    CONTEST,
+    GAME_DATES,
+    getOfferStatus,
+    getPhase,
+    MATCH,
+    Results,
+    TIEBREAK_DATE,
+} from './config';
 import {
     DECISIVE_SCORES,
     decisiveOptions,
     describePicks,
     Draft,
+    draftValues,
     findConflict,
     firstDecisiveOptions,
     firstOpenStep,
     formatCountdown,
+    formatGameDate,
     formatLockMoment,
+    gamesForScore,
     lockDayLabel,
     MAX_POINTS,
     Picks,
@@ -284,5 +297,45 @@ describe('the clock', () => {
         expect(lockDayLabel(lockAt - 3600000, lockAt, zone)).toBe('today');
         // 15:00 in Geneva is already Wednesday in Auckland.
         expect(lockDayLabel(lockAt - 3 * day, lockAt, 'Pacific/Auckland')).toBe('Wednesday');
+    });
+});
+
+describe('the schedule', () => {
+    const day = 24 * 60 * 60 * 1000;
+    const days = GAME_DATES.map((date) => Date.parse(`${date}T00:00:00Z`) / day);
+
+    it('has a day for each of the 14 games, starting on the lock day', () => {
+        expect(GAME_DATES).toHaveLength(MATCH.games);
+        expect(new Date(CONTEST.lockAt).toISOString().slice(0, 10)).toBe(GAME_DATES[0]);
+        expect(formatGameDate(GAME_DATES[0])).toBe('November 24');
+        expect(formatGameDate(GAME_DATES[13])).toBe('December 11');
+    });
+
+    it('rests after every third game and plays the tiebreak the day after Game 14', () => {
+        const gaps = days.slice(1).map((value, index) => value - days[index]);
+        expect(gaps).toEqual([1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1]);
+        expect(Date.parse(`${TIEBREAK_DATE}T00:00:00Z`) / day - days[13]).toBe(1);
+    });
+
+    it('knows how long each score makes the match', () => {
+        expect(gamesForScore('7.5-6.5')).toEqual({ games: 14, orFewer: false });
+        expect(gamesForScore('7.5-5.5')).toEqual({ games: 13, orFewer: false });
+        expect(gamesForScore('7.5-4.5')).toEqual({ games: 12, orFewer: false });
+        expect(gamesForScore('7.5-3.5+')).toEqual({ games: 11, orFewer: true });
+        expect(gamesForScore(TIED_SCORE)).toEqual({ games: 14, orFewer: false });
+    });
+
+    it('lists the answers so far in question order', () => {
+        expect(draftValues({})).toEqual([undefined, undefined, undefined, undefined, undefined]);
+        expect(
+            draftValues({ winner: 'gukesh', tiebreaks: true, firstDecisiveGame: 'none' }),
+        ).toEqual(['Gukesh', 'Tiebreaks', '7-7', undefined, 'None']);
+        expect(draftValues(picks)).toEqual([
+            'Sindarov',
+            'Classical games',
+            '7.5-5.5',
+            '4',
+            'Game 3',
+        ]);
     });
 });

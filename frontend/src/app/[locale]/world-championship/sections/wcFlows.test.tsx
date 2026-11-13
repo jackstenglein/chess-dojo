@@ -1,11 +1,22 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BF_OFFER, CONTEST, ContestConfig, LOCK_AT_MS, Results } from '../config';
-import { CONFIRMATION, FINISHED, FLOW, HERO, LIVE, NOT_AFFILIATED } from '../content';
+import {
+    CONFIRMATION,
+    FINISHED,
+    FLOW,
+    HERO,
+    LIVE,
+    NOT_AFFILIATED,
+    PUZZLE,
+    SCORECARD,
+    THE_MATCH,
+} from '../content';
 import { loadEntry, Picks, saveEntry } from '../prediction';
 import { WorldChampionshipPage } from '../WorldChampionshipPage';
 import { BlackFriday } from './BlackFriday';
 import { PickFlow } from './PickFlow';
+import { Puzzle } from './Puzzle';
 
 const mocks = vi.hoisted(() => ({
     auth: { status: 'Unauthenticated', user: undefined as object | undefined },
@@ -331,9 +342,9 @@ describe('WorldChampionshipPage', () => {
         expect(card.textContent).toContain('Sindarov');
         expect(card.textContent).toContain('Pat');
         expect(card.textContent).toContain('www.chessdojo.club/world-championship');
-        expect(
-            screen.getByRole('link', { name: CONFIRMATION.classInvite.cta }).getAttribute('href'),
-        ).toBe('/class');
+        // Once after the confirmation and once under the puzzle.
+        const classLinks = screen.getAllByRole('link', { name: CONFIRMATION.classInvite.cta });
+        expect(classLinks.map((link) => link.getAttribute('href'))).toEqual(['/class', '/class']);
         expect(screen.queryByRole('heading', { name: 'Who wins the match?' })).toBeNull();
     });
 
@@ -472,5 +483,111 @@ describe('BlackFriday', () => {
             currency: 'USD',
             value: 599,
         });
+    });
+});
+
+describe('the match on the page', () => {
+    it('shows both players and the schedule before any pick is made', () => {
+        render(<WorldChampionshipPage serverNow={Date.now()} />);
+
+        expect(screen.getByRole('heading', { name: THE_MATCH.heading })).toBeTruthy();
+        expect(
+            screen.getByText('Won the 2026 Candidates unbeaten, 10 points from 14'),
+        ).toBeTruthy();
+        expect(screen.getByText('Beat Ding Liren in Singapore, 7.5-6.5')).toBeTruthy();
+        expect(screen.getByRole('heading', { name: THE_MATCH.scheduleHeading })).toBeTruthy();
+        expect(screen.getAllByLabelText(new RegExp(THE_MATCH.stripLabel))).toHaveLength(1);
+        expect(screen.queryByText(SCORECARD.yourPick('Sindarov'))).toBeNull();
+    });
+
+    it('draws an entrant’s picks onto the schedule and the scoring table', () => {
+        saveEntry({ picks, displayName: 'Pat', submittedAt: new Date().toISOString() });
+        render(<WorldChampionshipPage serverNow={Date.now()} />);
+
+        expect(screen.getByText(SCORECARD.yourPick('Sindarov'))).toBeTruthy();
+        expect(screen.getByText(SCORECARD.yourPick('7.5-5.5'))).toBeTruthy();
+        expect(screen.getByText(SCORECARD.yourPick('Game 3'))).toBeTruthy();
+        // On the picks card and in the schedule section.
+        const strips = screen.getAllByLabelText(
+            /Over after Game 13, on December 10\. First win in Game 3, on November 26\./,
+        );
+        expect(strips).toHaveLength(2);
+    });
+
+    it('updates the strip inside the flow as picks come in', async () => {
+        render(<PickFlow onClosed={vi.fn()} />);
+        await pick('Who wins the match?', 'Gukesh');
+        await pick('Does it go to tiebreaks?', 'Tied 7-7, decided in tiebreaks');
+
+        await screen.findByLabelText(/All 14 games, then tiebreaks on December 12\./);
+    });
+});
+
+describe('Puzzle', () => {
+    const square = (name: string) => screen.getByRole('button', { name });
+    const slow = { timeout: 9000 };
+
+    it('starts from the position after 55.Rf2', () => {
+        render(<Puzzle />);
+
+        for (const piece of [
+            'White bishop, a8',
+            'White rook, f2',
+            'White king, g1',
+            'White pawn, g3',
+            'Black bishop, e6',
+            'Black king, e5',
+            'Black pawn, f5',
+            'Black pawn, g4',
+            'Black rook, b2',
+        ]) {
+            expect(square(piece)).toBeTruthy();
+        }
+        expect(screen.getByText(PUZZLE.steps[0].prompt)).toBeTruthy();
+    });
+
+    it('accepts the two moves Gukesh played and plays the answers', async () => {
+        render(<Puzzle />);
+
+        fireEvent.click(square('Black rook, b2'));
+        fireEvent.click(square('White rook, f2'));
+        await screen.findByText(PUZZLE.steps[1].prompt, undefined, slow);
+        expect(square('White king, f2')).toBeTruthy();
+
+        fireEvent.click(square('Black bishop, e6'));
+        fireEvent.click(square('d5'));
+        await screen.findByText(PUZZLE.solved, undefined, slow);
+        expect(square('Black king, d5')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /bishop/ })).toBeNull();
+        expect(screen.getByRole('button', { name: PUZZLE.again })).toBeTruthy();
+    }, 20000);
+
+    it('turns down another move and then gives a hint', () => {
+        render(<Puzzle />);
+
+        fireEvent.click(square('Black king, e5'));
+        fireEvent.click(square('d4'));
+        expect(screen.getByText(PUZZLE.wrong)).toBeTruthy();
+        expect(square('Black king, e5')).toBeTruthy();
+
+        fireEvent.click(square('Black rook, b2'));
+        fireEvent.click(square('b8'));
+        expect(screen.getByText(PUZZLE.steps[0].hint)).toBeTruthy();
+    });
+
+    it('can show the moves and start over', async () => {
+        render(<Puzzle />);
+
+        fireEvent.click(screen.getByRole('button', { name: PUZZLE.showMe }));
+        await screen.findByText(PUZZLE.solved, undefined, slow);
+
+        fireEvent.click(screen.getByRole('button', { name: PUZZLE.again }));
+        expect(square('Black rook, b2')).toBeTruthy();
+        expect(screen.getByText(PUZZLE.steps[0].prompt)).toBeTruthy();
+    }, 20000);
+
+    it('leads on to the free class', () => {
+        render(<Puzzle />);
+        expect(screen.getByRole('link', { name: PUZZLE.cta }).getAttribute('href')).toBe('/class');
     });
 });

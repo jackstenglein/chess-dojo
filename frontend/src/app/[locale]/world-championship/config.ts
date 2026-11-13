@@ -30,6 +30,31 @@ export const PLAYERS: Record<PlayerId, { name: string; fullName: string; country
     sindarov: { name: 'Sindarov', fullName: 'Javokhir Sindarov', country: 'Uzbekistan' },
 };
 
+/**
+ * The day of each classical game, from the FIDE schedule (tickets.fide.com and
+ * the match regulations, checked November 13, 2026). Every game starts at 15:00
+ * in Geneva. Rest days fall after games 3, 6, 9 and 12.
+ */
+export const GAME_DATES = [
+    '2026-11-24',
+    '2026-11-25',
+    '2026-11-26',
+    '2026-11-28',
+    '2026-11-29',
+    '2026-11-30',
+    '2026-12-02',
+    '2026-12-03',
+    '2026-12-04',
+    '2026-12-06',
+    '2026-12-07',
+    '2026-12-08',
+    '2026-12-10',
+    '2026-12-11',
+];
+
+/** Tiebreaks, if the classical games end 7-7. */
+export const TIEBREAK_DATE = '2026-12-12';
+
 export const MATCH = {
     /** Classical games in the match. */
     games: 14,

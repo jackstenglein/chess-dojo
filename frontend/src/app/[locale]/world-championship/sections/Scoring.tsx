@@ -15,9 +15,13 @@ import {
     Section,
 } from '../../class/sections/shared';
 import { Prizes as PrizesConfig, SenseiPick } from '../config';
-import { PRIZES_SECTION, SCORING, SENSEI_SECTION } from '../content';
+import { PRIZES_SECTION, SCORECARD, SCORING, SENSEI_SECTION } from '../content';
+import { Draft, draftValues } from '../prediction';
 
-export function Scoring() {
+/** The five questions and their points, with the visitor's own answers filled in once they have any. */
+export function Scoring({ draft }: { draft: Draft }) {
+    const picks = draftValues(draft);
+
     return (
         <Section maxWidth='md'>
             <Heading sx={{ mb: { xs: 3, md: 5 } }}>{SCORING.heading}</Heading>
@@ -53,6 +57,14 @@ export function Scoring() {
                                     </Condensed>
                                     <Box>
                                         <Condensed component='span'>{row.question}</Condensed>
+                                        {picks[index] && (
+                                            <Typography
+                                                variant='body2'
+                                                sx={{ color: ORANGE, fontWeight: 600 }}
+                                            >
+                                                {SCORECARD.yourPick(picks[index])}
+                                            </Typography>
+                                        )}
                                         {row.note && (
                                             <Typography
                                                 variant='body2'

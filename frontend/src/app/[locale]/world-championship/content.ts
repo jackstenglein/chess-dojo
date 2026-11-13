@@ -28,6 +28,7 @@ export const HERO = {
     countdownFallback: 'Predictions lock when Game 1 starts',
     /** The lock time at the venue, shown until the browser's time zone is known. */
     lockAtVenue: 'Tuesday, November 24 at 15:00 in Geneva',
+    clock: { days: 'days', hours: 'hrs', minutes: 'min', seconds: 'sec' },
     cta: 'Make my picks',
     microcopy: 'Free to enter. One entry per person.',
     proof: 'Run by ChessDojo senseis GM Jesse Kraai, IM David Pruess and IM Kostya Kavutskiy.',
@@ -287,6 +288,9 @@ export const FINISHED = {
 
 export const STICKY = {
     cta: HERO.cta,
+    /** Shown once the visitor has started picking. */
+    continueCta: 'Continue my picks',
+    progress: (done: number) => `${done} of 5 picks made`,
 };
 
 export const FOOTER_LINKS = [
@@ -304,3 +308,85 @@ export function sentences(text: string): string[] {
     const found = text.match(/[^.?]+[.?]*/g) ?? [text];
     return found.map((sentence) => sentence.trim()).filter(Boolean);
 }
+
+/**
+ * The two players, side by side. Not from the campaign brief: taken from FIDE
+ * and World Chess reporting, checked November 13, 2026. Kostya should confirm
+ * these before the page goes live.
+ */
+export const THE_MATCH = {
+    heading: 'The champion and the challenger',
+    yourPick: 'Your pick',
+    tape: [
+        { label: 'Title', gukesh: 'World Champion since 2024', sindarov: 'Challenger' },
+        { label: 'Country', gukesh: 'India', sindarov: 'Uzbekistan' },
+        { label: 'Age at Game 1', gukesh: '20', sindarov: '20' },
+        {
+            label: 'How he got here',
+            gukesh: 'Beat Ding Liren in Singapore, 7.5-6.5',
+            sindarov: 'Won the 2026 Candidates unbeaten, 10 points from 14',
+        },
+        {
+            label: 'Before that',
+            gukesh: 'Won the 2024 Candidates at 17',
+            sindarov: 'Won the 2025 World Cup',
+        },
+    ],
+    scheduleHeading: 'Fourteen games in Geneva',
+    format: 'Up to 14 classical games, one a day at 15:00 in Geneva, with a rest day after every third game. The first player to 7.5 points wins. At 7-7 the title is decided in tiebreaks on December 12.',
+    stripLabel: 'The 14 classical games and the tiebreak day',
+    tiebreakCell: 'TB',
+    legend: {
+        first: 'Your first win',
+        unplayed: 'Not played, by your score',
+    },
+    yourCall: 'Your call.',
+};
+
+/** One sentence per pick, for the line under the match strip. */
+export const MATCH_SUMMARY = {
+    endsAfter: (game: number, date: string) => `Over after Game ${game}, on ${date}.`,
+    endsBy: (game: number, date: string) => `Over by Game ${game}, on ${date} at the latest.`,
+    tiebreaks: (date: string) => `All 14 games, then tiebreaks on ${date}.`,
+    firstWin: (game: number, date: string) => `First win in Game ${game}, on ${date}.`,
+    allDrawn: 'Every classical game drawn.',
+};
+
+/**
+ * Game 14 of the 2024 match, from the Lichess broadcast PGN and replayed with a
+ * chess library. A sensei should read the explanations before this goes live.
+ */
+export const PUZZLE = {
+    heading: 'Find the moves that made Gukesh World Champion',
+    intro: 'Singapore, December 12, 2024. Game 14, the last classical game, with the match level at 6.5-6.5. Ding Liren has just played 55.Rf2. You have the black pieces.',
+    boardLabel:
+        'Position after 55.Rf2 in Game 14 of the 2024 World Championship, seen from Black’s side',
+    steps: [
+        {
+            prompt: 'Black to move. Tap a piece, then the square it goes to.',
+            hint: 'Ding’s rook now stands on the same rank as yours.',
+        },
+        {
+            prompt: 'Rooks off, and Ding took back with the king. One more move.',
+            hint: 'Offer the bishops too.',
+        },
+    ],
+    wrong: 'Not that one. Have another look.',
+    solved: 'Bishops off too. What is left is a king and pawn ending with Black a pawn up. Ding resigned after 58...Ke5, and Gukesh was World Champion at 18.',
+    showMe: 'Show me the moves',
+    again: 'Play it again',
+    bridge: 'Guessing the move before it is explained is how we suggest watching a ChessDojo class. Try it on a full one, free: GM Jesse Kraai, Logical Chess Move by Move, 70 minutes.',
+    cta: 'Watch the class',
+    href: '/class',
+    pieceNames: { K: 'king', R: 'rook', B: 'bishop', P: 'pawn' },
+};
+
+export const SHARE = {
+    button: 'Share my picks',
+    text: (winner: string, score: string) =>
+        `I picked ${winner} to win the World Championship ${score === '7-7' ? 'in tiebreaks' : score}. Make your five picks before Game 1.`,
+};
+
+export const SCORECARD = {
+    yourPick: (value: string) => `Your pick: ${value}`,
+};

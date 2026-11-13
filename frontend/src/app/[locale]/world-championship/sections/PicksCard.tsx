@@ -5,7 +5,7 @@ import { anton, barlow, barlowCondensed } from '@/components/landing/fonts';
 import { getConfig } from '@/config';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { fontFamily } from '@/style/font';
-import { Check, Download, Link as LinkIcon } from '@mui/icons-material';
+import { Check, Download, IosShare, Link as LinkIcon } from '@mui/icons-material';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -17,9 +17,11 @@ import {
     ORANGE,
 } from '../../class/sections/shared';
 import { PAGE_PATH, PLAYERS } from '../config';
-import { CONFIRMATION, PLAYER_ROLES } from '../content';
-import { describePicks, Picks } from '../prediction';
+import { CONFIRMATION, PLAYER_ROLES, SHARE } from '../content';
+import { useHydrated } from '../hooks';
+import { describePicks, Picks, scoreLabel } from '../prediction';
 import { renderShareCard, saveShareCard } from '../shareCard';
+import { MatchStrip } from './MatchStrip';
 import { BoardMotif, clipSx, Flag } from './Motif';
 
 const baseUrl = getConfig().baseUrl.replace(/\/$/, '');
@@ -114,15 +116,10 @@ export function PicksCard({ picks, displayName }: { picks: Picks; displayName: s
                     </Stack>
                 ))}
             </Box>
-            <Typography
-                variant='body2'
-                sx={{
-                    pt: 1.25,
-                    color: MUTED,
-                    fontSize: '0.95rem',
-                    borderTop: `1px solid ${HAIRLINE}`,
-                }}
-            >
+            <Box sx={{ pt: 1.75, borderTop: `1px solid ${HAIRLINE}` }}>
+                <MatchStrip draft={picks} size='small' />
+            </Box>
+            <Typography variant='body2' sx={{ pt: 1.25, color: MUTED, fontSize: '0.95rem' }}>
                 {CONFIRMATION.tieBreakerLine(picks.game1Moves)}
             </Typography>
             <Condensed sx={{ mt: 2, color: ORANGE, fontSize: '1.1rem', overflowWrap: 'anywhere' }}>
@@ -145,8 +142,26 @@ export function ShareButtons({ picks, displayName }: { picks: Picks; displayName
     const [copied, setCopied] = useState(false);
     const [saving, setSaving] = useState(false);
     const copiedTimer = useRef<number>(undefined);
+    // The share sheet only exists on some browsers, mostly phones.
+    const canShare = useHydrated() && typeof navigator.share === 'function';
 
     useEffect(() => () => window.clearTimeout(copiedTimer.current), []);
+
+    const onShare = async () => {
+        try {
+            await navigator.share({
+                title: CONFIRMATION.cardTitle,
+                text: SHARE.text(
+                    PLAYERS[picks.winner].name,
+                    picks.tiebreaks ? picks.score : scoreLabel(picks.score),
+                ),
+                url: SHARE_URL,
+            });
+            trackEvent(EventType.WcShare, { method: 'native' });
+        } catch {
+            // The visitor closed the share sheet.
+        }
+    };
 
     const onCopy = async () => {
         try {
@@ -185,6 +200,17 @@ export function ShareButtons({ picks, displayName }: { picks: Picks; displayName
 
     return (
         <Stack direction='row' sx={{ gap: 1.25, flexWrap: 'wrap' }}>
+            {canShare && (
+                <Button
+                    variant='outlined'
+                    color='inherit'
+                    onClick={() => void onShare()}
+                    startIcon={<IosShare />}
+                    sx={shareButtonSx}
+                >
+                    {SHARE.button}
+                </Button>
+            )}
             <Button
                 variant='outlined'
                 color='inherit'

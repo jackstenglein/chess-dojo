@@ -26,8 +26,8 @@ import {
     MUTED,
     ORANGE,
 } from '../../class/sections/shared';
-import { MATCH, PlayerId, PLAYERS } from '../config';
-import { FLOW, PLAYER_ROLES, QUESTIONS, SCORE_OPTIONS, TIEBREAK_OPTIONS } from '../content';
+import { MATCH, PLAYERS } from '../config';
+import { FLOW, QUESTIONS, SCORE_OPTIONS, TIEBREAK_OPTIONS } from '../content';
 import { useStoredDraft } from '../hooks';
 import {
     DECISIVE_SCORES,
@@ -49,11 +49,14 @@ import {
     wcPredictionSchema,
 } from '../prediction';
 import { submitEntry } from '../submitEntry';
-import { Flag } from './Motif';
+import { MatchStripWithSummary } from './MatchStrip';
+import { Versus } from './Versus';
 
 export const FLOW_ELEMENT_ID = 'picks';
 const DEFAULT_GAME_1_MOVES = 40;
 const ADVANCE_DELAY_MS = 180;
+/** The first pick gets a little longer, so the chosen side can finish filling in. */
+const WINNER_ADVANCE_DELAY_MS = 420;
 const PICK_NUMBERS: Partial<Record<StepId, number>> = {
     winner: 1,
     tiebreaks: 2,
@@ -81,12 +84,12 @@ function optionSx(selected: boolean) {
         bgcolor: selected ? 'rgba(247, 148, 31, 0.16)' : 'rgba(255, 255, 255, 0.045)',
         border: `2px solid ${selected ? ORANGE : HAIRLINE}`,
         transition: `border-color 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}, transform 150ms ${EASE_OUT}`,
-        '@media (hover: hover)': {
+        '@media (hover: hover) and (pointer: fine)': {
             '&:hover:not(:disabled)': {
                 borderColor: selected ? ORANGE : 'rgba(255, 255, 255, 0.45)',
             },
         },
-        '&:active:not(:disabled)': { transform: 'scale(0.96)' },
+        '&:active:not(:disabled)': { transform: 'scale(0.97)' },
         '&:disabled': { opacity: 0.28, cursor: 'not-allowed' },
     } as const;
 }
@@ -234,7 +237,10 @@ export function PickFlow({ onClosed }: { onClosed: () => void }) {
         }
         trackEvent(EventType.WcPickStep, { step: stepIndex + 1, step_id: step });
         window.clearTimeout(advanceTimer.current);
-        advanceTimer.current = window.setTimeout(() => goNext(picks), ADVANCE_DELAY_MS);
+        advanceTimer.current = window.setTimeout(
+            () => goNext(picks),
+            step === 'winner' ? WINNER_ADVANCE_DELAY_MS : ADVANCE_DELAY_MS,
+        );
     };
 
     const movesText = movesInput ?? String(draft.game1Moves ?? DEFAULT_GAME_1_MOVES);
@@ -411,29 +417,11 @@ export function PickFlow({ onClosed }: { onClosed: () => void }) {
 
                     <Box sx={{ mt: 2 }}>
                         {step === 'winner' && (
-                            <Box
-                                role='radiogroup'
-                                aria-label={title}
-                                sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}
-                            >
-                                {(Object.keys(PLAYERS) as PlayerId[]).map((player) => (
-                                    <Option
-                                        key={player}
-                                        selected={draft.winner === player}
-                                        onSelect={() => answer({ winner: player })}
-                                        label={PLAYERS[player].name}
-                                        sx={{ minHeight: 104, py: 1.75 }}
-                                    >
-                                        <Flag player={player} width={36} />
-                                        <Condensed sx={{ mt: 1.25, fontSize: '1.7rem' }}>
-                                            {PLAYERS[player].name}
-                                        </Condensed>
-                                        <Typography variant='body2' sx={{ color: MUTED }}>
-                                            {PLAYER_ROLES[player]}
-                                        </Typography>
-                                    </Option>
-                                ))}
-                            </Box>
+                            <Versus
+                                label={title}
+                                selected={draft.winner}
+                                onSelect={(player) => answer({ winner: player })}
+                            />
                         )}
 
                         {step === 'tiebreaks' && (
@@ -695,6 +683,12 @@ export function PickFlow({ onClosed }: { onClosed: () => void }) {
                         )}
                     </Box>
 
+                    {step !== 'winner' && draft.winner && (
+                        <Box sx={{ mt: 2.25, pt: 2, borderTop: `1px solid ${HAIRLINE}` }}>
+                            <MatchStripWithSummary draft={draft} />
+                        </Box>
+                    )}
+
                     {blocked && conflict && (
                         <Typography
                             role='alert'
@@ -756,5 +750,5 @@ const stepperSx = {
     border: `1px solid ${HAIRLINE}`,
     borderRadius: 2,
     transition: `transform 150ms ${EASE_OUT}, border-color 200ms ${EASE_OUT}`,
-    '&:active': { transform: 'scale(0.96)' },
+    '&:active': { transform: 'scale(0.97)' },
 } as const;

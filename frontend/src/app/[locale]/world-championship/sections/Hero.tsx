@@ -6,7 +6,7 @@ import { anton, barlowCondensed } from '@/components/landing/fonts';
 import { Link } from '@/components/navigation/Link';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { fontFamily } from '@/style/font';
-import { CheckCircle, Schedule } from '@mui/icons-material';
+import { CheckCircle } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -17,6 +17,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { keyframes } from '@mui/material/styles';
 import { ReactNode, useState } from 'react';
 import { getAttribution } from '../../class/classLead';
 import {
@@ -44,92 +45,96 @@ import {
 } from '../prediction';
 import { submitEntry } from '../submitEntry';
 import { OFFER_ELEMENT_ID } from './BlackFriday';
-import { BoardMotif, clipSx, Flag } from './Motif';
-import { PickFlow, scrollToFlow } from './PickFlow';
+import { clipSx, Flag } from './Motif';
+import { PickFlow } from './PickFlow';
 import { PicksCard, ShareButtons } from './PicksCard';
+
+/** The picks card lands like a stamp, the one celebration on the page. */
+const stampIn = keyframes`
+    from { opacity: 0; transform: scale(1.06); filter: blur(6px); }
+    to { opacity: 1; transform: scale(1); filter: blur(0); }
+`;
 
 function entranceSx(delayMs: number) {
     return { animation: `${riseIn} 800ms ${EASE_OUT} ${delayMs}ms both` };
 }
 
-function HeroFrame({ children, cta }: { children: ReactNode; cta?: boolean }) {
+function HeroFrame({ children }: { children: ReactNode }) {
     return (
         <Box
             sx={{
                 position: 'relative',
                 ...clipSx,
                 isolation: 'isolate',
-                background: `linear-gradient(180deg, #10101C 0%, ${INK} 100%)`,
+                background: `linear-gradient(180deg, #11111D 0%, ${INK} 100%)`,
             }}
         >
-            <BoardMotif
+            {/* The event line runs across the top like a broadcast strap. */}
+            <Condensed
                 sx={{
+                    px: 2,
+                    py: 0.75,
+                    textAlign: 'center',
+                    color: '#0b0b12',
+                    bgcolor: ORANGE,
+                    fontSize: { xs: '0.8rem', sm: '0.95rem' },
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    textWrap: 'balance',
+                }}
+            >
+                {HERO.eyebrow}
+            </Condensed>
+
+            {/* A board running away from the viewer, under everything else. */}
+            <Box
+                aria-hidden
+                sx={{
+                    position: 'absolute',
                     zIndex: -1,
-                    top: { xs: '-4rem', md: '-9rem' },
-                    right: { xs: '-9rem', md: '-7rem' },
-                    width: { xs: '34rem', md: '58rem' },
+                    left: '-30%',
+                    right: '-30%',
+                    bottom: 0,
+                    height: { xs: '46%', md: '62%' },
+                    pointerEvents: 'none',
+                    backgroundImage:
+                        'conic-gradient(rgba(255, 255, 255, 0.07) 25%, transparent 0 50%, rgba(255, 255, 255, 0.07) 0 75%, transparent 0)',
+                    backgroundSize: { xs: '96px 96px', md: '150px 150px' },
+                    backgroundPosition: '50% 100%',
+                    transform: 'perspective(620px) rotateX(58deg)',
+                    transformOrigin: '50% 100%',
+                    maskImage: 'linear-gradient(to top, #000 0%, transparent 92%)',
                 }}
             />
-            <Container maxWidth='lg' sx={{ pt: 2, pb: { xs: 5, md: 9 } }}>
+
+            <Container maxWidth='lg' sx={{ pt: { xs: 1.5, md: 2 }, pb: { xs: 5, md: 9 } }}>
                 <Stack
+                    component={Link}
+                    href='/'
                     direction='row'
-                    sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        minHeight: 44,
+                        color: 'common.white',
+                        textDecoration: 'none',
+                    }}
                 >
-                    <Stack
-                        component={Link}
-                        href='/'
-                        direction='row'
+                    <ChessDojoIcon sx={{ fontSize: '2.25rem' }} />
+                    <Typography
                         sx={{
-                            alignItems: 'center',
-                            gap: 1,
-                            color: 'common.white',
-                            textDecoration: 'none',
+                            fontFamily: (theme) => fontFamily(theme, barlowCondensed),
+                            fontWeight: 600,
+                            fontSize: '1.4rem',
                         }}
                     >
-                        <ChessDojoIcon sx={{ fontSize: '2.5rem' }} />
-                        <Typography
-                            sx={{
-                                fontFamily: (theme) => fontFamily(theme, barlowCondensed),
-                                fontWeight: 600,
-                                fontSize: '1.5rem',
-                            }}
-                        >
-                            ChessDojo
-                        </Typography>
-                    </Stack>
-                    {cta && (
-                        <Button
-                            onClick={scrollToFlow}
-                            sx={{
-                                color: ORANGE,
-                                fontWeight: 600,
-                                minHeight: 44,
-                                px: 1.5,
-                                mr: -1.5,
-                            }}
-                        >
-                            {HERO.cta}
-                        </Button>
-                    )}
+                        ChessDojo
+                    </Typography>
                 </Stack>
                 {children}
             </Container>
         </Box>
-    );
-}
-
-function Eyebrow() {
-    return (
-        <Condensed
-            sx={{
-                color: ORANGE,
-                fontSize: { xs: '0.95rem', md: '1.15rem' },
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-            }}
-        >
-            {HERO.eyebrow}
-        </Condensed>
     );
 }
 
@@ -138,7 +143,6 @@ function Title({ children }: { children: ReactNode }) {
         <Typography
             component='h1'
             sx={{
-                mt: 1.25,
                 fontFamily: (theme) => fontFamily(theme, anton),
                 fontSize: { xs: 'clamp(1.9rem, 8.8vw, 2.9rem)', md: '3.6rem', lg: '4.1rem' },
                 lineHeight: 1.1,
@@ -151,39 +155,76 @@ function Title({ children }: { children: ReactNode }) {
     );
 }
 
+/** Days, hours, minutes and seconds until predictions lock, as four fixed cells. */
 function Countdown({ lockAt, frozenAt }: { lockAt: number; frozenAt?: number }) {
     const left = useTimeLeft(lockAt, frozenAt);
+    const seconds = Math.max(0, Math.floor((left ?? 0) / 1000));
+    const cells = [
+        { value: Math.floor(seconds / 86400), unit: HERO.clock.days },
+        { value: Math.floor((seconds % 86400) / 3600), unit: HERO.clock.hours },
+        { value: Math.floor((seconds % 3600) / 60), unit: HERO.clock.minutes },
+        { value: seconds % 60, unit: HERO.clock.seconds },
+    ];
 
     return (
         <Box>
+            <Condensed sx={{ mb: 1, fontSize: { xs: '1.05rem', md: '1.2rem' }, fontWeight: 500 }}>
+                {left === undefined ? HERO.countdownFallback : HERO.countdownLabel}
+            </Condensed>
             <Stack
                 direction='row'
-                sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    minHeight: 44,
-                    px: 1.75,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(247, 148, 31, 0.12)',
-                    border: '1px solid rgba(247, 148, 31, 0.45)',
-                }}
+                role='timer'
+                aria-label={
+                    left === undefined
+                        ? HERO.countdownFallback
+                        : `${HERO.countdownLabel} ${formatCountdown(left)}`
+                }
+                sx={{ gap: { xs: 0.75, md: 1 } }}
             >
-                <Schedule sx={{ fontSize: 20, color: ORANGE }} />
-                <Condensed sx={{ fontSize: { xs: '1.2rem', md: '1.35rem' }, whiteSpace: 'nowrap' }}>
-                    {left === undefined ? (
-                        HERO.countdownFallback
-                    ) : (
-                        <>
-                            {HERO.countdownLabel}{' '}
-                            <Box component='span' sx={{ color: ORANGE }}>
-                                {formatCountdown(left)}
-                            </Box>
-                        </>
-                    )}
-                </Condensed>
+                {cells.map((cell) => (
+                    <Box
+                        key={cell.unit}
+                        aria-hidden
+                        sx={{
+                            minWidth: { xs: '3.6rem', md: '4.4rem' },
+                            py: { xs: 0.75, md: 1 },
+                            textAlign: 'center',
+                            borderRadius: 2,
+                            bgcolor: 'rgba(8, 8, 15, 0.72)',
+                            boxShadow: `inset 0 0 0 1px ${HAIRLINE}`,
+                        }}
+                    >
+                        <Typography
+                            component='span'
+                            sx={{
+                                display: 'block',
+                                fontFamily: (theme) => fontFamily(theme, anton),
+                                fontSize: { xs: '1.75rem', md: '2.3rem' },
+                                lineHeight: 1.1,
+                                color: ORANGE,
+                                // Space is kept until the clock of the browser is read, so nothing jumps.
+                                visibility: left === undefined ? 'hidden' : 'visible',
+                            }}
+                        >
+                            {String(cell.value).padStart(2, '0')}
+                        </Typography>
+                        <Typography
+                            component='span'
+                            variant='caption'
+                            sx={{
+                                display: 'block',
+                                color: MUTED,
+                                fontSize: '0.72rem',
+                                letterSpacing: '0.06em',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {cell.unit}
+                        </Typography>
+                    </Box>
+                ))}
             </Stack>
-            <Typography variant='body2' sx={{ mt: 0.75, color: MUTED, minHeight: '1.45em' }}>
+            <Typography variant='body2' sx={{ mt: 1, color: MUTED, minHeight: '1.45em' }}>
                 {left === undefined ? HERO.lockAtVenue : formatLockMoment(lockAt)}
             </Typography>
         </Box>
@@ -203,7 +244,7 @@ function OpenHero({
     const lines = sentences(HERO.headlines[variant]);
 
     return (
-        <HeroFrame cta>
+        <HeroFrame>
             <Box
                 sx={{
                     mt: { xs: 2.5, md: 7 },
@@ -214,7 +255,6 @@ function OpenHero({
                 }}
             >
                 <Box sx={entranceSx(0)}>
-                    <Eyebrow />
                     <Title>
                         {lines.map((line, index) => (
                             <Box
@@ -236,7 +276,7 @@ function OpenHero({
                             color: 'common.white',
                             fontSize: { xs: '1.125rem', md: '1.35rem' },
                             maxWidth: '34rem',
-                            textWrap: 'pretty',
+                            textWrap: 'balance',
                         }}
                     >
                         {config.prizes.confirmed
@@ -352,10 +392,7 @@ function ConfirmedHero({
                 }}
             >
                 <Box sx={{ gridArea: 'head', ...entranceSx(0) }}>
-                    <Stack direction='row' sx={{ alignItems: 'center', gap: 1, color: '#7FD66B' }}>
-                        <CheckCircle />
-                        <Eyebrow />
-                    </Stack>
+                    <CheckCircle sx={{ mb: 1, fontSize: '2.25rem', color: '#7FD66B' }} />
                     <Title>{CONFIRMATION.heading}</Title>
                     <Body
                         sx={{
@@ -369,7 +406,12 @@ function ConfirmedHero({
                     </Body>
                 </Box>
 
-                <Box sx={{ gridArea: 'card', ...entranceSx(120) }}>
+                <Box
+                    sx={{
+                        gridArea: 'card',
+                        animation: `${stampIn} 520ms ${EASE_OUT} 80ms both`,
+                    }}
+                >
                     <PicksCard picks={entry.picks} displayName={entry.displayName} />
                 </Box>
 
@@ -523,7 +565,6 @@ function LiveHero({ entry }: { entry?: StoredEntry }) {
                 }}
             >
                 <Box sx={entranceSx(0)}>
-                    <Eyebrow />
                     <Title>{LIVE.heading}</Title>
                     <Body
                         sx={{
@@ -573,7 +614,6 @@ function FinishedHero({ results, entry }: { results: Results; entry?: StoredEntr
                 }}
             >
                 <Box sx={entranceSx(0)}>
-                    <Eyebrow />
                     <Stack direction='row' sx={{ mt: 1.5, alignItems: 'center', gap: 1.25 }}>
                         <Flag player={results.winner} width={42} />
                         <Condensed sx={{ color: MUTED, fontSize: '1.2rem' }}>

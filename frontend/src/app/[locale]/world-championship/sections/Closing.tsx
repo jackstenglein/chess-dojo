@@ -7,7 +7,7 @@ import { Box, Button, Container, Slide, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react';
 import { HAIRLINE, INK_RAISED, MUTED, ORANGE } from '../../class/sections/shared';
 import { FINAL_CTA, FOOTER_LINKS, HERO, NOT_AFFILIATED, sentences, STICKY } from '../content';
-import { useHydrated, useTimeLeft } from '../hooks';
+import { useHydrated, useStoredDraft, useTimeLeft } from '../hooks';
 import { formatCountdown, lockDayLabel } from '../prediction';
 import { BoardMotif, clipSx } from './Motif';
 import { FLOW_ELEMENT_ID, scrollToFlow } from './PickFlow';
@@ -111,6 +111,7 @@ export function Footer({ padForStickyBar }: { padForStickyBar: boolean }) {
 export function StickyBar({ lockAt, frozenAt }: { lockAt: number; frozenAt?: number }) {
     const [flowVisible, setFlowVisible] = useState(true);
     const left = useTimeLeft(lockAt, frozenAt);
+    const { started } = useStoredDraft();
 
     useEffect(() => {
         const flow = document.getElementById(FLOW_ELEMENT_ID);
@@ -167,7 +168,7 @@ export function StickyBar({ lockAt, frozenAt }: { lockAt: number; frozenAt?: num
                     onClick={scrollToFlow}
                     sx={{ minHeight: 48, px: 3, fontWeight: 600, flexShrink: 0 }}
                 >
-                    {STICKY.cta}
+                    {started ? STICKY.continueCta : STICKY.cta}
                 </Button>
             </Stack>
         </Slide>

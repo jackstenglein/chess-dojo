@@ -3,15 +3,18 @@
 import { Box, GlobalStyles } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { rememberAttribution } from '../class/classLead';
+import { RatingMoves } from '../class/sections/RatingMoves';
 import { InkGround, pageSx } from '../class/sections/shared';
 import { CONTEST, ContestConfig, getOfferStatus, getPhase } from './config';
-import { useContestClock, useSearch, useStoredEntry } from './hooks';
+import { useContestClock, useSearch, useStoredDraft, useStoredEntry } from './hooks';
 import { getPreview } from './preview';
 import { BlackFriday } from './sections/BlackFriday';
 import { FinalCta, Footer, StickyBar } from './sections/Closing';
 import { Faq } from './sections/Faq';
 import { Hero } from './sections/Hero';
+import { Puzzle } from './sections/Puzzle';
 import { Prizes, Scoring, SenseiPicks } from './sections/Scoring';
+import { TheMatch } from './sections/TheMatch';
 import { WhoRuns } from './sections/WhoRuns';
 
 /**
@@ -39,6 +42,9 @@ export function WorldChampionshipPage({
     // The server has the final word on the lock. If it refused an entry, the page follows.
     const now = closedByServer ? Math.max(clock, config.lockAt) : clock;
     const entry = useStoredEntry();
+    const draft = useStoredDraft();
+    // What the visitor has called so far, whether sent or still in progress.
+    const picks = entry?.picks ?? draft.picks;
 
     useEffect(() => {
         rememberAttribution(window.location.search);
@@ -49,7 +55,7 @@ export function WorldChampionshipPage({
     const picking = phase === 'open' && !entry;
 
     return (
-        <Box className='dark' sx={pageSx}>
+        <Box className='dark' sx={{ ...pageSx, caretColor: '#F7941F' }}>
             <GlobalStyles styles={hideSiteNavigation} />
             <Hero
                 phase={phase}
@@ -60,11 +66,14 @@ export function WorldChampionshipPage({
                 onClosed={() => setClosedByServer(true)}
             />
             <InkGround>
-                <Scoring />
+                <TheMatch draft={picks} />
+                <Scoring draft={picks} />
                 <Prizes prizes={config.prizes} />
                 <SenseiPicks picks={config.senseiPicks} />
             </InkGround>
+            <Puzzle />
             <WhoRuns />
+            <RatingMoves />
             {offerStatus === 'live' && <BlackFriday offer={config.offer} />}
             <Faq
                 lockAt={config.lockAt}

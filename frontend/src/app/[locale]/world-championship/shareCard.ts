@@ -1,6 +1,6 @@
-import { PlayerId, PLAYERS } from './config';
-import { CONFIRMATION, PLAYER_ROLES } from './content';
-import { describePicks, Picks } from './prediction';
+import { MATCH, PlayerId, PLAYERS } from './config';
+import { CONFIRMATION, PLAYER_ROLES, THE_MATCH } from './content';
+import { describePicks, gamesForScore, Picks } from './prediction';
 
 /**
  * Draws the picks card as a 1080x1350 PNG, the portrait size Instagram and X show
@@ -110,6 +110,51 @@ function drawFlag(context: CanvasRenderingContext2D, player: PlayerId, x: number
     context.stroke();
 }
 
+/** The 14 games in their schedule blocks, with the first win filled in and unplayed games struck out. */
+function drawStrip(context: CanvasRenderingContext2D, picks: Picks, top: number, family: string) {
+    const cell = 46;
+    const height = 46;
+    const lastGame = gamesForScore(picks.score).games;
+    let x = MARGIN;
+    context.textAlign = 'center';
+    context.font = `600 24px ${family}`;
+    for (let game = 1; game <= MATCH.games; game++) {
+        const firstWin = picks.firstDecisiveGame === game;
+        const unplayed = game > lastGame;
+        if (unplayed) {
+            context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            context.lineWidth = 2;
+            context.strokeRect(x + 1, top + 1, cell - 2, height - 2);
+            context.beginPath();
+            context.moveTo(x + 6, top + height - 6);
+            context.lineTo(x + cell - 6, top + 6);
+            context.stroke();
+        } else {
+            context.fillStyle = firstWin ? ORANGE : 'rgba(255, 255, 255, 0.12)';
+            context.fillRect(x, top, cell, height);
+        }
+        context.fillStyle = firstWin
+            ? '#0b0b12'
+            : unplayed
+              ? 'rgba(255, 255, 255, 0.35)'
+              : '#FFFFFF';
+        context.fillText(String(game), x + cell / 2, top + 32);
+        // A wider gap after every third game marks the rest day.
+        x += cell + (game % 3 === 0 ? 18 : 4);
+    }
+    const tiebreakWidth = 72;
+    if (picks.tiebreaks) {
+        context.fillStyle = ORANGE;
+        context.fillRect(x + 14, top, tiebreakWidth, height);
+    } else {
+        context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        context.lineWidth = 2;
+        context.strokeRect(x + 15, top + 1, tiebreakWidth - 2, height - 2);
+    }
+    context.fillStyle = picks.tiebreaks ? '#0b0b12' : 'rgba(255, 255, 255, 0.5)';
+    context.fillText(THE_MATCH.tiebreakCell, x + 14 + tiebreakWidth / 2, top + 32);
+}
+
 function hairline(context: CanvasRenderingContext2D, y: number) {
     context.fillStyle = HAIRLINE;
     context.fillRect(MARGIN, y, WIDTH - MARGIN * 2, 2);
@@ -187,10 +232,10 @@ export async function renderShareCard(data: ShareCardData, fonts: ShareCardFonts
     );
 
     const lines = describePicks(picks).slice(1);
-    let y = 700;
+    let y = 690;
     for (const line of lines) {
         hairline(context, y);
-        y += 80;
+        y += 74;
         context.textAlign = 'left';
         context.fillStyle = MUTED;
         context.font = `400 42px ${fonts.body}`;
@@ -199,14 +244,15 @@ export async function renderShareCard(data: ShareCardData, fonts: ShareCardFonts
         context.fillStyle = '#FFFFFF';
         context.font = `600 56px ${fonts.condensed}`;
         context.fillText(line.value, WIDTH - MARGIN, y + 4);
-        y += 30;
+        y += 26;
     }
     hairline(context, y);
+    drawStrip(context, picks, y + 24, fonts.condensed);
 
     context.textAlign = 'left';
     context.fillStyle = MUTED;
     context.font = `400 38px ${fonts.body}`;
-    context.fillText(CONFIRMATION.tieBreakerLine(picks.game1Moves), MARGIN, y + 64);
+    context.fillText(CONFIRMATION.tieBreakerLine(picks.game1Moves), MARGIN, y + 126);
 
     context.fillStyle = ORANGE;
     context.font = `600 46px ${fonts.condensed}`;

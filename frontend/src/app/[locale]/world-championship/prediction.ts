@@ -292,6 +292,49 @@ export function describePicks(picks: Picks): PickLine[] {
     ];
 }
 
+/** The answers given so far, in the order of the five questions. Undefined where there is none yet. */
+export function draftValues(draft: Draft): (string | undefined)[] {
+    const score = scoreOf(draft);
+    return [
+        draft.winner ? PLAYERS[draft.winner].name : undefined,
+        draft.tiebreaks === undefined
+            ? undefined
+            : draft.tiebreaks
+              ? 'Tiebreaks'
+              : 'Classical games',
+        score ? scoreLabel(score) : undefined,
+        draft.decisiveGames === undefined ? undefined : String(draft.decisiveGames),
+        draft.firstDecisiveGame === undefined
+            ? undefined
+            : draft.firstDecisiveGame === 'none'
+              ? 'None'
+              : `Game ${draft.firstDecisiveGame}`,
+    ];
+}
+
+/** How long a match with this final score lasts. `orFewer` is true for the 7.5-3.5 or bigger pick. */
+export function gamesForScore(score: ScorePick): { games: number; orFewer: boolean } {
+    switch (score) {
+        case '7.5-5.5':
+            return { games: 13, orFewer: false };
+        case '7.5-4.5':
+            return { games: 12, orFewer: false };
+        case '7.5-3.5+':
+            return { games: 11, orFewer: true };
+        default:
+            return { games: MATCH.games, orFewer: false };
+    }
+}
+
+/** "December 10" for a date like "2026-12-10". */
+export function formatGameDate(isoDate: string): string {
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC',
+    }).format(Date.parse(`${isoDate}T12:00:00Z`));
+}
+
 // ---------------------------------------------------------------------------
 // Scoring
 // ---------------------------------------------------------------------------
