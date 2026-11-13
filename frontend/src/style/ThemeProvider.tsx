@@ -24,6 +24,26 @@ export const CategoryColors: Record<RequirementCategory, string> = {
     [RequirementCategory.Pinned]: '#c27ba0',
 };
 
+// The series colors of react-charts, kept when the charts moved to MUI X Charts.
+export const ChartColors = [
+    '#0f83ab',
+    '#faa43a',
+    '#fd6868',
+    '#53cfc9',
+    '#a2d925',
+    '#decf3f',
+    '#734fe9',
+    '#cd82ad',
+    '#006d92',
+    '#de7c00',
+    '#f33232',
+    '#3f9a80',
+    '#53c200',
+    '#d7af00',
+    '#4c26c9',
+    '#d44d99',
+];
+
 // Extremely degen stuff to force the type system to accept the result
 // of themeRequirementCategory as a valid theme value.
 // TODO: figure out a way to migrate this.

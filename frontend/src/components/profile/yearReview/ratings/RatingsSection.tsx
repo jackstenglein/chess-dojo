@@ -1,4 +1,3 @@
-import { useAuth } from '@/auth/Auth';
 import { RatingSystem, formatRatingSystem } from '@/database/user';
 import { YearReviewRatingData } from '@/database/yearReview';
 import { Stack, Typography } from '@mui/material';
@@ -10,8 +9,6 @@ import RatingCard from './RatingCard';
 const RatingsSection = ({ review }: SectionProps) => {
     const t = useTranslations('profile.yearReview.ratings');
     const tRating = useTranslations('enums.ratingSystem');
-    const viewer = useAuth().user;
-    const dark = !viewer?.enableLightMode;
 
     const preferred = review.ratings
         ? Object.entries(review.ratings).find((data) => data[1].isPreferred)
@@ -86,7 +83,6 @@ const RatingsSection = ({ review }: SectionProps) => {
                         cohort={review.currentCohort}
                         system={preferred[0] as RatingSystem}
                         data={preferred[1]}
-                        dark={dark}
                         period={review.period}
                     />
 
@@ -116,7 +112,6 @@ const RatingsSection = ({ review }: SectionProps) => {
                                     cohort={review.currentCohort}
                                     system={system as RatingSystem}
                                     data={data}
-                                    dark={dark}
                                     period={review.period}
                                 />
                             );

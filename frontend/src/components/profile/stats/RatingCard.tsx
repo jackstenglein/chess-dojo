@@ -1,4 +1,3 @@
-import { useAuth } from '@/auth/Auth';
 import {
     RatingHistory,
     RatingSystem,
@@ -28,7 +27,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { AxisOptions, Chart } from 'react-charts';
+import { RatingHistoryChart } from './RatingHistoryChart';
 
 export function getMemberLink(ratingSystem: RatingSystem, username: string): string {
     switch (ratingSystem) {
@@ -167,26 +166,6 @@ function RatingProfileLink({
     );
 }
 
-interface Datum {
-    date: Date;
-    rating: number;
-}
-
-export const primaryAxis: AxisOptions<Datum> = {
-    scaleType: 'time',
-    getValue: (datum) => datum.date,
-};
-
-export const secondaryAxes: AxisOptions<Datum>[] = [
-    {
-        scaleType: 'linear',
-        getValue: (datum) => datum.rating,
-        formatters: {
-            scale: (value) => `${value}`,
-        },
-    },
-];
-
 interface RatingCardProps {
     system: RatingSystem;
     cohort: string;
@@ -218,8 +197,6 @@ const RatingCard: React.FC<RatingCardProps> = ({
 }) => {
     const t = useTranslations('profile.stats.ratingCard');
     const tRating = useTranslations('enums.ratingSystem');
-    const { user } = useAuth();
-    const dark = !user?.enableLightMode;
     const [refreshing, setRefreshing] = useState(false);
     const ratingChange = currentRating - startRating;
     const graduation = getRatingBoundary(cohort, system);
@@ -549,15 +526,9 @@ const RatingCard: React.FC<RatingCardProps> = ({
                                 mt: 2,
                             }}
                         >
-                            <Chart
-                                options={{
-                                    data: historyData,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                    dark,
-                                    interactionMode: 'closest',
-                                    tooltip: false,
-                                }}
+                            <RatingHistoryChart
+                                data={historyData[0].data}
+                                label={historyData[0].label}
                             />
                         </Box>
                         <Typography
