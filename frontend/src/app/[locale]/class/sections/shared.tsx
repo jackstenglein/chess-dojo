@@ -17,6 +17,7 @@ export const BLUE_BAND =
 export const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 export const OFFER_ELEMENT_ID = 'join';
 export const LIVE_CLASSES_ELEMENT_ID = 'live-classes';
+export const LIBRARY_ELEMENT_ID = 'library';
 
 type StyleObject = Record<string, string | number | object | undefined>;
 
@@ -179,6 +180,10 @@ export function Condensed({
 
 export function scrollToOffer() {
     document.getElementById(OFFER_ELEMENT_ID)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+export function scrollToLibrary() {
+    document.getElementById(LIBRARY_ELEMENT_ID)?.scrollIntoView({ behavior: 'smooth' });
 }
 
 const subscribeToNothing = () => () => undefined;

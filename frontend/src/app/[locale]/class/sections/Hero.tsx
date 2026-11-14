@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import posterImage from '../assets/logical-chess-poster.webp';
 import { rememberAttribution } from '../classLead';
 import { ClassId, CORE_OFFER, WORKSHOPS_OFFER } from '../content';
+import { HeroLibraryStats, LibraryBanner } from './LibraryBanner';
 import {
     Body,
     Condensed,
@@ -84,6 +85,8 @@ export function Hero({
                     background: `linear-gradient(180deg, rgba(7, 7, 18, 0.86) 0%, rgba(7, 7, 18, 0.93) 55%, ${INK} 100%)`,
                 }}
             />
+
+            <LibraryBanner />
 
             <Container maxWidth='lg' sx={{ pt: 2.5, pb: { xs: 5, md: 7 } }}>
                 <Stack
@@ -196,11 +199,15 @@ export function Hero({
                     </Body>
                 </Box>
 
+                <Box sx={{ ...entranceSx(180), mt: { xs: 3, md: 3.5 }, textAlign: 'center' }}>
+                    <HeroLibraryStats />
+                </Box>
+
                 <Box
                     sx={{
                         ...entranceSx(240),
-                        mt: { xs: 3, md: 4 },
-                        maxWidth: { xs: 1, md: 'min(62rem, calc((100vh - 27rem) * 16 / 9))' },
+                        mt: { xs: 2.5, md: 3 },
+                        maxWidth: { xs: 1, md: 'min(62rem, calc((100vh - 31rem) * 16 / 9))' },
                         minWidth: { md: '38rem' },
                         mx: 'auto',
                     }}

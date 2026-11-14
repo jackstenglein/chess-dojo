@@ -228,46 +228,130 @@ export const RATING_MOVES = [
     },
 ];
 
+/**
+ * The recorded library, counted from /public/live-classes/recordings on Nov 13, 2026.
+ * Workshops: 16 courses, 224 recordings and 244.5 hours of measured runtime.
+ * Review teams: 369 more recordings, which have no runtime in the API. The total
+ * hours figure counts them at about 45 minutes each and needs Kostya's sign-off.
+ */
+export const LIBRARY = {
+    courses: 16,
+    workshopRecordings: 220,
+    workshopHours: 240,
+    reviewRecordings: 360,
+    totalRecordings: 590,
+    totalHours: 500,
+};
+
+/** Every workshop course in the library, longest first. Counted Nov 13, 2026. */
 export const CLASS_COVERS = [
     {
         name: 'Calculation 1000+',
         teacher: 'IM Kostya Kavutskiy',
-        detail: '42 recordings',
+        detail: '43 recordings · 46 hours',
         imageUrl: 'https://i.ytimg.com/vi/5MynOIPEi4w/maxresdefault.jpg',
-    },
-    {
-        name: 'Logical Chess Move by Move',
-        teacher: 'GM Jesse Kraai',
-        detail: '17 recordings',
-        imageUrl:
-            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/logical-chess-2.webp',
-    },
-    {
-        name: 'Middlegame Decision Making',
-        teacher: 'GM Josh Friedel',
-        detail: '22 recordings',
-        imageUrl:
-            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/middlegame_decisions.webp',
     },
     {
         name: 'Intermediate Endgames',
         teacher: 'IM Tatev Abrahamyan',
-        detail: '37 recordings',
+        detail: '37 recordings · 39 hours',
         imageUrl:
             'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/endgame-intermediate-2.webp',
     },
     {
+        name: 'Middlegame Decision Making',
+        teacher: 'GM Josh Friedel',
+        detail: '22 recordings · 24 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/middlegame_decisions.webp',
+    },
+    {
+        name: 'Starter d4 Repertoire and Typical Plans',
+        teacher: 'IM Kostya Kavutskiy',
+        detail: '21 recordings · 22 hours',
+        imageUrl: 'https://i.ytimg.com/vi/Ho7vxC1YE_s/maxresdefault.jpg',
+    },
+    {
+        name: 'Logical Chess Move by Move',
+        teacher: 'GM Jesse Kraai',
+        detail: '17 recordings · 21 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/logical-chess-2.webp',
+    },
+    {
+        name: 'Typical Pawn Structures',
+        teacher: 'IM Kostya Kavutskiy',
+        detail: '17 recordings · 17 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/july-live-classes/typical_pawn_structures.webp',
+    },
+    {
+        name: 'Evaluation for Beginners',
+        teacher: 'GM Jesse Kraai',
+        detail: '13 recordings · 14 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/july-live-classes/jesse_eval.jpeg',
+    },
+    {
         name: 'The Accelerated Dragon',
         teacher: 'GM Eugene Perelshteyn',
-        detail: '12 recordings',
+        detail: '12 recordings · 12 hours',
         imageUrl:
             'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/Accelerated_Dragon.webp',
     },
     {
+        name: 'The Tactical Nimzo',
+        teacher: 'GM Josh Friedel',
+        detail: '10 recordings · 11 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/july-live-classes/josh_nimzo.jpeg',
+    },
+    {
+        name: 'Checkmate Patterns',
+        teacher: 'GM Josh Friedel',
+        detail: '9 recordings · 10 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/2026-10_live-classes/checkmate_patterns.webp',
+    },
+    {
+        name: 'Tactics Bootcamp',
+        teacher: 'GM Jesse Kraai',
+        detail: '6 recordings · 7 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/2026-10_live-classes/tactics_bootcamp.webp',
+    },
+    {
         name: "David's Guide to The Najdorf",
         teacher: 'IM David Pruess',
-        detail: '4 recordings',
+        detail: '4 recordings · 7 hours',
         imageUrl: 'https://i.ytimg.com/vi/MsJUbsshT9E/maxresdefault.jpg',
+    },
+    {
+        name: 'Endgame Fundamentals',
+        teacher: 'GM Jesse Kraai',
+        detail: '4 recordings · 5 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/endgame-fundamentals-2.webp',
+    },
+    {
+        name: 'Basic Board Visualization',
+        teacher: 'GM Jesse Kraai',
+        detail: '4 recordings · 5 hours',
+        imageUrl: 'https://i.ytimg.com/vi/3jiJn8bjtYk/maxresdefault.jpg',
+    },
+    {
+        name: 'The London System',
+        teacher: 'GM Eugene Perelshteyn',
+        detail: '3 recordings · 3 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/emails/2026-11_live-classes/london_system.jpg',
+    },
+    {
+        name: 'Attacking 101',
+        teacher: 'IM Tatev Abrahamyan',
+        detail: '2 recordings · 2 hours',
+        imageUrl:
+            'https://chess-dojo-images.s3.us-east-1.amazonaws.com/live-classes/attacking-101.webp',
     },
 ];
 
@@ -731,7 +815,7 @@ export const WORKSHOPS_OFFER: Offer = {
             description: 'Positions to work on before class, so you arrive with your own answers.',
         },
         {
-            title: '200+ recorded classes, yours while you’re a member',
+            title: `${LIBRARY.courses} recorded courses, ${LIBRARY.workshopHours}+ hours to watch, yours while you’re a member`,
             description: 'Seven of these workshops sell separately in our shop for $520.',
             value: '$520 in the shop',
         },
@@ -774,7 +858,7 @@ export const GAME_REVIEW_OFFER: Offer = {
         },
         {
             title: 'Recordings of every review team, at every rating',
-            description: 'Watch how the senseis handle players at other ratings.',
+            description: `${LIBRARY.reviewRecordings}+ recorded reviews so far. Watch how the senseis handle players at other ratings.`,
         },
         {
             title: 'Everything in Workshops',
