@@ -23,6 +23,7 @@ import {
     WorkGoalSettings,
     isFree,
 } from '@/database/user';
+import { getAllocatedMinutes, getPinnedMinutes, pinnedMinutesMatch } from './pinSchedule';
 import { DEFAULT_MINUTES_PER_TASK, DEFAULT_WORK_GOAL } from './workGoal';
 
 export type Task = Requirement | CustomTask;
@@ -248,7 +249,13 @@ export class TaskSuggestionAlgorithm {
             return SuggestedTaskGenerationReason.SkippedTaskUpdate;
         }
 
-        if (!weeklyPlanMatchesPinnedTasks(existingPlan, this.user.pinnedTasks ?? [])) {
+        if (
+            !weeklyPlanMatchesPinnedTasks(
+                existingPlan,
+                this.user.pinnedTasks ?? [],
+                this.user.pinnedTaskMinutes,
+            )
+        ) {
             return SuggestedTaskGenerationReason.PinnedTaskUpdate;
         }
 
@@ -267,7 +274,13 @@ export class TaskSuggestionAlgorithm {
             return SuggestedTaskGenerationReason.ScheduledGamesUpdateFuture;
         }
 
-        if (!weeklyPlanMatchesWorkGoal(existingPlan, this.user.workGoal || DEFAULT_WORK_GOAL)) {
+        if (
+            !weeklyPlanMatchesWorkGoal(
+                existingPlan,
+                this.user.workGoal || DEFAULT_WORK_GOAL,
+                this.user.pinnedTaskMinutes,
+            )
+        ) {
             return SuggestedTaskGenerationReason.WorkGoalUpdate;
         }
 
@@ -428,7 +441,10 @@ export class TaskSuggestionAlgorithm {
             );
             suggestions.push(...pinnedSuggestions);
 
-            const remainingSlots = Math.max(0, MAX_SUGGESTED_TASKS - suggestions.length);
+            const remainingSlots = Math.max(
+                0,
+                Math.min(MAX_SUGGESTED_TASKS, algoSuggestions.length) - suggestions.length,
+            );
             suggestions.push(
                 ...newSuggestions
                     .filter(({ task }) => !pinnedTaskIds.has(task.id))
@@ -457,9 +473,15 @@ export class TaskSuggestionAlgorithm {
 
         let tasksMissingTime = 0;
         let welcomeTaskMinutes = 0;
+        let pinnedMinutes = 0;
 
         for (const suggestion of suggestions) {
-            if (suggestion.task.category === RequirementCategory.Welcome) {
+            const scheduled = this.getScheduledMinutes(suggestion.task.id, day);
+            if (scheduled !== undefined) {
+                // Pinned tasks with a schedule get exactly the time the user set aside.
+                suggestion.goalMinutes = scheduled;
+                pinnedMinutes += scheduled;
+            } else if (suggestion.task.category === RequirementCategory.Welcome) {
                 if (welcomeTaskMinutes < goalMinutes) {
                     suggestion.goalMinutes = suggestion.task.expectedMinutes;
                     welcomeTaskMinutes += suggestion.goalMinutes;
@@ -472,7 +494,20 @@ export class TaskSuggestionAlgorithm {
             return;
         }
 
-        const otherTaskMinutes = goalMinutes - welcomeTaskMinutes;
+        const otherTaskMinutes = goalMinutes - welcomeTaskMinutes - pinnedMinutes;
+        if (otherTaskMinutes <= 0) {
+            // The day is already full, so the remaining tasks get no time.
+            for (const suggestion of suggestions) {
+                if (
+                    this.getScheduledMinutes(suggestion.task.id, day) === undefined &&
+                    suggestion.task.category !== RequirementCategory.Welcome
+                ) {
+                    suggestion.goalMinutes = 0;
+                }
+            }
+            return;
+        }
+
         const maxTasksWithTime = Math.min(
             Math.max(1, Math.floor(otherTaskMinutes / DEFAULT_MINUTES_PER_TASK)),
             tasksMissingTime,
@@ -481,7 +516,10 @@ export class TaskSuggestionAlgorithm {
 
         let tasksWithTime = 0;
         for (const suggestion of suggestions) {
-            if (suggestion.task.category === RequirementCategory.Welcome) {
+            if (
+                suggestion.task.category === RequirementCategory.Welcome ||
+                this.getScheduledMinutes(suggestion.task.id, day) !== undefined
+            ) {
                 continue;
             }
             if (
@@ -547,11 +585,15 @@ export class TaskSuggestionAlgorithm {
                     this.user.progress[t.id],
                     this.timeline,
                     true,
-                ) && !this.skippedTaskIds.includes(t.id),
+                ) &&
+                !this.skippedTaskIds.includes(t.id) &&
+                // A pinned task with a schedule is only planned on the days it has time.
+                this.getScheduledMinutes(t.id, date) !== 0,
         );
         suggestedTasks.push(...pinnedTasks);
 
-        if (pinnedTasks.length >= MAX_SUGGESTED_TASKS) {
+        const maxTasks = this.getMaxTasks(pinnedTasks, date);
+        if (pinnedTasks.length >= maxTasks) {
             return suggestedTasks;
         }
 
@@ -561,7 +603,11 @@ export class TaskSuggestionAlgorithm {
             user: this.user,
             timeline: this.timeline,
             skippedTaskIds: this.skippedTaskIds,
-        });
+        }).filter(
+            // The user chose which days a scheduled pinned task is on, so it is
+            // never suggested on its other days.
+            (r) => this.getScheduledMinutes(r.id, date) === undefined,
+        );
         if (eligibleRequirements.length === 0) {
             return suggestedTasks;
         }
@@ -579,7 +625,7 @@ export class TaskSuggestionAlgorithm {
 
         let scheduleGame = false;
 
-        while (suggestedTasks.length < MAX_SUGGESTED_TASKS) {
+        while (suggestedTasks.length < maxTasks) {
             const eligibleCategories = categoryPercentages.filter((item) =>
                 eligibleRequirements.some((r) => r.category === item.category),
             );
@@ -627,7 +673,7 @@ export class TaskSuggestionAlgorithm {
                     1,
                 );
 
-                if (suggestedTasks.length >= MAX_SUGGESTED_TASKS) {
+                if (suggestedTasks.length >= maxTasks) {
                     break;
                 }
             }
@@ -640,6 +686,43 @@ export class TaskSuggestionAlgorithm {
         }
 
         return suggestedTasks;
+    }
+
+    /**
+     * Returns the minutes the user set aside for the given pinned task on the given
+     * day, or undefined if the task is not pinned or has no schedule.
+     */
+    getScheduledMinutes(taskId: string, date: Date): number | undefined {
+        if (!this.user.pinnedTasks?.includes(taskId)) {
+            return undefined;
+        }
+        return getPinnedMinutes(this.user.pinnedTaskMinutes, taskId, date.getDay());
+    }
+
+    /**
+     * Returns the most tasks to plan on the given day, counting the pinned tasks.
+     * Suggested tasks only fill the time the pinned tasks leave free: once the
+     * pinned tasks' schedules use up the day, nothing more is suggested.
+     */
+    getMaxTasks(pinnedTasks: Task[], date: Date): number {
+        const scheduledIds = pinnedTasks
+            .map((t) => t.id)
+            .filter((id) => this.getScheduledMinutes(id, date) !== undefined);
+        if (scheduledIds.length === 0) {
+            return MAX_SUGGESTED_TASKS;
+        }
+
+        const goal = (this.user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay[date.getDay()];
+        const free =
+            goal - getAllocatedMinutes(scheduledIds, this.user.pinnedTaskMinutes, date.getDay());
+        if (free <= 0) {
+            return pinnedTasks.length;
+        }
+        const slots = Math.max(1, Math.floor(free / DEFAULT_MINUTES_PER_TASK));
+        return Math.max(
+            pinnedTasks.length,
+            Math.min(MAX_SUGGESTED_TASKS, pinnedTasks.length + slots),
+        );
     }
 
     /**
@@ -801,10 +884,18 @@ function lastProgressUpdate(user: User): string {
  * @param workGoal The work goal to check.
  * @returns True if the weekly plan matches the work goal.
  */
-function weeklyPlanMatchesWorkGoal(weeklyPlan: WeeklyPlan, workGoal: WorkGoalSettings): boolean {
+function weeklyPlanMatchesWorkGoal(
+    weeklyPlan: WeeklyPlan,
+    workGoal: WorkGoalSettings,
+    pinnedTaskMinutes?: Record<string, number[]>,
+): boolean {
     for (let i = 0; i < weeklyPlan.tasks.length; i++) {
         const day = weeklyPlan.tasks[i];
         if (day.length === 0) {
+            continue;
+        }
+        // A day with scheduled pinned tasks follows the pins' minutes, not an even split.
+        if (day.some(({ id }) => getPinnedMinutes(pinnedTaskMinutes, id, i) !== undefined)) {
             continue;
         }
 
@@ -838,7 +929,14 @@ function weeklyPlanMatchesWorkGoal(weeklyPlan: WeeklyPlan, workGoal: WorkGoalSet
  * @param pinnedTasks The pinned tasks to check.
  * @returns True if the weekly plan matches the pinned tasks.
  */
-function weeklyPlanMatchesPinnedTasks(weeklyPlan: WeeklyPlan, pinnedTasks: string[]): boolean {
+function weeklyPlanMatchesPinnedTasks(
+    weeklyPlan: WeeklyPlan,
+    pinnedTasks: string[],
+    pinnedTaskMinutes?: Record<string, number[]>,
+): boolean {
+    if (!pinnedMinutesMatch(pinnedTasks, weeklyPlan.pinnedTaskMinutes, pinnedTaskMinutes)) {
+        return false;
+    }
     if (!weeklyPlan.pinnedTasks?.length && !pinnedTasks.length) {
         return true;
     }

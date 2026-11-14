@@ -139,11 +139,12 @@
                 "show": "Mostra",
                 "taskDetails": "Dettagli del compito",
                 "showHistory": "Mostra cronologia",
-                "updateProgress": "Aggiorna i progressi",
+                "logTraining": "Registra allenamento",
                 "viewTaskDetails": "Visualizza i dettagli del compito",
                 "skipForWeek": "Salta per il resto della settimana",
                 "pinToDaily": "Fissa ai compiti giornalieri",
                 "unpinFromDaily": "Rimuovi dai compiti giornalieri",
+                "editPin": "Modifica fissaggio",
                 "hours": "Ore",
                 "minutes": "Minuti",
                 "date": "Data",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "Visualizza il tabellone completo",
                 "loadError": "Caricamento dei dati della classifica non riuscito.",
                 "empty": "Nessun utente attualmente in questa coorte."
+            },
+            "pin": {
+                "description": "Scegli i giorni in cui lavorerai a questa attività e per quanto tempo. Le attività suggerite riempiono solo il tempo rimasto nella giornata.",
+                "days": "Giorni",
+                "timePerDay": "Tempo al giorno",
+                "perDay": "Imposta per giorno",
+                "overbooked": "Le attività fissate superano il tempo pianificato di {days}.",
+                "unpin": "Rimuovi",
+                "pin": "Fissa",
+                "overbookedDay": "{day} è troppo pieno: le attività fissate richiedono {allocated}, ma hai pianificato {goal}.",
+                "raiseGoal": "Pianifica {time} per {day}",
+                "trimTasks": "Riduci le attività a {time}"
             }
         },
         "activity": {

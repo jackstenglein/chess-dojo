@@ -329,6 +329,12 @@ type User struct {
 	// The IDs of the user's pinned tasks.
 	PinnedTasks []string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks"`
 
+	// The minutes the user has set aside for each pinned task, by day of the week.
+	// Maps a task id to 7 numbers (Sunday is index 0; Saturday is index 6), where 0
+	// means the task is not planned that day. A pinned task with no entry is planned
+	// every day and shares the day's time with the suggested tasks.
+	PinnedTaskMinutes map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
+
 	// The day the user's week starts on. Sunday is 0; Saturday is 6.
 	WeekStart int `dynamodbav:"weekStart,omitempty" json:"weekStart"`
 
@@ -487,6 +493,9 @@ type WeeklyPlan struct {
 
 	// The ids of the user's pinned tasks (in order) when the weekly plan was last generated.
 	PinnedTasks []string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks,omitempty"`
+
+	// The user's pinned task minutes when the weekly plan was last generated.
+	PinnedTaskMinutes map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
 
 	// The date (in ISO 8601) of the user's next scheduled game when the weekly plan was last generated.
 	NextGame string `dynamodbav:"nextGame,omitempty" json:"nextGame"`
@@ -857,6 +866,9 @@ type UserUpdate struct {
 
 	// The IDs of the user's pinned tasks.
 	PinnedTasks *[]string `dynamodbav:"pinnedTasks,omitempty" json:"pinnedTasks,omitempty"`
+
+	// The minutes the user has set aside for each pinned task, by day of the week.
+	PinnedTaskMinutes *map[string][]int `dynamodbav:"pinnedTaskMinutes,omitempty" json:"pinnedTaskMinutes,omitempty"`
 
 	// The day the user's week starts on. Sunday is 0; Saturday is 6.
 	WeekStart *int `dynamodbav:"weekStart,omitempty" json:"weekStart,omitempty"`

@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
+import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
 import { splitDisplayName } from '../taskVerb';
@@ -129,6 +130,14 @@ export function WeeklyTrainingPlan() {
 
             <Collapse in={expanded}>
                 <Stack spacing={1.5}>
+                    {!isLoading &&
+                        weekDays
+                            // Today's warning is shown in the Today section.
+                            .filter((day) => !day.isPast && !day.isToday)
+                            .map((day) => (
+                                <OverbookedDayAlert key={day.dayIndex} dayIndex={day.dayIndex} />
+                            ))}
+
                     {!isLoading && <CategoryTotals totals={getCategoryTotals(rows)} />}
 
                     {isLoading ? (

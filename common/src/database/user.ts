@@ -106,6 +106,14 @@ export interface User {
     /** The IDs of the user's pinned tasks. */
     pinnedTasks?: string[];
 
+    /**
+     * The minutes the user has set aside for each pinned task, by day of the week.
+     * Maps a task id to 7 numbers (Sunday is index 0; Saturday is index 6), where 0
+     * means the task is not planned that day. A pinned task with no entry here is
+     * planned every day and shares the day's time with the suggested tasks.
+     */
+    pinnedTaskMinutes?: Record<string, number[]>;
+
     /** The day the user's week starts on. Sunday is 0; Saturday is 6. */
     weekStart: 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -210,6 +218,8 @@ export interface WeeklyPlan {
     progressUpdatedAt: string;
     /** The ids of the user's pinned tasks (in order) when the weekly plan was last generated. */
     pinnedTasks?: string[];
+    /** The user's pinned task minutes when the weekly plan was last generated. */
+    pinnedTaskMinutes?: Record<string, number[]>;
     /** The date (in ISO 8601) of the user's next scheduled game when the weekly plan was last generated. */
     nextGame: string;
     /** The ids of the user's skipped tasks (in order) when the weekly plan was last generated. */

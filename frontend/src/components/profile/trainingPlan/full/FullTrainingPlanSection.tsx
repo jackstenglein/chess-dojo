@@ -60,7 +60,7 @@ interface TrainingPlanSectionProps {
     /** The cohort being displayed. */
     cohort: string;
     /** A callback invoked when the user toggles a pinned task. */
-    togglePin: (req: Requirement | CustomTask) => void;
+    onPinClick: (req: Requirement | CustomTask) => void;
     /** The set of pinned tasks. */
     pinnedTasks: (Requirement | CustomTask)[];
     /** Whether to show completed tasks */
@@ -76,7 +76,7 @@ export function FullTrainingPlanSection({
     user,
     isCurrentUser,
     cohort,
-    togglePin,
+    onPinClick,
     pinnedTasks,
     showCompleted,
     setShowCompleted,
@@ -201,7 +201,7 @@ export function FullTrainingPlanSection({
                     cohort={cohort}
                     isFreeTier={isFreeTier}
                     isCurrentUser={isCurrentUser}
-                    togglePin={togglePin}
+                    onPinClick={onPinClick}
                     pinnedTasks={pinnedTasks}
                 />
 
@@ -236,7 +236,7 @@ export function FullTrainingPlanSection({
                                 cohort={cohort}
                                 isFreeTier={isFreeTier}
                                 isCurrentUser={isCurrentUser}
-                                togglePin={togglePin}
+                                onPinClick={onPinClick}
                                 pinnedTasks={pinnedTasks}
                             />
                         </>
@@ -297,7 +297,7 @@ function TaskList({
     user,
     cohort,
     isCurrentUser,
-    togglePin,
+    onPinClick,
     pinnedTasks,
 }: {
     tasks: (Requirement | CustomTask)[];
@@ -306,7 +306,7 @@ function TaskList({
     cohort: string;
     isCurrentUser: boolean;
     /** A callback invoked when the user toggles a pinned task. */
-    togglePin: (req: Requirement | CustomTask) => void;
+    onPinClick: (req: Requirement | CustomTask) => void;
     /** The set of pinned tasks. */
     pinnedTasks: (Requirement | CustomTask)[];
 }) {
@@ -327,7 +327,7 @@ function TaskList({
                         cohort={cohort}
                         isCurrentUser={isCurrentUser}
                         user={user}
-                        togglePin={togglePin}
+                        onPinClick={onPinClick}
                         isPinned={pinnedTasks.some((t) => t.id === r.id)}
                     />
                 );

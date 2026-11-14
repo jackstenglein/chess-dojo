@@ -42,6 +42,7 @@ import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
 import { displayProgress } from '../full/FullTrainingPlanItem';
+import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
@@ -156,6 +157,8 @@ export function DailyTrainingPlan() {
                     workedMinutes={suggestedWorkedTime}
                 />
             )}
+
+            {!isLoading && <OverbookedDayAlert dayIndex={new Date().getDay()} />}
 
             <Collapse in={expanded}>
                 {isLoading ? (
@@ -348,7 +351,7 @@ function DailyTrainingPlanItem({
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
-    const { isCurrentUser, pinnedTasks, togglePin, timeline, user, toggleSkip } =
+    const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
     const isPinned = pinnedTasks.some((t) => t.id === task.id);
 
@@ -398,13 +401,13 @@ function DailyTrainingPlanItem({
         if (isPinnable(task)) {
             menuActions.push({
                 key: 'pin',
-                label: isPinned ? tCommon('unpinFromDaily') : tCommon('pinToDaily'),
+                label: isPinned ? tCommon('editPin') : tCommon('pinToDaily'),
                 icon: isPinned ? (
                     <PushPin fontSize='small' color='dojoOrange' />
                 ) : (
                     <PushPinOutlined fontSize='small' color='dojoOrange' />
                 ),
-                onClick: () => togglePin(task),
+                onClick: () => openPinEditor(task),
             });
         }
         menuActions.push({
@@ -422,7 +425,7 @@ function DailyTrainingPlanItem({
                 {isCurrentUser && goalMinutes > 0 && <SwapTaskButton task={suggestion.task} />}
                 {isPinned && (
                     // Pinned tasks show their pin, so it's clear without opening the menu.
-                    <Tooltip title={isCurrentUser ? tCommon('unpinFromDaily') : tCommon('pinned')}>
+                    <Tooltip title={isCurrentUser ? tCommon('editPin') : tCommon('pinned')}>
                         <Box
                             component='span'
                             sx={{
@@ -434,11 +437,9 @@ function DailyTrainingPlanItem({
                         >
                             <IconButton
                                 size='small'
-                                aria-label={
-                                    isCurrentUser ? tCommon('unpinFromDaily') : tCommon('pinned')
-                                }
+                                aria-label={isCurrentUser ? tCommon('editPin') : tCommon('pinned')}
                                 disabled={!isCurrentUser}
-                                onClick={() => togglePin(task)}
+                                onClick={() => openPinEditor(task)}
                                 sx={{ '&.Mui-disabled': { color: 'dojoOrange.main' } }}
                                 data-testid='daily-task-pin'
                             >
@@ -552,7 +553,7 @@ function DailyTrainingPlanItem({
 
                     {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
 
-                    <Tooltip title={isCurrentUser ? tCommon('updateProgress') : ''}>
+                    <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                         <Box component='span' sx={{ ml: 'auto' }}>
                             <DailyTimePill
                                 worked={timeWorkedMinutes}
