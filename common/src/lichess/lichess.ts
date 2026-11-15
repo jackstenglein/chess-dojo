@@ -17,7 +17,7 @@ function urlMatches(
         pathParts: RegExp[];
     },
 ): boolean {
-    let urlObj: URL | null = null;
+    let urlObj: URL;
     try {
         urlObj = new URL(url.trim());
     } catch (_err) {

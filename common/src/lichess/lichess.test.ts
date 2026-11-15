@@ -31,7 +31,7 @@ beforeEach(() => {
 
 describe('getLichessGameId', () => {
     it('returns the game id from supported Lichess game URLs', () => {
-        const cases: Array<[string, string]> = [
+        const cases: [string, string][] = [
             ['https://lichess.org/mN1qj7pP/black', 'mN1qj7pP'],
             ['https://lichess.org/mN1qj7pP/', 'mN1qj7pP'],
             ['https://lichess.org/mN1qj7pP', 'mN1qj7pP'],
