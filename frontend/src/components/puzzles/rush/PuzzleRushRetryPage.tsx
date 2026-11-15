@@ -3,6 +3,7 @@
 import { RequestSnackbar } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard, { PgnBoardApi, useChess } from '@/board/pgn/PgnBoard';
 import { InProgressAfterPgnText } from '@/board/pgn/solitaire/SolitaireAfterPgnText';
 import { LoseIcon, WinIcon } from '@/components/games/list/GameListItem';
@@ -18,7 +19,6 @@ import { Bolt, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Box, Button, CardContent, Container, Divider, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useMemo, useRef, useState } from 'react';
-import { DefaultUnderboardTab } from 'src/board/pgn/boardTools/underboard/underboardTabs';
 import { puzzleRushRetryHref, puzzleRushReviewHref } from './PuzzleRushSummary';
 import { usePuzzleRushSession } from './usePuzzleRushSession';
 

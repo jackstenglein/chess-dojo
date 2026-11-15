@@ -1,6 +1,6 @@
+import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard from '@/board/pgn/PgnBoard';
 import { Box } from '@mui/material';
-import { DefaultUnderboardTab } from 'src/board/pgn/boardTools/underboard/underboardTabs';
 import { ModuleProps } from './Module';
 
 const PgnViewerModule: React.FC<ModuleProps> = ({ module }) => {
