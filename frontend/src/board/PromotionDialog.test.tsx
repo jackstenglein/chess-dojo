@@ -227,9 +227,13 @@ describe('PromotionDialog', () => {
 
     it('cancels when the player clicks the rest of the board', async () => {
         const { onFinishPromotion, onCancelPromotion } = renderDialog(move('c8'), 'white');
+        const board = screen.getByTestId('promotion-dialog');
+
+        // The listener ignores the pointer event that opens the dialog.
+        fireEvent.pointerDown(board);
         await activateClickAway();
 
-        fireEvent.click(screen.getByTestId('promotion-dialog'));
+        fireEvent.pointerDown(board);
 
         expect(onCancelPromotion).toHaveBeenCalledOnce();
         expect(onFinishPromotion).not.toHaveBeenCalled();

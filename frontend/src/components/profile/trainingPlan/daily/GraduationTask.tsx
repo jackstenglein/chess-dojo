@@ -3,25 +3,28 @@ import { formatRatingSystem, getCurrentRating, shouldPromptGraduation } from '@/
 import CohortIcon from '@/scoreboard/CohortIcon';
 import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
-import { Help, NotInterested } from '@mui/icons-material';
+import { Help, NotInterested, School } from '@mui/icons-material';
 import {
+    Button,
     Card,
     CardActionArea,
     CardActions,
     CardContent,
     Grid,
-    IconButton,
     Stack,
-    Tooltip,
     Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { GraduationDialog } from '../GraduationDialog';
+import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { TrainingPlanContext } from '../TrainingPlanTab';
+import { dailyCardActionsSx, dailyCardSx, dailyPrimaryButtonSx } from './DailyCard';
+import { DailyTaskMenu, DailyTaskMenuAction } from './DailyTaskMenu';
 
 export function GraduationTask() {
     const t = useTranslations('profile.trainingPlan.graduationTask');
+    const tGraduation = useTranslations('profile.trainingPlan.graduation');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tRating = useTranslations('enums.ratingSystem');
     const { user, isCurrentUser, skippedTaskIds, toggleSkip } = use(TrainingPlanContext);
@@ -31,7 +34,7 @@ export function GraduationTask() {
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [showGraduationDialog, setShowGraduationDialog] = useState(false);
 
-    if (!shouldGraduate || skippedTaskIds?.includes('graduation')) {
+    if (!shouldGraduate || skippedTaskIds?.includes(GRADUATION_SKIP_ID)) {
         return null;
     }
 
@@ -45,14 +48,30 @@ export function GraduationTask() {
         }
     };
 
+    const menuActions: DailyTaskMenuAction[] = [
+        {
+            key: 'details',
+            label: tCommon('viewTaskDetails'),
+            icon: <Help fontSize='small' />,
+            onClick: onOpen,
+        },
+    ];
+    if (isCurrentUser) {
+        menuActions.push({
+            key: 'skip',
+            label: tCommon('skipForWeek'),
+            icon: <NotInterested fontSize='small' />,
+            onClick: () => toggleSkip(GRADUATION_SKIP_ID),
+        });
+    }
+
     return (
         <>
             <Grid size={{ xs: 12, md: 4 }}>
-                <Card
-                    variant='outlined'
-                    sx={{ height: 1, display: 'flex', flexDirection: 'column' }}
-                >
-                    <CardActionArea sx={{ flexGrow: 1 }} onClick={onOpen}>
+                <Card variant='outlined' sx={dailyCardSx(false)}>
+                    <DailyTaskMenu actions={menuActions} />
+
+                    <CardActionArea sx={{ flexGrow: 1, borderRadius: 'inherit' }} onClick={onOpen}>
                         <CardContent sx={{ height: 1 }}>
                             <Stack
                                 spacing={1}
@@ -86,26 +105,18 @@ export function GraduationTask() {
                             </Typography>
                         </CardContent>
                     </CardActionArea>
-                    <CardActions disableSpacing>
-                        <Tooltip title={tCommon('viewTaskDetails')}>
-                            <IconButton sx={{ color: 'text.secondary' }} onClick={onOpen}>
-                                <Help />
-                            </IconButton>
-                        </Tooltip>
-
-                        {isCurrentUser && (
-                            <Tooltip title={tCommon('skipForWeek')}>
-                                <IconButton
-                                    sx={{
-                                        color: 'text.secondary',
-                                        marginLeft: 'auto',
-                                    }}
-                                    onClick={() => toggleSkip('graduation')}
-                                >
-                                    <NotInterested />
-                                </IconButton>
-                            </Tooltip>
-                        )}
+                    <CardActions disableSpacing sx={dailyCardActionsSx}>
+                        <Button
+                            size='small'
+                            variant='contained'
+                            disableElevation
+                            startIcon={<School />}
+                            onClick={onOpen}
+                            sx={dailyPrimaryButtonSx}
+                            data-testid='graduate-button'
+                        >
+                            {tGraduation('graduate')}
+                        </Button>
                     </CardActions>
                 </Card>
             </Grid>
