@@ -59,7 +59,7 @@ export function GameReview({
                             title='Game & Profile Review with GM Jesse Kraai'
                             poster={REVIEW_POSTER}
                             playing={playing}
-                            onPlay={() => onPlay('game-review')}
+                            onPlay={() => onPlay(ClassId.enum.GAME_REVIEW)}
                         />
                         <Typography variant='body2' sx={{ mt: 1.25, color: MUTED }}>
                             Watch a real session: GM Jesse Kraai reviews a member’s first game in

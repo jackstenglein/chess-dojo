@@ -129,7 +129,7 @@ describe('GateDialog', () => {
         const fetchMock = vi.fn();
         vi.stubGlobal('fetch', fetchMock);
         const onUnlocked = vi.fn();
-        render(<GateDialog classId='calculation' onClose={vi.fn()} onUnlocked={onUnlocked} />);
+        render(<GateDialog classId='CALCULATION' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
         fillAndSubmit('nope', false);
 
@@ -143,16 +143,16 @@ describe('GateDialog', () => {
         const fetchMock = vi.fn().mockResolvedValue({ ok: true });
         vi.stubGlobal('fetch', fetchMock);
         const onUnlocked = vi.fn();
-        render(<GateDialog classId='logical-chess' onClose={vi.fn()} onUnlocked={onUnlocked} />);
+        render(<GateDialog classId='LOGICAL_CHESS' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
         fillAndSubmit('player@example.com', true);
 
-        await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('logical-chess'));
+        await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('LOGICAL_CHESS'));
         const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
         expect(url).toBe('/api/class-lead');
         expect(JSON.parse(init.body as string)).toMatchObject({
             email: 'player@example.com',
-            classId: 'logical-chess',
+            classId: 'LOGICAL_CHESS',
             consent: true,
         });
         expect(hasClassAccess()).toBe(true);
@@ -162,10 +162,10 @@ describe('GateDialog', () => {
     it('still gives the visitor the class if the request fails', async () => {
         vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
         const onUnlocked = vi.fn();
-        render(<GateDialog classId='calculation' onClose={vi.fn()} onUnlocked={onUnlocked} />);
+        render(<GateDialog classId='CALCULATION' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
         fillAndSubmit('player@example.com', true);
 
-        await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('calculation'));
+        await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('CALCULATION'));
     });
 });

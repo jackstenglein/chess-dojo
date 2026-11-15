@@ -17,11 +17,13 @@ import {
 const validLead = {
     email: 'player@example.com',
     classId: 'CALCULATION',
+    type: 'LIVE_CLASS',
     consent: true,
 };
 
 describe('classLeadSchema', () => {
     it('accepts a complete lead', () => {
+        expect(classLeadSchema.safeParse(validLead).error).toBe(undefined);
         expect(classLeadSchema.safeParse(validLead).success).toBe(true);
     });
 

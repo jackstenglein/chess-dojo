@@ -47,6 +47,33 @@ functions:
         Resource:
           - arn:aws:ses:${aws:region}:${aws:accountId}:identity/chessdojo.club
 
+  # Sends follow-up emails when records are deleted via TTL.
+  followUp:
+    handler: followUp.handler
+    timeout: 120
+    package:
+      individually: true
+      patterns:
+        - emailTemplates/**/*.minified.html
+        - emailTemplates/**/*.subject
+        - emailTemplates/**/*.txt
+    events:
+      - stream:
+          type: dynamodb
+          arn: !GetAtt LeadTable.StreamArn
+          batchWindow: 20
+          batchSize: 60
+          maximumRetryAttempts: 2
+          parallelizationFactor: 10
+          filterPatterns:
+            - eventName: [REMOVE]
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - ses:SendTemplatedEmail
+        Resource:
+          - arn:aws:ses:${aws:region}:${aws:accountId}:identity/chessdojo.club
+
 resources:
   Conditions:
     IsProd: !Equals ['${sls:stage}', 'prod']
