@@ -1,7 +1,7 @@
 'use server';
 
-import { axiosService } from 'src/api/axiosService';
-import { logger } from 'src/logging/logger';
+import { axiosService } from '@/api/axiosService';
+import { logger } from '@/logging/logger';
 
 interface LichessGameResponse {
     players: {
