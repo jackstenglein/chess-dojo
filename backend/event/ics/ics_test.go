@@ -213,6 +213,32 @@ func TestFormatICS(t *testing.T) {
 	}
 }
 
+func TestFormatICSKeepsWallTimeAcrossDaylightSaving(t *testing.T) {
+	user := &database.User{Username: "alice", DisplayName: "Alice"}
+	event := &database.Event{
+		Id:         "evt-zoned",
+		Type:       database.EventType_Dojo,
+		Title:      "Berlin Class",
+		RRule:      "DTSTART;TZID=Europe/Berlin:20260323T180000\nRRULE:FREQ=WEEKLY",
+		DurationMs: int64(time.Hour / time.Millisecond),
+		Status:     database.SchedulingStatus_Scheduled,
+	}
+
+	ics := formatICS([]*database.Event{event}, user, "ChessDojo – Alice")
+	for _, want := range []string{
+		"DTSTART;TZID=Europe/Berlin:20260323T180000",
+		"DTEND;TZID=Europe/Berlin:20260323T190000",
+		"RRULE:FREQ=WEEKLY",
+	} {
+		if !strings.Contains(ics, want) {
+			t.Fatalf("ICS missing %q\n%s", want, ics)
+		}
+	}
+	if strings.Contains(ics, "DTSTART:20260323T170000Z") {
+		t.Fatalf("zoned event was rewritten as a fixed UTC start\n%s", ics)
+	}
+}
+
 func TestIcsRRule(t *testing.T) {
 	tests := []struct {
 		in   string

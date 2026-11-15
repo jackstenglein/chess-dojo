@@ -1,25 +1,118 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
+const DTSTART_PATTERN = /DTSTART(?:;TZID=([^:\r\n]+))?:([0-9]{8}T[0-9]{6})(Z?)/;
+
+interface WallTime {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    second: number;
+}
+
+/**
+ * IANA timezone from `DTSTART;TZID=...`, if the rule is not a fixed UTC instant.
+ */
+export function getRRuleTimeZone(rrule: string): string | undefined {
+    const match = DTSTART_PATTERN.exec(rrule);
+    const tzid = match?.[1];
+    if (!tzid || tzid.toUpperCase() === 'UTC' || match?.[3] === 'Z') {
+        return undefined;
+    }
+    return tzid;
+}
+
+/**
+ * Offset of `timeZone` at `instant`, in milliseconds (positive east of UTC).
+ */
+function timeZoneOffsetMs(instant: Date, timeZone: string): number {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hourCycle: 'h23',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    }).formatToParts(instant);
+    const map: Record<string, string> = {};
+    for (const part of parts) {
+        if (part.type !== 'literal') {
+            map[part.type] = part.value;
+        }
+    }
+
+    let hour = Number(map.hour);
+    const day = Number(map.day);
+    if (hour === 24) {
+        hour = 0;
+    }
+
+    const asUtc = Date.UTC(
+        Number(map.year),
+        Number(map.month) - 1,
+        day,
+        hour,
+        Number(map.minute),
+        Number(map.second),
+    );
+    return asUtc - instant.getTime();
+}
+
+/**
+ * Converts a wall-clock time in `timeZone` to an absolute instant.
+ * A second pass covers the offset change around a daylight-saving transition.
+ */
+function zonedWallTimeToUtc(wall: WallTime, timeZone: string): Date {
+    const utcGuess = Date.UTC(
+        wall.year,
+        wall.month - 1,
+        wall.day,
+        wall.hour,
+        wall.minute,
+        wall.second,
+    );
+    const offsetMs = timeZoneOffsetMs(new Date(utcGuess), timeZone);
+    const corrected = new Date(utcGuess - offsetMs);
+    const offsetAtCorrected = timeZoneOffsetMs(corrected, timeZone);
+    if (offsetAtCorrected === offsetMs) {
+        return corrected;
+    }
+    return new Date(utcGuess - offsetAtCorrected);
+}
+
 /**
  * Parses the DTSTART value from an RRULE string.
- * Supports `DTSTART:YYYYMMDDTHHMMSSZ` and `DTSTART;...:YYYYMMDDTHHMMSS`.
+ * `DTSTART;TZID=Zone:YYYYMMDDTHHMMSS` is a wall-clock time in that zone, so the
+ * absolute instant shifts when the zone enters or leaves daylight saving.
+ * `DTSTART:YYYYMMDDTHHMMSSZ` stays a fixed UTC instant (legacy rules).
  */
 export function getRRuleDtStart(rrule: string): Date | undefined {
-    const match = /DTSTART(?:;[^\n:]*)?:([0-9]{8}T[0-9]{6}Z?)/.exec(rrule);
-    if (!match?.[1]) {
+    const match = DTSTART_PATTERN.exec(rrule);
+    const raw = match?.[2];
+    if (!raw) {
         return undefined;
     }
 
-    const raw = match[1];
-    const year = Number(raw.slice(0, 4));
-    const month = Number(raw.slice(4, 6)) - 1;
-    const day = Number(raw.slice(6, 8));
-    const hour = Number(raw.slice(9, 11));
-    const minute = Number(raw.slice(11, 13));
-    const second = Number(raw.slice(13, 15));
+    const wall: WallTime = {
+        year: Number(raw.slice(0, 4)),
+        month: Number(raw.slice(4, 6)),
+        day: Number(raw.slice(6, 8)),
+        hour: Number(raw.slice(9, 11)),
+        minute: Number(raw.slice(11, 13)),
+        second: Number(raw.slice(13, 15)),
+    };
 
-    // rrule.js serializes dtstart in UTC form; treat Z and floating the same way.
-    return new Date(Date.UTC(year, month, day, hour, minute, second));
+    const timeZone = getRRuleTimeZone(rrule);
+    if (!timeZone) {
+        return new Date(
+            Date.UTC(wall.year, wall.month - 1, wall.day, wall.hour, wall.minute, wall.second),
+        );
+    }
+
+    return zonedWallTimeToUtc(wall, timeZone);
 }
 
 export interface EventTimes {

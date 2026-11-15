@@ -214,7 +214,9 @@ type Event struct {
 
 	// The recurrence rule of the event, if set.
 	// For new Dojo/Coaching/Lecture/GameReview events this always includes DTSTART
-	// (even when the event does not repeat).
+	// (even when the event does not repeat). New rules use DTSTART;TZID=<zone>:
+	// so the wall-clock time stays put across daylight saving. Legacy rules may
+	// still be a fixed UTC DTSTART:...Z.
 	RRule string `dynamodbav:"rrule,omitempty" json:"rrule,omitempty"`
 
 	// The color of the event.

@@ -6,8 +6,10 @@ import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useCache } from '@/api/cache/Cache';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import { instantToFloating, occurrenceToInstant } from '@/components/calendar/eventTimeZone';
 import Field from '@/components/calendar/eventViewer/Field';
 import ParticipantsList from '@/components/calendar/eventViewer/ParticipantsList';
+import { parseStoredRRule } from '@/components/calendar/recurrence';
 import { Link } from '@/components/navigation/Link';
 import { GameReviewCohortQueue } from '@/components/profile/liveClasses/GameReviewCohortQueue';
 import { getConfig } from '@/config';
@@ -25,6 +27,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import { logger } from '@/logging/logger';
 import CancelMeetingButton from '@/meeting/CancelMeetingButton';
 import MeetingMessages from '@/meeting/MeetingMessages';
+import { getRRuleTimeZone } from '@jackstenglein/chess-dojo-common/src/database/eventTimes';
 import { GameReviewCohort } from '@jackstenglein/chess-dojo-common/src/liveClasses/api';
 import { Warning } from '@mui/icons-material';
 import {
@@ -40,7 +43,7 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { Fragment, useEffect } from 'react';
-import { datetime, RRule } from 'rrule';
+import { datetime } from 'rrule';
 
 const CANCELATION_DEADLINE = 24 * 1000 * 60 * 60; // 24 hours
 
@@ -160,26 +163,35 @@ export function MeetingPage({ meetingId }: { meetingId: string }) {
     }
 
     let dates: Date[] = [];
+    const zoned = Boolean(meeting.rrule && getRRuleTimeZone(meeting.rrule));
     if (meeting.rrule) {
-        const options = RRule.parseString(meeting.rrule);
-        const rrule = new RRule(options);
-        if (!options.count && !options.until) {
-            dates = rrule.between(new Date(), datetime(2050, 0, 1), true, (_, i: number) => i < 4);
-        } else {
-            dates = rrule.all();
-        }
+        const rule = parseStoredRRule(meeting.rrule);
+        const base = rule.rrules()[0];
+        const openEnded = !base?.options.count && !base?.options.until;
+        const rangeEnd = datetime(2050, 0, 1);
+        const floating = openEnded
+            ? rule.between(
+                  zoned ? instantToFloating(new Date()) : new Date(),
+                  rangeEnd,
+                  true,
+                  (_, i: number) => i < 4,
+              )
+            : rule.all();
+        dates = zoned ? floating.map(occurrenceToInstant) : floating;
     } else {
         dates.push(new Date(meeting.bookedStartTime || getEventStart(meeting).toISOString()));
     }
 
-    const startTime = toDojoTimeString(
-        getEventStart(meeting),
-        user.timezoneOverride,
-        user.timeFormat,
-    );
-    const endTime = toDojoTimeString(getEventEnd(meeting), user.timezoneOverride, user.timeFormat);
     const times = dates.map((d) => {
+        const startAt = zoned ? d : getEventStart(meeting);
+        const endAt = zoned
+            ? new Date(
+                  d.getTime() + getEventEnd(meeting).getTime() - getEventStart(meeting).getTime(),
+              )
+            : getEventEnd(meeting);
         const startDate = toDojoDateString(d, user.timezoneOverride);
+        const startTime = toDojoTimeString(startAt, user.timezoneOverride, user.timeFormat);
+        const endTime = toDojoTimeString(endAt, user.timezoneOverride, user.timeFormat);
         return `${startDate} ${startTime} — ${endTime}`;
     });
 

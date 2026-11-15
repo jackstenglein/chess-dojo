@@ -204,12 +204,7 @@ func writeVEVENT(b *strings.Builder, event *database.Event, username string) {
 	b.WriteString("DTSTAMP:")
 	b.WriteString(formatICSTime(time.Now().UTC()))
 	b.WriteString("\r\n")
-	b.WriteString("DTSTART:")
-	b.WriteString(formatICSTime(start.UTC()))
-	b.WriteString("\r\n")
-	b.WriteString("DTEND:")
-	b.WriteString(formatICSTime(end.UTC()))
-	b.WriteString("\r\n")
+	writeEventTimes(b, event, start, end)
 	b.WriteString("SUMMARY:")
 	b.WriteString(escapeICSText(eventTitle(event, username)))
 	b.WriteString("\r\n")
@@ -236,6 +231,38 @@ func writeVEVENT(b *strings.Builder, event *database.Event, username string) {
 
 func formatICSTime(t time.Time) string {
 	return t.UTC().Format("20060102T150405Z")
+}
+
+// writeEventTimes writes DTSTART and DTEND. Zoned rules keep the wall-clock
+// time in their TZID so calendar clients repeat it across daylight saving
+// instead of holding a fixed UTC hour.
+func writeEventTimes(b *strings.Builder, event *database.Event, start, end time.Time) {
+	tzid := ""
+	if event.StartTime == "" && event.BookedStartTime == "" {
+		tzid = database.GetRRuleTimeZone(event.RRule)
+	}
+	if tzid != "" {
+		if loc, err := time.LoadLocation(tzid); err == nil {
+			b.WriteString("DTSTART;TZID=")
+			b.WriteString(tzid)
+			b.WriteString(":")
+			b.WriteString(start.In(loc).Format("20060102T150405"))
+			b.WriteString("\r\n")
+			b.WriteString("DTEND;TZID=")
+			b.WriteString(tzid)
+			b.WriteString(":")
+			b.WriteString(end.In(loc).Format("20060102T150405"))
+			b.WriteString("\r\n")
+			return
+		}
+	}
+
+	b.WriteString("DTSTART:")
+	b.WriteString(formatICSTime(start.UTC()))
+	b.WriteString("\r\n")
+	b.WriteString("DTEND:")
+	b.WriteString(formatICSTime(end.UTC()))
+	b.WriteString("\r\n")
 }
 
 // icsRRule extracts the RRULE value (without the RRULE: prefix) from a stored rrule string.

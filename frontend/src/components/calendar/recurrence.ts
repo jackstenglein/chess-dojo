@@ -1,8 +1,12 @@
 import { Event, getEventDurationMs, getEventStart } from '@/database/event';
-import { getRRuleDtStart } from '@jackstenglein/chess-dojo-common/src/database/eventTimes';
+import {
+    getRRuleDtStart,
+    getRRuleTimeZone,
+} from '@jackstenglein/chess-dojo-common/src/database/eventTimes';
 import { EventRecurrence } from '@jackstenglein/react-scheduler/types';
 import { RRule, RRuleSet, rrulestr } from 'rrule';
 import { toRRuleDate } from './displayDate';
+import { floatingInZone, instantToFloating, occurrenceToInstant } from './eventTimeZone';
 
 export type RecurrenceEditScope = 'this' | 'all';
 
@@ -36,6 +40,13 @@ export function parseStoredRRule(rrule: string): RRuleSet {
 export function getProcessedRecurrence(event: Event): EventRecurrence | undefined {
     if (!isRecurringEvent(event) || !event.rrule) {
         return undefined;
+    }
+
+    // TZID rules already repeat a wall-clock time across daylight saving.
+    // Rewriting DTSTART from one absolute instant would pin every occurrence
+    // to the offset of that single date.
+    if (getRRuleTimeZone(event.rrule)) {
+        return parseStoredRRule(event.rrule);
     }
 
     // Prefer legacy startTime when set; otherwise use rrule DTSTART.
@@ -93,8 +104,14 @@ export function moveSingleOccurrence(
     }
 
     const set = toRRuleSet(event.rrule, getEventStart(event));
-    set.exdate(toRRuleDate(originalOccurrenceStart));
-    set.rdate(toRRuleDate(newStart));
+    const timeZone = getRRuleTimeZone(event.rrule);
+    if (timeZone) {
+        set.exdate(floatingInZone(originalOccurrenceStart, timeZone));
+        set.rdate(floatingInZone(newStart, timeZone));
+    } else {
+        set.exdate(toRRuleDate(originalOccurrenceStart));
+        set.rdate(toRRuleDate(newStart));
+    }
     return set.toString();
 }
 
@@ -103,20 +120,46 @@ export function moveSingleOccurrence(
  * Drops any prior EXDATE/RDATE exceptions. Always includes DTSTART.
  */
 export function moveAllOccurrences(rrule: string, newStart: Date): string {
+    const timeZone = getRRuleTimeZone(rrule);
+    const dtstart = timeZone ? floatingInZone(newStart, timeZone) : newStart;
     if (!rrule.trim()) {
-        return RRule.optionsToString({ dtstart: newStart });
+        return RRule.optionsToString({ dtstart });
     }
 
     const parsed = rrulestr(rrule, { forceset: true });
     const baseRule = parsed instanceof RRuleSet ? parsed.rrules()[0] : parsed;
     if (!baseRule) {
-        return RRule.optionsToString({ dtstart: newStart });
+        return RRule.optionsToString({ dtstart, tzid: timeZone });
     }
 
     return RRule.optionsToString({
         ...baseRule.origOptions,
-        dtstart: newStart,
+        dtstart,
+        tzid: timeZone ?? baseRule.origOptions.tzid,
     });
+}
+
+/**
+ * Occurrences of a stored rule between two absolute instants.
+ * TZID rules are queried in rrule's floating form and returned as real instants,
+ * so each occurrence keeps the series wall time across daylight saving.
+ */
+export function expandStoredBetween(
+    rrule: string,
+    start: Date,
+    end: Date,
+    inc: boolean,
+    iterator?: (date: Date, i: number) => boolean,
+): Date[] {
+    const rule = parseStoredRRule(rrule);
+    const zoned = Boolean(getRRuleTimeZone(rrule));
+    const dates = rule.between(
+        zoned ? instantToFloating(start) : start,
+        zoned ? instantToFloating(end) : end,
+        inc,
+        iterator,
+    );
+    return zoned ? dates.map(occurrenceToInstant) : dates;
 }
 
 /**

@@ -4,21 +4,35 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 )
 
-var dtstartRegex = regexp.MustCompile(`DTSTART(?:;[^\n:]*)?:([0-9]{8}T[0-9]{6}Z?)`)
+// Groups: 1 TZID, 2 YYYYMMDDTHHMMSS, 3 Z marker.
+var dtstartRegex = regexp.MustCompile(`DTSTART(?:;TZID=([^:\r\n]+))?:([0-9]{8}T[0-9]{6})(Z?)`)
+
+// GetRRuleTimeZone returns the IANA timezone from DTSTART;TZID=..., if the
+// rule is a wall-clock time rather than a fixed UTC instant.
+func GetRRuleTimeZone(rrule string) string {
+	match := dtstartRegex.FindStringSubmatch(rrule)
+	if len(match) < 4 || match[1] == "" || match[3] == "Z" || strings.EqualFold(match[1], "UTC") {
+		return ""
+	}
+	return match[1]
+}
 
 // GetRRuleDtStart parses the DTSTART value from an RRULE string.
+// A TZID value is a wall-clock time in that zone, so the absolute instant
+// shifts across daylight saving. A trailing Z stays a fixed UTC instant.
 func GetRRuleDtStart(rrule string) (time.Time, error) {
 	match := dtstartRegex.FindStringSubmatch(rrule)
-	if len(match) < 2 {
+	if len(match) < 3 || match[2] == "" {
 		return time.Time{}, errors.New(400, "Invalid request: rrule is missing DTSTART", "")
 	}
 
-	raw := match[1]
+	raw := match[2]
 	year, _ := strconv.Atoi(raw[0:4])
 	month, _ := strconv.Atoi(raw[4:6])
 	day, _ := strconv.Atoi(raw[6:8])
@@ -26,7 +40,16 @@ func GetRRuleDtStart(rrule string) (time.Time, error) {
 	minute, _ := strconv.Atoi(raw[11:13])
 	second, _ := strconv.Atoi(raw[13:15])
 
-	return time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC), nil
+	loc := time.UTC
+	if tzid := GetRRuleTimeZone(rrule); tzid != "" {
+		loaded, err := time.LoadLocation(tzid)
+		if err != nil {
+			return time.Time{}, errors.Wrap(400, "Invalid request: rrule timezone is not recognized", "", err)
+		}
+		loc = loaded
+	}
+
+	return time.Date(year, time.Month(month), day, hour, minute, second, 0, loc).UTC(), nil
 }
 
 // formatDtStartRRule returns a DTSTART-only rrule string for a non-recurring event.

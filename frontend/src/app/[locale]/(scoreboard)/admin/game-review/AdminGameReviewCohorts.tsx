@@ -8,7 +8,7 @@ import {
 } from '@/api/liveClassesApi';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
-import { getTimeZonedDate } from '@/components/calendar/displayDate';
+import { buildZonedRRule, schedulingTimeZone } from '@/components/calendar/eventTimeZone';
 import { Link } from '@/components/navigation/Link';
 import { getConfig } from '@/config';
 import { TimeFormat } from '@/database/user';
@@ -39,7 +39,7 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
-import { Frequency, RRule } from 'rrule';
+import { Frequency } from 'rrule';
 import { groupLectureUsersByCohort } from './groupLectureUsersByCohort';
 
 interface EditableGameReviewCohort extends GameReviewCohort {
@@ -220,23 +220,19 @@ export function AdminGameReviewCohorts() {
                 ...item,
                 discordChannelId: item.editDiscordChannelId || item.discordChannelId,
                 peerReviewRrule: item.editPeerReviewTime
-                    ? RRule.optionsToString({
-                          freq: Frequency.WEEKLY,
-                          dtstart: getTimeZonedDate(
-                              item.editPeerReviewTime.toJSDate(),
-                              user?.timezoneOverride,
-                              'forward',
-                          ),
+                    ? buildZonedRRule({
+                          start: item.editPeerReviewTime,
+                          editorZone: schedulingTimeZone(user?.timezoneOverride),
+                          eventZone: schedulingTimeZone(user?.timezoneOverride),
+                          options: { freq: Frequency.WEEKLY },
                       })
                     : undefined,
                 senseiReviewRrule: item.editSenseiReviewTime
-                    ? RRule.optionsToString({
-                          freq: Frequency.WEEKLY,
-                          dtstart: getTimeZonedDate(
-                              item.editSenseiReviewTime.toJSDate(),
-                              user?.timezoneOverride,
-                              'forward',
-                          ),
+                    ? buildZonedRRule({
+                          start: item.editSenseiReviewTime,
+                          editorZone: schedulingTimeZone(user?.timezoneOverride),
+                          eventZone: schedulingTimeZone(user?.timezoneOverride),
+                          options: { freq: Frequency.WEEKLY },
                       })
                     : undefined,
             })),

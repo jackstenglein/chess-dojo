@@ -7,6 +7,19 @@ describe('eventTimes', () => {
         expect(dtstart?.toISOString()).toBe('2026-08-01T15:00:00.000Z');
     });
 
+    it('keeps a zoned wall time across the Europe daylight-saving change', () => {
+        const before = getRRuleDtStart(
+            'DTSTART;TZID=Europe/Berlin:20260323T180000\nRRULE:FREQ=WEEKLY',
+        );
+        const after = getRRuleDtStart(
+            'DTSTART;TZID=Europe/Berlin:20260406T180000\nRRULE:FREQ=WEEKLY',
+        );
+
+        // 23 Mar 2026 is CET (UTC+1). 6 Apr 2026 is CEST (UTC+2). Both are 18:00 locally.
+        expect(before?.toISOString()).toBe('2026-03-23T17:00:00.000Z');
+        expect(after?.toISOString()).toBe('2026-04-06T16:00:00.000Z');
+    });
+
     it('prefers legacy startTime when set', () => {
         const start = getEventStart({
             startTime: '2026-08-01T10:00:00.000Z',

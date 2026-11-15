@@ -70,7 +70,9 @@ export interface Event {
     /**
      * The recurrence rule of the event, as a string.
      * For new Dojo/Coaching/Lecture/GameReview events this always includes DTSTART
-     * (even when the event does not repeat).
+     * (even when the event does not repeat). New rules use `DTSTART;TZID=<zone>:`
+     * so the wall-clock time stays put across daylight saving. Legacy rules may
+     * still be a fixed UTC `DTSTART:...Z`.
      */
     rrule?: string;
 

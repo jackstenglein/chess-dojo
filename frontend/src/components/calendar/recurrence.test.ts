@@ -114,6 +114,26 @@ describe('recurrence helpers', () => {
         expect((recurring as RRuleSet).rdates()).toHaveLength(1);
     });
 
+    it('keeps a TZID rule so the wall time is not pinned to one offset', () => {
+        const event = baseEvent({
+            rrule: 'DTSTART;TZID=Europe/Berlin:20260323T180000\nRRULE:FREQ=WEEKLY;COUNT=4',
+        });
+        const recurring = getProcessedRecurrence(event);
+        expect(recurring).toBeInstanceOf(RRuleSet);
+        const rule = (recurring as RRuleSet).rrules()[0];
+        expect(rule?.options.tzid).toBe('Europe/Berlin');
+        expect(rule?.options.dtstart?.toISOString()).toBe('2026-03-23T18:00:00.000Z');
+    });
+
+    it('moveAllOccurrences keeps the event timezone and writes the new wall time', () => {
+        const moved = moveAllOccurrences(
+            'DTSTART;TZID=Europe/Berlin:20260323T180000\nRRULE:FREQ=WEEKLY',
+            new Date('2026-04-06T16:00:00.000Z'),
+        );
+        expect(moved).toContain('DTSTART;TZID=Europe/Berlin:20260406T180000');
+        expect(moved).toContain('FREQ=WEEKLY');
+    });
+
     it('getProcessedRecurrence returns undefined for DTSTART-only events', () => {
         expect(
             getProcessedRecurrence(baseEvent({ rrule: 'DTSTART:20260801T150000Z' })),

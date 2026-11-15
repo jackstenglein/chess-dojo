@@ -3,12 +3,14 @@ import { getGameReviewCohort } from '@/api/liveClassesApi';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
+import { occurrenceToInstant } from '@/components/calendar/eventTimeZone';
 import { parseStoredRRule } from '@/components/calendar/recurrence';
 import { Link } from '@/components/navigation/Link';
 import { getConfig } from '@/config';
 import { Event, EventType } from '@/database/event';
 import { User } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
+import { getRRuleTimeZone } from '@jackstenglein/chess-dojo-common/src/database/eventTimes';
 import {
     getSubscriptionTier,
     SubscriptionTier,
@@ -279,13 +281,20 @@ function WorkshopsSection() {
 }
 
 /**
- * Next lecture on or after the UTC calendar day of `now`.
+ * Next lecture on or after the calendar day of `now`.
+ * Legacy UTC rules use the UTC day. Zoned rules use the local day and return
+ * the real instant, so 18:00 in the event zone stays 18:00 after daylight saving.
  * Includes extra dates from an RDATE line and skips EXDATE exceptions.
  */
 export function getNextLectureDate(rrule: string, now: Date): Date | null {
     const rule = parseStoredRRule(rrule);
-    return (
-        rule.after(datetime(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate()), true) ??
-        null
-    );
+    const zoned = Boolean(getRRuleTimeZone(rrule));
+    const day = zoned
+        ? datetime(now.getFullYear(), now.getMonth() + 1, now.getDate())
+        : datetime(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
+    const next = rule.after(day, true);
+    if (!next) {
+        return null;
+    }
+    return zoned ? occurrenceToInstant(next) : next;
 }

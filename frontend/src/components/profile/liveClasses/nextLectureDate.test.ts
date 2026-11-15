@@ -33,6 +33,20 @@ describe('getNextLectureDate', () => {
         expect(next?.toISOString()).toBe('2026-11-09T15:00:00.000Z');
     });
 
+    it('keeps 18:00 Europe/Berlin across the daylight-saving change', () => {
+        const before = getNextLectureDate(
+            'DTSTART;TZID=Europe/Berlin:20260316T180000\nRRULE:FREQ=WEEKLY',
+            new Date('2026-03-23T10:00:00.000Z'),
+        );
+        const after = getNextLectureDate(
+            'DTSTART;TZID=Europe/Berlin:20260316T180000\nRRULE:FREQ=WEEKLY',
+            new Date('2026-04-06T10:00:00.000Z'),
+        );
+
+        expect(before?.toISOString()).toBe('2026-03-23T17:00:00.000Z');
+        expect(after?.toISOString()).toBe('2026-04-06T16:00:00.000Z');
+    });
+
     it('advances to the following RDATE after that UTC day', () => {
         const next = getNextLectureDate(
             'RDATE:20261109T130000Z,20261116T130000Z,20261123T130000Z',

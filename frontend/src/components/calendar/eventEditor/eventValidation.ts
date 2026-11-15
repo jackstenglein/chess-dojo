@@ -8,8 +8,13 @@ import {
 import { dojoCohorts, User } from '@/database/user';
 import { ProcessedEvent } from '@jackstenglein/react-scheduler/types';
 import { DateTime } from 'luxon';
-import { Options, RRule } from 'rrule';
-import { getTimeZonedDate } from '../displayDate';
+import { Frequency } from 'rrule';
+import {
+    buildZonedRRule,
+    eventZoneForSave,
+    schedulingTimeZone,
+    zonedDurationMs,
+} from '../eventTimeZone';
 import {
     getDefaultRRuleCount,
     getMinEnd,
@@ -47,30 +52,30 @@ function validateTimes(
 }
 
 /**
- * Builds rrule (always including DTSTART) and durationMs for scheduled events.
- * Does not set deprecated startTime/endTime.
+ * Builds rrule (always including a zoned DTSTART) and durationMs for scheduled events.
+ * The wall-clock time is stored with a TZID so weekly occurrences stay on that local
+ * time when daylight saving starts or ends. Does not set deprecated startTime/endTime.
  */
 function buildRruleAndDuration(
     editor: UseEventEditorResponse,
-    timezoneOverride: string,
+    timezoneOverride: string | undefined,
     errors: Record<string, string>,
     t: TranslateFn,
+    existingRrule?: string,
 ): { rrule: string; durationMs: number } | null {
     if (!editor.start || !editor.end) {
         return null;
     }
 
-    const start = getTimeZonedDate(editor.start.toJSDate(), timezoneOverride, 'forward');
-    const end = getTimeZonedDate(editor.end.toJSDate(), timezoneOverride, 'forward');
-    const durationMs = end.getTime() - start.getTime();
+    const editorZone = schedulingTimeZone(timezoneOverride);
+    const durationMs = zonedDurationMs(editor.start, editor.end, editorZone);
     if (durationMs <= 0) {
         errors.end = t('validationEndTooEarly');
         return null;
     }
 
-    const options: Partial<Options> = {
-        dtstart: start,
-    };
+    const options: { freq?: Frequency; count?: number } = {};
+    let until: DateTime | null = null;
 
     if (editor.rruleOptions.freq) {
         options.freq = editor.rruleOptions.freq;
@@ -84,26 +89,18 @@ function buildRruleAndDuration(
         }
 
         if (editor.rruleOptions.ends === RRuleEnds.Until) {
-            if (editor.rruleOptions.until) {
-                options.until = new Date(
-                    getTimeZonedDate(
-                        editor.rruleOptions.until.toJSDate(),
-                        timezoneOverride,
-                    ).toISOString(),
-                );
-            } else {
-                options.until = new Date(
-                    getTimeZonedDate(
-                        editor.start.plus({ months: 1 }).toJSDate(),
-                        timezoneOverride,
-                    ).toISOString(),
-                );
-            }
+            until = editor.rruleOptions.until ?? editor.start.plus({ months: 1 });
         }
     }
 
     return {
-        rrule: RRule.optionsToString(options),
+        rrule: buildZonedRRule({
+            start: editor.start,
+            until,
+            editorZone,
+            eventZone: eventZoneForSave(timezoneOverride, existingRrule),
+            options,
+        }),
         durationMs,
     };
 }
@@ -247,7 +244,13 @@ function validateClassEditor(
     requireField(editor, 'location', errors, t);
     const fullPrice = optionalPrice(editor, 'fullPrice', errors, t);
     const currentPrice = optionalPrice(editor, 'currentPrice', errors, t);
-    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(
+        editor,
+        user.timezoneOverride,
+        errors,
+        t,
+        (originalEvent?.event as Event | undefined)?.rrule,
+    );
 
     if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
@@ -305,7 +308,13 @@ function validateCoachingEditor(
     const fullPrice = requirePrice(editor, 'fullPrice', errors, t);
     const currentPrice = optionalPrice(editor, 'currentPrice', errors, t);
     const maxParticipants = requireMaxParticipants(editor, errors, t);
-    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(
+        editor,
+        user.timezoneOverride,
+        errors,
+        t,
+        (originalEvent?.event as Event | undefined)?.rrule,
+    );
 
     if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
@@ -359,7 +368,13 @@ function validateDojoEventEditor(
 
     validateTimes(editor, errors, t);
     requireField(editor, 'title', errors, t);
-    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(
+        editor,
+        user.timezoneOverride,
+        errors,
+        t,
+        (originalEvent?.event as Event | undefined)?.rrule,
+    );
 
     if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
@@ -462,7 +477,13 @@ function validateAvailabilityEditor(
         return [null, errors];
     }
 
-    const times = buildRruleAndDuration(editor, user.timezoneOverride, errors, t);
+    const times = buildRruleAndDuration(
+        editor,
+        user.timezoneOverride,
+        errors,
+        t,
+        (originalEvent?.event as Event | undefined)?.rrule,
+    );
     if (Object.entries(errors).length > 0 || !times) {
         return [null, errors];
     }

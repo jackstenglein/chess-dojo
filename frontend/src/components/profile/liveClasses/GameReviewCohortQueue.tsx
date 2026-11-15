@@ -2,7 +2,7 @@ import { pauseQueueDate, resetQueueDate } from '@/api/liveClassesApi';
 import { useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
-import { parseStoredRRule } from '@/components/calendar/recurrence';
+import { expandStoredBetween } from '@/components/calendar/recurrence';
 import { Link } from '@/components/navigation/Link';
 import { logger } from '@/logging/logger';
 import Avatar from '@/profile/Avatar';
@@ -263,18 +263,18 @@ function getDatesByUser(
         peerReviewStart.setDate(peerReviewStart.getDate() - 7);
     }
 
-    const peerReviewRRule = parseStoredRRule(gameReviewCohort.peerReviewEvent.rrule);
-    const peerReviewDates = peerReviewRRule.between(
+    const horizon = datetime(2050, 1, 1);
+    const peerReviewDates = expandStoredBetween(
+        gameReviewCohort.peerReviewEvent.rrule,
         peerReviewStart,
-        datetime(2050, 1, 1),
+        horizon,
         false,
         (_: Date, i: number) => i < reviewQueue.length,
     );
-
-    const senseiReviewRule = parseStoredRRule(gameReviewCohort.senseiReviewEvent.rrule);
-    const senseiReviewDates = senseiReviewRule.between(
+    const senseiReviewDates = expandStoredBetween(
+        gameReviewCohort.senseiReviewEvent.rrule,
         new Date(),
-        datetime(2050, 1, 1),
+        horizon,
         !queueResetToday,
         (_, i) => i < reviewQueue.length,
     );
