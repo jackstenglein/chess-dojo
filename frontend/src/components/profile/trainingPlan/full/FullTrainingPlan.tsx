@@ -55,7 +55,7 @@ export function FullTrainingPlan({
         request: requirementRequest,
         allRequirements,
         pinnedTasks,
-        togglePin,
+        openPinEditor: onPinClick,
         isCurrentUser,
     } = use(TrainingPlanContext);
 
@@ -291,7 +291,7 @@ export function FullTrainingPlan({
                         user={user}
                         isCurrentUser={isCurrentUser}
                         cohort={cohort}
-                        togglePin={togglePin}
+                        onPinClick={onPinClick}
                         pinnedTasks={pinnedTasks}
                         showCompleted={showCompleted}
                         setShowCompleted={setShowCompleted}

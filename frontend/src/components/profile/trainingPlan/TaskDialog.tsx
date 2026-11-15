@@ -366,7 +366,7 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                     onClick={() => setView(TaskDialogView.Progress)}
                     sx={taskDialogPrimaryButtonSx}
                 >
-                    {tCommon('updateProgress')}
+                    {tCommon('logTraining')}
                 </Button>
             </TaskDialogFooter>
         </>

@@ -5,6 +5,7 @@ import { createContext, useEffect, useState } from 'react';
 import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
+import { PinTaskDialog } from './PinTaskDialog';
 import { useWeeklyTrainingPlan, UseWeeklyTrainingPlanResponse } from './useTrainingPlan';
 import { WeeklyTrainingPlan } from './weekly/WeeklyTrainingPlan';
 
@@ -33,6 +34,7 @@ export function TrainingPlanTab({ user }: { user: User }) {
                 <WeeklyTrainingPlan />
                 <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
                 <MiniScoreboard cohort={cohort} />
+                <PinTaskDialog />
             </TrainingPlanContext>
         </Stack>
     );
