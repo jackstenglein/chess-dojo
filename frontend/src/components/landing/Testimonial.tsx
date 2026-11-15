@@ -1,3 +1,4 @@
+import Avatar from '@/profile/Avatar';
 import { fontFamily } from '@/style/font';
 import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
 import {
@@ -12,7 +13,6 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { Children, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import Avatar from 'src/profile/Avatar';
 import { barlow, barlowCondensed, eyebrowSx, sectionTitleSx } from './fonts';
 import { JoinDojoButton } from './JoinDojoButton';
 import { TestimonialData, testimonials } from './testimonials';

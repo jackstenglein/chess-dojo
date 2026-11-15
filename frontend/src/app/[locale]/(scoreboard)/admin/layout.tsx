@@ -1,9 +1,9 @@
 'use client';
 
+import { AuthStatus, useAuth } from '@/auth/Auth';
+import { useRouter } from '@/hooks/useRouter';
+import LoadingPage from '@/loading/LoadingPage';
 import { useEffect } from 'react';
-import { AuthStatus, useAuth } from 'src/auth/Auth';
-import { useRouter } from 'src/hooks/useRouter';
-import LoadingPage from 'src/loading/LoadingPage';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const auth = useAuth();

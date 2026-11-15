@@ -3,6 +3,10 @@
 import { RequestSnackbar } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { ShortcutAction } from '@/board/pgn/boardTools/underboard/settings/ShortcutAction';
+import ViewerSettings, {
+    ViewerSetting,
+} from '@/board/pgn/boardTools/underboard/settings/ViewerSettings';
 import PgnBoard, { PgnBoardApi } from '@/board/pgn/PgnBoard';
 import { Link } from '@/components/navigation/Link';
 import LoadingPage from '@/loading/LoadingPage';
@@ -36,10 +40,6 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef } from 'react';
-import { ShortcutAction } from 'src/board/pgn/boardTools/underboard/settings/ShortcutAction';
-import ViewerSettings, {
-    ViewerSetting,
-} from 'src/board/pgn/boardTools/underboard/settings/ViewerSettings';
 import { PuzzleRushBests, PuzzleRushIndexes } from './PuzzleRushStanding';
 import {
     PuzzleRushAttemptsTable,

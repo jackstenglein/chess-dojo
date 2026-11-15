@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const axiosGetMock = vi.hoisted(() => vi.fn());
 
-vi.mock('axios', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('axios')>();
-    return { ...actual, default: { ...actual.default, get: axiosGetMock } };
+vi.mock('@/api/axiosService', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/api/axiosService')>();
+    return { axiosService: { ...actual.axiosService, get: axiosGetMock } };
 });
 
 import { fetchOpenClassicalLichessGame } from './lichessGame';
@@ -40,6 +40,7 @@ describe('fetchOpenClassicalLichessGame', () => {
         expect(axiosGetMock).toHaveBeenCalledWith('https://lichess.org/api/game/abcdefgh', {
             headers: { Authorization: 'Bearer lip_token' },
             maxRedirects: 0,
+            functionName: 'getLichessGame',
         });
     });
 
@@ -59,6 +60,7 @@ describe('fetchOpenClassicalLichessGame', () => {
         expect(axiosGetMock).toHaveBeenCalledWith('https://lichess.org/api/game/abcdefgh', {
             headers: {},
             maxRedirects: 0,
+            functionName: 'getLichessGame',
         });
     });
 
