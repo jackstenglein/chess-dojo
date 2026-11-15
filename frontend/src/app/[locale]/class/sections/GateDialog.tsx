@@ -2,6 +2,7 @@
 
 import { EventType, trackEvent } from '@/analytics/events';
 import { metaLead } from '@/analytics/meta';
+import { axiosService } from '@/api/axiosService';
 import { Link } from '@/components/navigation/Link';
 import { LeadType } from '@jackstenglein/chess-dojo-common/src/lead/api';
 import { Close, PlayArrowRounded } from '@mui/icons-material';
@@ -17,8 +18,6 @@ import {
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { axiosService } from 'src/api/axiosService';
-import { logger } from 'src/logging/logger';
 import { classLeadSchema, getAttribution, grantClassAccess } from '../classLead';
 import { ClassId } from '../content';
 import { Body, Condensed, fontVars, INK_RAISED } from './shared';
@@ -52,7 +51,6 @@ export function GateDialog({
     const onSubmit = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         if (!classId) {
-            logger.debug('No class ID');
             return;
         }
 
@@ -69,14 +67,12 @@ export function GateDialog({
                 email: fields.has('email') ? 'Enter a valid email address.' : undefined,
                 consent: !consent ? 'Tick the box to get the class and our emails.' : undefined,
             });
-            logger.debug('Set errors: ', parsed.error, consent, classId);
             return;
         }
 
         setErrors({});
         setLoading(true);
         try {
-            logger.debug('Calling axios');
             await axiosService.post('/public/lead', lead, { functionName: 'registerLead' });
         } catch {
             // An email tool outage shouldn't cost this visitor the class they asked for.
