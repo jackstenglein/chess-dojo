@@ -116,7 +116,6 @@ async function fetchFromMasters(fen: string): Promise<ExplorerPosition | null> {
  */
 async function fetchFromLichess(fen: string): Promise<LichessExplorerPosition | null> {
     try {
-        console.log(`Fetching from Lichess: `, fen);
         const token = await getLichessToken();
         const response = await axios.get<LichessExplorerPosition>(
             'https://explorer.lichess.org/lichess',
@@ -126,7 +125,6 @@ async function fetchFromLichess(fen: string): Promise<LichessExplorerPosition | 
                 timeout: 500,
             },
         );
-        console.log('Finished fetching from Lichess: ', fen);
         return response.data;
     } catch (err) {
         console.error('Failed to get explorer position from Lichess: ', err);
