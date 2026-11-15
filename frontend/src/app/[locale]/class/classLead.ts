@@ -1,4 +1,7 @@
-import { z } from 'zod';
+import {
+    RegisterLeadRequest,
+    registerLeadRequestSchema,
+} from '@jackstenglein/chess-dojo-common/src/lead/api';
 import { ClassOfferTier } from './content';
 
 const ACCESS_KEY = 'classLanding.access';
@@ -13,16 +16,9 @@ const ATTRIBUTION_PARAMS = [
     'utm_term',
 ] as const;
 
-export const classLeadSchema = z.object({
-    email: z.email().max(254),
-    classId: z.enum(['logical-chess', 'calculation', 'game-review']),
-    consent: z.literal(true),
-    attribution: z.record(z.string(), z.string().max(200)).optional(),
-    /** Honeypot field. Hidden from people, so only bots fill it in. */
-    website: z.string().max(0).optional(),
-});
+export const classLeadSchema = registerLeadRequestSchema;
 
-export type ClassLead = z.infer<typeof classLeadSchema>;
+export type ClassLead = RegisterLeadRequest;
 
 export interface PendingCheckout {
     tier: ClassOfferTier;

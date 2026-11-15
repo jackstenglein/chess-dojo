@@ -81,9 +81,7 @@ export function RatingMoves() {
     return (
         <Box sx={{ bgcolor: '#0D0D18', borderBlock: `1px solid ${HAIRLINE}` }}>
             <Section>
-                <Heading description='Pick a member and watch the climb. Ratings are from the site shown, and your own results depend on the work you put in.'>
-                    They did the work. Here’s what moved.
-                </Heading>
+                <Heading>They did the work. Here’s what moved.</Heading>
 
                 <Box
                     ref={rootRef}

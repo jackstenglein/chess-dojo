@@ -1,4 +1,5 @@
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import { LiveClassLeadId } from '@jackstenglein/chess-dojo-common/src/lead/api';
 
 /**
  * Copy and offer data for the /class campaign page. The page is an English-only
@@ -6,12 +7,13 @@ import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/
  * offer settles.
  */
 
-export type ClassId = 'logical-chess' | 'calculation' | 'game-review';
+export const ClassId = LiveClassLeadId;
+export type ClassId = LiveClassLeadId;
 
 export const STATS = [
     { target: 200000, label: 'Rating points gained' },
     { target: 4900, label: 'Graduations' },
-    { target: 99800, label: 'Training hours logged' },
+    { target: 100000, label: 'Training hours logged' },
 ];
 
 export const STUCK_WEEK = [

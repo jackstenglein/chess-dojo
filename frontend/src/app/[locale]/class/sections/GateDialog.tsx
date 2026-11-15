@@ -3,6 +3,7 @@
 import { EventType, trackEvent } from '@/analytics/events';
 import { metaLead } from '@/analytics/meta';
 import { Link } from '@/components/navigation/Link';
+import { LeadType } from '@jackstenglein/chess-dojo-common/src/lead/api';
 import { Close, PlayArrowRounded } from '@mui/icons-material';
 import {
     Box,
@@ -16,14 +17,16 @@ import {
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { axiosService } from 'src/api/axiosService';
+import { logger } from 'src/logging/logger';
 import { classLeadSchema, getAttribution, grantClassAccess } from '../classLead';
 import { ClassId } from '../content';
 import { Body, Condensed, fontVars, INK_RAISED } from './shared';
 
 const CLASS_NAMES: Record<ClassId, string> = {
-    'logical-chess': 'Logical Chess Move by Move with GM Jesse Kraai',
-    calculation: 'Calculation 1000+ with IM Kostya Kavutskiy',
-    'game-review': 'Game & Profile Review with GM Jesse Kraai',
+    [ClassId.enum.LOGICAL_CHESS]: 'Logical Chess Move by Move with GM Jesse Kraai',
+    [ClassId.enum.CALCULATION]: 'Calculation 1000+ with IM Kostya Kavutskiy',
+    [ClassId.enum.GAME_REVIEW]: 'Game & Profile Review with GM Jesse Kraai',
 };
 
 export function GateDialog({
@@ -41,7 +44,7 @@ export function GateDialog({
     const [errors, setErrors] = useState<{ email?: string; consent?: string }>({});
     const [loading, setLoading] = useState(false);
     // Keeps the class name on screen while the dialog fades out.
-    const [lastClass, setLastClass] = useState<ClassId>('logical-chess');
+    const [lastClass, setLastClass] = useState<ClassId>(ClassId.enum.LOGICAL_CHESS);
     if (classId && classId !== lastClass) {
         setLastClass(classId);
     }
@@ -49,36 +52,32 @@ export function GateDialog({
     const onSubmit = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         if (!classId) {
+            logger.debug('No class ID');
             return;
         }
 
         const lead = {
             email: email.trim(),
+            type: LeadType.enum.LIVE_CLASS,
             classId,
-            consent,
             attribution: getAttribution(),
-            website,
         };
         const parsed = classLeadSchema.safeParse(lead);
-        if (!parsed.success) {
-            const fields = new Set(parsed.error.issues.map((issue) => issue.path[0]));
+        if (!parsed.success || !consent) {
+            const fields = new Set(parsed.error?.issues.map((issue) => issue.path[0]));
             setErrors({
                 email: fields.has('email') ? 'Enter a valid email address.' : undefined,
-                consent: fields.has('consent')
-                    ? 'Tick the box to get the class and our emails.'
-                    : undefined,
+                consent: !consent ? 'Tick the box to get the class and our emails.' : undefined,
             });
+            logger.debug('Set errors: ', parsed.error, consent, classId);
             return;
         }
 
         setErrors({});
         setLoading(true);
         try {
-            await fetch('/api/class-lead', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(lead),
-            });
+            logger.debug('Calling axios');
+            await axiosService.post('/public/lead', lead, { functionName: 'registerLead' });
         } catch {
             // An email tool outage shouldn't cost this visitor the class they asked for.
         }

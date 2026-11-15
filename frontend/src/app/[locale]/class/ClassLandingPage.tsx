@@ -40,21 +40,21 @@ export function ClassLandingPage() {
 
     return (
         <Box className='dark' sx={pageSx}>
-            <Hero playing={unlocked.includes('logical-chess')} onPlay={onPlay} />
+            <Hero playing={unlocked.includes(ClassId.enum.LOGICAL_CHESS)} onPlay={onPlay} />
             <ProofBand />
             <InkGround>
                 <StuckWeek />
                 <TheSystem />
             </InkGround>
             <RatingMoves />
-            <LiveClasses playing={unlocked.includes('calculation')} onPlay={onPlay} />
-            <GameReview playing={unlocked.includes('game-review')} onPlay={onPlay} />
+            <LiveClasses playing={unlocked.includes(ClassId.enum.CALCULATION)} onPlay={onPlay} />
+            <GameReview playing={unlocked.includes(ClassId.enum.GAME_REVIEW)} onPlay={onPlay} />
             <Senseis />
             <Community />
             <Objections />
             <OfferSection />
             <Faq />
-            <Closing onWatch={() => onPlay('logical-chess')} />
+            <Closing onWatch={() => onPlay(ClassId.enum.LOGICAL_CHESS)} />
             <StickyOfferBar />
             <GateDialog
                 classId={gateFor}

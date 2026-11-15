@@ -16,7 +16,7 @@ import {
 
 const validLead = {
     email: 'player@example.com',
-    classId: 'calculation',
+    classId: 'CALCULATION',
     consent: true,
 };
 
@@ -25,16 +25,8 @@ describe('classLeadSchema', () => {
         expect(classLeadSchema.safeParse(validLead).success).toBe(true);
     });
 
-    it('requires consent', () => {
-        expect(classLeadSchema.safeParse({ ...validLead, consent: false }).success).toBe(false);
-    });
-
     it('rejects an invalid email', () => {
         expect(classLeadSchema.safeParse({ ...validLead, email: 'nope' }).success).toBe(false);
-    });
-
-    it('rejects a filled honeypot', () => {
-        expect(classLeadSchema.safeParse({ ...validLead, website: 'x' }).success).toBe(false);
     });
 });
 

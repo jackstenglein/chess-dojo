@@ -219,7 +219,7 @@ export function Hero({
                         playAt={{ x: '50%', y: '80%' }}
                         priority
                         playing={playing}
-                        onPlay={() => onPlay('logical-chess')}
+                        onPlay={() => onPlay(ClassId.enum.LOGICAL_CHESS)}
                         overlay={
                             <Stack
                                 direction='row'
@@ -351,7 +351,7 @@ export function Hero({
                                 That’s one class. Members get six workshops a week.
                             </Condensed>
                             <Body sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
-                                Each one comes with a recording and its own Discord channel, on top
+                                Each one comes with recordings and its own Discord channel, on top
                                 of a training plan built for your rating.
                             </Body>
                             <Button
@@ -370,7 +370,7 @@ export function Hero({
                             </Button>
                             <Body sx={{ fontSize: '1rem' }}>
                                 Live classes from ${WORKSHOPS_OFFER.price.year}/month billed yearly.
-                                Training plan from ${CORE_OFFER.price.year}.
+                                Training plans from ${CORE_OFFER.price.year}.
                             </Body>
                         </>
                     )}

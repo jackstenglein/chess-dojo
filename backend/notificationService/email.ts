@@ -12,7 +12,7 @@ const ses = new SESv2Client({ region: 'us-east-1' });
  *   - emailTemplates/foo/bar.txt
  *
  * If not specified, the sender email address defaults to
- * `ChessDojo <notifications@mail.chessdojo.club>`.
+ * `ChessDojo <notifications@chessdojo.club>`.
  * @param template The template to send.
  * @param templateData The data to insert into the template.
  * @param addresses The email addresses to send the email to.
@@ -22,7 +22,7 @@ export async function sendEmailTemplate(
     template: string,
     templateData: Record<string, string>,
     addresses: string[],
-    sender = 'ChessDojo <notifications@mail.chessdojo.club>',
+    sender = 'ChessDojo <notifications@chessdojo.club>',
 ) {
     const subject = readFile(`emailTemplates/${template}.subject`);
     const html = readFile(`emailTemplates/${template}.minified.html`);

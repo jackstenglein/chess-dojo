@@ -155,7 +155,7 @@ export function LiveClasses({
             <Section id={LIVE_CLASSES_ELEMENT_ID} sx={{ pb: { xs: 3, md: 4 } }}>
                 <Heading
                     sx={{ mb: { xs: 3, md: 4 }, maxWidth: '50rem' }}
-                    description='Workshop members can join all six classes. Game & Profile Review members also meet their own team twice a week.'
+                    description='Workshop members can join all six classes. Sensei Review members also meet their own team twice a week.'
                 >
                     A week of live classes with GMs and IMs
                 </Heading>
@@ -178,7 +178,7 @@ export function LiveClasses({
                             posterNode={<CalculationCover />}
                             playAt={{ x: '24%', y: '74%' }}
                             playing={playing}
-                            onPlay={() => onPlay('calculation')}
+                            onPlay={() => onPlay(ClassId.enum.CALCULATION)}
                         />
                         <Typography variant='body2' sx={{ mt: 1.25, color: MUTED }}>
                             Free sample: IM Kostya Kavutskiy’s Saturday calculation class. 60 min.
@@ -240,7 +240,7 @@ export function LiveClasses({
                 <Body sx={{ mt: { xs: 2.5, md: 3 }, maxWidth: '46rem' }}>
                     Workshops members get all {LIBRARY.courses} courses from day one:{' '}
                     {LIBRARY.workshopRecordings}+ classes and {LIBRARY.workshopHours}+ hours to
-                    watch. Game &amp; Profile Review adds the recordings of every review team.
+                    watch. Sensei Review adds the recordings of every review team.
                 </Body>
             </Section>
             <Box

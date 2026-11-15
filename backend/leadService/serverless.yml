@@ -1,0 +1,85 @@
+# Deploys the lead service.
+
+service: chess-dojo-lead
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  # Registers a new lead.
+  register:
+    handler: register.handler
+    package:
+      individually: true
+      patterns:
+        - emailTemplates/classLead/n1-class-link.minified.html
+        - emailTemplates/classLead/n1-class-link.subject
+        - emailTemplates/classLead/n1-class-link.txt
+    events:
+      - httpApi:
+          path: /public/lead
+          method: post
+    environment:
+      stage: ${sls:stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt LeadTable.Arn
+      - Effect: Allow
+        Action:
+          - ses:SendTemplatedEmail
+        Resource:
+          - arn:aws:ses:${aws:region}:${aws:accountId}:identity/chessdojo.club
+
+resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+    IsNotSimple: !Not [!Equals ['${sls:stage}', 'simple']]
+
+  Resources:
+    LeadTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-leads
+        AttributeDefinitions:
+          - AttributeName: hash
+            AttributeType: S
+          - AttributeName: range
+            AttributeType: S
+        KeySchema:
+          - AttributeName: hash
+            KeyType: HASH
+          - AttributeName: range
+            KeyType: RANGE
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: ttl
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+
+  Outputs:
+    LeadTableArn:
+      Value: !GetAtt LeadTable.Arn
