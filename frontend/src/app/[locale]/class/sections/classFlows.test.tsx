@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
     onSubscribe: vi.fn(),
     trackEvent: vi.fn(),
     metaLead: vi.fn(),
+    post: vi.fn(),
 }));
 
 vi.mock('@/components/landing/fonts', () => {
@@ -40,6 +41,10 @@ vi.mock('@/api/Request', () => ({
     RequestSnackbar: () => null,
 }));
 
+vi.mock('@/api/axiosService', () => ({
+    axiosService: { post: mocks.post },
+}));
+
 vi.mock('@/analytics/events', () => ({
     EventType: { ClassLead: 'class_lead' },
     trackEvent: mocks.trackEvent,
@@ -57,6 +62,7 @@ vi.mock('../../(scoreboard)/prices/useOnSubscribe', () => ({
 }));
 
 beforeEach(() => {
+    mocks.post.mockReset();
     window.localStorage.clear();
     vi.stubGlobal(
         'IntersectionObserver',
@@ -126,8 +132,6 @@ describe('GateDialog', () => {
     }
 
     it('blocks the class until the email and consent are valid', () => {
-        const fetchMock = vi.fn();
-        vi.stubGlobal('fetch', fetchMock);
         const onUnlocked = vi.fn();
         render(<GateDialog classId='CALCULATION' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
@@ -135,37 +139,50 @@ describe('GateDialog', () => {
 
         expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
         expect(screen.getByText('Tick the box to get the class and our emails.')).toBeTruthy();
-        expect(fetchMock).not.toHaveBeenCalled();
+        expect(mocks.post).not.toHaveBeenCalled();
         expect(onUnlocked).not.toHaveBeenCalled();
     });
 
     it('posts the lead and unlocks the class', async () => {
-        const fetchMock = vi.fn().mockResolvedValue({ ok: true });
-        vi.stubGlobal('fetch', fetchMock);
+        mocks.post.mockResolvedValue({ data: {} });
         const onUnlocked = vi.fn();
         render(<GateDialog classId='LOGICAL_CHESS' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
         fillAndSubmit('player@example.com', true);
 
         await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('LOGICAL_CHESS'));
-        const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-        expect(url).toBe('/api/class-lead');
-        expect(JSON.parse(init.body as string)).toMatchObject({
-            email: 'player@example.com',
-            classId: 'LOGICAL_CHESS',
-            consent: true,
-        });
+        expect(mocks.post).toHaveBeenCalledWith(
+            '/public/lead',
+            {
+                email: 'player@example.com',
+                type: 'LIVE_CLASS',
+                classId: 'LOGICAL_CHESS',
+                attribution: {},
+            },
+            { functionName: 'registerLead' },
+        );
         expect(hasClassAccess()).toBe(true);
         expect(mocks.metaLead).toHaveBeenCalledTimes(1);
+        expect(mocks.trackEvent).toHaveBeenCalledWith('class_lead', { class_id: 'LOGICAL_CHESS' });
     });
 
     it('still gives the visitor the class if the request fails', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+        mocks.post.mockRejectedValue(new Error('offline'));
         const onUnlocked = vi.fn();
         render(<GateDialog classId='CALCULATION' onClose={vi.fn()} onUnlocked={onUnlocked} />);
 
         fillAndSubmit('player@example.com', true);
 
         await waitFor(() => expect(onUnlocked).toHaveBeenCalledWith('CALCULATION'));
+        expect(mocks.post).toHaveBeenCalledWith(
+            '/public/lead',
+            {
+                email: 'player@example.com',
+                type: 'LIVE_CLASS',
+                classId: 'CALCULATION',
+                attribution: {},
+            },
+            { functionName: 'registerLead' },
+        );
     });
 });
