@@ -1,5 +1,81 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
+/**
+ * Returns true if the URL matches the given specification.
+ * @param url The URL to test.
+ * @param hostname The hostname to test against.
+ * @param pathParts A list of regular expressions to test each part of the URL against.
+ * @returns True if the URL matches the hostname and path parts.
+ */
+function urlMatches(
+    url: string,
+    {
+        hostname,
+        pathParts,
+    }: {
+        hostname: string;
+        pathParts: RegExp[];
+    },
+): boolean {
+    let urlObj: URL | null = null;
+    try {
+        urlObj = new URL(url.trim());
+    } catch (_err) {
+        return false;
+    }
+
+    if (urlObj.hostname !== hostname) {
+        return false;
+    }
+
+    const parts = urlObj.pathname.split('/').filter((part) => part);
+    if (parts.length !== pathParts.length) {
+        return false;
+    }
+
+    for (const [idx, part] of parts.entries()) {
+        const re = pathParts[idx];
+        if (!re.test(part)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+const matchLichessId = /^(\w{8}|\w{12})$/;
+
+const lichessMatchers = [
+    [matchLichessId, /^(black|white)$/],
+    [matchLichessId],
+    [/^game$/, matchLichessId, /^(black|white)$/],
+    [/^game$/, matchLichessId],
+];
+
+/**
+ * Returns the Lichess game ID from the given URL.
+ * @param url The URL to extract the Lichess game ID from.
+ * @returns The Lichess game ID.
+ */
+export function getLichessGameId(url?: string): PgnImportResult<string> {
+    if (!url) {
+        return { error: { statusCode: 400, publicMessage: 'URL is required' } };
+    }
+
+    for (const matcher of lichessMatchers) {
+        if (urlMatches(url, { hostname: 'lichess.org', pathParts: matcher })) {
+            const idIndex = matcher.indexOf(matchLichessId);
+            return getPathSegment(url, idIndex);
+        }
+    }
+    return {
+        error: {
+            statusCode: 400,
+            publicMessage: `URL does not match expected Lichess game format`,
+        },
+    };
+}
+
 export interface PgnImportError {
     statusCode: number;
     publicMessage: string;
@@ -83,7 +159,7 @@ export class LichessFetcher {
      * @returns The PGN of the Lichess game.
      */
     public async getLichessGame(url?: string): Promise<PgnImportResult<string>> {
-        const { data, error } = getPathSegment(url, 0);
+        const { data, error } = getLichessGameId(url);
         if (error) {
             return { error };
         }
