@@ -30,6 +30,11 @@ services:
       DirectoriesTableArn: ${directoryService.DirectoriesTableArn}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
 
+  leadService:
+    path: leadService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+
   discordAuthService:
     path: discordAuthService
     params:
