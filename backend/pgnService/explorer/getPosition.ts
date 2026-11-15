@@ -118,10 +118,11 @@ async function fetchFromLichess(fen: string): Promise<LichessExplorerPosition | 
     try {
         const token = await getLichessToken();
         const response = await axios.get<LichessExplorerPosition>(
-            'https://explorer.lichess.ovh/lichess',
+            'https://explorer.lichess.org/lichess',
             {
                 params: { fen, topGames: 0, recentGames: 0 },
                 headers: { Authorization: `Bearer ${token}` },
+                timeout: 500,
             },
         );
         return response.data;
@@ -144,10 +145,11 @@ async function fetchFromTablebase(fen: string): Promise<LichessTablebasePosition
     try {
         const token = await getLichessToken();
         const response = await axios.get<LichessTablebasePosition>(
-            'https://tablebase.lichess.ovh/standard',
+            'https://tablebase.lichess.org/standard',
             {
                 params: { fen: fen.replaceAll(' ', '_') },
                 headers: { Accept: '*/*', Authorization: `Bearer ${token}` },
+                timeout: 500,
             },
         );
         return response.data;
