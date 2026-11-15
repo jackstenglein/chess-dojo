@@ -87,12 +87,10 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
     const tTime = useTranslations('common');
     const dayNames = useShortDayNames();
     const { pinEditorTask, user, pinnedTasks, savePin, togglePin } = use(TrainingPlanContext);
-    // PinTaskDialog only renders this form while a task is being edited.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const task = pinEditorTask!;
+    const task = pinEditorTask;
 
-    const isPinned = pinnedTasks.some((p) => p.id === task.id);
-    const saved = user.pinnedTaskMinutes?.[task.id];
+    const isPinned = pinnedTasks.some((p) => p.id === task?.id);
+    const saved = task ? user.pinnedTaskMinutes?.[task.id] : undefined;
 
     // Each day keeps its minutes while it is switched off, so turning it back on restores them.
     const [minutes, setMinutes] = useState<number[]>(() =>
@@ -110,6 +108,11 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
         () => [0, 1, 2, 3, 4, 5, 6].map((i) => (i + (user.weekStart ?? 0)) % 7),
         [user.weekStart],
     );
+
+    if (!task) {
+        return null;
+    }
+
     const selectedDays = days.filter((d) => selected.includes(d));
     const sharedMinutes = minutes[selectedDays[0] ?? days[0]];
 
