@@ -76,7 +76,7 @@
         "comlink": "^4.4.2",
         "date-fns": "^4.1.0",
         "deep-equal": "^2.2.3",
-        "idb": "^8.0.3",
+        "idb": "^8.0.4",
         "lodash.debounce": "^4.0.8",
         "luxon": "^3.7.2",
         "modern-screenshot": "^4.6.8",
