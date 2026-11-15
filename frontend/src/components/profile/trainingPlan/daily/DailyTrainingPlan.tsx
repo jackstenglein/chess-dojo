@@ -78,7 +78,7 @@ export function DailyTrainingPlan() {
 
     const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
 
-    const [goalTime, , workedTime, extraTaskIds] = useTrainingPlanProgress({
+    const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: suggestionsByDay[new Date().getDay()],
