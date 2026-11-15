@@ -78,7 +78,7 @@ export function DailyTrainingPlan() {
 
     const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
 
-    const [goalTime, suggestedWorkedTime, workedTime, extraTaskIds] = useTrainingPlanProgress({
+    const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: suggestionsByDay[new Date().getDay()],
@@ -153,7 +153,7 @@ export function DailyTrainingPlan() {
                     taskCount={taskCount}
                     doneCount={doneCount}
                     goalMinutes={goalTime}
-                    workedMinutes={suggestedWorkedTime}
+                    workedMinutes={workedTime}
                 />
             )}
 
@@ -173,8 +173,9 @@ export function DailyTrainingPlan() {
 }
 
 /**
- * Renders the summary of today's plan: how many tasks are done, how much of the
- * day's suggested time has been worked, and a clear finished state.
+ * Renders the summary of today's plan: how many tasks are done, how much time has
+ * been logged today against the day's goal (any task counts, not just suggested
+ * ones), and a clear finished state.
  */
 export function DailySummary({
     taskCount,
