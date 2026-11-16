@@ -36,6 +36,7 @@ import { Stepper } from './Stepper';
 import { TaskDialogView } from './TaskDialog';
 import { TaskDialogFooter, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
 import { getTaskUnit, singularUnit } from './taskUnit';
+import { DEFAULT_MINUTES_PER_TASK } from './workGoal';
 
 /** How much the −/+ buttons change the time by, in minutes. */
 const TIME_STEP_MINUTES = 5;
@@ -50,7 +51,10 @@ interface ProgressUpdaterProps {
     cohort: string;
     onClose: () => void;
     setView?: (view: TaskDialogView) => void;
-    /** Time to prefill when no timer is running for this task, in minutes. */
+    /**
+     * Time to prefill when no timer is running for this task, in minutes. Defaults
+     * to the usual 30 minutes per task.
+     */
     initialMinutes?: number;
 }
 
@@ -60,7 +64,7 @@ export const ProgressUpdater = ({
     cohort,
     onClose,
     setView,
-    initialMinutes,
+    initialMinutes = DEFAULT_MINUTES_PER_TASK,
 }: ProgressUpdaterProps) => {
     const t = useTranslations('profile.trainingPlan.progressUpdater');
     const tCommon = useTranslations('profile.trainingPlan.common');

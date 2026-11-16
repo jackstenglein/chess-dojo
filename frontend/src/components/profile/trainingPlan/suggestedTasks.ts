@@ -106,6 +106,9 @@ export function splitMinutes(total: number, count: number): number[] {
 /** The maximum number of suggested tasks returned by the suggestion algorithm. */
 const MAX_SUGGESTED_TASKS = 3;
 
+/** The least time a suggested (not pinned) task is planned with; less leaves it out. */
+const MIN_SUGGESTED_TASK_MINUTES = 10;
+
 /**
  * The categories allowed in the suggested tasks algorithm. Their order here is used
  * for breaking ties in the algorithm if two categories have the same remaining Dojo
@@ -315,8 +318,12 @@ export class TaskSuggestionAlgorithm {
             return;
         }
 
+        // Pinned tasks can come from another cohort's plan, so they are looked up
+        // among the pins too, not only in the user's cohort.
         const fullTask =
-            this.customTasks.find((t) => t.id === id) ?? this.requirements.find((t) => t.id === id);
+            this.customTasks.find((t) => t.id === id) ??
+            this.requirements.find((t) => t.id === id) ??
+            this.pinnedTasks.find((t) => t.id === id);
         if (fullTask) {
             to.push({ task: fullTask, goalMinutes: minutes });
         }
@@ -496,42 +503,62 @@ export class TaskSuggestionAlgorithm {
 
         const otherTaskMinutes = goalMinutes - welcomeTaskMinutes - pinnedMinutes;
         if (otherTaskMinutes <= 0) {
-            // The day is already full, so the remaining tasks get no time.
+            // The day is already full, so suggested tasks get no time. Pinned tasks
+            // without a schedule still stay on the plan when other pins filled the
+            // day: the user asked for them, so they go over the day's goal. On a rest
+            // day (no goal and no scheduled pins), nothing gets time.
+            const keepPinned = pinnedMinutes > 0;
+            const pinnedTaskIds = new Set(this.pinnedTasks.map((t) => t.id));
             for (const suggestion of suggestions) {
                 if (
                     this.getScheduledMinutes(suggestion.task.id, day) === undefined &&
                     suggestion.task.category !== RequirementCategory.Welcome
                 ) {
-                    suggestion.goalMinutes = 0;
+                    suggestion.goalMinutes =
+                        keepPinned &&
+                        pinnedTaskIds.has(suggestion.task.id) &&
+                        suggestion.task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID
+                            ? DEFAULT_MINUTES_PER_TASK
+                            : 0;
                 }
             }
             return;
         }
 
+        const needsTime = suggestions.filter(
+            (s) =>
+                s.task.category !== RequirementCategory.Welcome &&
+                s.task.id !== SCHEDULE_CLASSICAL_GAME_TASK_ID &&
+                this.getScheduledMinutes(s.task.id, day) === undefined,
+        );
+        // Every pinned task stays on the plan, sharing the day's goal with the
+        // others, even when that leaves each one less than the usual 30 minutes.
+        // Pinned tasks get time first; suggested tasks only fill the slots left.
+        const pinnedTaskIds = new Set(this.pinnedTasks.map((t) => t.id));
+        const pinned = needsTime.filter((s) => pinnedTaskIds.has(s.task.id));
+        const ordered = [...pinned, ...needsTime.filter((s) => !pinnedTaskIds.has(s.task.id))];
+        const pinnedCount = pinned.length;
+
         const maxTasksWithTime = Math.min(
-            Math.max(1, Math.floor(otherTaskMinutes / DEFAULT_MINUTES_PER_TASK)),
+            Math.max(1, pinnedCount, Math.floor(otherTaskMinutes / DEFAULT_MINUTES_PER_TASK)),
             tasksMissingTime,
         );
         const minutesPerTask = splitMinutes(otherTaskMinutes, maxTasksWithTime);
 
-        let tasksWithTime = 0;
         for (const suggestion of suggestions) {
-            if (
-                suggestion.task.category === RequirementCategory.Welcome ||
-                this.getScheduledMinutes(suggestion.task.id, day) !== undefined
-            ) {
-                continue;
-            }
-            if (
-                tasksWithTime >= maxTasksWithTime ||
-                suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID
-            ) {
+            if (suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID) {
                 suggestion.goalMinutes = 0;
-            } else {
-                suggestion.goalMinutes = minutesPerTask[tasksWithTime];
-                tasksWithTime++;
             }
         }
+        ordered.forEach((suggestion, i) => {
+            const minutes = i < maxTasksWithTime ? minutesPerTask[i] : 0;
+            // A suggested task is only worth planning with a real block of time; a
+            // smaller leftover stays unplanned. Pinned tasks keep whatever they get.
+            suggestion.goalMinutes =
+                pinnedTaskIds.has(suggestion.task.id) || minutes >= MIN_SUGGESTED_TASK_MINUTES
+                    ? minutes
+                    : 0;
+        });
     }
 
     /**

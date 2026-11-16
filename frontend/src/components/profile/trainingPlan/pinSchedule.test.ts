@@ -6,7 +6,7 @@ import {
 } from '@/database/requirement';
 import { SubscriptionStatus, User } from '@/database/user';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getOverallocation, trimPinnedMinutes } from './pinSchedule';
+import { getDefaultLogMinutes } from './pinSchedule';
 import { TaskSuggestionAlgorithm } from './suggestedTasks';
 
 const cohort = '1000-1100';
@@ -136,55 +136,25 @@ describe('scheduled pinned tasks', () => {
     });
 });
 
-describe('getOverallocation', () => {
-    it('reports a day whose pinned tasks need more than the planned time', () => {
-        const user = createUser({
-            pinnedTasks: ['a', 'b'],
-            pinnedTaskMinutes: { a: minutesOn(MONDAY, 45), b: minutesOn(MONDAY, 45) },
-        });
-
-        expect(getOverallocation(user, MONDAY)).toEqual({
-            dayIndex: MONDAY,
-            allocated: 90,
-            goal: 60,
-        });
-        expect(getOverallocation(user, TUESDAY)).toBeUndefined();
+describe('getDefaultLogMinutes', () => {
+    const user = createUser({
+        pinnedTasks: ['pinned'],
+        pinnedTaskMinutes: { pinned: minutesOn(MONDAY, 45) },
     });
 
-    it('ignores minutes left behind by an unpinned task', () => {
-        const user = createUser({
-            pinnedTasks: ['a'],
-            pinnedTaskMinutes: { a: minutesOn(MONDAY, 30), b: minutesOn(MONDAY, 90) },
-        });
-
-        expect(getOverallocation(user, MONDAY)).toBeUndefined();
-    });
-});
-
-describe('trimPinnedMinutes', () => {
-    it('scales each task down to its share of the day', () => {
-        const result = trimPinnedMinutes(
-            ['a', 'b'],
-            { a: minutesOn(MONDAY, 60), b: minutesOn(MONDAY, 30) },
-            MONDAY,
-            60,
-        );
-
-        expect(result.a[MONDAY]).toBe(40);
-        expect(result.b[MONDAY]).toBe(20);
+    it('uses the time planned for the task today', () => {
+        const today = [{ task: { id: 'pinned' }, goalMinutes: 20 }];
+        expect(getDefaultLogMinutes('pinned', today, user, MONDAY)).toBe(20);
     });
 
-    it('never goes over the day and leaves other days alone', () => {
-        const a = minutesOn(MONDAY, 50);
-        a[TUESDAY] = 90;
-        const result = trimPinnedMinutes(
-            ['a', 'b', 'c'],
-            { a, b: minutesOn(MONDAY, 50), c: minutesOn(MONDAY, 50) },
-            MONDAY,
-            10,
-        );
+    it("falls back to the pin's minutes for today", () => {
+        expect(getDefaultLogMinutes('pinned', [], user, MONDAY)).toBe(45);
+    });
 
-        expect(result.a[MONDAY] + result.b[MONDAY] + result.c[MONDAY]).toBeLessThanOrEqual(10);
-        expect(result.a[TUESDAY]).toBe(90);
+    it('falls back to 30 minutes otherwise', () => {
+        expect(getDefaultLogMinutes('pinned', [], user, TUESDAY)).toBe(30);
+        expect(getDefaultLogMinutes('other', undefined, user, MONDAY)).toBe(30);
+        const unplanned = [{ task: { id: 'other' }, goalMinutes: 0 }];
+        expect(getDefaultLogMinutes('other', unplanned, user, MONDAY)).toBe(30);
     });
 });

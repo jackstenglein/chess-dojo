@@ -11,7 +11,6 @@ import { pinnedMinutesMatch } from './pinSchedule';
 import { clearUpcomingDays, toggleSkippedIds } from './skippedTasks';
 import { SuggestedTask, TaskSuggestionAlgorithm } from './suggestedTasks';
 import { swapInPlan } from './swapTask';
-import { DEFAULT_WORK_GOAL } from './workGoal';
 
 export interface UseTrainingPlanResponse {
     /** The request for fetching requirements. */
@@ -29,10 +28,6 @@ export interface UseTrainingPlanResponse {
      * the week. Sunday is index 0; Saturday is index 6.
      */
     savePin: (task: Requirement | CustomTask, minutesPerDay: number[]) => void;
-    /** Replaces the minutes set aside for the pinned tasks. */
-    savePinnedTaskMinutes: (pinnedTaskMinutes: Record<string, number[]>) => void;
-    /** Sets the user's planned minutes for one day of the week. */
-    saveDayGoal: (dayIndex: number, minutes: number) => void;
     /** The task whose pin is being edited, if any. */
     pinEditorTask?: Requirement | CustomTask;
     /** Opens the editor for the task's pin, to pin it or change its days and minutes. */
@@ -120,24 +115,6 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         void api.updateUser({ pinnedTasks: pinnedTaskIds, pinnedTaskMinutes });
     };
 
-    const savePinnedTaskMinutes = (pinnedTaskMinutes: Record<string, number[]>) => {
-        updateUser({ pinnedTaskMinutes });
-        void api.updateUser({ pinnedTaskMinutes });
-    };
-
-    const saveDayGoal = (dayIndex: number, minutes: number) => {
-        const minutesPerDay = [...(user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay];
-        minutesPerDay[dayIndex] = minutes;
-        const workGoal = { minutesPerDay };
-        const workGoalHistory = (user.workGoalHistory ?? []).concat({
-            date: new Date().toISOString(),
-            workGoal,
-        });
-
-        updateUser({ workGoal, workGoalHistory });
-        void api.updateUser({ workGoal, workGoalHistory });
-    };
-
     const [pinEditorTask, setPinEditorTask] = useState<Requirement | CustomTask>();
 
     const [lastSkip, setLastSkip] = useState<{ ids: string[]; previousPlan: WeeklyPlan }>();
@@ -205,8 +182,6 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         pinnedTasks,
         togglePin,
         savePin,
-        savePinnedTaskMinutes,
-        saveDayGoal,
         pinEditorTask,
         openPinEditor: setPinEditorTask,
         closePinEditor: () => setPinEditorTask(undefined),

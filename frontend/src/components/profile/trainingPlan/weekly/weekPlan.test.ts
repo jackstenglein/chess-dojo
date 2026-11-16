@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { makeEntry, makeTask } from '../__fixtures__/tasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK } from '../suggestedTasks';
 import {
+    filterActiveRows,
     getCategoryTotals,
     getCellState,
     getChipDisplay,
@@ -198,5 +199,17 @@ describe('getCategoryTotals', () => {
 
     it('leaves out a category with nothing planned or logged', () => {
         expect(getCategoryTotals([row(opening, [[0, 0]])])).toEqual([]);
+    });
+});
+
+describe('filterActiveRows', () => {
+    it('keeps only the rows with time logged this week', () => {
+        const worked = makeTask({ id: 'worked' });
+        const idle = makeTask({ id: 'idle' });
+        const rows = [
+            { task: worked, cells: [cell(30, 0), cell(30, 10)] },
+            { task: idle, cells: [cell(30, 0), cell(30, 0)] },
+        ];
+        expect(filterActiveRows(rows).map((r) => r.task.id)).toEqual(['worked']);
     });
 });

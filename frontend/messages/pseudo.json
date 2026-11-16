@@ -180,6 +180,7 @@
             "daily": {
                 "today": "[T] Today",
                 "summary": "[T] {done} of {total} tasks done · {worked} of {goal}",
+                "plannedOverGoal": "[T] {planned} planned",
                 "allDone": "[T] Done for today · {worked} logged",
                 "goalMet": "[T] Time goal met",
                 "skippedHeading": "[T] Skipped this week ({count})",
@@ -400,12 +401,8 @@
                 "days": "[T] Days",
                 "timePerDay": "[T] Time each day",
                 "perDay": "[T] Set per day",
-                "overbooked": "[T] Your pinned tasks go over your planned time on {days}.",
                 "unpin": "[T] Unpin",
-                "pin": "[T] Pin",
-                "overbookedDay": "[T] {day} is overbooked: pinned tasks take {allocated}, but you planned {goal}.",
-                "raiseGoal": "[T] Plan {time} for {day}",
-                "trimTasks": "[T] Trim tasks to {time}"
+                "pin": "[T] Pin"
             }
         },
         "activity": {
