@@ -2,7 +2,7 @@
  * Maia chess engine — ChessAgine NN API backed implementation.
  *
  * Replaces the previous ONNX/browser-inference version.
- * All inference runs on the ChessAgine neural-net server via ChessAgineNNService.
+ * All inference runs on the ChessDojo Cloud Run neural-net server via ChessAgineNNService.
  */
 
 import { chessAgineNNService } from '@/api/chessAgineNNService';
