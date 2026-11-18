@@ -154,6 +154,7 @@ export function ScheduleClassicalGameDaily() {
                     open
                     onClose={() => setTaskDialogView(undefined)}
                     initialView={taskDialogView}
+                    isCurrentUser={isCurrentUser}
                 />
             )}
         </Grid>
@@ -162,12 +163,12 @@ export function ScheduleClassicalGameDaily() {
 
 export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
-    const { user } = useAuth();
+    const { user, isCurrentUser } = use(TrainingPlanContext);
     const [taskDialogView, setTaskDialogView] = useState<
         TaskDialogView.Details | TaskDialogView.Progress
     >();
 
-    const upcomingGames = getUpcomingGameSchedule(user?.gameSchedule);
+    const upcomingGames = getUpcomingGameSchedule(user.gameSchedule);
     return (
         <Stack
             spacing={2}
@@ -224,10 +225,11 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                             justifyContent: 'end',
                         }}
                     >
-                        <Tooltip title={t('updateTooltip')}>
+                        <Tooltip title={isCurrentUser ? t('updateTooltip') : ''}>
                             <Checkbox
                                 checked={upcomingGames.length > 0}
                                 onClick={() => setTaskDialogView(TaskDialogView.Progress)}
+                                disabled={!isCurrentUser}
                             />
                         </Tooltip>
                     </Stack>
@@ -240,6 +242,7 @@ export const ScheduleClassicalGame = ({ hideChip }: { hideChip?: boolean }) => {
                     open
                     onClose={() => setTaskDialogView(undefined)}
                     initialView={taskDialogView}
+                    isCurrentUser={isCurrentUser}
                 />
             )}
         </Stack>
@@ -250,17 +253,20 @@ interface ScheduleClassicalGameDialogProps {
     open: boolean;
     onClose: () => void;
     initialView: TaskDialogView.Details | TaskDialogView.Progress;
+    isCurrentUser: boolean;
 }
 
 function ScheduleClassicalGameDialog({
     open,
     onClose,
     initialView,
+    isCurrentUser,
 }: ScheduleClassicalGameDialogProps) {
     const t = useTranslations('profile.trainingPlan.scheduleGame');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
-    const [view, setView] = useState(initialView);
+    const [selectedView, setView] = useState(initialView);
+    const view = isCurrentUser ? selectedView : TaskDialogView.Details;
     const [entries, setEntries] = useState<ScheduleFormEntry[]>(
         getScheduleFormEntries(user?.gameSchedule),
     );
@@ -270,6 +276,10 @@ function ScheduleClassicalGameDialog({
     const request = useRequest();
 
     const onSave = () => {
+        if (!isCurrentUser) {
+            return;
+        }
+
         const errors: Record<number, { date?: string; count?: string }> = {};
         const parsed: { date: string; count: number }[] = [];
 
@@ -336,9 +346,11 @@ function ScheduleClassicalGameDialog({
                     {tCommon('cancel')}
                 </Button>
                 {view === TaskDialogView.Details ? (
-                    <Button onClick={() => setView(TaskDialogView.Progress)}>
-                        {t('updateSchedule')}
-                    </Button>
+                    isCurrentUser && (
+                        <Button onClick={() => setView(TaskDialogView.Progress)}>
+                            {t('updateSchedule')}
+                        </Button>
+                    )
                 ) : (
                     <>
                         <Button
