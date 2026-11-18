@@ -333,11 +333,11 @@ function DetailsDialog({ task, onClose, cohort, setView, isOwner }: DetailsDialo
                         ))}
                 </Stack>
             </DialogContent>
-            <TaskDialogFooter
-                view={TaskDialogView.Details}
-                setView={isOwner ? setView : undefined}
-                extra={
-                    isOwner ? (
+            {isOwner && (
+                <TaskDialogFooter
+                    view={TaskDialogView.Details}
+                    setView={setView}
+                    extra={
                         timerRunning ? (
                             <Button
                                 color='warning'
@@ -362,13 +362,11 @@ function DetailsDialog({ task, onClose, cohort, setView, isOwner }: DetailsDialo
                                 {getTimerLabel(task.id)}
                             </Button>
                         )
-                    ) : undefined
-                }
-            >
-                <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
-                    {tCommon('cancel')}
-                </Button>
-                {isOwner && (
+                    }
+                >
+                    <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
+                        {tCommon('cancel')}
+                    </Button>
                     <Button
                         variant='contained'
                         disableElevation
@@ -377,8 +375,8 @@ function DetailsDialog({ task, onClose, cohort, setView, isOwner }: DetailsDialo
                     >
                         {tCommon('logTraining')}
                     </Button>
-                )}
-            </TaskDialogFooter>
+                </TaskDialogFooter>
+            )}
         </>
     );
 }

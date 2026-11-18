@@ -5,7 +5,7 @@ import { Link } from '@/components/navigation/Link';
 import { RequirementCategory } from '@/database/requirement';
 import { dojoCohorts, GameScheduleEntry } from '@/database/user';
 import { CategoryColors } from '@/style/ThemeProvider';
-import { AddCircle, CalendarMonth, Delete, Help, NotInterested } from '@mui/icons-material';
+import { AddCircle, CalendarMonth, Close, Delete, Help, NotInterested } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -328,7 +328,17 @@ function ScheduleClassicalGameDialog({
             maxWidth='md'
             fullWidth
         >
-            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogTitle sx={{ pr: 7 }}>
+                {t('title')}
+                <IconButton
+                    aria-label={tCommon('close')}
+                    disabled={request.isLoading()}
+                    onClick={onClose}
+                    sx={{ position: 'absolute', top: 12, right: 12, color: 'text.secondary' }}
+                >
+                    <Close fontSize='small' />
+                </IconButton>
+            </DialogTitle>
 
             <DialogContent>
                 {view === TaskDialogView.Details && <ScheduleClassicalGameDialogDetails />}
@@ -341,30 +351,30 @@ function ScheduleClassicalGameDialog({
                 )}
             </DialogContent>
 
-            <DialogActions>
-                <Button disabled={request.isLoading()} onClick={onClose}>
-                    {tCommon('cancel')}
-                </Button>
-                {view === TaskDialogView.Details ? (
-                    isCurrentUser && (
+            {isCurrentUser && (
+                <DialogActions>
+                    <Button disabled={request.isLoading()} onClick={onClose}>
+                        {tCommon('cancel')}
+                    </Button>
+                    {view === TaskDialogView.Details ? (
                         <Button onClick={() => setView(TaskDialogView.Progress)}>
                             {t('updateSchedule')}
                         </Button>
-                    )
-                ) : (
-                    <>
-                        <Button
-                            disabled={request.isLoading()}
-                            onClick={() => setView(TaskDialogView.Details)}
-                        >
-                            {tCommon('taskDetails')}
-                        </Button>
-                        <Button loading={request.isLoading()} onClick={onSave}>
-                            {tCommon('save')}
-                        </Button>
-                    </>
-                )}
-            </DialogActions>
+                    ) : (
+                        <>
+                            <Button
+                                disabled={request.isLoading()}
+                                onClick={() => setView(TaskDialogView.Details)}
+                            >
+                                {tCommon('taskDetails')}
+                            </Button>
+                            <Button loading={request.isLoading()} onClick={onSave}>
+                                {tCommon('save')}
+                            </Button>
+                        </>
+                    )}
+                </DialogActions>
+            )}
         </Dialog>
     );
 }

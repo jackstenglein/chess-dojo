@@ -51,12 +51,12 @@ const timer: Timer = {
     getLabel: () => 'Start Timer',
 };
 
-function renderDialog(initialView: TaskDialogView) {
+function renderDialog(initialView: TaskDialogView, onClose = vi.fn()) {
     return renderWithIntl(
         <TimerContext value={timer}>
             <TaskDialog
                 open
-                onClose={vi.fn()}
+                onClose={onClose}
                 task={task}
                 initialView={initialView}
                 progress={undefined}
@@ -100,5 +100,15 @@ describe('TaskDialog', () => {
         expect(screen.queryByTestId('task-updater-show-history-button')).not.toBeInTheDocument();
         expect(screen.queryByText('Start Timer')).not.toBeInTheDocument();
         expect(screen.queryByTestId('task-updater-save-button')).not.toBeInTheDocument();
+    });
+
+    it('closes read-only task details from the header', () => {
+        mocks.owner = 'someone-else';
+        const onClose = vi.fn();
+        renderDialog(TaskDialogView.Details, onClose);
+
+        expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+        expect(onClose).toHaveBeenCalledOnce();
     });
 });
