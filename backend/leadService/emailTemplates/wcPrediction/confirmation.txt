@@ -1,0 +1,29 @@
+Your picks are in
+
+Hi there,
+
+Thanks for entering the ChessDojo World Championship prediction contest. Here is what you picked:
+
+Match winner: {{winner}}
+How it ends: {{finish}}
+Games with a winner: {{decisiveGames}}
+First game with a winner: {{firstDecisiveGame}}
+Tie-breaker, moves in Game 1: {{game1Moves}}
+
+Changed your mind? Enter again with this email before Game 1 starts on {{lockMoment}}. Your latest entry is the one that counts.
+
+Change my picks: https://www.chessdojo.club/world-championship?utm_medium=email&utm_source=wc-contest&utm_campaign=wc-2026&utm_content=confirmation
+
+We'll email your score after the final game. Until then, you can follow the match with ChessDojo commentary:
+
+Twitch: https://www.twitch.tv/chessdojo
+YouTube: https://www.youtube.com/@ChessDojo
+
+Good luck,
+
+The ChessDojo team
+
+--
+You're getting this because you entered the World Championship prediction contest at chessdojo.club.
+Unsubscribe: https://www.chessdojo.club/dojodigest/unsubscribe
+(c) 2026 ChessDojo

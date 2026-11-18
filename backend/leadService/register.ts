@@ -5,6 +5,7 @@ import {
     RegisterLeadRequest,
     registerLeadRequestSchema,
 } from '@jackstenglein/chess-dojo-common/src/lead/api';
+import { WC_LOCK_AT_UTC } from '@jackstenglein/chess-dojo-common/src/lead/worldChampionship';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { LiveClassLeadId } from '../../common/src/lead/api';
 import {
@@ -15,6 +16,7 @@ import {
 } from '../directoryService/api';
 import { dynamo } from '../directoryService/database';
 import { sendEmailTemplate } from '../notificationService/email';
+import { wcConfirmationData } from './wcPrediction';
 
 const leadTable = `${process.env.stage}-leads`;
 
@@ -28,7 +30,13 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const request = parseEvent(event, registerLeadRequestSchema);
         switch (request.type) {
             case LeadType.enum.LIVE_CLASS:
-                return handleLiveClassLead(request);
+                return await handleLiveClassLead(request);
+
+            case LeadType.enum.WC_PREDICTION:
+                return await handleWcPrediction(request);
+
+            case LeadType.enum.WC_RESULTS:
+                return await handleWcResultsSignup(request);
 
             default:
                 throw new ApiError({
@@ -135,6 +143,89 @@ async function handleLiveClassLead(request: RegisterLeadRequest) {
             }),
         );
     }
+
+    return success(null);
+}
+
+/**
+ * Saves a World Championship prediction and emails the visitor a copy of their
+ * picks. The record is keyed by email, so entering again replaces the earlier
+ * picks. Predictions are refused once Game 1 has started, whatever the
+ * visitor's own clock says.
+ * @param request The request to register a lead.
+ */
+async function handleWcPrediction(request: RegisterLeadRequest) {
+    const { picks, displayName, attribution } = request;
+
+    if (!picks) {
+        throw new ApiError({
+            statusCode: 400,
+            publicMessage: `Invalid ${LeadType.enum.WC_PREDICTION} lead: no picks set`,
+        });
+    }
+    if (Date.now() >= Date.parse(WC_LOCK_AT_UTC)) {
+        throw new ApiError({
+            statusCode: 409,
+            publicMessage: 'Predictions closed when Game 1 started',
+        });
+    }
+
+    await dynamo.send(
+        new PutItemCommand({
+            TableName: leadTable,
+            Item: marshall(
+                {
+                    hash: LeadType.enum.WC_PREDICTION,
+                    range: request.email.toLowerCase(),
+                    leadType: LeadType.enum.WC_PREDICTION,
+                    createdAt: new Date().toISOString(),
+                    email: request.email,
+                    displayName: displayName || undefined,
+                    ...picks,
+                    attribution,
+                },
+                { removeUndefinedValues: true },
+            ),
+        }),
+    );
+
+    try {
+        await sendEmailTemplate(
+            'wcPrediction/confirmation',
+            wcConfirmationData(picks),
+            [request.email],
+            'ChessDojo <chessdojo@chessdojo.club>',
+        );
+    } catch (err) {
+        // The picks are saved, so a failed email must not tell the visitor to enter again.
+        console.error('Failed to send World Championship confirmation email: ', err);
+    }
+
+    return success(null);
+}
+
+/**
+ * Saves the email of a visitor who arrived after predictions locked and asked
+ * for the results.
+ * @param request The request to register a lead.
+ */
+async function handleWcResultsSignup(request: RegisterLeadRequest) {
+    await dynamo.send(
+        new PutItemCommand({
+            TableName: leadTable,
+            Item: marshall(
+                {
+                    hash: LeadType.enum.WC_RESULTS,
+                    range: request.email.toLowerCase(),
+                    leadType: LeadType.enum.WC_RESULTS,
+                    createdAt: new Date().toISOString(),
+                    email: request.email,
+                    attribution: request.attribution,
+                },
+                { removeUndefinedValues: true },
+            ),
+        }),
+    );
 
     return success(null);
 }
