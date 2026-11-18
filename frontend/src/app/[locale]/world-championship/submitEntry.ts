@@ -1,31 +1,46 @@
+import { axiosService } from '@/api/axiosService';
+import { LeadType, RegisterLeadRequest } from '@jackstenglein/chess-dojo-common/src/lead/api';
+import { isAxiosError } from 'axios';
 import { WcEntry } from './prediction';
 
 export type SubmitOutcome = 'stored' | 'closed' | 'failed';
 
-/** Without a webhook the local dev server still lets the flow finish, so the page can be reviewed. */
+/**
+ * A local dev server may talk to an API that does not know the contest yet. The
+ * flow still finishes there, so the page can be reviewed.
+ */
 const ACCEPT_UNSTORED = process.env.NODE_ENV === 'development';
 
 /**
- * Sends a prediction or a results sign up to /api/wc-prediction. "stored" is only
- * returned when the entry really reached the sheet, because the page then tells
- * the visitor that their picks are in.
+ * Sends a prediction or a results sign up to the lead service, which saves it
+ * and emails a prediction back to the visitor. "stored" is only returned when
+ * the entry was really saved, because the page then tells the visitor that
+ * their picks are in.
  */
 export async function submitEntry(entry: WcEntry): Promise<SubmitOutcome> {
+    const request: RegisterLeadRequest =
+        entry.kind === 'prediction'
+            ? {
+                  type: LeadType.enum.WC_PREDICTION,
+                  email: entry.email,
+                  displayName: entry.displayName,
+                  picks: entry.picks,
+                  attribution: entry.attribution,
+              }
+            : {
+                  type: LeadType.enum.WC_RESULTS,
+                  email: entry.email,
+                  attribution: entry.attribution,
+              };
+
     try {
-        const response = await fetch('/api/wc-prediction', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry),
-        });
-        if (response.status === 409) {
+        await axiosService.post('/public/lead', request, { functionName: 'registerLead' });
+        return 'stored';
+    } catch (err) {
+        // The lead service answers 409 once Game 1 has started.
+        if (isAxiosError(err) && err.response?.status === 409) {
             return 'closed';
         }
-        if (!response.ok) {
-            return 'failed';
-        }
-        const result = (await response.json()) as { stored?: boolean };
-        return result.stored === true || ACCEPT_UNSTORED ? 'stored' : 'failed';
-    } catch {
-        return 'failed';
+        return ACCEPT_UNSTORED ? 'stored' : 'failed';
     }
 }

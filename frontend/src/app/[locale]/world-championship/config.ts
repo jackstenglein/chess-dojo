@@ -1,4 +1,9 @@
 import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
+import {
+    WC_GAMES,
+    WC_LOCK_AT_UTC,
+    WcPlayerId,
+} from '@jackstenglein/chess-dojo-common/src/lead/worldChampionship';
 
 /**
  * Everything the team may need to change during the World Championship contest,
@@ -8,14 +13,10 @@ import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/
 
 /**
  * Game 1 starts on Tuesday, November 24, 2026 at 15:00 in Geneva (CET, UTC+1).
- * Predictions lock at this moment, in the browser and in /api/wc-prediction.
- *
- * Checked November 13, 2026 against the FIDE ticket site (tickets.fide.com,
- * "Round 1, Tuesday 24 November, 15:00"), the FIDE match regulations
- * (Art. 4.6.1) and worldchess.com. The regulations let FIDE move the schedule,
- * so check again a few days before the match.
+ * Predictions lock at this moment, in the browser and in the lead service. The
+ * moment itself is set in the common package, which both of them read.
  */
-export const LOCK_AT_UTC = '2026-11-24T14:00:00Z';
+export const LOCK_AT_UTC = WC_LOCK_AT_UTC;
 export const LOCK_AT_MS = Date.parse(LOCK_AT_UTC);
 
 /** The time zone of the venue, for the fallback shown before the browser's zone is known. */
@@ -23,7 +24,7 @@ export const VENUE_TIME_ZONE = 'Europe/Zurich';
 
 export const PAGE_PATH = '/world-championship';
 
-export type PlayerId = 'gukesh' | 'sindarov';
+export type PlayerId = WcPlayerId;
 
 export const PLAYERS: Record<PlayerId, { name: string; fullName: string; country: string }> = {
     gukesh: { name: 'Gukesh', fullName: 'Gukesh Dommaraju', country: 'India' },
@@ -57,7 +58,7 @@ export const TIEBREAK_DATE = '2026-12-12';
 
 export const MATCH = {
     /** Classical games in the match. */
-    games: 14,
+    games: WC_GAMES,
     /** Points that win the match, in half points. 15 half points is 7.5. */
     winningHalfPoints: 15,
 };

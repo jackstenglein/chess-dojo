@@ -1,14 +1,22 @@
+import {
+    WC_DECISIVE_SCORES,
+    WC_MAX_DISPLAY_NAME,
+    WC_MAX_GAME_1_MOVES,
+    WC_TIED_SCORE,
+    wcPicksShape,
+} from '@jackstenglein/chess-dojo-common/src/lead/worldChampionship';
 import { z } from 'zod';
 import { MATCH, PlayerId, PLAYERS, Results } from './config';
 
 /**
  * The prediction itself: its shape, which combinations of picks can happen in a
  * 14-game match, how an entry is scored, and where a visitor's picks are kept
- * between visits. Shared by the page and by /api/wc-prediction.
+ * between visits. The shape of the picks comes from the common package, so the
+ * lead service checks the same fields.
  */
 
-export const DECISIVE_SCORES = ['7.5-6.5', '7.5-5.5', '7.5-4.5', '7.5-3.5+'] as const;
-export const TIED_SCORE = '7-7' as const;
+export const DECISIVE_SCORES = WC_DECISIVE_SCORES;
+export const TIED_SCORE = WC_TIED_SCORE;
 
 export type DecisiveScore = (typeof DECISIVE_SCORES)[number];
 export type ScorePick = DecisiveScore | typeof TIED_SCORE;
@@ -370,20 +378,13 @@ export function scorePicks(picks: Picks, results: Results): number {
 }
 
 // ---------------------------------------------------------------------------
-// What the page sends to /api/wc-prediction
+// What the page checks before it sends an entry to the lead service
 // ---------------------------------------------------------------------------
 
-export const MAX_GAME_1_MOVES = 200;
-export const MAX_DISPLAY_NAME = 30;
+export const MAX_GAME_1_MOVES = WC_MAX_GAME_1_MOVES;
+export const MAX_DISPLAY_NAME = WC_MAX_DISPLAY_NAME;
 
-const picksShape = z.object({
-    winner: z.enum(['gukesh', 'sindarov']),
-    tiebreaks: z.boolean(),
-    score: z.enum([...DECISIVE_SCORES, TIED_SCORE]),
-    decisiveGames: z.number().int().min(0).max(MATCH.games),
-    firstDecisiveGame: z.union([z.literal('none'), z.number().int().min(1).max(MATCH.games)]),
-    game1Moves: z.number().int().min(1).max(MAX_GAME_1_MOVES),
-});
+const picksShape = wcPicksShape;
 
 const draftSchema = picksShape.partial();
 

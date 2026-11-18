@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => ({
     onSubscribe: vi.fn(),
     trackEvent: vi.fn(),
     metaLead: vi.fn(),
+    post: vi.fn(),
 }));
 
 vi.mock('@/components/landing/fonts', () => {
@@ -63,6 +64,10 @@ vi.mock('@/api/Request', () => ({
     RequestSnackbar: () => null,
 }));
 
+vi.mock('@/api/axiosService', () => ({
+    axiosService: { post: mocks.post },
+}));
+
 vi.mock('@/analytics/events', () => ({
     EventType: {
         WcPickStart: 'wc_pick_start',
@@ -96,17 +101,12 @@ const picks: Picks = {
 
 const HOUR = 60 * 60 * 1000;
 
-function stubFetch(response: { status?: number; body?: object } | Error) {
-    const fetchMock =
-        response instanceof Error
-            ? vi.fn().mockRejectedValue(response)
-            : vi.fn().mockResolvedValue({
-                  ok: (response.status ?? 200) < 400,
-                  status: response.status ?? 200,
-                  json: () => Promise.resolve(response.body ?? {}),
-              });
-    vi.stubGlobal('fetch', fetchMock);
-    return fetchMock;
+/** An error shaped like the one axios throws for a response with this status. */
+function apiError(status: number) {
+    return Object.assign(new Error(`Request failed with status code ${status}`), {
+        isAxiosError: true,
+        response: { status },
+    });
 }
 
 beforeEach(() => {
@@ -127,6 +127,8 @@ beforeEach(() => {
     );
     Element.prototype.scrollIntoView = vi.fn();
     mocks.auth = { status: 'Unauthenticated', user: undefined };
+    mocks.post.mockReset();
+    mocks.post.mockResolvedValue({ data: null });
 });
 
 afterEach(() => {
@@ -163,7 +165,6 @@ function fillEmail(email: string, consent: boolean) {
 
 describe('PickFlow', () => {
     it('takes five picks, a tie-breaker and an email, then stores the entry', async () => {
-        const fetchMock = stubFetch({ body: { stored: true } });
         render(<PickFlow onClosed={vi.fn()} />);
 
         await answerAllPicks();
@@ -174,13 +175,13 @@ describe('PickFlow', () => {
 
         await waitFor(() => expect(loadEntry()?.picks).toEqual(picks));
         expect(loadEntry()?.displayName).toBe('Pat');
-        const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-        expect(url).toBe('/api/wc-prediction');
-        expect(JSON.parse(init.body as string)).toMatchObject({
-            kind: 'prediction',
+        expect(mocks.post).toHaveBeenCalledTimes(1);
+        const [url, request] = mocks.post.mock.calls[0] as [string, object];
+        expect(url).toBe('/public/lead');
+        expect(request).toMatchObject({
+            type: 'WC_PREDICTION',
             email: 'player@example.com',
             displayName: 'Pat',
-            consent: true,
             picks,
         });
         expect(
@@ -247,7 +248,6 @@ describe('PickFlow', () => {
     });
 
     it('asks for a valid email and consent before sending anything', async () => {
-        const fetchMock = stubFetch({ body: { stored: true } });
         render(<PickFlow onClosed={vi.fn()} />);
         await answerAllPicks();
 
@@ -255,12 +255,12 @@ describe('PickFlow', () => {
 
         expect(screen.getByText(FLOW.email.emailError)).toBeTruthy();
         expect(screen.getByText(FLOW.email.consentError)).toBeTruthy();
-        expect(fetchMock).not.toHaveBeenCalled();
+        expect(mocks.post).not.toHaveBeenCalled();
         expect(loadEntry()).toBeUndefined();
     });
 
     it('does not claim the picks are in when they were not stored', async () => {
-        stubFetch({ body: { stored: false } });
+        mocks.post.mockRejectedValue(apiError(500));
         render(<PickFlow onClosed={vi.fn()} />);
         await answerAllPicks();
 
@@ -275,7 +275,7 @@ describe('PickFlow', () => {
     });
 
     it('tells the page when the server says predictions have closed', async () => {
-        stubFetch({ status: 409, body: { error: 'closed' } });
+        mocks.post.mockRejectedValue(apiError(409));
         const onClosed = vi.fn();
         render(<PickFlow onClosed={onClosed} />);
         await answerAllPicks();
@@ -380,7 +380,6 @@ describe('WorldChampionshipPage', () => {
 
     it('closes predictions once Game 1 has started and offers the results by email', async () => {
         vi.setSystemTime(LOCK_AT_MS + HOUR);
-        const fetchMock = stubFetch({ body: { stored: true } });
         render(<WorldChampionshipPage serverNow={Date.now()} />);
 
         expect(screen.getByRole('heading', { name: LIVE.heading })).toBeTruthy();
@@ -394,12 +393,9 @@ describe('WorldChampionshipPage', () => {
         fireEvent.click(screen.getByRole('button', { name: LIVE.submit }));
 
         await screen.findByText(LIVE.done);
-        const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-        expect(JSON.parse(init.body as string)).toMatchObject({
-            kind: 'results',
-            email: 'fan@example.com',
-            consent: true,
-        });
+        const [url, request] = mocks.post.mock.calls[0] as [string, object];
+        expect(url).toBe('/public/lead');
+        expect(request).toMatchObject({ type: 'WC_RESULTS', email: 'fan@example.com' });
     });
 
     it('shows an entrant their picks while the match is on', () => {

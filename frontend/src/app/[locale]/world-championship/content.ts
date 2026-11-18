@@ -115,7 +115,7 @@ export const FLOW = {
 
 export const CONFIRMATION = {
     heading: 'Your picks are in.',
-    body: 'We’ll email your score after the final game. You can change your picks until Game 1 starts by entering again with the same email.',
+    body: 'We emailed you a copy of your picks, and we’ll email your score after the final game. You can change your picks until Game 1 starts by entering again with the same email.',
     cardTitle: 'ChessDojo World Championship predictions',
     cardFallbackName: 'My picks',
     tieBreakerLine: (moves: number) => `Tie-breaker: Game 1 lasts ${moves} moves`,
