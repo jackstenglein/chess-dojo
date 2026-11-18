@@ -303,6 +303,10 @@ export function PickFlow({ onClosed }: { onClosed: () => void }) {
             onClosed();
             return;
         }
+        if (outcome === 'duplicate') {
+            setErrors({ form: FLOW.email.duplicateError });
+            return;
+        }
         // "Your picks are in" has to be true, so a failed save keeps the visitor here.
         if (outcome === 'failed') {
             setErrors({ form: FLOW.email.saveError });
@@ -669,6 +673,12 @@ export function PickFlow({ onClosed }: { onClosed: () => void }) {
                                         {errors.form}
                                     </Typography>
                                 )}
+                                <Typography
+                                    variant='body2'
+                                    sx={{ color: 'rgba(255,255,255,0.85)', mb: -0.5 }}
+                                >
+                                    {FLOW.email.finalNote}
+                                </Typography>
                                 <Button
                                     type='submit'
                                     variant='contained'

@@ -1,4 +1,4 @@
-import { PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { ConditionalCheckFailedException, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import {
     LeadType,
@@ -149,9 +149,9 @@ async function handleLiveClassLead(request: RegisterLeadRequest) {
 
 /**
  * Saves a World Championship prediction and emails the visitor a copy of their
- * picks. The record is keyed by email, so entering again replaces the earlier
- * picks. Predictions are refused once Game 1 has started, whatever the
- * visitor's own clock says.
+ * picks. Picks are final: the record is keyed by email and a second prediction
+ * for the same email is refused. Predictions are also refused once Game 1 has
+ * started, whatever the visitor's own clock says.
  * @param request The request to register a lead.
  */
 async function handleWcPrediction(request: RegisterLeadRequest) {
@@ -165,29 +165,42 @@ async function handleWcPrediction(request: RegisterLeadRequest) {
     }
     if (Date.now() >= Date.parse(WC_LOCK_AT_UTC)) {
         throw new ApiError({
-            statusCode: 409,
+            statusCode: 403,
             publicMessage: 'Predictions closed when Game 1 started',
         });
     }
 
-    await dynamo.send(
-        new PutItemCommand({
-            TableName: leadTable,
-            Item: marshall(
-                {
-                    hash: LeadType.enum.WC_PREDICTION,
-                    range: request.email.toLowerCase(),
-                    leadType: LeadType.enum.WC_PREDICTION,
-                    createdAt: new Date().toISOString(),
-                    email: request.email,
-                    displayName: displayName || undefined,
-                    ...picks,
-                    attribution,
-                },
-                { removeUndefinedValues: true },
-            ),
-        }),
-    );
+    try {
+        await dynamo.send(
+            new PutItemCommand({
+                TableName: leadTable,
+                Item: marshall(
+                    {
+                        hash: LeadType.enum.WC_PREDICTION,
+                        range: request.email.toLowerCase(),
+                        leadType: LeadType.enum.WC_PREDICTION,
+                        createdAt: new Date().toISOString(),
+                        email: request.email,
+                        displayName: displayName || undefined,
+                        ...picks,
+                        attribution,
+                    },
+                    { removeUndefinedValues: true },
+                ),
+                ConditionExpression: 'attribute_not_exists(#hash)',
+                ExpressionAttributeNames: { '#hash': 'hash' },
+            }),
+        );
+    } catch (err) {
+        if (err instanceof ConditionalCheckFailedException) {
+            throw new ApiError({
+                statusCode: 409,
+                publicMessage: 'This email already has a prediction',
+                cause: err,
+            });
+        }
+        throw err;
+    }
 
     try {
         await sendEmailTemplate(
@@ -197,7 +210,7 @@ async function handleWcPrediction(request: RegisterLeadRequest) {
             'ChessDojo <chessdojo@chessdojo.club>',
         );
     } catch (err) {
-        // The picks are saved, so a failed email must not tell the visitor to enter again.
+        // The picks are saved and final, so a failed email must not fail the entry.
         console.error('Failed to send World Championship confirmation email: ', err);
     }
 

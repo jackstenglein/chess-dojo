@@ -1,3 +1,4 @@
+import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import { WC_LOCK_AT_UTC } from '@jackstenglein/chess-dojo-common/src/lead/worldChampionship';
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -35,7 +36,11 @@ async function register(body: object): Promise<APIGatewayProxyStructuredResultV2
 /** The input of the nth PutItem call, with the item as DynamoDB attribute values. */
 function putItem(call = 0) {
     const command = mocks.dynamoSend.mock.calls[call][0] as {
-        input: { TableName: string; Item: Record<string, Record<string, unknown>> };
+        input: {
+            TableName: string;
+            Item: Record<string, Record<string, unknown>>;
+            ConditionExpression?: string;
+        };
     };
     return command.input;
 }
@@ -66,7 +71,9 @@ describe('register World Championship prediction', () => {
 
         expect(result.statusCode).toBe(200);
         expect(mocks.dynamoSend).toHaveBeenCalledTimes(1);
-        const { Item } = putItem();
+        const { Item, ConditionExpression } = putItem();
+        // Picks are final, so the write only goes through for a new email.
+        expect(ConditionExpression).toBe('attribute_not_exists(#hash)');
         expect(Item.hash).toEqual({ S: 'WC_PREDICTION' });
         expect(Item.range).toEqual({ S: 'player@example.com' });
         expect(Item.email).toEqual({ S: 'Player@Example.com' });
@@ -141,8 +148,36 @@ describe('register World Championship prediction', () => {
             picks,
         });
 
-        expect(result.statusCode).toBe(409);
+        expect(result.statusCode).toBe(403);
         expect(mocks.dynamoSend).not.toHaveBeenCalled();
+        expect(mocks.sendEmailTemplate).not.toHaveBeenCalled();
+    });
+
+    it('refuses a second prediction for the same email and sends no email', async () => {
+        mocks.dynamoSend.mockRejectedValue(
+            new ConditionalCheckFailedException({ message: 'exists', $metadata: {} }),
+        );
+
+        const result = await register({
+            type: 'WC_PREDICTION',
+            email: 'player@example.com',
+            picks: { ...picks, winner: 'gukesh' },
+        });
+
+        expect(result.statusCode).toBe(409);
+        expect(mocks.sendEmailTemplate).not.toHaveBeenCalled();
+    });
+
+    it('answers with a server error when the table cannot be written', async () => {
+        mocks.dynamoSend.mockRejectedValue(new Error('throttled'));
+
+        const result = await register({
+            type: 'WC_PREDICTION',
+            email: 'player@example.com',
+            picks,
+        });
+
+        expect(result.statusCode).toBe(500);
         expect(mocks.sendEmailTemplate).not.toHaveBeenCalled();
     });
 

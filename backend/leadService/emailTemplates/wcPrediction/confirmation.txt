@@ -10,9 +10,7 @@ Games with a winner: {{decisiveGames}}
 First game with a winner: {{firstDecisiveGame}}
 Tie-breaker, moves in Game 1: {{game1Moves}}
 
-Changed your mind? Enter again with this email before Game 1 starts on {{lockMoment}}. Your latest entry is the one that counts.
-
-Change my picks: https://www.chessdojo.club/world-championship?utm_medium=email&utm_source=wc-contest&utm_campaign=wc-2026&utm_content=confirmation
+Your picks are final. Game 1 starts on {{lockMoment}}.
 
 We'll email your score after the final game. Until then, you can follow the match with ChessDojo commentary:
 

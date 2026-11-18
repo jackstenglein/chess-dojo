@@ -105,24 +105,26 @@ export const FLOW = {
         nameLabel: 'Name on your picks card (optional)',
         consent: 'Email me my result and ChessDojo news. Unsubscribe anytime.',
         submit: 'Lock in my picks',
+        finalNote: 'Picks are final once you lock them in.',
         emailError: 'Enter a valid email address.',
         consentError: 'Tick the box so we can email your result.',
         saveError:
             'We couldn’t save your picks just now. They are still here. Try again in a minute.',
         closedError: 'Game 1 has started, so predictions are closed.',
+        duplicateError:
+            'This email already has an entry. Picks are final, so your first entry stands.',
     },
 };
 
 export const CONFIRMATION = {
     heading: 'Your picks are in.',
-    body: 'We emailed you a copy of your picks, and we’ll email your score after the final game. You can change your picks until Game 1 starts by entering again with the same email.',
+    body: 'We emailed you a copy of your picks, and we’ll email your score after the final game. Your picks are final.',
     cardTitle: 'ChessDojo World Championship predictions',
     cardFallbackName: 'My picks',
     tieBreakerLine: (moves: number) => `Tie-breaker: Game 1 lasts ${moves} moves`,
     copyLink: 'Copy link',
     linkCopied: 'Link copied',
     saveImage: 'Save image',
-    changePicks: 'Change my picks',
     classInvite: {
         body: 'While you wait for Game 1, watch a full ChessDojo class free: GM Jesse Kraai, Logical Chess Move by Move, 70 minutes.',
         cta: 'Watch the class',
@@ -209,7 +211,7 @@ export const FAQ: FaqItem[] = [
     },
     {
         question: 'Can I change my picks?',
-        answer: 'Yes, until Game 1 starts. Enter again with the same email and the latest entry counts.',
+        answer: 'No. Picks are final once you lock them in, so check them on the last step before you submit.',
     },
     {
         question: 'When do predictions close?',
@@ -245,7 +247,7 @@ export const RULES = {
         { text: 'ChessDojo runs this contest.' },
         { text: 'Entry is free. You can enter without buying anything or opening an account.' },
         {
-            text: 'One entry per person. If you enter again with the same email, your latest entry counts.',
+            text: 'One entry per person. Picks are final once they are submitted.',
         },
         { text: 'Entries close when Game 1 starts, {lock}.' },
         {

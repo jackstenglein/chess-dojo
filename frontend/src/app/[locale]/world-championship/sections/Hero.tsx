@@ -37,7 +37,6 @@ import { useResultsSignup, useTimeLeft } from '../hooks';
 import {
     formatCountdown,
     formatLockMoment,
-    reopenEntry,
     saveResultsSignup,
     scorePicks,
     StoredEntry,
@@ -420,12 +419,6 @@ function ConfirmedHero({
 
                 <Box sx={{ gridArea: 'actions' }}>
                     <ShareButtons picks={entry.picks} displayName={entry.displayName} />
-                    <Button
-                        onClick={() => reopenEntry(entry)}
-                        sx={{ mt: 1, color: MUTED, minHeight: 44, px: 1.5, ml: -1.5 }}
-                    >
-                        {CONFIRMATION.changePicks}
-                    </Button>
                     <NextStep config={config} offerStatus={offerStatus} />
                     <WatchInline sx={{ mt: 2.5 }} />
                 </Box>

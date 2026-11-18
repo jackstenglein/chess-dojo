@@ -569,11 +569,6 @@ export function saveEntry(entry: StoredEntry) {
 }
 
 /** Puts a submitted entry back into the flow so the visitor can change it. */
-export function reopenEntry(entry: StoredEntry) {
-    write(ENTRY_KEY, null);
-    saveDraft({ picks: entry.picks, step: 'winner', started: true });
-}
-
 export function hasResultsSignup(): boolean {
     return read(RESULTS_SIGNUP_KEY) !== null;
 }

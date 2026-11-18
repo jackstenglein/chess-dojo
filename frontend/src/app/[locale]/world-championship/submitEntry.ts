@@ -3,7 +3,7 @@ import { LeadType, RegisterLeadRequest } from '@jackstenglein/chess-dojo-common/
 import { isAxiosError } from 'axios';
 import { WcEntry } from './prediction';
 
-export type SubmitOutcome = 'stored' | 'closed' | 'failed';
+export type SubmitOutcome = 'stored' | 'closed' | 'duplicate' | 'failed';
 
 /**
  * A local dev server may talk to an API that does not know the contest yet. The
@@ -37,9 +37,13 @@ export async function submitEntry(entry: WcEntry): Promise<SubmitOutcome> {
         await axiosService.post('/public/lead', request, { functionName: 'registerLead' });
         return 'stored';
     } catch (err) {
-        // The lead service answers 409 once Game 1 has started.
-        if (isAxiosError(err) && err.response?.status === 409) {
+        // The lead service answers 403 once Game 1 has started, and 409 when the
+        // email already has a prediction. Picks are final, so that one stands.
+        if (isAxiosError(err) && err.response?.status === 403) {
             return 'closed';
+        }
+        if (isAxiosError(err) && err.response?.status === 409) {
+            return 'duplicate';
         }
         return ACCEPT_UNSTORED ? 'stored' : 'failed';
     }

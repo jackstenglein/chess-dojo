@@ -274,8 +274,22 @@ describe('PickFlow', () => {
         );
     });
 
-    it('tells the page when the server says predictions have closed', async () => {
+    it('keeps the first entry when the email already has one', async () => {
         mocks.post.mockRejectedValue(apiError(409));
+        const onClosed = vi.fn();
+        render(<PickFlow onClosed={onClosed} />);
+        await answerAllPicks();
+        expect(screen.getByText(FLOW.email.finalNote)).toBeTruthy();
+
+        fillEmail('player@example.com', true);
+
+        expect((await screen.findByRole('alert')).textContent).toBe(FLOW.email.duplicateError);
+        expect(loadEntry()).toBeUndefined();
+        expect(onClosed).not.toHaveBeenCalled();
+    });
+
+    it('tells the page when the server says predictions have closed', async () => {
+        mocks.post.mockRejectedValue(apiError(403));
         const onClosed = vi.fn();
         render(<PickFlow onClosed={onClosed} />);
         await answerAllPicks();
@@ -348,16 +362,13 @@ describe('WorldChampionshipPage', () => {
         expect(screen.queryByRole('heading', { name: 'Who wins the match?' })).toBeNull();
     });
 
-    it('lets an entrant change their picks before the lock', async () => {
+    it('does not let an entrant change their picks', () => {
         saveEntry({ picks, displayName: 'Pat', submittedAt: new Date().toISOString() });
         render(<WorldChampionshipPage serverNow={Date.now()} />);
 
-        fireEvent.click(screen.getByRole('button', { name: CONFIRMATION.changePicks }));
-
-        await screen.findByRole('heading', { name: 'Who wins the match?' });
-        expect(screen.getByRole('radio', { name: 'Sindarov' }).getAttribute('aria-checked')).toBe(
-            'true',
-        );
+        expect(screen.getByText(CONFIRMATION.body).textContent).toContain('Your picks are final.');
+        expect(screen.queryByRole('button', { name: 'Change my picks' })).toBeNull();
+        expect(screen.queryByRole('heading', { name: 'Who wins the match?' })).toBeNull();
     });
 
     it('copies the page link from the picks card', async () => {
@@ -405,7 +416,7 @@ describe('WorldChampionshipPage', () => {
 
         expect(screen.getByText(LIVE.subWithEntry)).toBeTruthy();
         expect(screen.getByTestId('picks-card')).toBeTruthy();
-        expect(screen.queryByRole('button', { name: CONFIRMATION.changePicks })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Change my picks' })).toBeNull();
     });
 
     it('shows the results and an entrant’s score once results are in', () => {
