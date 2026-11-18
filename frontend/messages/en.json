@@ -191,9 +191,6 @@
             },
             "daily": {
                 "today": "Today",
-                "summary": "{done} of {total} tasks done · {worked} of {goal}",
-                "allDone": "Done for today · {worked} logged",
-                "goalMet": "Time goal met",
                 "skippedHeading": "Skipped this week ({count})",
                 "restore": "Restore {name}",
                 "skippedToast": "Skipped {name} for the rest of the week",
@@ -223,7 +220,7 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Full Training Plan",
+                "heading": "Training Plan",
                 "cohort": "Cohort",
                 "showCompletedTasks": "Show Completed Tasks",
                 "hideCompletedTasksTooltip": "Hide Completed Tasks",
@@ -291,8 +288,26 @@
                 "body": "This custom task will be removed from your profile, and all time logged will be lost. This action is irreverisble.",
                 "delete": "Delete Task"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Training plan options",
+                "showSections": "Show sections",
+                "today": "Today",
+                "thisWeek": "This Week",
+                "workGoal": "Set Weekly Goal",
+                "resetProgress": "Reset progress",
+                "barColor": "Bar color",
+                "barColors": {
+                    "multicolor": "Multicolor",
+                    "teal": "Teal",
+                    "blue": "Blue",
+                    "purple": "Purple",
+                    "pink": "Pink",
+                    "orange": "Orange",
+                    "green": "Green"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Edit work goal",
                 "startWeekOn": "Start Week On",
                 "Sunday": "Sunday",
                 "Monday": "Monday",

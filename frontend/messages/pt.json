@@ -179,9 +179,6 @@
             },
             "daily": {
                 "today": "Hoje",
-                "summary": "{done} de {total} tarefas feitas · {worked} de {goal}",
-                "allDone": "Concluído por hoje · {worked} registrados",
-                "goalMet": "Meta de tempo atingida",
                 "skippedHeading": "Puladas nesta semana ({count})",
                 "restore": "Restaurar {name}",
                 "skippedToast": "{name} pulada pelo resto da semana",
@@ -211,7 +208,7 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Plano de treino completo",
+                "heading": "Plano de treino",
                 "cohort": "Coorte",
                 "showCompletedTasks": "Mostrar tarefas concluídas",
                 "hideCompletedTasksTooltip": "Ocultar tarefas concluídas",
@@ -279,8 +276,26 @@
                 "body": "Esta tarefa personalizada será removida do seu perfil, e todo o tempo registrado será perdido. Esta ação é irreversível.",
                 "delete": "Excluir tarefa"
             },
+            "planMenu": {
+                "plan": "Plano",
+                "tooltip": "Opções do plano de treino",
+                "showSections": "Mostrar seções",
+                "today": "Hoje",
+                "thisWeek": "Esta semana",
+                "workGoal": "Definir meta semanal",
+                "resetProgress": "Redefinir progresso",
+                "barColor": "Cor da barra",
+                "barColors": {
+                    "multicolor": "Multicolorido",
+                    "teal": "Verde-azulado",
+                    "blue": "Azul",
+                    "purple": "Roxo",
+                    "pink": "Rosa",
+                    "orange": "Laranja",
+                    "green": "Verde"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Editar meta de trabalho",
                 "startWeekOn": "Começar a semana em",
                 "Sunday": "Domingo",
                 "Monday": "Segunda-feira",

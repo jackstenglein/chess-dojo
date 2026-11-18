@@ -13,15 +13,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import { ProgressText } from '@/scoreboard/ScoreboardProgress';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import {
-    Add,
-    Check,
-    ExpandMore,
-    Help,
-    NotInterested,
-    PushPin,
-    PushPinOutlined,
-} from '@mui/icons-material';
+import { Add, Help, NotInterested, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -44,6 +36,7 @@ import { CategoryLabel } from '../CategoryLabel';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
+import { SectionHeader } from '../SectionHeader';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
 import { TaskDescription } from '../TaskDescription';
@@ -53,18 +46,16 @@ import { TaskName } from '../TaskName';
 import { getTaskUnit } from '../taskUnit';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
-import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
+import { getDailyGoalMinutes } from '../workGoal';
 import { dailyCardActionsSx, dailyCardSx, dailyPrimaryButtonSx, DailyTimePill } from './DailyCard';
 import { DailyTaskMenu, DailyTaskMenuAction } from './DailyTaskMenu';
 import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
-import { getTodaySummary } from './todaySummary';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
-    const tCommon = useTranslations('profile.trainingPlan.common');
     const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
 
     const [startDate, endDate] = useMemo(() => {
@@ -77,26 +68,17 @@ export function DailyTrainingPlan() {
         return [startDate.toISOString(), endDate.toISOString()];
     }, []);
 
-    const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
+    const { suggestionsByDay, timeline, isLoading, user } = use(TrainingPlanContext);
 
-    const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
+    const [, , workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: suggestionsByDay[new Date().getDay()],
         timeline,
     });
-
-    const { taskCount, doneCount } = useMemo(
-        () =>
-            getTodaySummary({
-                suggestions: suggestionsByDay[new Date().getDay()] ?? [],
-                timeline,
-                startDate,
-                endDate,
-                gameSchedule: user.gameSchedule,
-            }),
-        [suggestionsByDay, timeline, startDate, endDate, user.gameSchedule],
-    );
+    // Today's goal is the user's goal for the day, like This Week uses the whole
+    // week's goal, so it doesn't move as tasks are done or the suggestions change.
+    const goalTime = getDailyGoalMinutes(user.workGoal, new Date().getDay());
 
     const toggleExpanded = () => {
         setExpanded((v) => !v);
@@ -110,53 +92,15 @@ export function DailyTrainingPlan() {
                 width: 1,
             }}
         >
-            <Stack
-                direction='row'
-                sx={{
-                    alignItems: 'center',
-                }}
-            >
-                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
-                    <IconButton onClick={toggleExpanded}>
-                        <ExpandMore
-                            sx={{
-                                transform: expanded ? 'rotate(180deg)' : undefined,
-                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-                            }}
-                        />
-                    </IconButton>
-                </Tooltip>
-
-                <Typography
-                    variant='h5'
-                    sx={{
-                        fontWeight: 'bold',
-                        ml: 0.5,
-                        mr: 2,
-                    }}
-                >
-                    {t('today')}
-                </Typography>
-
-                <WorkGoalSettingsEditor
-                    currentGoal={goalTime}
-                    currentValue={workedTime}
-                    disabled={!isCurrentUser}
-                    initialWeekStart={user.weekStart}
-                    workGoal={user.workGoal}
-                    workGoalHistory={user.workGoalHistory}
-                    variant='icon'
-                />
-            </Stack>
-
-            {!isLoading && taskCount > 0 && (
-                <DailySummary
-                    taskCount={taskCount}
-                    doneCount={doneCount}
-                    goalMinutes={goalTime}
-                    workedMinutes={workedTime}
-                />
-            )}
+            <SectionHeader
+                title={t('today')}
+                expanded={expanded}
+                onToggle={toggleExpanded}
+                goal={goalTime}
+                worked={workedTime}
+                showProgress={!isLoading}
+                testId='today'
+            />
 
             {!isLoading && <OverbookedDayAlert dayIndex={new Date().getDay()} />}
 
@@ -171,75 +115,6 @@ export function DailyTrainingPlan() {
                     />
                 )}
             </Collapse>
-        </Stack>
-    );
-}
-
-/**
- * Renders the summary of today's plan: how many tasks are done, how much time has
- * been logged today against the day's goal (any task counts, not just suggested
- * ones), and a clear finished state.
- */
-export function DailySummary({
-    taskCount,
-    doneCount,
-    goalMinutes,
-    workedMinutes,
-}: {
-    taskCount: number;
-    doneCount: number;
-    goalMinutes: number;
-    workedMinutes: number;
-}) {
-    const t = useTranslations('profile.trainingPlan.daily');
-    const tTime = useTranslations('common');
-    const allDone = doneCount >= taskCount;
-    // The day's suggested time is logged, even if some tasks are left.
-    const goalMet = goalMinutes > 0 && workedMinutes >= goalMinutes;
-    const complete = allDone || goalMet;
-    const percent = goalMinutes > 0 ? Math.min(100, (100 * workedMinutes) / goalMinutes) : 0;
-
-    return (
-        <Stack spacing={0.75} sx={{ width: 1, maxWidth: 520, pl: 1 }} data-testid='daily-summary'>
-            <Stack direction='row' sx={{ alignItems: 'center', gap: 0.75 }}>
-                {allDone && <Check fontSize='small' color='success' />}
-                <Typography
-                    variant='body2'
-                    sx={{ fontWeight: 600, color: allDone ? 'success.main' : 'text.secondary' }}
-                >
-                    {allDone
-                        ? t('allDone', { worked: formatTime(workedMinutes, tTime) })
-                        : t('summary', {
-                              done: doneCount,
-                              total: taskCount,
-                              worked: formatTime(workedMinutes, tTime),
-                              goal: formatTime(goalMinutes, tTime),
-                          })}
-                </Typography>
-                {!allDone && goalMet && (
-                    <Typography
-                        variant='body2'
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.25,
-                            fontWeight: 600,
-                            color: 'success.main',
-                            ml: 'auto',
-                        }}
-                        data-testid='daily-goal-met'
-                    >
-                        <Check sx={{ fontSize: '1rem' }} />
-                        {t('goalMet')}
-                    </Typography>
-                )}
-            </Stack>
-            <LinearProgress
-                variant='determinate'
-                value={complete ? 100 : percent}
-                color={complete ? 'success' : 'primary'}
-                sx={{ height: 8, borderRadius: 4, backgroundColor: 'action.hover' }}
-            />
         </Stack>
     );
 }
@@ -385,9 +260,6 @@ function DailyTrainingPlanItem({
     // The quick log records whatever is left of today's suggested time for this task.
     // Prefill the log with what's left of today's suggestion, or the full
     // suggestion once it's been met (someone logging more is still training).
-    const hasProgress =
-        progressCurrent > 0 || (user.progress[task.id]?.minutesSpent?.[user.dojoCohort] ?? 0) > 0;
-
     const title = taskDisplayName({ task, cohort: user.dojoCohort });
 
     const menuActions: DailyTaskMenuAction[] = [
@@ -456,15 +328,8 @@ function DailyTrainingPlanItem({
                         borderRadius: 'inherit',
                         opacity: isComplete ? 0.75 : undefined,
                     }}
-                    // A task already started opens straight to logging; others show details first.
-                    onClick={() =>
-                        onOpenTask(
-                            task,
-                            isCurrentUser && hasProgress
-                                ? TaskDialogView.Progress
-                                : TaskDialogView.Details,
-                        )
-                    }
+                    // Clicking a task shows its details; only Log training opens logging.
+                    onClick={() => onOpenTask(task, TaskDialogView.Details)}
                 >
                     <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
                         <Stack sx={{ height: 1 }}>

@@ -6,7 +6,7 @@ import { User } from '@/database/user';
 import Avatar from '@/profile/Avatar';
 import CohortIcon from '@/scoreboard/CohortIcon';
 import { ScoreboardRow } from '@/scoreboard/scoreboardData';
-import { ArrowForward } from '@mui/icons-material';
+import { ArrowForward, Leaderboard } from '@mui/icons-material';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import {
     Box,
@@ -236,7 +236,11 @@ export function MiniScoreboard({ cohort }: { cohort: string }) {
 
     return (
         <Stack spacing={2} sx={{ width: 1, mt: 4 }}>
-            <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+            <Typography
+                variant='h5'
+                sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+                <Leaderboard sx={{ color: 'primary.main', fontSize: 'inherit' }} />
                 {t('heading')}
             </Typography>
             <Card

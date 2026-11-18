@@ -179,9 +179,6 @@
             },
             "daily": {
                 "today": "Heute",
-                "summary": "{done} von {total} Aufgaben erledigt · {worked} von {goal}",
-                "allDone": "Fertig für heute · {worked} eingetragen",
-                "goalMet": "Zeitziel erreicht",
                 "skippedHeading": "Diese Woche übersprungen ({count})",
                 "restore": "{name} wiederherstellen",
                 "skippedToast": "{name} für den Rest der Woche übersprungen",
@@ -211,7 +208,7 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Vollständiger Trainingsplan",
+                "heading": "Trainingsplan",
                 "cohort": "Kohorte",
                 "showCompletedTasks": "Abgeschlossene Aufgaben anzeigen",
                 "hideCompletedTasksTooltip": "Abgeschlossene Aufgaben ausblenden",
@@ -279,8 +276,26 @@
                 "body": "Diese benutzerdefinierte Aufgabe wird aus deinem Profil entfernt, und alle protokollierte Zeit geht verloren. Diese Aktion ist irreversibel.",
                 "delete": "Aufgabe löschen"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Trainingsplan-Optionen",
+                "showSections": "Bereiche anzeigen",
+                "today": "Heute",
+                "thisWeek": "Diese Woche",
+                "workGoal": "Wochenziel festlegen",
+                "resetProgress": "Fortschritt zurücksetzen",
+                "barColor": "Balkenfarbe",
+                "barColors": {
+                    "multicolor": "Mehrfarbig",
+                    "teal": "Petrol",
+                    "blue": "Blau",
+                    "purple": "Lila",
+                    "pink": "Pink",
+                    "orange": "Orange",
+                    "green": "Grün"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Arbeitsziel bearbeiten",
                 "startWeekOn": "Woche beginnt am",
                 "Sunday": "Sonntag",
                 "Monday": "Montag",
