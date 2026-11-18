@@ -6,7 +6,15 @@ import { fontFamily } from '@/style/font';
 import { Box, Button, Container, Slide, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { HAIRLINE, INK_RAISED, MUTED, ORANGE } from '../../class/sections/shared';
-import { FINAL_CTA, FOOTER_LINKS, HERO, NOT_AFFILIATED, sentences, STICKY } from '../content';
+import {
+    FINAL_CTA,
+    FOOTER_LINKS,
+    HERO,
+    NOT_AFFILIATED,
+    PHOTO_CREDITS,
+    sentences,
+    STICKY,
+} from '../content';
 import { useHydrated, useStoredDraft, useTimeLeft } from '../hooks';
 import { formatCountdown, lockDayLabel } from '../prediction';
 import { BoardMotif, clipSx } from './Motif';
@@ -89,6 +97,24 @@ export function Footer({ padForStickyBar }: { padForStickyBar: boolean }) {
         >
             <Typography variant='body2' sx={{ color: 'inherit' }}>
                 {NOT_AFFILIATED}
+            </Typography>
+            <Typography variant='body2' sx={{ mt: 1, color: 'inherit', fontSize: '0.85rem' }}>
+                {PHOTO_CREDITS.label}{' '}
+                {PHOTO_CREDITS.items.map((item, index) => (
+                    <Box key={item.subject} component='span'>
+                        {index > 0 && ', '}
+                        {item.subject} by{' '}
+                        <a href={item.href} target='_blank' rel='noopener noreferrer'>
+                            {item.author}
+                        </a>{' '}
+                        (
+                        <a href={item.licenseHref} target='_blank' rel='noopener noreferrer'>
+                            {item.license}
+                        </a>
+                        )
+                    </Box>
+                ))}
+                , via Wikimedia Commons. {PHOTO_CREDITS.note}
             </Typography>
             <Stack
                 direction='row'

@@ -20,6 +20,8 @@ import { THE_MATCH } from '../content';
 import { Draft } from '../prediction';
 import { MatchStrip, matchSummary } from './MatchStrip';
 import { Flag } from './Motif';
+import { PlayerPhoto } from './Portrait';
+import { Watch } from './Watch';
 
 function PlayerHead({
     player,
@@ -32,6 +34,23 @@ function PlayerHead({
 }) {
     return (
         <Stack sx={{ alignItems: align === 'left' ? 'flex-start' : 'flex-end', minWidth: 0 }}>
+            <Box
+                sx={{
+                    position: 'relative',
+                    width: { xs: 'min(40vw, 150px)', sm: 190, md: 230 },
+                    aspectRatio: '4 / 5',
+                    mb: { xs: 1.75, md: 2.25 },
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    bgcolor: INK_RAISED,
+                    boxShadow: picked
+                        ? `0 0 0 2px ${ORANGE}, 0 30px 60px -34px rgba(0, 0, 0, 0.9)`
+                        : `0 0 0 1px ${HAIRLINE}, 0 30px 60px -34px rgba(0, 0, 0, 0.9)`,
+                    transition: `box-shadow 260ms ${EASE_OUT}`,
+                }}
+            >
+                <PlayerPhoto player={player} named sizes='(max-width: 600px) 40vw, 230px' />
+            </Box>
             <Flag player={player} width={44} />
             <Typography
                 component='h3'
@@ -172,6 +191,7 @@ export function TheMatch({ draft }: { draft: Draft }) {
                         {summary.join(' ')}
                     </Typography>
                 )}
+                <Watch divided />
             </Box>
         </Section>
     );

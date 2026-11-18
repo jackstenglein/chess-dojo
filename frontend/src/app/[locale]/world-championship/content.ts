@@ -343,6 +343,56 @@ export const THE_MATCH = {
     yourCall: 'Your call.',
 };
 
+/**
+ * Where to follow the games. Kostya asked for this on November 17, 2026. He
+ * should confirm what the streams will cover before the page goes live.
+ */
+export const WATCH = {
+    heading: 'Watch the match with the senseis',
+    body: 'ChessDojo will have commentary on the match on Twitch and YouTube.',
+    /** The short line in the hero. It runs straight into the two links, so it ends on "on". */
+    hero: 'Follow the match with ChessDojo commentary on',
+    links: [
+        {
+            id: 'twitch',
+            name: 'Twitch',
+            label: 'ChessDojo on Twitch',
+            href: 'https://www.twitch.tv/chessdojo',
+        },
+        {
+            id: 'youtube',
+            name: 'YouTube',
+            label: 'ChessDojo on YouTube',
+            href: 'https://www.youtube.com/@ChessDojo',
+        },
+    ],
+} as const;
+
+/**
+ * Both photos are from Wikimedia Commons under licenses that ask for the
+ * photographer to be named, so the footer has to keep these lines.
+ */
+export const PHOTO_CREDITS = {
+    label: 'Photos:',
+    items: [
+        {
+            subject: 'Gukesh',
+            author: 'Frans Peeters',
+            href: 'https://commons.wikimedia.org/wiki/File:Gukesh_in_2024_(cropped_2).jpg',
+            license: 'CC BY-SA 2.0',
+            licenseHref: 'https://creativecommons.org/licenses/by-sa/2.0/',
+        },
+        {
+            subject: 'Sindarov',
+            author: 'ChessKelly',
+            href: 'https://commons.wikimedia.org/wiki/File:Javokhir_Sindarov_at_the_Naroditsky_Memorial_Rapid_and_Blitz_2026.jpg',
+            license: 'CC BY 4.0',
+            licenseHref: 'https://creativecommons.org/licenses/by/4.0/',
+        },
+    ],
+    note: 'Both cropped. Backdrop lettering removed from the Sindarov photo.',
+};
+
 /** One sentence per pick, for the line under the match strip. */
 export const MATCH_SUMMARY = {
     endsAfter: (game: number, date: string) => `Over after Game ${game}, on ${date}.`,

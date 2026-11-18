@@ -7,13 +7,15 @@ import { Condensed, EASE_OUT, HAIRLINE, INK_RAISED, ORANGE } from '../../class/s
 import { PlayerId, PLAYERS } from '../config';
 import { PLAYER_ROLES } from '../content';
 import { Flag } from './Motif';
+import { PlayerPhoto } from './Portrait';
 
 const INK_TEXT = '#0b0b12';
 
 /**
  * The first question, drawn as the match itself: the two players face each
  * other and the visitor taps a side. The chosen side floods with orange from
- * the bottom edge, which is the one authored moment on the page.
+ * the bottom edge, which is the one authored moment on the page. The photo
+ * fades out toward the bottom, so the flood shows under the name.
  */
 export function Versus({
     label,
@@ -54,7 +56,7 @@ export function Versus({
                             position: 'relative',
                             isolation: 'isolate',
                             overflow: 'hidden',
-                            minHeight: { xs: 156, sm: 190 },
+                            minHeight: { xs: 208, sm: 250 },
                             p: { xs: 1.75, sm: 2.25 },
                             display: 'flex',
                             flexDirection: 'column',
@@ -86,7 +88,17 @@ export function Versus({
                             '&:focus-visible': { outlineOffset: '-3px' },
                         }}
                     >
-                        <Flag player={player} width={40} />
+                        <PlayerPhoto
+                            player={player}
+                            sizes='(max-width: 600px) 50vw, 240px'
+                            priority
+                            sx={{
+                                zIndex: -1,
+                                maskImage:
+                                    'linear-gradient(to bottom, #000 48%, rgba(0, 0, 0, 0.28) 72%, transparent 90%)',
+                            }}
+                        />
+                        <Flag player={player} width={34} />
                         <Box>
                             <Typography
                                 component='span'

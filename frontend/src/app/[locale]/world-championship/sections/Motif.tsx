@@ -7,7 +7,7 @@ import { PlayerId, PLAYERS } from '../config';
 type StyleObject = Record<string, string | number | object | undefined>;
 
 /**
- * Drawn here because the page uses no player photos and no FIDE or event marks.
+ * Drawn here because the page uses no FIDE or event marks.
  * Simplified at small sizes: India without the spokes of the wheel, Uzbekistan
  * with the crescent and three of its twelve stars.
  */

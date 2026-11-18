@@ -48,6 +48,7 @@ import { OFFER_ELEMENT_ID } from './BlackFriday';
 import { clipSx, Flag } from './Motif';
 import { PickFlow } from './PickFlow';
 import { PicksCard, ShareButtons } from './PicksCard';
+import { Watch, WatchInline } from './Watch';
 
 /** The picks card lands like a stamp, the one celebration on the page. */
 const stampIn = keyframes`
@@ -287,6 +288,7 @@ function OpenHero({
                     <Body sx={{ mt: 3, fontSize: '1rem', display: { xs: 'none', md: 'block' } }}>
                         {HERO.proof}
                     </Body>
+                    <WatchInline sx={{ mt: 1.75, display: { xs: 'none', md: 'flex' } }} />
                 </Box>
 
                 <Box sx={entranceSx(120)}>
@@ -307,6 +309,7 @@ function OpenHero({
                     >
                         {HERO.proof}
                     </Body>
+                    <WatchInline centered sx={{ mt: 1.75, display: { md: 'none' } }} />
                 </Box>
             </Box>
         </HeroFrame>
@@ -424,6 +427,7 @@ function ConfirmedHero({
                         {CONFIRMATION.changePicks}
                     </Button>
                     <NextStep config={config} offerStatus={offerStatus} />
+                    <WatchInline sx={{ mt: 2.5 }} />
                 </Box>
             </Box>
         </HeroFrame>
@@ -577,6 +581,9 @@ function LiveHero({ entry }: { entry?: StoredEntry }) {
                         {entry ? LIVE.subWithEntry : LIVE.subWithoutEntry}
                     </Body>
                     {!entry && <ResultsSignup />}
+                    <Box sx={{ mt: 4 }}>
+                        <Watch />
+                    </Box>
                 </Box>
                 {entry && (
                     <Box sx={entranceSx(120)}>
