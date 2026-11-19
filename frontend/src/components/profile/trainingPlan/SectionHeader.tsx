@@ -26,9 +26,9 @@ const GAP = 16;
 /**
  * The header of the Today and This Week sections. The whole header is a progress
  * bar: it fills from the left as time is logged against the goal, and turns green
- * once the goal is met. The chevron at the right shows or hides the section (a
- * hidden section's title is slightly dimmed); for the plan's owner, clicking
- * anywhere else on the header opens the weekly goal editor.
+ * once the goal is met. The chevron at the right shows or hides the section; for
+ * the plan's owner, clicking anywhere else on the header opens the weekly goal
+ * editor.
  */
 export function SectionHeader({
     title,
@@ -61,7 +61,6 @@ export function SectionHeader({
     const [goalOpen, setGoalOpen] = useState(false);
 
     const percent = goal > 0 ? Math.min(100, (100 * worked) / goal) : 0;
-    const done = goal > 0 && worked >= goal;
     // The viewer's bar color: by default it blends from orange through yellow to
     // green as the goal nears; they can pick a single color instead.
     const [barColor] = useBarColor();
@@ -140,18 +139,14 @@ export function SectionHeader({
                         justifySelf: 'start',
                         fontWeight: 'bold',
                         whiteSpace: 'nowrap',
-                        // A hidden section's title is slightly dimmed.
-                        opacity: expanded ? 1 : 0.8,
-                        transition: 'opacity 200ms',
+                        color: 'text.primary',
                     }}
                 >
                     {title}
                 </Typography>
 
                 <Box sx={{ justifySelf: { xs: 'end', sm: 'start' } }}>
-                    {showProgress && (
-                        <GoalTime time={time} doneColor={done ? progressColor : undefined} />
-                    )}
+                    {showProgress && <GoalTime time={time} />}
                 </Box>
 
                 {/* Matches the arrows on the Training Plan's category rows. */}
@@ -187,15 +182,15 @@ export function SectionHeader({
     );
 }
 
-/** The time against the goal; it takes the bar's color once the goal is met. */
-function GoalTime({ time, doneColor }: { time: string; doneColor?: string }) {
+/** The time against the goal, in the text color whether or not the goal is met. */
+function GoalTime({ time }: { time: string }) {
     return (
         <Typography
             sx={{
                 fontWeight: 700,
                 whiteSpace: 'nowrap',
                 fontVariantNumeric: 'tabular-nums',
-                color: doneColor ?? 'text.primary',
+                color: 'text.primary',
             }}
         >
             {time}
