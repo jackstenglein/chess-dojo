@@ -237,6 +237,46 @@
                 "graduate": "[T] Graduate",
                 "success": "[T] Congratulations! You have successfully graduated!"
             },
+            "starter": {
+                "title": "[T] Your Starter Plan",
+                "subtitle": "[T] Welcome to the Dojo! These four steps show you how training here works. Finish them and you'll move on to your full training plan.",
+                "progress": "[T] {done} of {total} steps done",
+                "stepNumber": "[T] Step {number}",
+                "stepProgress": "[T] {done} of {total} done",
+                "steps": {
+                    "welcome": {
+                        "title": "[T] Complete the Welcome to the Dojo tasks",
+                        "description": "[T] Short intro tasks that show you around the Dojo and how to log your training."
+                    },
+                    "classicalGame": {
+                        "title": "[T] Play 1 classical game",
+                        "description": "[T] Play a slow game, online or over the board. Classical games are the heart of the Dojo training program."
+                    },
+                    "annotateGame": {
+                        "title": "[T] Annotate 1 game",
+                        "description": "[T] Go through one of your games before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "dojoRush": {
+                        "title": "[T] Try the Dojo Rush trainer",
+                        "description": "[T] Solve as many puzzles as you can against the clock. One run completes this step."
+                    }
+                },
+                "actions": {
+                    "open": "[T] Open",
+                    "view": "[T] View",
+                    "logGame": "[T] Log your game",
+                    "howItWorks": "[T] How it works",
+                    "importGame": "[T] Import a game",
+                    "logAnnotation": "[T] Log your annotation",
+                    "startRush": "[T] Start Dojo Rush"
+                },
+                "complete": {
+                    "title": "[T] Starter plan complete!",
+                    "description": "[T] Nice work. Your full training plan is ready, with daily tasks picked for your cohort."
+                },
+                "continue": "[T] Continue to the full training plan",
+                "skip": "[T] Already know the Dojo? Skip to the full training plan"
+            },
             "graduationTask": {
                 "title": "[T] Graduate from {cohort}",
                 "descriptionBase": "[T] Congrats on reaching {rating} {system}! Use this task to move to the next cohort, add a badge to your profile, and get one of your annotated games reviewed on stream!",

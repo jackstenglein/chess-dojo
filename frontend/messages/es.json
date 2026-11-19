@@ -237,6 +237,46 @@
                 "graduate": "Graduarse",
                 "success": "¡Felicidades! ¡Te has graduado con éxito!"
             },
+            "starter": {
+                "title": "Tu plan de inicio",
+                "subtitle": "¡Bienvenido al Dojo! Estos cuatro pasos te muestran cómo funciona el entrenamiento aquí. Complétalos y pasarás a tu plan de entrenamiento completo.",
+                "progress": "{done} de {total} pasos completados",
+                "stepNumber": "Paso {number}",
+                "stepProgress": "{done} de {total} completadas",
+                "steps": {
+                    "welcome": {
+                        "title": "Completa las tareas de Bienvenida al Dojo",
+                        "description": "Tareas breves de introducción que te enseñan el Dojo y cómo registrar tu entrenamiento."
+                    },
+                    "classicalGame": {
+                        "title": "Juega 1 partida clásica",
+                        "description": "Juega una partida lenta, online o sobre el tablero. Las partidas clásicas son el núcleo del programa de entrenamiento del Dojo."
+                    },
+                    "annotateGame": {
+                        "title": "Anota 1 partida",
+                        "description": "Revisa una de tus partidas antes de usar un motor. Anota lo que pensabas, tus decisiones clave y tus errores."
+                    },
+                    "dojoRush": {
+                        "title": "Prueba el entrenador Dojo Rush",
+                        "description": "Resuelve tantos problemas como puedas contra el reloj. Una partida completa este paso."
+                    }
+                },
+                "actions": {
+                    "open": "Abrir",
+                    "view": "Ver",
+                    "logGame": "Registra tu partida",
+                    "howItWorks": "Cómo funciona",
+                    "importGame": "Importar una partida",
+                    "logAnnotation": "Registra tu anotación",
+                    "startRush": "Empezar Dojo Rush"
+                },
+                "complete": {
+                    "title": "¡Plan de inicio completado!",
+                    "description": "Buen trabajo. Tu plan de entrenamiento completo está listo, con tareas diarias elegidas para tu cohorte."
+                },
+                "continue": "Continuar al plan de entrenamiento completo",
+                "skip": "¿Ya conoces el Dojo? Salta al plan de entrenamiento completo"
+            },
             "graduationTask": {
                 "title": "Graduarse de {cohort}",
                 "descriptionBase": "¡Felicidades por alcanzar {rating} {system}! ¡Usa esta tarea para pasar a la siguiente cohorte, añadir una insignia a tu perfil y conseguir que una de tus partidas anotadas sea revisada en el stream!",

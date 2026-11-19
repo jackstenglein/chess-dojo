@@ -6,6 +6,8 @@ import { DailyTrainingPlan } from './daily/DailyTrainingPlan';
 import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
 import { PinTaskDialog } from './PinTaskDialog';
+import { isStarterPlanActive } from './starter/starterPlan';
+import { StarterTrainingPlan } from './starter/StarterTrainingPlan';
 import { useWeeklyTrainingPlan, UseWeeklyTrainingPlanResponse } from './useTrainingPlan';
 import { WeeklyTrainingPlan } from './weekly/WeeklyTrainingPlan';
 
@@ -15,6 +17,9 @@ export const TrainingPlanContext = createContext<UseWeeklyTrainingPlanResponse>(
 export function TrainingPlanTab({ user }: { user: User }) {
     const trainingPlan = useWeeklyTrainingPlan(user);
     const [cohort, setCohort] = useState(user.dojoCohort);
+    // New members work through the starter plan before the daily and weekly plan.
+    // Its progress checks need the member's own data, so others see the usual plan.
+    const showStarterPlan = trainingPlan.isCurrentUser && isStarterPlanActive(user);
 
     useEffect(() => {
         setCohort(user.dojoCohort);
@@ -30,8 +35,14 @@ export function TrainingPlanTab({ user }: { user: User }) {
             <RequestSnackbar request={trainingPlan.request} />
 
             <TrainingPlanContext value={trainingPlan}>
-                <DailyTrainingPlan />
-                <WeeklyTrainingPlan />
+                {showStarterPlan ? (
+                    <StarterTrainingPlan />
+                ) : (
+                    <>
+                        <DailyTrainingPlan />
+                        <WeeklyTrainingPlan />
+                    </>
+                )}
                 <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
                 <MiniScoreboard cohort={cohort} />
                 <PinTaskDialog />

@@ -237,6 +237,46 @@
                 "graduate": "Passa al livello successivo",
                 "success": "Congratulazioni! Sei passato al livello successivo!"
             },
+            "starter": {
+                "title": "Il tuo piano iniziale",
+                "subtitle": "Benvenuto nel Dojo! Questi quattro passi ti mostrano come funziona l'allenamento qui. Completali e passerai al tuo piano di allenamento completo.",
+                "progress": "{done} passi su {total} completati",
+                "stepNumber": "Passo {number}",
+                "stepProgress": "{done} su {total} completate",
+                "steps": {
+                    "welcome": {
+                        "title": "Completa le attività Benvenuto nel Dojo",
+                        "description": "Brevi attività introduttive che ti mostrano il Dojo e come registrare il tuo allenamento."
+                    },
+                    "classicalGame": {
+                        "title": "Gioca 1 partita classica",
+                        "description": "Gioca una partita lenta, online o alla scacchiera. Le partite classiche sono il cuore del programma di allenamento del Dojo."
+                    },
+                    "annotateGame": {
+                        "title": "Annota 1 partita",
+                        "description": "Analizza una delle tue partite prima di usare un motore. Annota cosa pensavi, le decisioni chiave e i tuoi errori."
+                    },
+                    "dojoRush": {
+                        "title": "Prova l'allenatore Dojo Rush",
+                        "description": "Risolvi più problemi che puoi contro il tempo. Una sessione completa questo passo."
+                    }
+                },
+                "actions": {
+                    "open": "Apri",
+                    "view": "Vedi",
+                    "logGame": "Registra la partita",
+                    "howItWorks": "Come funziona",
+                    "importGame": "Importa una partita",
+                    "logAnnotation": "Registra l'annotazione",
+                    "startRush": "Inizia Dojo Rush"
+                },
+                "complete": {
+                    "title": "Piano iniziale completato!",
+                    "description": "Ottimo lavoro. Il tuo piano di allenamento completo è pronto, con attività giornaliere scelte per la tua coorte."
+                },
+                "continue": "Continua con il piano di allenamento completo",
+                "skip": "Conosci già il Dojo? Passa al piano di allenamento completo"
+            },
             "graduationTask": {
                 "title": "Passa al livello successivo da {cohort}",
                 "descriptionBase": "Congratulazioni per aver raggiunto {rating} {system}! Usa questo compito per passare alla coorte successiva, aggiungere un badge al tuo profilo e far analizzare una delle tue partite commentate in diretta!",
