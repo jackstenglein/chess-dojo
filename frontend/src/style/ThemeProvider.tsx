@@ -13,7 +13,7 @@ import { ReactNode, useEffect } from 'react';
 
 export const CategoryColors: Record<RequirementCategory, string> = {
     [RequirementCategory.SuggestedTasks]: '#c27ba0',
-    [RequirementCategory.Welcome]: '#c27ba0',
+    [RequirementCategory.Welcome]: '#e590c3',
     [RequirementCategory.Games]: '#faa137',
     [RequirementCategory.Tactics]: '#82e356',
     [RequirementCategory.Middlegames]: '#5f5ffa',
