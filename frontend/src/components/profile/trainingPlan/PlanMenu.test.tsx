@@ -14,20 +14,11 @@ const user = { username: 'me', weekStart: 0 } as unknown as User;
 function Harness({ isCurrentUser }: { isCurrentUser: boolean }) {
     const [showToday, setShowToday] = useState(true);
     const [showWeek, setShowWeek] = useState(true);
-    const [showCompletedToday, setShowCompletedToday] = useState(true);
-    const sections: TrainingPlanSections = {
-        showToday,
-        setShowToday,
-        showWeek,
-        setShowWeek,
-        showCompletedToday,
-        setShowCompletedToday,
-    };
+    const sections: TrainingPlanSections = { showToday, setShowToday, showWeek, setShowWeek };
     return (
         <NextIntlClientProvider locale='en' messages={messages}>
             <PlanMenu user={user} isCurrentUser={isCurrentUser} sections={sections} />
             <span data-testid='state'>{`${showToday}-${showWeek}`}</span>
-            <span data-testid='completed-state'>{`${showCompletedToday}`}</span>
         </NextIntlClientProvider>
     );
 }
@@ -108,19 +99,5 @@ describe('PlanMenu', () => {
         const items = screen.getAllByRole('menuitem').map((item) => item.dataset.testid);
         expect(items[0]).toBe('plan-menu-work-goal');
         expect(items.at(-1)).toBe('plan-menu-reset');
-    });
-
-    it('hides or shows completed tasks in Today, only while Today is shown', () => {
-        render(<Harness isCurrentUser />);
-        openMenu();
-
-        fireEvent.click(screen.getByTestId('plan-menu-show-completed-today'));
-        expect(screen.getByTestId('completed-state').textContent).toBe('false');
-
-        fireEvent.click(screen.getByTestId('plan-menu-show-today'));
-        expect(screen.getByTestId('plan-menu-show-completed-today')).toHaveAttribute(
-            'aria-disabled',
-            'true',
-        );
     });
 });

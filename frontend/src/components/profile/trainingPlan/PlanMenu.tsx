@@ -33,9 +33,6 @@ export interface TrainingPlanSections {
     setShowToday: (show: boolean) => void;
     showWeek: boolean;
     setShowWeek: (show: boolean) => void;
-    /** Whether Today lists the tasks already done today. */
-    showCompletedToday: boolean;
-    setShowCompletedToday: (show: boolean) => void;
 }
 
 /**
@@ -45,18 +42,7 @@ export interface TrainingPlanSections {
 export function useTrainingPlanSections(): TrainingPlanSections {
     const [showToday, setShowToday] = useLocalStorage('training-plan-show-today', true);
     const [showWeek, setShowWeek] = useLocalStorage('training-plan-show-week', true);
-    const [showCompletedToday, setShowCompletedToday] = useLocalStorage(
-        'training-plan-show-completed-today',
-        true,
-    );
-    return {
-        showToday,
-        setShowToday,
-        showWeek,
-        setShowWeek,
-        showCompletedToday,
-        setShowCompletedToday,
-    };
+    return { showToday, setShowToday, showWeek, setShowWeek };
 }
 
 /**
@@ -155,24 +141,6 @@ export function PlanMenu({
                         />
                     </ListItemIcon>
                     <ListItemText>{t('today')}</ListItemText>
-                </MenuItem>
-                {/* Only affects Today, so it sits indented under it. */}
-                <MenuItem
-                    onClick={() => sections.setShowCompletedToday(!sections.showCompletedToday)}
-                    disabled={!sections.showToday}
-                    sx={{ pl: 4.5 }}
-                    data-testid='plan-menu-show-completed-today'
-                >
-                    <ListItemIcon>
-                        <Checkbox
-                            size='small'
-                            checked={sections.showCompletedToday}
-                            tabIndex={-1}
-                            disableRipple
-                            sx={{ p: 0 }}
-                        />
-                    </ListItemIcon>
-                    <ListItemText>{t('completedTasks')}</ListItemText>
                 </MenuItem>
                 <MenuItem
                     onClick={() => sections.setShowWeek(!sections.showWeek)}
