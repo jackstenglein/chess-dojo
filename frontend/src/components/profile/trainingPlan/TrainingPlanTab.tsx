@@ -17,7 +17,7 @@ export const TrainingPlanContext = createContext<UseWeeklyTrainingPlanResponse>(
 export function TrainingPlanTab({ user }: { user: User }) {
     const trainingPlan = useWeeklyTrainingPlan(user);
     const [cohort, setCohort] = useState(user.dojoCohort);
-    // New members work through the starter plan before the daily and weekly plan.
+    // New members work through the starter plan before the full training plan.
     // Its progress checks need the member's own data, so others see the usual plan.
     const showStarterPlan = trainingPlan.isCurrentUser && isStarterPlanActive(user);
 
@@ -36,16 +36,17 @@ export function TrainingPlanTab({ user }: { user: User }) {
 
             <TrainingPlanContext value={trainingPlan}>
                 {showStarterPlan ? (
+                    // The full training plan stays locked until the starter plan is done.
                     <StarterTrainingPlan />
                 ) : (
                     <>
                         <DailyTrainingPlan />
                         <WeeklyTrainingPlan />
+                        <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
+                        <MiniScoreboard cohort={cohort} />
+                        <PinTaskDialog />
                     </>
                 )}
-                <FullTrainingPlan cohort={cohort} setCohort={setCohort} />
-                <MiniScoreboard cohort={cohort} />
-                <PinTaskDialog />
             </TrainingPlanContext>
         </Stack>
     );

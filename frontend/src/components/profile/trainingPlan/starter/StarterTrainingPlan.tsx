@@ -2,28 +2,52 @@
 
 import { useApi } from '@/api/Api';
 import { listPuzzleRushSessions } from '@/api/puzzleApi';
+import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { Link } from '@/components/navigation/Link';
-import { isComplete, Requirement } from '@/database/requirement';
+import { useTimelineContext } from '@/components/profile/activity/useTimeline';
+import { Requirement } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import { Check, EmojiEvents, RadioButtonUnchecked } from '@mui/icons-material';
+import { Check, EmojiEvents, Lock, RadioButtonUnchecked } from '@mui/icons-material';
 import {
     Box,
     Button,
     Card,
     CardContent,
     Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     LinearProgress,
     Stack,
+    TextField,
     Typography,
 } from '@mui/material';
+import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useState } from 'react';
 import { dailyCardSx, dailyPrimaryButtonSx } from '../daily/DailyCard';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { TrainingPlanContext } from '../TrainingPlanTab';
-import { getStarterSteps, STARTER_PLAN_TUTORIAL, StarterStep, StarterStepId } from './starterPlan';
+import {
+    getStarterCredits,
+    getStarterSteps,
+    StarterStep,
+    StarterStepId,
+    StarterStepTask,
+} from './starterPlan';
+import {
+    Tutorials,
+    withoutStarterTask,
+    withStarterPlanFinished,
+    withStarterTask,
+    withStarterTaskCredited,
+} from './starterProgress';
+
+/** The minutes suggested for a task that has no expected time. */
+const DEFAULT_TASK_MINUTES = 30;
 
 /**
  * Returns whether the current user has finished a Dojo Rush run, or undefined
@@ -53,18 +77,21 @@ function useHasDojoRushRun(): boolean | undefined {
 }
 
 /**
- * The plan new members follow before the full training plan: the Welcome to the
- * Dojo tasks, one classical game, one annotated game and one Dojo Rush run. Once
- * every step is done (or the member skips it) the daily and weekly plan take over.
+ * The plan new members follow before the full training plan. Tasks marked done here
+ * are kept apart from the member's real progress; when they finish (or skip) the
+ * starter plan, those tasks are credited to the full training plan, which unlocks.
  */
 export function StarterTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.starter');
     const api = useApi();
     const { updateUser } = useAuth();
+    const { onNewEntry } = useTimelineContext();
     const { user, requirements, timeline, isLoading } = use(TrainingPlanContext);
     const hasDojoRushRun = useHasDojoRushRun();
+    const request = useRequest();
 
-    const [dialog, setDialog] = useState<{ task: Requirement; view: TaskDialogView }>();
+    const [detailsTask, setDetailsTask] = useState<Requirement>();
+    const [markDoneTask, setMarkDoneTask] = useState<Requirement>();
 
     const steps = useMemo(
         () =>
@@ -84,24 +111,79 @@ export function StarterTrainingPlan() {
     const doneCount = steps.filter((s) => s.complete).length;
     const allDone = doneCount === steps.length;
 
-    const moveToFullPlan = () => {
-        const tutorials = { ...user.tutorials, [STARTER_PLAN_TUTORIAL]: true };
+    const saveTutorials = async (tutorials: Tutorials) => {
         updateUser({ tutorials });
-        void api.updateUser({ tutorials });
+        await api.updateUser({ tutorials });
     };
 
-    const openTask = (task: Requirement, view: TaskDialogView) => setDialog({ task, view });
+    const onMarkDone = (task: Requirement, minutes: number) => {
+        request.onStart();
+        saveTutorials(withStarterTask(user.tutorials, task.id, minutes, new Date()))
+            .then(() => {
+                request.onSuccess();
+                setMarkDoneTask(undefined);
+            })
+            .catch((err: unknown) => request.onFailure(err));
+    };
+
+    const onUndo = (task: Requirement) => {
+        request.onStart();
+        saveTutorials(withoutStarterTask(user.tutorials, task.id))
+            .then(() => request.onSuccess())
+            .catch((err: unknown) => request.onFailure(err));
+    };
+
+    /**
+     * Credits every starter task to the member's real progress, then marks the starter
+     * plan finished. Each credited task is remembered, so a retry after a failure never
+     * credits a task twice.
+     */
+    const onFinish = async () => {
+        request.onStart();
+        let tutorials = user.tutorials ?? {};
+        try {
+            for (const credit of getStarterCredits(user, steps, timeline)) {
+                const resp = await api.updateUserProgress({
+                    cohort: user.dojoCohort,
+                    requirementId: credit.task.id,
+                    previousCount: credit.previousCount,
+                    newCount: credit.newCount,
+                    incrementalMinutesSpent: credit.minutes,
+                    date: DateTime.fromISO(credit.date),
+                    notes: '',
+                });
+                onNewEntry(resp.data.timelineEntry);
+                tutorials = withStarterTaskCredited(tutorials, credit.task.id);
+            }
+            await saveTutorials(withStarterPlanFinished(tutorials));
+            request.onSuccess();
+        } catch (err) {
+            request.onFailure(err);
+            await saveTutorials(tutorials).catch(() => undefined);
+        }
+    };
 
     return (
         <Stack spacing={2} sx={{ width: 1 }} data-testid='starter-training-plan'>
-            {dialog && (
+            <RequestSnackbar request={request} />
+
+            {detailsTask && (
                 <TaskDialog
                     open
-                    onClose={() => setDialog(undefined)}
-                    task={dialog.task}
-                    initialView={dialog.view}
-                    progress={user.progress[dialog.task.id]}
+                    onClose={() => setDetailsTask(undefined)}
+                    task={detailsTask}
+                    initialView={TaskDialogView.Details}
+                    progress={user.progress[detailsTask.id]}
                     cohort={user.dojoCohort}
+                />
+            )}
+
+            {markDoneTask && (
+                <MarkDoneDialog
+                    task={markDoneTask}
+                    loading={request.isLoading()}
+                    onSave={(minutes) => onMarkDone(markDoneTask, minutes)}
+                    onClose={() => setMarkDoneTask(undefined)}
                 />
             )}
 
@@ -141,7 +223,8 @@ export function StarterTrainingPlan() {
                                 variant='contained'
                                 color='success'
                                 disableElevation
-                                onClick={moveToFullPlan}
+                                loading={request.isLoading()}
+                                onClick={() => void onFinish()}
                                 sx={dailyPrimaryButtonSx}
                             >
                                 {t('continue')}
@@ -153,23 +236,43 @@ export function StarterTrainingPlan() {
 
             <Stack spacing={1.5}>
                 {steps.map((step, i) => (
-                    <StarterStepCard key={step.id} step={step} index={i} onOpenTask={openTask} />
+                    <StarterStepCard
+                        key={step.id}
+                        step={step}
+                        index={i}
+                        disabled={request.isLoading()}
+                        onDetails={setDetailsTask}
+                        onMarkDone={setMarkDoneTask}
+                        onUndo={onUndo}
+                    />
                 ))}
             </Stack>
 
-            {!allDone && (
-                <Box>
-                    <Button
-                        size='small'
-                        color='inherit'
-                        onClick={moveToFullPlan}
-                        sx={{ textTransform: 'none', color: 'text.secondary' }}
-                        data-testid='skip-starter-plan'
-                    >
-                        {t('skip')}
-                    </Button>
-                </Box>
-            )}
+            <Card variant='outlined' sx={{ borderRadius: 3, borderStyle: 'dashed' }}>
+                <CardContent sx={{ '&:last-child': { pb: 2 } }}>
+                    <Stack direction='row' spacing={1.5} sx={{ alignItems: 'start' }}>
+                        <Lock sx={{ color: 'text.secondary', mt: 0.25 }} />
+                        <Stack spacing={0.5} sx={{ alignItems: 'start' }}>
+                            <Typography sx={{ fontWeight: 700 }}>{t('locked.title')}</Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                                {t('locked.description')}
+                            </Typography>
+                            {!allDone && (
+                                <Button
+                                    size='small'
+                                    color='inherit'
+                                    disabled={request.isLoading()}
+                                    onClick={() => void onFinish()}
+                                    sx={{ textTransform: 'none', color: 'text.secondary', px: 0 }}
+                                    data-testid='skip-starter-plan'
+                                >
+                                    {t('skip')}
+                                </Button>
+                            )}
+                        </Stack>
+                    </Stack>
+                </CardContent>
+            </Card>
         </Stack>
     );
 }
@@ -177,11 +280,17 @@ export function StarterTrainingPlan() {
 function StarterStepCard({
     step,
     index,
-    onOpenTask,
+    disabled,
+    onDetails,
+    onMarkDone,
+    onUndo,
 }: {
     step: StarterStep;
     index: number;
-    onOpenTask: (task: Requirement, view: TaskDialogView) => void;
+    disabled: boolean;
+    onDetails: (task: Requirement) => void;
+    onMarkDone: (task: Requirement) => void;
+    onUndo: (task: Requirement) => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter');
 
@@ -223,19 +332,22 @@ function StarterStepCard({
                             {t(`steps.${step.id}.description`)}
                         </Typography>
 
-                        {step.id === StarterStepId.Welcome && step.tasks && (
+                        {step.tasks.length > 0 && (
                             <Stack spacing={0.5} sx={{ pt: 0.5 }}>
-                                {step.tasks.map((task) => (
-                                    <WelcomeTaskRow
-                                        key={task.id}
-                                        task={task}
-                                        onOpenTask={onOpenTask}
+                                {step.tasks.map((stepTask) => (
+                                    <StarterTaskRow
+                                        key={stepTask.task.id}
+                                        stepTask={stepTask}
+                                        disabled={disabled}
+                                        onDetails={onDetails}
+                                        onMarkDone={onMarkDone}
+                                        onUndo={onUndo}
                                     />
                                 ))}
                             </Stack>
                         )}
 
-                        {!step.complete && <StepActions step={step} onOpenTask={onOpenTask} />}
+                        {!step.complete && <StepLinks step={step} />}
                     </Stack>
                 </Stack>
             </CardContent>
@@ -243,103 +355,57 @@ function StarterStepCard({
     );
 }
 
-function StepActions({
-    step,
-    onOpenTask,
-}: {
-    step: StarterStep;
-    onOpenTask: (task: Requirement, view: TaskDialogView) => void;
-}) {
+/** Links to the pages where the member does a step, for steps done outside the plan. */
+function StepLinks({ step }: { step: StarterStep }) {
     const t = useTranslations('profile.trainingPlan.starter.actions');
-    const task = step.task;
-
-    switch (step.id) {
-        case StarterStepId.ClassicalGame:
-            return (
-                <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap', pt: 0.5 }}>
-                    {task && (
-                        <>
-                            <Button
-                                size='small'
-                                variant='contained'
-                                disableElevation
-                                onClick={() => onOpenTask(task, TaskDialogView.Progress)}
-                                sx={dailyPrimaryButtonSx}
-                            >
-                                {t('logGame')}
-                            </Button>
-                            <Button
-                                size='small'
-                                onClick={() => onOpenTask(task, TaskDialogView.Details)}
-                                sx={{ textTransform: 'none' }}
-                            >
-                                {t('howItWorks')}
-                            </Button>
-                        </>
-                    )}
-                </Stack>
-            );
-
-        case StarterStepId.AnnotateGame:
-            return (
-                <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap', pt: 0.5 }}>
-                    <Button
-                        size='small'
-                        variant='contained'
-                        disableElevation
-                        component={Link}
-                        href='/games/import'
-                        sx={dailyPrimaryButtonSx}
-                    >
-                        {t('importGame')}
-                    </Button>
-                    {task && (
-                        <Button
-                            size='small'
-                            onClick={() => onOpenTask(task, TaskDialogView.Progress)}
-                            sx={{ textTransform: 'none' }}
-                        >
-                            {t('logAnnotation')}
-                        </Button>
-                    )}
-                </Stack>
-            );
-
-        case StarterStepId.DojoRush:
-            return (
-                <Box sx={{ pt: 0.5 }}>
-                    <Button
-                        size='small'
-                        variant='contained'
-                        disableElevation
-                        component={Link}
-                        href='/puzzles/rush'
-                        sx={dailyPrimaryButtonSx}
-                    >
-                        {t('startRush')}
-                    </Button>
-                </Box>
-            );
-
-        default:
-            return null;
+    const href =
+        step.id === StarterStepId.AnnotateGame
+            ? '/games/import'
+            : step.id === StarterStepId.DojoRush
+              ? '/puzzles/rush'
+              : undefined;
+    if (!href) {
+        return null;
     }
+    return (
+        <Box sx={{ pt: 0.5 }}>
+            <Button
+                size='small'
+                variant={step.id === StarterStepId.DojoRush ? 'contained' : 'outlined'}
+                disableElevation
+                component={Link}
+                href={href}
+                sx={dailyPrimaryButtonSx}
+            >
+                {step.id === StarterStepId.DojoRush ? t('startRush') : t('importGame')}
+            </Button>
+        </Box>
+    );
 }
 
-function WelcomeTaskRow({
-    task,
-    onOpenTask,
+function StarterTaskRow({
+    stepTask,
+    disabled,
+    onDetails,
+    onMarkDone,
+    onUndo,
 }: {
-    task: Requirement;
-    onOpenTask: (task: Requirement, view: TaskDialogView) => void;
+    stepTask: StarterStepTask;
+    disabled: boolean;
+    onDetails: (task: Requirement) => void;
+    onMarkDone: (task: Requirement) => void;
+    onUndo: (task: Requirement) => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter.actions');
+    const { task, done, record } = stepTask;
     const translated = useTranslatedRequirement(task) ?? task;
-    const { user } = use(TrainingPlanContext);
-    const done = isComplete(user.dojoCohort, task, user.progress[task.id]);
 
     return (
-        <Stack direction='row' sx={{ alignItems: 'center', gap: 1 }}>
+        <Stack
+            direction='row'
+            sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
+            data-testid={`starter-task-${task.id}`}
+        >
             {done ? (
                 <Check fontSize='small' color='success' />
             ) : (
@@ -349,21 +415,105 @@ function WelcomeTaskRow({
                 variant='body2'
                 sx={{
                     flexGrow: 1,
+                    minWidth: 0,
+                    fontWeight: 600,
                     color: done ? 'text.secondary' : 'text.primary',
-                    textDecoration: done ? 'line-through' : undefined,
                 }}
             >
-                {translated.name}
+                {translated.name.replaceAll('{{count}}', '1')}
+                {record && (
+                    <Typography component='span' variant='body2' color='text.secondary'>
+                        {' · '}
+                        {t('minutesSpent', { minutes: record.minutes })}
+                    </Typography>
+                )}
             </Typography>
+
             <Button
                 size='small'
-                onClick={() =>
-                    onOpenTask(task, done ? TaskDialogView.Details : TaskDialogView.Progress)
-                }
+                onClick={() => onDetails(task)}
                 sx={{ textTransform: 'none', flexShrink: 0 }}
             >
-                {done ? t('view') : t('open')}
+                {t('details')}
             </Button>
+            {!done && (
+                <Button
+                    size='small'
+                    variant='contained'
+                    disableElevation
+                    disabled={disabled}
+                    onClick={() => onMarkDone(task)}
+                    sx={dailyPrimaryButtonSx}
+                >
+                    {t('markDone')}
+                </Button>
+            )}
+            {record && (
+                <Button
+                    size='small'
+                    color='inherit'
+                    disabled={disabled}
+                    onClick={() => onUndo(task)}
+                    sx={{ textTransform: 'none', flexShrink: 0, color: 'text.secondary' }}
+                >
+                    {t('undo')}
+                </Button>
+            )}
         </Stack>
+    );
+}
+
+/** Asks how long a task took, then marks it done on the starter plan. */
+function MarkDoneDialog({
+    task,
+    loading,
+    onSave,
+    onClose,
+}: {
+    task: Requirement;
+    loading: boolean;
+    onSave: (minutes: number) => void;
+    onClose: () => void;
+}) {
+    const t = useTranslations('profile.trainingPlan.starter.markDone');
+    const translated = useTranslatedRequirement(task) ?? task;
+    const [minutes, setMinutes] = useState(`${task.expectedMinutes || DEFAULT_TASK_MINUTES}`);
+    const value = Number(minutes);
+    const invalid = minutes.trim() === '' || !Number.isInteger(value) || value < 0;
+
+    return (
+        <Dialog open onClose={onClose} fullWidth maxWidth='xs'>
+            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogContent>
+                <Stack spacing={2} sx={{ pt: 1 }}>
+                    <Typography sx={{ fontWeight: 600 }}>
+                        {translated.name.replaceAll('{{count}}', '1')}
+                    </Typography>
+                    <TextField
+                        autoFocus
+                        type='number'
+                        label={t('minutesLabel')}
+                        value={minutes}
+                        onChange={(e) => setMinutes(e.target.value)}
+                        error={invalid}
+                        helperText={invalid ? t('minutesInvalid') : t('minutesHelper')}
+                        slotProps={{ htmlInput: { min: 0, step: 5 } }}
+                    />
+                </Stack>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose} disabled={loading}>
+                    {t('cancel')}
+                </Button>
+                <Button
+                    variant='contained'
+                    loading={loading}
+                    disabled={invalid}
+                    onClick={() => onSave(value)}
+                >
+                    {t('save')}
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
 }

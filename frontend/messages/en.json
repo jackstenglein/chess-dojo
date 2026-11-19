@@ -251,14 +251,14 @@
             },
             "starter": {
                 "title": "Your Starter Plan",
-                "subtitle": "Welcome to the Dojo! These four steps show you how training here works. Finish them and you'll move on to your full training plan.",
+                "subtitle": "Welcome to the Dojo! These steps show you how training here works. Mark each task done as you go, and your full training plan unlocks when you finish.",
                 "progress": "{done} of {total} steps done",
                 "stepNumber": "Step {number}",
                 "stepProgress": "{done} of {total} done",
                 "steps": {
                     "welcome": {
                         "title": "Complete the Welcome to the Dojo tasks",
-                        "description": "Short intro tasks that show you around the Dojo and how to log your training."
+                        "description": "Short intro tasks that show you around the Dojo."
                     },
                     "classicalGame": {
                         "title": "Play 1 classical game",
@@ -266,27 +266,46 @@
                     },
                     "annotateGame": {
                         "title": "Annotate 1 game",
-                        "description": "Go through one of your games before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                        "description": "Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Complete 1 endgame algorithm",
+                        "description": "Learn a key endgame by playing it out until you can win it every time. This is your cohort's first one."
+                    },
+                    "middlegameSparring": {
+                        "title": "Spar 1 middlegame position",
+                        "description": "Play out a middlegame position against a training partner or a bot. This is your cohort's first one."
                     },
                     "dojoRush": {
                         "title": "Try the Dojo Rush trainer",
-                        "description": "Solve as many puzzles as you can against the clock. One run completes this step."
+                        "description": "Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
                     }
                 },
                 "actions": {
-                    "open": "Open",
-                    "view": "View",
-                    "logGame": "Log your game",
-                    "howItWorks": "How it works",
+                    "details": "Details",
+                    "markDone": "Mark done",
+                    "undo": "Undo",
+                    "minutesSpent": "{minutes} min",
                     "importGame": "Import a game",
-                    "logAnnotation": "Log your annotation",
                     "startRush": "Start Dojo Rush"
+                },
+                "markDone": {
+                    "title": "Mark task done",
+                    "minutesLabel": "Minutes spent",
+                    "minutesHelper": "Roughly how long it took. It's added to your training time when you finish the starter plan.",
+                    "minutesInvalid": "Enter a whole number of minutes.",
+                    "save": "Mark done",
+                    "cancel": "Cancel"
                 },
                 "complete": {
                     "title": "Starter plan complete!",
-                    "description": "Nice work. Your full training plan is ready, with daily tasks picked for your cohort."
+                    "description": "Nice work. When you continue, everything you did here is checked off in your full training plan."
                 },
                 "continue": "Continue to the full training plan",
+                "locked": {
+                    "title": "Full training plan locked",
+                    "description": "Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
+                },
                 "skip": "Already know the Dojo? Skip to the full training plan"
             },
             "graduationTask": {

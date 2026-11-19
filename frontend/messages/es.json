@@ -239,14 +239,14 @@
             },
             "starter": {
                 "title": "Tu plan de inicio",
-                "subtitle": "¡Bienvenido al Dojo! Estos cuatro pasos te muestran cómo funciona el entrenamiento aquí. Complétalos y pasarás a tu plan de entrenamiento completo.",
+                "subtitle": "¡Bienvenido al Dojo! Estos pasos te muestran cómo funciona el entrenamiento aquí. Marca cada tarea como hecha y, al terminar, se desbloqueará tu plan de entrenamiento completo.",
                 "progress": "{done} de {total} pasos completados",
                 "stepNumber": "Paso {number}",
                 "stepProgress": "{done} de {total} completadas",
                 "steps": {
                     "welcome": {
                         "title": "Completa las tareas de Bienvenida al Dojo",
-                        "description": "Tareas breves de introducción que te enseñan el Dojo y cómo registrar tu entrenamiento."
+                        "description": "Tareas breves de introducción que te enseñan el Dojo."
                     },
                     "classicalGame": {
                         "title": "Juega 1 partida clásica",
@@ -254,27 +254,46 @@
                     },
                     "annotateGame": {
                         "title": "Anota 1 partida",
-                        "description": "Revisa una de tus partidas antes de usar un motor. Anota lo que pensabas, tus decisiones clave y tus errores."
+                        "description": "Importa una de tus partidas y revísala antes de usar un motor. Anota lo que pensabas, tus decisiones clave y tus errores."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Completa 1 algoritmo de finales",
+                        "description": "Aprende un final clave jugándolo hasta ganarlo siempre. Este es el primero de tu cohorte."
+                    },
+                    "middlegameSparring": {
+                        "title": "Haz sparring en 1 posición de medio juego",
+                        "description": "Juega una posición de medio juego contra un compañero de entrenamiento o un bot. Esta es la primera de tu cohorte."
                     },
                     "dojoRush": {
                         "title": "Prueba el entrenador Dojo Rush",
-                        "description": "Resuelve tantos problemas como puedas contra el reloj. Una partida completa este paso."
+                        "description": "Resuelve tantos problemas como puedas contra el reloj. Este paso se marca solo después de tu primera partida."
                     }
                 },
                 "actions": {
-                    "open": "Abrir",
-                    "view": "Ver",
-                    "logGame": "Registra tu partida",
-                    "howItWorks": "Cómo funciona",
+                    "details": "Detalles",
+                    "markDone": "Marcar como hecha",
+                    "undo": "Deshacer",
+                    "minutesSpent": "{minutes} min",
                     "importGame": "Importar una partida",
-                    "logAnnotation": "Registra tu anotación",
                     "startRush": "Empezar Dojo Rush"
+                },
+                "markDone": {
+                    "title": "Marcar tarea como hecha",
+                    "minutesLabel": "Minutos dedicados",
+                    "minutesHelper": "Aproximadamente cuánto tardaste. Se suma a tu tiempo de entrenamiento cuando terminas el plan de inicio.",
+                    "minutesInvalid": "Introduce un número entero de minutos.",
+                    "save": "Marcar como hecha",
+                    "cancel": "Cancelar"
                 },
                 "complete": {
                     "title": "¡Plan de inicio completado!",
-                    "description": "Buen trabajo. Tu plan de entrenamiento completo está listo, con tareas diarias elegidas para tu cohorte."
+                    "description": "Buen trabajo. Al continuar, todo lo que hiciste aquí quedará marcado en tu plan de entrenamiento completo."
                 },
                 "continue": "Continuar al plan de entrenamiento completo",
+                "locked": {
+                    "title": "Plan de entrenamiento completo bloqueado",
+                    "description": "Termina el plan de inicio para desbloquear tu plan de entrenamiento completo. Todo lo que marques aquí quedará marcado allí."
+                },
                 "skip": "¿Ya conoces el Dojo? Salta al plan de entrenamiento completo"
             },
             "graduationTask": {
