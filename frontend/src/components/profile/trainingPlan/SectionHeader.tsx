@@ -1,6 +1,7 @@
 import { formatTime } from '@/database/requirement';
 import { ExpandMore } from '@mui/icons-material';
 import { alpha, Box, ButtonBase, IconButton, Tooltip, Typography } from '@mui/material';
+import { keyframes } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { getBarColor, useBarColor } from './barColor';
@@ -13,6 +14,26 @@ import { WorkGoalDialog } from './WorkGoalDialog';
  * This Week category bars below can line up with it.
  */
 export const SECTION_TITLE_WIDTH = 208;
+
+/** A slow sweep of light across a bar that's past its goal. */
+const shimmer = keyframes`
+    0% { background-position: 150% 0; }
+    100% { background-position: -50% 0; }
+`;
+
+/**
+ * Returns how much a bar should shine, from 0 (at or under the goal) to 1 (at
+ * double the goal or more).
+ * @param worked The time worked, in minutes.
+ * @param goal The goal, in minutes.
+ */
+export function getShine(worked: number, goal: number): number {
+    if (goal <= 0 || worked <= goal) {
+        return 0;
+    }
+    // Noticeable as soon as the goal is passed, then building to full at double it.
+    return Math.min(1, 0.35 + 0.65 * (worked / goal - 1));
+}
 
 /** The width of the header's border, in px. */
 const BORDER = 1;
@@ -65,6 +86,9 @@ export function SectionHeader({
     // green as the goal nears; they can pick a single color instead.
     const [barColor] = useBarColor();
     const progressColor = getBarColor(percent, barColor);
+    // Past the goal the bar starts to shine: brighter, glowing, with a slow
+    // shimmer, growing up to double the goal.
+    const shine = getShine(worked, goal);
     const time = `${formatTime(worked, tTime)} / ${formatTime(goal, tTime)}`;
 
     return (
@@ -77,10 +101,16 @@ export function SectionHeader({
                 minWidth: { sm: 440 },
                 border: `${BORDER}px solid`,
                 borderColor: (theme) =>
-                    showProgress ? alpha(progressColor, 0.7) : theme.palette.divider,
-                backgroundColor: showProgress ? alpha(progressColor, 0.05) : 'transparent',
+                    showProgress ? alpha(progressColor, 0.7 + 0.3 * shine) : theme.palette.divider,
+                backgroundColor: showProgress
+                    ? alpha(progressColor, 0.05 + 0.1 * shine)
+                    : 'transparent',
+                boxShadow:
+                    showProgress && shine > 0
+                        ? `0 0 ${10 + 16 * shine}px ${alpha(progressColor, 0.25 + 0.35 * shine)}`
+                        : 'none',
                 borderRadius: '26px',
-                transition: 'border-color 300ms',
+                transition: 'border-color 300ms, box-shadow 400ms',
             }}
         >
             {showProgress && isCurrentUser && (
@@ -107,8 +137,27 @@ export function SectionHeader({
                         inset: 0,
                         pointerEvents: 'none',
                         width: `${percent}%`,
-                        background: `linear-gradient(90deg, ${alpha(progressColor, 0.18)}, ${alpha(progressColor, 0.42)})`,
+                        background: `linear-gradient(90deg, ${alpha(progressColor, 0.18 + 0.22 * shine)}, ${alpha(progressColor, 0.42 + 0.4 * shine)})`,
                         transition: 'width 400ms ease-out, background 400ms',
+                    }}
+                />
+            )}
+
+            {showProgress && shine > 0 && (
+                <Box
+                    aria-hidden
+                    data-testid={`${testId}-shine`}
+                    sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        background: `linear-gradient(100deg, transparent 30%, ${alpha('#ffffff', 0.12 + 0.12 * shine)} 50%, transparent 70%)`,
+                        backgroundSize: '200% 100%',
+                        animation: `${shimmer} ${4 - 1.5 * shine}s ease-in-out infinite`,
+                        '@media (prefers-reduced-motion: reduce)': {
+                            animation: 'none',
+                            opacity: 0,
+                        },
                     }}
                 />
             )}

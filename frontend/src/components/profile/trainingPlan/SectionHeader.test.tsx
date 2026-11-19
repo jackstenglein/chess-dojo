@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import messages from '../../../../messages/en.json';
 import { getBarColor, getProgressColor } from './barColor';
-import { SectionHeader } from './SectionHeader';
+import { getShine, SectionHeader } from './SectionHeader';
 import { TrainingPlanContext } from './TrainingPlanTab';
 import { UseWeeklyTrainingPlanResponse } from './useTrainingPlan';
 import { getWeeklyGoalMinutes } from './workGoal';
@@ -110,5 +110,17 @@ describe('SectionHeader', () => {
     it('shows a hidden section as collapsed', () => {
         renderHeader({ expanded: false });
         expect(screen.getByTestId('today-toggle')).toHaveAttribute('aria-expanded', 'false');
+    });
+});
+
+describe('getShine', () => {
+    it('only shines past the goal, building up to double it', () => {
+        expect(getShine(30, 60)).toBe(0);
+        expect(getShine(60, 60)).toBe(0);
+        expect(getShine(61, 60)).toBeGreaterThan(0.35);
+        expect(getShine(90, 60)).toBeCloseTo(0.675);
+        expect(getShine(120, 60)).toBe(1);
+        expect(getShine(300, 60)).toBe(1);
+        expect(getShine(30, 0)).toBe(0);
     });
 });
