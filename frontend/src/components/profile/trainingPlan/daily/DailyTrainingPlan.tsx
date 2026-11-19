@@ -1,3 +1,4 @@
+import { RequestSnackbar } from '@/api/Request';
 import {
     CustomTask,
     formatTime,
@@ -13,7 +14,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import { ProgressText } from '@/scoreboard/ScoreboardProgress';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import { Add, Help, NotInterested, PushPin, PushPinOutlined } from '@mui/icons-material';
+import { Add, Check, Help, NotInterested, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -31,6 +32,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { useDoneColor } from '../barColor';
 import { CategoryLabel } from '../CategoryLabel';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
@@ -44,10 +46,13 @@ import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
 import { TaskName } from '../TaskName';
 import { getTaskUnit } from '../taskUnit';
+import { getCheckOffVerbLabel } from '../taskVerb';
 import { TrainingPlanContext } from '../TrainingPlanTab';
+import { useMarkComplete } from '../useMarkComplete';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { getDailyGoalMinutes } from '../workGoal';
 import {
+    completedButtonStyles,
     dailyCardActionsSx,
     dailyCardSx,
     dailyPrimaryButtonSx,
@@ -293,13 +298,15 @@ function DailyTrainingPlanItem({
     const isComplete = checkOff
         ? finished
         : isDailyTaskDone(timeWorkedMinutes, goalMinutes, finished);
+    const { markComplete, request: markCompleteRequest } = useMarkComplete(task);
+    const doneColor = useDoneColor();
 
     // The time pill's text: Done / To do for check-off tasks; what was logged for a
     // task not planned today (rather than a goal of 0m); otherwise the default
     // "worked / goal".
     let pillLabel: string | undefined;
     if (checkOff) {
-        pillLabel = isComplete ? tDaily('doneLabel') : tDaily('toDo');
+        pillLabel = isComplete ? tDaily('doneLabel') : getCheckOffVerbLabel(task.name, tDaily);
     } else if (goalMinutes === 0) {
         if (timeWorkedMinutes > 0) {
             pillLabel = tDaily('loggedTime', { time: formatTime(timeWorkedMinutes, tTime) });
@@ -352,7 +359,8 @@ function DailyTrainingPlanItem({
 
     return (
         <Box key={task.id} sx={{ minWidth: 0 }}>
-            <Card variant='outlined' sx={dailyCardSx(isComplete)}>
+            <RequestSnackbar request={markCompleteRequest} />
+            <Card variant='outlined' sx={dailyCardSx(isComplete, doneColor)}>
                 <DailyTaskMenu actions={menuActions} />
                 {isCurrentUser && goalMinutes > 0 && <SwapTaskButton task={suggestion.task} />}
                 {isPinned && (
@@ -462,40 +470,69 @@ function DailyTrainingPlanItem({
                 </CardActionArea>
 
                 <CardActions disableSpacing sx={dailyCardActionsSx}>
-                    {isCurrentUser && (
-                        <Tooltip title={tQuickLog('logTooltip')}>
-                            <Button
-                                size='small'
-                                variant='contained'
-                                disableElevation
-                                startIcon={<Add />}
-                                onClick={() => onOpenTask(task, TaskDialogView.Progress)}
-                                sx={dailyPrimaryButtonSx}
-                                data-testid='quick-log-button'
-                            >
-                                {tQuickLog('logTraining')}
-                            </Button>
-                        </Tooltip>
+                    {/* Check-off tasks are marked complete directly, with no time to log. */}
+                    {isCurrentUser && checkOff && (
+                        <Button
+                            size='small'
+                            variant={isComplete ? 'outlined' : 'contained'}
+                            color={isComplete ? 'success' : 'primary'}
+                            disableElevation
+                            startIcon={<Check />}
+                            disabled={isComplete}
+                            loading={markCompleteRequest.isLoading()}
+                            onClick={() => void markComplete()}
+                            sx={(theme) => ({
+                                ...dailyPrimaryButtonSx,
+                                // Done: green, in the corner where the time pill goes.
+                                ...(isComplete
+                                    ? { ml: 'auto', ...completedButtonStyles(theme, doneColor) }
+                                    : {}),
+                            })}
+                            data-testid='mark-complete-button'
+                        >
+                            {isComplete ? tDaily('completed') : tDaily('markComplete')}
+                        </Button>
+                    )}
+                    {!checkOff && (
+                        <>
+                            {isCurrentUser && (
+                                <Tooltip title={tQuickLog('logTooltip')}>
+                                    <Button
+                                        size='small'
+                                        variant='contained'
+                                        disableElevation
+                                        startIcon={<Add />}
+                                        onClick={() => onOpenTask(task, TaskDialogView.Progress)}
+                                        sx={dailyPrimaryButtonSx}
+                                        data-testid='quick-log-button'
+                                    >
+                                        {tQuickLog('logTraining')}
+                                    </Button>
+                                </Tooltip>
+                            )}
+                            {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
+                        </>
                     )}
 
-                    {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
-
-                    <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
-                        <Box component='span' sx={{ ml: 'auto' }}>
-                            <DailyTimePill
-                                worked={checkOff ? 0 : timeWorkedMinutes}
-                                goal={checkOff ? 0 : goalMinutes}
-                                done={isComplete}
-                                label={pillLabel}
-                                onClick={
-                                    isCurrentUser
-                                        ? () => onOpenTask(task, TaskDialogView.Progress)
-                                        : undefined
-                                }
-                                data-testid='update-task-button'
-                            />
-                        </Box>
-                    </Tooltip>
+                    {/* A completed check-off task's green Completed button says it all. */}
+                    {!(checkOff && isComplete) && (
+                        <Tooltip title={isCurrentUser && !checkOff ? tCommon('logTraining') : ''}>
+                            <Box component='span' sx={{ ml: 'auto' }}>
+                                <DailyTimePill
+                                    worked={checkOff ? 0 : timeWorkedMinutes}
+                                    goal={checkOff ? 0 : goalMinutes}
+                                    done={isComplete}
+                                    label={pillLabel}
+                                    onClick={
+                                        isCurrentUser && !checkOff
+                                            ? () => onOpenTask(task, TaskDialogView.Progress)
+                                            : undefined
+                                    }
+                                    data-testid='update-task-button'
+                                />
+                            </Box>
+                        </Tooltip>
+                    )}
                 </CardActions>
             </Card>
         </Box>

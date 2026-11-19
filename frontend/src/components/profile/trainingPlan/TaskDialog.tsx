@@ -1,4 +1,5 @@
 import { useRequirements } from '@/api/cache/requirements';
+import { RequestSnackbar } from '@/api/Request';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
@@ -23,9 +24,13 @@ import { AccessAlarm, Check, Lock, Loop, Pause, PlayArrow, Scoreboard } from '@m
 import { Box, Button, Chip, Dialog, DialogContent, Grid, Stack, Tooltip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
+import { useDoneColor } from './barColor';
 import CustomTaskEditor from './CustomTaskEditor';
+import { completedButtonStyles } from './daily/DailyCard';
+import { isCheckOffTask, isTaskFinished } from './daily/todayCards';
 import { TaskDescription } from './TaskDescription';
 import { TaskDialogFooter, TaskDialogHeader, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
+import { useMarkComplete } from './useMarkComplete';
 
 export enum TaskDialogView {
     Details = 'DETAILS',
@@ -155,6 +160,9 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
         getLabel: getTimerLabel,
     } = use(TimerContext);
     const timerIsOtherTask = timerTask && timerTask.id !== task.id;
+    const tDaily = useTranslations('profile.trainingPlan.daily');
+    const { markComplete, request: markCompleteRequest } = useMarkComplete(task);
+    const doneColor = useDoneColor();
 
     const selectedCohort = useMemo(() => {
         if (!task) {
@@ -172,6 +180,10 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
 
         return cohortOptions.sort(compareCohorts)[0];
     }, [task, user?.dojoCohort, cohort]);
+
+    // Welcome to the Dojo tasks and single checkboxes are marked complete directly.
+    const checkOff = isCheckOffTask(task, selectedCohort ?? cohort);
+    const finished = !!user && isTaskFinished(user, task, timeline);
 
     const { requirements } = useRequirements(ALL_COHORTS, false);
 
@@ -327,11 +339,13 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                         ))}
                 </Stack>
             </DialogContent>
+            <RequestSnackbar request={markCompleteRequest} />
             <TaskDialogFooter
                 view={TaskDialogView.Details}
                 setView={setView}
                 extra={
-                    timerRunning ? (
+                    // Check-off tasks are just done or not, so there's no time to track.
+                    checkOff ? undefined : timerRunning ? (
                         <Button
                             color='warning'
                             size='small'
@@ -360,14 +374,37 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                 <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
                     {tCommon('cancel')}
                 </Button>
-                <Button
-                    variant='contained'
-                    disableElevation
-                    onClick={() => setView(TaskDialogView.Progress)}
-                    sx={taskDialogPrimaryButtonSx}
-                >
-                    {tCommon('logTraining')}
-                </Button>
+                {checkOff ? (
+                    <Button
+                        variant='contained'
+                        color={finished ? 'success' : 'primary'}
+                        disableElevation
+                        startIcon={<Check />}
+                        disabled={finished}
+                        loading={markCompleteRequest.isLoading()}
+                        onClick={async () => {
+                            if (await markComplete()) {
+                                onClose();
+                            }
+                        }}
+                        sx={(theme) => ({
+                            ...taskDialogPrimaryButtonSx,
+                            ...(finished ? completedButtonStyles(theme, doneColor) : {}),
+                        })}
+                        data-testid='task-dialog-mark-complete'
+                    >
+                        {finished ? tDaily('completed') : tDaily('markComplete')}
+                    </Button>
+                ) : (
+                    <Button
+                        variant='contained'
+                        disableElevation
+                        onClick={() => setView(TaskDialogView.Progress)}
+                        sx={taskDialogPrimaryButtonSx}
+                    >
+                        {tCommon('logTraining')}
+                    </Button>
+                )}
             </TaskDialogFooter>
         </>
     );

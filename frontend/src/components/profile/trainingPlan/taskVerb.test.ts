@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { splitDisplayName, splitTaskVerb } from './taskVerb';
+import { getCheckOffVerbLabel, splitDisplayName, splitTaskVerb } from './taskVerb';
 
 describe('splitTaskVerb', () => {
     it('takes the verb off the front', () => {
@@ -52,5 +52,16 @@ describe('splitDisplayName', () => {
         ['Review With a Coach', 'review', 'Review With a Coach'],
     ])('%s', (name, verb, rest) => {
         expect(splitDisplayName(name)).toEqual({ verb, rest });
+    });
+});
+
+describe('getCheckOffVerbLabel', () => {
+    const t = (key: 'verbRead' | 'verbWatch' | 'toDo') =>
+        ({ verbRead: 'Read', verbWatch: 'Watch', toDo: 'To do' })[key];
+
+    it('says Read or Watch from the task name, and To do otherwise', () => {
+        expect(getCheckOffVerbLabel('Read How to Find a Training Partner', t)).toBe('Read');
+        expect(getCheckOffVerbLabel('Watch How to Make 1900', t)).toBe('Watch');
+        expect(getCheckOffVerbLabel('Join the Discord', t)).toBe('To do');
     });
 });

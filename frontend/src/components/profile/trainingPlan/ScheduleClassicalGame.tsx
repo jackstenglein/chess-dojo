@@ -31,6 +31,7 @@ import { DatePicker } from '@mui/x-date-pickers-pro';
 import { DateTime } from 'luxon';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
+import { useDoneColor } from './barColor';
 import { CategoryLabel } from './CategoryLabel';
 import {
     dailyCardActionsSx,
@@ -55,6 +56,7 @@ export function ScheduleClassicalGameDaily() {
         TaskDialogView.Details | TaskDialogView.Progress
     >();
     const upcomingGames = getUpcomingGameSchedule(user.gameSchedule);
+    const doneColor = useDoneColor();
 
     const menuActions: DailyTaskMenuAction[] = [
         {
@@ -75,7 +77,7 @@ export function ScheduleClassicalGameDaily() {
 
     return (
         <Box sx={{ minWidth: 0 }}>
-            <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0)}>
+            <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0, doneColor)}>
                 <DailyTaskMenu actions={menuActions} />
 
                 <CardActionArea

@@ -69,3 +69,12 @@ export function getBarColor(percent: number, choice: BarColor): string {
     }
     return getProgressColor(percent);
 }
+
+/**
+ * Returns the color for something done, from the viewer's bar color: bright green
+ * for multicolor, or their single color.
+ */
+export function useDoneColor(): string {
+    const [barColor] = useBarColor();
+    return getBarColor(100, barColor);
+}
