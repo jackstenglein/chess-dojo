@@ -19,6 +19,7 @@ import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { useTrainingPlanSections } from '../PlanMenu';
 import { SECTION_TITLE_WIDTH, SectionHeader } from '../SectionHeader';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
@@ -38,6 +39,7 @@ import {
     WeekCell,
     WeekDay,
     WeekRow,
+    withoutSuggestions,
 } from './weekPlan';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -87,19 +89,29 @@ export function WeeklyTrainingPlan() {
         [startDate, user.weekStart],
     );
 
-    const rows = useMemo(
-        () =>
-            getWeekRows({
-                weekDays,
-                suggestionsByDay,
-                timeline,
-                pinnedTaskIds: new Set(pinnedTasks.map((p) => p.id)),
-                findTask: (id) =>
-                    user.customTasks?.find((c) => c.id === id) ??
-                    allRequirements.find((r) => r.id === id),
-            }),
-        [weekDays, suggestionsByDay, timeline, pinnedTasks, user.customTasks, allRequirements],
-    );
+    const { showSuggestions } = useTrainingPlanSections();
+    const rows = useMemo(() => {
+        const pinnedTaskIds = new Set(pinnedTasks.map((p) => p.id));
+        const all = getWeekRows({
+            weekDays,
+            suggestionsByDay,
+            timeline,
+            pinnedTaskIds,
+            findTask: (id) =>
+                user.customTasks?.find((c) => c.id === id) ??
+                allRequirements.find((r) => r.id === id),
+        });
+        // The Plan menu can hide the plan's suggestions, leaving pinned and logged tasks.
+        return showSuggestions ? all : withoutSuggestions(all, pinnedTaskIds);
+    }, [
+        weekDays,
+        suggestionsByDay,
+        timeline,
+        pinnedTasks,
+        user.customTasks,
+        allRequirements,
+        showSuggestions,
+    ]);
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);

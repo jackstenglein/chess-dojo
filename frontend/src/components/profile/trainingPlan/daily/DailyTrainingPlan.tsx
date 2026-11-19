@@ -34,6 +34,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { CategoryLabel } from '../CategoryLabel';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { useTrainingPlanSections } from '../PlanMenu';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { SectionHeader } from '../SectionHeader';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
@@ -153,6 +154,8 @@ function DailyTrainingPlanInternal({
         return tasks;
     }, [user.customTasks, allRequirements, extraTaskIds]);
 
+    const { showSuggestions } = useTrainingPlanSections();
+
     // Today's cards, with the tasks still to do before the ones already done.
     const cards = useMemo(
         () =>
@@ -166,6 +169,7 @@ function DailyTrainingPlanInternal({
                 endDate,
                 gameSchedule: user.gameSchedule,
                 user,
+                showSuggestions,
             }),
         [
             suggestedTasks,
@@ -176,6 +180,7 @@ function DailyTrainingPlanInternal({
             startDate,
             endDate,
             user,
+            showSuggestions,
         ],
     );
 

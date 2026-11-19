@@ -33,6 +33,9 @@ export interface TrainingPlanSections {
     setShowToday: (show: boolean) => void;
     showWeek: boolean;
     setShowWeek: (show: boolean) => void;
+    /** Whether Today and This Week include the tasks the plan suggests. */
+    showSuggestions: boolean;
+    setShowSuggestions: (show: boolean) => void;
 }
 
 /**
@@ -42,7 +45,18 @@ export interface TrainingPlanSections {
 export function useTrainingPlanSections(): TrainingPlanSections {
     const [showToday, setShowToday] = useLocalStorage('training-plan-show-today', true);
     const [showWeek, setShowWeek] = useLocalStorage('training-plan-show-week', true);
-    return { showToday, setShowToday, showWeek, setShowWeek };
+    const [showSuggestions, setShowSuggestions] = useLocalStorage(
+        'training-plan-show-suggestions',
+        true,
+    );
+    return {
+        showToday,
+        setShowToday,
+        showWeek,
+        setShowWeek,
+        showSuggestions,
+        setShowSuggestions,
+    };
 }
 
 /**
@@ -156,6 +170,21 @@ export function PlanMenu({
                         />
                     </ListItemIcon>
                     <ListItemText>{t('thisWeek')}</ListItemText>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => sections.setShowSuggestions(!sections.showSuggestions)}
+                    data-testid='plan-menu-show-suggestions'
+                >
+                    <ListItemIcon>
+                        <Checkbox
+                            size='small'
+                            checked={sections.showSuggestions}
+                            tabIndex={-1}
+                            disableRipple
+                            sx={{ p: 0 }}
+                        />
+                    </ListItemIcon>
+                    <ListItemText>{t('suggestedTasks')}</ListItemText>
                 </MenuItem>
 
                 <Divider sx={dividerSx} />

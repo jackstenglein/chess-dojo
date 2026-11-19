@@ -118,4 +118,16 @@ describe('getTodayCards', () => {
             [true, true],
         ]);
     });
+
+    it('shows only pinned and logged tasks when suggestions are hidden', () => {
+        const cards = getTodayCards({
+            ...base,
+            suggestions: [suggest(polgar, 30), suggest(games, 30)],
+            extraTasks: [logged],
+            pinnedTaskIds: new Set(['games']),
+            timeline: [logEntry('logged', 15)],
+            showSuggestions: false,
+        });
+        expect(ids(cards)).toEqual(['games', 'logged']);
+    });
 });

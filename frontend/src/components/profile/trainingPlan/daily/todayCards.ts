@@ -52,6 +52,7 @@ export function getTodayCards({
     endDate,
     gameSchedule,
     user,
+    showSuggestions = true,
 }: {
     /** Today's suggested tasks. */
     suggestions: SuggestedTask[];
@@ -67,6 +68,8 @@ export function getTodayCards({
     gameSchedule?: GameScheduleEntry[];
     /** The user, to tell which tasks are already finished. */
     user: Pick<User, 'dojoCohort' | 'progress'>;
+    /** Whether to include the plan's suggestions; if not, only pinned and logged tasks. */
+    showSuggestions?: boolean;
 }): TodayCard[] {
     const workedByTask = new Map<string, number>();
     for (const entry of timeline) {
@@ -81,11 +84,12 @@ export function getTodayCards({
     const gameScheduled = getUpcomingGameSchedule(gameSchedule).length > 0;
 
     const cards = suggestions
-        .filter(
-            (t) =>
-                t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ||
-                t.goalMinutes > 0 ||
-                pinnedTaskIds.has(t.task.id),
+        .filter((t) =>
+            showSuggestions
+                ? t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ||
+                  t.goalMinutes > 0 ||
+                  pinnedTaskIds.has(t.task.id)
+                : pinnedTaskIds.has(t.task.id),
         )
         .concat(extraTasks.map((task) => ({ task, goalMinutes: 0 })))
         .filter((suggestion) => !skippedTaskIds?.includes(suggestion.task.id))

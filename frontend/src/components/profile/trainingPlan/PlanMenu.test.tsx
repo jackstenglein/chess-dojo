@@ -14,11 +14,20 @@ const user = { username: 'me', weekStart: 0 } as unknown as User;
 function Harness({ isCurrentUser }: { isCurrentUser: boolean }) {
     const [showToday, setShowToday] = useState(true);
     const [showWeek, setShowWeek] = useState(true);
-    const sections: TrainingPlanSections = { showToday, setShowToday, showWeek, setShowWeek };
+    const [showSuggestions, setShowSuggestions] = useState(true);
+    const sections: TrainingPlanSections = {
+        showToday,
+        setShowToday,
+        showWeek,
+        setShowWeek,
+        showSuggestions,
+        setShowSuggestions,
+    };
     return (
         <NextIntlClientProvider locale='en' messages={messages}>
             <PlanMenu user={user} isCurrentUser={isCurrentUser} sections={sections} />
             <span data-testid='state'>{`${showToday}-${showWeek}`}</span>
+            <span data-testid='suggestions-state'>{`${showSuggestions}`}</span>
         </NextIntlClientProvider>
     );
 }
@@ -99,5 +108,14 @@ describe('PlanMenu', () => {
         const items = screen.getAllByRole('menuitem').map((item) => item.dataset.testid);
         expect(items[0]).toBe('plan-menu-work-goal');
         expect(items.at(-1)).toBe('plan-menu-reset');
+    });
+
+    it("turns the plan's suggested tasks off and on", () => {
+        render(<Harness isCurrentUser />);
+        openMenu();
+        fireEvent.click(screen.getByTestId('plan-menu-show-suggestions'));
+        expect(screen.getByTestId('suggestions-state').textContent).toBe('false');
+        fireEvent.click(screen.getByTestId('plan-menu-show-suggestions'));
+        expect(screen.getByTestId('suggestions-state').textContent).toBe('true');
     });
 });
