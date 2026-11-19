@@ -244,8 +244,9 @@ export function FullTrainingPlan({
 }
 
 export function useShowCompleted(isCurrentUser: boolean) {
-    const myProfile = useLocalStorage('showCompletedTasks', false);
-    const otherProfile = useState(false);
+    // Completed tasks are shown by default; each category can hide them.
+    const myProfile = useLocalStorage('showCompletedTasks', true);
+    const otherProfile = useState(true);
 
     if (isCurrentUser) {
         return myProfile;
