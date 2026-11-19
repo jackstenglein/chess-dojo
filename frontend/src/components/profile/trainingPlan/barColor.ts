@@ -7,11 +7,11 @@ import { useLocalStorage } from 'usehooks-ts';
 const COLOR_STOPS: { at: number; rgb: [number, number, number] }[] = [
     { at: 0, rgb: [0xf7, 0x94, 0x1f] },
     { at: 50, rgb: [0xf5, 0xd3, 0x3f] },
-    { at: 100, rgb: [0x4c, 0xe0, 0x6a] },
+    { at: 100, rgb: [0x43, 0xc9, 0x5e] },
 ];
 
 /** The bright green of a met goal in the multicolor bar. */
-export const MULTICOLOR_DONE = '#4ce06a';
+export const MULTICOLOR_DONE = '#43c95e';
 
 /** The single colors a viewer can pick for the Today and This Week bars. */
 export const SINGLE_BAR_COLORS = {

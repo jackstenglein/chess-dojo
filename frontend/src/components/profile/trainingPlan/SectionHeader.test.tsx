@@ -60,7 +60,7 @@ describe('getProgressColor', () => {
         expect(getProgressColor(0)).toBe('rgb(247, 148, 31)');
         expect(getProgressColor(25)).toBe('rgb(246, 180, 47)');
         expect(getProgressColor(50)).toBe('rgb(245, 211, 63)');
-        expect(getProgressColor(100)).toBe('rgb(76, 224, 106)');
+        expect(getProgressColor(100)).toBe('rgb(67, 201, 94)');
     });
 
     it('uses a single color when one is picked', () => {
@@ -71,7 +71,7 @@ describe('getProgressColor', () => {
 
     it('clamps out-of-range percents', () => {
         expect(getProgressColor(-10)).toBe('rgb(247, 148, 31)');
-        expect(getProgressColor(150)).toBe('rgb(76, 224, 106)');
+        expect(getProgressColor(150)).toBe('rgb(67, 201, 94)');
     });
 });
 
