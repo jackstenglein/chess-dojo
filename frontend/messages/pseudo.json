@@ -279,6 +279,7 @@
                 "show": "[T] Show",
                 "today": "[T] Today",
                 "thisWeek": "[T] This Week",
+                "completedTasks": "[T] Completed tasks",
                 "workGoal": "[T] Set Weekly Goal",
                 "resetProgress": "[T] Reset progress",
                 "barColor": "[T] Bar color",

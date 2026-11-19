@@ -291,6 +291,7 @@
                 "show": "Show",
                 "today": "Today",
                 "thisWeek": "This Week",
+                "completedTasks": "Completed tasks",
                 "workGoal": "Set Weekly Goal",
                 "resetProgress": "Reset progress",
                 "barColor": "Bar color",
