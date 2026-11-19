@@ -56,7 +56,7 @@ describe('TaskSuggestionAlgorithm suggestion cap', () => {
         vi.useRealTimers();
     });
 
-    it('limits automatic suggestions when a saved task is retained', () => {
+    it('keeps today as planned after progress is logged, without adding suggestions', () => {
         const completed = createRequirement('completed', RequirementCategory.Games);
         const requirements = [
             completed,
@@ -92,8 +92,7 @@ describe('TaskSuggestionAlgorithm suggestion cap', () => {
         ).getWeeklySuggestions();
 
         const todaySuggestions = result.suggestionsByDay[todayIndex];
-        expect(todaySuggestions).toHaveLength(3);
-        expect(todaySuggestions.map(({ task }) => task.id)).toContain(completed.id);
+        expect(todaySuggestions.map(({ task }) => task.id)).toEqual([completed.id]);
     });
 
     it('keeps all explicitly pinned tasks when there are more than the automatic cap', () => {
@@ -115,5 +114,57 @@ describe('TaskSuggestionAlgorithm suggestion cap', () => {
         expect(result.suggestionsByDay[todayIndex].map(({ task }) => task.id)).toEqual(
             requirements.map((task) => task.id),
         );
+    });
+
+    describe('today stays fixed for the day', () => {
+        const games = createRequirement('games', RequirementCategory.Games);
+        const tactics = createRequirement('tactics', RequirementCategory.Tactics);
+        const middlegames = createRequirement('middlegames', RequirementCategory.Middlegames);
+        const endgame = createRequirement('endgame', RequirementCategory.Endgame);
+        const requirements = [games, tactics, middlegames, endgame];
+
+        function savedPlan(todayIds: string[], extra: Partial<User['weeklyPlan']> = {}) {
+            const tasks = new Array(7).fill(0).map(() => [] as { id: string; minutes: number }[]);
+            tasks[todayIndex] = todayIds.map((id) => ({ id, minutes: 20 }));
+            return {
+                endDate: '2026-09-21T00:00:00.000Z',
+                tasks,
+                progressUpdatedAt: '',
+                pinnedTasks: [],
+                nextGame: '',
+                ...extra,
+            } as User['weeklyPlan'];
+        }
+
+        function todayIds(user: User) {
+            return new TaskSuggestionAlgorithm(user, requirements, requirements, [])
+                .getWeeklySuggestions()
+                .suggestionsByDay[todayIndex].map(({ task }) => task.id);
+        }
+
+        it('drops a skipped task without bringing in a replacement', () => {
+            const user = createUser({
+                weeklyPlan: savedPlan(['games', 'tactics', 'middlegames'], {
+                    skippedTasks: ['tactics'],
+                }),
+            });
+            expect(todayIds(user)).toEqual(['games', 'middlegames']);
+        });
+
+        it('adds a newly pinned task and keeps the rest', () => {
+            const user = createUser({
+                pinnedTasks: ['endgame'],
+                weeklyPlan: savedPlan(['games', 'tactics', 'middlegames']),
+            });
+            expect(todayIds(user)).toEqual(['games', 'tactics', 'middlegames', 'endgame']);
+        });
+
+        it('chooses today again when the work goal changes', () => {
+            const user = createUser({
+                workGoal: { minutesPerDay: [120, 120, 120, 120, 120, 120, 120] },
+                weeklyPlan: savedPlan(['games']),
+            });
+            expect(todayIds(user).length).toBeGreaterThan(1);
+        });
     });
 });
