@@ -74,7 +74,7 @@ export function ScheduleClassicalGameDaily() {
     }
 
     return (
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Box sx={{ minWidth: 0 }}>
             <Card variant='outlined' sx={dailyCardSx(upcomingGames.length > 0)}>
                 <DailyTaskMenu actions={menuActions} />
 
@@ -90,9 +90,7 @@ export function ScheduleClassicalGameDaily() {
                         <Stack spacing={0.75} sx={{ alignItems: 'start', pr: 3 }}>
                             <CategoryLabel category={RequirementCategory.Games} />
 
-                            <Typography
-                                sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}
-                            >
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}>
                                 {t('title')}
                             </Typography>
                         </Stack>
@@ -156,7 +154,7 @@ export function ScheduleClassicalGameDaily() {
                     initialView={taskDialogView}
                 />
             )}
-        </Grid>
+        </Box>
     );
 }
 

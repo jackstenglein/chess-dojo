@@ -22,7 +22,6 @@ import {
     CardActions,
     CardContent,
     Collapse,
-    Grid,
     IconButton,
     LinearProgress,
     Stack,
@@ -174,7 +173,19 @@ function DailyTrainingPlanInternal({
                 />
             )}
 
-            <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
+            {/*
+             * A CSS grid rather than MUI's flex Grid so that on wider screens every
+             * row is as tall as the tallest, keeping all of Today's cards the same size.
+             */}
+            <Box
+                sx={{
+                    display: 'grid',
+                    width: 1,
+                    gap: 2,
+                    gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(3, minmax(0, 1fr))' },
+                    gridAutoRows: { md: '1fr' },
+                }}
+            >
                 {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
                     <GraduationTask />
                 )}
@@ -204,7 +215,7 @@ function DailyTrainingPlanInternal({
                         endDate={endDate}
                     />
                 ))}
-            </Grid>
+            </Box>
 
             <SkippedTasksRow />
             <SkipUndoSnackbar />
@@ -292,7 +303,7 @@ function DailyTrainingPlanItem({
     }
 
     return (
-        <Grid key={task.id} size={{ xs: 12, md: 4 }}>
+        <Box key={task.id} sx={{ minWidth: 0 }}>
             <Card variant='outlined' sx={dailyCardSx(isComplete)}>
                 <DailyTaskMenu actions={menuActions} />
                 {isCurrentUser && goalMinutes > 0 && <SwapTaskButton task={suggestion.task} />}
@@ -437,7 +448,7 @@ function DailyTrainingPlanItem({
                     </Tooltip>
                 </CardActions>
             </Card>
-        </Grid>
+        </Box>
     );
 }
 /**
