@@ -37,11 +37,7 @@ import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { SectionHeader } from '../SectionHeader';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
-import {
-    getUpcomingGameSchedule,
-    SCHEDULE_CLASSICAL_GAME_TASK_ID,
-    SuggestedTask,
-} from '../suggestedTasks';
+import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
 import { TaskDescription } from '../TaskDescription';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
@@ -62,6 +58,7 @@ import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
+import { getTodayCards } from './todayCards';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -157,40 +154,29 @@ function DailyTrainingPlanInternal({
     }, [user.customTasks, allRequirements, extraTaskIds]);
 
     // Today's cards, with the tasks still to do before the ones already done.
-    const cards = useMemo(() => {
-        const workedByTask = new Map<string, number>();
-        for (const entry of timeline) {
-            const date = entry.date || entry.createdAt;
-            if (date >= startDate && date < endDate) {
-                workedByTask.set(
-                    entry.requirementId,
-                    (workedByTask.get(entry.requirementId) ?? 0) + entry.minutesSpent,
-                );
-            }
-        }
-        const gameScheduled = getUpcomingGameSchedule(user.gameSchedule).length > 0;
-
-        const items = (suggestedTasks ?? [])
-            .filter(
-                (t) =>
-                    t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ||
-                    t.goalMinutes > 0 ||
-                    pinnedTasks.some((pin) => pin.id === t.task.id),
-            )
-            .concat(extraTasks.map((task) => ({ task, goalMinutes: 0 })))
-            .map((suggestion) => ({
-                suggestion,
-                done:
-                    suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID
-                        ? gameScheduled
-                        : isDailyTaskDone(
-                              workedByTask.get(suggestion.task.id) ?? 0,
-                              suggestion.goalMinutes,
-                          ),
-            }));
-        // A stable sort keeps the planned order within each group.
-        return items.sort((a, b) => Number(a.done) - Number(b.done));
-    }, [suggestedTasks, extraTasks, pinnedTasks, timeline, startDate, endDate, user.gameSchedule]);
+    const cards = useMemo(
+        () =>
+            getTodayCards({
+                suggestions: suggestedTasks ?? [],
+                extraTasks,
+                pinnedTaskIds: new Set(pinnedTasks.map((t) => t.id)),
+                skippedTaskIds,
+                timeline,
+                startDate,
+                endDate,
+                gameSchedule: user.gameSchedule,
+            }),
+        [
+            suggestedTasks,
+            extraTasks,
+            pinnedTasks,
+            skippedTaskIds,
+            timeline,
+            startDate,
+            endDate,
+            user.gameSchedule,
+        ],
+    );
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
