@@ -222,9 +222,6 @@
             "full": {
                 "heading": "Training Plan",
                 "cohort": "Cohort",
-                "showCompletedTasks": "Show Completed Tasks",
-                "hideCompletedTasksTooltip": "Hide Completed Tasks",
-                "showCompletedTasksTooltip": "Show Completed Tasks",
                 "expandAll": "Expand All",
                 "collapseAll": "Collapse All",
                 "completedTasks": "Completed Tasks",

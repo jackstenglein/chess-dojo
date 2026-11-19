@@ -210,9 +210,6 @@
             "full": {
                 "heading": "Piano di allenamento",
                 "cohort": "Coorte",
-                "showCompletedTasks": "Mostra compiti completati",
-                "hideCompletedTasksTooltip": "Nascondi compiti completati",
-                "showCompletedTasksTooltip": "Mostra compiti completati",
                 "expandAll": "Espandi tutto",
                 "collapseAll": "Comprimi tutto",
                 "completedTasks": "Compiti completati",

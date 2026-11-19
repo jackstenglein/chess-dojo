@@ -210,9 +210,6 @@
             "full": {
                 "heading": "Plan de entrenamiento",
                 "cohort": "Cohorte",
-                "showCompletedTasks": "Mostrar tareas completadas",
-                "hideCompletedTasksTooltip": "Ocultar tareas completadas",
-                "showCompletedTasksTooltip": "Mostrar tareas completadas",
                 "expandAll": "Expandir todo",
                 "collapseAll": "Contraer todo",
                 "completedTasks": "Tareas completadas",

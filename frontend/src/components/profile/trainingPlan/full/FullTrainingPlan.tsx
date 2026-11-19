@@ -13,24 +13,8 @@ import CohortIcon from '@/scoreboard/CohortIcon';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { getSubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
-import {
-    CheckBox,
-    CheckBoxOutlineBlank,
-    UnfoldLess,
-    UnfoldMore,
-    Visibility,
-    VisibilityOff,
-} from '@mui/icons-material';
-import {
-    Button,
-    IconButton,
-    MenuItem,
-    Stack,
-    TextField,
-    Tooltip,
-    Typography,
-    useMediaQuery,
-} from '@mui/material';
+import { UnfoldLess, UnfoldMore } from '@mui/icons-material';
+import { IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -64,8 +48,8 @@ export function FullTrainingPlan({
     } = use(TrainingPlanContext);
 
     const t = useTranslations('profile.trainingPlan.full');
+    // Completed tasks are shown or hidden from each category's own link.
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
-    const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
     const [expanded, setExpanded] = useState<Partial<Record<RequirementCategory, boolean>>>({
         [RequirementCategory.Pinned]: true,
@@ -219,55 +203,16 @@ export function FullTrainingPlan({
                         ml: 'auto',
                     }}
                 >
-                    {isSmall ? (
-                        <>
-                            <Tooltip
-                                title={
-                                    showCompleted
-                                        ? t('hideCompletedTasksTooltip')
-                                        : t('showCompletedTasksTooltip')
-                                }
-                            >
-                                <IconButton
-                                    onClick={() => setShowCompleted(!showCompleted)}
-                                    sx={{ color: 'text.secondary' }}
-                                >
-                                    {showCompleted ? <Visibility /> : <VisibilityOff />}
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title={allExpanded ? t('collapseAll') : t('expandAll')}>
-                                <IconButton
-                                    onClick={allExpanded ? onCollapseAll : onExpandAll}
-                                    aria-label={allExpanded ? t('collapseAll') : t('expandAll')}
-                                    sx={{ color: 'text.secondary' }}
-                                    data-testid='full-plan-expand-toggle'
-                                >
-                                    {allExpanded ? <UnfoldLess /> : <UnfoldMore />}
-                                </IconButton>
-                            </Tooltip>
-                        </>
-                    ) : (
-                        <>
-                            <Button
-                                onClick={() => setShowCompleted(!showCompleted)}
-                                color='inherit'
-                                sx={{ color: 'text.secondary', textTransform: 'none' }}
-                                startIcon={showCompleted ? <CheckBox /> : <CheckBoxOutlineBlank />}
-                            >
-                                {t('showCompletedTasks')}
-                            </Button>
-                            <Tooltip title={allExpanded ? t('collapseAll') : t('expandAll')}>
-                                <IconButton
-                                    onClick={allExpanded ? onCollapseAll : onExpandAll}
-                                    aria-label={allExpanded ? t('collapseAll') : t('expandAll')}
-                                    sx={{ color: 'text.secondary' }}
-                                    data-testid='full-plan-expand-toggle'
-                                >
-                                    {allExpanded ? <UnfoldLess /> : <UnfoldMore />}
-                                </IconButton>
-                            </Tooltip>
-                        </>
-                    )}
+                    <Tooltip title={allExpanded ? t('collapseAll') : t('expandAll')}>
+                        <IconButton
+                            onClick={allExpanded ? onCollapseAll : onExpandAll}
+                            aria-label={allExpanded ? t('collapseAll') : t('expandAll')}
+                            sx={{ color: 'text.secondary' }}
+                            data-testid='full-plan-expand-toggle'
+                        >
+                            {allExpanded ? <UnfoldLess /> : <UnfoldMore />}
+                        </IconButton>
+                    </Tooltip>
                     {headerAction}
                 </Stack>
             </Stack>
