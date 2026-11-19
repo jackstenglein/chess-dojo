@@ -40,10 +40,10 @@ export const dailyCardActionsSx: SxProps<Theme> = {
     // rather than pushing it past the card's edge.
     flexWrap: 'wrap',
     gap: 0.75,
-    px: 2.5,
-    pt: 0.5,
-    pb: 2,
-    minHeight: 60,
+    px: 2,
+    pt: 0.25,
+    pb: 1.5,
+    minHeight: 52,
     alignItems: 'center',
 };
 
@@ -54,8 +54,8 @@ export const dailyPrimaryButtonSx: SxProps<Theme> = {
     whiteSpace: 'nowrap',
     flexShrink: 0,
     borderRadius: 999,
-    height: 34,
-    px: 1.75,
+    height: 32,
+    px: 1.5,
 };
 
 /**

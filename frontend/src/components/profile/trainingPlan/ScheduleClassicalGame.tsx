@@ -86,12 +86,12 @@ export function ScheduleClassicalGameDaily() {
                     }}
                     onClick={() => setTaskDialogView(TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
-                        <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                    <CardContent sx={{ height: 1, p: 2, pb: 1 }}>
+                        <Stack spacing={0.75} sx={{ alignItems: 'start', pr: 3 }}>
                             <CategoryLabel category={RequirementCategory.Games} />
 
                             <Typography
-                                sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
+                                sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}
                             >
                                 {t('title')}
                             </Typography>
@@ -101,11 +101,11 @@ export function ScheduleClassicalGameDaily() {
                             sx={{
                                 color: 'text.secondary',
                                 fontSize: '0.875rem',
-                                lineHeight: 1.55,
-                                mt: 1,
-                                lineClamp: 2,
+                                lineHeight: 1.5,
+                                mt: 0.75,
+                                lineClamp: 1,
                                 display: '-webkit-box',
-                                WebkitLineClamp: 2,
+                                WebkitLineClamp: 1,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',

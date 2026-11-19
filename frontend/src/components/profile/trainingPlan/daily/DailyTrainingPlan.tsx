@@ -331,15 +331,15 @@ function DailyTrainingPlanItem({
                     // Clicking a task shows its details; only Log training opens logging.
                     onClick={() => onOpenTask(task, TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
+                    <CardContent sx={{ height: 1, p: 2, pb: 1 }}>
                         <Stack sx={{ height: 1 }}>
-                            <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                            <Stack spacing={0.75} sx={{ alignItems: 'start', pr: 3 }}>
                                 <Box sx={{ pr: 4 }}>
                                     <CategoryLabel category={task.category} />
                                 </Box>
 
                                 <Typography
-                                    sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
+                                    sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}
                                 >
                                     <TaskName name={title} iconColor='text.secondary' />
                                 </Typography>
@@ -351,11 +351,13 @@ function DailyTrainingPlanItem({
                                         color: 'text.secondary',
                                         fontSize: '0.875rem',
                                         '& *': { fontSize: 'inherit', lineHeight: 'inherit' },
-                                        mt: 1,
-                                        lineHeight: 1.55,
-                                        lineClamp: 2,
+                                        mt: 0.75,
+                                        lineHeight: 1.5,
+                                        // One line keeps the cards compact; the full
+                                        // description is in the task's details.
+                                        lineClamp: 1,
                                         display: '-webkit-box',
-                                        WebkitLineClamp: 2,
+                                        WebkitLineClamp: 1,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -370,7 +372,7 @@ function DailyTrainingPlanItem({
                             {displayProgress(task) && (
                                 <Stack
                                     spacing={0.75}
-                                    sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}
+                                    sx={{ flexGrow: 1, justifyContent: 'end', mt: 1.5 }}
                                 >
                                     <ProgressText
                                         value={progressCurrent}
