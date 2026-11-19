@@ -164,6 +164,18 @@ describe('getTodayCards', () => {
             ['discord', true],
         ]);
     });
+
+    it('puts the unplanned task with more time logged after the one with less', () => {
+        const more = makeTask({ id: 'more' });
+        const less = makeTask({ id: 'less' });
+        const cards = getTodayCards({
+            ...base,
+            suggestions: [suggest(polgar, 30)],
+            extraTasks: [more, less],
+            timeline: [logEntry('more', 90), logEntry('less', 30)],
+        });
+        expect(ids(cards)).toEqual(['polgar', 'less', 'more']);
+    });
 });
 
 describe('isCheckOffTask', () => {

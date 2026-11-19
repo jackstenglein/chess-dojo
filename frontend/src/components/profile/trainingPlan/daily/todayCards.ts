@@ -143,7 +143,9 @@ export function getTodayCards({
                         ),
         }));
     // Tasks still to do come first, then the ones done; within each, planned tasks
-    // before unplanned ones. A stable sort keeps the planned order in a group.
+    // before unplanned ones. Planned tasks keep their planned order (the sort is
+    // stable); unplanned ones go from the least time logged today to the most.
     const rank = (card: TodayCard) => (card.done ? 2 : 0) + (card.planned ? 0 : 1);
-    return cards.sort((a, b) => rank(a) - rank(b));
+    const logged = (card: TodayCard) => workedByTask.get(card.suggestion.task.id) ?? 0;
+    return cards.sort((a, b) => rank(a) - rank(b) || (a.planned ? 0 : logged(a) - logged(b)));
 }
