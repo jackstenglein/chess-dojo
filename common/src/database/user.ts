@@ -37,6 +37,9 @@ export interface User {
     /** The user's aggregate time management rating. */
     timeManagementRating?: TimeManagementRating;
 
+    /** Daily aggregate time management ratings, dated by the games played. */
+    timeManagementRatingHistory?: RatingHistory[];
+
     progress: Record<string, RequirementProgress>;
     disableBookingNotifications: boolean;
     disableCancellationNotifications: boolean;
