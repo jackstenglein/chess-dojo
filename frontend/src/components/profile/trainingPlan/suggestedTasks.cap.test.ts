@@ -4,6 +4,7 @@ import {
     RequirementStatus,
     ScoreboardDisplay,
 } from '@/database/requirement';
+import { TimelineEntry } from '@/database/timeline';
 import { SubscriptionStatus, User } from '@/database/user';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TaskSuggestionAlgorithm } from './suggestedTasks';
@@ -157,6 +158,37 @@ describe('TaskSuggestionAlgorithm suggestion cap', () => {
                 weeklyPlan: savedPlan(['games', 'tactics', 'middlegames']),
             });
             expect(todayIds(user)).toEqual(['games', 'tactics', 'middlegames', 'endgame']);
+        });
+
+        it('takes an unpinned task back off today', () => {
+            const user = createUser({
+                pinnedTasks: [],
+                weeklyPlan: savedPlan(['games', 'tactics', 'endgame'], {
+                    pinnedTasks: ['endgame'],
+                }),
+            });
+            expect(todayIds(user)).toEqual(['games', 'tactics']);
+        });
+
+        it('keeps an unpinned task on today once time was logged on it', () => {
+            const user = createUser({
+                pinnedTasks: [],
+                weeklyPlan: savedPlan(['games', 'tactics', 'endgame'], {
+                    pinnedTasks: ['endgame'],
+                }),
+            });
+            const timeline = [
+                {
+                    requirementId: 'endgame',
+                    minutesSpent: 10,
+                    date: new Date(2026, 8, 15, 9).toISOString(),
+                    createdAt: new Date(2026, 8, 15, 9).toISOString(),
+                },
+            ] as TimelineEntry[];
+            const ids = new TaskSuggestionAlgorithm(user, requirements, requirements, timeline)
+                .getWeeklySuggestions()
+                .suggestionsByDay[todayIndex].map(({ task }) => task.id);
+            expect(ids).toEqual(['games', 'tactics', 'endgame']);
         });
 
         it('chooses today again when the work goal was changed today', () => {

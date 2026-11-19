@@ -123,13 +123,14 @@ describe('getTodayCards', () => {
     it('shows only pinned and logged tasks when suggestions are hidden', () => {
         const cards = getTodayCards({
             ...base,
-            suggestions: [suggest(polgar, 30), suggest(games, 30)],
+            suggestions: [suggest(polgar, 30), suggest(games, 30), suggest(guide, 30)],
             extraTasks: [logged],
             pinnedTaskIds: new Set(['games']),
-            timeline: [logEntry('logged', 15)],
+            timeline: [logEntry('logged', 15), logEntry('guide', 10)],
             showSuggestions: false,
         });
-        expect(ids(cards)).toEqual(['games', 'logged']);
+        // Polgar is only a suggestion; the guide was suggested but has time logged.
+        expect(ids(cards)).toEqual(['games', 'guide', 'logged']);
     });
 
     it('counts Welcome tasks as done only once checked off, not by time logged', () => {

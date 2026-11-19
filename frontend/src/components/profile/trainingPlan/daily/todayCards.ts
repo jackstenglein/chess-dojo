@@ -122,7 +122,8 @@ export function getTodayCards({
                 ? t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ||
                   t.goalMinutes > 0 ||
                   pinnedTaskIds.has(t.task.id)
-                : pinnedTaskIds.has(t.task.id),
+                : // Without suggestions, keep what's pinned and what was worked on.
+                  pinnedTaskIds.has(t.task.id) || (workedByTask.get(t.task.id) ?? 0) > 0,
         )
         .concat(extraTasks.map((task) => ({ task, goalMinutes: 0 })))
         .filter((suggestion) => !skippedTaskIds?.includes(suggestion.task.id))

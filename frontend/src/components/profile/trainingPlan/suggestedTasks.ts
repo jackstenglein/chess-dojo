@@ -419,6 +419,17 @@ export class TaskSuggestionAlgorithm {
                     }
                 }
                 if (reason === SuggestedTaskGenerationReason.PinnedTaskUpdate) {
+                    // Unpinning (or taking today out of a pin's schedule) takes the
+                    // task back off today, unless time was already logged on it.
+                    const wasPinned = new Set(this.weeklyPlan?.pinnedTasks ?? []);
+                    const kept = suggestions.filter(
+                        (s) =>
+                            !wasPinned.has(s.task.id) ||
+                            this.isPinnedForDay(s.task.id, day) ||
+                            this.loggedOnDay(s.task.id, day),
+                    );
+                    suggestions.splice(0, suggestions.length, ...kept);
+
                     for (const task of this.getPinnedTasksForDay(day)) {
                         if (!suggestions.some((s) => s.task.id === task.id)) {
                             suggestions.push({ task, goalMinutes: 0 });
@@ -488,6 +499,36 @@ export class TaskSuggestionAlgorithm {
     workGoalChangedSince(date: Date): boolean {
         const last = this.user.workGoalHistory?.at(-1);
         return !!last && new Date(last.date).getTime() >= date.getTime();
+    }
+
+    /**
+     * Returns whether the task is pinned and, if it has a schedule, scheduled for
+     * the given day.
+     * @param id The task's id.
+     * @param day The day.
+     */
+    isPinnedForDay(id: string, day: Date): boolean {
+        return (
+            (this.user.pinnedTasks ?? []).includes(id) && this.getScheduledMinutes(id, day) !== 0
+        );
+    }
+
+    /**
+     * Returns whether any time was logged on the task on the given day.
+     * @param id The task's id.
+     * @param day The start of the day.
+     */
+    loggedOnDay(id: string, day: Date): boolean {
+        const start = day.toISOString();
+        const next = new Date(day);
+        next.setDate(next.getDate() + 1);
+        const end = next.toISOString();
+        return this.timeline.some((entry) => {
+            const date = entry.date || entry.createdAt;
+            return (
+                entry.requirementId === id && entry.minutesSpent > 0 && date >= start && date < end
+            );
+        });
     }
 
     /**
