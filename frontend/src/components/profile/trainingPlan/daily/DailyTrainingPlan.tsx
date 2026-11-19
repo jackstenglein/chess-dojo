@@ -47,6 +47,7 @@ import { taskDisplayName } from '../taskDisplayName';
 import { TaskName } from '../TaskName';
 import { getTaskUnit } from '../taskUnit';
 import { getCheckOffVerbLabel } from '../taskVerb';
+import { TaskVerbIcon } from '../TaskVerbIcon';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useMarkComplete } from '../useMarkComplete';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
@@ -64,7 +65,7 @@ import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
-import { getTodayCards, isCheckOffTask, isTaskFinished } from './todayCards';
+import { getTodayCards, isCheckOffTask, isGuideTask, isTaskFinished } from './todayCards';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -327,6 +328,7 @@ function DailyTrainingPlanItem({
     // Prefill the log with what's left of today's suggestion, or the full
     // suggestion once it's been met (someone logging more is still training).
     const title = taskDisplayName({ task, cohort: user.dojoCohort });
+    const isGuide = isGuideTask(task, user.dojoCohort);
 
     const menuActions: DailyTaskMenuAction[] = [
         {
@@ -471,7 +473,7 @@ function DailyTrainingPlanItem({
 
                 <CardActions disableSpacing sx={dailyCardActionsSx}>
                     {/* Check-off tasks are marked complete directly, with no time to log. */}
-                    {isCurrentUser && checkOff && (
+                    {checkOff && (isComplete || (isCurrentUser && !isGuide)) && (
                         <Button
                             size='small'
                             variant={isComplete ? 'outlined' : 'contained'}
@@ -491,6 +493,20 @@ function DailyTrainingPlanItem({
                             data-testid='mark-complete-button'
                         >
                             {isComplete ? tDaily('completed') : tDaily('markComplete')}
+                        </Button>
+                    )}
+                    {/* A guide is for reading, so its button opens it. */}
+                    {isGuide && !isComplete && (
+                        <Button
+                            size='small'
+                            variant='contained'
+                            disableElevation
+                            startIcon={<TaskVerbIcon verb='guide' size='1.1em' />}
+                            onClick={() => onOpenTask(task, TaskDialogView.Details)}
+                            sx={dailyPrimaryButtonSx}
+                            data-testid='read-guide-button'
+                        >
+                            {tDaily('verbRead')}
                         </Button>
                     )}
                     {!checkOff && (
@@ -514,8 +530,9 @@ function DailyTrainingPlanItem({
                         </>
                     )}
 
-                    {/* A completed check-off task's green Completed button says it all. */}
-                    {!(checkOff && isComplete) && (
+                    {/* A completed check-off task's green Completed button says it all, and a
+                        guide's Read button says what to do. */}
+                    {!(checkOff && (isComplete || isGuide)) && (
                         <Tooltip title={isCurrentUser && !checkOff ? tCommon('logTraining') : ''}>
                             <Box component='span' sx={{ ml: 'auto' }}>
                                 <DailyTimePill

@@ -3,7 +3,7 @@ import { TimelineEntry } from '@/database/timeline';
 import { describe, expect, it } from 'vitest';
 import { COHORT, makeTask } from '../__fixtures__/tasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK, SuggestedTask } from '../suggestedTasks';
-import { getTodayCards, isCheckOffTask } from './todayCards';
+import { getTodayCards, isCheckOffTask, isGuideTask } from './todayCards';
 
 const startDate = '2026-11-18T00:00:00.000Z';
 const endDate = '2026-11-19T00:00:00.000Z';
@@ -190,5 +190,16 @@ describe('isCheckOffTask', () => {
             ),
         ).toBe(false);
         expect(isCheckOffTask(makeTask({}), COHORT)).toBe(false);
+    });
+});
+
+describe('isGuideTask', () => {
+    it('spots guides to read by their name', () => {
+        expect(isGuideTask(makeTask({ name: 'Read Tactics Guide' }), COHORT)).toBe(true);
+        expect(isGuideTask(makeTask({ name: 'Read How to Find a Training Partner' }), COHORT)).toBe(
+            true,
+        );
+        expect(isGuideTask(makeTask({ name: 'Read Evaluate like a GM' }), COHORT)).toBe(false);
+        expect(isCheckOffTask(makeTask({ name: 'Read Tactics Guide' }), COHORT)).toBe(true);
     });
 });

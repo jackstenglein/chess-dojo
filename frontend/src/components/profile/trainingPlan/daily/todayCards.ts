@@ -14,6 +14,8 @@ import {
     SCHEDULE_CLASSICAL_GAME_TASK_ID,
     SuggestedTask,
 } from '../suggestedTasks';
+import { taskDisplayName } from '../taskDisplayName';
+import { splitDisplayName } from '../taskVerb';
 import { isDailyTaskDone } from './DailyCard';
 
 /**
@@ -36,16 +38,26 @@ export function isTaskFinished(
 
 /**
  * Returns whether the task is simply done or not done, like the Welcome to the
- * Dojo tasks or a single checkbox, rather than measured by time logged.
+ * Dojo tasks, guides or a single checkbox, rather than measured by time logged.
  * @param task The task.
  * @param cohort The cohort to count the task's checkboxes in.
  */
 export function isCheckOffTask(task: Requirement | CustomTask, cohort: string): boolean {
     return (
         task.category === RequirementCategory.Welcome ||
+        isGuideTask(task, cohort) ||
         (task.scoreboardDisplay === ScoreboardDisplay.Checkbox &&
             getTotalCount(cohort, task, true) <= 1)
     );
+}
+
+/**
+ * Returns whether the task is a guide to read, like "Read Tactics Guide".
+ * @param task The task.
+ * @param cohort The cohort used for the task's display name.
+ */
+export function isGuideTask(task: Requirement | CustomTask, cohort: string): boolean {
+    return splitDisplayName(taskDisplayName({ task, cohort })).verb === 'guide';
 }
 
 /** A card on Today: the task, whether it was planned for today, and whether it is done. */
