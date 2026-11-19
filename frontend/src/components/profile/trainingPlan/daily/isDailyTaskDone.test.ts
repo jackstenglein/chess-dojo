@@ -8,8 +8,8 @@ describe('isDailyTaskDone', () => {
         expect(isDailyTaskDone(10, 30)).toBe(false);
     });
 
-    it('counts unplanned time that was logged as done', () => {
-        expect(isDailyTaskDone(10, 0)).toBe(true);
+    it('does not count time logged on an unplanned task as done', () => {
+        expect(isDailyTaskDone(10, 0)).toBe(false);
     });
 
     it('keeps a task with nothing planned and nothing logged to do', () => {

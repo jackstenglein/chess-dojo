@@ -409,7 +409,7 @@ export class TaskSuggestionAlgorithm {
             }
         } else if (day.getTime() === today.getTime()) {
             const todaysPlan = this.weeklyPlan?.tasks[dayIdx] ?? [];
-            if (todaysPlan.length > 0 && this.keepsTodaysTasks(reason)) {
+            if (todaysPlan.length > 0 && this.keepsTodaysTasks(reason, today)) {
                 // Once today has a plan, its tasks stay fixed for the day: completing
                 // or skipping tasks never brings in new suggestions. A skipped task is
                 // dropped without a replacement, and a newly pinned task is added.
@@ -466,12 +466,28 @@ export class TaskSuggestionAlgorithm {
      * a change to the work goal, or a classical game being scheduled or unscheduled
      * for today, chooses today's tasks again.
      * @param reason The reason the task list is being generated.
+     * @param today The start of today.
      */
-    keepsTodaysTasks(reason: SuggestedTaskGenerationReason): boolean {
-        return (
-            reason !== SuggestedTaskGenerationReason.WorkGoalUpdate &&
-            reason !== SuggestedTaskGenerationReason.ScheduledGamesUpdateToday
-        );
+    keepsTodaysTasks(reason: SuggestedTaskGenerationReason, today: Date): boolean {
+        if (reason === SuggestedTaskGenerationReason.ScheduledGamesUpdateToday) {
+            return false;
+        }
+        if (reason === SuggestedTaskGenerationReason.WorkGoalUpdate) {
+            // The saved plan's minutes can drift from the work goal during the day
+            // (e.g. after a skip), so only an actual change to the goal today counts.
+            return !this.workGoalChangedSince(today);
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether the user changed their work goal on or after the given date,
+     * going by their work goal history.
+     * @param date The date to check from.
+     */
+    workGoalChangedSince(date: Date): boolean {
+        const last = this.user.workGoalHistory?.at(-1);
+        return !!last && new Date(last.date).getTime() >= date.getTime();
     }
 
     /**

@@ -179,6 +179,9 @@
             },
             "daily": {
                 "today": "Hoje",
+                "loggedTime": "{time} registrados",
+                "notPlanned": "Não planejada",
+                "doneLabel": "Concluída",
                 "skippedHeading": "Puladas nesta semana ({count})",
                 "restore": "Restaurar {name}",
                 "skippedToast": "{name} pulada pelo resto da semana",

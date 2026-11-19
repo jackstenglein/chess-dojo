@@ -33,9 +33,9 @@ export function dailyCardSx(isComplete: boolean): SxProps<Theme> {
 
 /**
  * Returns whether a Today task is done: either the task itself is finished (for
- * example a checkbox task that was checked off), or some time was logged on it
- * today and it covers the time planned for it. A task with nothing planned and
- * nothing logged is still to do.
+ * example a checkbox task that was checked off), or it had time planned today and
+ * that time has been logged. Logging time on a task that wasn't planned for today
+ * doesn't make it done.
  * @param workedMinutes The minutes logged on the task today.
  * @param goalMinutes The minutes planned for the task today.
  * @param taskFinished Whether the task itself is finished.
@@ -45,7 +45,7 @@ export function isDailyTaskDone(
     goalMinutes: number,
     taskFinished = false,
 ): boolean {
-    return taskFinished || (workedMinutes > 0 && workedMinutes >= goalMinutes);
+    return taskFinished || (goalMinutes > 0 && workedMinutes >= goalMinutes);
 }
 
 /**

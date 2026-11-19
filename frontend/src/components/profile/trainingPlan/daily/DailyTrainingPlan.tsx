@@ -258,6 +258,8 @@ function DailyTrainingPlanItem({
 }) {
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
+    const tDaily = useTranslations('profile.trainingPlan.daily');
+    const tTime = useTranslations('common');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
     const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
@@ -463,6 +465,19 @@ function DailyTrainingPlanItem({
                                 worked={timeWorkedMinutes}
                                 goal={goalMinutes}
                                 done={isComplete}
+                                label={
+                                    // A task not planned for today shows what was
+                                    // logged, not a goal of 0m.
+                                    goalMinutes > 0
+                                        ? undefined
+                                        : timeWorkedMinutes > 0
+                                          ? tDaily('loggedTime', {
+                                                time: formatTime(timeWorkedMinutes, tTime),
+                                            })
+                                          : isComplete
+                                            ? tDaily('doneLabel')
+                                            : tDaily('notPlanned')
+                                }
                                 onClick={
                                     isCurrentUser
                                         ? () => onOpenTask(task, TaskDialogView.Progress)

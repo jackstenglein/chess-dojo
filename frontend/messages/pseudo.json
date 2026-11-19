@@ -179,6 +179,9 @@
             },
             "daily": {
                 "today": "[T] Today",
+                "loggedTime": "[T] {time} logged",
+                "notPlanned": "[T] Not planned",
+                "doneLabel": "[T] Done",
                 "skippedHeading": "[T] Skipped this week ({count})",
                 "restore": "[T] Restore {name}",
                 "skippedToast": "[T] Skipped {name} for the rest of the week",

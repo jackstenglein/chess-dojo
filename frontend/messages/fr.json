@@ -179,6 +179,9 @@
             },
             "daily": {
                 "today": "Aujourd'hui",
+                "loggedTime": "{time} enregistrées",
+                "notPlanned": "Non prévue",
+                "doneLabel": "Terminée",
                 "skippedHeading": "Ignorées cette semaine ({count})",
                 "restore": "Rétablir {name}",
                 "skippedToast": "{name} ignorée pour le reste de la semaine",

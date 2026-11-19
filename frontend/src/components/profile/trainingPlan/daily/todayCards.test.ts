@@ -101,5 +101,21 @@ describe('getTodayCards', () => {
         });
         expect(ids(cards)).toEqual(['polgar', 'checkbox']);
         expect(cards[1].done).toBe(true);
+        expect(cards[1].planned).toBe(false);
+    });
+
+    it('lists every task to do before any done, planned ones first, and logged time does not finish unplanned ones', () => {
+        const cards = getTodayCards({
+            ...base,
+            suggestions: [suggest(polgar, 30), suggest(games, 30)],
+            extraTasks: [logged],
+            timeline: [logEntry('logged', 15), logEntry('games', 30)],
+        });
+        expect(ids(cards)).toEqual(['polgar', 'logged', 'games']);
+        expect(cards.map((c) => [c.planned, c.done])).toEqual([
+            [true, false],
+            [false, false],
+            [true, true],
+        ]);
     });
 });

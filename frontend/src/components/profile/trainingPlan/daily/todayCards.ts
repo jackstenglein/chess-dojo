@@ -27,15 +27,18 @@ export function isTaskFinished(
     );
 }
 
-/** A card on Today: the task and whether it is done for the day. */
+/** A card on Today: the task, whether it was planned for today, and whether it is done. */
 export interface TodayCard {
     suggestion: SuggestedTask;
+    /** Whether the task had time planned today (rather than only being logged or pinned). */
+    planned: boolean;
     done: boolean;
 }
 
 /**
- * Returns the cards to show on Today, with the tasks still to do before the ones
- * already done (keeping the planned order within each group). Cards are today's
+ * Returns the cards to show on Today: the tasks still to do, then the ones done,
+ * with planned tasks before unplanned ones in each (keeping the planned order
+ * within each group). Cards are today's
  * suggestions with planned time, pinned tasks and tasks logged today without being
  * planned. Skipped tasks are left out: they are listed under "Skipped this week".
  */
@@ -88,6 +91,9 @@ export function getTodayCards({
         .filter((suggestion) => !skippedTaskIds?.includes(suggestion.task.id))
         .map((suggestion) => ({
             suggestion,
+            planned:
+                suggestion.goalMinutes > 0 ||
+                suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID,
             done:
                 suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID
                     ? gameScheduled
@@ -97,6 +103,8 @@ export function getTodayCards({
                           isTaskFinished(user, suggestion.task, timeline),
                       ),
         }));
-    // A stable sort keeps the planned order within each group.
-    return cards.sort((a, b) => Number(a.done) - Number(b.done));
+    // Tasks still to do come first, then the ones done; within each, planned tasks
+    // before unplanned ones. A stable sort keeps the planned order in a group.
+    const rank = (card: TodayCard) => (card.done ? 2 : 0) + (card.planned ? 0 : 1);
+    return cards.sort((a, b) => rank(a) - rank(b));
 }

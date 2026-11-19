@@ -179,6 +179,9 @@
             },
             "daily": {
                 "today": "Heute",
+                "loggedTime": "{time} erfasst",
+                "notPlanned": "Nicht geplant",
+                "doneLabel": "Erledigt",
                 "skippedHeading": "Diese Woche übersprungen ({count})",
                 "restore": "{name} wiederherstellen",
                 "skippedToast": "{name} für den Rest der Woche übersprungen",

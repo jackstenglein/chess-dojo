@@ -159,12 +159,24 @@ describe('TaskSuggestionAlgorithm suggestion cap', () => {
             expect(todayIds(user)).toEqual(['games', 'tactics', 'middlegames', 'endgame']);
         });
 
-        it('chooses today again when the work goal changes', () => {
+        it('chooses today again when the work goal was changed today', () => {
+            const workGoal = { minutesPerDay: [120, 120, 120, 120, 120, 120, 120] };
             const user = createUser({
-                workGoal: { minutesPerDay: [120, 120, 120, 120, 120, 120, 120] },
+                workGoal,
+                workGoalHistory: [{ date: new Date().toISOString(), workGoal }],
                 weeklyPlan: savedPlan(['games']),
             });
             expect(todayIds(user).length).toBeGreaterThan(1);
+        });
+
+        it('keeps today when the plan only drifted from an older work goal', () => {
+            const workGoal = { minutesPerDay: [120, 120, 120, 120, 120, 120, 120] };
+            const user = createUser({
+                workGoal,
+                workGoalHistory: [{ date: '2026-09-01T00:00:00.000Z', workGoal }],
+                weeklyPlan: savedPlan(['games']),
+            });
+            expect(todayIds(user)).toEqual(['games']);
         });
     });
 });
