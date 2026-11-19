@@ -34,7 +34,7 @@ export function FullTrainingPlan({
 }: {
     cohort: string;
     setCohort: (c: string) => void;
-    /** Shown at the end of the heading row, after the plan's own controls. */
+    /** Shown on the heading row, just before the expand/collapse toggle. */
     headerAction?: ReactNode;
 }) {
     const {
@@ -203,6 +203,7 @@ export function FullTrainingPlan({
                         ml: 'auto',
                     }}
                 >
+                    {headerAction}
                     <Tooltip title={allExpanded ? t('collapseAll') : t('expandAll')}>
                         <IconButton
                             onClick={allExpanded ? onCollapseAll : onExpandAll}
@@ -213,7 +214,6 @@ export function FullTrainingPlan({
                             {allExpanded ? <UnfoldLess /> : <UnfoldMore />}
                         </IconButton>
                     </Tooltip>
-                    {headerAction}
                 </Stack>
             </Stack>
 
