@@ -1,5 +1,4 @@
 import { ResetProgressDialog } from '@/components/profile/edit/ResetProgressButton';
-import { formatTime } from '@/database/requirement';
 import { User } from '@/database/user';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { Check, RestartAlt, Schedule, Tune } from '@mui/icons-material';
@@ -15,7 +14,6 @@ import {
     Menu,
     MenuItem,
     Tooltip,
-    Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
@@ -27,7 +25,6 @@ import {
     SINGLE_BAR_COLORS,
     useBarColor,
 } from './barColor';
-import { getWeeklyGoalMinutes } from './workGoal';
 import { WorkGoalDialog } from './WorkGoalDialog';
 
 /** Which of the optional training plan sections the viewer has chosen to show. */
@@ -70,7 +67,6 @@ export function PlanMenu({
     const [workGoalOpen, setWorkGoalOpen] = useState(false);
     const [resetOpen, setResetOpen] = useState(false);
 
-    const tTime = useTranslations('common');
     const close = () => setAnchor(undefined);
     // Tighter than the default so the groups read as separate blocks.
     const dividerSx = { my: '4px !important' };
@@ -111,7 +107,7 @@ export function PlanMenu({
                 anchorEl={anchor}
                 open={!!anchor}
                 onClose={close}
-                slotProps={{ paper: { sx: { minWidth: 260 } } }}
+                slotProps={{ paper: { sx: { minWidth: 240 } } }}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
@@ -127,17 +123,6 @@ export function PlanMenu({
                             <Schedule fontSize='small' />
                         </ListItemIcon>
                         <ListItemText>{t('workGoal')}</ListItemText>
-                        <Typography
-                            variant='body2'
-                            sx={{
-                                color: 'text.secondary',
-                                ml: 3,
-                                fontVariantNumeric: 'tabular-nums',
-                            }}
-                            data-testid='plan-menu-work-goal-total'
-                        >
-                            {formatTime(getWeeklyGoalMinutes(user.workGoal), tTime)}
-                        </Typography>
                     </MenuItem>
                 )}
                 {isCurrentUser && <Divider sx={dividerSx} />}

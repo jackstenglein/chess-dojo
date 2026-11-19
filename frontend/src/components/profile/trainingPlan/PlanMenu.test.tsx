@@ -57,7 +57,7 @@ describe('PlanMenu', () => {
     it('opens the work goal dialog', () => {
         render(<Harness isCurrentUser />);
         openMenu();
-        expect(screen.getByTestId('plan-menu-work-goal').textContent).toContain('Set Weekly Goal');
+        expect(screen.getByTestId('plan-menu-work-goal').textContent).toBe('Set Weekly Goal');
         fireEvent.click(screen.getByTestId('plan-menu-work-goal'));
         expect(screen.getByLabelText('Start Week On')).toBeInTheDocument();
     });
@@ -92,14 +92,12 @@ describe('PlanMenu', () => {
         localStorage.removeItem('training-plan-bar-color');
     });
 
-    it('leads with Set Weekly Goal and its total, and ends with Reset progress', () => {
+    it('leads with Set Weekly Goal and ends with Reset progress', () => {
         render(<Harness isCurrentUser />);
         openMenu();
 
         const items = screen.getAllByRole('menuitem').map((item) => item.dataset.testid);
         expect(items[0]).toBe('plan-menu-work-goal');
         expect(items.at(-1)).toBe('plan-menu-reset');
-        // No saved goal, so the default of an hour a day.
-        expect(screen.getByTestId('plan-menu-work-goal-total').textContent).toBe('7h');
     });
 });
