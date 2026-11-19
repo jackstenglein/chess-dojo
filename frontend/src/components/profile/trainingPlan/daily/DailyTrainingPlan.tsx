@@ -37,7 +37,11 @@ import { OverbookedDayAlert } from '../OverbookedDayAlert';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
 import { SectionHeader } from '../SectionHeader';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
-import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
+import {
+    getUpcomingGameSchedule,
+    SCHEDULE_CLASSICAL_GAME_TASK_ID,
+    SuggestedTask,
+} from '../suggestedTasks';
 import { TaskDescription } from '../TaskDescription';
 import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
@@ -46,7 +50,13 @@ import { getTaskUnit } from '../taskUnit';
 import { TrainingPlanContext } from '../TrainingPlanTab';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
 import { getDailyGoalMinutes } from '../workGoal';
-import { dailyCardActionsSx, dailyCardSx, dailyPrimaryButtonSx, DailyTimePill } from './DailyCard';
+import {
+    dailyCardActionsSx,
+    dailyCardSx,
+    dailyPrimaryButtonSx,
+    DailyTimePill,
+    isDailyTaskDone,
+} from './DailyCard';
 import { DailyTaskMenu, DailyTaskMenuAction } from './DailyTaskMenu';
 import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
@@ -127,7 +137,7 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
-    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks } =
+    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, timeline } =
         use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
@@ -145,6 +155,42 @@ function DailyTrainingPlanInternal({
         }
         return tasks;
     }, [user.customTasks, allRequirements, extraTaskIds]);
+
+    // Today's cards, with the tasks still to do before the ones already done.
+    const cards = useMemo(() => {
+        const workedByTask = new Map<string, number>();
+        for (const entry of timeline) {
+            const date = entry.date || entry.createdAt;
+            if (date >= startDate && date < endDate) {
+                workedByTask.set(
+                    entry.requirementId,
+                    (workedByTask.get(entry.requirementId) ?? 0) + entry.minutesSpent,
+                );
+            }
+        }
+        const gameScheduled = getUpcomingGameSchedule(user.gameSchedule).length > 0;
+
+        const items = (suggestedTasks ?? [])
+            .filter(
+                (t) =>
+                    t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ||
+                    t.goalMinutes > 0 ||
+                    pinnedTasks.some((pin) => pin.id === t.task.id),
+            )
+            .concat(extraTasks.map((task) => ({ task, goalMinutes: 0 })))
+            .map((suggestion) => ({
+                suggestion,
+                done:
+                    suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID
+                        ? gameScheduled
+                        : isDailyTaskDone(
+                              workedByTask.get(suggestion.task.id) ?? 0,
+                              suggestion.goalMinutes,
+                          ),
+            }));
+        // A stable sort keeps the planned order within each group.
+        return items.sort((a, b) => Number(a.done) - Number(b.done));
+    }, [suggestedTasks, extraTasks, pinnedTasks, timeline, startDate, endDate, user.gameSchedule]);
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
@@ -190,31 +236,19 @@ function DailyTrainingPlanInternal({
                     <GraduationTask />
                 )}
 
-                {suggestedTasks.map((t) =>
-                    t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
-                        <ScheduleClassicalGameDaily key={t.task.id} />
+                {cards.map(({ suggestion }) =>
+                    suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
+                        <ScheduleClassicalGameDaily key={suggestion.task.id} />
                     ) : (
-                        (t.goalMinutes > 0 || pinnedTasks.some((pin) => pin.id === t.task.id)) && (
-                            <DailyTrainingPlanItem
-                                key={t.task.id}
-                                suggestion={t}
-                                onOpenTask={onOpenTask}
-                                startDate={startDate}
-                                endDate={endDate}
-                            />
-                        )
+                        <DailyTrainingPlanItem
+                            key={suggestion.task.id}
+                            suggestion={suggestion}
+                            onOpenTask={onOpenTask}
+                            startDate={startDate}
+                            endDate={endDate}
+                        />
                     ),
                 )}
-
-                {extraTasks.map((task) => (
-                    <DailyTrainingPlanItem
-                        key={task.id}
-                        suggestion={{ task, goalMinutes: 0 }}
-                        onOpenTask={onOpenTask}
-                        startDate={startDate}
-                        endDate={endDate}
-                    />
-                ))}
             </Box>
 
             <SkippedTasksRow />
@@ -258,7 +292,7 @@ function DailyTrainingPlanItem({
         timeline,
     });
 
-    const isComplete = timeWorkedMinutes >= goalMinutes;
+    const isComplete = isDailyTaskDone(timeWorkedMinutes, goalMinutes);
 
     // Counts are offset by startCount, so display and bar both work from the
     // adjusted values; otherwise a task starting at 306 shows "306 / 2100" over

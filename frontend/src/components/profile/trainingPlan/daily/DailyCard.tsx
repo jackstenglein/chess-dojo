@@ -32,6 +32,17 @@ export function dailyCardSx(isComplete: boolean): SxProps<Theme> {
 }
 
 /**
+ * Returns whether a Today task is done: some time was logged on it today and it
+ * covers the time planned for it. A task with nothing planned and nothing logged
+ * is still to do.
+ * @param workedMinutes The minutes logged on the task today.
+ * @param goalMinutes The minutes planned for the task today.
+ */
+export function isDailyTaskDone(workedMinutes: number, goalMinutes: number): boolean {
+    return workedMinutes > 0 && workedMinutes >= goalMinutes;
+}
+
+/**
  * The row of actions at the foot of a card. A fixed height keeps the main button
  * level across cards whether or not the row also holds the 40px timer button.
  */
