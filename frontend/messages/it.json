@@ -276,7 +276,7 @@
             "planMenu": {
                 "plan": "Piano",
                 "tooltip": "Opzioni del piano di allenamento",
-                "showSections": "Mostra sezioni",
+                "show": "Mostra",
                 "today": "Oggi",
                 "thisWeek": "Questa settimana",
                 "workGoal": "Imposta obiettivo settimanale",

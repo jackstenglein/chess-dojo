@@ -1,4 +1,5 @@
 import { ResetProgressDialog } from '@/components/profile/edit/ResetProgressButton';
+import { formatTime } from '@/database/requirement';
 import { User } from '@/database/user';
 import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { Check, RestartAlt, Schedule, Tune } from '@mui/icons-material';
@@ -14,6 +15,7 @@ import {
     Menu,
     MenuItem,
     Tooltip,
+    Typography,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useState } from 'react';
@@ -25,6 +27,7 @@ import {
     SINGLE_BAR_COLORS,
     useBarColor,
 } from './barColor';
+import { getWeeklyGoalMinutes } from './workGoal';
 import { WorkGoalDialog } from './WorkGoalDialog';
 
 /** Which of the optional training plan sections the viewer has chosen to show. */
@@ -67,7 +70,10 @@ export function PlanMenu({
     const [workGoalOpen, setWorkGoalOpen] = useState(false);
     const [resetOpen, setResetOpen] = useState(false);
 
+    const tTime = useTranslations('common');
     const close = () => setAnchor(undefined);
+    // Tighter than the default so the groups read as separate blocks.
+    const dividerSx = { my: '4px !important' };
 
     return (
         <>
@@ -105,11 +111,37 @@ export function PlanMenu({
                 anchorEl={anchor}
                 open={!!anchor}
                 onClose={close}
-                slotProps={{ paper: { sx: { minWidth: 220 } } }}
+                slotProps={{ paper: { sx: { minWidth: 260 } } }}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <MenuSubheader>{t('showSections')}</MenuSubheader>
+                {isCurrentUser && (
+                    <MenuItem
+                        onClick={() => {
+                            close();
+                            setWorkGoalOpen(true);
+                        }}
+                        data-testid='plan-menu-work-goal'
+                    >
+                        <ListItemIcon>
+                            <Schedule fontSize='small' />
+                        </ListItemIcon>
+                        <ListItemText>{t('workGoal')}</ListItemText>
+                        <Typography
+                            variant='body2'
+                            sx={{
+                                color: 'text.secondary',
+                                ml: 3,
+                                fontVariantNumeric: 'tabular-nums',
+                            }}
+                            data-testid='plan-menu-work-goal-total'
+                        >
+                            {formatTime(getWeeklyGoalMinutes(user.workGoal), tTime)}
+                        </Typography>
+                    </MenuItem>
+                )}
+                {isCurrentUser && <Divider sx={dividerSx} />}
+                <MenuSubheader>{t('show')}</MenuSubheader>
                 <MenuItem
                     onClick={() => sections.setShowToday(!sections.showToday)}
                     data-testid='plan-menu-show-today'
@@ -141,25 +173,10 @@ export function PlanMenu({
                     <ListItemText>{t('thisWeek')}</ListItemText>
                 </MenuItem>
 
-                <Divider />
+                <Divider sx={dividerSx} />
                 <MenuSubheader>{t('barColor')}</MenuSubheader>
                 <BarColorPicker />
-
-                {isCurrentUser && <Divider />}
-                {isCurrentUser && (
-                    <MenuItem
-                        onClick={() => {
-                            close();
-                            setWorkGoalOpen(true);
-                        }}
-                        data-testid='plan-menu-work-goal'
-                    >
-                        <ListItemIcon>
-                            <Schedule fontSize='small' />
-                        </ListItemIcon>
-                        <ListItemText>{t('workGoal')}</ListItemText>
-                    </MenuItem>
-                )}
+                {isCurrentUser && <Divider sx={dividerSx} />}
                 {isCurrentUser && (
                     <MenuItem
                         onClick={() => {
@@ -227,7 +244,14 @@ function BarColorPicker() {
         <Box
             role='radiogroup'
             aria-label={t('barColor')}
-            sx={{ display: 'flex', gap: 1, px: 2, pt: 0.5, pb: 1.25 }}
+            sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 1,
+                px: 2,
+                pt: 0.75,
+                pb: 1.25,
+            }}
         >
             {BAR_COLORS.map((choice: BarColor) => {
                 const selected = choice === barColor;
@@ -241,14 +265,15 @@ function BarColorPicker() {
                             onClick={() => setBarColor(choice)}
                             data-testid={`bar-color-${choice}`}
                             sx={{
-                                width: 26,
-                                height: 26,
+                                width: 24,
+                                height: 24,
+                                flexShrink: 0,
                                 borderRadius: '50%',
                                 background:
                                     choice === 'multicolor'
                                         ? MULTICOLOR_SWATCH
                                         : SINGLE_BAR_COLORS[choice],
-                                outline: selected ? '2px solid' : 'none',
+                                outline: selected ? '1.5px solid' : 'none',
                                 outlineColor: 'text.primary',
                                 outlineOffset: 2,
                                 '&.Mui-focusVisible': {
@@ -257,7 +282,7 @@ function BarColorPicker() {
                                 },
                             }}
                         >
-                            {selected && <Check sx={{ fontSize: 16, color: '#000' }} />}
+                            {selected && <Check sx={{ fontSize: 14, color: '#000' }} />}
                         </ButtonBase>
                     </Tooltip>
                 );

@@ -288,7 +288,7 @@
             "planMenu": {
                 "plan": "Plan",
                 "tooltip": "Training plan options",
-                "showSections": "Show sections",
+                "show": "Show",
                 "today": "Today",
                 "thisWeek": "This Week",
                 "workGoal": "Set Weekly Goal",

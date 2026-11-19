@@ -276,7 +276,7 @@
             "planMenu": {
                 "plan": "[T] Plan",
                 "tooltip": "[T] Training plan options",
-                "showSections": "[T] Show sections",
+                "show": "[T] Show",
                 "today": "[T] Today",
                 "thisWeek": "[T] This Week",
                 "workGoal": "[T] Set Weekly Goal",
