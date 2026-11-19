@@ -86,8 +86,8 @@ export function SectionHeader({
     // green as the goal nears; they can pick a single color instead.
     const [barColor] = useBarColor();
     const progressColor = getBarColor(percent, barColor);
-    // Past the goal the bar starts to shine: brighter, glowing, with a slow
-    // shimmer, growing up to double the goal.
+    // Past the goal the bar starts to shine: a brighter fill and outline and a
+    // slow shimmer, growing up to double the goal.
     const shine = getShine(worked, goal);
     const time = `${formatTime(worked, tTime)} / ${formatTime(goal, tTime)}`;
 
@@ -105,12 +105,8 @@ export function SectionHeader({
                 backgroundColor: showProgress
                     ? alpha(progressColor, 0.05 + 0.1 * shine)
                     : 'transparent',
-                boxShadow:
-                    showProgress && shine > 0
-                        ? `0 0 ${10 + 16 * shine}px ${alpha(progressColor, 0.25 + 0.35 * shine)}`
-                        : 'none',
                 borderRadius: '26px',
-                transition: 'border-color 300ms, box-shadow 400ms',
+                transition: 'border-color 300ms',
             }}
         >
             {showProgress && isCurrentUser && (
