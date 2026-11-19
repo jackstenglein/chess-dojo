@@ -1,7 +1,6 @@
 import { formatTime } from '@/database/requirement';
 import { ExpandMore } from '@mui/icons-material';
 import { alpha, Box, ButtonBase, IconButton, Tooltip, Typography } from '@mui/material';
-import { keyframes } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { getBarColor, useBarColor } from './barColor';
@@ -14,12 +13,6 @@ import { WorkGoalDialog } from './WorkGoalDialog';
  * This Week category bars below can line up with it.
  */
 export const SECTION_TITLE_WIDTH = 208;
-
-/** A slow sweep of light across a bar that's past its goal. */
-const shimmer = keyframes`
-    0% { background-position: 150% 0; }
-    100% { background-position: -50% 0; }
-`;
 
 /**
  * Returns how much a bar should shine, from 0 (at or under the goal) to 1 (at
@@ -86,8 +79,8 @@ export function SectionHeader({
     // green as the goal nears; they can pick a single color instead.
     const [barColor] = useBarColor();
     const progressColor = getBarColor(percent, barColor);
-    // Past the goal the bar starts to shine: a brighter fill and outline and a
-    // slow shimmer, growing up to double the goal.
+    // Past the goal the bar gets a brighter fill and outline, growing up to
+    // double the goal.
     const shine = getShine(worked, goal);
     const time = `${formatTime(worked, tTime)} / ${formatTime(goal, tTime)}`;
 
@@ -135,25 +128,6 @@ export function SectionHeader({
                         width: `${percent}%`,
                         background: `linear-gradient(90deg, ${alpha(progressColor, 0.18 + 0.22 * shine)}, ${alpha(progressColor, 0.42 + 0.4 * shine)})`,
                         transition: 'width 400ms ease-out, background 400ms',
-                    }}
-                />
-            )}
-
-            {showProgress && shine > 0 && (
-                <Box
-                    aria-hidden
-                    data-testid={`${testId}-shine`}
-                    sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        pointerEvents: 'none',
-                        background: `linear-gradient(100deg, transparent 30%, ${alpha('#ffffff', 0.12 + 0.12 * shine)} 50%, transparent 70%)`,
-                        backgroundSize: '200% 100%',
-                        animation: `${shimmer} ${4 - 1.5 * shine}s ease-in-out infinite`,
-                        '@media (prefers-reduced-motion: reduce)': {
-                            animation: 'none',
-                            opacity: 0,
-                        },
                     }}
                 />
             )}

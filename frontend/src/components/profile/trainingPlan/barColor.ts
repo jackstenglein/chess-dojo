@@ -18,7 +18,7 @@ export const SINGLE_BAR_COLORS = {
     teal: '#4db6ac',
     blue: '#64b5f6',
     purple: '#9575cd',
-    pink: '#ff80bf',
+    pink: '#ff69b4',
     orange: '#f7941f',
     green: '#4ce06a',
 } as const;
