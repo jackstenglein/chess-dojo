@@ -32,7 +32,7 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { use, useMemo, useState } from 'react';
+import { ReactNode, use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
     getUpcomingGameSchedule,
@@ -46,9 +46,12 @@ import { FullTrainingPlanSection, Section } from './FullTrainingPlanSection';
 export function FullTrainingPlan({
     cohort,
     setCohort,
+    headerAction,
 }: {
     cohort: string;
     setCohort: (c: string) => void;
+    /** Shown at the end of the heading row, after the plan's own controls. */
+    headerAction?: ReactNode;
 }) {
     const {
         user,
@@ -265,6 +268,7 @@ export function FullTrainingPlan({
                             </Tooltip>
                         </>
                     )}
+                    {headerAction}
                 </Stack>
             </Stack>
 
