@@ -1,6 +1,6 @@
 import { TimelineEntry } from '@/database/timeline';
 import { describe, expect, it } from 'vitest';
-import { makeTask } from '../__fixtures__/tasks';
+import { COHORT, makeTask } from '../__fixtures__/tasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK, SuggestedTask } from '../suggestedTasks';
 import { getTodayCards } from './todayCards';
 
@@ -36,6 +36,7 @@ describe('getTodayCards', () => {
         timeline: [],
         startDate,
         endDate,
+        user: { dojoCohort: COHORT, progress: {} },
     };
 
     it('lists tasks to do before tasks done, keeping the planned order', () => {
@@ -78,5 +79,27 @@ describe('getTodayCards', () => {
             gameSchedule: [{ date: future, count: 1 }],
         });
         expect(ids(cards)).toEqual(['polgar', SCHEDULE_CLASSICAL_GAME_TASK.id]);
+    });
+
+    it('counts a finished task as done even with no time logged', () => {
+        const checkbox = makeTask({ id: 'checkbox', counts: { [COHORT]: 1 } });
+        const cards = getTodayCards({
+            ...base,
+            suggestions: [suggest(checkbox, 0), suggest(polgar, 30)],
+            pinnedTaskIds: new Set(['checkbox']),
+            user: {
+                dojoCohort: COHORT,
+                progress: {
+                    checkbox: {
+                        requirementId: 'checkbox',
+                        counts: { ALL_COHORTS: 1 },
+                        minutesSpent: {},
+                        updatedAt: '2026-11-18T12:00:00.000Z',
+                    },
+                },
+            },
+        });
+        expect(ids(cards)).toEqual(['polgar', 'checkbox']);
+        expect(cards[1].done).toBe(true);
     });
 });

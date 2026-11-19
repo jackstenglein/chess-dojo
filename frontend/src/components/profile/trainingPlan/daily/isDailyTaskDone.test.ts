@@ -15,4 +15,9 @@ describe('isDailyTaskDone', () => {
     it('keeps a task with nothing planned and nothing logged to do', () => {
         expect(isDailyTaskDone(0, 0)).toBe(false);
     });
+
+    it('is done when the task itself is finished, with or without time', () => {
+        expect(isDailyTaskDone(0, 0, true)).toBe(true);
+        expect(isDailyTaskDone(0, 30, true)).toBe(true);
+    });
 });

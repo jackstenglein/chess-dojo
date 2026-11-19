@@ -1,12 +1,31 @@
-import { CustomTask, Requirement } from '@/database/requirement';
+import { CustomTask, isComplete, Requirement } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
-import { GameScheduleEntry } from '@/database/user';
+import { GameScheduleEntry, User } from '@/database/user';
 import {
     getUpcomingGameSchedule,
+    MINIMUM_TASKS,
     SCHEDULE_CLASSICAL_GAME_TASK_ID,
     SuggestedTask,
 } from '../suggestedTasks';
 import { isDailyTaskDone } from './DailyCard';
+
+/**
+ * Returns whether the task itself is finished, e.g. a checkbox task that was
+ * checked off. Tasks that are minimums (like playing classical games) never are.
+ * @param user The user.
+ * @param task The task.
+ * @param timeline The user's timeline, for yearly tasks.
+ */
+export function isTaskFinished(
+    user: Pick<User, 'dojoCohort' | 'progress'>,
+    task: Requirement | CustomTask,
+    timeline: TimelineEntry[],
+): boolean {
+    return (
+        !MINIMUM_TASKS.has(task.id) &&
+        isComplete(user.dojoCohort, task, user.progress[task.id], timeline, true)
+    );
+}
 
 /** A card on Today: the task and whether it is done for the day. */
 export interface TodayCard {
@@ -29,6 +48,7 @@ export function getTodayCards({
     startDate,
     endDate,
     gameSchedule,
+    user,
 }: {
     /** Today's suggested tasks. */
     suggestions: SuggestedTask[];
@@ -42,6 +62,8 @@ export function getTodayCards({
     /** The start of tomorrow, in ISO 8601. */
     endDate: string;
     gameSchedule?: GameScheduleEntry[];
+    /** The user, to tell which tasks are already finished. */
+    user: Pick<User, 'dojoCohort' | 'progress'>;
 }): TodayCard[] {
     const workedByTask = new Map<string, number>();
     for (const entry of timeline) {
@@ -72,6 +94,7 @@ export function getTodayCards({
                     : isDailyTaskDone(
                           workedByTask.get(suggestion.task.id) ?? 0,
                           suggestion.goalMinutes,
+                          isTaskFinished(user, suggestion.task, timeline),
                       ),
         }));
     // A stable sort keeps the planned order within each group.

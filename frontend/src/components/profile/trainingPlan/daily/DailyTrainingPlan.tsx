@@ -58,7 +58,7 @@ import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
-import { getTodayCards } from './todayCards';
+import { getTodayCards, isTaskFinished } from './todayCards';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -165,6 +165,7 @@ function DailyTrainingPlanInternal({
                 startDate,
                 endDate,
                 gameSchedule: user.gameSchedule,
+                user,
             }),
         [
             suggestedTasks,
@@ -174,7 +175,7 @@ function DailyTrainingPlanInternal({
             timeline,
             startDate,
             endDate,
-            user.gameSchedule,
+            user,
         ],
     );
 
@@ -278,7 +279,11 @@ function DailyTrainingPlanItem({
         timeline,
     });
 
-    const isComplete = isDailyTaskDone(timeWorkedMinutes, goalMinutes);
+    const isComplete = isDailyTaskDone(
+        timeWorkedMinutes,
+        goalMinutes,
+        isTaskFinished(user, task, timeline),
+    );
 
     // Counts are offset by startCount, so display and bar both work from the
     // adjusted values; otherwise a task starting at 306 shows "306 / 2100" over
@@ -457,6 +462,7 @@ function DailyTrainingPlanItem({
                             <DailyTimePill
                                 worked={timeWorkedMinutes}
                                 goal={goalMinutes}
+                                done={isComplete}
                                 onClick={
                                     isCurrentUser
                                         ? () => onOpenTask(task, TaskDialogView.Progress)

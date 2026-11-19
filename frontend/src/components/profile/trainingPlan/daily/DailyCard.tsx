@@ -32,14 +32,20 @@ export function dailyCardSx(isComplete: boolean): SxProps<Theme> {
 }
 
 /**
- * Returns whether a Today task is done: some time was logged on it today and it
- * covers the time planned for it. A task with nothing planned and nothing logged
- * is still to do.
+ * Returns whether a Today task is done: either the task itself is finished (for
+ * example a checkbox task that was checked off), or some time was logged on it
+ * today and it covers the time planned for it. A task with nothing planned and
+ * nothing logged is still to do.
  * @param workedMinutes The minutes logged on the task today.
  * @param goalMinutes The minutes planned for the task today.
+ * @param taskFinished Whether the task itself is finished.
  */
-export function isDailyTaskDone(workedMinutes: number, goalMinutes: number): boolean {
-    return workedMinutes > 0 && workedMinutes >= goalMinutes;
+export function isDailyTaskDone(
+    workedMinutes: number,
+    goalMinutes: number,
+    taskFinished = false,
+): boolean {
+    return taskFinished || (workedMinutes > 0 && workedMinutes >= goalMinutes);
 }
 
 /**
@@ -77,19 +83,22 @@ export const dailyPrimaryButtonSx: SxProps<Theme> = {
 export function DailyTimePill({
     worked,
     goal,
+    done: doneOverride,
     label,
     onClick,
     'data-testid': dataTestId,
 }: {
     worked: number;
     goal: number;
+    /** Whether the task is done; by default worked out from the time. */
+    done?: boolean;
     /** Overrides the "worked / goal" text. */
     label?: string;
     onClick?: () => void;
     'data-testid'?: string;
 }) {
     const tTime = useTranslations('common');
-    const done = goal > 0 ? worked >= goal : worked > 0;
+    const done = doneOverride ?? (goal > 0 ? worked >= goal : worked > 0);
     const percent = goal > 0 ? Math.min(100, (100 * worked) / goal) : 0;
 
     return (
