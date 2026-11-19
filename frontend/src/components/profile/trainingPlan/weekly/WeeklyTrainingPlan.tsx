@@ -90,28 +90,29 @@ export function WeeklyTrainingPlan() {
     );
 
     const { showSuggestions } = useTrainingPlanSections();
-    const rows = useMemo(() => {
-        const pinnedTaskIds = new Set(pinnedTasks.map((p) => p.id));
-        const all = getWeekRows({
-            weekDays,
-            suggestionsByDay,
-            timeline,
-            pinnedTaskIds,
-            findTask: (id) =>
-                user.customTasks?.find((c) => c.id === id) ??
-                allRequirements.find((r) => r.id === id),
-        });
-        // The Plan menu can hide the plan's suggestions, leaving pinned and logged tasks.
-        return showSuggestions ? all : withoutSuggestions(all, pinnedTaskIds);
-    }, [
-        weekDays,
-        suggestionsByDay,
-        timeline,
-        pinnedTasks,
-        user.customTasks,
-        allRequirements,
-        showSuggestions,
-    ]);
+    // Every task in the week's plan; the category goals always count all of them.
+    const allRows = useMemo(
+        () =>
+            getWeekRows({
+                weekDays,
+                suggestionsByDay,
+                timeline,
+                pinnedTaskIds: new Set(pinnedTasks.map((p) => p.id)),
+                findTask: (id) =>
+                    user.customTasks?.find((c) => c.id === id) ??
+                    allRequirements.find((r) => r.id === id),
+            }),
+        [weekDays, suggestionsByDay, timeline, pinnedTasks, user.customTasks, allRequirements],
+    );
+    // The calendar's tasks: the Plan menu can hide the plan's suggestions there,
+    // leaving pinned and logged tasks.
+    const rows = useMemo(
+        () =>
+            showSuggestions
+                ? allRows
+                : withoutSuggestions(allRows, new Set(pinnedTasks.map((p) => p.id))),
+        [allRows, showSuggestions, pinnedTasks],
+    );
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
@@ -140,7 +141,7 @@ export function WeeklyTrainingPlan() {
                                 <OverbookedDayAlert key={day.dayIndex} dayIndex={day.dayIndex} />
                             ))}
 
-                    {!isLoading && <CategoryTotals totals={getCategoryTotals(rows)} />}
+                    {!isLoading && <CategoryTotals totals={getCategoryTotals(allRows)} />}
 
                     {isLoading ? (
                         <LoadingPage />
