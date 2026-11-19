@@ -526,7 +526,13 @@ function DailyTrainingPlanItem({
                                     </Button>
                                 </Tooltip>
                             )}
-                            {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
+                            {/* Takes the space between the Log training button and the time
+                                pill, with the timer centered in it. */}
+                            {isCurrentUser && (
+                                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                                    <TaskTimerIconButton taskId={task.id} />
+                                </Box>
+                            )}
                         </>
                     )}
 
