@@ -1,4 +1,11 @@
-import { CustomTask, isComplete, Requirement } from '@/database/requirement';
+import {
+    CustomTask,
+    getTotalCount,
+    isComplete,
+    Requirement,
+    RequirementCategory,
+    ScoreboardDisplay,
+} from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
 import { GameScheduleEntry, User } from '@/database/user';
 import {
@@ -24,6 +31,20 @@ export function isTaskFinished(
     return (
         !MINIMUM_TASKS.has(task.id) &&
         isComplete(user.dojoCohort, task, user.progress[task.id], timeline, true)
+    );
+}
+
+/**
+ * Returns whether the task is simply done or not done, like the Welcome to the
+ * Dojo tasks or a single checkbox, rather than measured by time logged.
+ * @param task The task.
+ * @param cohort The cohort to count the task's checkboxes in.
+ */
+export function isCheckOffTask(task: Requirement | CustomTask, cohort: string): boolean {
+    return (
+        task.category === RequirementCategory.Welcome ||
+        (task.scoreboardDisplay === ScoreboardDisplay.Checkbox &&
+            getTotalCount(cohort, task, true) <= 1)
     );
 }
 
@@ -101,11 +122,13 @@ export function getTodayCards({
             done:
                 suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID
                     ? gameScheduled
-                    : isDailyTaskDone(
-                          workedByTask.get(suggestion.task.id) ?? 0,
-                          suggestion.goalMinutes,
-                          isTaskFinished(user, suggestion.task, timeline),
-                      ),
+                    : isCheckOffTask(suggestion.task, user.dojoCohort)
+                      ? isTaskFinished(user, suggestion.task, timeline)
+                      : isDailyTaskDone(
+                            workedByTask.get(suggestion.task.id) ?? 0,
+                            suggestion.goalMinutes,
+                            isTaskFinished(user, suggestion.task, timeline),
+                        ),
         }));
     // Tasks still to do come first, then the ones done; within each, planned tasks
     // before unplanned ones. A stable sort keeps the planned order in a group.

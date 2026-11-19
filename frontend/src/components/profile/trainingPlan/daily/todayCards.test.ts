@@ -1,8 +1,9 @@
+import { RequirementCategory, ScoreboardDisplay } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
 import { describe, expect, it } from 'vitest';
 import { COHORT, makeTask } from '../__fixtures__/tasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK, SuggestedTask } from '../suggestedTasks';
-import { getTodayCards } from './todayCards';
+import { getTodayCards, isCheckOffTask } from './todayCards';
 
 const startDate = '2026-11-18T00:00:00.000Z';
 const endDate = '2026-11-19T00:00:00.000Z';
@@ -129,5 +130,65 @@ describe('getTodayCards', () => {
             showSuggestions: false,
         });
         expect(ids(cards)).toEqual(['games', 'logged']);
+    });
+
+    it('counts Welcome tasks as done only once checked off, not by time logged', () => {
+        const intro = makeTask({
+            id: 'intro',
+            category: RequirementCategory.Welcome,
+            counts: { [COHORT]: 1 },
+        });
+        const discord = makeTask({
+            id: 'discord',
+            category: RequirementCategory.Welcome,
+            counts: { [COHORT]: 1 },
+        });
+        const cards = getTodayCards({
+            ...base,
+            suggestions: [suggest(intro, 10), suggest(discord, 5)],
+            timeline: [logEntry('intro', 30)],
+            user: {
+                dojoCohort: COHORT,
+                progress: {
+                    discord: {
+                        requirementId: 'discord',
+                        counts: { ALL_COHORTS: 1 },
+                        minutesSpent: {},
+                        updatedAt: '2026-11-18T12:00:00.000Z',
+                    },
+                },
+            },
+        });
+        expect(cards.map((c) => [c.suggestion.task.id, c.done])).toEqual([
+            ['intro', false],
+            ['discord', true],
+        ]);
+    });
+});
+
+describe('isCheckOffTask', () => {
+    it('is true for Welcome tasks and single checkboxes only', () => {
+        expect(isCheckOffTask(makeTask({ category: RequirementCategory.Welcome }), COHORT)).toBe(
+            true,
+        );
+        expect(
+            isCheckOffTask(
+                makeTask({
+                    scoreboardDisplay: ScoreboardDisplay.Checkbox,
+                    counts: { [COHORT]: 1 },
+                }),
+                COHORT,
+            ),
+        ).toBe(true);
+        expect(
+            isCheckOffTask(
+                makeTask({
+                    scoreboardDisplay: ScoreboardDisplay.Checkbox,
+                    counts: { [COHORT]: 3 },
+                }),
+                COHORT,
+            ),
+        ).toBe(false);
+        expect(isCheckOffTask(makeTask({}), COHORT)).toBe(false);
     });
 });

@@ -182,6 +182,7 @@
                 "loggedTime": "{time} registrati",
                 "notPlanned": "Non pianificata",
                 "doneLabel": "Fatta",
+                "toDo": "Da fare",
                 "skippedHeading": "Saltate questa settimana ({count})",
                 "restore": "Ripristina {name}",
                 "skippedToast": "{name} saltata per il resto della settimana",

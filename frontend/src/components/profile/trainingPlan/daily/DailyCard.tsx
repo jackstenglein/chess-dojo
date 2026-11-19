@@ -76,9 +76,10 @@ export const dailyPrimaryButtonSx: SxProps<Theme> = {
 };
 
 /**
- * Today's time on a task as a small pill that fills in as time is logged. It stays
- * neutral until the goal is met, then turns green with a check: not having started
- * yet is not an error, so it is never red.
+ * Today's time on a task as a small pill that fills in green as time is logged:
+ * half full at 15m of 30m, and full for any time logged on a task with nothing
+ * planned. A done task gets a check. Not having started yet is not an error, so it
+ * is never red.
  */
 export function DailyTimePill({
     worked,
@@ -99,7 +100,10 @@ export function DailyTimePill({
 }) {
     const tTime = useTranslations('common');
     const done = doneOverride ?? (goal > 0 ? worked >= goal : worked > 0);
-    const percent = goal > 0 ? Math.min(100, (100 * worked) / goal) : 0;
+    const logged = goal > 0 ? Math.min(100, (100 * worked) / goal) : worked > 0 ? 100 : 0;
+    const percent = done ? 100 : logged;
+    // A full pill is outlined and written in green, like a done one.
+    const full = percent >= 100;
 
     return (
         <ButtonBase
@@ -119,32 +123,30 @@ export function DailyTimePill({
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 border: `1px solid ${
-                    done
+                    full
                         ? theme.alpha((theme.vars ?? theme).palette.success.main, 0.5)
                         : (theme.vars ?? theme).palette.divider
                 }`,
-                color: done
+                color: full
                     ? (theme.vars ?? theme).palette.success.main
                     : (theme.vars ?? theme).palette.text.secondary,
-                backgroundColor: done
-                    ? theme.alpha((theme.vars ?? theme).palette.success.main, 0.12)
-                    : 'transparent',
                 '&.Mui-disabled': {
-                    color: done
+                    color: full
                         ? (theme.vars ?? theme).palette.success.main
                         : (theme.vars ?? theme).palette.text.secondary,
                 },
             })}
         >
-            {!done && percent > 0 && (
+            {percent > 0 && (
                 <Box
+                    data-testid='daily-time-pill-fill'
                     sx={(theme) => ({
                         position: 'absolute',
                         inset: 0,
                         width: `${percent}%`,
                         backgroundColor: theme.alpha(
-                            (theme.vars ?? theme).palette.primary.main,
-                            0.18,
+                            (theme.vars ?? theme).palette.success.main,
+                            0.16,
                         ),
                     })}
                 />

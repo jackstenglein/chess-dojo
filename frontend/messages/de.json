@@ -182,6 +182,7 @@
                 "loggedTime": "{time} erfasst",
                 "notPlanned": "Nicht geplant",
                 "doneLabel": "Erledigt",
+                "toDo": "Offen",
                 "skippedHeading": "Diese Woche übersprungen ({count})",
                 "restore": "{name} wiederherstellen",
                 "skippedToast": "{name} für den Rest der Woche übersprungen",

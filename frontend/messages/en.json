@@ -194,6 +194,7 @@
                 "loggedTime": "{time} logged",
                 "notPlanned": "Not planned",
                 "doneLabel": "Done",
+                "toDo": "To do",
                 "skippedHeading": "Skipped this week ({count})",
                 "restore": "Restore {name}",
                 "skippedToast": "Skipped {name} for the rest of the week",

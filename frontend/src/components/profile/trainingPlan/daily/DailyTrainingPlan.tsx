@@ -59,7 +59,7 @@ import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
-import { getTodayCards, isTaskFinished } from './todayCards';
+import { getTodayCards, isCheckOffTask, isTaskFinished } from './todayCards';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
@@ -286,11 +286,27 @@ function DailyTrainingPlanItem({
         timeline,
     });
 
-    const isComplete = isDailyTaskDone(
-        timeWorkedMinutes,
-        goalMinutes,
-        isTaskFinished(user, task, timeline),
-    );
+    // Welcome to the Dojo tasks and single checkboxes are simply done or not;
+    // other tasks are done once today's planned time is logged.
+    const checkOff = isCheckOffTask(task, user.dojoCohort);
+    const finished = isTaskFinished(user, task, timeline);
+    const isComplete = checkOff
+        ? finished
+        : isDailyTaskDone(timeWorkedMinutes, goalMinutes, finished);
+
+    // The time pill's text: Done / To do for check-off tasks; what was logged for a
+    // task not planned today (rather than a goal of 0m); otherwise the default
+    // "worked / goal".
+    let pillLabel: string | undefined;
+    if (checkOff) {
+        pillLabel = isComplete ? tDaily('doneLabel') : tDaily('toDo');
+    } else if (goalMinutes === 0) {
+        if (timeWorkedMinutes > 0) {
+            pillLabel = tDaily('loggedTime', { time: formatTime(timeWorkedMinutes, tTime) });
+        } else {
+            pillLabel = isComplete ? tDaily('doneLabel') : tDaily('notPlanned');
+        }
+    }
 
     // Counts are offset by startCount, so display and bar both work from the
     // adjusted values; otherwise a task starting at 306 shows "306 / 2100" over
@@ -467,22 +483,10 @@ function DailyTrainingPlanItem({
                     <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                         <Box component='span' sx={{ ml: 'auto' }}>
                             <DailyTimePill
-                                worked={timeWorkedMinutes}
-                                goal={goalMinutes}
+                                worked={checkOff ? 0 : timeWorkedMinutes}
+                                goal={checkOff ? 0 : goalMinutes}
                                 done={isComplete}
-                                label={
-                                    // A task not planned for today shows what was
-                                    // logged, not a goal of 0m.
-                                    goalMinutes > 0
-                                        ? undefined
-                                        : timeWorkedMinutes > 0
-                                          ? tDaily('loggedTime', {
-                                                time: formatTime(timeWorkedMinutes, tTime),
-                                            })
-                                          : isComplete
-                                            ? tDaily('doneLabel')
-                                            : tDaily('notPlanned')
-                                }
+                                label={pillLabel}
                                 onClick={
                                     isCurrentUser
                                         ? () => onOpenTask(task, TaskDialogView.Progress)
