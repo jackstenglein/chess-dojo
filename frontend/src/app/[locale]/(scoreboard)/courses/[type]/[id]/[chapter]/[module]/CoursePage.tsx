@@ -173,7 +173,7 @@ export const CoursePage = ({
                                 mt: 2,
                             }}
                         >
-                            <Module module={courseModule} />
+                            <Module module={courseModule} course={course} />
                         </Box>
                     </Stack>
 

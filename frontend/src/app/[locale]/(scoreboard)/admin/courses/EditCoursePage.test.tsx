@@ -235,6 +235,23 @@ describe('EditCoursePage', () => {
         expect(screen.getByTestId('content-preview')).toBeInTheDocument();
     });
 
+    it('saves the export toggle', async () => {
+        mocks.api.getCourse.mockResolvedValue({ data: { course: savedCourse() } });
+        mocks.api.setCourse.mockResolvedValue({
+            data: savedCourse({ status: CourseStatus.Published, allowExport: true }),
+        });
+        renderPage(<EditCoursePage type='OPENING' id='course-1' />);
+        expect(await screen.findByText('Edit course')).toBeInTheDocument();
+
+        const toggle = screen.getByRole('checkbox', { name: /allow cloning/i });
+        expect(toggle).not.toBeChecked();
+        fireEvent.click(toggle);
+        fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+
+        await waitFor(() => expect(mocks.api.setCourse).toHaveBeenCalled());
+        expect(mocks.api.setCourse.mock.calls[0][0]).toMatchObject({ allowExport: true });
+    });
+
     it('disables the type select when editing an existing course', async () => {
         mocks.api.getCourse.mockResolvedValue({ data: { course: savedCourse() } });
         renderPage(<EditCoursePage type='OPENING' id='course-1' />);

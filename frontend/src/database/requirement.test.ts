@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     CustomTask,
     getCurrentCount,
+    hasMaterial,
     isRequirementAvailableForSubscriptionTier,
     Requirement,
     RequirementCategory,
@@ -379,6 +380,31 @@ describe('requirement.ts', () => {
             });
 
             expect(count).toBe(10);
+        });
+    });
+
+    describe('hasMaterial', () => {
+        it('is true for a requirement pointing at a course', () => {
+            expect(
+                hasMaterial({
+                    ...requirementNormal,
+                    material: [
+                        {
+                            kind: 'COURSE',
+                            courseType: 'STUDY',
+                            courseId: 'study-master-games-1500-1600',
+                        },
+                    ],
+                }),
+            ).toBe(true);
+        });
+
+        it('is false for a requirement without material', () => {
+            expect(hasMaterial(requirementNormal)).toBe(false);
+        });
+
+        it('is false for a custom task with an empty material list', () => {
+            expect(hasMaterial({ ...customTaskNormal, material: [] })).toBe(false);
         });
     });
 });

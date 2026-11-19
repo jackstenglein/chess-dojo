@@ -1,4 +1,4 @@
-import { CourseModule, CourseModuleType } from '@/database/course';
+import { Course, CourseModule, CourseModuleType } from '@/database/course';
 import { Stack, Typography } from '@mui/material';
 import ExercisesModule from './ExercisesModule';
 import ModelGamesModule from './ModelGamesModule';
@@ -8,29 +8,30 @@ import VideoModule from './VideoModule';
 
 export interface ModuleProps {
     module: CourseModule;
+    course: Course;
     preview?: boolean;
 }
 
-const Module = ({ module, preview }: ModuleProps) => {
+const Module = ({ module, course, preview }: ModuleProps) => {
     let M = null;
     switch (module.type) {
         case CourseModuleType.Video:
-            M = <VideoModule module={module} />;
+            M = <VideoModule module={module} course={course} />;
             break;
         case CourseModuleType.PgnViewer:
-            M = <PgnViewerModule module={module} />;
+            M = <PgnViewerModule module={module} course={course} />;
             break;
         case CourseModuleType.SparringPositions:
-            M = <SparringPositionsModule module={module} />;
+            M = <SparringPositionsModule module={module} course={course} />;
             break;
         case CourseModuleType.ModelGames:
-            M = <ModelGamesModule module={module} />;
+            M = <ModelGamesModule module={module} course={course} />;
             break;
         case CourseModuleType.Themes:
             M = null;
             break;
         case CourseModuleType.Exercises:
-            M = <ExercisesModule module={module} preview={preview} />;
+            M = <ExercisesModule module={module} course={course} preview={preview} />;
             break;
         default:
             M = null;
