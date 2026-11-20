@@ -239,8 +239,8 @@
             },
             "starter": {
                 "title": "Ton plan de démarrage",
-                "subtitle": "Bienvenue au Dojo ! Ces étapes te montrent comment fonctionne l'entraînement ici. Marque chaque tâche comme faite, et ton plan d'entraînement complet se débloque à la fin.",
-                "progress": "{done} étapes sur {total} terminées",
+                "subtitle": "Trois courtes étapes pour apprendre comment fonctionne l'entraînement ici. Tout ce que tu termines est reporté dans ton plan d'entraînement complet, qui se débloque à la fin.",
+                "progress": "{done} tâches sur {total} terminées",
                 "stepNumber": "Étape {number}",
                 "stepProgress": "{done} sur {total} terminées",
                 "steps": {
@@ -250,23 +250,24 @@
                     },
                     "classicalGame": {
                         "title": "Joue 1 partie classique",
-                        "description": "Joue une partie lente, en ligne ou sur l'échiquier. Les parties classiques sont au cœur du programme d'entraînement du Dojo."
+                        "description": "Joue une partie lente, en ligne ou sur l'échiquier. Les parties classiques sont au cœur du programme d'entraînement du Dojo.",
+                        "timeControl": "Cadence conseillée : {timeControl} ou plus longue"
                     },
                     "annotateGame": {
                         "title": "Annote 1 partie",
                         "description": "Importe une de tes parties et analyse-la avant d'utiliser un moteur. Note ce que tu pensais, tes décisions clés et tes erreurs."
                     },
-                    "endgameAlgorithm": {
-                        "title": "Termine 1 algorithme de finale",
-                        "description": "Apprends une finale clé en la jouant jusqu'à la gagner à chaque fois. C'est le premier de ta cohorte."
-                    },
-                    "middlegameSparring": {
-                        "title": "Fais 1 sparring de milieu de partie",
-                        "description": "Joue une position de milieu de partie contre un partenaire d'entraînement ou un bot. C'est la première de ta cohorte."
-                    },
                     "dojoRush": {
                         "title": "Essaie l'entraîneur Dojo Rush",
                         "description": "Résous un maximum de problèmes contre la montre. Cette étape se coche toute seule après ta première session."
+                    },
+                    "masterGame": {
+                        "title": "Étudie 1 partie de maître",
+                        "description": "Parcours une partie classique de l'étude de parties de maîtres de ta cohorte. Cherche les plans et les idées derrière les coups."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Joue 1 position d'algorithme de finale",
+                        "description": "Joue la première position du premier algorithme de finale de ta cohorte jusqu'à la gagner. Ton temps est reporté sur l'algorithme complet."
                     }
                 },
                 "actions": {
@@ -275,7 +276,11 @@
                     "undo": "Annuler",
                     "minutesSpent": "{minutes} min",
                     "importGame": "Importer une partie",
-                    "startRush": "Lancer Dojo Rush"
+                    "viewTournaments": "Voir les tournois",
+                    "startRush": "Lancer Dojo Rush",
+                    "firstPosition": "{name}, position 1",
+                    "completed": "Terminée",
+                    "playBot": "Jouer contre le bot"
                 },
                 "markDone": {
                     "title": "Marquer la tâche comme faite",
@@ -294,7 +299,48 @@
                     "title": "Plan d'entraînement complet verrouillé",
                     "description": "Termine le plan de démarrage pour débloquer ton plan d'entraînement complet. Tout ce que tu marques ici y sera coché pour toi."
                 },
-                "skip": "Tu connais déjà le Dojo ? Passe directement au plan d'entraînement complet"
+                "skip": "Tu connais déjà le Dojo ? Passe directement au plan d'entraînement complet",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guide",
+                        "action": "Lire le guide"
+                    },
+                    "video": {
+                        "label": "Vidéo",
+                        "action": "Regarder"
+                    },
+                    "community": {
+                        "label": "Communauté",
+                        "action": "Rejoindre"
+                    },
+                    "task": {
+                        "label": "Tâche",
+                        "action": "Ouvrir"
+                    }
+                },
+                "botGame": {
+                    "completed": "Étape du plan de démarrage terminée !",
+                    "backToPlan": "Retour au plan"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Bienvenue au Dojo ! Je suis Sensei Jesse. Avant de commencer ton plan d'entraînement complet, assurons-nous que tu connais les lieux. Termine ces trois étapes et on se retrouve de l'autre côté."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Bienvenue",
+                        "description": "Découvre le Dojo et sa communauté."
+                    },
+                    "training": {
+                        "title": "Entraîne-toi",
+                        "description": "Essaie les types d'entraînement que tu feras chaque semaine."
+                    },
+                    "games": {
+                        "title": "Parties et analyse",
+                        "description": "Joue une partie lente, puis apprends-en."
+                    }
+                },
+                "stageNumber": "Étape {number}"
             },
             "graduationTask": {
                 "title": "Passer au niveau supérieur depuis {cohort}",

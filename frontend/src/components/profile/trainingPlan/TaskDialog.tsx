@@ -1,6 +1,7 @@
 import { useRequirements } from '@/api/cache/requirements';
 import { useAuth, useFreeTier } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import { Link } from '@/components/navigation/Link';
 import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import DeleteCustomTaskModal from '@/components/profile/trainingPlan/DeleteCustomTaskModal';
 import Position from '@/components/profile/trainingPlan/Position';
@@ -42,6 +43,51 @@ interface TaskDialogProps {
     cohort: string;
     /** Time to prefill in the progress form, in minutes. */
     initialMinutes?: number;
+    /**
+     * Set when the dialog is opened from the starter plan, which keeps its own progress.
+     * The dialog then only shows the task's details: logging training, the history and
+     * the timer are hidden, and the main button runs onMarkComplete if it is given.
+     */
+    starterMode?: StarterModeProps;
+}
+
+/** How the task dialog behaves when opened from the starter plan. */
+export interface StarterModeProps {
+    /** The label of the main button. */
+    label: string;
+    /**
+     * The title to show instead of the task's name, which is written for the full plan
+     * ("Play 40 classical games per year") while the starter plan asks for one.
+     */
+    title?: string;
+    /**
+     * What the starter plan asks for, shown first in place of the description's
+     * sentences that give the full plan's count ("Annotate 30 classical games…").
+     */
+    description?: string;
+    /** A page where the member does the task, shown as a button beside the main one. */
+    link?: { href: string; label: string };
+    /** Marks the task complete on the starter plan. Omitted once it is complete. */
+    onMarkComplete?: () => void;
+}
+
+/**
+ * Returns the description without the sentences that give the task's count, such as
+ * "Annotate {{count}} classical games and submit them to the Dojo Database."
+ */
+function withoutCountSentences(description: string): string {
+    return description
+        .split('\n')
+        .map((line) =>
+            line.includes('{{count}}')
+                ? line
+                      .split(/(?<=[.!?])\s+/)
+                      .filter((sentence) => !sentence.includes('{{count}}'))
+                      .join(' ')
+                : line,
+        )
+        .join('\n')
+        .replace(/^\s+/, '');
 }
 
 function getRequirementName(task: Requirement | CustomTask, cohort: string) {
@@ -134,11 +180,11 @@ function ProgressDialog({
     );
 }
 
-type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort'> & {
+type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort' | 'starterMode'> & {
     setView: (view: TaskDialogView) => void;
 };
 
-function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
+function DetailsDialog({ task, onClose, cohort, setView, starterMode }: DetailsDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
@@ -218,13 +264,15 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
     const currentCount = progress?.counts?.[selectedCohort] || progress?.counts?.[ALL_COHORTS] || 0;
     const isCompleted = currentCount >= totalCount;
 
-    const requirementName = getRequirementName(task, selectedCohort);
+    const requirementName = starterMode?.title ?? getRequirementName(task, selectedCohort);
 
     let description =
         isRequirement(task) && isFreeTier
             ? task.freeDescription || task.description
             : task.description;
-    description = description.replaceAll('{{count}}', `${totalCount}`);
+    description = starterMode?.description
+        ? `${starterMode.description}\n\n${withoutCountSentences(description)}`.trim()
+        : description.replaceAll('{{count}}', `${totalCount}`);
 
     return (
         <>
@@ -288,7 +336,10 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                             }}
                         >
                             <DojoPointChip requirement={task} cohort={selectedCohort} />
-                            <ExpirationChip requirement={task} progress={progress} />
+                            {/* The starter plan asks for one, so the yearly window doesn't apply. */}
+                            {!starterMode && (
+                                <ExpirationChip requirement={task} progress={progress} />
+                            )}
                             <RepeatChip requirement={task} />
                             {task.blockers && (
                                 <BlockerChips requirement={task} cohort={selectedCohort} />
@@ -329,9 +380,9 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
             </DialogContent>
             <TaskDialogFooter
                 view={TaskDialogView.Details}
-                setView={setView}
+                setView={starterMode ? undefined : setView}
                 extra={
-                    timerRunning ? (
+                    starterMode ? undefined : timerRunning ? (
                         <Button
                             color='warning'
                             size='small'
@@ -360,14 +411,38 @@ function DetailsDialog({ task, onClose, cohort, setView }: DetailsDialogProps) {
                 <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
                     {tCommon('cancel')}
                 </Button>
-                <Button
-                    variant='contained'
-                    disableElevation
-                    onClick={() => setView(TaskDialogView.Progress)}
-                    sx={taskDialogPrimaryButtonSx}
-                >
-                    {tCommon('logTraining')}
-                </Button>
+                {starterMode ? (
+                    <>
+                        {starterMode.link && (
+                            <Button
+                                component={Link}
+                                href={starterMode.link.href}
+                                sx={{ textTransform: 'none' }}
+                            >
+                                {starterMode.link.label}
+                            </Button>
+                        )}
+                        {starterMode.onMarkComplete && (
+                            <Button
+                                variant='contained'
+                                disableElevation
+                                onClick={starterMode.onMarkComplete}
+                                sx={taskDialogPrimaryButtonSx}
+                            >
+                                {starterMode.label}
+                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <Button
+                        variant='contained'
+                        disableElevation
+                        onClick={() => setView(TaskDialogView.Progress)}
+                        sx={taskDialogPrimaryButtonSx}
+                    >
+                        {tCommon('logTraining')}
+                    </Button>
+                )}
             </TaskDialogFooter>
         </>
     );

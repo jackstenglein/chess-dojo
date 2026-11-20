@@ -80,12 +80,12 @@ const endgameSparring = createRequirement('endgame-sparring', RequirementCategor
     name: 'Sparring Position #1',
     sortPriority: 'endgame.algo.00',
 });
-const sparringGuide = checkbox('sparring-guide', RequirementCategory.Middlegames, {
-    name: 'Watch the Middlegame Sparring Guide',
+const masterGamesGuide = checkbox('master-guide', RequirementCategory.Games, {
+    name: 'Read the Master Games Guide',
     sortPriority: 'middlegame.00',
 });
-const sparring1 = checkbox('mg-sparring-1', RequirementCategory.Middlegames, {
-    name: 'Middlegame Sparring Position #1',
+const masterGames = createRequirement('master-games', RequirementCategory.Games, {
+    name: 'Study Master Games',
     sortPriority: 'middlegame.01',
 });
 const requirements = [
@@ -97,8 +97,8 @@ const requirements = [
     algorithm2,
     algorithm1,
     endgameSparring,
-    sparringGuide,
-    sparring1,
+    masterGamesGuide,
+    masterGames,
 ];
 
 function progress(id: string, count: number) {
@@ -163,11 +163,11 @@ describe('getStarterSteps', () => {
 
         expect(steps.map((s) => s.id)).toEqual([
             StarterStepId.Welcome,
+            StarterStepId.DojoRush,
+            StarterStepId.MasterGame,
+            StarterStepId.EndgameAlgorithm,
             StarterStepId.ClassicalGame,
             StarterStepId.AnnotateGame,
-            StarterStepId.EndgameAlgorithm,
-            StarterStepId.MiddlegameSparring,
-            StarterStepId.DojoRush,
         ]);
         expect(steps.every((s) => !s.complete)).toBe(true);
     });
@@ -175,6 +175,24 @@ describe('getStarterSteps', () => {
     it('ignores archived welcome tasks', () => {
         const welcome = step(createUser(), StarterStepId.Welcome);
         expect(welcome?.tasks.map((t) => t.task.id)).toEqual(['welcome-a', 'welcome-b']);
+    });
+
+    it('leaves the training partner and weekly training plans guides out', () => {
+        const guides = [
+            checkbox('partner-guide', RequirementCategory.Welcome, {
+                name: 'Read the Training Partner Guide',
+            }),
+            checkbox('weekly-guide', RequirementCategory.Welcome, {
+                name: 'Read the Weekly Training Plans Guide',
+            }),
+        ];
+        const steps = getStarterSteps({
+            user: createUser(),
+            requirements: [welcomeA, ...guides],
+            timeline: [],
+            hasDojoRushRun: false,
+        });
+        expect(steps[0].tasks.map((t) => t.task.id)).toEqual(['welcome-a']);
     });
 
     it('counts tasks marked done on the starter plan without real progress', () => {
@@ -194,6 +212,29 @@ describe('getStarterSteps', () => {
         expect(classicalStep?.tasks[0].record).toBeUndefined();
     });
 
+    it('ignores real progress when previewing as a new member', () => {
+        const user = createUser({
+            tutorials: markedDone(welcomeA.id),
+            progress: {
+                [welcomeB.id]: progress(welcomeB.id, 1),
+                [CLASSICAL_GAMES_TASK_ID]: progress(CLASSICAL_GAMES_TASK_ID, 5),
+            },
+        });
+        const steps = getStarterSteps({
+            user,
+            requirements,
+            timeline: [],
+            hasDojoRushRun: false,
+            ignoreRealProgress: true,
+        });
+
+        expect(steps.find((s) => s.id === StarterStepId.Welcome)).toMatchObject({
+            current: 1,
+            total: 2,
+        });
+        expect(steps.find((s) => s.id === StarterStepId.ClassicalGame)?.complete).toBe(false);
+    });
+
     it('does not count a task starting value as real progress', () => {
         const user = createUser({
             progress: { [CLASSICAL_GAMES_TASK_ID]: progress(CLASSICAL_GAMES_TASK_ID, 2) },
@@ -207,11 +248,11 @@ describe('getStarterSteps', () => {
         expect(steps.find((s) => s.id === StarterStepId.ClassicalGame)?.complete).toBe(false);
     });
 
-    it("points at the cohort's first endgame algorithm and middlegame sparring position", () => {
+    it("points at the cohort's first endgame algorithm and its master games task", () => {
         const user = createUser();
-        // Endgame sparring positions and the sparring guide are not picked.
+        // Endgame sparring positions are not algorithms, and guides are not master games.
         expect(step(user, StarterStepId.EndgameAlgorithm)?.tasks[0].task.id).toBe(algorithm1.id);
-        expect(step(user, StarterStepId.MiddlegameSparring)?.tasks[0].task.id).toBe(sparring1.id);
+        expect(step(user, StarterStepId.MasterGame)?.tasks[0].task.id).toBe(masterGames.id);
     });
 
     it('shows a later algorithm the member has already done', () => {
@@ -230,8 +271,8 @@ describe('getStarterSteps', () => {
         });
         expect(steps.map((s) => s.id)).toEqual([
             StarterStepId.Welcome,
-            StarterStepId.ClassicalGame,
             StarterStepId.DojoRush,
+            StarterStepId.ClassicalGame,
         ]);
         // A cohort without welcome tasks has nothing left to do in that step.
         expect(steps[0].complete).toBe(true);
@@ -268,16 +309,18 @@ describe('getStarterCredits', () => {
                 date: '2026-11-21T10:00:00.000Z',
             },
             {
-                id: CLASSICAL_GAMES_TASK_ID,
-                previousCount: 4,
-                newCount: 5,
+                // Only one of the algorithm's positions was asked for, so only its
+                // time is credited and the task is not completed.
+                id: algorithm1.id,
+                previousCount: 0,
+                newCount: 0,
                 minutes: 20,
                 date: '2026-11-21T10:00:00.000Z',
             },
             {
-                id: algorithm1.id,
-                previousCount: 0,
-                newCount: 1,
+                id: CLASSICAL_GAMES_TASK_ID,
+                previousCount: 4,
+                newCount: 5,
                 minutes: 20,
                 date: '2026-11-21T10:00:00.000Z',
             },

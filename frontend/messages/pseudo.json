@@ -239,8 +239,8 @@
             },
             "starter": {
                 "title": "[T] Your Starter Plan",
-                "subtitle": "[T] Welcome to the Dojo! These steps show you how training here works. Mark each task done as you go, and your full training plan unlocks when you finish.",
-                "progress": "[T] {done} of {total} steps done",
+                "subtitle": "[T] Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
+                "progress": "[T] {done} of {total} tasks done",
                 "stepNumber": "[T] Step {number}",
                 "stepProgress": "[T] {done} of {total} done",
                 "steps": {
@@ -250,39 +250,44 @@
                     },
                     "classicalGame": {
                         "title": "[T] Play 1 classical game",
-                        "description": "[T] Play a slow game, online or over the board. Classical games are the heart of the Dojo training program."
+                        "description": "[T] Play a slow game, online or over the board. Classical games are the heart of the Dojo training program.",
+                        "timeControl": "[T] Suggested time control: {timeControl} or longer"
                     },
                     "annotateGame": {
                         "title": "[T] Annotate 1 game",
                         "description": "[T] Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
                     },
-                    "endgameAlgorithm": {
-                        "title": "[T] Complete 1 endgame algorithm",
-                        "description": "[T] Learn a key endgame by playing it out until you can win it every time. This is your cohort's first one."
-                    },
-                    "middlegameSparring": {
-                        "title": "[T] Spar 1 middlegame position",
-                        "description": "[T] Play out a middlegame position against a training partner or a bot. This is your cohort's first one."
-                    },
                     "dojoRush": {
                         "title": "[T] Try the Dojo Rush trainer",
                         "description": "[T] Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
+                    },
+                    "masterGame": {
+                        "title": "[T] Study 1 master game",
+                        "description": "[T] Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "[T] Play 1 endgame algorithm position",
+                        "description": "[T] Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
                     }
                 },
                 "actions": {
                     "details": "[T] Details",
-                    "markDone": "[T] Mark done",
+                    "markDone": "[T] Mark completed",
                     "undo": "[T] Undo",
                     "minutesSpent": "[T] {minutes} min",
                     "importGame": "[T] Import a game",
-                    "startRush": "[T] Start Dojo Rush"
+                    "viewTournaments": "[T] View tournaments",
+                    "startRush": "[T] Start Dojo Rush",
+                    "firstPosition": "[T] {name}, position 1",
+                    "completed": "[T] Completed",
+                    "playBot": "[T] Play bot"
                 },
                 "markDone": {
-                    "title": "[T] Mark task done",
+                    "title": "[T] Mark task completed",
                     "minutesLabel": "[T] Minutes spent",
                     "minutesHelper": "[T] Roughly how long it took. It's added to your training time when you finish the starter plan.",
                     "minutesInvalid": "[T] Enter a whole number of minutes.",
-                    "save": "[T] Mark done",
+                    "save": "[T] Mark completed",
                     "cancel": "[T] Cancel"
                 },
                 "complete": {
@@ -294,7 +299,48 @@
                     "title": "[T] Full training plan locked",
                     "description": "[T] Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
                 },
-                "skip": "[T] Already know the Dojo? Skip to the full training plan"
+                "skip": "[T] Already know the Dojo? Skip to the full training plan",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "[T] Guide",
+                        "action": "[T] Read the guide"
+                    },
+                    "video": {
+                        "label": "[T] Video",
+                        "action": "[T] Watch"
+                    },
+                    "community": {
+                        "label": "[T] Community",
+                        "action": "[T] Join"
+                    },
+                    "task": {
+                        "label": "[T] Task",
+                        "action": "[T] Open"
+                    }
+                },
+                "botGame": {
+                    "completed": "[T] Starter plan step completed!",
+                    "backToPlan": "[T] Back to plan"
+                },
+                "sensei": {
+                    "name": "[T] Sensei Jesse",
+                    "greeting": "[T] Welcome to the Dojo! I'm Sensei Jesse. Before you start your full training plan, let's make sure you know your way around. Finish these three stages and I'll see you on the other side."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "[T] Welcome",
+                        "description": "[T] Get to know the Dojo and the community."
+                    },
+                    "training": {
+                        "title": "[T] Train",
+                        "description": "[T] Try the kinds of training you will do every week."
+                    },
+                    "games": {
+                        "title": "[T] Games & Analysis",
+                        "description": "[T] Play a slow game, then learn from it."
+                    }
+                },
+                "stageNumber": "[T] Stage {number}"
             },
             "graduationTask": {
                 "title": "[T] Graduate from {cohort}",

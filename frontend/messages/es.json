@@ -239,8 +239,8 @@
             },
             "starter": {
                 "title": "Tu plan de inicio",
-                "subtitle": "¡Bienvenido al Dojo! Estos pasos te muestran cómo funciona el entrenamiento aquí. Marca cada tarea como hecha y, al terminar, se desbloqueará tu plan de entrenamiento completo.",
-                "progress": "{done} de {total} pasos completados",
+                "subtitle": "Tres etapas cortas para aprender cómo funciona el entrenamiento aquí. Todo lo que completes pasa a tu plan de entrenamiento completo, que se desbloquea al terminar.",
+                "progress": "{done} de {total} tareas completadas",
                 "stepNumber": "Paso {number}",
                 "stepProgress": "{done} de {total} completadas",
                 "steps": {
@@ -250,23 +250,24 @@
                     },
                     "classicalGame": {
                         "title": "Juega 1 partida clásica",
-                        "description": "Juega una partida lenta, online o sobre el tablero. Las partidas clásicas son el núcleo del programa de entrenamiento del Dojo."
+                        "description": "Juega una partida lenta, online o sobre el tablero. Las partidas clásicas son el núcleo del programa de entrenamiento del Dojo.",
+                        "timeControl": "Control de tiempo sugerido: {timeControl} o más"
                     },
                     "annotateGame": {
                         "title": "Anota 1 partida",
                         "description": "Importa una de tus partidas y revísala antes de usar un motor. Anota lo que pensabas, tus decisiones clave y tus errores."
                     },
-                    "endgameAlgorithm": {
-                        "title": "Completa 1 algoritmo de finales",
-                        "description": "Aprende un final clave jugándolo hasta ganarlo siempre. Este es el primero de tu cohorte."
-                    },
-                    "middlegameSparring": {
-                        "title": "Haz sparring en 1 posición de medio juego",
-                        "description": "Juega una posición de medio juego contra un compañero de entrenamiento o un bot. Esta es la primera de tu cohorte."
-                    },
                     "dojoRush": {
                         "title": "Prueba el entrenador Dojo Rush",
                         "description": "Resuelve tantos problemas como puedas contra el reloj. Este paso se marca solo después de tu primera partida."
+                    },
+                    "masterGame": {
+                        "title": "Estudia 1 partida de maestros",
+                        "description": "Repasa una partida clásica del estudio de partidas de maestros de tu cohorte. Busca los planes e ideas detrás de las jugadas."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Juega 1 posición de algoritmo de finales",
+                        "description": "Juega la primera posición del primer algoritmo de finales de tu cohorte hasta ganarla. El tiempo que dediques pasa al algoritmo completo."
                     }
                 },
                 "actions": {
@@ -275,7 +276,11 @@
                     "undo": "Deshacer",
                     "minutesSpent": "{minutes} min",
                     "importGame": "Importar una partida",
-                    "startRush": "Empezar Dojo Rush"
+                    "viewTournaments": "Ver torneos",
+                    "startRush": "Empezar Dojo Rush",
+                    "firstPosition": "{name}, posición 1",
+                    "completed": "Completada",
+                    "playBot": "Jugar contra el bot"
                 },
                 "markDone": {
                     "title": "Marcar tarea como hecha",
@@ -294,7 +299,48 @@
                     "title": "Plan de entrenamiento completo bloqueado",
                     "description": "Termina el plan de inicio para desbloquear tu plan de entrenamiento completo. Todo lo que marques aquí quedará marcado allí."
                 },
-                "skip": "¿Ya conoces el Dojo? Salta al plan de entrenamiento completo"
+                "skip": "¿Ya conoces el Dojo? Salta al plan de entrenamiento completo",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guía",
+                        "action": "Leer la guía"
+                    },
+                    "video": {
+                        "label": "Vídeo",
+                        "action": "Ver"
+                    },
+                    "community": {
+                        "label": "Comunidad",
+                        "action": "Unirse"
+                    },
+                    "task": {
+                        "label": "Tarea",
+                        "action": "Abrir"
+                    }
+                },
+                "botGame": {
+                    "completed": "¡Paso del plan de inicio completado!",
+                    "backToPlan": "Volver al plan"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "¡Bienvenido al Dojo! Soy el Sensei Jesse. Antes de empezar tu plan de entrenamiento completo, asegurémonos de que conoces el lugar. Termina estas tres etapas y nos vemos al otro lado."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Bienvenida",
+                        "description": "Conoce el Dojo y su comunidad."
+                    },
+                    "training": {
+                        "title": "Entrena",
+                        "description": "Prueba los tipos de entrenamiento que harás cada semana."
+                    },
+                    "games": {
+                        "title": "Partidas y análisis",
+                        "description": "Juega una partida lenta y aprende de ella."
+                    }
+                },
+                "stageNumber": "Etapa {number}"
             },
             "graduationTask": {
                 "title": "Graduarse de {cohort}",

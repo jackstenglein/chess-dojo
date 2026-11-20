@@ -1,0 +1,57 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
+
+/**
+ * The starter plan preview only exists on a local dev server (`next dev`). Production
+ * builds set NODE_ENV to production, so the live site never shows it.
+ */
+export const STARTER_PREVIEW_ENABLED = process.env.NODE_ENV === 'development';
+
+/** The URL parameter that controls the preview: on, off or reset. */
+export const STARTER_PREVIEW_PARAM = 'starterPlan';
+
+export enum StarterPreviewMode {
+    /** No preview: the starter plan follows the normal rules. */
+    Off = 'off',
+    /** Show the starter plan to the signed-in account, as if it had just joined. */
+    On = 'on',
+    /** Clear the account's starter progress, then preview as with On. */
+    Reset = 'reset',
+}
+
+/**
+ * Returns the starter plan preview mode, for testing the starter plan with an
+ * existing account on a local dev server.
+ *
+ * Visit /profile?starterPlan=on to turn it on, ?starterPlan=off to turn it off and
+ * ?starterPlan=reset to clear the account's starter progress. On and off are
+ * remembered in this browser until changed.
+ */
+export function useStarterPlanPreview(): StarterPreviewMode {
+    const param = useSearchParams().get(STARTER_PREVIEW_PARAM);
+    const [stored, setStored] = useLocalStorage('starter-plan-preview', false);
+
+    useEffect(() => {
+        if (!STARTER_PREVIEW_ENABLED) {
+            return;
+        }
+        if (param === StarterPreviewMode.On || param === StarterPreviewMode.Reset) {
+            setStored(true);
+        } else if (param === StarterPreviewMode.Off) {
+            setStored(false);
+        }
+    }, [param, setStored]);
+
+    if (!STARTER_PREVIEW_ENABLED || param === StarterPreviewMode.Off) {
+        return StarterPreviewMode.Off;
+    }
+    if (param === StarterPreviewMode.Reset) {
+        return StarterPreviewMode.Reset;
+    }
+    return param === StarterPreviewMode.On || stored
+        ? StarterPreviewMode.On
+        : StarterPreviewMode.Off;
+}

@@ -8,6 +8,7 @@
  *   starter:<taskId>:<minutes>:<completedAt ms>   a task marked done
  *   starterCredited:<taskId>                      that task was credited to real progress
  *   StarterPlan                                   the starter plan is finished
+ *   starterResetAt:<ms>                           when the starter plan was last reset
  *
  * Task ids are UUIDs and contain no colons. If the backend gains a dedicated field,
  * only this file needs to change.
@@ -18,6 +19,7 @@ export const STARTER_PLAN_FINISHED_KEY = 'StarterPlan';
 
 const TASK_PREFIX = 'starter:';
 const CREDITED_PREFIX = 'starterCredited:';
+const RESET_PREFIX = 'starterResetAt:';
 
 export type Tutorials = Record<string, boolean>;
 
@@ -89,7 +91,38 @@ export function withStarterTaskCredited(
     return { ...tutorials, [`${CREDITED_PREFIX}${taskId}`]: true };
 }
 
+/** Returns a copy of tutorials with all starter plan progress removed. */
+export function withoutStarterProgress(tutorials: Tutorials | undefined): Tutorials {
+    return Object.fromEntries(
+        Object.entries(tutorials ?? {}).filter(
+            ([key]) =>
+                key !== STARTER_PLAN_FINISHED_KEY &&
+                !key.startsWith(TASK_PREFIX) &&
+                !key.startsWith(CREDITED_PREFIX) &&
+                !key.startsWith(RESET_PREFIX),
+        ),
+    );
+}
+
 /** Returns a copy of tutorials with the starter plan marked finished. */
 export function withStarterPlanFinished(tutorials: Tutorials | undefined): Tutorials {
     return { ...tutorials, [STARTER_PLAN_FINISHED_KEY]: true };
+}
+
+/**
+ * Returns a copy of tutorials with all starter plan progress removed and the time of
+ * the reset remembered, so progress from before the reset (such as earlier Dojo Rush
+ * runs) can be ignored.
+ */
+export function withStarterReset(tutorials: Tutorials | undefined, date: Date): Tutorials {
+    return { ...withoutStarterProgress(tutorials), [`${RESET_PREFIX}${date.getTime()}`]: true };
+}
+
+/** Returns when the starter plan was last reset, in milliseconds, if it ever was. */
+export function getStarterResetAt(tutorials: Tutorials | undefined): number | undefined {
+    const key = Object.keys(tutorials ?? {}).find(
+        (k) => k.startsWith(RESET_PREFIX) && tutorials?.[k],
+    );
+    const time = Number(key?.slice(RESET_PREFIX.length));
+    return key && !isNaN(time) ? time : undefined;
 }

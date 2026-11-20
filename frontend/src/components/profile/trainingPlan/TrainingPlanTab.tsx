@@ -7,6 +7,8 @@ import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
 import { PinTaskDialog } from './PinTaskDialog';
 import { isStarterPlanActive } from './starter/starterPlan';
+import { StarterPreviewMode, useStarterPlanPreview } from './starter/starterPreview';
+import { isStarterPlanFinished } from './starter/starterProgress';
 import { StarterTrainingPlan } from './starter/StarterTrainingPlan';
 import { useWeeklyTrainingPlan, UseWeeklyTrainingPlanResponse } from './useTrainingPlan';
 import { WeeklyTrainingPlan } from './weekly/WeeklyTrainingPlan';
@@ -17,9 +19,15 @@ export const TrainingPlanContext = createContext<UseWeeklyTrainingPlanResponse>(
 export function TrainingPlanTab({ user }: { user: User }) {
     const trainingPlan = useWeeklyTrainingPlan(user);
     const [cohort, setCohort] = useState(user.dojoCohort);
+    const preview = useStarterPlanPreview();
     // New members work through the starter plan before the full training plan.
     // Its progress checks need the member's own data, so others see the usual plan.
-    const showStarterPlan = trainingPlan.isCurrentUser && isStarterPlanActive(user);
+    // On a local dev server, the preview shows it to any account for testing.
+    const showStarterPlan =
+        trainingPlan.isCurrentUser &&
+        (isStarterPlanActive(user) ||
+            preview === StarterPreviewMode.Reset ||
+            (preview === StarterPreviewMode.On && !isStarterPlanFinished(user.tutorials)));
 
     useEffect(() => {
         setCohort(user.dojoCohort);
@@ -37,7 +45,7 @@ export function TrainingPlanTab({ user }: { user: User }) {
             <TrainingPlanContext value={trainingPlan}>
                 {showStarterPlan ? (
                     // The full training plan stays locked until the starter plan is done.
-                    <StarterTrainingPlan />
+                    <StarterTrainingPlan preview={preview} />
                 ) : (
                     <>
                         <DailyTrainingPlan />

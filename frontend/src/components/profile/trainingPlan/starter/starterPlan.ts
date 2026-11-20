@@ -21,11 +21,11 @@ export const STARTER_PLAN_LAUNCH_DATE = '2026-11-19T00:00:00.000Z';
 /** The steps of the starter plan, in the order they are shown. */
 export enum StarterStepId {
     Welcome = 'welcome',
+    DojoRush = 'dojoRush',
+    MasterGame = 'masterGame',
+    EndgameAlgorithm = 'endgameAlgorithm',
     ClassicalGame = 'classicalGame',
     AnnotateGame = 'annotateGame',
-    EndgameAlgorithm = 'endgameAlgorithm',
-    MiddlegameSparring = 'middlegameSparring',
-    DojoRush = 'dojoRush',
 }
 
 /** A task within a starter step and whether the user has done it. */
@@ -60,12 +60,23 @@ export function isStarterPlanActive(user: User): boolean {
 }
 
 /**
+ * Whether the starter plan asks for one of the task's count rather than all of it:
+ * one classical game, one annotation, one master game.
+ */
+function isCountedTask(user: User, task: Requirement): boolean {
+    return (
+        task.scoreboardDisplay !== ScoreboardDisplay.Checkbox &&
+        getTotalCount(user.dojoCohort, task, true) > 1
+    );
+}
+
+/**
  * Returns whether the user has already done the task in their real progress, for
  * example by logging it from another page. Counted tasks need one more than their
  * starting value; other tasks need to be complete.
  */
 function isDoneInProgress(user: User, task: Requirement, timeline: TimelineEntry[]): boolean {
-    if (task.id === CLASSICAL_GAMES_TASK_ID || task.id === ANNOTATE_GAMES_TASK_ID) {
+    if (isCountedTask(user, task)) {
         const count = getCurrentCount({
             cohort: user.dojoCohort,
             requirement: task,
@@ -91,11 +102,14 @@ export function getStarterSteps({
     requirements,
     timeline,
     hasDojoRushRun,
+    ignoreRealProgress = false,
 }: {
     user: User;
     requirements: Requirement[];
     timeline: TimelineEntry[];
     hasDojoRushRun: boolean;
+    /** Count only tasks marked done on the starter plan, as for a brand-new member. */
+    ignoreRealProgress?: boolean;
 }): StarterStep[] {
     const active = requirements.filter((r) => r.status === RequirementStatus.Active);
     const records = getStarterTasks(user.tutorials);
@@ -103,7 +117,7 @@ export function getStarterSteps({
     const toStepTask = (task: Requirement): StarterStepTask => ({
         task,
         record: records[task.id],
-        done: !!records[task.id] || isDoneInProgress(user, task, timeline),
+        done: !!records[task.id] || (!ignoreRealProgress && isDoneInProgress(user, task, timeline)),
     });
 
     const step = (id: StarterStepId, tasks: StarterStepTask[]): StarterStep => {
@@ -112,10 +126,7 @@ export function getStarterSteps({
     };
 
     const steps: StarterStep[] = [
-        step(
-            StarterStepId.Welcome,
-            active.filter((r) => r.category === RequirementCategory.Welcome).map(toStepTask),
-        ),
+        step(StarterStepId.Welcome, active.filter(isStarterWelcomeTask).map(toStepTask)),
     ];
 
     for (const [id, taskId] of [
@@ -128,16 +139,6 @@ export function getStarterSteps({
         }
     }
 
-    for (const [id, tasks] of [
-        [StarterStepId.EndgameAlgorithm, active.filter(isEndgameAlgorithm)],
-        [StarterStepId.MiddlegameSparring, active.filter(isMiddlegameSparring)],
-    ] as const) {
-        const chosen = chooseOneOf(tasks.map(toStepTask));
-        if (chosen) {
-            steps.push(step(id, [chosen]));
-        }
-    }
-
     steps.push({
         id: StarterStepId.DojoRush,
         complete: hasDojoRushRun,
@@ -145,7 +146,35 @@ export function getStarterSteps({
         total: 1,
         tasks: [],
     });
-    return steps;
+
+    for (const [id, tasks] of [
+        [StarterStepId.EndgameAlgorithm, active.filter(isEndgameAlgorithm)],
+        [StarterStepId.MasterGame, active.filter(isMasterGamesTask)],
+    ] as const) {
+        const chosen = chooseOneOf(tasks.map(toStepTask));
+        if (chosen) {
+            steps.push(step(id, [chosen]));
+        }
+    }
+
+    // StarterStepId lists the steps in the order they are shown.
+    const order = Object.values(StarterStepId);
+    return steps.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+}
+
+/**
+ * Welcome to the Dojo tasks left out of the starter plan: the training partner guide
+ * and the weekly training plans guide, which matter once the member is on the full
+ * plan. They stay in the Welcome to the Dojo category there.
+ */
+const EXCLUDED_WELCOME_TASKS = [/training partner/i, /weekly training plan/i];
+
+/** Whether the task is a Welcome to the Dojo task included in the starter plan. */
+export function isStarterWelcomeTask(task: Requirement): boolean {
+    return (
+        task.category === RequirementCategory.Welcome &&
+        !EXCLUDED_WELCOME_TASKS.some((pattern) => pattern.test(task.name))
+    );
 }
 
 /** Whether the task is one of the numbered endgame algorithms (e.g. "Complete Algorithm #1"). */
@@ -153,16 +182,9 @@ export function isEndgameAlgorithm(task: Requirement): boolean {
     return task.category === RequirementCategory.Endgame && /algorithm/i.test(task.name);
 }
 
-/**
- * Whether the task is a middlegame sparring position. The guide to middlegame
- * sparring is in the same category but is reading, not sparring, so it is left out.
- */
-export function isMiddlegameSparring(task: Requirement): boolean {
-    return (
-        task.category === RequirementCategory.Middlegames &&
-        /sparring/i.test(task.name) &&
-        !/guide/i.test(task.name)
-    );
+/** Whether the task is the cohort's "Study Master Games" task, not a guide about it. */
+export function isMasterGamesTask(task: Requirement): boolean {
+    return /master games/i.test(task.name) && !/guide/i.test(task.name);
 }
 
 /**
@@ -188,10 +210,20 @@ export interface StarterCredit {
 }
 
 /**
+ * Whether the starter plan asks for only the first position of the task: endgame
+ * algorithms have several positions, but the starter plan asks for one, so finishing
+ * it does not complete the whole algorithm.
+ */
+export function isOnePositionTask(task: Requirement): boolean {
+    return isEndgameAlgorithm(task);
+}
+
+/**
  * Returns the progress updates that move the user's starter tasks into their real
  * progress when they finish the starter plan. Each task marked done on the starter
  * plan and not yet credited adds one to a counted task or completes a checkbox task.
- * A checkbox task already complete in real progress is credited with its time only.
+ * A checkbox task already complete in real progress, and a task the starter plan only
+ * asked one position of, is credited with its time only.
  */
 export function getStarterCredits(
     user: User,
@@ -211,7 +243,11 @@ export function getStarterCredits(
         });
         const totalCount = getTotalCount(user.dojoCohort, task, true);
         const isCheckbox = task.scoreboardDisplay === ScoreboardDisplay.Checkbox || totalCount <= 1;
-        const newCount = isCheckbox ? Math.max(previousCount, totalCount) : previousCount + 1;
+        const newCount = isOnePositionTask(task)
+            ? previousCount
+            : isCheckbox
+              ? Math.max(previousCount, totalCount)
+              : previousCount + 1;
         credits.push({
             task,
             previousCount,

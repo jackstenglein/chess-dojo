@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+    getStarterResetAt,
     getStarterTasks,
     isStarterPlanFinished,
+    withoutStarterProgress,
     withoutStarterTask,
     withStarterPlanFinished,
+    withStarterReset,
     withStarterTask,
     withStarterTaskCredited,
 } from './starterProgress';
@@ -54,6 +57,27 @@ describe('starter progress storage', () => {
                 [`starter:${taskId}:10:${date.getTime()}`]: false,
             }),
         ).toEqual({});
+    });
+
+    it('clears all starter progress and keeps other tutorials', () => {
+        let tutorials = withStarterTask({ ScoreboardPage: true }, taskId, 45, date);
+        tutorials = withStarterPlanFinished(withStarterTaskCredited(tutorials, taskId));
+
+        expect(withoutStarterProgress(tutorials)).toEqual({ ScoreboardPage: true });
+    });
+
+    it('remembers when the plan was reset and clears the old progress', () => {
+        let tutorials = withStarterPlanFinished(withStarterTask({}, taskId, 45, date));
+        tutorials = withStarterReset(tutorials, date);
+
+        expect(getStarterTasks(tutorials)).toEqual({});
+        expect(isStarterPlanFinished(tutorials)).toBe(false);
+        expect(getStarterResetAt(tutorials)).toBe(date.getTime());
+
+        // A later reset replaces the earlier time.
+        const later = new Date('2026-11-22T10:00:00.000Z');
+        expect(getStarterResetAt(withStarterReset(tutorials, later))).toBe(later.getTime());
+        expect(getStarterResetAt({})).toBeUndefined();
     });
 
     it('marks the starter plan finished', () => {
