@@ -186,7 +186,10 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
     return (
         <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Container maxWidth='xl' sx={{ py: { xs: 3, md: 4 } }}>
+                <Container
+                    maxWidth='xl'
+                    sx={{ py: { xs: 3, md: 4 }, display: 'flex', flexDirection: 'column', gap: 3 }}
+                >
                     <Stack
                         sx={{
                             flexDirection: { xs: 'column', md: 'row' },
@@ -204,39 +207,64 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 <HeaderStat label='Themes'>{themeCount}</HeaderStat>
                                 <HeaderStat label='Contributors'>{contributors}</HeaderStat>
                             </Stack>
-                            <Stack direction='row' sx={{ gap: 1.5, flexWrap: 'wrap' }}>
-                                <Button
-                                    variant='contained'
-                                    startIcon={<Add />}
-                                    onClick={() => setAdding(true)}
-                                >
-                                    Add puzzles
-                                </Button>
-                                <Button
-                                    component={Link}
-                                    href='/puzzles/train'
-                                    variant='outlined'
-                                    startIcon={<PlayArrow />}
-                                >
-                                    Train
-                                </Button>
-                                <Button
-                                    component={Link}
-                                    href='/puzzles/base/review'
-                                    variant='outlined'
-                                    color='inherit'
-                                    startIcon={<LocalOffer />}
-                                >
-                                    Review tags
-                                    {pendingReviews > 0 && (
-                                        <Chip
-                                            size='small'
-                                            color='primary'
-                                            label={pendingReviews}
-                                            sx={{ ml: 1, height: 20 }}
-                                        />
-                                    )}
-                                </Button>
+                        </Stack>
+                        <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                            <PopularPuzzles puzzles={puzzles} />
+                            <Leaderboard entries={leaderboard} />
+                        </Stack>
+                    </Stack>
+                    <Stack direction='row' sx={{ gap: 1.5, flexWrap: 'wrap' }}>
+                        <Button
+                            variant='contained'
+                            startIcon={<Add />}
+                            onClick={() => setAdding(true)}
+                        >
+                            Add puzzles
+                        </Button>
+                        <Button
+                            component={Link}
+                            href='/puzzles/train'
+                            variant='outlined'
+                            startIcon={<PlayArrow />}
+                        >
+                            Train
+                        </Button>
+                        <Button
+                            component={Link}
+                            href='/puzzles/base/review'
+                            variant='outlined'
+                            color='inherit'
+                            startIcon={<LocalOffer />}
+                        >
+                            Review tags
+                            {pendingReviews > 0 && (
+                                <Chip
+                                    size='small'
+                                    color='primary'
+                                    label={pendingReviews}
+                                    sx={{ ml: 1, height: 20 }}
+                                />
+                            )}
+                        </Button>
+                        <Divider
+                            orientation='vertical'
+                            flexItem
+                            sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
+                        />
+                        <Button
+                            color='inherit'
+                            startIcon={<Download />}
+                            onClick={() =>
+                                downloadText(
+                                    `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
+                                    puzzlesToPgn(puzzles),
+                                )
+                            }
+                        >
+                            Export PGN
+                        </Button>
+                        {status.isAdmin && (
+                            <>
                                 <Divider
                                     orientation='vertical'
                                     flexItem
@@ -244,54 +272,29 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 />
                                 <Button
                                     color='inherit'
-                                    startIcon={<Download />}
-                                    onClick={() =>
-                                        downloadText(
-                                            `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
-                                            puzzlesToPgn(puzzles),
-                                        )
-                                    }
+                                    startIcon={<Groups />}
+                                    onClick={() => setShowContributors(true)}
                                 >
-                                    Export PGN
-                                </Button>
-                                {status.isAdmin && (
-                                    <>
-                                        <Divider
-                                            orientation='vertical'
-                                            flexItem
-                                            sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
+                                    Manage contributors
+                                    {waiting > 0 && (
+                                        <Chip
+                                            size='small'
+                                            color='primary'
+                                            label={waiting}
+                                            sx={{ ml: 1, height: 20 }}
                                         />
-                                        <Button
-                                            color='inherit'
-                                            startIcon={<Groups />}
-                                            onClick={() => setShowContributors(true)}
-                                        >
-                                            Manage contributors
-                                            {waiting > 0 && (
-                                                <Chip
-                                                    size='small'
-                                                    color='primary'
-                                                    label={waiting}
-                                                    sx={{ ml: 1, height: 20 }}
-                                                />
-                                            )}
-                                        </Button>
-                                        <Button
-                                            component={Link}
-                                            href='/puzzles/base/admin-log'
-                                            color='inherit'
-                                            startIcon={<History />}
-                                        >
-                                            Admin log
-                                        </Button>
-                                    </>
-                                )}
-                            </Stack>
-                        </Stack>
-                        <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-                            <PopularPuzzles puzzles={puzzles} />
-                            <Leaderboard entries={leaderboard} />
-                        </Stack>
+                                    )}
+                                </Button>
+                                <Button
+                                    component={Link}
+                                    href='/puzzles/base/admin-log'
+                                    color='inherit'
+                                    startIcon={<History />}
+                                >
+                                    Admin log
+                                </Button>
+                            </>
+                        )}
                     </Stack>
                 </Container>
                 <Stack direction='row' aria-hidden sx={{ height: 3 }}>
