@@ -266,7 +266,7 @@ export function AddPuzzlesDialog({
                                     variant='overline'
                                     sx={{ color: 'text.secondary', lineHeight: 1.4 }}
                                 >
-                                    Things that were left off · {imported.warnings.length}
+                                    Notes · {imported.warnings.length}
                                 </Typography>
                                 {imported.warnings.map((note, i) => (
                                     <Alert key={i} severity='info' icon={false}>

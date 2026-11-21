@@ -4,10 +4,12 @@ import {
     ImportLichessStudyRequestSchema,
     ImportLichessStudyResponse,
     PuzzlebasePuzzle,
+    PuzzlebaseTaxonomy,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import {
     buildPuzzle,
-    contributionFromPgn,
+    contributionAddingThemes,
+    PgnContribution,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/build';
 import {
     ParsedPuzzlePgn,
@@ -29,6 +31,7 @@ import {
     putPuzzle,
     requireContributor,
     reservePuzzleIds,
+    saveTaxonomy,
 } from './database';
 
 const STUDY_ID_REGEX = /^[A-Za-z0-9]{8}$/;
@@ -57,10 +60,41 @@ function chapterTitle(pgn: string): string | undefined {
     return /\[Event "([^"]*)"\]/.exec(pgn)?.[1];
 }
 
+/** How many times saving new themes is tried when someone else changes the themes meanwhile. */
+const MAX_TAXONOMY_ATTEMPTS = 3;
+
+/**
+ * Works out each chapter's tags, adding the themes the chapters name that don't exist yet, and
+ * saves the new themes. Chapters are taken in order, so a theme the first one adds is simply used
+ * by later ones.
+ * @throws ApiError 409 if the themes kept changing while saving.
+ */
+async function addChapterThemes(
+    chapters: { parsed: ParsedPuzzlePgn }[],
+): Promise<{ taxonomy: PuzzlebaseTaxonomy; contributions: PgnContribution[] }> {
+    for (let attempt = 0; attempt < MAX_TAXONOMY_ATTEMPTS; attempt++) {
+        const { taxonomy: stored, version } = await getTaxonomy();
+        let taxonomy = stored;
+        const contributions = chapters.map(({ parsed }) => {
+            const result = contributionAddingThemes(taxonomy, parsed);
+            taxonomy = result.taxonomy;
+            return result.contribution;
+        });
+        if (taxonomy === stored || (await saveTaxonomy(taxonomy, version))) {
+            return { taxonomy, contributions };
+        }
+    }
+    throw new ApiError({
+        statusCode: 409,
+        publicMessage: 'The themes changed while importing. Please try again.',
+    });
+}
+
 /**
  * Handles requests to import a public Lichess study. Every chapter becomes its own puzzle, and
  * every puzzle gets the requested rating. Chapters that are not puzzles (no starting position, no
- * moves, or an illegal move) are skipped and reported rather than failing the whole import.
+ * moves, or an illegal move) are skipped and reported rather than failing the whole import. Tags
+ * that are not real themes become new themes, as when adding a single puzzle.
  * The caller must be a Puzzle Contributor or an admin.
  */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -98,16 +132,23 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         });
 
         if (usable.length > 0) {
-            const { taxonomy } = await getTaxonomy();
+            // A chapter can ask for its own tags and rating. A tag that is not a real theme is
+            // added as a new one (or read as the real tag it is a typo of), and reported.
+            const { taxonomy, contributions } = await addChapterThemes(usable);
+            contributions.forEach((fromPgn, i) => {
+                for (const message of fromPgn.warnings) {
+                    response.warnings.push({
+                        chapter: usable[i].chapter,
+                        title: usable[i].title,
+                        message,
+                    });
+                }
+            });
+
             const ids = await reservePuzzleIds(usable.length);
             const now = new Date().toISOString();
-            const puzzles: PuzzlebasePuzzle[] = usable.map(({ parsed, chapter, title }, i) => {
-                // A chapter can ask for its own tags and rating. Anything that is not a real
-                // theme is left off and reported, rather than skipping the whole chapter.
-                const fromPgn = contributionFromPgn(taxonomy, parsed);
-                for (const message of fromPgn.warnings) {
-                    response.warnings.push({ chapter, title, message });
-                }
+            const puzzles: PuzzlebasePuzzle[] = usable.map(({ parsed }, i) => {
+                const fromPgn = contributions[i];
                 return buildPuzzle(
                     {
                         id: ids[i],

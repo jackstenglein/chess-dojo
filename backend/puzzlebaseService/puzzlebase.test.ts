@@ -296,14 +296,38 @@ describe('tags and ratings written in the PGN', () => {
         expect(status).toBe(200);
         expect(body.puzzles.map((p: any) => [p.rating, p.themes])).toEqual([
             [500, ['Fork']],
-            [1000, ['Pin']],
+            [1000, ['Pin', 'Banana']],
             [1000, []],
         ]);
-        // The typo does not skip the chapter. It is reported against it.
+        // A tag that is not a theme yet becomes one, and the chapter says so.
         expect(body.skipped).toEqual([]);
         expect(body.warnings).toEqual([
-            { chapter: 2, message: 'Unknown tag "Banana". It was left off.' },
+            { chapter: 2, message: 'Added new theme "Banana" under Tactics.' },
         ]);
+        expect(taxonomy.buckets.Tactics).toContain('Banana');
+    });
+
+    it('reads a typo as the real tag, and adds a new theme once for every chapter', async () => {
+        getLichessStudyMock.mockResolvedValue([
+            pgnWith('{ tags: Endgame, Skewr, Triangulation dance } '),
+            pgnWith('{ tags: triangulation dance } '),
+        ]);
+        const { body } = await call(
+            importStudy,
+            event('approved', { study: 'abcd1234', rating: 1000 }),
+        );
+
+        expect(body.puzzles.map((p: any) => p.themes)).toEqual([
+            ['Skewer', 'Triangulation dance'],
+            ['Triangulation dance'],
+        ]);
+        expect(body.warnings).toEqual([
+            { chapter: 1, message: 'Added new theme "Triangulation dance" under Endgame.' },
+            { chapter: 1, message: 'Read "Skewr" as "Skewer".' },
+        ]);
+        expect(
+            taxonomy.buckets.Endgame.filter((t: string) => t === 'Triangulation dance'),
+        ).toHaveLength(1);
     });
 });
 

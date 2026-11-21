@@ -7,7 +7,7 @@ import {
     UpdatePuzzleRequest,
 } from './api';
 import { ParsedPuzzlePgn, parsePuzzlePgn } from './parse';
-import { describeUnknownTag, resolveTagNames } from './pgnTags';
+import { describeUnknownTag, planTags, resolveTagNames } from './pgnTags';
 import { canonicalTheme, normalizeThemeName } from './tags';
 
 export { normalizeThemeName };
@@ -136,6 +136,46 @@ export function contributionFromPgn(
         themes: resolved.themes,
         rating: parsed.rating,
         warnings: [...parsed.problems, ...resolved.unknown.map(describeUnknownTag)],
+    };
+}
+
+/**
+ * Like contributionFromPgn, but a tag that is not a real theme is added to the taxonomy instead of
+ * being left off (see planTags): a near miss is read as the real tag, and anything else becomes a
+ * new theme. Every change is noted in the warnings.
+ * @returns What the PGN adds to the puzzle, and the taxonomy with any new themes in it.
+ */
+export function contributionAddingThemes(
+    taxonomy: PuzzlebaseTaxonomy,
+    parsed: Pick<ParsedPuzzlePgn, 'tagNames' | 'rating' | 'problems'>,
+): { contribution: PgnContribution; taxonomy: PuzzlebaseTaxonomy } {
+    const plan = planTags(taxonomy, parsed.tagNames);
+    const warnings = [...parsed.problems];
+    const creating = new Set(plan.create.map((c) => c.theme));
+    const themes = plan.themes.filter((t) => !creating.has(t));
+
+    let updated = taxonomy;
+    for (const { theme, bucket } of plan.create) {
+        try {
+            updated = addThemeToTaxonomy(updated, bucket, theme);
+            themes.push(canonicalTheme(updated, theme) ?? theme);
+            warnings.push(`Added new theme "${theme}" under ${bucket}.`);
+        } catch (err) {
+            warnings.push(
+                `"${theme}" was left off: ${err instanceof Error ? err.message : 'not a valid theme'}`,
+            );
+        }
+    }
+    for (const { name, to } of plan.corrected) {
+        warnings.push(`Read "${name}" as "${to}".`);
+    }
+    for (const name of plan.skipped) {
+        warnings.push(`"${name}" can't be a theme name, so it was left off.`);
+    }
+
+    return {
+        contribution: { buckets: plan.buckets, themes, rating: parsed.rating, warnings },
+        taxonomy: updated,
     };
 }
 

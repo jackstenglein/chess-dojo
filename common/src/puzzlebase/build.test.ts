@@ -4,6 +4,7 @@ import {
     addThemeToTaxonomy,
     applyPuzzleUpdate,
     buildPuzzle,
+    contributionAddingThemes,
     contributionFromPgn,
     defaultTaxonomy,
     normalizeThemeName,
@@ -279,5 +280,40 @@ describe('removeThemeFromTaxonomy', () => {
     it('rejects unknown buckets and themes', () => {
         expect(() => removeThemeFromTaxonomy(tax, 'Nope', 'Pin')).toThrow('Unknown bucket');
         expect(() => removeThemeFromTaxonomy(tax, 'Tactics', 'Skewer')).toThrow('not in Tactics');
+    });
+});
+
+describe('contributionAddingThemes', () => {
+    const withComment = (comment: string) =>
+        parsePuzzlePgn(`[SetUp "1"]\n[FEN "${FEN}"]\n\n{ ${comment} } 1. Rd8#`);
+
+    it('adds new themes to the taxonomy, reads typos as real tags, and says so', () => {
+        const before = defaultTaxonomy();
+        const { contribution, taxonomy } = contributionAddingThemes(
+            before,
+            withComment('tags: Endgame, Fork, Skewr, banana split; rating: 900'),
+        );
+        expect(contribution).toEqual({
+            buckets: ['Endgame'],
+            themes: ['Fork', 'Skewer', 'Banana split'],
+            rating: 900,
+            warnings: [
+                'Added new theme "Banana split" under Endgame.',
+                'Read "Skewr" as "Skewer".',
+            ],
+        });
+        expect(taxonomy.buckets.Endgame).toContain('Banana split');
+        // The taxonomy passed in is not changed.
+        expect(before.buckets.Endgame).not.toContain('Banana split');
+    });
+
+    it('changes nothing when every tag is known', () => {
+        const before = defaultTaxonomy();
+        const { contribution, taxonomy } = contributionAddingThemes(
+            before,
+            withComment('tags: Fork'),
+        );
+        expect(taxonomy).toBe(before);
+        expect(contribution.warnings).toEqual([]);
     });
 });
