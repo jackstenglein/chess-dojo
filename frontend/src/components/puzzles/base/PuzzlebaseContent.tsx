@@ -25,6 +25,7 @@ import {
     Chip,
     CircularProgress,
     Container,
+    Divider,
     MenuItem,
     Paper,
     Select,
@@ -153,6 +154,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
     const editingPuzzle = puzzles.find((p) => p.id === editingId);
 
     const contributors = new Set(puzzles.map((p) => p.annotator)).size;
+    // A theme can be listed under several buckets, but it is still one theme.
+    const themeCount = new Set(Object.values(taxonomy.buckets).flat()).size;
     const hasFilters =
         filterBuckets.length > 0 || filterThemes.length > 0 || filterBands.length > 0;
 
@@ -198,36 +201,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             </Typography>
                             <Stack direction='row' sx={{ gap: 4 }}>
                                 <HeaderStat label='Puzzles'>{puzzles.length}</HeaderStat>
+                                <HeaderStat label='Themes'>{themeCount}</HeaderStat>
                                 <HeaderStat label='Contributors'>{contributors}</HeaderStat>
-                                {status.isAdmin && (
-                                    <Stack direction='row' sx={{ gap: 0.5, alignSelf: 'flex-end' }}>
-                                        <Button
-                                            size='small'
-                                            color='inherit'
-                                            startIcon={<Groups />}
-                                            onClick={() => setShowContributors(true)}
-                                        >
-                                            Manage contributors
-                                            {waiting > 0 && (
-                                                <Chip
-                                                    size='small'
-                                                    color='primary'
-                                                    label={waiting}
-                                                    sx={{ ml: 1, height: 18 }}
-                                                />
-                                            )}
-                                        </Button>
-                                        <Button
-                                            component={Link}
-                                            href='/puzzles/base/admin-log'
-                                            size='small'
-                                            color='inherit'
-                                            startIcon={<History />}
-                                        >
-                                            Admin log
-                                        </Button>
-                                    </Stack>
-                                )}
                             </Stack>
                             <Stack direction='row' sx={{ gap: 1.5, flexWrap: 'wrap' }}>
                                 <Button
@@ -262,6 +237,11 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                         />
                                     )}
                                 </Button>
+                                <Divider
+                                    orientation='vertical'
+                                    flexItem
+                                    sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
+                                />
                                 <Button
                                     color='inherit'
                                     startIcon={<Download />}
@@ -274,6 +254,38 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 >
                                     Export PGN
                                 </Button>
+                                {status.isAdmin && (
+                                    <>
+                                        <Divider
+                                            orientation='vertical'
+                                            flexItem
+                                            sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
+                                        />
+                                        <Button
+                                            color='inherit'
+                                            startIcon={<Groups />}
+                                            onClick={() => setShowContributors(true)}
+                                        >
+                                            Manage contributors
+                                            {waiting > 0 && (
+                                                <Chip
+                                                    size='small'
+                                                    color='primary'
+                                                    label={waiting}
+                                                    sx={{ ml: 1, height: 20 }}
+                                                />
+                                            )}
+                                        </Button>
+                                        <Button
+                                            component={Link}
+                                            href='/puzzles/base/admin-log'
+                                            color='inherit'
+                                            startIcon={<History />}
+                                        >
+                                            Admin log
+                                        </Button>
+                                    </>
+                                )}
                             </Stack>
                         </Stack>
                         <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
