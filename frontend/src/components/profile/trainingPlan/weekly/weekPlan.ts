@@ -125,6 +125,11 @@ export function getWeekRows({
     return [...rows.values()];
 }
 
+/** Returns only the rows the user has logged time on this week. */
+export function filterActiveRows(rows: WeekRow[]): WeekRow[] {
+    return rows.filter((row) => row.cells.some((cell) => cell.workedMinutes > 0));
+}
+
 function getDayOfWeekAfterDate(reference: Date, day: number): string {
     reference.setHours(0, 0, 0, 0);
     if (reference.getDay() < day) {

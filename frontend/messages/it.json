@@ -180,6 +180,7 @@
             "daily": {
                 "today": "Oggi",
                 "summary": "{done} di {total} attività fatte · {worked} di {goal}",
+                "plannedOverGoal": "{planned} in programma",
                 "allDone": "Finito per oggi · {worked} registrati",
                 "goalMet": "Obiettivo di tempo raggiunto",
                 "skippedHeading": "Saltate questa settimana ({count})",
@@ -400,12 +401,8 @@
                 "days": "Giorni",
                 "timePerDay": "Tempo al giorno",
                 "perDay": "Imposta per giorno",
-                "overbooked": "Le attività fissate superano il tempo pianificato di {days}.",
                 "unpin": "Rimuovi",
-                "pin": "Fissa",
-                "overbookedDay": "{day} è troppo pieno: le attività fissate richiedono {allocated}, ma hai pianificato {goal}.",
-                "raiseGoal": "Pianifica {time} per {day}",
-                "trimTasks": "Riduci le attività a {time}"
+                "pin": "Fissa"
             }
         },
         "activity": {

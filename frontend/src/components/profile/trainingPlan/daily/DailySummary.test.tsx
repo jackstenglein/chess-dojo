@@ -43,4 +43,28 @@ describe('DailySummary', () => {
         expect(screen.getByText(/Done for today/)).toBeTruthy();
         expect(screen.queryByTestId('daily-goal-met')).toBeNull();
     });
+
+    it('measures progress against the day goal and shows pinned time over it', () => {
+        renderSummary({
+            taskCount: 2,
+            doneCount: 0,
+            goalMinutes: 60,
+            plannedMinutes: 120,
+            workedMinutes: 30,
+        });
+        expect(screen.getByTestId('daily-summary').textContent).toContain('30m of 1h');
+        expect(screen.getByTestId('daily-planned-over-goal').textContent).toBe('2h planned');
+    });
+
+    it('marks the day goal met even when pinned tasks planned more', () => {
+        renderSummary({
+            taskCount: 2,
+            doneCount: 0,
+            goalMinutes: 60,
+            plannedMinutes: 120,
+            workedMinutes: 60,
+        });
+        expect(screen.getByTestId('daily-goal-met')).not.toBeNull();
+        expect(screen.queryByTestId('daily-planned-over-goal')).toBeNull();
+    });
 });

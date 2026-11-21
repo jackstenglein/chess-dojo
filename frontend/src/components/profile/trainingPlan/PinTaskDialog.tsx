@@ -1,7 +1,6 @@
 import { formatTime } from '@/database/requirement';
 import { PushPin } from '@mui/icons-material';
 import {
-    Alert,
     Box,
     Button,
     Dialog,
@@ -18,7 +17,7 @@ import {
 } from '@mui/material';
 import { useLocale, useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
-import { DEFAULT_PINNED_MINUTES, getAllocatedMinutes, getDayGoal } from './pinSchedule';
+import { DEFAULT_PINNED_MINUTES } from './pinSchedule';
 import { SectionLabel } from './SectionLabel';
 import { Stepper } from './Stepper';
 import { TaskDialogHeader, taskDialogPrimaryButtonSx } from './TaskDialogFrame';
@@ -115,13 +114,6 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
 
     const selectedDays = days.filter((d) => selected.includes(d));
     const sharedMinutes = minutes[selectedDays[0] ?? days[0]];
-
-    const otherPinnedIds = pinnedTasks.map((p) => p.id).filter((id) => id !== task.id);
-    const overbooked = selectedDays.filter(
-        (d) =>
-            getAllocatedMinutes(otherPinnedIds, user.pinnedTaskMinutes, d) + minutes[d] >
-            getDayGoal(user, d),
-    );
 
     const onToggleDays = (_: unknown, value: number[]) => {
         if (!perDay) {
@@ -243,9 +235,7 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
                                                 sx={{
                                                     width: 48,
                                                     flexShrink: 0,
-                                                    color: overbooked.includes(d)
-                                                        ? 'warning.main'
-                                                        : 'text.primary',
+                                                    color: 'text.primary',
                                                 }}
                                             >
                                                 {dayNames[d]}
@@ -254,7 +244,6 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
                                                 label={dayNames[d]}
                                                 value={minutes[d]}
                                                 onChange={(v) => setDayMinutes(d, v)}
-                                                warning={overbooked.includes(d)}
                                                 data-testid={`pin-minutes-${d}`}
                                             />
                                         </Stack>
@@ -266,7 +255,6 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
                                         label={tCommon('minutes')}
                                         value={sharedMinutes}
                                         onChange={setAllMinutes}
-                                        warning={overbooked.length > 0}
                                         data-testid='pin-minutes'
                                     />
                                     <ToggleButtonGroup
@@ -288,14 +276,6 @@ function PinTaskDialogForm({ onClose }: { onClose: () => void }) {
                                 </Stack>
                             )}
                         </Stack>
-                    )}
-
-                    {overbooked.length > 0 && (
-                        <Alert severity='warning' data-testid='pin-overbooked'>
-                            {t('overbooked', {
-                                days: overbooked.map((d) => dayNames[d]).join(', '),
-                            })}
-                        </Alert>
                     )}
                 </Stack>
             </DialogContent>
@@ -331,13 +311,11 @@ function MinutesStepper({
     label,
     value,
     onChange,
-    warning,
     'data-testid': dataTestId,
 }: {
     label: string;
     value: number;
     onChange: (value: number) => void;
-    warning?: boolean;
     'data-testid'?: string;
 }) {
     const t = useTranslations('profile.trainingPlan.progressUpdater');
@@ -352,7 +330,6 @@ function MinutesStepper({
             label={label}
             decrementLabel={t('removeTime')}
             incrementLabel={t('addTime')}
-            warning={warning}
             data-testid={dataTestId}
         />
     );
