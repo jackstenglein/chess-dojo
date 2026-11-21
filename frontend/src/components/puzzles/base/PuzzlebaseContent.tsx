@@ -11,18 +11,26 @@ import {
     Clear,
     Download,
     GridView,
+    Groups,
+    History,
     LocalOffer,
+    MoreHoriz,
     PlayArrow,
     TableRows,
     Tune,
 } from '@mui/icons-material';
 import {
     Alert,
+    Badge,
     Box,
     Button,
     Chip,
     CircularProgress,
     Container,
+    IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
     MenuItem,
     Paper,
     Select,
@@ -83,6 +91,11 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
         addPuzzles,
     } = usePuzzlebaseData(client);
     const [adding, setAdding] = useState(false);
+    const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null);
+    const [showContributors, setShowContributors] = useState(false);
+    const [showLog, setShowLog] = useState(false);
+    // How many contributor applications are waiting, for the dot on the menu.
+    const [waiting, setWaiting] = useState(0);
     // How many puzzles have tags waiting for review, for the badge on the Review tags button.
     const [pendingReviews, setPendingReviews] = useState(0);
     useEffect(() => {
@@ -229,20 +242,63 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                         />
                                     )}
                                 </Button>
-                                <Button
-                                    color='inherit'
-                                    startIcon={<Download />}
-                                    onClick={() =>
-                                        downloadText(
-                                            `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
-                                            puzzlesToPgn(puzzles),
-                                        )
-                                    }
+                                <IconButton
+                                    aria-label='More'
+                                    onClick={(e) => setMoreAnchor(e.currentTarget)}
                                 >
-                                    Export PGN
-                                </Button>
-                                {status.isAdmin && <ApplicationsPanel client={client} />}
-                                {status.isAdmin && <AdminLogPanel client={client} />}
+                                    <Badge color='primary' variant='dot' invisible={waiting === 0}>
+                                        <MoreHoriz />
+                                    </Badge>
+                                </IconButton>
+                                <Menu
+                                    anchorEl={moreAnchor}
+                                    open={!!moreAnchor}
+                                    onClose={() => setMoreAnchor(null)}
+                                >
+                                    <MenuItem
+                                        onClick={() => {
+                                            setMoreAnchor(null);
+                                            downloadText(
+                                                `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
+                                                puzzlesToPgn(puzzles),
+                                            );
+                                        }}
+                                    >
+                                        <ListItemIcon>
+                                            <Download />
+                                        </ListItemIcon>
+                                        <ListItemText>Export PGN</ListItemText>
+                                    </MenuItem>
+                                    {status.isAdmin && (
+                                        <MenuItem
+                                            onClick={() => {
+                                                setMoreAnchor(null);
+                                                setShowContributors(true);
+                                            }}
+                                        >
+                                            <ListItemIcon>
+                                                <Groups />
+                                            </ListItemIcon>
+                                            <ListItemText>
+                                                Contributors
+                                                {waiting > 0 ? ` · ${waiting} waiting` : ''}
+                                            </ListItemText>
+                                        </MenuItem>
+                                    )}
+                                    {status.isAdmin && (
+                                        <MenuItem
+                                            onClick={() => {
+                                                setMoreAnchor(null);
+                                                setShowLog(true);
+                                            }}
+                                        >
+                                            <ListItemIcon>
+                                                <History />
+                                            </ListItemIcon>
+                                            <ListItemText>Admin log</ListItemText>
+                                        </MenuItem>
+                                    )}
+                                </Menu>
                             </Stack>
                         </Stack>
                         <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
@@ -511,6 +567,22 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                     )}
                 </Stack>
             </Container>
+
+            {status.isAdmin && (
+                <>
+                    <ApplicationsPanel
+                        client={client}
+                        open={showContributors}
+                        onClose={() => setShowContributors(false)}
+                        onWaiting={setWaiting}
+                    />
+                    <AdminLogPanel
+                        client={client}
+                        open={showLog}
+                        onClose={() => setShowLog(false)}
+                    />
+                </>
+            )}
 
             {editingPuzzle && (
                 <EditPuzzleDialog

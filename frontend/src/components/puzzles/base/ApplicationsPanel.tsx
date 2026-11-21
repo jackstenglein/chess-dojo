@@ -4,11 +4,10 @@ import {
     ContributorStatus,
     PuzzlebaseContributor,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
-import { ExpandLess, ExpandMore, Groups } from '@mui/icons-material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import {
     Alert,
     Button,
-    Chip,
     Collapse,
     Dialog,
     DialogActions,
@@ -28,15 +27,24 @@ import { errorMessage } from './puzzlebaseErrors';
  * buttons, then the current contributors (each can be removed) and the people who were denied or
  * removed (each can be approved again). Shows nothing when there is no one to show.
  */
-export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
+export function ApplicationsPanel({
+    client,
+    open: showing,
+    onClose,
+    onWaiting,
+}: {
+    client: PuzzlebaseClient;
+    open: boolean;
+    onClose: () => void;
+    /** Told how many applications are waiting, for a badge on whatever opens the panel. */
+    onWaiting?: (count: number) => void;
+}) {
     const [people, setPeople] = useState<PuzzlebaseContributor[]>([]);
     const [working, setWorking] = useState<string>();
     // The contributor whose removal is waiting to be confirmed.
     const [confirming, setConfirming] = useState<string>();
     const [error, setError] = useState<string>();
     const [open, setOpen] = useState<'contributors' | 'closed'>();
-    const [showing, setShowing] = useState(false);
-
     useEffect(() => {
         let cancelled = false;
         client
@@ -75,6 +83,10 @@ export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
     const withStatus = (...statuses: ContributorStatus[]) =>
         people.filter((c) => statuses.includes(c.status));
     const waiting = withStatus('PENDING');
+    const waitingCount = waiting.length;
+    useEffect(() => {
+        onWaiting?.(waitingCount);
+    }, [onWaiting, waitingCount]);
     const members = withStatus('APPROVED');
     const turnedDown = withStatus('DENIED', 'REVOKED');
 
@@ -147,23 +159,7 @@ export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
 
     return (
         <>
-            <Button
-                color='inherit'
-                startIcon={<Groups />}
-                onClick={() => setShowing(true)}
-                aria-label='Puzzle Contributors'
-            >
-                Contributors
-                {waiting.length > 0 && (
-                    <Chip
-                        size='small'
-                        color='primary'
-                        label={waiting.length}
-                        sx={{ ml: 1, height: 20 }}
-                    />
-                )}
-            </Button>
-            <Dialog open={showing} onClose={() => setShowing(false)} fullWidth maxWidth='sm'>
+            <Dialog open={showing} onClose={onClose} fullWidth maxWidth='sm'>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Puzzle Contributors</DialogTitle>
                 <DialogContent>
                     <Stack sx={{ gap: 1.5 }}>
@@ -269,7 +265,7 @@ export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button color='inherit' onClick={() => setShowing(false)}>
+                    <Button color='inherit' onClick={onClose}>
                         Close
                     </Button>
                 </DialogActions>

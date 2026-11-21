@@ -1,7 +1,6 @@
 'use client';
 
 import { AdminAction } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
-import { History } from '@mui/icons-material';
 import {
     Alert,
     Button,
@@ -17,8 +16,15 @@ import { PuzzlebaseClient } from './puzzlebaseClient';
 import { errorMessage } from './puzzlebaseErrors';
 
 /** For puzzle admins: a record of what admins have done (deleting themes, approving contributors). */
-export function AdminLogPanel({ client }: { client: PuzzlebaseClient }) {
-    const [open, setOpen] = useState(false);
+export function AdminLogPanel({
+    client,
+    open,
+    onClose,
+}: {
+    client: PuzzlebaseClient;
+    open: boolean;
+    onClose: () => void;
+}) {
     const [actions, setActions] = useState<AdminAction[]>();
     const [error, setError] = useState<string>();
 
@@ -36,10 +42,7 @@ export function AdminLogPanel({ client }: { client: PuzzlebaseClient }) {
 
     return (
         <>
-            <Button color='inherit' startIcon={<History />} onClick={() => setOpen(true)}>
-                Admin log
-            </Button>
-            <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='sm'>
+            <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Admin log</DialogTitle>
                 <DialogContent>
                     {error && <Alert severity='error'>{error}</Alert>}
@@ -58,7 +61,7 @@ export function AdminLogPanel({ client }: { client: PuzzlebaseClient }) {
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button color='inherit' onClick={() => setOpen(false)}>
+                    <Button color='inherit' onClick={onClose}>
                         Close
                     </Button>
                 </DialogActions>
