@@ -201,12 +201,6 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
                                     Dojo PuzzleBase
                                 </Typography>
-                                <Typography
-                                    sx={{ color: 'text.secondary', mt: 0.75, maxWidth: 460 }}
-                                >
-                                    Hand-picked puzzles from Dojo contributors, tagged by theme and
-                                    rated by difficulty.
-                                </Typography>
                             </Box>
                             <Stack
                                 direction='row'
