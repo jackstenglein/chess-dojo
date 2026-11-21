@@ -18,6 +18,7 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import {
     AttemptSubmission,
+    DashboardAttemptsResponse,
     PuzzleAttempt,
     PuzzleRunsResponse,
     PuzzleStatsResponse,
@@ -240,6 +241,19 @@ export function getPuzzleRuns(
     return axiosService.get<PuzzleRunsResponse>(`/puzzlebase/runs/${username}`, {
         params: range,
         functionName: 'getPuzzleRuns',
+    });
+}
+
+/**
+ * Fetches everyone's attempts in a stretch of time, newest first, for the stats dashboard. By
+ * default the last 30 days. Puzzle Contributors and admins only.
+ */
+export function getDashboardAttempts(
+    range: { from?: string; to?: string } = {},
+): Promise<AxiosResponse<DashboardAttemptsResponse>> {
+    return axiosService.get<DashboardAttemptsResponse>('/puzzlebase/dashboard/attempts', {
+        params: range,
+        functionName: 'getDashboardAttempts',
     });
 }
 

@@ -12,6 +12,7 @@ import {
     addCounters,
     continuesSession,
     countersForAttempt,
+    DashboardAttempt,
     emptyCounters,
     PuzzleAttempt,
     PuzzleSession,
@@ -33,8 +34,14 @@ import { dynamo, getUser } from './database';
  * - `RATING`: the person's tactics rating, its uncertainty and how many puzzles counted towards it.
  *
  * Attempts and sessions sort by time, so a day or a month is a range query.
+ *
+ * The `ByPuzzle` index lists the attempts at a puzzle by when they finished, for the stats
+ * dashboard. Only attempts have a `puzzleId`, so nothing else is in it.
  */
 export const runsTable = process.env.stage + '-puzzlebase-runs';
+
+/** The index of attempts by puzzle and finish time. */
+export const BY_PUZZLE_INDEX = 'ByPuzzle';
 
 const COUNTER_FIELDS = Object.keys(emptyCounters()) as (keyof StatCounters)[];
 
@@ -321,4 +328,42 @@ export async function getLastSeen(username: string): Promise<Record<string, stri
         }
     }
     return lastSeen;
+}
+
+/**
+ * Returns everyone's attempts at a puzzle that finished in [from, to), oldest first.
+ * @param limit Stop after this many; the caller has a cap on the whole dashboard.
+ */
+export async function listAttemptsForPuzzle(
+    puzzleId: string,
+    from: string,
+    to: string,
+    limit: number,
+): Promise<DashboardAttempt[]> {
+    const attempts: DashboardAttempt[] = [];
+    let startKey: Record<string, unknown> | undefined;
+    do {
+        const output = await dynamo.send(
+            new QueryCommand({
+                TableName: runsTable,
+                IndexName: BY_PUZZLE_INDEX,
+                KeyConditionExpression: 'puzzleId = :puzzleId AND finishedAt BETWEEN :from AND :to',
+                ExpressionAttributeValues: marshall({
+                    ':puzzleId': puzzleId,
+                    ':from': from,
+                    ':to': to,
+                }),
+                ExclusiveStartKey: startKey as never,
+            }),
+        );
+        for (const item of output.Items ?? []) {
+            const { sk: _sk, ...attempt } = unmarshall(item);
+            // BETWEEN includes `to`; the range is meant to stop just before it.
+            if (attempt.finishedAt < to) {
+                attempts.push(attempt as DashboardAttempt);
+            }
+        }
+        startKey = output.LastEvaluatedKey;
+    } while (startKey && attempts.length < limit);
+    return attempts.slice(0, limit);
 }

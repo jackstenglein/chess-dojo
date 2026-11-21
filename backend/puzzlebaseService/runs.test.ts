@@ -29,6 +29,7 @@ vi.mock('../directoryService/database', () => ({
 
 import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/ratingSystem';
 import { getNormalizedRating } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
+import { handler as dashboardHandler } from './dashboard';
 import { runsHandler, statsHandler } from './stats';
 import { submitAttemptHandler, trainHandler } from './training';
 
@@ -88,6 +89,17 @@ function runUpdate(input: any) {
 
 function runQuery(input: any) {
     const values = unmarshall(input.ExpressionAttributeValues);
+    if (input.IndexName === 'ByPuzzle') {
+        const items = [...runs.values()]
+            .filter(
+                (i) =>
+                    i.puzzleId === values[':puzzleId'] &&
+                    i.finishedAt >= values[':from'] &&
+                    i.finishedAt <= values[':to'],
+            )
+            .sort((a, b) => a.finishedAt.localeCompare(b.finishedAt));
+        return { Items: items.map((i) => marshall(i, { removeUndefinedValues: true })) };
+    }
     let items = [...runs.values()]
         .filter((i) => i.username === values[':username'])
         .sort((a, b) => a.sk.localeCompare(b.sk));
@@ -855,5 +867,58 @@ describe('scoring and tactics rating', () => {
     it('leaves a member with no counted puzzles without a rating in their stats', async () => {
         const { body } = await call(statsHandler, event('rated', {}, { username: 'rated' }));
         expect(body.rating).toBeUndefined();
+    });
+});
+
+describe('the stats dashboard', () => {
+    it('saves who the solver was, with their ratings, on each attempt', async () => {
+        await call(submitAttemptHandler, event('rated', submission()));
+        const [attempt] = stored('rated', 'ATTEMPT#');
+        expect(attempt.solver).toMatchObject({
+            displayName: 'Rated',
+            ratingSystem: 'LICHESS',
+            ratings: { LICHESS: 1500 },
+            normalizedRating: Math.round(getNormalizedRating(1500, RatingSystem.Lichess)),
+        });
+    });
+
+    it("lists everyone's attempts in the range, newest first", async () => {
+        await call(submitAttemptHandler, event('rated', submission({ finishedAt: at(50) })));
+        await call(
+            submitAttemptHandler,
+            event('other', submission({ puzzleId: '003', finishedAt: at(40) })),
+        );
+        // 40 days ago: outside the default range of 30 days.
+        await call(
+            submitAttemptHandler,
+            event('other', submission({ startedAt: at(40 * 1440 + 1), finishedAt: at(40 * 1440) })),
+        );
+
+        const { status, body } = await call(dashboardHandler, event('admin'));
+        expect(status).toBe(200);
+        expect(body.truncated).toBe(false);
+        expect(body.attempts.map((a: any) => [a.username, a.puzzleId])).toEqual([
+            ['other', '003'],
+            ['rated', '001'],
+        ]);
+        expect(body.attempts[1].solver.ratings).toEqual({ LICHESS: 1500 });
+
+        const wide = await call(
+            dashboardHandler,
+            event('admin', {}, {}, { from: at(60 * 1440), to: NOW.toISOString() }),
+        );
+        expect(wide.body.attempts).toHaveLength(3);
+    });
+
+    it('is only for Puzzle Contributors and admins', async () => {
+        expect((await call(dashboardHandler, event('other'))).status).toBe(403);
+    });
+
+    it('turns down a range that ends before it starts', async () => {
+        const { status } = await call(
+            dashboardHandler,
+            event('admin', {}, {}, { from: NOW.toISOString(), to: at(60) }),
+        );
+        expect(status).toBe(400);
     });
 });

@@ -8,6 +8,7 @@ import {
     denyContributor,
     getContributorProfile,
     getContributorStatus,
+    getDashboardAttempts,
     getLeaderboard,
     getPuzzle,
     getPuzzleRuns,
@@ -47,6 +48,7 @@ import {
 import {
     AttemptSubmission,
     PuzzleAttempt,
+    DashboardAttemptsResponse,
     PuzzleRunsResponse,
     PuzzleStatsResponse,
     TrainingTagSet,
@@ -132,6 +134,8 @@ export interface PuzzlebaseClient {
         username: string,
         range?: { from?: string; to?: string },
     ): Promise<PuzzleRunsResponse>;
+    /** Everyone's attempts in a stretch of time, for the stats dashboard. */
+    getDashboardAttempts(range?: { from?: string; to?: string }): Promise<DashboardAttemptsResponse>;
 }
 
 /** The client that talks to the real puzzlebase API. */
@@ -169,6 +173,7 @@ export const apiPuzzlebaseClient: PuzzlebaseClient = {
     submitAttempt: async (submission) => (await submitAttempt(submission)).data,
     getPuzzleStats: async (username) => (await getPuzzleStats(username)).data,
     getPuzzleRuns: async (username, range) => (await getPuzzleRuns(username, range)).data,
+    getDashboardAttempts: async (range) => (await getDashboardAttempts(range)).data,
 };
 
 /** Returns the client the screens should use: the one that talks to the real puzzlebase API. */

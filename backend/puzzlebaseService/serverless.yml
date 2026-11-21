@@ -515,6 +515,31 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  dashboard:
+    handler: dashboard.handler
+    timeout: 29
+    events:
+      - httpApi:
+          path: /puzzlebase/dashboard/attempts
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !Join ['', [!GetAtt PuzzleRunsTable.Arn, '/index/ByPuzzle']]
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   suggestTags:
     handler: suggestions.suggestHandler
     events:
@@ -623,11 +648,26 @@ resources:
             AttributeType: S
           - AttributeName: sk
             AttributeType: S
+          - AttributeName: puzzleId
+            AttributeType: S
+          - AttributeName: finishedAt
+            AttributeType: S
         KeySchema:
           - AttributeName: username
             KeyType: HASH
           - AttributeName: sk
             KeyType: RANGE
+        # Attempts by puzzle and finish time, for the stats dashboard. Only attempts have a
+        # puzzleId, so the index holds nothing else.
+        GlobalSecondaryIndexes:
+          - IndexName: ByPuzzle
+            KeySchema:
+              - AttributeName: puzzleId
+                KeyType: HASH
+              - AttributeName: finishedAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
   Outputs:
     PuzzlebaseTableArn:

@@ -40,6 +40,7 @@ import {
     putAttempt,
     putMemberRating,
 } from './runsDatabase';
+import { solverSnapshot } from './solver';
 
 /** How far ahead of the server's clock a finish time can be before it is rejected, in ms. */
 const CLOCK_SKEW_MS = 5 * 60 * 1000;
@@ -134,7 +135,11 @@ export const submitAttemptHandler: APIGatewayProxyHandlerV2 = async (event) => {
             member,
             anchor,
         });
-        const attempt = { ...toPuzzleAttempt(submission, puzzle), scoring };
+        const attempt = {
+            ...toPuzzleAttempt(submission, puzzle),
+            scoring,
+            solver: solverSnapshot(user),
+        };
 
         if (await putAttempt(username, attempt)) {
             await addToSession(username, attempt);

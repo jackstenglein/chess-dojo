@@ -13,6 +13,7 @@ import {
     GridView,
     Groups,
     History,
+    Insights,
     LocalOffer,
     PlayArrow,
     TableRows,
@@ -258,6 +259,14 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 >
                                     Review tags
                                     <CountBadge count={pendingReviews} />
+                                </Button>
+                                <Button
+                                    component={Link}
+                                    href='/puzzles/base/stats'
+                                    startIcon={<Insights />}
+                                    sx={toolSx}
+                                >
+                                    Solve stats
                                 </Button>
                                 <Button
                                     startIcon={<Download />}

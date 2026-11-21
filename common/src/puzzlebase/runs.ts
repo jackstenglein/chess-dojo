@@ -132,6 +132,45 @@ export interface PuzzleAttempt extends Omit<AttemptSubmission, 'abandoned'> {
     themes: string[];
     /** How the attempt was scored, and what it did to the member's rating. */
     scoring?: AttemptScoring;
+    /** Who the solver was when they played it. Attempts saved before this was added have none. */
+    solver?: SolverSnapshot;
+}
+
+/** The solver's profile and ratings at the moment they finished a puzzle. */
+export interface SolverSnapshot {
+    displayName?: string;
+    /** Their Dojo cohort, like "1200-1300". */
+    cohort?: string;
+    /** The rating system they chose as their main one, like "CHESSCOM_RAPID". */
+    ratingSystem?: string;
+    /** Their main rating converted to the Dojo's common scale, if they have one. */
+    normalizedRating?: number;
+    /** Every rating on their profile, by rating system. Systems without a rating are left out. */
+    ratings: Record<string, number>;
+}
+
+/** An attempt as the stats dashboard sees it: whose it was, and everything about it. */
+export interface DashboardAttempt extends PuzzleAttempt {
+    username: string;
+}
+
+/** The most attempts the dashboard returns at once. Older ones in the range are left off. */
+export const MAX_DASHBOARD_ATTEMPTS = 5000;
+
+/** Verifies a request for the stats dashboard: everyone's attempts in a stretch of time. */
+export const DashboardRequestSchema = z.object({
+    /** Only attempts finished at or after this time. Defaults to 30 days ago. */
+    from: z.iso.datetime().optional(),
+    /** Only attempts finished before this time. Defaults to now. */
+    to: z.iso.datetime().optional(),
+});
+export type DashboardRequest = z.infer<typeof DashboardRequestSchema>;
+
+/** Everyone's attempts in a stretch of time, newest first. */
+export interface DashboardAttemptsResponse {
+    attempts: DashboardAttempt[];
+    /** Set when there were more than MAX_DASHBOARD_ATTEMPTS and the oldest were left off. */
+    truncated: boolean;
 }
 
 /** Builds the stored form of an attempt. Everything about the puzzle comes from the server's copy. */
