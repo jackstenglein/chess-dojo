@@ -53,11 +53,16 @@ const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 /**
  * The biggest PGN file that can be uploaded, in bytes, and the most games it can hold. Each game
- * is sent on its own, one after another, so a few hundred take a minute or two. The cap stops a
- * whole database of games being sent by mistake.
+ * is sent on its own, one after another, so a big file takes a while (see minutesFor). A puzzle
+ * PGN is around 1 KB, so 10 MB leaves room for 5000 well-annotated ones.
  */
-const MAX_FILE_BYTES = 2_000_000;
-const MAX_FILE_GAMES = 500;
+const MAX_FILE_BYTES = 10_000_000;
+const MAX_FILE_GAMES = 5000;
+/** Files with more games than this get a warning that they take a while. */
+const LARGE_FILE_GAMES = 100;
+
+/** Roughly how long adding this many games takes: about 100 a minute, one at a time. */
+const minutesFor = (games: number) => Math.max(1, Math.round(games / 100));
 
 /** Returns a game's title from its [Event] header, for reporting games that were skipped. */
 const gameTitle = (pgn: string) => /\[Event "([^"]*)"\]/.exec(pgn)?.[1];
@@ -87,13 +92,14 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     const fileGameTexts = useMemo(() => (file ? splitPgnFile(file.text) : []), [file]);
     const fileGames = fileGameTexts.length;
     const tooManyGames = fileGames > MAX_FILE_GAMES;
+    const largeFile = fileGames > LARGE_FILE_GAMES && !tooManyGames;
 
     const readFile = (picked: File | undefined) => {
         if (!picked) return;
         setError(undefined);
         if (picked.size > MAX_FILE_BYTES) {
             setFile(undefined);
-            setError('That file is too big. Split it into files of under 2 MB.');
+            setError('That file is too big. Split it into files of under 10 MB.');
             return;
         }
         picked
@@ -436,6 +442,15 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                 header. Games that are not puzzles are skipped and listed
                                 afterwards.
                             </Typography>
+                            {largeFile && (
+                                <Alert severity='warning' sx={{ textAlign: 'left' }}>
+                                    This file has {fileGames} games, more than {LARGE_FILE_GAMES}.
+                                    They are added one at a time, so it will take about{' '}
+                                    {minutesFor(fileGames)}{' '}
+                                    {minutesFor(fileGames) === 1 ? 'minute' : 'minutes'}. Keep this
+                                    window open until it finishes.
+                                </Alert>
+                            )}
                         </Stack>
                     ) : (
                         <TextField

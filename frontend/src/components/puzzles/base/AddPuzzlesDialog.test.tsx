@@ -150,6 +150,7 @@ describe('AddPuzzlesDialog', () => {
         const { createPuzzle, onAdded } = setup();
         await upload(`${pgnWith('')}\n\n${pgnWith('')}`);
         expect(screen.getByText('2 games found')).toBeTruthy();
+        expect(screen.queryByText(/more than 100/)).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'Import 2 puzzles' }));
 
         expect(await screen.findByText('Import finished')).toBeTruthy();
@@ -194,18 +195,22 @@ describe('AddPuzzlesDialog', () => {
         expect(screen.getByText(/upload stopped at an earlier error/)).toBeTruthy();
     });
 
-    it('takes files of more than 100 games, up to 500', async () => {
+    it('takes files of more than 100 games, with a warning', async () => {
         setup();
         await upload(Array.from({ length: 105 }, () => pgnWith('')).join('\n\n'));
         expect(screen.getByText('105 games found')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Import 105 puzzles' })).toBeEnabled();
+        expect(screen.getByText(/This file has 105 games, more than 100/)).toBeTruthy();
+        expect(screen.getByText(/about 1 minute\./)).toBeTruthy();
     });
 
-    it('turns down files of more than 500 games', async () => {
+    it('turns down files of more than 5000 games', async () => {
         setup();
-        await upload(Array.from({ length: 501 }, () => pgnWith('')).join('\n\n'));
-        expect(screen.getByText(/You can upload at most 500 at a time/)).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Import 501 puzzles' })).toBeDisabled();
+        await upload(Array.from({ length: 5001 }, () => pgnWith('')).join('\n\n'));
+        expect(
+            screen.getByText(/5001 games found. You can upload at most 5000 at a time/),
+        ).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Import 5001 puzzles' })).toBeDisabled();
     });
 
     it('offers a guide whose examples fill the field and are accepted as puzzles', async () => {
