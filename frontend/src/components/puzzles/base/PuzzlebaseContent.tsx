@@ -186,23 +186,33 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
     return (
         <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Container
-                    maxWidth='xl'
-                    sx={{ py: { xs: 3, md: 4 }, display: 'flex', flexDirection: 'column', gap: 3 }}
-                >
+                <Container maxWidth='xl' sx={{ pt: { xs: 3, md: 4 }, pb: 2.5 }}>
                     <Stack
                         sx={{
                             flexDirection: { xs: 'column', md: 'row' },
-                            gap: 3,
+                            gap: { xs: 3, md: 4 },
                             justifyContent: 'space-between',
-                            alignItems: { md: 'flex-end' },
                         }}
                     >
-                        <Stack sx={{ gap: 2 }}>
-                            <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
-                                Dojo PuzzleBase
-                            </Typography>
-                            <Stack direction='row' sx={{ gap: 4 }}>
+                        <Stack
+                            sx={{ justifyContent: 'space-between', gap: 3, minWidth: 0, py: 0.5 }}
+                        >
+                            <Box>
+                                <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+                                    Dojo PuzzleBase
+                                </Typography>
+                                <Typography
+                                    sx={{ color: 'text.secondary', mt: 0.75, maxWidth: 460 }}
+                                >
+                                    Hand-picked puzzles from Dojo contributors, tagged by theme and
+                                    rated by difficulty.
+                                </Typography>
+                            </Box>
+                            <Stack
+                                direction='row'
+                                divider={<Divider orientation='vertical' flexItem />}
+                                sx={{ gap: 3 }}
+                            >
                                 <HeaderStat label='Puzzles'>{puzzles.length}</HeaderStat>
                                 <HeaderStat label='Themes'>{themeCount}</HeaderStat>
                                 <HeaderStat label='Contributors'>{contributors}</HeaderStat>
@@ -213,100 +223,87 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             <Leaderboard entries={leaderboard} />
                         </Stack>
                     </Stack>
-                    <Stack direction='row' sx={{ gap: 1, alignItems: 'center', overflowX: 'auto' }}>
-                        <Button
-                            size='small'
-                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-                            variant='contained'
-                            startIcon={<Add />}
-                            onClick={() => setAdding(true)}
+
+                    <Stack
+                        direction='row'
+                        sx={{
+                            mt: 3,
+                            pt: 2.5,
+                            borderTop: 1,
+                            borderColor: 'divider',
+                            gap: 2,
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Stack direction='row' sx={{ gap: 1.5 }}>
+                            <Button
+                                variant='contained'
+                                startIcon={<Add />}
+                                onClick={() => setAdding(true)}
+                                sx={actionSx}
+                            >
+                                Add puzzles
+                            </Button>
+                            <Button
+                                component={Link}
+                                href='/puzzles/train'
+                                variant='outlined'
+                                startIcon={<PlayArrow />}
+                                sx={actionSx}
+                            >
+                                Train
+                            </Button>
+                        </Stack>
+                        <Stack
+                            direction='row'
+                            sx={{ gap: 2, flexWrap: 'wrap', alignItems: 'center' }}
                         >
-                            Add puzzles
-                        </Button>
-                        <Button
-                            size='small'
-                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-                            component={Link}
-                            href='/puzzles/train'
-                            variant='outlined'
-                            startIcon={<PlayArrow />}
-                        >
-                            Train
-                        </Button>
-                        <Button
-                            size='small'
-                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-                            component={Link}
-                            href='/puzzles/base/review'
-                            variant='outlined'
-                            color='inherit'
-                            startIcon={<LocalOffer />}
-                        >
-                            Review tags
-                            {pendingReviews > 0 && (
-                                <Chip
-                                    size='small'
-                                    color='primary'
-                                    label={pendingReviews}
-                                    sx={{ ml: 1, height: 20 }}
-                                />
-                            )}
-                        </Button>
-                        <Divider
-                            orientation='vertical'
-                            flexItem
-                            sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
-                        />
-                        <Button
-                            size='small'
-                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-                            color='inherit'
-                            startIcon={<Download />}
-                            onClick={() =>
-                                downloadText(
-                                    `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
-                                    puzzlesToPgn(puzzles),
-                                )
-                            }
-                        >
-                            Export PGN
-                        </Button>
-                        {status.isAdmin && (
-                            <>
-                                <Divider
-                                    orientation='vertical'
-                                    flexItem
-                                    sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
-                                />
+                            <ToolGroup>
                                 <Button
-                                    size='small'
-                                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-                                    color='inherit'
-                                    startIcon={<Groups />}
-                                    onClick={() => setShowContributors(true)}
-                                >
-                                    Manage contributors
-                                    {waiting > 0 && (
-                                        <Chip
-                                            size='small'
-                                            color='primary'
-                                            label={waiting}
-                                            sx={{ ml: 1, height: 20 }}
-                                        />
-                                    )}
-                                </Button>
-                                <Button
-                                    size='small'
-                                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                                     component={Link}
-                                    href='/puzzles/base/admin-log'
-                                    color='inherit'
-                                    startIcon={<History />}
+                                    href='/puzzles/base/review'
+                                    startIcon={<LocalOffer />}
+                                    sx={toolSx}
                                 >
-                                    Admin log
+                                    Review tags
+                                    <CountBadge count={pendingReviews} />
                                 </Button>
-                            </>
-                        )}
+                                <Button
+                                    startIcon={<Download />}
+                                    sx={toolSx}
+                                    onClick={() =>
+                                        downloadText(
+                                            `dojo-puzzlebase-${new Date().toISOString().slice(0, 10)}.pgn`,
+                                            puzzlesToPgn(puzzles),
+                                        )
+                                    }
+                                >
+                                    Export PGN
+                                </Button>
+                            </ToolGroup>
+                            {status.isAdmin && (
+                                <ToolGroup label='Admin'>
+                                    <Button
+                                        startIcon={<Groups />}
+                                        onClick={() => setShowContributors(true)}
+                                        sx={toolSx}
+                                    >
+                                        Contributors
+                                        <CountBadge count={waiting} />
+                                    </Button>
+                                    <Button
+                                        component={Link}
+                                        href='/puzzles/base/admin-log'
+                                        startIcon={<History />}
+                                        sx={toolSx}
+                                    >
+                                        Admin log
+                                    </Button>
+                                </ToolGroup>
+                            )}
+                        </Stack>
                     </Stack>
                 </Container>
                 <Stack direction='row' aria-hidden sx={{ height: 3 }}>
@@ -641,6 +638,83 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                     </Button>
                 }
             />
+        </Box>
+    );
+}
+
+/** The two main header actions share one size. */
+const actionSx = { px: 2.5, whiteSpace: 'nowrap' } as const;
+
+/** Secondary header tools: quiet text buttons that light up on hover. */
+const toolSx = {
+    color: 'text.secondary',
+    whiteSpace: 'nowrap',
+    px: 1.5,
+    '& .MuiButton-startIcon': { mr: 0.75 },
+    '&:hover': { color: 'text.primary', bgcolor: 'action.hover' },
+} as const;
+
+/** A rounded, outlined strip holding related tools, with an optional label in front. */
+function ToolGroup({ label, children }: { label?: string; children: React.ReactNode }) {
+    return (
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+                flexShrink: 0,
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2,
+                p: 0.5,
+                gap: 0.25,
+            }}
+        >
+            {label && (
+                <Typography
+                    variant='overline'
+                    sx={{
+                        color: 'text.disabled',
+                        lineHeight: 1,
+                        px: 1.25,
+                        alignSelf: 'stretch',
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRight: 1,
+                        borderColor: 'divider',
+                        mr: 0.25,
+                    }}
+                >
+                    {label}
+                </Typography>
+            )}
+            {children}
+        </Stack>
+    );
+}
+
+/** A small count pill after a tool's label, hidden at zero. */
+function CountBadge({ count }: { count: number }) {
+    if (count <= 0) {
+        return null;
+    }
+    return (
+        <Box
+            component='span'
+            sx={{
+                ml: 1,
+                px: 0.75,
+                minWidth: 20,
+                height: 20,
+                borderRadius: 10,
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                lineHeight: '20px',
+                textAlign: 'center',
+            }}
+        >
+            {count}
         </Box>
     );
 }
