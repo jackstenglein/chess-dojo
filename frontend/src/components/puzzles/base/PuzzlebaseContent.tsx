@@ -213,8 +213,10 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             <Leaderboard entries={leaderboard} />
                         </Stack>
                     </Stack>
-                    <Stack direction='row' sx={{ gap: 1.5, flexWrap: 'wrap' }}>
+                    <Stack direction='row' sx={{ gap: 1, alignItems: 'center', overflowX: 'auto' }}>
                         <Button
+                            size='small'
+                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                             variant='contained'
                             startIcon={<Add />}
                             onClick={() => setAdding(true)}
@@ -222,6 +224,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             Add puzzles
                         </Button>
                         <Button
+                            size='small'
+                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                             component={Link}
                             href='/puzzles/train'
                             variant='outlined'
@@ -230,6 +234,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             Train
                         </Button>
                         <Button
+                            size='small'
+                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                             component={Link}
                             href='/puzzles/base/review'
                             variant='outlined'
@@ -252,6 +258,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
                         />
                         <Button
+                            size='small'
+                            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                             color='inherit'
                             startIcon={<Download />}
                             onClick={() =>
@@ -271,6 +279,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     sx={{ mx: 0.5, display: { xs: 'none', sm: 'block' } }}
                                 />
                                 <Button
+                                    size='small'
+                                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                                     color='inherit'
                                     startIcon={<Groups />}
                                     onClick={() => setShowContributors(true)}
@@ -286,6 +296,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     )}
                                 </Button>
                                 <Button
+                                    size='small'
+                                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                                     component={Link}
                                     href='/puzzles/base/admin-log'
                                     color='inherit'
