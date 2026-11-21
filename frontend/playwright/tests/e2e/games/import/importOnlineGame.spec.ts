@@ -10,6 +10,8 @@ const testUrls = {
     lichessStudy: 'https://lichess.org/study/W67VW7nM',
     // Without an API token, Lichess only exports older games if their players average 2200+.
     lichessGame: 'https://lichess.org/tDGABnVf/black',
+    lichessGamePrefix: 'https://lichess.org/game/tDGABnVf/black',
+    lichessGamePrefixNoColor: 'https://lichess.org/game/tDGABnVf',
     lichessGameNoColor: 'https://lichess.org/tDGABnVf/',
     lichessChapterMissingData: 'https://lichess.org/study/W67VW7nM/lsJkNwwR',
     // Lichess only exports this one with an API token, so it tests that the token is sent.
@@ -57,6 +59,34 @@ test.describe('Import Games Page - Import Online Games', () => {
 
     test('submits from Lichess game URL', async ({ page }) => {
         await importUrl(page, testUrls.lichessGame);
+        await verifyGame(page, {
+            white: 'lwierenga',
+            black: 'FinodoChess',
+            lastMove: 'R1f7#',
+            lastMoveClock: {
+                white: '0:05:06',
+                black: '0:06:37',
+            },
+            lastMoveEmt: '00:00',
+        });
+    });
+
+    test('submits from Lichess game with prefixed URL', async ({ page }) => {
+        await importUrl(page, testUrls.lichessGamePrefix);
+        await verifyGame(page, {
+            white: 'lwierenga',
+            black: 'FinodoChess',
+            lastMove: 'R1f7#',
+            lastMoveClock: {
+                white: '0:05:06',
+                black: '0:06:37',
+            },
+            lastMoveEmt: '00:00',
+        });
+    });
+
+    test('submits from Lichess game with prefixed URL without color', async ({ page }) => {
+        await importUrl(page, testUrls.lichessGamePrefixNoColor);
         await verifyGame(page, {
             white: 'lwierenga',
             black: 'FinodoChess',
@@ -143,7 +173,7 @@ test.describe('Import Games Page - Import Online Games', () => {
         await importUrl(page, testUrls.chesscomAnalysisGame);
         await verifyGame(page, {
             white: 'bestieboots',
-            black: 'David71401',
+            black: 'cented66',
             lastMove: 'Nf3',
             lastMoveClock: {
                 white: '0:08:14',

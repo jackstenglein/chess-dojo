@@ -92,7 +92,7 @@ export function TaskDialogFooter({
         },
         {
             view: TaskDialogView.Progress,
-            label: t('updateProgress'),
+            label: t('logTraining'),
             icon: <AddCircleOutlined fontSize='small' />,
             testId: 'task-dialog-progress-button',
         },

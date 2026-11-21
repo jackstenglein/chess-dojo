@@ -7,9 +7,11 @@ import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, User, WeeklyPlan, WorkGoalSettings } from '@/database/user';
 import { useEffect, useMemo, useState } from 'react';
 import { useTimelineContext } from '../activity/useTimeline';
+import { pinnedMinutesMatch } from './pinSchedule';
 import { clearUpcomingDays, toggleSkippedIds } from './skippedTasks';
 import { SuggestedTask, TaskSuggestionAlgorithm } from './suggestedTasks';
 import { swapInPlan } from './swapTask';
+import { DEFAULT_WORK_GOAL } from './workGoal';
 
 export interface UseTrainingPlanResponse {
     /** The request for fetching requirements. */
@@ -22,6 +24,21 @@ export interface UseTrainingPlanResponse {
     pinnedTasks: (Requirement | CustomTask)[];
     /** A callback function to toggle whether a task is pinned. */
     togglePin: (task: Requirement | CustomTask) => void;
+    /**
+     * Pins the task (if it is not already) with the given minutes for each day of
+     * the week. Sunday is index 0; Saturday is index 6.
+     */
+    savePin: (task: Requirement | CustomTask, minutesPerDay: number[]) => void;
+    /** Replaces the minutes set aside for the pinned tasks. */
+    savePinnedTaskMinutes: (pinnedTaskMinutes: Record<string, number[]>) => void;
+    /** Sets the user's planned minutes for one day of the week. */
+    saveDayGoal: (dayIndex: number, minutes: number) => void;
+    /** The task whose pin is being edited, if any. */
+    pinEditorTask?: Requirement | CustomTask;
+    /** Opens the editor for the task's pin, to pin it or change its days and minutes. */
+    openPinEditor: (task: Requirement | CustomTask) => void;
+    /** Closes the pin editor. */
+    closePinEditor: () => void;
     /** The user passed as a parameter, unchanged. */
     user: User;
     /** Whether the provided user is the current logged in user. */
@@ -81,9 +98,47 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
             : [...pinnedTasks, task];
         const newIds = newPinnedTasks.map((t) => t.id);
 
-        updateUser({ pinnedTasks: newIds });
-        void api.updateUser({ pinnedTasks: newIds });
+        // Unpinning also forgets the task's days and minutes.
+        const pinnedTaskMinutes =
+            isPinned && user.pinnedTaskMinutes
+                ? Object.fromEntries(
+                      Object.entries(user.pinnedTaskMinutes).filter(([id]) => id !== task.id),
+                  )
+                : user.pinnedTaskMinutes;
+
+        updateUser({ pinnedTasks: newIds, pinnedTaskMinutes });
+        void api.updateUser({ pinnedTasks: newIds, pinnedTaskMinutes });
     };
+
+    const savePin = (task: Requirement | CustomTask, minutesPerDay: number[]) => {
+        const pinnedTaskIds = pinnedTasks.some((t) => t.id === task.id)
+            ? pinnedTasks.map((t) => t.id)
+            : [...pinnedTasks.map((t) => t.id), task.id];
+        const pinnedTaskMinutes = { ...user.pinnedTaskMinutes, [task.id]: minutesPerDay };
+
+        updateUser({ pinnedTasks: pinnedTaskIds, pinnedTaskMinutes });
+        void api.updateUser({ pinnedTasks: pinnedTaskIds, pinnedTaskMinutes });
+    };
+
+    const savePinnedTaskMinutes = (pinnedTaskMinutes: Record<string, number[]>) => {
+        updateUser({ pinnedTaskMinutes });
+        void api.updateUser({ pinnedTaskMinutes });
+    };
+
+    const saveDayGoal = (dayIndex: number, minutes: number) => {
+        const minutesPerDay = [...(user.workGoal || DEFAULT_WORK_GOAL).minutesPerDay];
+        minutesPerDay[dayIndex] = minutes;
+        const workGoal = { minutesPerDay };
+        const workGoalHistory = (user.workGoalHistory ?? []).concat({
+            date: new Date().toISOString(),
+            workGoal,
+        });
+
+        updateUser({ workGoal, workGoalHistory });
+        void api.updateUser({ workGoal, workGoalHistory });
+    };
+
+    const [pinEditorTask, setPinEditorTask] = useState<Requirement | CustomTask>();
 
     const [lastSkip, setLastSkip] = useState<{ ids: string[]; previousPlan: WeeklyPlan }>();
 
@@ -149,6 +204,12 @@ export function useTrainingPlan(user: User, cohort?: string): UseTrainingPlanRes
         allRequirements,
         pinnedTasks,
         togglePin,
+        savePin,
+        savePinnedTaskMinutes,
+        saveDayGoal,
+        pinEditorTask,
+        openPinEditor: setPinEditorTask,
+        closePinEditor: () => setPinEditorTask(undefined),
         isCurrentUser: currentUser?.username === user.username,
         skippedTaskIds: user.weeklyPlan?.skippedTasks,
         toggleSkip,
@@ -217,6 +278,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
                 endDate,
                 progressUpdatedAt,
                 pinnedTasks: pinnedTasks.map((t) => t.id),
+                pinnedTaskMinutes: user.pinnedTaskMinutes,
                 nextGame,
             }) ||
             isEmpty(suggestionsByDay) ||
@@ -235,6 +297,10 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
             ),
             progressUpdatedAt,
             pinnedTasks: pinnedTasks.map((t) => t.id),
+            pinnedTaskMinutes: pickPinnedMinutes(
+                pinnedTasks.map((t) => t.id),
+                user.pinnedTaskMinutes,
+            ),
             nextGame,
             skippedTasks:
                 (savedPlan?.endDate ?? '') >= endDate ? savedPlan?.skippedTasks : undefined,
@@ -250,6 +316,7 @@ export function useWeeklyTrainingPlan(user: User): UseWeeklyTrainingPlanResponse
         endDate,
         progressUpdatedAt,
         pinnedTasks,
+        user.pinnedTaskMinutes,
         nextGame,
         api,
         isLoading,
@@ -290,6 +357,7 @@ function equalPlans(
         endDate: string;
         progressUpdatedAt: string;
         pinnedTasks: string[];
+        pinnedTaskMinutes?: Record<string, number[]>;
         nextGame: string;
     },
 ) {
@@ -303,6 +371,15 @@ function equalPlans(
         return false;
     }
     if (savedPlan.nextGame !== newPlan.nextGame) {
+        return false;
+    }
+    if (
+        !pinnedMinutesMatch(
+            newPlan.pinnedTasks,
+            savedPlan.pinnedTaskMinutes,
+            newPlan.pinnedTaskMinutes,
+        )
+    ) {
         return false;
     }
     for (let i = 0; i < newPlan.pinnedTasks.length; i++) {
@@ -326,6 +403,20 @@ function equalPlans(
         }
     }
     return true;
+}
+
+/** Returns only the minutes of tasks that are still pinned, or undefined if there are none. */
+function pickPinnedMinutes(
+    pinnedTaskIds: string[],
+    pinnedTaskMinutes?: Record<string, number[]>,
+): Record<string, number[]> | undefined {
+    const result: Record<string, number[]> = {};
+    for (const id of pinnedTaskIds) {
+        if (pinnedTaskMinutes?.[id]) {
+            result[id] = pinnedTaskMinutes[id];
+        }
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function isEmpty(suggestionsByDay: SuggestedTask[][]) {

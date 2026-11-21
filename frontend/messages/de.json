@@ -139,11 +139,12 @@
                 "show": "Zeigen",
                 "taskDetails": "Aufgabendetails",
                 "showHistory": "Verlauf anzeigen",
-                "updateProgress": "Fortschritt aktualisieren",
+                "logTraining": "Training eintragen",
                 "viewTaskDetails": "Aufgabendetails ansehen",
                 "skipForWeek": "Für den Rest der Woche auslassen",
                 "pinToDaily": "An tägliche Aufgaben anheften",
                 "unpinFromDaily": "Von den täglichen Aufgaben abheften",
+                "editPin": "Anheften bearbeiten",
                 "hours": "Stunden",
                 "minutes": "Minuten",
                 "date": "Datum",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "Vollständige Bestenliste anzeigen",
                 "loadError": "Fehler beim Laden der Bestenlisten-Daten.",
                 "empty": "Derzeit keine Benutzer in dieser Kohorte."
+            },
+            "pin": {
+                "description": "Wähle die Tage, an denen du an dieser Aufgabe arbeitest, und wie lange. Vorgeschlagene Aufgaben füllen nur die restliche Zeit deines Tages.",
+                "days": "Tage",
+                "timePerDay": "Zeit pro Tag",
+                "perDay": "Pro Tag festlegen",
+                "overbooked": "Deine angehefteten Aufgaben überschreiten deine geplante Zeit am {days}.",
+                "unpin": "Lösen",
+                "pin": "Anheften",
+                "overbookedDay": "{day} ist überbucht: Angeheftete Aufgaben brauchen {allocated}, geplant sind {goal}.",
+                "raiseGoal": "{time} für {day} planen",
+                "trimTasks": "Aufgaben auf {time} kürzen"
             }
         },
         "activity": {
@@ -651,6 +664,7 @@
             "whenPlayWhite": "Wenn du mit Weiß spielst",
             "whenPlayBlack": "Wenn du Schwarz spielst",
             "normalizedRatingTooltip": "Das auf das Dojo-System normalisierte Rating",
+            "timeManagementTooltip": "Berechnet aus den Partien in diesem Ordner, die Uhrzeiten enthalten.",
             "performanceByCohort": "Leistung nach Gegner-Kohorte",
             "colOpponentCohort": "Gegner Kohorte",
             "colPerformance": "Leistung",

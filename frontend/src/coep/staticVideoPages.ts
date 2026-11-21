@@ -16,6 +16,7 @@ export const STATIC_VIDEO_PAGE_SOURCES = [
     '/learn/live-classes/:path*',
     '/learn/sparring',
     '/live-classes',
+    '/class',
     '/admin/courses/:path*',
     '/blog/:path*',
     '/admin/blog/:path*',

@@ -13,7 +13,12 @@ import {
     PerformanceStats,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
 import { RatingSystem } from '@jackstenglein/chess-dojo-common/src/database/user';
+import {
+    MIN_GAMES_FOR_ELO,
+    TimeManagementRating,
+} from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { Assessment, PeopleAlt, StarBorder, TimelineOutlined } from '@mui/icons-material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import {
     Box,
     Button,
@@ -42,6 +47,10 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
+import {
+    TimeManagementDirectionIcon,
+    TimeManagementDirectionTooltip,
+} from '../../info/TimeManagementRatingRow';
 
 const { Custom, Custom2, Custom3, ...validRatingSystems } = RatingSystem;
 
@@ -240,6 +249,7 @@ export function StatsButton({ directory }: StatsButtonProps) {
                     {request.data && (
                         <DirectoryStats
                             stats={request.data.stats}
+                            timeManagementRating={request.data.timeManagementRating}
                             playerName={playerName}
                             ratingSystem={ratingSystem}
                         />
@@ -255,10 +265,12 @@ export function StatsButton({ directory }: StatsButtonProps) {
 
 function DirectoryStats({
     stats,
+    timeManagementRating,
     playerName,
     ratingSystem,
 }: {
     stats: PerformanceStats;
+    timeManagementRating?: TimeManagementRating;
     playerName: string;
     ratingSystem: RatingSystem;
 }) {
@@ -283,6 +295,8 @@ function DirectoryStats({
                 >
                     {t('playerPerformance', { name: playerName })}
                 </Typography>
+
+                <DirectoryTimeManagement rating={timeManagementRating} />
 
                 <Stack spacing={2}>
                     <Typography
@@ -392,6 +406,113 @@ function DirectoryStats({
                 <CohortStatsTable stats={stats} />
             </Stack>
         </Fade>
+    );
+}
+
+/**
+ * Shows the selected player's time management rating for games in this folder.
+ * @param rating The aggregate returned by the directory stats API.
+ */
+export function DirectoryTimeManagement({ rating }: { rating?: TimeManagementRating }) {
+    const t = useTranslations('profile.directories');
+    const tInfo = useTranslations('profile.info');
+    const tStats = useTranslations('profile.stats.ratingCard');
+    const theme = useTheme();
+    if (!rating) {
+        return null;
+    }
+
+    const hasRating = rating.numGames > 0;
+    const provisional = hasRating && rating.numGames < MIN_GAMES_FOR_ELO;
+    const colorValue = theme.palette.info.main;
+
+    return (
+        <Stack spacing={2}>
+            <Typography
+                variant='h6'
+                sx={{
+                    fontWeight: 'bold',
+                }}
+            >
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <AccessTimeIcon color='primary' />
+                    <Tooltip title={t('timeManagementTooltip')}>
+                        <span>{tInfo('timeManagement')}</span>
+                    </Tooltip>
+                </Stack>
+            </Typography>
+
+            <Zoom in timeout={300}>
+                <Card
+                    elevation={1}
+                    sx={{
+                        alignSelf: { sm: 'flex-start' },
+                        minWidth: { sm: 280 },
+                        color: colorValue,
+                        backgroundColor: alpha(colorValue, 0.08),
+                        border: `1px solid ${alpha(colorValue, 0.2)}`,
+                        borderRadius: 2,
+                    }}
+                >
+                    <CardContent>
+                        <Stack spacing={2}>
+                            <Typography
+                                variant='body2'
+                                sx={{
+                                    color: 'text.secondary',
+                                    fontWeight: 500,
+                                }}
+                            >
+                                {tStats('current')}
+                            </Typography>
+
+                            <TimeManagementDirectionTooltip area={rating.area}>
+                                <Stack
+                                    direction='row'
+                                    sx={{
+                                        alignItems: 'center',
+                                        gap: 1,
+                                    }}
+                                >
+                                    <TimeManagementDirectionIcon
+                                        area={rating.area}
+                                        sx={{ fontSize: '2rem', mt: 0 }}
+                                    />
+                                    <Typography
+                                        data-testid='directory-time-management-rating'
+                                        variant='h4'
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'inherit',
+                                        }}
+                                    >
+                                        {hasRating
+                                            ? `${rating.currentRating}${provisional ? '?' : ''}`
+                                            : 'N/A'}
+                                    </Typography>
+                                </Stack>
+                            </TimeManagementDirectionTooltip>
+
+                            {hasRating && (
+                                <Typography
+                                    sx={{
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    {t('gamesCount', { count: rating.numGames })}
+                                </Typography>
+                            )}
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Zoom>
+        </Stack>
     );
 }
 

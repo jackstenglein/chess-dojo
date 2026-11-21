@@ -139,11 +139,12 @@
                 "show": "Afficher",
                 "taskDetails": "Détails de la tâche",
                 "showHistory": "Afficher l'historique",
-                "updateProgress": "Mettre à jour la progression",
+                "logTraining": "Enregistrer l'entraînement",
                 "viewTaskDetails": "Voir les détails de la tâche",
                 "skipForWeek": "Passer pour le reste de la semaine",
                 "pinToDaily": "Épingler aux tâches quotidiennes",
                 "unpinFromDaily": "Désépingler des tâches quotidiennes",
+                "editPin": "Modifier l'épinglage",
                 "hours": "Heures",
                 "minutes": "Minutes",
                 "date": "Date",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "Voir le tableau de score complet",
                 "loadError": "Échec du chargement des données du classement.",
                 "empty": "Aucun utilisateur dans cette cohorte pour le moment."
+            },
+            "pin": {
+                "description": "Choisis les jours où tu travailleras sur cette tâche et pendant combien de temps. Les tâches suggérées remplissent seulement le temps restant dans ta journée.",
+                "days": "Jours",
+                "timePerDay": "Temps par jour",
+                "perDay": "Régler par jour",
+                "overbooked": "Tes tâches épinglées dépassent ton temps prévu le {days}.",
+                "unpin": "Désépingler",
+                "pin": "Épingler",
+                "overbookedDay": "{day} est surchargé : les tâches épinglées prennent {allocated}, mais tu as prévu {goal}.",
+                "raiseGoal": "Prévoir {time} le {day}",
+                "trimTasks": "Réduire les tâches à {time}"
             }
         },
         "activity": {
@@ -651,6 +664,7 @@
             "whenPlayWhite": "Quand tu joues les Blancs",
             "whenPlayBlack": "Quand tu joues les Noirs",
             "normalizedRatingTooltip": "Le classement normalisé selon le système Dojo",
+            "timeManagementTooltip": "Calculé à partir des parties de ce dossier qui incluent les temps d'horloge.",
             "performanceByCohort": "Performance par cohorte d'adversaires",
             "colOpponentCohort": "Cohorte de l'adversaire",
             "colPerformance": "Performance",

@@ -12,6 +12,7 @@ describe('isStaticVideoPage', () => {
         expect(isStaticVideoPage('/learn/live-classes/cohort')).toBe(true);
         expect(isStaticVideoPage('/learn/sparring')).toBe(true);
         expect(isStaticVideoPage('/live-classes')).toBe(true);
+        expect(isStaticVideoPage('/class')).toBe(true);
         expect(isStaticVideoPage('/admin/courses/OPENING/id')).toBe(true);
         expect(isStaticVideoPage('/blog/dojo-talks/top-10')).toBe(true);
         expect(isStaticVideoPage('/es/admin/blog/id')).toBe(true);

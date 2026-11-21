@@ -139,11 +139,12 @@
                 "show": "[T] Show",
                 "taskDetails": "[T] Task Details",
                 "showHistory": "[T] Show History",
-                "updateProgress": "[T] Update Progress",
+                "logTraining": "[T] Log Training",
                 "viewTaskDetails": "[T] View task details",
                 "skipForWeek": "[T] Skip for the rest of the week",
                 "pinToDaily": "[T] Pin to Daily Tasks",
                 "unpinFromDaily": "[T] Unpin from Daily Tasks",
+                "editPin": "[T] Edit pin",
                 "hours": "[T] Hours",
                 "minutes": "[T] Minutes",
                 "date": "[T] Date",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "[T] View Full Scoreboard",
                 "loadError": "[T] Failed to load leaderboard data.",
                 "empty": "[T] No users currently in this cohort."
+            },
+            "pin": {
+                "description": "[T] Choose the days you'll work on this task and for how long. Suggested tasks only fill the time left in your day.",
+                "days": "[T] Days",
+                "timePerDay": "[T] Time each day",
+                "perDay": "[T] Set per day",
+                "overbooked": "[T] Your pinned tasks go over your planned time on {days}.",
+                "unpin": "[T] Unpin",
+                "pin": "[T] Pin",
+                "overbookedDay": "[T] {day} is overbooked: pinned tasks take {allocated}, but you planned {goal}.",
+                "raiseGoal": "[T] Plan {time} for {day}",
+                "trimTasks": "[T] Trim tasks to {time}"
             }
         },
         "activity": {
@@ -651,6 +664,7 @@
             "whenPlayWhite": "[T] When You Play White",
             "whenPlayBlack": "[T] When You Play Black",
             "normalizedRatingTooltip": "[T] The rating normalized to the Dojo system",
+            "timeManagementTooltip": "[T] Calculated from games in this folder that include clock times.",
             "performanceByCohort": "[T] Performance by Opponent Cohort",
             "colOpponentCohort": "[T] Opponent Cohort",
             "colPerformance": "[T] Performance",

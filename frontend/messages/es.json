@@ -139,11 +139,12 @@
                 "show": "Mostrar",
                 "taskDetails": "Detalles de la tarea",
                 "showHistory": "Mostrar historial",
-                "updateProgress": "Actualizar progreso",
+                "logTraining": "Registrar entrenamiento",
                 "viewTaskDetails": "Ver detalles de la tarea",
                 "skipForWeek": "Omitir durante el resto de la semana",
                 "pinToDaily": "Anclar a tareas diarias",
                 "unpinFromDaily": "Desanclar de tareas diarias",
+                "editPin": "Editar fijación",
                 "hours": "Horas",
                 "minutes": "Minutos",
                 "date": "Fecha",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "Ver tabla de clasificación completa",
                 "loadError": "No se pudieron cargar los datos de la clasificación.",
                 "empty": "No hay usuarios en esta cohorte actualmente."
+            },
+            "pin": {
+                "description": "Elige los días en que trabajarás en esta tarea y durante cuánto tiempo. Las tareas sugeridas solo llenan el tiempo que te quede en el día.",
+                "days": "Días",
+                "timePerDay": "Tiempo cada día",
+                "perDay": "Ajustar por día",
+                "overbooked": "Tus tareas fijadas superan tu tiempo planificado el {days}.",
+                "unpin": "Desfijar",
+                "pin": "Fijar",
+                "overbookedDay": "{day} tiene demasiado: las tareas fijadas ocupan {allocated}, pero planificaste {goal}.",
+                "raiseGoal": "Planificar {time} para el {day}",
+                "trimTasks": "Recortar tareas a {time}"
             }
         },
         "activity": {
@@ -651,6 +664,7 @@
             "whenPlayWhite": "Cuando juegas con blancas",
             "whenPlayBlack": "Cuando juegas con negras",
             "normalizedRatingTooltip": "El rating normalizado al sistema del Dojo",
+            "timeManagementTooltip": "Calculado a partir de las partidas de esta carpeta que incluyen tiempos de reloj.",
             "performanceByCohort": "Rendimiento por cohorte del rival",
             "colOpponentCohort": "Cohorte del rival",
             "colPerformance": "Rendimiento",

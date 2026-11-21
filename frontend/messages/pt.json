@@ -139,11 +139,12 @@
                 "show": "Mostrar",
                 "taskDetails": "Detalhes da tarefa",
                 "showHistory": "Mostrar histórico",
-                "updateProgress": "Atualizar progresso",
+                "logTraining": "Registrar treino",
                 "viewTaskDetails": "Ver detalhes da tarefa",
                 "skipForWeek": "Pular pelo resto da semana",
                 "pinToDaily": "Fixar nas tarefas diárias",
                 "unpinFromDaily": "Desfixar das tarefas diárias",
+                "editPin": "Editar fixação",
                 "hours": "Horas",
                 "minutes": "Minutos",
                 "date": "Data",
@@ -393,6 +394,18 @@
                 "viewFullScoreboard": "Ver placar completo",
                 "loadError": "Falha ao carregar os dados da classificação.",
                 "empty": "Nenhum usuário nesta coorte no momento."
+            },
+            "pin": {
+                "description": "Escolha os dias em que vai trabalhar nesta tarefa e por quanto tempo. As tarefas sugeridas só preenchem o tempo que sobrar no seu dia.",
+                "days": "Dias",
+                "timePerDay": "Tempo por dia",
+                "perDay": "Definir por dia",
+                "overbooked": "Suas tarefas fixadas passam do tempo planejado em {days}.",
+                "unpin": "Desafixar",
+                "pin": "Fixar",
+                "overbookedDay": "{day} está sobrecarregado: as tarefas fixadas levam {allocated}, mas você planejou {goal}.",
+                "raiseGoal": "Planejar {time} para {day}",
+                "trimTasks": "Reduzir tarefas para {time}"
             }
         },
         "activity": {
@@ -651,6 +664,7 @@
             "whenPlayWhite": "Quando você joga de brancas",
             "whenPlayBlack": "Quando você joga de pretas",
             "normalizedRatingTooltip": "O rating normalizado para o sistema do Dojo",
+            "timeManagementTooltip": "Calculado a partir dos jogos nesta pasta que incluem tempos de relógio.",
             "performanceByCohort": "Desempenho por coorte do adversário",
             "colOpponentCohort": "Coorte do adversário",
             "colPerformance": "Performance",
