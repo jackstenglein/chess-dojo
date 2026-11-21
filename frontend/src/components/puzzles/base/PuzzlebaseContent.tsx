@@ -49,6 +49,7 @@ import { HeaderStat } from './HeaderStat';
 import { Leaderboard } from './Leaderboard';
 import { PopularPuzzles } from './PopularPuzzles';
 import { PuzzlebaseClient } from './puzzlebaseClient';
+import { PuzzlebaseLogo } from './PuzzlebaseLogo';
 import { PuzzleCard } from './PuzzleCard';
 import { PuzzleTable } from './PuzzleTable';
 import { RatingBands } from './RatingBands';
@@ -197,11 +198,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                         <Stack
                             sx={{ justifyContent: 'space-between', gap: 3, minWidth: 0, py: 0.5 }}
                         >
-                            <Box>
-                                <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
-                                    Dojo PuzzleBase
-                                </Typography>
-                            </Box>
+                            <PuzzlebaseLogo />
                             <Stack
                                 direction='row'
                                 divider={<Divider orientation='vertical' flexItem />}
