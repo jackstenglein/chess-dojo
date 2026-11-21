@@ -5,6 +5,10 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { Chart } from 'react-charts';
+import {
+    TimeManagementDirectionIcon,
+    TimeManagementDirectionTooltip,
+} from '../info/TimeManagementRatingRow';
 import { primaryAxis, secondaryAxes } from './RatingCard';
 
 /**
@@ -61,10 +65,29 @@ export function TimeManagementRatingCard({ user }: { user: User }) {
                     <Typography variant='subtitle2' color='text.secondary'>
                         {t('stats.ratingCard.current')}
                     </Typography>
-                    <Typography sx={{ fontSize: '2.25rem', lineHeight: 1, fontWeight: 'bold' }}>
-                        {rating.currentRating}
-                        {rating.numGames < MIN_GAMES_FOR_ELO && '?'}
-                    </Typography>
+
+                    <TimeManagementDirectionTooltip area={rating.area}>
+                        <Stack
+                            direction='row'
+                            sx={{
+                                alignItems: 'center',
+                                gap: 0.5,
+                                position: 'relative',
+                                left: '-8px',
+                            }}
+                        >
+                            <TimeManagementDirectionIcon
+                                area={rating.area}
+                                sx={{ fontSize: '2.25rem' }}
+                            />
+                            <Typography
+                                sx={{ fontSize: '2.25rem', lineHeight: 1, fontWeight: 'bold' }}
+                            >
+                                {rating.currentRating}
+                                {rating.numGames < MIN_GAMES_FOR_ELO && '?'}
+                            </Typography>
+                        </Stack>
+                    </TimeManagementDirectionTooltip>
                     <Typography variant='body2' color='text.secondary'>
                         {t('directories.gamesCount', { count: rating.numGames })}
                     </Typography>
