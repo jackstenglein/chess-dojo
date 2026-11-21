@@ -196,7 +196,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 <HeaderStat label='Puzzles'>{puzzles.length}</HeaderStat>
                                 <HeaderStat label='Contributors'>{contributors}</HeaderStat>
                             </Stack>
-                            <Stack direction='row' sx={{ gap: 1.5 }}>
+                            <Stack direction='row' sx={{ gap: 1.5, flexWrap: 'wrap' }}>
                                 <Button
                                     variant='contained'
                                     startIcon={<Add />}
@@ -241,6 +241,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                 >
                                     Export PGN
                                 </Button>
+                                {status.isAdmin && <ApplicationsPanel client={client} />}
+                                {status.isAdmin && <AdminLogPanel client={client} />}
                             </Stack>
                         </Stack>
                         <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
@@ -258,8 +260,6 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
 
             <Container maxWidth='xl' sx={{ py: 3 }}>
                 <Stack sx={{ gap: 2.5 }}>
-                    {status.isAdmin && <ApplicationsPanel client={client} />}
-                    {status.isAdmin && <AdminLogPanel client={client} />}
                     {loadState === 'loading' && (
                         <Stack
                             sx={{ alignItems: 'center', py: 8 }}

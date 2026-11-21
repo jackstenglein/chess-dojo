@@ -1,8 +1,17 @@
 'use client';
 
 import { AdminAction } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Alert, Button, Collapse, Paper, Stack, Typography } from '@mui/material';
+import { History } from '@mui/icons-material';
+import {
+    Alert,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { PuzzlebaseClient } from './puzzlebaseClient';
 import { errorMessage } from './puzzlebaseErrors';
@@ -26,22 +35,13 @@ export function AdminLogPanel({ client }: { client: PuzzlebaseClient }) {
     }, [client, open]);
 
     return (
-        <Paper variant='outlined' sx={{ p: 2 }}>
-            <Stack sx={{ gap: 1 }}>
-                <Button
-                    color='inherit'
-                    onClick={() => setOpen((v) => !v)}
-                    endIcon={open ? <ExpandLess /> : <ExpandMore />}
-                    sx={{ justifyContent: 'space-between', textTransform: 'none' }}
-                >
-                    <Typography
-                        variant='overline'
-                        sx={{ color: 'text.secondary', lineHeight: 1.4 }}
-                    >
-                        Admin log
-                    </Typography>
-                </Button>
-                <Collapse in={open} unmountOnExit>
+        <>
+            <Button color='inherit' startIcon={<History />} onClick={() => setOpen(true)}>
+                Admin log
+            </Button>
+            <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='sm'>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Admin log</DialogTitle>
+                <DialogContent>
                     {error && <Alert severity='error'>{error}</Alert>}
                     {actions?.length === 0 && (
                         <Typography color='text.secondary'>Nothing has been logged yet.</Typography>
@@ -56,8 +56,13 @@ export function AdminLogPanel({ client }: { client: PuzzlebaseClient }) {
                             </Stack>
                         ))}
                     </Stack>
-                </Collapse>
-            </Stack>
-        </Paper>
+                </DialogContent>
+                <DialogActions>
+                    <Button color='inherit' onClick={() => setOpen(false)}>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }

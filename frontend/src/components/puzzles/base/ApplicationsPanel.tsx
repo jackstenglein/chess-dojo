@@ -4,15 +4,24 @@ import {
     ContributorStatus,
     PuzzlebaseContributor,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Alert, Button, Collapse, Paper, Stack, Typography } from '@mui/material';
+import { ExpandLess, ExpandMore, Groups } from '@mui/icons-material';
+import {
+    Alert,
+    Button,
+    Chip,
+    Collapse,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    Typography,
+} from '@mui/material';
 import { ReactNode, useEffect, useState } from 'react';
 import { AddContributor } from './AddContributor';
 import { AnnotatorLink } from './AnnotatorLink';
 import { PuzzlebaseClient } from './puzzlebaseClient';
 import { errorMessage } from './puzzlebaseErrors';
-
-const PANEL_HIDDEN_KEY = 'puzzlebase-contributors-panel-hidden';
 
 /**
  * For admins: the applications waiting to become Puzzle Contributors, each with Approve and Deny
@@ -26,26 +35,7 @@ export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
     const [confirming, setConfirming] = useState<string>();
     const [error, setError] = useState<string>();
     const [open, setOpen] = useState<'contributors' | 'closed'>();
-    // Whether the panel is open. The choice is remembered on this device.
-    const [shown, setShown] = useState(true);
-
-    useEffect(() => {
-        try {
-            if (window.localStorage.getItem(PANEL_HIDDEN_KEY) === '1') setShown(false);
-        } catch {
-            // Storage is blocked: the panel just starts open.
-        }
-    }, []);
-
-    const toggleShown = () => {
-        const next = !shown;
-        setShown(next);
-        try {
-            window.localStorage.setItem(PANEL_HIDDEN_KEY, next ? '0' : '1');
-        } catch {
-            // Not remembered, but the panel still opens and closes.
-        }
-    };
+    const [showing, setShowing] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -156,122 +146,134 @@ export function ApplicationsPanel({ client }: { client: PuzzlebaseClient }) {
         );
 
     return (
-        <Paper variant='outlined' sx={{ p: 2 }}>
+        <>
             <Button
                 color='inherit'
-                fullWidth
-                onClick={toggleShown}
-                aria-expanded={shown}
-                endIcon={shown ? <ExpandLess /> : <ExpandMore />}
-                sx={{ justifyContent: 'space-between', textTransform: 'none', mb: shown ? 1 : 0 }}
+                startIcon={<Groups />}
+                onClick={() => setShowing(true)}
+                aria-label='Puzzle Contributors'
             >
-                <Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-                    Puzzle Contributors
-                    {!shown && waiting.length > 0 ? ` · ${waiting.length} waiting` : ''}
-                </Typography>
-            </Button>
-            <Collapse in={shown} unmountOnExit>
-                <Stack sx={{ gap: 1.5 }}>
-                    <AddContributor
-                        client={client}
-                        exclude={withStatus('APPROVED').map((c) => c.username)}
-                        onAdded={(added) =>
-                            setPeople((all) => [
-                                ...all.filter((c) => c.username !== added.username),
-                                added,
-                            ])
-                        }
+                Contributors
+                {waiting.length > 0 && (
+                    <Chip
+                        size='small'
+                        color='primary'
+                        label={waiting.length}
+                        sx={{ ml: 1, height: 20 }}
                     />
-                    <Typography
-                        variant='overline'
-                        sx={{ color: 'text.secondary', lineHeight: 1.4 }}
-                    >
-                        Applications waiting · {waiting.length}
-                    </Typography>
-                    {error && <Alert severity='error'>{error}</Alert>}
-                    {waiting.map((applicant) =>
-                        row(
-                            applicant,
-                            <>
-                                <Button
-                                    color='inherit'
-                                    size='small'
-                                    disabled={working === applicant.username}
-                                    onClick={() => decide(applicant.username, 'deny', 'DENIED')}
-                                    aria-label={`Deny ${applicant.displayName}`}
-                                >
-                                    Deny
-                                </Button>
-                                {approveButton(applicant)}
-                            </>,
-                        ),
-                    )}
-
-                    {section(
-                        'Puzzle Contributors',
-                        members.length,
-                        'contributors',
-                        members.map((person) =>
+                )}
+            </Button>
+            <Dialog open={showing} onClose={() => setShowing(false)} fullWidth maxWidth='sm'>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Puzzle Contributors</DialogTitle>
+                <DialogContent>
+                    <Stack sx={{ gap: 1.5 }}>
+                        <AddContributor
+                            client={client}
+                            exclude={withStatus('APPROVED').map((c) => c.username)}
+                            onAdded={(added) =>
+                                setPeople((all) => [
+                                    ...all.filter((c) => c.username !== added.username),
+                                    added,
+                                ])
+                            }
+                        />
+                        <Typography
+                            variant='overline'
+                            sx={{ color: 'text.secondary', lineHeight: 1.4 }}
+                        >
+                            Applications waiting · {waiting.length}
+                        </Typography>
+                        {error && <Alert severity='error'>{error}</Alert>}
+                        {waiting.map((applicant) =>
                             row(
-                                person,
-                                person.role === 'ADMIN' ? null : confirming === person.username ? (
-                                    <>
-                                        <Button
-                                            color='inherit'
-                                            size='small'
-                                            onClick={() => setConfirming(undefined)}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            color='error'
-                                            variant='contained'
-                                            size='small'
-                                            disabled={working === person.username}
-                                            onClick={() =>
-                                                decide(person.username, 'revoke', 'REVOKED')
-                                            }
-                                            aria-label={`Confirm removing ${person.displayName}`}
-                                        >
-                                            Confirm remove
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button
-                                        color='error'
-                                        size='small'
-                                        onClick={() => setConfirming(person.username)}
-                                        aria-label={`Remove ${person.displayName}`}
-                                    >
-                                        Remove
-                                    </Button>
-                                ),
-                            ),
-                        ),
-                    )}
-
-                    {section(
-                        'Denied or removed',
-                        turnedDown.length,
-                        'closed',
-                        turnedDown.map((person) =>
-                            row(
-                                person,
+                                applicant,
                                 <>
-                                    <Typography
-                                        variant='body2'
-                                        color='text.secondary'
-                                        sx={{ alignSelf: 'center' }}
+                                    <Button
+                                        color='inherit'
+                                        size='small'
+                                        disabled={working === applicant.username}
+                                        onClick={() => decide(applicant.username, 'deny', 'DENIED')}
+                                        aria-label={`Deny ${applicant.displayName}`}
                                     >
-                                        {person.status === 'DENIED' ? 'Denied' : 'Removed'}
-                                    </Typography>
-                                    {approveButton(person, 'Approve again')}
+                                        Deny
+                                    </Button>
+                                    {approveButton(applicant)}
                                 </>,
                             ),
-                        ),
-                    )}
-                </Stack>
-            </Collapse>
-        </Paper>
+                        )}
+
+                        {section(
+                            'Puzzle Contributors',
+                            members.length,
+                            'contributors',
+                            members.map((person) =>
+                                row(
+                                    person,
+                                    person.role === 'ADMIN' ? null : confirming ===
+                                      person.username ? (
+                                        <>
+                                            <Button
+                                                color='inherit'
+                                                size='small'
+                                                onClick={() => setConfirming(undefined)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                color='error'
+                                                variant='contained'
+                                                size='small'
+                                                disabled={working === person.username}
+                                                onClick={() =>
+                                                    decide(person.username, 'revoke', 'REVOKED')
+                                                }
+                                                aria-label={`Confirm removing ${person.displayName}`}
+                                            >
+                                                Confirm remove
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button
+                                            color='error'
+                                            size='small'
+                                            onClick={() => setConfirming(person.username)}
+                                            aria-label={`Remove ${person.displayName}`}
+                                        >
+                                            Remove
+                                        </Button>
+                                    ),
+                                ),
+                            ),
+                        )}
+
+                        {section(
+                            'Denied or removed',
+                            turnedDown.length,
+                            'closed',
+                            turnedDown.map((person) =>
+                                row(
+                                    person,
+                                    <>
+                                        <Typography
+                                            variant='body2'
+                                            color='text.secondary'
+                                            sx={{ alignSelf: 'center' }}
+                                        >
+                                            {person.status === 'DENIED' ? 'Denied' : 'Removed'}
+                                        </Typography>
+                                        {approveButton(person, 'Approve again')}
+                                    </>,
+                                ),
+                            ),
+                        )}
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button color='inherit' onClick={() => setShowing(false)}>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }
