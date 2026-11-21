@@ -3302,7 +3302,19 @@
             "incorrectMoveCommentDuringRun": "Falsche Vermutung während des Laufs",
             "tooltipSettings": "Einstellungen",
             "prevWrong": "Vorheriges falsches Rätsel",
-            "nextWrong": "Nächstes falsches Rätsel"
+            "nextWrong": "Nächstes falsches Rätsel",
+            "leaderboardTitle": "Rangliste",
+            "leaderboardAllTime": "Allzeit",
+            "leaderboardMonth": "Dieser Monat",
+            "leaderboardOverall": "Gesamt",
+            "leaderboardCohort": "Kohorte",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Rang",
+            "columnPlayer": "Spieler",
+            "columnScore": "Punkte",
+            "columnRuns": "Läufe",
+            "leaderboardEmpty": "Noch keine abgeschlossenen Läufe.",
+            "leaderboardPartial": "Ältere Läufe werden noch hinzugefügt."
         },
         "squareColors": {
             "title": "Feldfarbe Drill",

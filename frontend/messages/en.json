@@ -3302,7 +3302,19 @@
             "incorrectMoveCommentDuringRun": "Incorrect guess during the run",
             "tooltipSettings": "Settings",
             "prevWrong": "Previous Wrong Puzzle",
-            "nextWrong": "Next Wrong Puzzle"
+            "nextWrong": "Next Wrong Puzzle",
+            "leaderboardTitle": "Leaderboard",
+            "leaderboardAllTime": "All-time",
+            "leaderboardMonth": "This month",
+            "leaderboardOverall": "Overall",
+            "leaderboardCohort": "Cohort",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Rank",
+            "columnPlayer": "Player",
+            "columnScore": "Score",
+            "columnRuns": "Runs",
+            "leaderboardEmpty": "No completed runs yet.",
+            "leaderboardPartial": "Earlier runs are still being added."
         },
         "squareColors": {
             "title": "Square Color Drill",
