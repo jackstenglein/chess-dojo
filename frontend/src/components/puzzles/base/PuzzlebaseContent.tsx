@@ -154,8 +154,8 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
     const editingPuzzle = puzzles.find((p) => p.id === editingId);
 
     const contributors = new Set(puzzles.map((p) => p.annotator)).size;
-    // A theme can be listed under several buckets, but it is still one theme.
-    const themeCount = new Set(Object.values(taxonomy.buckets).flat()).size;
+    // Only themes that at least one puzzle actually uses.
+    const themeCount = new Set(puzzles.flatMap((p) => p.themes)).size;
     const hasFilters =
         filterBuckets.length > 0 || filterThemes.length > 0 || filterBands.length > 0;
 
