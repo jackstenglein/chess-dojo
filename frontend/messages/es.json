@@ -1553,7 +1553,9 @@
         "myCohort": "Mi cohorte",
         "graduations": "Graduaciones",
         "viewAll": "Ver todo",
+        "comment": "Comentar",
         "showPostsFrom": "Mostrar publicaciones de",
+        "showMyPosts": "Mostrar mis publicaciones",
         "categories": "Categorías",
         "allCategories": "Todas las categorías",
         "annotations": "Anotaciones",
@@ -1562,6 +1564,8 @@
         "completedRequirement": "Completó <strong>{name}</strong>",
         "updated": "Actualizado",
         "updatedRequirement": "Actualizó <strong>{name}</strong>",
+        "dojoPointsGained": "+{count} puntos Dojo",
+        "markedNotDone": "Marcada como no hecha",
         "dojoPoints": "Puntos Dojo:",
         "totalTime": "Tiempo total:",
         "customTask": "Tarea personalizada",
@@ -1580,7 +1584,9 @@
             "players": "Jugadores:",
             "date": "Fecha:",
             "result": "Resultado:",
-            "moves": "Jugadas:"
+            "moves": "Jugadas:",
+            "versus": "{white} vs. {black}",
+            "newAnalysis": "Nuevo análisis de partida"
         },
         "graduation": {
             "graduated": "Se graduó de <strong>{oldCohort}</strong> a <strong>{newCohort}</strong>",
