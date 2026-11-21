@@ -958,6 +958,18 @@ function StepActions({
         stepTask && isOnePositionTask(stepTask.task) ? stepTask.task.positions?.[0] : undefined;
     const [playBotOpen, setPlayBotOpen] = useState(false);
 
+    // A completed step shows the same footer as a completed welcome card.
+    if (step.complete && (stepTask || step.id === StarterStepId.DojoRush)) {
+        return (
+            <CardActions disableSpacing sx={dailyCardActionsSx}>
+                <CompletedFooter
+                    disabled={disabled}
+                    onUndo={() => (stepTask ? onUndo(stepTask.task) : onUndoRush())}
+                />
+            </CardActions>
+        );
+    }
+
     return (
         <CardActions disableSpacing sx={dailyCardActionsSx}>
             {botPosition && (
@@ -1008,18 +1020,6 @@ function StepActions({
                     {t(link.label)}
                 </Button>
             )}
-            {/* Any completed step can be undone, however it was completed. */}
-            {step.complete && (stepTask || step.id === StarterStepId.DojoRush) && (
-                <Button
-                    size='small'
-                    color='inherit'
-                    disabled={disabled}
-                    onClick={() => (stepTask ? onUndo(stepTask.task) : onUndoRush())}
-                    sx={{ textTransform: 'none', color: 'text.secondary' }}
-                >
-                    {t('undo')}
-                </Button>
-            )}
             {stepTask && !link && !botPosition && (
                 <Button
                     size='small'
@@ -1047,6 +1047,33 @@ function StepActions({
                 </Box>
             )}
         </CardActions>
+    );
+}
+
+/**
+ * The footer of every completed card on the starter plan: "Completed" on the left and
+ * Undo on the right.
+ */
+function CompletedFooter({ disabled, onUndo }: { disabled: boolean; onUndo: () => void }) {
+    const t = useTranslations('profile.trainingPlan.starter.actions');
+    return (
+        <Stack direction='row' sx={{ alignItems: 'center', gap: 1, width: 1, minHeight: 30 }}>
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 0.5, flexGrow: 1 }}>
+                <Check sx={{ fontSize: '1rem', color: 'success.main' }} />
+                <Typography variant='caption' sx={{ color: 'success.main', fontWeight: 600 }}>
+                    {t('completed')}
+                </Typography>
+            </Stack>
+            <Button
+                size='small'
+                color='inherit'
+                disabled={disabled}
+                onClick={onUndo}
+                sx={{ textTransform: 'none', color: 'text.secondary', minWidth: 0 }}
+            >
+                {t('undo')}
+            </Button>
+        </Stack>
     );
 }
 
@@ -1254,23 +1281,7 @@ function WelcomeTaskCard({
                 sx={{ alignItems: 'center', gap: 1, px: 1.75, pb: 1.5, minHeight: 40 }}
             >
                 {done ? (
-                    <>
-                        <Typography
-                            variant='caption'
-                            sx={{ color: 'success.main', fontWeight: 600, flexGrow: 1 }}
-                        >
-                            {t('actions.completed')}
-                        </Typography>
-                        <Button
-                            size='small'
-                            color='inherit'
-                            disabled={disabled}
-                            onClick={() => onUndo(task)}
-                            sx={{ textTransform: 'none', color: 'text.secondary', minWidth: 0 }}
-                        >
-                            {t('actions.undo')}
-                        </Button>
-                    </>
+                    <CompletedFooter disabled={disabled} onUndo={() => onUndo(task)} />
                 ) : (
                     <Button
                         size='small'
