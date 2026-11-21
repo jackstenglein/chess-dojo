@@ -8,7 +8,9 @@ import {
 } from './api';
 import { ParsedPuzzlePgn, parsePuzzlePgn } from './parse';
 import { describeUnknownTag, resolveTagNames } from './pgnTags';
-import { canonicalTheme } from './tags';
+import { canonicalTheme, normalizeThemeName } from './tags';
+
+export { normalizeThemeName };
 
 /** Returns a copy of the built-in taxonomy: the buckets and themes puzzles start with. */
 export function defaultTaxonomy(): PuzzlebaseTaxonomy {
@@ -20,12 +22,6 @@ export function defaultTaxonomy(): PuzzlebaseTaxonomy {
             ]),
         ),
     };
-}
-
-/** Cleans up a user-entered theme name: trims, collapses whitespace, and capitalizes it. */
-export function normalizeThemeName(theme: string): string {
-    const cleaned = theme.trim().replace(/\s+/g, ' ');
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
 /**

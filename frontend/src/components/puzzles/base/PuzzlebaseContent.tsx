@@ -85,6 +85,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
         updatePuzzle: savePuzzle,
         createTheme,
         addPuzzles,
+        replaceTaxonomy,
     } = usePuzzlebaseData(client);
     const [adding, setAdding] = useState(false);
     const [showContributors, setShowContributors] = useState(false);
@@ -590,6 +591,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                     client={client}
                     taxonomy={taxonomy}
                     onClose={() => setAdding(false)}
+                    onTaxonomyChange={replaceTaxonomy}
                     onAdded={(added, notes) => {
                         addPuzzles(added);
                         if (notes.length > 0) {

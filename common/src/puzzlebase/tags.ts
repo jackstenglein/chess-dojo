@@ -1,5 +1,11 @@
 import { PuzzlebaseTaxonomy, siblingBuckets } from './api';
 
+/** Cleans up a user-entered theme name: trims, collapses whitespace, and capitalizes it. */
+export function normalizeThemeName(theme: string): string {
+    const cleaned = theme.trim().replace(/\s+/g, ' ');
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 /** The tags on a puzzle. */
 export interface PuzzleTags {
     buckets: string[];

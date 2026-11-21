@@ -1,4 +1,5 @@
 import { PuzzlebaseTaxonomy } from './api';
+import { normalizeThemeName } from './tags';
 
 /** The highest rating a puzzle can have. Matches the puzzlebase API schema. */
 const MAX_RATING = 3500;
@@ -188,4 +189,70 @@ export function resolveTagNames(taxonomy: PuzzlebaseTaxonomy, names: string[]): 
 /** Describes a name that was not recognized, for showing to a person. */
 export function describeUnknownTag({ name, suggestion }: { name: string; suggestion?: string }) {
     return `Unknown tag "${name}"${suggestion ? `. Did you mean "${suggestion}"?` : '.'} It was left off.`;
+}
+
+/** The bucket a new theme goes in when the puzzle names no bucket of its own. */
+export const DEFAULT_NEW_THEME_BUCKET = 'Tactics';
+
+/** How the tags written in a PGN will be applied, including themes that have to be created. */
+export interface TagPlan {
+    /** Existing buckets and themes to tag the puzzle with, including corrected typos. */
+    buckets: string[];
+    themes: string[];
+    /** Names that are close to an existing tag, and the tag they are read as. */
+    corrected: { name: string; to: string }[];
+    /** New themes to create before the puzzle is added, and the bucket each goes in. */
+    create: { theme: string; bucket: string }[];
+    /** Names that cannot be a theme (too short or too long), left off. */
+    skipped: string[];
+}
+
+/**
+ * Works out how a PGN's tags will be applied. Known tags are used as they are. A name close to a
+ * known tag (a typo, like Skewr for Skewer) is read as that tag. Anything else becomes a new theme,
+ * in the first bucket the PGN names, or in Tactics if it names none.
+ */
+export function planTags(taxonomy: PuzzlebaseTaxonomy, names: string[]): TagPlan {
+    const resolved = resolveTagNames(taxonomy, names);
+    const plan: TagPlan = {
+        buckets: [...resolved.buckets],
+        themes: [...resolved.themes],
+        corrected: [],
+        create: [],
+        skipped: [],
+    };
+    const bucketNames = Object.keys(taxonomy.buckets);
+    const newThemeBucket =
+        resolved.buckets[0] ??
+        (bucketNames.includes(DEFAULT_NEW_THEME_BUCKET)
+            ? DEFAULT_NEW_THEME_BUCKET
+            : bucketNames[0]);
+
+    for (const { name, suggestion } of resolved.unknown) {
+        if (suggestion) {
+            const list = suggestion in taxonomy.buckets ? plan.buckets : plan.themes;
+            if (!list.includes(suggestion)) list.push(suggestion);
+            plan.corrected.push({ name, to: suggestion });
+            continue;
+        }
+        const theme = normalizeThemeName(name);
+        if (theme.length < 2 || theme.length > 40 || !newThemeBucket) {
+            plan.skipped.push(name);
+            continue;
+        }
+        if (!plan.create.some((c) => c.theme.toLowerCase() === theme.toLowerCase())) {
+            plan.create.push({ theme, bucket: newThemeBucket });
+            plan.themes.push(theme);
+        }
+    }
+    return plan;
+}
+
+/** Describes what a tag plan will do beyond using known tags, for showing to a person. */
+export function describeTagPlan(plan: TagPlan): string[] {
+    return [
+        ...plan.create.map((c) => `New theme "${c.theme}" will be added under ${c.bucket}.`),
+        ...plan.corrected.map((c) => `"${c.name}" is read as "${c.to}".`),
+        ...plan.skipped.map((name) => `"${name}" can't be a theme name, so it was left off.`),
+    ];
 }

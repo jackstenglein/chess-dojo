@@ -26,18 +26,34 @@ function setup(overrides: Partial<PuzzlebaseClient> = {}) {
             ],
         }),
     );
-    const client = { createPuzzle, importStudy, ...overrides } as unknown as PuzzlebaseClient;
+    // Creating a theme hands back the taxonomy with it added, as the server does.
+    let taxonomy = defaultTaxonomy();
+    const createTheme = vi.fn(({ bucket, theme }: { bucket: string; theme: string }) => {
+        taxonomy = {
+            ...taxonomy,
+            buckets: { ...taxonomy.buckets, [bucket]: [...taxonomy.buckets[bucket], theme] },
+        };
+        return Promise.resolve(taxonomy);
+    });
+    const client = {
+        createPuzzle,
+        importStudy,
+        createTheme,
+        ...overrides,
+    } as unknown as PuzzlebaseClient;
     const onAdded = vi.fn();
     const onClose = vi.fn();
+    const onTaxonomyChange = vi.fn();
     render(
         <AddPuzzlesDialog
             client={client}
             taxonomy={defaultTaxonomy()}
             onClose={onClose}
             onAdded={onAdded}
+            onTaxonomyChange={onTaxonomyChange}
         />,
     );
-    return { createPuzzle, importStudy, onAdded, onClose };
+    return { createPuzzle, importStudy, createTheme, onAdded, onClose, onTaxonomyChange };
 }
 
 const paste = (text: string) =>
@@ -59,13 +75,15 @@ describe('AddPuzzlesDialog', () => {
         );
     });
 
-    it('shows the tags the PGN asks for and flags one that is not a real theme', () => {
+    it('shows the tags the PGN asks for, a typo read as the real tag, and new themes', () => {
         setup();
-        paste(pgnWith('{ tags: back rank mate, Skewr }'));
+        paste(pgnWith('{ tags: back rank mate, Skewr, windmill attack }'));
 
         expect(screen.getByText('Back rank mate')).toBeTruthy();
+        expect(screen.getByText('Skewer')).toBeTruthy();
+        expect(screen.getByText('"Skewr" is read as "Skewer".')).toBeTruthy();
         expect(
-            screen.getByText('Unknown tag "Skewr". Did you mean "Skewer"? It was left off.'),
+            screen.getByText('New theme "Windmill attack" will be added under Tactics.'),
         ).toBeTruthy();
         // A typo does not stop the puzzle from being added.
         expect(screen.getByRole('button', { name: 'Add puzzle' }).hasAttribute('disabled')).toBe(
@@ -96,13 +114,61 @@ describe('AddPuzzlesDialog', () => {
         });
     });
 
-    it('passes on what the server left off, and closes', async () => {
-        const { onAdded, onClose } = setup();
+    it("reads a typo as the real tag, drops the server's note about it, and closes", async () => {
+        const createPuzzle = vi.fn(() =>
+            Promise.resolve({
+                puzzle,
+                warnings: [
+                    'Unknown tag "Skewr". Did you mean "Skewer"? It was left off.',
+                    'Something else the server noticed.',
+                ],
+            }),
+        );
+        const { onAdded, onClose } = setup({ createPuzzle });
         paste(pgnWith('{ tags: Skewr }'));
         fireEvent.click(screen.getByRole('button', { name: 'Add puzzle' }));
 
         await waitFor(() => expect(onClose).toHaveBeenCalled());
-        expect(onAdded).toHaveBeenCalledWith([puzzle], ['Unknown tag "Skewr".']);
+        expect(createPuzzle).toHaveBeenCalledWith(expect.objectContaining({ themes: ['Skewer'] }));
+        expect(onAdded).toHaveBeenCalledWith(
+            [puzzle],
+            ['Read "Skewr" as "Skewer".', 'Something else the server noticed.'],
+        );
+    });
+
+    it('creates a theme the PGN names that does not exist yet, then adds the puzzle with it', async () => {
+        const { createPuzzle, createTheme, onAdded, onTaxonomyChange } = setup();
+        paste(pgnWith('{ tags: Endgame, triangulation dance }'));
+        fireEvent.click(screen.getByRole('button', { name: 'Add puzzle' }));
+
+        await waitFor(() => expect(onAdded).toHaveBeenCalled());
+        expect(createTheme).toHaveBeenCalledWith({
+            bucket: 'Endgame',
+            theme: 'Triangulation dance',
+        });
+        expect(onTaxonomyChange).toHaveBeenCalled();
+        expect(createPuzzle).toHaveBeenCalledWith(
+            expect.objectContaining({ buckets: ['Endgame'], themes: ['Triangulation dance'] }),
+        );
+        expect(onAdded.mock.calls[0][1]).toContain(
+            'Added new theme "Triangulation dance" under Endgame.',
+        );
+    });
+
+    it('creates a new theme once when several games in a file use it', async () => {
+        const { createTheme, createPuzzle } = setup();
+        await upload(
+            [pgnWith('{ tags: Windmill attack }'), pgnWith('{ tags: windmill attack }')].join(
+                '\n\n',
+            ),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Import 2 puzzles' }));
+
+        expect(await screen.findByText('Import finished')).toBeTruthy();
+        expect(createTheme).toHaveBeenCalledTimes(1);
+        expect(createPuzzle).toHaveBeenLastCalledWith(
+            expect.objectContaining({ themes: ['Windmill attack'] }),
+        );
     });
 
     it('explains why adding failed and stays open', async () => {

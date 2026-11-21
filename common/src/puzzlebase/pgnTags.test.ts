@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { defaultTaxonomy } from './build';
-import { describeUnknownTag, readPgnTagInfo, resolveTagNames } from './pgnTags';
+import {
+    describeTagPlan,
+    describeUnknownTag,
+    planTags,
+    readPgnTagInfo,
+    resolveTagNames,
+} from './pgnTags';
 
 describe('readPgnTagInfo', () => {
     it('reads tags and a rating from a comment before the first move', () => {
@@ -124,5 +130,42 @@ describe('theme names that changed', () => {
         const result = resolveTagNames(defaultTaxonomy(), ['Decoy', 'decoy', 'attraction']);
         expect(result.themes).toEqual(['Attraction']);
         expect(result.unknown).toEqual([]);
+    });
+});
+
+describe('planTags', () => {
+    const taxonomy = defaultTaxonomy();
+
+    it('uses known tags as they are', () => {
+        const plan = planTags(taxonomy, ['Fork', 'Endgame']);
+        expect(plan).toMatchObject({ buckets: ['Endgame'], themes: ['Fork'], create: [] });
+    });
+
+    it('reads a near miss as the real tag', () => {
+        const plan = planTags(taxonomy, ['Skewr']);
+        expect(plan.themes).toEqual(['Skewer']);
+        expect(plan.corrected).toEqual([{ name: 'Skewr', to: 'Skewer' }]);
+        expect(plan.create).toEqual([]);
+    });
+
+    it('creates a new theme in the bucket the PGN names', () => {
+        const plan = planTags(taxonomy, ['Endgame', 'triangulation dance']);
+        expect(plan.create).toEqual([{ theme: 'Triangulation dance', bucket: 'Endgame' }]);
+        expect(plan.themes).toEqual(['Triangulation dance']);
+        expect(describeTagPlan(plan)).toEqual([
+            'New theme "Triangulation dance" will be added under Endgame.',
+        ]);
+    });
+
+    it('puts a new theme in Tactics when no bucket is named', () => {
+        expect(planTags(taxonomy, ['Windmill attack']).create).toEqual([
+            { theme: 'Windmill attack', bucket: 'Tactics' },
+        ]);
+    });
+
+    it('creates each new theme once, and skips names that cannot be themes', () => {
+        const plan = planTags(taxonomy, ['Zugzwang dance', 'zugzwang dance', 'x']);
+        expect(plan.create).toHaveLength(1);
+        expect(plan.skipped).toEqual(['x']);
     });
 });

@@ -7,10 +7,12 @@ import {
     PuzzlebaseTaxonomy,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import {
+    describeTagPlan,
     describeUnknownTag,
-    resolveTagNames,
+    planTags,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/pgnTags';
 import { splitPgnFile } from '@jackstenglein/chess-dojo-common/src/puzzlebase/splitPgnFile';
+import { canonicalTheme } from '@jackstenglein/chess-dojo-common/src/puzzlebase/tags';
 import { UploadFile } from '@mui/icons-material';
 import {
     Alert,
@@ -45,6 +47,8 @@ interface AddPuzzlesDialogProps {
      * study, the ignored things are shown in the dialog instead, so `notes` is empty.
      */
     onAdded: (puzzles: PuzzlebasePuzzle[], notes: string[]) => void;
+    /** Called when adding puzzles created new themes, with the taxonomy that has them. */
+    onTaxonomyChange?: (taxonomy: PuzzlebaseTaxonomy) => void;
 }
 
 type Source = 'pgn' | 'file' | 'study';
@@ -74,7 +78,15 @@ const monoSx = { fontFamily: 'monospace', fontSize: '0.85rem' } as const;
  * of a public Lichess study.
  * Tags can be added on the list afterwards.
  */
-export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzzlesDialogProps) {
+export function AddPuzzlesDialog({
+    client,
+    taxonomy,
+    onClose,
+    onAdded,
+    onTaxonomyChange,
+}: AddPuzzlesDialogProps) {
+    /** The themes as they are now, including any created while adding these puzzles. */
+    const liveTaxonomy = useRef(taxonomy);
     const [tab, setTab] = useState<Source>('pgn');
     const [file, setFile] = useState<{ name: string; text: string }>();
     const [dragging, setDragging] = useState(false);
@@ -112,13 +124,13 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
 
     // What the PGN asks for, checked against the real themes as it is pasted.
     const pgnRating = check.ok ? check.rating : undefined;
-    const found = useMemo(
-        () => (check.ok ? resolveTagNames(taxonomy, check.tagNames) : undefined),
+    const plan = useMemo(
+        () => (check.ok ? planTags(taxonomy, check.tagNames) : undefined),
         [check, taxonomy],
     );
-    const notes =
-        check.ok && found ? [...check.problems, ...found.unknown.map(describeUnknownTag)] : [];
-    const foundTags = found ? [...found.buckets, ...found.themes] : [];
+    const notes = check.ok ? check.problems : [];
+    const tagNotes = plan ? describeTagPlan(plan) : [];
+    const foundTags = plan ? [...plan.buckets, ...plan.themes] : [];
 
     // A rating written in the PGN takes the place of the one typed here.
     const ratingFromPgn = tab === 'pgn' && pgnRating !== undefined;
@@ -139,13 +151,8 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
         setError(undefined);
         try {
             if (tab === 'pgn') {
-                const { puzzle, warnings } = await client.createPuzzle({
-                    pgn,
-                    rating: ratingToUse,
-                    themes: [],
-                    buckets: [],
-                });
-                onAdded([puzzle], warnings);
+                const { puzzle, notes: added } = await addGame(pgn, ratingToUse);
+                onAdded([puzzle], added);
                 onClose();
             } else if (tab === 'file') {
                 const result = await addFileGames(ratingToUse);
@@ -165,6 +172,43 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     };
 
     /**
+     * Adds one puzzle. Tags in the PGN that are not real themes are created first (or, if close to
+     * a real tag, read as it), so the puzzle keeps every tag it was written with.
+     * @returns The puzzle, and notes on new themes, corrected tags and anything left off.
+     */
+    const addGame = async (game: string, fallbackRating: number) => {
+        const checked = checkPuzzlePgn(game);
+        const gamePlan = checked.ok ? planTags(liveTaxonomy.current, checked.tagNames) : undefined;
+        const notes: string[] = [];
+        for (const { theme, bucket } of gamePlan?.create ?? []) {
+            // An earlier game in the same file may have created it already.
+            if (canonicalTheme(liveTaxonomy.current, theme)) continue;
+            liveTaxonomy.current = await client.createTheme({ bucket, theme });
+            onTaxonomyChange?.(liveTaxonomy.current);
+            notes.push(`Added new theme "${theme}" under ${bucket}.`);
+        }
+        const { puzzle, warnings } = await client.createPuzzle({
+            pgn: game,
+            rating: fallbackRating,
+            themes: gamePlan?.themes ?? [],
+            buckets: gamePlan?.buckets ?? [],
+        });
+        // The server does not know which typos were corrected, so it still calls them unknown.
+        const handled = new Set(
+            (gamePlan?.corrected ?? []).map((c) =>
+                describeUnknownTag({ name: c.name, suggestion: c.to }),
+            ),
+        );
+        for (const c of gamePlan?.corrected ?? []) {
+            notes.push(`Read "${c.name}" as "${c.to}".`);
+        }
+        for (const name of gamePlan?.skipped ?? []) {
+            notes.push(`"${name}" can't be a theme name, so it was left off.`);
+        }
+        return { puzzle, notes: [...notes, ...warnings.filter((w) => !handled.has(w))] };
+    };
+
+    /**
      * Adds each game of the uploaded file as its own puzzle, in order. A game the server turns down
      * as not a puzzle is skipped and reported. Any other failure (signed out, server down) stops
      * the upload, and the games not yet sent are reported as not added.
@@ -176,14 +220,9 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
             const title = gameTitle(game);
             setProgress(index);
             try {
-                const { puzzle, warnings } = await client.createPuzzle({
-                    pgn: game,
-                    rating: fallbackRating,
-                    themes: [],
-                    buckets: [],
-                });
+                const { puzzle, notes } = await addGame(game, fallbackRating);
                 result.puzzles.push(puzzle);
-                for (const message of warnings) {
+                for (const message of notes) {
                     result.warnings.push({ chapter, title, message });
                 }
             } catch (err) {
@@ -366,6 +405,11 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                 )}
                                 {notes.map((note) => (
                                     <Alert key={note} severity='warning' sx={{ py: 0 }}>
+                                        {note}
+                                    </Alert>
+                                ))}
+                                {tagNotes.map((note) => (
+                                    <Alert key={note} severity='info' sx={{ py: 0 }}>
                                         {note}
                                     </Alert>
                                 ))}

@@ -192,6 +192,8 @@ export function usePuzzlebaseData(client: PuzzlebaseClient) {
     return {
         puzzles,
         taxonomy,
+        /** Takes a taxonomy the server sent back, such as after themes were created. */
+        replaceTaxonomy: setTaxonomy,
         leaderboard,
         loadState,
         loadError,
