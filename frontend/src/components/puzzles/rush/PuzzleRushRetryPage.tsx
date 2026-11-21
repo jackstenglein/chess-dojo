@@ -175,6 +175,22 @@ function RetryUnderboard({
     const t = useTranslations('puzzles.rush');
     const originalMovetext = useMemo(() => stripPgnHeaders(attempt.pgn), [attempt.pgn]);
 
+    let prevWrongHref: string | undefined;
+    let nextWrongHref: string | undefined;
+
+    for (let i = index - 1; i >= 0; i--) {
+        if (session.attempts[i].result !== 'win') {
+            prevWrongHref = puzzleRushRetryHref(session.createdAt, i);
+            break;
+        }
+    }
+    for (let i = index + 1; i < session.attempts.length; i++) {
+        if (session.attempts[i].result !== 'win') {
+            nextWrongHref = puzzleRushRetryHref(session.createdAt, i);
+            break;
+        }
+    }
+
     return (
         <CardContent sx={{ minHeight: 1 }}>
             <Stack sx={{ minHeight: 1, gap: 2 }}>
@@ -289,6 +305,22 @@ function RetryUnderboard({
                         flexWrap: 'wrap',
                     }}
                 >
+                    <Button
+                        variant='contained'
+                        component={Link}
+                        disabled={!prevWrongHref}
+                        href={prevWrongHref}
+                    >
+                        {t('prevWrong')}
+                    </Button>
+                    <Button
+                        variant='contained'
+                        component={Link}
+                        disabled={!nextWrongHref}
+                        href={nextWrongHref}
+                    >
+                        {t('nextWrong')}
+                    </Button>
                     <Button
                         variant='contained'
                         component={Link}

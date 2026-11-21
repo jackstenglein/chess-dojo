@@ -3314,7 +3314,21 @@
             "loadMore": "Charger plus",
             "incorrectMoveComment": "Mauvaise supposition",
             "incorrectMoveCommentDuringRun": "Mauvaise réponse pendant la course",
-            "tooltipSettings": "Paramètres"
+            "tooltipSettings": "Paramètres",
+            "prevWrong": "Puzzle précédent incorrect",
+            "nextWrong": "Prochain puzzle erroné",
+            "leaderboardTitle": "Classement",
+            "leaderboardAllTime": "Tout temps",
+            "leaderboardMonth": "Ce mois-ci",
+            "leaderboardOverall": "Général",
+            "leaderboardCohort": "Cohorte",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Rang",
+            "columnPlayer": "Joueur",
+            "columnScore": "Score",
+            "columnRuns": "Parties",
+            "leaderboardEmpty": "Aucune partie terminée pour le moment.",
+            "leaderboardPartial": "Des parties plus anciennes sont encore en cours d'ajout."
         },
         "squareColors": {
             "title": "Exercice de couleur des cases",

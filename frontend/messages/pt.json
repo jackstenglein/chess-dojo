@@ -3314,7 +3314,21 @@
             "loadMore": "Carregar mais",
             "incorrectMoveComment": "Palpite incorreto",
             "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida",
-            "tooltipSettings": "Configurações"
+            "tooltipSettings": "Configurações",
+            "prevWrong": "Quebra-cabeça errado anterior",
+            "nextWrong": "Próximo quebra-cabeça errado",
+            "leaderboardTitle": "Classificação",
+            "leaderboardAllTime": "Todos os tempos",
+            "leaderboardMonth": "Este mês",
+            "leaderboardOverall": "Geral",
+            "leaderboardCohort": "Coorte",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Posição",
+            "columnPlayer": "Jogador",
+            "columnScore": "Pontuação",
+            "columnRuns": "Partidas",
+            "leaderboardEmpty": "Ainda não há partidas concluídas.",
+            "leaderboardPartial": "Partidas anteriores ainda estão sendo adicionadas."
         },
         "squareColors": {
             "title": "Treino de cor das casas",

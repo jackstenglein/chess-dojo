@@ -3314,7 +3314,21 @@
             "loadMore": "[T] Load More",
             "incorrectMoveComment": "[T] Incorrect guess",
             "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run",
-            "tooltipSettings": "[T] Settings"
+            "tooltipSettings": "[T] Settings",
+            "prevWrong": "[T] Previous Wrong Puzzle",
+            "nextWrong": "[T] Next Wrong Puzzle",
+            "leaderboardTitle": "[T] Leaderboard",
+            "leaderboardAllTime": "[T] All-time",
+            "leaderboardMonth": "[T] This month",
+            "leaderboardOverall": "[T] Overall",
+            "leaderboardCohort": "[T] Cohort",
+            "leaderboardMonthCaption": "[T] {month} (UTC)",
+            "columnRank": "[T] Rank",
+            "columnPlayer": "[T] Player",
+            "columnScore": "[T] Score",
+            "columnRuns": "[T] Runs",
+            "leaderboardEmpty": "[T] No completed runs yet.",
+            "leaderboardPartial": "[T] Earlier runs are still being added."
         },
         "squareColors": {
             "title": "[T] Square Color Drill",
