@@ -664,6 +664,7 @@
             "whenPlayWhite": "When You Play White",
             "whenPlayBlack": "When You Play Black",
             "normalizedRatingTooltip": "The rating normalized to the Dojo system",
+            "timeManagementTooltip": "Calculated from games in this folder that include clock times.",
             "performanceByCohort": "Performance by Opponent Cohort",
             "colOpponentCohort": "Opponent Cohort",
             "colPerformance": "Performance",

@@ -664,6 +664,7 @@
             "whenPlayWhite": "Wenn du mit Weiß spielst",
             "whenPlayBlack": "Wenn du Schwarz spielst",
             "normalizedRatingTooltip": "Das auf das Dojo-System normalisierte Rating",
+            "timeManagementTooltip": "Berechnet aus den Partien in diesem Ordner, die Uhrzeiten enthalten.",
             "performanceByCohort": "Leistung nach Gegner-Kohorte",
             "colOpponentCohort": "Gegner Kohorte",
             "colPerformance": "Leistung",
