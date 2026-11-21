@@ -194,6 +194,20 @@ describe('AddPuzzlesDialog', () => {
         expect(screen.getByText(/upload stopped at an earlier error/)).toBeTruthy();
     });
 
+    it('takes files of more than 100 games, up to 500', async () => {
+        setup();
+        await upload(Array.from({ length: 105 }, () => pgnWith('')).join('\n\n'));
+        expect(screen.getByText('105 games found')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Import 105 puzzles' })).toBeEnabled();
+    });
+
+    it('turns down files of more than 500 games', async () => {
+        setup();
+        await upload(Array.from({ length: 501 }, () => pgnWith('')).join('\n\n'));
+        expect(screen.getByText(/You can upload at most 500 at a time/)).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Import 501 puzzles' })).toBeDisabled();
+    });
+
     it('offers a guide whose examples fill the field and are accepted as puzzles', async () => {
         const { createPuzzle } = setup();
         fireEvent.click(screen.getByText('How to write a puzzle PGN'));

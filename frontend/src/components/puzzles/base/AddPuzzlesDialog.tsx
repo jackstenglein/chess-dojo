@@ -51,9 +51,13 @@ type Source = 'pgn' | 'file' | 'study';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
-/** The biggest PGN file that can be uploaded, in bytes, and the most games it can hold. */
+/**
+ * The biggest PGN file that can be uploaded, in bytes, and the most games it can hold. Each game
+ * is sent on its own, one after another, so a few hundred take a minute or two. The cap stops a
+ * whole database of games being sent by mistake.
+ */
 const MAX_FILE_BYTES = 2_000_000;
-const MAX_FILE_GAMES = 100;
+const MAX_FILE_GAMES = 500;
 
 /** Returns a game's title from its [Event] header, for reporting games that were skipped. */
 const gameTitle = (pgn: string) => /\[Event "([^"]*)"\]/.exec(pgn)?.[1];
