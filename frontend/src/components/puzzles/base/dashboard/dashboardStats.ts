@@ -239,6 +239,8 @@ export function attemptsCsv(attempts: DashboardAttempt[]): string {
         'Main rating system',
         ...systems.map(systemLabel),
     ];
+    const round = (value: number | undefined, factor = 1) =>
+        value === undefined ? undefined : Math.round(value * factor) / factor;
     const seconds = (ms: number | undefined) =>
         ms === undefined ? undefined : Math.round(ms / 100) / 10;
     const rows = attempts.map((a) => [
@@ -256,13 +258,13 @@ export function attemptsCsv(attempts: DashboardAttempt[]): string {
         a.summary.movesFirstTry,
         a.summary.mistakes,
         a.summary.revealed,
-        a.scoring?.accuracy,
-        a.scoring?.speed,
-        a.scoring?.score,
+        round(a.scoring?.accuracy, 100),
+        round(a.scoring?.speed, 100),
+        round(a.scoring?.score, 100),
         a.scoring ? (a.scoring.counted ? 'yes' : 'no') : undefined,
-        a.scoring?.ratingBefore,
-        a.scoring?.ratingAfter,
-        a.scoring?.delta,
+        round(a.scoring?.ratingBefore),
+        round(a.scoring?.ratingAfter),
+        round(a.scoring?.delta, 10),
         a.solver?.normalizedRating,
         a.solver?.ratingSystem ? systemLabel(a.solver.ratingSystem) : undefined,
         ...systems.map((s) => a.solver?.ratings[s]),

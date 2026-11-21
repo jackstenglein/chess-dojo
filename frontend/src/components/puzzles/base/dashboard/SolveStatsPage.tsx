@@ -38,6 +38,7 @@ import { downloadText } from '../downloadFile';
 import { PuzzlebaseClient } from '../puzzlebaseClient';
 import { errorMessage } from '../puzzlebaseErrors';
 import { PuzzlebaseGate } from '../PuzzlebaseGate';
+import { formatDelta } from '../ScoreSummary';
 import {
     afterFirstMoveMs,
     attemptsCsv,
@@ -404,7 +405,7 @@ function AttemptRow({ attempt: a }: { attempt: DashboardAttempt }) {
             <TableCell align='right' sx={num}>
                 {scoring?.ratingAfter !== undefined ? (
                     <>
-                        {scoring.ratingAfter}
+                        {Math.round(scoring.ratingAfter)}
                         {scoring.counted && scoring.delta !== undefined && (
                             <Typography
                                 component='span'
@@ -419,8 +420,7 @@ function AttemptRow({ attempt: a }: { attempt: DashboardAttempt }) {
                                               : 'text.secondary',
                                 }}
                             >
-                                {scoring.delta > 0 ? '+' : ''}
-                                {scoring.delta}
+                                {formatDelta(scoring.delta)}
                             </Typography>
                         )}
                         {!scoring.counted && (
@@ -499,10 +499,7 @@ const PUZZLE_COLUMNS: { key: PuzzleSort; label: string; format: (row: PuzzleRow)
         {
             key: 'averageDelta',
             label: 'Avg rating change',
-            format: (r) =>
-                r.averageDelta === undefined
-                    ? '–'
-                    : `${r.averageDelta > 0 ? '+' : ''}${Math.round(r.averageDelta * 10) / 10}`,
+            format: (r) => (r.averageDelta === undefined ? '–' : formatDelta(r.averageDelta)),
         },
     ];
 

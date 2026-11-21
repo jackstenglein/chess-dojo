@@ -71,7 +71,7 @@ describe('SolveStatsPage', () => {
         fireEvent.click(screen.getByRole('tab', { name: 'Every attempt' }));
         expect(screen.getByText('ANN')).toBeTruthy();
         expect(screen.getAllByText('Lichess 1400')).toHaveLength(2);
-        expect(screen.getAllByText('+12')).toHaveLength(2);
+        expect(screen.getAllByText('+12.0')).toHaveLength(2);
         fireEvent.change(screen.getByLabelText('Member, cohort or puzzle #'), {
             target: { value: '#002' },
         });
