@@ -1,3 +1,4 @@
+import { RequestSnackbar } from '@/api/Request';
 import {
     CustomTask,
     formatTime,
@@ -13,15 +14,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import { ProgressText } from '@/scoreboard/ScoreboardProgress';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
-import {
-    Add,
-    Check,
-    ExpandMore,
-    Help,
-    NotInterested,
-    PushPin,
-    PushPinOutlined,
-} from '@mui/icons-material';
+import { Add, Check, Help, NotInterested, PushPin, PushPinOutlined } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -30,7 +23,6 @@ import {
     CardActions,
     CardContent,
     Collapse,
-    Grid,
     IconButton,
     LinearProgress,
     Stack,
@@ -40,10 +32,13 @@ import {
 import { useTranslations } from 'next-intl';
 import { use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { useDoneColor } from '../barColor';
 import { CategoryLabel } from '../CategoryLabel';
 import { displayProgress } from '../full/FullTrainingPlanItem';
 import { OverbookedDayAlert } from '../OverbookedDayAlert';
+import { useTrainingPlanSections } from '../PlanMenu';
 import { ScheduleClassicalGameDaily } from '../ScheduleClassicalGame';
+import { SectionHeader } from '../SectionHeader';
 import { GRADUATION_SKIP_ID } from '../skippedTasks';
 import { SCHEDULE_CLASSICAL_GAME_TASK_ID, SuggestedTask } from '../suggestedTasks';
 import { TaskDescription } from '../TaskDescription';
@@ -51,20 +46,29 @@ import { TaskDialog, TaskDialogView } from '../TaskDialog';
 import { taskDisplayName } from '../taskDisplayName';
 import { TaskName } from '../TaskName';
 import { getTaskUnit } from '../taskUnit';
+import { getCheckOffVerbLabel } from '../taskVerb';
+import { TaskVerbIcon } from '../TaskVerbIcon';
 import { TrainingPlanContext } from '../TrainingPlanTab';
+import { useMarkComplete } from '../useMarkComplete';
 import { useTrainingPlanProgress } from '../useTrainingPlan';
-import { WorkGoalSettingsEditor } from '../WorkGoalSettingsEditor';
-import { dailyCardActionsSx, dailyCardSx, dailyPrimaryButtonSx, DailyTimePill } from './DailyCard';
+import { getDailyGoalMinutes } from '../workGoal';
+import {
+    completedButtonStyles,
+    dailyCardActionsSx,
+    dailyCardSx,
+    dailyPrimaryButtonSx,
+    DailyTimePill,
+    isDailyTaskDone,
+} from './DailyCard';
 import { DailyTaskMenu, DailyTaskMenuAction } from './DailyTaskMenu';
 import { GraduationTask } from './GraduationTask';
 import { SkippedTasksRow, SkipUndoSnackbar } from './SkippedTasks';
 import { SwapTaskButton, SwapUndoSnackbar } from './SwapTaskButton';
 import { TaskTimerIconButton } from './TaskTimerIconButton';
-import { getTodaySummary } from './todaySummary';
+import { getTodayCards, isCheckOffTask, isGuideTask, isTaskFinished } from './todayCards';
 
 export function DailyTrainingPlan() {
     const t = useTranslations('profile.trainingPlan.daily');
-    const tCommon = useTranslations('profile.trainingPlan.common');
     const [expanded, setExpanded] = useLocalStorage('training-plan-daily-expanded', true);
 
     const [startDate, endDate] = useMemo(() => {
@@ -77,26 +81,17 @@ export function DailyTrainingPlan() {
         return [startDate.toISOString(), endDate.toISOString()];
     }, []);
 
-    const { suggestionsByDay, isCurrentUser, timeline, isLoading, user } = use(TrainingPlanContext);
+    const { suggestionsByDay, timeline, isLoading, user } = use(TrainingPlanContext);
 
-    const [goalTime, _, workedTime, extraTaskIds] = useTrainingPlanProgress({
+    const [, , workedTime, extraTaskIds] = useTrainingPlanProgress({
         startDate,
         endDate,
         tasks: suggestionsByDay[new Date().getDay()],
         timeline,
     });
-
-    const { taskCount, doneCount } = useMemo(
-        () =>
-            getTodaySummary({
-                suggestions: suggestionsByDay[new Date().getDay()] ?? [],
-                timeline,
-                startDate,
-                endDate,
-                gameSchedule: user.gameSchedule,
-            }),
-        [suggestionsByDay, timeline, startDate, endDate, user.gameSchedule],
-    );
+    // Today's goal is the user's goal for the day, like This Week uses the whole
+    // week's goal, so it doesn't move as tasks are done or the suggestions change.
+    const goalTime = getDailyGoalMinutes(user.workGoal, new Date().getDay());
 
     const toggleExpanded = () => {
         setExpanded((v) => !v);
@@ -110,53 +105,15 @@ export function DailyTrainingPlan() {
                 width: 1,
             }}
         >
-            <Stack
-                direction='row'
-                sx={{
-                    alignItems: 'center',
-                }}
-            >
-                <Tooltip title={expanded ? tCommon('hide') : tCommon('show')}>
-                    <IconButton onClick={toggleExpanded}>
-                        <ExpandMore
-                            sx={{
-                                transform: expanded ? 'rotate(180deg)' : undefined,
-                                transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-                            }}
-                        />
-                    </IconButton>
-                </Tooltip>
-
-                <Typography
-                    variant='h5'
-                    sx={{
-                        fontWeight: 'bold',
-                        ml: 0.5,
-                        mr: 2,
-                    }}
-                >
-                    {t('today')}
-                </Typography>
-
-                <WorkGoalSettingsEditor
-                    currentGoal={goalTime}
-                    currentValue={workedTime}
-                    disabled={!isCurrentUser}
-                    initialWeekStart={user.weekStart}
-                    workGoal={user.workGoal}
-                    workGoalHistory={user.workGoalHistory}
-                    variant='icon'
-                />
-            </Stack>
-
-            {!isLoading && taskCount > 0 && (
-                <DailySummary
-                    taskCount={taskCount}
-                    doneCount={doneCount}
-                    goalMinutes={goalTime}
-                    workedMinutes={workedTime}
-                />
-            )}
+            <SectionHeader
+                title={t('today')}
+                expanded={expanded}
+                onToggle={toggleExpanded}
+                goal={goalTime}
+                worked={workedTime}
+                showProgress={!isLoading}
+                testId='today'
+            />
 
             {!isLoading && <OverbookedDayAlert dayIndex={new Date().getDay()} />}
 
@@ -175,75 +132,6 @@ export function DailyTrainingPlan() {
     );
 }
 
-/**
- * Renders the summary of today's plan: how many tasks are done, how much time has
- * been logged today against the day's goal (any task counts, not just suggested
- * ones), and a clear finished state.
- */
-export function DailySummary({
-    taskCount,
-    doneCount,
-    goalMinutes,
-    workedMinutes,
-}: {
-    taskCount: number;
-    doneCount: number;
-    goalMinutes: number;
-    workedMinutes: number;
-}) {
-    const t = useTranslations('profile.trainingPlan.daily');
-    const tTime = useTranslations('common');
-    const allDone = doneCount >= taskCount;
-    // The day's suggested time is logged, even if some tasks are left.
-    const goalMet = goalMinutes > 0 && workedMinutes >= goalMinutes;
-    const complete = allDone || goalMet;
-    const percent = goalMinutes > 0 ? Math.min(100, (100 * workedMinutes) / goalMinutes) : 0;
-
-    return (
-        <Stack spacing={0.75} sx={{ width: 1, maxWidth: 520, pl: 1 }} data-testid='daily-summary'>
-            <Stack direction='row' sx={{ alignItems: 'center', gap: 0.75 }}>
-                {allDone && <Check fontSize='small' color='success' />}
-                <Typography
-                    variant='body2'
-                    sx={{ fontWeight: 600, color: allDone ? 'success.main' : 'text.secondary' }}
-                >
-                    {allDone
-                        ? t('allDone', { worked: formatTime(workedMinutes, tTime) })
-                        : t('summary', {
-                              done: doneCount,
-                              total: taskCount,
-                              worked: formatTime(workedMinutes, tTime),
-                              goal: formatTime(goalMinutes, tTime),
-                          })}
-                </Typography>
-                {!allDone && goalMet && (
-                    <Typography
-                        variant='body2'
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.25,
-                            fontWeight: 600,
-                            color: 'success.main',
-                            ml: 'auto',
-                        }}
-                        data-testid='daily-goal-met'
-                    >
-                        <Check sx={{ fontSize: '1rem' }} />
-                        {t('goalMet')}
-                    </Typography>
-                )}
-            </Stack>
-            <LinearProgress
-                variant='determinate'
-                value={complete ? 100 : percent}
-                color={complete ? 'success' : 'primary'}
-                sx={{ height: 8, borderRadius: 4, backgroundColor: 'action.hover' }}
-            />
-        </Stack>
-    );
-}
-
 function DailyTrainingPlanInternal({
     startDate,
     endDate,
@@ -253,7 +141,7 @@ function DailyTrainingPlanInternal({
     endDate: string;
     extraTaskIds: Set<string>;
 }) {
-    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks } =
+    const { suggestionsByDay, user, skippedTaskIds, allRequirements, pinnedTasks, timeline } =
         use(TrainingPlanContext);
     const suggestedTasks = useMemo(() => suggestionsByDay[new Date().getDay()], [suggestionsByDay]);
     const [selectedTask, setSelectedTask] = useState<Requirement | CustomTask>();
@@ -271,6 +159,36 @@ function DailyTrainingPlanInternal({
         }
         return tasks;
     }, [user.customTasks, allRequirements, extraTaskIds]);
+
+    const { showSuggestions } = useTrainingPlanSections();
+
+    // Today's cards, with the tasks still to do before the ones already done.
+    const cards = useMemo(
+        () =>
+            getTodayCards({
+                suggestions: suggestedTasks ?? [],
+                extraTasks,
+                pinnedTaskIds: new Set(pinnedTasks.map((t) => t.id)),
+                skippedTaskIds,
+                timeline,
+                startDate,
+                endDate,
+                gameSchedule: user.gameSchedule,
+                user,
+                showSuggestions,
+            }),
+        [
+            suggestedTasks,
+            extraTasks,
+            pinnedTasks,
+            skippedTaskIds,
+            timeline,
+            startDate,
+            endDate,
+            user,
+            showSuggestions,
+        ],
+    );
 
     const onOpenTask = (task: Requirement | CustomTask, view: TaskDialogView) => {
         setSelectedTask(task);
@@ -299,37 +217,37 @@ function DailyTrainingPlanInternal({
                 />
             )}
 
-            <Grid container sx={{ width: 1 }} columnSpacing={2} rowSpacing={2}>
+            {/*
+             * A CSS grid rather than MUI's flex Grid so that on wider screens every
+             * row is as tall as the tallest, keeping all of Today's cards the same size.
+             */}
+            <Box
+                sx={{
+                    display: 'grid',
+                    width: 1,
+                    gap: 2,
+                    gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(3, minmax(0, 1fr))' },
+                    gridAutoRows: { md: '1fr' },
+                }}
+            >
                 {shouldPromptGraduation(user) && !skippedTaskIds?.includes(GRADUATION_SKIP_ID) && (
                     <GraduationTask />
                 )}
 
-                {suggestedTasks.map((t) =>
-                    t.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
-                        <ScheduleClassicalGameDaily key={t.task.id} />
+                {cards.map(({ suggestion }) =>
+                    suggestion.task.id === SCHEDULE_CLASSICAL_GAME_TASK_ID ? (
+                        <ScheduleClassicalGameDaily key={suggestion.task.id} />
                     ) : (
-                        (t.goalMinutes > 0 || pinnedTasks.some((pin) => pin.id === t.task.id)) && (
-                            <DailyTrainingPlanItem
-                                key={t.task.id}
-                                suggestion={t}
-                                onOpenTask={onOpenTask}
-                                startDate={startDate}
-                                endDate={endDate}
-                            />
-                        )
+                        <DailyTrainingPlanItem
+                            key={suggestion.task.id}
+                            suggestion={suggestion}
+                            onOpenTask={onOpenTask}
+                            startDate={startDate}
+                            endDate={endDate}
+                        />
                     ),
                 )}
-
-                {extraTasks.map((task) => (
-                    <DailyTrainingPlanItem
-                        key={task.id}
-                        suggestion={{ task, goalMinutes: 0 }}
-                        onOpenTask={onOpenTask}
-                        startDate={startDate}
-                        endDate={endDate}
-                    />
-                ))}
-            </Grid>
+            </Box>
 
             <SkippedTasksRow />
             <SkipUndoSnackbar />
@@ -351,6 +269,8 @@ function DailyTrainingPlanItem({
 }) {
     const tCommon = useTranslations('profile.trainingPlan.common');
     const tQuickLog = useTranslations('profile.trainingPlan.quickLog');
+    const tDaily = useTranslations('profile.trainingPlan.daily');
+    const tTime = useTranslations('common');
     const task = useTranslatedRequirement(suggestion.task) ?? suggestion.task;
     const { isCurrentUser, pinnedTasks, openPinEditor, timeline, user, toggleSkip } =
         use(TrainingPlanContext);
@@ -372,7 +292,29 @@ function DailyTrainingPlanItem({
         timeline,
     });
 
-    const isComplete = timeWorkedMinutes >= goalMinutes;
+    // Welcome to the Dojo tasks and single checkboxes are simply done or not;
+    // other tasks are done once today's planned time is logged.
+    const checkOff = isCheckOffTask(task, user.dojoCohort);
+    const finished = isTaskFinished(user, task, timeline);
+    const isComplete = checkOff
+        ? finished
+        : isDailyTaskDone(timeWorkedMinutes, goalMinutes, finished);
+    const { markComplete, request: markCompleteRequest } = useMarkComplete(task);
+    const doneColor = useDoneColor();
+
+    // The time pill's text: Done / To do for check-off tasks; what was logged for a
+    // task not planned today (rather than a goal of 0m); otherwise the default
+    // "worked / goal".
+    let pillLabel: string | undefined;
+    if (checkOff) {
+        pillLabel = isComplete ? tDaily('doneLabel') : getCheckOffVerbLabel(task.name, tDaily);
+    } else if (goalMinutes === 0) {
+        if (timeWorkedMinutes > 0) {
+            pillLabel = tDaily('loggedTime', { time: formatTime(timeWorkedMinutes, tTime) });
+        } else {
+            pillLabel = isComplete ? tDaily('doneLabel') : tDaily('notPlanned');
+        }
+    }
 
     // Counts are offset by startCount, so display and bar both work from the
     // adjusted values; otherwise a task starting at 306 shows "306 / 2100" over
@@ -385,10 +327,8 @@ function DailyTrainingPlanItem({
     // The quick log records whatever is left of today's suggested time for this task.
     // Prefill the log with what's left of today's suggestion, or the full
     // suggestion once it's been met (someone logging more is still training).
-    const hasProgress =
-        progressCurrent > 0 || (user.progress[task.id]?.minutesSpent?.[user.dojoCohort] ?? 0) > 0;
-
     const title = taskDisplayName({ task, cohort: user.dojoCohort });
+    const isGuide = isGuideTask(task, user.dojoCohort);
 
     const menuActions: DailyTaskMenuAction[] = [
         {
@@ -420,8 +360,9 @@ function DailyTrainingPlanItem({
     }
 
     return (
-        <Grid key={task.id} size={{ xs: 12, md: 4 }}>
-            <Card variant='outlined' sx={dailyCardSx(isComplete)}>
+        <Box key={task.id} sx={{ minWidth: 0 }}>
+            <RequestSnackbar request={markCompleteRequest} />
+            <Card variant='outlined' sx={dailyCardSx(isComplete, doneColor)}>
                 <DailyTaskMenu actions={menuActions} />
                 {isCurrentUser && goalMinutes > 0 && <SwapTaskButton task={suggestion.task} />}
                 {isPinned && (
@@ -456,25 +397,18 @@ function DailyTrainingPlanItem({
                         borderRadius: 'inherit',
                         opacity: isComplete ? 0.75 : undefined,
                     }}
-                    // A task already started opens straight to logging; others show details first.
-                    onClick={() =>
-                        onOpenTask(
-                            task,
-                            isCurrentUser && hasProgress
-                                ? TaskDialogView.Progress
-                                : TaskDialogView.Details,
-                        )
-                    }
+                    // Clicking a task shows its details; only Log training opens logging.
+                    onClick={() => onOpenTask(task, TaskDialogView.Details)}
                 >
-                    <CardContent sx={{ height: 1, p: 2.5, pb: 1.5 }}>
+                    <CardContent sx={{ height: 1, p: 2, pb: 1 }}>
                         <Stack sx={{ height: 1 }}>
-                            <Stack spacing={1} sx={{ alignItems: 'start', pr: 3 }}>
+                            <Stack spacing={0.75} sx={{ alignItems: 'start', pr: 3 }}>
                                 <Box sx={{ pr: 4 }}>
                                     <CategoryLabel category={task.category} />
                                 </Box>
 
                                 <Typography
-                                    sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.3 }}
+                                    sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}
                                 >
                                     <TaskName name={title} iconColor='text.secondary' />
                                 </Typography>
@@ -486,11 +420,13 @@ function DailyTrainingPlanItem({
                                         color: 'text.secondary',
                                         fontSize: '0.875rem',
                                         '& *': { fontSize: 'inherit', lineHeight: 'inherit' },
-                                        mt: 1,
-                                        lineHeight: 1.55,
-                                        lineClamp: 2,
+                                        mt: 0.75,
+                                        lineHeight: 1.5,
+                                        // One line keeps the cards compact; the full
+                                        // description is in the task's details.
+                                        lineClamp: 1,
                                         display: '-webkit-box',
-                                        WebkitLineClamp: 2,
+                                        WebkitLineClamp: 1,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -505,7 +441,7 @@ function DailyTrainingPlanItem({
                             {displayProgress(task) && (
                                 <Stack
                                     spacing={0.75}
-                                    sx={{ flexGrow: 1, justifyContent: 'end', mt: 2 }}
+                                    sx={{ flexGrow: 1, justifyContent: 'end', mt: 1.5 }}
                                 >
                                     <ProgressText
                                         value={progressCurrent}
@@ -536,41 +472,93 @@ function DailyTrainingPlanItem({
                 </CardActionArea>
 
                 <CardActions disableSpacing sx={dailyCardActionsSx}>
-                    {isCurrentUser && (
-                        <Tooltip title={tQuickLog('logTooltip')}>
-                            <Button
-                                size='small'
-                                variant='contained'
-                                disableElevation
-                                startIcon={<Add />}
-                                onClick={() => onOpenTask(task, TaskDialogView.Progress)}
-                                sx={dailyPrimaryButtonSx}
-                                data-testid='quick-log-button'
-                            >
-                                {tQuickLog('logTraining')}
-                            </Button>
-                        </Tooltip>
+                    {/* Check-off tasks are marked complete directly, with no time to log. */}
+                    {checkOff && (isComplete || (isCurrentUser && !isGuide)) && (
+                        <Button
+                            size='small'
+                            variant={isComplete ? 'outlined' : 'contained'}
+                            color={isComplete ? 'success' : 'primary'}
+                            disableElevation
+                            startIcon={<Check />}
+                            disabled={isComplete}
+                            loading={markCompleteRequest.isLoading()}
+                            onClick={() => void markComplete()}
+                            sx={(theme) => ({
+                                ...dailyPrimaryButtonSx,
+                                // Done: green, in the corner where the time pill goes.
+                                ...(isComplete
+                                    ? { ml: 'auto', ...completedButtonStyles(theme, doneColor) }
+                                    : {}),
+                            })}
+                            data-testid='mark-complete-button'
+                        >
+                            {isComplete ? tDaily('completed') : tDaily('markComplete')}
+                        </Button>
+                    )}
+                    {/* A guide is for reading, so its button opens it. */}
+                    {isGuide && !isComplete && (
+                        <Button
+                            size='small'
+                            variant='contained'
+                            disableElevation
+                            startIcon={<TaskVerbIcon verb='guide' size='1.1em' />}
+                            onClick={() => onOpenTask(task, TaskDialogView.Details)}
+                            sx={dailyPrimaryButtonSx}
+                            data-testid='read-guide-button'
+                        >
+                            {tDaily('verbRead')}
+                        </Button>
+                    )}
+                    {!checkOff && (
+                        <>
+                            {isCurrentUser && (
+                                <Tooltip title={tQuickLog('logTooltip')}>
+                                    <Button
+                                        size='small'
+                                        variant='contained'
+                                        disableElevation
+                                        startIcon={<Add />}
+                                        onClick={() => onOpenTask(task, TaskDialogView.Progress)}
+                                        sx={dailyPrimaryButtonSx}
+                                        data-testid='quick-log-button'
+                                    >
+                                        {tQuickLog('logTraining')}
+                                    </Button>
+                                </Tooltip>
+                            )}
+                            {/* Takes the space between the Log training button and the time
+                                pill, with the timer centered in it. */}
+                            {isCurrentUser && (
+                                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                                    <TaskTimerIconButton taskId={task.id} />
+                                </Box>
+                            )}
+                        </>
                     )}
 
-                    {isCurrentUser && <TaskTimerIconButton taskId={task.id} />}
-
-                    <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
-                        <Box component='span' sx={{ ml: 'auto' }}>
-                            <DailyTimePill
-                                worked={timeWorkedMinutes}
-                                goal={goalMinutes}
-                                onClick={
-                                    isCurrentUser
-                                        ? () => onOpenTask(task, TaskDialogView.Progress)
-                                        : undefined
-                                }
-                                data-testid='update-task-button'
-                            />
-                        </Box>
-                    </Tooltip>
+                    {/* A completed check-off task's green Completed button says it all, and a
+                        guide's Read button says what to do. */}
+                    {!(checkOff && (isComplete || isGuide)) && (
+                        <Tooltip title={isCurrentUser && !checkOff ? tCommon('logTraining') : ''}>
+                            <Box component='span' sx={{ ml: 'auto' }}>
+                                <DailyTimePill
+                                    worked={checkOff ? 0 : timeWorkedMinutes}
+                                    goal={checkOff ? 0 : goalMinutes}
+                                    done={isComplete}
+                                    label={pillLabel}
+                                    onClick={
+                                        isCurrentUser && !checkOff
+                                            ? () => onOpenTask(task, TaskDialogView.Progress)
+                                            : undefined
+                                    }
+                                    data-testid='update-task-button'
+                                />
+                            </Box>
+                        </Tooltip>
+                    )}
                 </CardActions>
             </Card>
-        </Grid>
+        </Box>
     );
 }
 /**

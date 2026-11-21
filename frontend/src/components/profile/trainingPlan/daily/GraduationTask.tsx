@@ -5,12 +5,12 @@ import UpsellDialog, { RestrictedAction } from '@/upsell/UpsellDialog';
 import { isCustom } from '@jackstenglein/chess-dojo-common/src/ratings/ratings';
 import { Help, NotInterested, School } from '@mui/icons-material';
 import {
+    Box,
     Button,
     Card,
     CardActionArea,
     CardActions,
     CardContent,
-    Grid,
     Stack,
     Typography,
 } from '@mui/material';
@@ -67,7 +67,7 @@ export function GraduationTask() {
 
     return (
         <>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ minWidth: 0 }}>
                 <Card variant='outlined' sx={dailyCardSx(false)}>
                     <DailyTaskMenu actions={menuActions} />
 
@@ -119,7 +119,7 @@ export function GraduationTask() {
                         </Button>
                     </CardActions>
                 </Card>
-            </Grid>
+            </Box>
 
             <GraduationDialog
                 open={showGraduationDialog}

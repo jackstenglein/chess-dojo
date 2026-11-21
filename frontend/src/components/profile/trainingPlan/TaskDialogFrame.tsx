@@ -17,9 +17,9 @@ import { CategoryLabel } from './CategoryLabel';
 import { TaskDialogView } from './TaskDialog';
 
 /** The style of a task dialog's main action, the same in every view. */
-export const taskDialogPrimaryButtonSx: SxProps<Theme> = {
+export const taskDialogPrimaryButtonSx = {
     fontWeight: 600,
-};
+} satisfies SxProps<Theme>;
 
 /**
  * The top of every task dialog view: the task's category, its name, an optional

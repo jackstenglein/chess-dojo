@@ -179,9 +179,14 @@
             },
             "daily": {
                 "today": "Heute",
-                "summary": "{done} von {total} Aufgaben erledigt · {worked} von {goal}",
-                "allDone": "Fertig für heute · {worked} eingetragen",
-                "goalMet": "Zeitziel erreicht",
+                "loggedTime": "{time} erfasst",
+                "notPlanned": "Nicht geplant",
+                "doneLabel": "Erledigt",
+                "toDo": "Offen",
+                "markComplete": "Als erledigt markieren",
+                "completed": "Erledigt",
+                "verbRead": "Lesen",
+                "verbWatch": "Ansehen",
                 "skippedHeading": "Diese Woche übersprungen ({count})",
                 "restore": "{name} wiederherstellen",
                 "skippedToast": "{name} für den Rest der Woche übersprungen",
@@ -211,11 +216,8 @@
                 "partialTime": "{worked} / {goal}"
             },
             "full": {
-                "heading": "Vollständiger Trainingsplan",
+                "heading": "Trainingsplan",
                 "cohort": "Kohorte",
-                "showCompletedTasks": "Abgeschlossene Aufgaben anzeigen",
-                "hideCompletedTasksTooltip": "Abgeschlossene Aufgaben ausblenden",
-                "showCompletedTasksTooltip": "Zeige abgeschlossene Aufgaben",
                 "expandAll": "Alle erweitern",
                 "collapseAll": "Alle einklappen",
                 "completedTasks": "Erledigte Aufgaben",
@@ -279,8 +281,27 @@
                 "body": "Diese benutzerdefinierte Aufgabe wird aus deinem Profil entfernt, und alle protokollierte Zeit geht verloren. Diese Aktion ist irreversibel.",
                 "delete": "Aufgabe löschen"
             },
+            "planMenu": {
+                "plan": "Plan",
+                "tooltip": "Trainingsplan-Optionen",
+                "show": "Anzeigen",
+                "today": "Heute",
+                "thisWeek": "Diese Woche",
+                "suggestedTasks": "Vorgeschlagene Aufgaben",
+                "workGoal": "Wochenziel festlegen",
+                "resetProgress": "Fortschritt zurücksetzen",
+                "barColor": "Balkenfarbe",
+                "barColors": {
+                    "multicolor": "Mehrfarbig",
+                    "teal": "Petrol",
+                    "blue": "Blau",
+                    "purple": "Lila",
+                    "pink": "Pink",
+                    "orange": "Orange",
+                    "green": "Grün"
+                }
+            },
             "workGoal": {
-                "editGoalTooltip": "Arbeitsziel bearbeiten",
                 "startWeekOn": "Woche beginnt am",
                 "Sunday": "Sonntag",
                 "Monday": "Montag",

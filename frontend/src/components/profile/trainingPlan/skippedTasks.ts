@@ -68,3 +68,17 @@ export function clearUpcomingDays(plan: WeeklyPlan, now = new Date()): WeeklyPla
     }
     return tasks;
 }
+
+/**
+ * Returns the plan's tasks after restoring skipped tasks: today stays as it is (a
+ * task skipped from today is still in its plan, hidden, so it simply shows again)
+ * and the days after today are cleared so they get rebuilt with the task.
+ * @param plan The weekly plan.
+ * @param now The current time.
+ */
+export function restoreToToday(plan: WeeklyPlan, now = new Date()): WeeklyPlan['tasks'] {
+    const tomorrow = new Date(now);
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return clearUpcomingDays(plan, tomorrow);
+}

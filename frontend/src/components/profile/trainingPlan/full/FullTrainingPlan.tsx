@@ -10,28 +10,13 @@ import {
 import { dojoCohorts } from '@/database/user';
 import LoadingPage from '@/loading/LoadingPage';
 import CohortIcon from '@/scoreboard/CohortIcon';
+import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { getSubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
-import {
-    CheckBox,
-    CheckBoxOutlineBlank,
-    KeyboardDoubleArrowDown,
-    KeyboardDoubleArrowUp,
-    Visibility,
-    VisibilityOff,
-} from '@mui/icons-material';
-import {
-    Button,
-    IconButton,
-    MenuItem,
-    Stack,
-    TextField,
-    Tooltip,
-    Typography,
-    useMediaQuery,
-} from '@mui/material';
+import { UnfoldLess, UnfoldMore } from '@mui/icons-material';
+import { IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { use, useMemo, useState } from 'react';
+import { ReactNode, use, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import {
     getUpcomingGameSchedule,
@@ -45,9 +30,12 @@ import { FullTrainingPlanSection, Section } from './FullTrainingPlanSection';
 export function FullTrainingPlan({
     cohort,
     setCohort,
+    headerAction,
 }: {
     cohort: string;
     setCohort: (c: string) => void;
+    /** Shown on the heading row, just before the expand/collapse toggle. */
+    headerAction?: ReactNode;
 }) {
     const {
         user,
@@ -60,8 +48,8 @@ export function FullTrainingPlan({
     } = use(TrainingPlanContext);
 
     const t = useTranslations('profile.trainingPlan.full');
+    // Completed tasks are shown or hidden from each category's own link.
     const [showCompleted, setShowCompleted] = useShowCompleted(isCurrentUser);
-    const isSmall = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
     const [expanded, setExpanded] = useState<Partial<Record<RequirementCategory, boolean>>>({
         [RequirementCategory.Pinned]: true,
@@ -135,6 +123,10 @@ export function FullTrainingPlan({
         });
     };
 
+    // The toggle collapses everything once every section shown is open, and
+    // otherwise expands them all.
+    const allExpanded = sections.every((section) => expanded[section.category]);
+
     const onExpandAll = () => {
         setExpanded((c) =>
             Object.keys(c).reduce<Record<string, boolean>>((acc, cat) => {
@@ -160,14 +152,70 @@ export function FullTrainingPlan({
                 width: 1,
             }}
         >
-            <Typography
-                variant='h5'
-                sx={{
-                    fontWeight: 'bold',
-                }}
+            <Stack
+                direction='row'
+                sx={{ alignItems: 'center', flexWrap: 'wrap', columnGap: 2.5, rowGap: 1.5 }}
             >
-                {t('heading')}
-            </Typography>
+                <Typography
+                    variant='h5'
+                    sx={{
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                    }}
+                >
+                    <ChessDojoIcon
+                        sx={{ color: 'primary.main', fontSize: 'inherit' }}
+                        titleAccess='ChessDojo'
+                    />
+                    {t('heading')}
+                </Typography>
+
+                <TextField
+                    id='training-plan-cohort-select'
+                    select
+                    label={t('cohort')}
+                    value={cohort}
+                    onChange={(event) => onChangeCohort(event.target.value)}
+                    size='small'
+                    sx={{ borderBottom: 0 }}
+                >
+                    {dojoCohorts.map((option) => (
+                        <MenuItem key={option} value={option}>
+                            <CohortIcon
+                                cohort={option}
+                                sx={{ marginRight: '0.6rem', verticalAlign: 'middle' }}
+                                tooltip=''
+                                size={30}
+                            />{' '}
+                            {option}
+                        </MenuItem>
+                    ))}
+                </TextField>
+
+                <Stack
+                    direction='row'
+                    spacing={1}
+                    sx={{
+                        justifyContent: 'end',
+                        alignItems: 'center',
+                        ml: 'auto',
+                    }}
+                >
+                    {headerAction}
+                    <Tooltip title={allExpanded ? t('collapseAll') : t('expandAll')}>
+                        <IconButton
+                            onClick={allExpanded ? onCollapseAll : onExpandAll}
+                            aria-label={allExpanded ? t('collapseAll') : t('expandAll')}
+                            sx={{ color: 'text.secondary' }}
+                            data-testid='full-plan-expand-toggle'
+                        >
+                            {allExpanded ? <UnfoldLess /> : <UnfoldMore />}
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            </Stack>
 
             <Stack
                 sx={{
@@ -175,113 +223,6 @@ export function FullTrainingPlan({
                     width: 1,
                 }}
             >
-                <Stack
-                    direction='row'
-                    sx={{
-                        justifyContent: 'space-between',
-                        width: 1,
-                        flexWrap: 'wrap',
-                        alignItems: 'end',
-                        mt: 1,
-                        mb: 1.5,
-                    }}
-                >
-                    <TextField
-                        id='training-plan-cohort-select'
-                        select
-                        label={t('cohort')}
-                        value={cohort}
-                        onChange={(event) => onChangeCohort(event.target.value)}
-                        size='small'
-                        sx={{ borderBottom: 0 }}
-                    >
-                        {dojoCohorts.map((option) => (
-                            <MenuItem key={option} value={option}>
-                                <CohortIcon
-                                    cohort={option}
-                                    sx={{ marginRight: '0.6rem', verticalAlign: 'middle' }}
-                                    tooltip=''
-                                    size={30}
-                                />{' '}
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    <Stack
-                        direction='row'
-                        spacing={1}
-                        sx={{
-                            justifyContent: 'end',
-                            alignItems: 'center',
-                        }}
-                    >
-                        {isSmall ? (
-                            <>
-                                <Tooltip
-                                    title={
-                                        showCompleted
-                                            ? t('hideCompletedTasksTooltip')
-                                            : t('showCompletedTasksTooltip')
-                                    }
-                                >
-                                    <IconButton
-                                        onClick={() => setShowCompleted(!showCompleted)}
-                                        sx={{ color: 'text.secondary' }}
-                                    >
-                                        {showCompleted ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title={t('expandAll')}>
-                                    <IconButton
-                                        onClick={onExpandAll}
-                                        sx={{ color: 'text.secondary' }}
-                                    >
-                                        <KeyboardDoubleArrowDown />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title={t('collapseAll')}>
-                                    <IconButton
-                                        onClick={onCollapseAll}
-                                        sx={{ color: 'text.secondary' }}
-                                    >
-                                        <KeyboardDoubleArrowUp />
-                                    </IconButton>
-                                </Tooltip>
-                            </>
-                        ) : (
-                            <>
-                                <Button
-                                    onClick={() => setShowCompleted(!showCompleted)}
-                                    color='inherit'
-                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
-                                    startIcon={
-                                        showCompleted ? <CheckBox /> : <CheckBoxOutlineBlank />
-                                    }
-                                >
-                                    {t('showCompletedTasks')}
-                                </Button>
-                                <Button
-                                    onClick={onExpandAll}
-                                    color='inherit'
-                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
-                                    startIcon={<KeyboardDoubleArrowDown />}
-                                >
-                                    {t('expandAll')}
-                                </Button>
-                                <Button
-                                    onClick={onCollapseAll}
-                                    color='inherit'
-                                    sx={{ color: 'text.secondary', textTransform: 'none' }}
-                                    startIcon={<KeyboardDoubleArrowUp />}
-                                >
-                                    {t('collapseAll')}
-                                </Button>
-                            </>
-                        )}
-                    </Stack>
-                </Stack>
-
                 {sections.map((section) => (
                     <FullTrainingPlanSection
                         key={section.category}
@@ -303,8 +244,9 @@ export function FullTrainingPlan({
 }
 
 export function useShowCompleted(isCurrentUser: boolean) {
-    const myProfile = useLocalStorage('showCompletedTasks', false);
-    const otherProfile = useState(false);
+    // Completed tasks are shown by default; each category can hide them.
+    const myProfile = useLocalStorage('showCompletedTasks', true);
+    const otherProfile = useState(true);
 
     if (isCurrentUser) {
         return myProfile;
