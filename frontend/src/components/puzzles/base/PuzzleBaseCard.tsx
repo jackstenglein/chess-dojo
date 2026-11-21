@@ -2,6 +2,8 @@
 
 import { ExamCard } from '@/components/exams/ExamCard';
 import { Extension } from '@mui/icons-material';
+import { Chip } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { getPuzzlebaseClient } from './puzzlebaseClient';
 
@@ -13,6 +15,7 @@ const NO_DESCRIPTION = ' ';
  * for everyone else, and until we know who is looking.
  */
 export function PuzzleBaseCard() {
+    const t = useTranslations('exams.landing');
     const [canContribute, setCanContribute] = useState(false);
 
     useEffect(() => {
@@ -39,6 +42,7 @@ export function PuzzleBaseCard() {
             description={NO_DESCRIPTION}
             href='/puzzles/base'
             icon={Extension}
+            badge={<Chip label={t('beta')} color='success' />}
         />
     );
 }
