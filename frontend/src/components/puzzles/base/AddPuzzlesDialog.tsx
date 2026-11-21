@@ -50,6 +50,8 @@ interface AddPuzzlesDialogProps {
 
 type Source = 'pgn' | 'file' | 'study';
 
+const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+
 const monoSx = { fontFamily: 'monospace', fontSize: '0.85rem' } as const;
 
 /**
@@ -261,22 +263,22 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                             }}
                                         />
                                     ) : (
-                                        <Stack
-                                            sx={{
-                                                height: '100%',
-                                                border: 1,
-                                                borderColor: 'divider',
-                                                borderRadius: 1,
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}
-                                        >
-                                            <Typography variant='body2' color='text.secondary'>
-                                                Paste a PGN
-                                            </Typography>
-                                        </Stack>
+                                        <Box sx={{ height: '100%', opacity: 0.35 }}>
+                                            <Board
+                                                config={{
+                                                    fen: EMPTY_BOARD_FEN,
+                                                    viewOnly: true,
+                                                    coordinates: false,
+                                                }}
+                                            />
+                                        </Box>
                                     )}
                                 </Box>
+                                {!check.ok && (
+                                    <Typography variant='body2' color='text.secondary'>
+                                        The puzzle's position shows here once the PGN is valid.
+                                    </Typography>
+                                )}
                                 {check.ok && check.players && (
                                     <Typography variant='body2' color='text.secondary'>
                                         {check.players}
