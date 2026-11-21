@@ -4,6 +4,7 @@ import {
     RequirementStatus,
     ScoreboardDisplay,
 } from '@/database/requirement';
+import { TimelineEntry } from '@/database/timeline';
 import { ALL_COHORTS, SubscriptionStatus, User } from '@/database/user';
 import { describe, expect, it } from 'vitest';
 import { ANNOTATE_GAMES_TASK_ID, CLASSICAL_GAMES_TASK_ID } from '../suggestedTasks';
@@ -11,11 +12,13 @@ import {
     getStarterCredits,
     getStarterSteps,
     isStarterPlanActive,
+    isStarterPlanSuggested,
     STARTER_PLAN_LAUNCH_DATE,
     StarterStepId,
 } from './starterPlan';
 import {
     withStarterPlanFinished,
+    withStarterPlanStarted,
     withStarterTask,
     withStarterTaskCredited,
 } from './starterProgress';
@@ -140,20 +143,84 @@ function step(user: User, id: StarterStepId) {
 }
 
 describe('isStarterPlanActive', () => {
-    it('is active for members who joined after the launch', () => {
-        expect(isStarterPlanActive(createUser())).toBe(true);
-        expect(isStarterPlanActive(createUser({ createdAt: STARTER_PLAN_LAUNCH_DATE }))).toBe(true);
+    const launch = '2026-11-19T00:00:00.000Z';
+
+    it('is active for members who joined on or after the launch', () => {
+        expect(isStarterPlanActive(createUser(), launch)).toBe(true);
+        expect(isStarterPlanActive(createUser({ createdAt: launch }), launch)).toBe(true);
     });
 
     it('is not active for members who joined before the launch', () => {
-        expect(isStarterPlanActive(createUser({ createdAt: '2025-01-01T00:00:00.000Z' }))).toBe(
-            false,
-        );
+        expect(
+            isStarterPlanActive(createUser({ createdAt: '2025-01-01T00:00:00.000Z' }), launch),
+        ).toBe(false);
     });
 
     it('is not active once the member has finished the starter plan', () => {
         const user = createUser({ tutorials: withStarterPlanFinished({}) });
-        expect(isStarterPlanActive(user)).toBe(false);
+        expect(isStarterPlanActive(user, launch)).toBe(false);
+    });
+
+    it('is active for a member who chose to start it, whenever they joined', () => {
+        const user = createUser({
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tutorials: withStarterPlanStarted(withStarterPlanFinished({})),
+        });
+        expect(isStarterPlanActive(user, undefined)).toBe(true);
+        expect(isStarterPlanActive(user, launch)).toBe(true);
+    });
+
+    it('is not active for anyone while the launch date is unset', () => {
+        expect(isStarterPlanActive(createUser(), undefined)).toBe(false);
+        expect(isStarterPlanActive(createUser(), '')).toBe(false);
+        // The launch date comes from the environment, which tests leave unset.
+        expect(STARTER_PLAN_LAUNCH_DATE).toBeUndefined();
+        expect(isStarterPlanActive(createUser())).toBe(false);
+    });
+});
+
+describe('isStarterPlanSuggested', () => {
+    // One task worth 30 points, so each point is about 3.3% of the program.
+    const program = [classical];
+    const now = new Date('2026-11-21T00:00:00.000Z');
+    const longAgo = '2026-09-01T00:00:00.000Z';
+    const lastWeek = '2026-11-14T00:00:00.000Z';
+    const existingMember = (overrides: Partial<User> = {}) =>
+        createUser({ createdAt: '2025-01-01T00:00:00.000Z', ...overrides });
+    const entry = (createdAt: string) => ({ createdAt }) as TimelineEntry;
+
+    const suggested = (user: User, timeline: TimelineEntry[] = []) =>
+        isStarterPlanSuggested({ user, requirements: program, timeline, now });
+
+    it('offers it to a member inactive for over a month with under 10% done', () => {
+        expect(suggested(existingMember())).toBe(true);
+        expect(suggested(existingMember(), [entry(longAgo)])).toBe(true);
+        expect(
+            suggested(existingMember({ progress: { [classical.id]: progress(classical.id, 2) } })),
+        ).toBe(true);
+    });
+
+    it('does not offer it to a member active in the last month', () => {
+        expect(suggested(existingMember(), [entry(longAgo), entry(lastWeek)])).toBe(false);
+        // A member who joined recently isn't inactive yet.
+        expect(suggested(createUser({ createdAt: lastWeek }))).toBe(false);
+    });
+
+    it('does not offer it to a member with 10% or more done', () => {
+        const user = existingMember({
+            progress: { [classical.id]: progress(classical.id, 3) },
+        });
+        expect(suggested(user)).toBe(false);
+    });
+
+    it('does not offer it to a member already on the starter plan', () => {
+        expect(suggested(existingMember({ tutorials: withStarterPlanStarted({}) }))).toBe(false);
+    });
+
+    it('does not offer it before the program has loaded', () => {
+        expect(
+            isStarterPlanSuggested({ user: existingMember(), requirements: [], timeline: [], now }),
+        ).toBe(false);
     });
 });
 

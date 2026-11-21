@@ -238,7 +238,8 @@
                 "success": "¡Felicidades! ¡Te has graduado con éxito!"
             },
             "starter": {
-                "title": "Tu plan de inicio",
+                "title": "Tutorial",
+                "planName": "Plan de entrenamiento inicial del Dojo",
                 "subtitle": "Tres etapas cortas para aprender cómo funciona el entrenamiento aquí. Todo lo que completes pasa a tu plan de entrenamiento completo, que se desbloquea al terminar.",
                 "progress": "{done} de {total} tareas completadas",
                 "stepNumber": "Paso {number}",
@@ -340,7 +341,12 @@
                         "description": "Juega una partida lenta y aprende de ella."
                     }
                 },
-                "stageNumber": "Etapa {number}"
+                "stageNumber": "Etapa {number}",
+                "suggestion": {
+                    "title": "¿Nuevo en el Dojo? Empieza aquí",
+                    "description": "Un tutorial breve que te enseña cómo funciona el entrenamiento aquí. Lo que ya hayas hecho seguirá completado.",
+                    "start": "Empezar aquí"
+                }
             },
             "graduationTask": {
                 "title": "Graduarse de {cohort}",

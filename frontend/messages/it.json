@@ -238,7 +238,8 @@
                 "success": "Congratulazioni! Sei passato al livello successivo!"
             },
             "starter": {
-                "title": "Il tuo piano iniziale",
+                "title": "Tutorial",
+                "planName": "Piano di allenamento iniziale del Dojo",
                 "subtitle": "Tre brevi fasi per imparare come funziona l'allenamento qui. Tutto ciò che completi passa al tuo piano di allenamento completo, che si sblocca quando hai finito.",
                 "progress": "{done} attività su {total} completate",
                 "stepNumber": "Passo {number}",
@@ -340,7 +341,12 @@
                         "description": "Gioca una partita lenta, poi impara da essa."
                     }
                 },
-                "stageNumber": "Fase {number}"
+                "stageNumber": "Fase {number}",
+                "suggestion": {
+                    "title": "Nuovo al Dojo? Inizia da qui",
+                    "description": "Un breve tutorial che ti mostra come funziona l'allenamento qui. Ciò che hai già fatto resta completato.",
+                    "start": "Inizia da qui"
+                }
             },
             "graduationTask": {
                 "title": "Passa al livello successivo da {cohort}",

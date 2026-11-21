@@ -7,6 +7,7 @@ import { FullTrainingPlan } from './full/FullTrainingPlan';
 import { MiniScoreboard } from './MiniScoreboard';
 import { PinTaskDialog } from './PinTaskDialog';
 import { isStarterPlanActive } from './starter/starterPlan';
+import { StarterPlanSuggestion } from './starter/StarterPlanSuggestion';
 import { StarterPreviewMode, useStarterPlanPreview } from './starter/starterPreview';
 import { isStarterPlanFinished } from './starter/starterProgress';
 import { StarterTrainingPlan } from './starter/StarterTrainingPlan';
@@ -45,9 +46,13 @@ export function TrainingPlanTab({ user }: { user: User }) {
             <TrainingPlanContext value={trainingPlan}>
                 {showStarterPlan ? (
                     // The full training plan stays locked until the starter plan is done.
-                    <StarterTrainingPlan preview={preview} />
+                    <StarterTrainingPlan
+                        preview={preview === StarterPreviewMode.Suggest ? undefined : preview}
+                    />
                 ) : (
                     <>
+                        {/* Inactive members who have done little are offered the starter plan. */}
+                        <StarterPlanSuggestion force={preview === StarterPreviewMode.Suggest} />
                         <DailyTrainingPlan />
                         <WeeklyTrainingPlan />
                         <FullTrainingPlan cohort={cohort} setCohort={setCohort} />

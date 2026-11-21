@@ -20,6 +20,12 @@ export enum StarterPreviewMode {
     On = 'on',
     /** Clear the account's starter progress, then preview as with On. */
     Reset = 'reset',
+    /**
+     * Show the "New to Dojo? Start here" button above the usual training plan, as an
+     * inactive member would see it. Starting from it shows the real starter plan, with
+     * the account's real progress.
+     */
+    Suggest = 'suggest',
 }
 
 /**
@@ -28,7 +34,8 @@ export enum StarterPreviewMode {
  *
  * Visit /profile?starterPlan=on to turn it on, ?starterPlan=off to turn it off and
  * ?starterPlan=reset to clear the account's starter progress. On and off are
- * remembered in this browser until changed.
+ * remembered in this browser until changed. ?starterPlan=suggest shows the "Start
+ * here" button offered to inactive members.
  */
 export function useStarterPlanPreview(): StarterPreviewMode {
     const param = useSearchParams().get(STARTER_PREVIEW_PARAM);
@@ -40,7 +47,7 @@ export function useStarterPlanPreview(): StarterPreviewMode {
         }
         if (param === StarterPreviewMode.On || param === StarterPreviewMode.Reset) {
             setStored(true);
-        } else if (param === StarterPreviewMode.Off) {
+        } else if (param === StarterPreviewMode.Off || param === StarterPreviewMode.Suggest) {
             setStored(false);
         }
     }, [param, setStored]);
@@ -48,8 +55,8 @@ export function useStarterPlanPreview(): StarterPreviewMode {
     if (!STARTER_PREVIEW_ENABLED || param === StarterPreviewMode.Off) {
         return StarterPreviewMode.Off;
     }
-    if (param === StarterPreviewMode.Reset) {
-        return StarterPreviewMode.Reset;
+    if (param === StarterPreviewMode.Reset || param === StarterPreviewMode.Suggest) {
+        return param;
     }
     return param === StarterPreviewMode.On || stored
         ? StarterPreviewMode.On

@@ -238,7 +238,8 @@
                 "success": "[T] Congratulations! You have successfully graduated!"
             },
             "starter": {
-                "title": "[T] Your Starter Plan",
+                "title": "[T] Tutorial",
+                "planName": "[T] Dojo Starter Training Plan",
                 "subtitle": "[T] Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
                 "progress": "[T] {done} of {total} tasks done",
                 "stepNumber": "[T] Step {number}",
@@ -340,7 +341,12 @@
                         "description": "[T] Play a slow game, then learn from it."
                     }
                 },
-                "stageNumber": "[T] Stage {number}"
+                "stageNumber": "[T] Stage {number}",
+                "suggestion": {
+                    "title": "[T] New to Dojo? Start here",
+                    "description": "[T] A short tutorial that shows you how training works here. Anything you have already done stays completed.",
+                    "start": "[T] Start here"
+                }
             },
             "graduationTask": {
                 "title": "[T] Graduate from {cohort}",

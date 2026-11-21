@@ -511,6 +511,15 @@ function StarterHero({
                         >
                             {t('title')}
                         </Typography>
+                        <Typography
+                            sx={{
+                                fontWeight: 700,
+                                fontSize: '1.15rem',
+                                color: CategoryColors[RequirementCategory.Welcome],
+                            }}
+                        >
+                            {t('planName')}
+                        </Typography>
                         <Typography color='text.secondary' sx={{ maxWidth: 680, lineHeight: 1.6 }}>
                             {t('subtitle')}
                         </Typography>

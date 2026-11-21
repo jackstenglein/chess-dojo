@@ -238,7 +238,8 @@
                 "success": "Herzlichen Glückwunsch! Du hast erfolgreich bestanden!"
             },
             "starter": {
-                "title": "Dein Startplan",
+                "title": "Tutorial",
+                "planName": "Dojo-Einsteiger-Trainingsplan",
                 "subtitle": "Drei kurze Etappen, um zu lernen, wie das Training hier funktioniert. Alles, was du abschließt, wird in deinen vollständigen Trainingsplan übernommen, der danach freigeschaltet wird.",
                 "progress": "{done} von {total} Aufgaben erledigt",
                 "stepNumber": "Schritt {number}",
@@ -340,7 +341,12 @@
                         "description": "Spiele eine langsame Partie und lerne daraus."
                     }
                 },
-                "stageNumber": "Etappe {number}"
+                "stageNumber": "Etappe {number}",
+                "suggestion": {
+                    "title": "Neu im Dojo? Starte hier",
+                    "description": "Ein kurzes Tutorial, das dir zeigt, wie das Training hier funktioniert. Was du schon erledigt hast, bleibt abgeschlossen.",
+                    "start": "Hier starten"
+                }
             },
             "graduationTask": {
                 "title": "Von {cohort} absolvieren",

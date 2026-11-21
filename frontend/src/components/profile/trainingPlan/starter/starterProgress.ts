@@ -8,6 +8,7 @@
  *   starter:<taskId>:<minutes>:<completedAt ms>   a task marked done
  *   starterCredited:<taskId>                      that task was credited to real progress
  *   StarterPlan                                   the starter plan is finished
+ *   StarterPlanStarted                            an existing member chose to start it
  *   starterResetAt:<ms>                           when the starter plan was last reset
  *
  * Task ids are UUIDs and contain no colons. If the backend gains a dedicated field,
@@ -16,6 +17,9 @@
 
 /** The key marking that the user has finished (or skipped) the starter plan. */
 export const STARTER_PLAN_FINISHED_KEY = 'StarterPlan';
+
+/** The key marking that a member chose to start the starter plan ("New to Dojo? Start here"). */
+export const STARTER_PLAN_STARTED_KEY = 'StarterPlanStarted';
 
 const TASK_PREFIX = 'starter:';
 const CREDITED_PREFIX = 'starterCredited:';
@@ -97,11 +101,29 @@ export function withoutStarterProgress(tutorials: Tutorials | undefined): Tutori
         Object.entries(tutorials ?? {}).filter(
             ([key]) =>
                 key !== STARTER_PLAN_FINISHED_KEY &&
+                key !== STARTER_PLAN_STARTED_KEY &&
                 !key.startsWith(TASK_PREFIX) &&
                 !key.startsWith(CREDITED_PREFIX) &&
                 !key.startsWith(RESET_PREFIX),
         ),
     );
+}
+
+/** Returns whether the member chose to start the starter plan and hasn't finished it since. */
+export function isStarterPlanStarted(tutorials?: Tutorials): boolean {
+    return !!tutorials?.[STARTER_PLAN_STARTED_KEY] && !isStarterPlanFinished(tutorials);
+}
+
+/**
+ * Returns a copy of tutorials with the starter plan started by the member's choice. A
+ * member who skipped or finished it before can start it again; tasks already credited
+ * to their real progress stay credited.
+ */
+export function withStarterPlanStarted(tutorials: Tutorials | undefined): Tutorials {
+    const rest = Object.fromEntries(
+        Object.entries(tutorials ?? {}).filter(([key]) => key !== STARTER_PLAN_FINISHED_KEY),
+    );
+    return { ...rest, [STARTER_PLAN_STARTED_KEY]: true };
 }
 
 /** Returns a copy of tutorials with the starter plan marked finished. */

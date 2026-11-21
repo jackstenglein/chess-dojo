@@ -3,9 +3,11 @@ import {
     getStarterResetAt,
     getStarterTasks,
     isStarterPlanFinished,
+    isStarterPlanStarted,
     withoutStarterProgress,
     withoutStarterTask,
     withStarterPlanFinished,
+    withStarterPlanStarted,
     withStarterReset,
     withStarterTask,
     withStarterTaskCredited,
@@ -78,6 +80,21 @@ describe('starter progress storage', () => {
         const later = new Date('2026-11-22T10:00:00.000Z');
         expect(getStarterResetAt(withStarterReset(tutorials, later))).toBe(later.getTime());
         expect(getStarterResetAt({})).toBeUndefined();
+    });
+
+    it('starts the plan by choice, again after skipping it, keeping credited tasks', () => {
+        let tutorials = withStarterTaskCredited(withStarterTask({}, taskId, 45, date), taskId);
+        tutorials = withStarterPlanFinished(tutorials);
+        expect(isStarterPlanStarted(tutorials)).toBe(false);
+
+        tutorials = withStarterPlanStarted(tutorials);
+        expect(isStarterPlanStarted(tutorials)).toBe(true);
+        expect(isStarterPlanFinished(tutorials)).toBe(false);
+        expect(getStarterTasks(tutorials)[taskId].credited).toBe(true);
+
+        // Finishing it ends the started state.
+        expect(isStarterPlanStarted(withStarterPlanFinished(tutorials))).toBe(false);
+        expect(isStarterPlanStarted(withoutStarterProgress(tutorials))).toBe(false);
     });
 
     it('marks the starter plan finished', () => {
