@@ -98,7 +98,7 @@ func Failure(err error) Response {
 
 	log.Error(err)
 	var message string
-	body, err := json.Marshal(map[string]interface{}{
+	body, err := json.Marshal(map[string]any{
 		"code":    500,
 		"message": "Unknown error (unknown type): " + err.Error(),
 	})
@@ -121,7 +121,7 @@ func Failure(err error) Response {
 
 // Success returns an AWS ApiGateway Response object with the provided
 // object encoded as the JSON body.
-func Success(in interface{}) Response {
+func Success(in any) Response {
 	body, err := json.Marshal(in)
 	if err != nil {
 		log.Error(err)

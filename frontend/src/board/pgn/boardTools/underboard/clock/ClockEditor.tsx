@@ -1,6 +1,6 @@
 import { useChess } from '@/board/pgn/PgnBoard';
 import { Chess, Move } from '@jackstenglein/chess';
-import { clockToSeconds, timeControlForMove } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
+import { maxClockSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { Edit } from '@mui/icons-material';
 import { Grid, IconButton, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
@@ -55,19 +55,9 @@ const ClockEditor = ({
     const moves = chess.history();
     const grid = [];
     const isThreeField = clockFieldFormat === ClockFieldFormat.ThreeField;
-
-    let whitePrevMoveSeconds = timeControlForMove(chess, moves[0])?.seconds;
-    let blackPrevMoveSeconds = whitePrevMoveSeconds;
+    const maxSeconds = maxClockSeconds(chess, moves);
 
     for (let i = 0; i < moves.length; i += 2) {
-        // Get previous move's clock for validation
-        whitePrevMoveSeconds =
-            clockToSeconds(moves[i - 2]?.commentDiag?.clk) ?? whitePrevMoveSeconds;
-        blackPrevMoveSeconds =
-            clockToSeconds(moves[i - 1]?.commentDiag?.clk) ?? blackPrevMoveSeconds;
-        const timeControl = timeControlForMove(chess, moves[i - 2]);
-        const increment = timeControl?.increment ?? 0;
-
         if (isThreeField) {
             grid.push(
                 <Grid key={`${i}-white-label`} size={3}>
@@ -83,7 +73,7 @@ const ClockEditor = ({
                 <ClockTextField
                     label={`${i / 2 + 1}. ${moves[i].san}`}
                     move={moves[i]}
-                    maxSeconds={whitePrevMoveSeconds ? whitePrevMoveSeconds + increment : undefined}
+                    maxSeconds={maxSeconds[i]}
                 />
             </Grid>,
         );
@@ -104,9 +94,7 @@ const ClockEditor = ({
                     <ClockTextField
                         label={`${i / 2 + 1}... ${moves[i + 1].san}`}
                         move={moves[i + 1]}
-                        maxSeconds={
-                            blackPrevMoveSeconds ? blackPrevMoveSeconds + increment : undefined
-                        }
+                        maxSeconds={maxSeconds[i + 1]}
                     />
                 </Grid>,
             );

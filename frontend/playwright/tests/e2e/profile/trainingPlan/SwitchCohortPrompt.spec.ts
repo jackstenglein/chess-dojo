@@ -1,5 +1,5 @@
+import { User } from '@/database/user';
 import { expect, Page, test } from '@playwright/test';
-import { User } from 'src/database/user';
 import { getEnv } from '../../../../lib/env';
 
 /** Minimal user fields required for the training plan profile view. */

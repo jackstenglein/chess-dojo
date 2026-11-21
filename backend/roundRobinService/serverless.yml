@@ -154,6 +154,11 @@ functions:
           - dynamodb:UpdateItem
           - dynamodb:GetItem
         Resource: ${param:TournamentsTableArn}
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-lichessApiToken-*
 
   adminSetResult:
     handler: admin/setResult.handler
@@ -174,6 +179,11 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-lichessApiToken-*
 
   adminUpdatePlayer:
     handler: admin/updatePlayer.handler

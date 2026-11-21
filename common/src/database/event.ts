@@ -39,7 +39,7 @@ export interface Event {
     types?: AvailabilityType[];
     bookedStartTime?: string;
     bookedType?: AvailabilityType;
-    cohorts: string[];
+    cohorts?: string[];
     status: EventStatus;
     location: string;
     description: string;

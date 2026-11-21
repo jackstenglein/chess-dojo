@@ -1,4 +1,4 @@
-import { Course } from 'src/database/course';
+import { Course } from '@/database/course';
 import { describe, expect, it } from 'vitest';
 import { getAdjacentModule } from './courseUtils';
 

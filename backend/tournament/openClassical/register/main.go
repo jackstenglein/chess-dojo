@@ -99,19 +99,17 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 	}
 
 	openClassicalPlayer := database.OpenClassicalPlayer{
-		OpenClassicalPlayerSummary: database.OpenClassicalPlayerSummary{
-			Username:        info.Username,
-			DisplayName:     request.DisplayName,
-			LichessUsername: request.LichessUsername,
-			DiscordUsername: request.DiscordUsername,
-			DiscordId:       request.DiscordId,
-			Title:           request.Title,
-			Rating:          request.LichessRating,
-		},
-		Email:       request.Email,
-		Region:      request.Region,
-		Section:     request.Section,
-		ByeRequests: request.ByeRequests,
+		Username:        info.Username,
+		DisplayName:     request.DisplayName,
+		LichessUsername: request.LichessUsername,
+		DiscordUsername: request.DiscordUsername,
+		DiscordId:       request.DiscordId,
+		Title:           request.Title,
+		Rating:          request.LichessRating,
+		Email:           request.Email,
+		Region:          request.Region,
+		Section:         request.Section,
+		ByeRequests:     request.ByeRequests,
 	}
 
 	openClassical, err = repository.UpdateOpenClassicalRegistration(openClassical, &openClassicalPlayer)

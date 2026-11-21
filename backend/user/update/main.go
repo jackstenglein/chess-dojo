@@ -11,7 +11,6 @@ import (
 
 	goaway "github.com/TwiN/go-away"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/log"
@@ -22,7 +21,14 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-var repository = database.DynamoDB
+type userRepository interface {
+	GetUser(username string) (*database.User, error)
+	UpdateUser(username string, update *database.UserUpdate) (*database.User, error)
+	ListTimelineEntries(owner string, startKey string) ([]*database.TimelineEntry, string, error)
+	PutTimelineEntries(entries []*database.TimelineEntry) (int, error)
+}
+
+var repository userRepository = database.DynamoDB
 var mediaStore database.MediaStore = database.S3
 var stage = os.Getenv("stage")
 var profanityDetector = goaway.NewProfanityDetector().WithExactWord(true)
@@ -108,10 +114,10 @@ func Handler(ctx context.Context, event api.Request) (api.Response, error) {
 		if err != nil {
 			return api.Failure(err), nil
 		}
-		update.ProfilePictureSet = aws.Bool(true)
+		update.ProfilePictureSet = new(true)
 	}
 
-	update.SearchKey = aws.String(database.GetSearchKey(user, update))
+	update.SearchKey = new(database.GetSearchKey(user, update))
 	newUser, err := repository.UpdateUser(info.Username, update)
 	if err != nil {
 		return api.Failure(err), nil
@@ -229,7 +235,7 @@ func saveReferralSource(ctx context.Context, user *database.User, update *databa
 
 	valueRange := &sheets.ValueRange{
 		MajorDimension: "ROWS",
-		Values: [][]interface{}{
+		Values: [][]any{
 			{
 				time.Now().Format(time.RFC3339),
 				user.Username,

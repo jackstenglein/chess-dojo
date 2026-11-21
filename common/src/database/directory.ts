@@ -1,6 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 import { PdfExportSchema } from '../pgn/export';
+import { SubscriptionTier } from './user';
+
+export const DIRECTORY_SUBSCRIPTION_TIERS = [
+    SubscriptionTier.Basic,
+    SubscriptionTier.Lecture,
+    SubscriptionTier.GameReview,
+] as const;
+
+const directorySubscriptionTier = z.enum(DIRECTORY_SUBSCRIPTION_TIERS);
 
 const gameMetadataSchema = z.object({
     /** The cohort of the game. */
@@ -266,6 +275,9 @@ export const DirectorySchema = z.object({
 
     /** A map from username to the user's access role in the directory. */
     access: z.record(z.string(), z.enum(DirectoryAccessRole)).optional(),
+
+    /** The exact paid subscription tiers that have Viewer access. */
+    subscriptionTiers: directorySubscriptionTier.array().optional(),
 });
 
 /** A directory owned by a user. */
@@ -414,11 +426,19 @@ export type MoveDirectoryItemsRequestV2 = z.infer<typeof MoveDirectoryItemsSchem
 export const ShareDirectorySchema = DirectorySchema.pick({
     owner: true,
     id: true,
-    access: true,
-}).required();
+    subscriptionTiers: true,
+}).extend({
+    access: z.record(z.string(), z.enum(DirectoryAccessRole)),
+});
 
 /** A request to share a directory. */
 export type ShareDirectoryRequest = z.infer<typeof ShareDirectorySchema>;
+
+/** The response returned after sharing a directory. */
+export interface ShareDirectoryResponse {
+    directory: Directory;
+    parent?: Directory;
+}
 
 /** Verifies the type of a request to list the breadcrumbs for a directory. */
 export const ListBreadcrumbsSchema = DirectorySchema.pick({

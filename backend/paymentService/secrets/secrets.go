@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 )
@@ -15,7 +14,7 @@ var svc = secretsmanager.New(session.Must(session.NewSession()))
 // getSecret fetches the secret with the given name from AWS SecretManager.
 func getSecret(name string) (string, error) {
 	input := &secretsmanager.GetSecretValueInput{
-		SecretId: aws.String(name),
+		SecretId: new(name),
 	}
 	result, err := svc.GetSecretValue(input)
 	if err != nil {

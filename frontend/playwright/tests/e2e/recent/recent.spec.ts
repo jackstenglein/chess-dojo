@@ -44,6 +44,9 @@ test.describe('Graduations', () => {
     });
 
     test('displays correct graduations for other timeframes', async ({ page }) => {
+        await expect(page.getByTestId('graduates-timeframe-select')).toContainText(
+            'Graduation of 9/6/2023',
+        );
         await page.getByTestId('graduates-timeframe-select').click();
         await page.getByText('Graduation of 8/30/2023').click();
 

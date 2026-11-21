@@ -12,6 +12,21 @@ import (
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/database"
 )
 
+type mockRequirementLister struct {
+	requirements []*database.Requirement
+}
+
+func (m mockRequirementLister) ListRequirements(cohort database.DojoCohort, scoreboardOnly bool, startKey string) ([]*database.Requirement, string, error) {
+	if scoreboardOnly {
+		return nil, "", nil
+	}
+	return m.requirements, "", nil
+}
+
+func (m mockRequirementLister) ScanRequirements(cohort database.DojoCohort, startKey string) ([]*database.Requirement, string, error) {
+	return m.requirements, "", nil
+}
+
 const testRequirementId = "test-requirement-id"
 
 var goldenRequirement = &database.Requirement{
@@ -47,6 +62,10 @@ func getEvent(testName, cohort, scoreboardOnly string) api.Request {
 }
 
 func TestListRequirements(t *testing.T) {
+	original := repository
+	repository = mockRequirementLister{requirements: []*database.Requirement{goldenRequirement}}
+	t.Cleanup(func() { repository = original })
+
 	ctx := context.Background()
 
 	table := []struct {
@@ -59,8 +78,8 @@ func TestListRequirements(t *testing.T) {
 	}{
 		{
 			name:     "MissingCohort",
-			wantCode: 400,
-			wantErr:  true,
+			wantCode: 200,
+			wantReqs: []*database.Requirement{goldenRequirement},
 		},
 		{
 			name:           "ScoreboardOnly",

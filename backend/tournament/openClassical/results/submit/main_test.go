@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -61,15 +63,25 @@ func (m *mockMediaStore) Download(bucket, key string, file *os.File) error {
 	return nil
 }
 
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
 func resetDependencies(t *testing.T) func() {
 	t.Helper()
 
 	originalRepository := repository
 	originalMediaStore := mediaStore
+	originalClient := lichessHTTPClient
+	originalToken := lichessAPIToken
 
 	return func() {
 		repository = originalRepository
 		mediaStore = originalMediaStore
+		lichessHTTPClient = originalClient
+		lichessAPIToken = originalToken
 	}
 }
 
@@ -325,8 +337,6 @@ func TestGetScreenshotKey(t *testing.T) {
 }
 
 func TestUploadScreenshots(t *testing.T) {
-	t.Parallel()
-
 	openClassical := testOpenClassical()
 	update := &database.OpenClassicalPairingUpdate{
 		Region:  "A",
@@ -350,8 +360,8 @@ func TestUploadScreenshots(t *testing.T) {
 			name:            "UploadsNonEmptyScreenshots",
 			screenshotsData: []string{"dGVzdDE=", "dGVzdDI="},
 			wantKeys: []string{
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_2",
 			},
 			wantUploads: 2,
 		},
@@ -359,8 +369,8 @@ func TestUploadScreenshots(t *testing.T) {
 			name:            "SkipsEmptyScreenshots",
 			screenshotsData: []string{"dGVzdDE=", "  ", "dGVzdDI="},
 			wantKeys: []string{
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+				"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_3",
 			},
 			wantUploads: 2,
 		},
@@ -374,8 +384,6 @@ func TestUploadScreenshots(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			restore := resetDependencies(t)
 			defer restore()
 
@@ -441,8 +449,6 @@ func TestGetGameUrl(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 
 	tests := []struct {
@@ -537,8 +543,8 @@ func TestHandler(t *testing.T) {
 					Notes:    "Good game",
 					Verified: false,
 					Screenshots: []string{
-						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
-						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer",
+						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_1",
+						"/open-classical/2026-01/A/Open/r1/whiteplayer_blackplayer_2",
 					},
 				},
 			},
@@ -620,6 +626,81 @@ func TestHandler(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestGetLichessGameUsesAPIToken(t *testing.T) {
+	restore := resetDependencies(t)
+	defer restore()
+
+	lichessAPIToken = func() string { return "lip_test" }
+
+	var gotAuth string
+	var gotURL string
+	lichessHTTPClient = &http.Client{
+		Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			gotAuth = r.Header.Get("Authorization")
+			gotURL = r.URL.String()
+			body := `{"status":"mate","winner":"white","players":{"white":{"userId":"WhitePlayer"},"black":{"userId":"BlackPlayer"}}}`
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(body)),
+				Header:     make(http.Header),
+			}, nil
+		}),
+	}
+
+	request := &SubmitResultsRequest{
+		GameUrl: "https://lichess.org/abcdefgh/black",
+		White:   "WhitePlayer",
+		Black:   "BlackPlayer",
+		Result:  "1-0",
+	}
+	if err := getLichessGame(request); err != nil {
+		t.Fatalf("getLichessGame() error = %v", err)
+	}
+	if gotURL != "https://lichess.org/api/game/abcdefgh" {
+		t.Fatalf("request URL = %q", gotURL)
+	}
+	if gotAuth != "Bearer lip_test" {
+		t.Fatalf("Authorization = %q, want %q", gotAuth, "Bearer lip_test")
+	}
+	if !request.Verified {
+		t.Fatal("getLichessGame() Verified = false, want true")
+	}
+}
+
+func TestGetLichessGameOmitsTokenWhenUnset(t *testing.T) {
+	restore := resetDependencies(t)
+	defer restore()
+
+	lichessAPIToken = func() string { return "" }
+
+	var gotAuth string
+	lichessHTTPClient = &http.Client{
+		Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			gotAuth = r.Header.Get("Authorization")
+			body := `{"status":"draw","players":{"white":{"userId":"WhitePlayer"},"black":{"userId":"BlackPlayer"}}}`
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(body)),
+				Header:     make(http.Header),
+			}, nil
+		}),
+	}
+
+	request := &SubmitResultsRequest{
+		GameUrl: "https://lichess.org/abcdefgh",
+		Result:  "1/2-1/2",
+	}
+	if err := getLichessGame(request); err != nil {
+		t.Fatalf("getLichessGame() error = %v", err)
+	}
+	if gotAuth != "" {
+		t.Fatalf("Authorization = %q, want empty", gotAuth)
+	}
+	if request.Result != "1/2-1/2" || !request.Verified {
+		t.Fatalf("request = %+v, want draw result and verified", request)
 	}
 }
 

@@ -2,7 +2,7 @@ import { useReconcile } from '@/board/Board';
 import { getStandardNag } from '@/board/pgn/Nag';
 import { useChess } from '@/board/pgn/PgnBoard';
 import { RabbitIcon } from '@/style/RabbitIcon';
-import { SlothIcon } from '@/style/SlothIcon';
+import { TurtleIcon } from '@/style/TurtleIcon';
 import { useLightMode } from '@/style/useLightMode';
 import { Chess, Event, EventType, Move } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
@@ -29,7 +29,7 @@ import { TimeControlDescription } from './TimeControlDescription';
 import {
     calculateTimeRating,
     getPerfectLineSeconds,
-    MAX_MOVE,
+    getTimeRatingMaxMove,
     MIN_MOVE,
     MIN_TIME_CONTROL,
 } from './rating/clockRating';
@@ -369,6 +369,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
 
         let timeControl = timeControls?.[0] ?? {};
         const initialTimeControl = timeControl.seconds ?? 0;
+        const maxRatedMove = getTimeRatingMaxMove(timeControls ?? [{}]);
 
         let timeControlIdx = 0;
         let pliesSinceTimeControl = 0;
@@ -422,7 +423,7 @@ const ClockUsage: React.FC<ClockUsageProps> = ({ showEditor }) => {
             if (
                 initialTimeControl >= MIN_TIME_CONTROL &&
                 moveNumber >= MIN_MOVE &&
-                moveNumber <= MAX_MOVE
+                moveNumber <= maxRatedMove
             ) {
                 perfectLine.push({
                     moveNumber,
@@ -891,7 +892,7 @@ function TimeRatingCard({
                 )}
                 {area < 0 && (
                     <Tooltip title={movedSlowerTooltip}>
-                        <SlothIcon sx={{ gridArea: 'icon', color: ratingColor }} />
+                        <TurtleIcon sx={{ gridArea: 'icon', color: ratingColor }} />
                     </Tooltip>
                 )}
             </Box>

@@ -155,6 +155,7 @@ interface RenderPlayersProps {
     blackProvisional?: boolean;
     fullHeight?: boolean;
     result?: GameResult | string | null;
+    truncateNames?: boolean;
 }
 
 export function RenderGameResultStack({ result }: { result: string | undefined | null }) {
@@ -220,6 +221,7 @@ export function RenderPlayers({
     blackElo,
     blackProvisional,
     fullHeight,
+    truncateNames,
 }: RenderPlayersProps) {
     return (
         <Stack
@@ -233,15 +235,32 @@ export function RenderPlayers({
                 sx={{
                     alignItems: 'center',
                     columnGap: '0.25rem',
+                    minWidth: 0,
                 }}
             >
                 <WhiteIcon />
-                <Typography variant='body2'>{white}</Typography>
+                <Typography
+                    variant='body2'
+                    noWrap={truncateNames}
+                    sx={
+                        truncateNames
+                            ? {
+                                  minWidth: 0,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                              }
+                            : undefined
+                    }
+                >
+                    {white}
+                </Typography>
                 {whiteElo && (
                     <Typography
                         variant='body2'
                         sx={{
                             overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            flexShrink: truncateNames ? 0 : undefined,
                         }}
                     >
                         {getPlayerRating(whiteElo, whiteProvisional)}
@@ -253,16 +272,32 @@ export function RenderPlayers({
                 sx={{
                     alignItems: 'center',
                     columnGap: '0.25rem',
+                    minWidth: 0,
                 }}
             >
                 <BlackIcon />
-                <Typography variant='body2'>{black}</Typography>
+                <Typography
+                    variant='body2'
+                    noWrap={truncateNames}
+                    sx={
+                        truncateNames
+                            ? {
+                                  minWidth: 0,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                              }
+                            : undefined
+                    }
+                >
+                    {black}
+                </Typography>
                 {blackElo && (
                     <Typography
                         variant='body2'
                         sx={{
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
+                            flexShrink: truncateNames ? 0 : undefined,
                         }}
                     >
                         {getPlayerRating(blackElo, blackProvisional)}
@@ -389,6 +424,14 @@ export function ListViewCell(params: GridRenderCellParams<GameInfo>) {
     return <GameCell {...params.row} showVisibility={showVisibility} />;
 }
 
+export function CompactListViewCell(params: GridRenderCellParams<GameInfo>) {
+    const apiRef = useGridApiContext();
+    const columnVisibilityModel = useGridSelector(apiRef, gridColumnVisibilityModelSelector);
+    const showVisibility = columnVisibilityModel.unlisted;
+
+    return <GameCell {...params.row} showVisibility={showVisibility} compact />;
+}
+
 export function GameCell({
     cohort,
     owner,
@@ -397,6 +440,7 @@ export function GameCell({
     date,
     headers,
     showVisibility,
+    compact,
 }: {
     cohort: string;
     owner?: string;
@@ -405,6 +449,7 @@ export function GameCell({
     date?: string;
     headers?: Partial<PgnHeaders>;
     showVisibility?: boolean;
+    compact?: boolean;
 }) {
     const { user } = useAuth();
     const t = useTranslations('games.listItem');
@@ -426,6 +471,129 @@ export function GameCell({
         const d = new Date(date);
         date = toDojoDateString(d, user?.timezoneOverride);
         description += date;
+    }
+
+    const cohortDetails = (
+        <Stack
+            direction='row'
+            sx={{
+                alignItems: 'center',
+                minWidth: 0,
+                width: compact ? 1 : undefined,
+                justifyContent: compact ? 'flex-end' : undefined,
+                overflow: compact ? 'hidden' : undefined,
+            }}
+        >
+            <Box sx={{ display: 'flex', flexShrink: compact ? 0 : undefined }}>
+                <CohortIcon cohort={cohort} tooltip={cohort} size={16} />
+            </Box>
+            <Typography
+                variant='body2'
+                noWrap={compact}
+                sx={{
+                    color: 'text.secondary',
+                    ml: 0.5,
+                    flexShrink: compact ? 0 : undefined,
+                }}
+            >
+                {cohort === MastersCohort ? t('mastersDb') : cohort}
+            </Typography>
+
+            {cohort !== MastersCohort && ownerDisplayName && owner && (
+                <>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            color: 'text.secondary',
+                            mx: 0.5,
+                            flexShrink: compact ? 0 : undefined,
+                        }}
+                    >
+                        •
+                    </Typography>
+                    <Box
+                        sx={{
+                            flex: compact ? '1 1 auto' : undefined,
+                            minWidth: 0,
+                            overflow: compact ? 'hidden' : undefined,
+                            whiteSpace: compact ? 'nowrap' : undefined,
+                            ...(compact && {
+                                '& a': {
+                                    display: 'block',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                },
+                            }),
+                        }}
+                    >
+                        <RenderOwner
+                            ownerDisplayName={ownerDisplayName}
+                            owner={owner}
+                            avatarSize={0}
+                        />
+                    </Box>
+                </>
+            )}
+        </Stack>
+    );
+
+    if (compact) {
+        return (
+            <Stack
+                direction='row'
+                sx={{
+                    height: 1,
+                    alignItems: 'center',
+                    gap: 1,
+                    py: 1,
+                    px: 1.5,
+                }}
+            >
+                <RenderGameResultStack result={headers?.Result} />
+
+                <Box
+                    sx={{
+                        flex: '1 1 0',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                    }}
+                >
+                    {RenderPlayers({
+                        white: headers?.White,
+                        whiteElo: headers?.WhiteElo,
+                        black: headers?.Black,
+                        blackElo: headers?.BlackElo,
+                        truncateNames: true,
+                    })}
+                </Box>
+
+                <Stack
+                    sx={{
+                        alignItems: 'flex-end',
+                        flex: '0 0 44%',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <Typography
+                        variant='body2'
+                        noWrap
+                        sx={{ color: 'text.secondary', maxWidth: 1 }}
+                    >
+                        {description}
+                    </Typography>
+                    {cohortDetails}
+                </Stack>
+
+                {showVisibility &&
+                    (unlisted ? (
+                        <VisibilityOff sx={{ color: 'text.secondary' }} />
+                    ) : (
+                        <Visibility sx={{ color: 'text.secondary' }} />
+                    ))}
+            </Stack>
+        );
     }
 
     return (
@@ -479,40 +647,7 @@ export function GameCell({
                 </Grid>
 
                 <Grid size={1}></Grid>
-                <Grid size={11}>
-                    <Stack
-                        direction='row'
-                        sx={{
-                            alignItems: 'center',
-                        }}
-                    >
-                        <CohortIcon cohort={cohort} tooltip={cohort} size={16} />
-                        <Typography
-                            variant='body2'
-                            sx={{
-                                color: 'text.secondary',
-                                ml: 0.5,
-                            }}
-                        >
-                            {cohort === MastersCohort ? t('mastersDb') : cohort}
-                        </Typography>
-
-                        {cohort !== MastersCohort && ownerDisplayName && owner && (
-                            <>
-                                <Typography
-                                    variant='body2'
-                                    sx={{
-                                        color: 'text.secondary',
-                                        mx: 0.5,
-                                    }}
-                                >
-                                    •
-                                </Typography>
-                                {RenderOwner({ ownerDisplayName, owner, avatarSize: 0 })}
-                            </>
-                        )}
-                    </Stack>
-                </Grid>
+                <Grid size={11}>{cohortDetails}</Grid>
             </Grid>
         </Stack>
     );

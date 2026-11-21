@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
 )
@@ -50,23 +49,23 @@ func (repo *dynamoRepository) PutNewsfeedEntries(entries []NewsfeedEntry) (int, 
 // The optional parameter lastFetch can be used to limit how many results are returned.
 func (repo *dynamoRepository) ListNewsfeedEntries(newsfeedId, startKey, lastFetch string, limit int64) ([]NewsfeedEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#newsfeedId = :newsfeedId"),
+		KeyConditionExpression: new("#newsfeedId = :newsfeedId"),
 		ExpressionAttributeNames: map[string]*string{
-			"#newsfeedId": aws.String("newsfeedId"),
+			"#newsfeedId": new("newsfeedId"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":newsfeedId": {
 				S: &newsfeedId,
 			},
 		},
-		Limit:            aws.Int64(limit),
-		ScanIndexForward: aws.Bool(false),
+		Limit:            new(limit),
+		ScanIndexForward: new(false),
 		TableName:        &newsfeedTable,
 	}
 
 	if lastFetch != "" {
 		input.SetKeyConditionExpression("#newsfeedId = :newsfeedId AND #sortKey >= :lastFetch")
-		input.ExpressionAttributeNames["#sortKey"] = aws.String("sortKey")
+		input.ExpressionAttributeNames["#sortKey"] = new("sortKey")
 		input.ExpressionAttributeValues[":lastFetch"] = &dynamodb.AttributeValue{S: &lastFetch}
 	}
 
@@ -107,8 +106,8 @@ func (repo *dynamoRepository) deleteNewsfeedEntriesByQuery(queryFunc newsfeedQue
 			req := &dynamodb.WriteRequest{
 				DeleteRequest: &dynamodb.DeleteRequest{
 					Key: map[string]*dynamodb.AttributeValue{
-						"newsfeedId": {S: aws.String(e.NewsfeedId)},
-						"sortKey":    {S: aws.String(e.SortKey)},
+						"newsfeedId": {S: new(e.NewsfeedId)},
+						"sortKey":    {S: new(e.SortKey)},
 					},
 				},
 			}
@@ -136,20 +135,20 @@ func (repo *dynamoRepository) deleteNewsfeedEntriesByQuery(queryFunc newsfeedQue
 
 func (repo *dynamoRepository) listNewsfeedEntriesByTimelineId(poster, timelineId, startKey string) ([]NewsfeedEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#poster = :poster AND #timelineId = :timelineId"),
+		KeyConditionExpression: new("#poster = :poster AND #timelineId = :timelineId"),
 		ExpressionAttributeNames: map[string]*string{
-			"#poster":     aws.String("poster"),
-			"#timelineId": aws.String("timelineId"),
+			"#poster":     new("poster"),
+			"#timelineId": new("timelineId"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":poster": {
-				S: aws.String(poster),
+				S: new(poster),
 			},
 			":timelineId": {
-				S: aws.String(timelineId),
+				S: new(timelineId),
 			},
 		},
-		IndexName: aws.String("PosterIndex"),
+		IndexName: new("PosterIndex"),
 		TableName: &newsfeedTable,
 	}
 
@@ -170,18 +169,18 @@ func (repo *dynamoRepository) RemovePosterFromNewsfeed(newsfeedId, poster string
 
 func (repo *dynamoRepository) listPosterInNewsfeed(newsfeedId, poster, startKey string) ([]NewsfeedEntry, string, error) {
 	input := &dynamodb.QueryInput{
-		KeyConditionExpression: aws.String("#newsfeedId = :newsfeedId"),
-		FilterExpression:       aws.String("#poster = :poster"),
+		KeyConditionExpression: new("#newsfeedId = :newsfeedId"),
+		FilterExpression:       new("#poster = :poster"),
 		ExpressionAttributeNames: map[string]*string{
-			"#newsfeedId": aws.String("newsfeedId"),
-			"#poster":     aws.String("poster"),
+			"#newsfeedId": new("newsfeedId"),
+			"#poster":     new("poster"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":poster": {
-				S: aws.String(poster),
+				S: new(poster),
 			},
 			":newsfeedId": {
-				S: aws.String(newsfeedId),
+				S: new(newsfeedId),
 			},
 		},
 		TableName: &newsfeedTable,

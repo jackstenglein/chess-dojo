@@ -30,6 +30,11 @@ services:
       DirectoriesTableArn: ${directoryService.DirectoriesTableArn}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
 
+  leadService:
+    path: leadService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+
   discordAuthService:
     path: discordAuthService
     params:
@@ -201,6 +206,7 @@ services:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
       GamesTableArn: ${chess-dojo-scheduler.GamesTableArn}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       GameDatabaseBucket: ${chess-dojo-scheduler.GameDatabaseBucket}
 
   pgnExportGifService:

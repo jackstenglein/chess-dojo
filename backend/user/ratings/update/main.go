@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"sort"
 	"strings"
@@ -101,12 +102,8 @@ func newMonthlyStats(attempts, failures map[database.RatingSystem]int) *monthlyS
 		Attempts: map[database.RatingSystem]int{},
 		Failures: map[database.RatingSystem]int{},
 	}
-	for system, n := range attempts {
-		s.Attempts[system] = n
-	}
-	for system, n := range failures {
-		s.Failures[system] = n
-	}
+	maps.Copy(s.Attempts, attempts)
+	maps.Copy(s.Failures, failures)
 	return s
 }
 
@@ -270,9 +267,7 @@ func ratingFetchFuncs(lichessRatings map[string]ratings.LichessResponse, lichess
 	}
 
 	funcs := make(map[database.RatingSystem]ratings.RatingFetchFunc, len(baseFetchFuncs))
-	for system, fetch := range baseFetchFuncs {
-		funcs[system] = fetch
-	}
+	maps.Copy(funcs, baseFetchFuncs)
 	funcs[database.Chesscom] = fetchChesscom
 	funcs[database.Lichess] = fetchLichess
 	return funcs
@@ -295,8 +290,8 @@ func flush(queued []*database.User) error {
 // repository.query.
 func cursorForUser(cohort database.DojoCohort, user *database.User) string {
 	key := map[string]*dynamodb.AttributeValue{
-		"dojoCohort": {S: aws.String(string(cohort))},
-		"username":   {S: aws.String(user.Username)},
+		"dojoCohort": {S: new(string(cohort))},
+		"username":   {S: new(user.Username)},
 	}
 	b, err := json.Marshal(key)
 	if err != nil {
@@ -364,7 +359,7 @@ func checkpoint(event Event, req RatingUpdateRequest) error {
 		return errors.Wrap(500, "Temporary server error", "Failed to marshal continuation request", err)
 	}
 
-	baseID := strings.Split(event.ID, "-cont")[0]
+	baseID, _, _ := strings.Cut(event.ID, "-cont")
 	continuation := Event{
 		ID:         fmt.Sprintf("%s-cont%d", baseID, req.ContinuationCount),
 		DetailType: event.DetailType,
@@ -378,7 +373,7 @@ func checkpoint(event Event, req RatingUpdateRequest) error {
 	}
 
 	output, err := invoker.Invoke(&lambdasvc.InvokeInput{
-		FunctionName:   aws.String(os.Getenv("AWS_LAMBDA_FUNCTION_NAME")),
+		FunctionName:   new(os.Getenv("AWS_LAMBDA_FUNCTION_NAME")),
 		InvocationType: aws.String(lambdasvc.InvocationTypeEvent),
 		Payload:        payload,
 	})

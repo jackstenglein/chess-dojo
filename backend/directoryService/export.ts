@@ -7,7 +7,6 @@ import { Chess } from '@jackstenglein/chess';
 import {
     CheckExportDirectorySchema,
     Directory,
-    DirectoryAccessRole,
     DirectoryItemTypes,
     ExportDirectoryRequest,
     ExportDirectoryRun,
@@ -15,11 +14,12 @@ import {
     exportDirectoryRunStatus,
     ExportDirectorySchema,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { SubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import AdmZip from 'adm-zip';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { appendFileSync, closeSync, openSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { checkAccess } from './access';
+import { canViewDirectory, fetchSubscriptionTier } from './access';
 import {
     ApiError,
     errToApiGatewayProxyResultV2,
@@ -95,8 +95,11 @@ export const runExport = async (event: object) => {
     const run = exportDirectoryRunSchema.parse(event);
 
     try {
+        const subscriptionTier = run.request.directories?.length
+            ? await fetchSubscriptionTier(run.username)
+            : undefined;
         const games = (run.request.games ?? []).concat(
-            ...(await fetchGameInfoFromDirectories(run.username, run.request)),
+            ...(await fetchGameInfoFromDirectories(run.username, run.request, subscriptionTier)),
         );
 
         if (games.length === 0) {
@@ -196,7 +199,11 @@ export const runExport = async (event: object) => {
  * @param request The request that triggered the directory export run.
  * @returns A list of cohort and id for each game in the directories.
  */
-async function fetchGameInfoFromDirectories(username: string, request: ExportDirectoryRequest) {
+export async function fetchGameInfoFromDirectories(
+    username: string,
+    request: ExportDirectoryRequest,
+    subscriptionTier?: SubscriptionTier,
+) {
     let queue = request.directories ?? [];
     let topLevel = true;
     const games: { cohort: string; id: string }[] = [];
@@ -211,8 +218,14 @@ async function fetchGameInfoFromDirectories(username: string, request: ExportDir
                     RequestItems: {
                         [directoryTable]: {
                             Keys: batch.map((d) => ({ owner: { S: d.owner }, id: { S: d.id } })),
-                            ProjectionExpression: '#owner, id, parent, #items, access',
-                            ExpressionAttributeNames: { '#owner': 'owner', '#items': 'items' },
+                            ProjectionExpression:
+                                '#owner, id, parent, #items, #access, #visibility, subscriptionTiers',
+                            ExpressionAttributeNames: {
+                                '#owner': 'owner',
+                                '#items': 'items',
+                                '#access': 'access',
+                                '#visibility': 'visibility',
+                            },
                         },
                     },
                 }),
@@ -228,20 +241,21 @@ async function fetchGameInfoFromDirectories(username: string, request: ExportDir
                 (d) => unmarshall(d) as Directory,
             );
             for (const directory of directories) {
-                if (
-                    topLevel &&
-                    !checkAccess({
-                        owner: directory.owner,
-                        id: directory.id,
-                        username,
-                        role: DirectoryAccessRole.Viewer,
-                        directory,
-                    })
-                ) {
-                    throw new ApiError({
-                        statusCode: 403,
-                        publicMessage: `User ${username} does not have viewer access for directory ${directory.owner}/${directory.id}`,
-                    });
+                const canView = await canViewDirectory({
+                    owner: directory.owner,
+                    id: directory.id,
+                    username,
+                    directory,
+                    subscriptionTier,
+                });
+                if (!canView) {
+                    if (topLevel) {
+                        throw new ApiError({
+                            statusCode: 403,
+                            publicMessage: `User ${username} does not have viewer access for directory ${directory.owner}/${directory.id}`,
+                        });
+                    }
+                    continue;
                 }
 
                 games.push(

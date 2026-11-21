@@ -1,22 +1,27 @@
 import csv
+import random
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import certifi
 
-THEMES = ['mateIn1', 'mateIn2', 'mateIn3', 'mate', 'advancedPawn', 'advantage', 'anastasiaMate', 'arabianMate', 'attackingF2F7', 'attraction', 'backRankMate', 'bishopEndgame', 'bodenMate', 'castling', 'capturingDefender', 'crushing', 'doubleBishopMate', 'dovetailMate', 'enPassant', 'equality', 'kingsideAttack', 'clearance', 'defensiveMove', 'deflection', 'discoveredAttack', 'doubleCheck', 'endgame', 'exposedKing', 'fork', 'hangingPiece', 'hookMate', 'interference', 'intermezzo', 'killBoxMate', 'vukovicMate', 'knightEndgame', 'long', 'master', 'masterVsMaster', 'middlegame', 'oneMove', 'opening', 'pawnEndgame', 'pin', 'promotion', 'queenEndgame', 'queenRookEndgame', 'queensideAttack', 'quietMove', 'rookEndgame', 'sacrifice', 'short', 'skewer', 'smotheredMate', 'superGM', 'trappedPiece', 'underPromotion', 'veryLong', 'xRayAttack', 'zugzwang', 'mix', 'playerGames']
+THEMES = ['mateIn1', 'mateIn2', 'mateIn3', 'mate', 'advancedPawn', 'advantage', 'anastasiaMate', 'arabianMate', 'attackingF2F7', 'attraction', 'backRankMate', 'bishopEndgame', 'bodenMate', 'castling', 'capturingDefender', 'crushing', 'doubleBishopMate', 'dovetailMate', 'enPassant', 'equality', 'kingsideAttack', 'clearance', 'defensiveMove', 'deflection', 'discoveredAttack', 'doubleCheck', 'endgame', 'exposedKing', 'fork', 'hangingPiece', 'hookMate', 'interference', 'intermezzo', 'killBoxMate', 'vukovicMate', 'knightEndgame', 'long', 'master', 'masterVsMaster', 'middlegame', 'oneMove', 'opening', 'pawnEndgame', 'pin', 'promotion', 'queenEndgame', 'queenRookEndgame', 'queensideAttack', 'quietMove', 'rookEndgame', 'sacrifice', 'short', 'skewer', 'smotheredMate', 'superGM', 'trappedPiece', 'underPromotion', 'veryLong', 'xRayAttack', 'zugzwang', 'mix', 'playerGames', 'non-mate', 'collinearMove', 'pillsburysMate', 'operaMate', 'discoveredCheck']
 COHORTS = ['0-300', '300-400', '400-500', '500-600', '600-700', '700-800', '800-900', '900-1000', '1000-1100', '1100-1200', '1200-1300', '1300-1400', '1400-1500', '1500-1600', '1600-1700', '1700-1800', '1800-1900', '1900-2000', '2000-2100', '2100-2200', '2200-2300', '2300-2400', '2400+']
 RATING_BOUNDARY = [1250, 1310, 1370, 1435, 1500, 1550, 1600, 1665, 1730, 1795, 1850, 1910, 1970, 2030, 2090, 2150, 2225, 2310, 2370, 2410, 2440, 2470]
+MATE_THEMES = ['mateIn1', 'mateIn2', 'mateIn3', 'mateIn4', 'mateIn5', 'mate', 'pillsburysMate', 'operaMate']
+NON_MATE_THEME = 'non-mate'
 
 CSV_FILE = '/Users/jackstenglein/Downloads/lichess_db_puzzle.csv'
 MAX_RATING_DEVIATION = 100
 LIMITED_THEMES = [
-    'attackingF2F7',
-    'backRankMate',
-    'smotheredMate'
+    # 'attackingF2F7',
+    # 'backRankMate',
+    # 'smotheredMate'
 ]
 MAX_LIMITED_THEMES = 200
 
-uri = "mongodb+srv://puzzle_writer_prod:<password>@chess-dojo-prod.bsc8oxy.mongodb.net/?retryWrites=true&w=majority&appName=chess-dojo-prod"
-client = MongoClient(uri, server_api=ServerApi('1'))
+ca = certifi.where()
+uri = "mongodb+srv://puzzle_writer:<password>@chess-dojo-prod.bsc8oxy.mongodb.net/?retryWrites=true&w=majority&appName=chess-dojo-prod"
+client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=ca)
 
 
 def get_cohort(lichess_rating) -> str:
@@ -44,9 +49,10 @@ def normalize_rating(rating) -> int:
     return round(result)
 
 
-def insert_row_if_necessary(row, collection, themes_per_cohort) -> bool:
-    if 'mateIn1' not in row['Themes'] and 'mateIn2' not in row['Themes'] and 'mateIn3' not in row['Themes']:
-        return False
+def update_row_if_necessary(row, collection, themes_per_cohort) -> bool:
+    for theme in MATE_THEMES:
+        if theme in row['Themes']:
+            return False
     
     if int(row['RatingDeviation']) > MAX_RATING_DEVIATION:
         return False
@@ -57,24 +63,35 @@ def insert_row_if_necessary(row, collection, themes_per_cohort) -> bool:
         if theme in row['Themes'] and cohort_theme_count.get(theme, 0) >= MAX_LIMITED_THEMES:
             return False
         
-    for theme in row['Themes'].split(' '):
+    themes = row['Themes'].split(' ')
+    themes.append(NON_MATE_THEME)
+    for theme in themes:
         cohort_theme_count[theme] = cohort_theme_count.get(theme, 0) + 1
     themes_per_cohort[cohort] = cohort_theme_count
 
     try:
-        collection.insert_one({
-            '_id': row['PuzzleId'],
-            'fen': row['FEN'],
-            'moves': row['Moves'].split(' '),
-            'rating': normalize_rating(int(row['Rating'])),
-            'ratingDeviation': 2*int(row['RatingDeviation']),
-            'themes': row['Themes'].split(' '),
-            'openingTags': row['OpeningTags'].split(' '),
-            'lichessId': row['PuzzleId'],
-            'lichessGameUrl': row['GameUrl'],
-            'plays': 0,
-            'successfulPlays': 0,
-        })
+        collection.update_one(
+            {'_id': row['PuzzleId']},
+            {
+                '$set': {
+                    'fen': row['FEN'],
+                    'moves': row['Moves'].split(' '),
+                    'rating': normalize_rating(int(row['Rating'])),
+                    'ratingDeviation': 2*int(row['RatingDeviation']),
+                    'themes': themes,
+                    # Uniform [0, 1) key used for O(1) random selection (see puzzleRush/get.ts).
+                    'random': random.random(),
+                    'openingTags': row['OpeningTags'].split(' '),
+                    'lichessId': row['PuzzleId'],
+                    'lichessGameUrl': row['GameUrl'],
+                },
+                '$setOnInsert': {
+                    'plays': 0,
+                    'successfulPlays': 0,
+                },
+            },
+            upsert=True,
+        )
         return True
     except Exception as e:
         print(e)
@@ -90,12 +107,12 @@ def main():
     with open(CSV_FILE, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if insert_row_if_necessary(row, collection, themes_per_cohort):
+            if update_row_if_necessary(row, collection, themes_per_cohort):
                 count += 1
             if count % 1000 == 0:
-                print(f'Inserted {count} puzzles...')
+                print(f'Upserted {count} puzzles...')
 
-    print(f'Finished. Inserted {count} total puzzles')
+    print(f'Finished. Upserted {count} total puzzles')
 
     with open('lichess_puzzle_cohort_stats.csv', 'w') as f:
         writer = csv.DictWriter(f, fieldnames=['cohort'] + THEMES)

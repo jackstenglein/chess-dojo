@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/chess-dojo-scheduler/backend/api/errors"
@@ -386,7 +385,7 @@ func (repo *dynamoRepository) SetEvent(event *Event) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	_, err = repo.svc.PutItem(input)
@@ -402,10 +401,10 @@ func (repo *dynamoRepository) GetEvent(id string) (*Event, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		TableName: aws.String(eventTable),
+		TableName: new(eventTable),
 	}
 
 	event := Event{}
@@ -424,14 +423,14 @@ func (repo *dynamoRepository) DeleteEvent(id string) (*Event, error) {
 	}
 
 	input := &dynamodb.DeleteItemInput{
-		ConditionExpression: aws.String("attribute_exists(id)"),
+		ConditionExpression: new("attribute_exists(id)"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String(id),
+				S: new(id),
 			},
 		},
-		ReturnValues: aws.String("ALL_OLD"),
-		TableName:    aws.String(eventTable),
+		ReturnValues: new("ALL_OLD"),
+		TableName:    new(eventTable),
 	}
 
 	result, err := repo.svc.DeleteItem(input)
@@ -472,54 +471,54 @@ func (repo *dynamoRepository) BookEvent(event *Event, user *User, startTime stri
 
 	updateExpr := "SET #p.#u = :p"
 	exprAttrNames := map[string]*string{
-		"#p":      aws.String("participants"),
-		"#u":      aws.String(user.Username),
-		"#status": aws.String("status"),
+		"#p":      new("participants"),
+		"#u":      new(user.Username),
+		"#status": new("status"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
 		":p": {M: p},
 		":maxP": {
-			N: aws.String(strconv.Itoa(event.MaxParticipants)),
+			N: new(strconv.Itoa(event.MaxParticipants)),
 		},
 		":scheduled": {
-			S: aws.String(string(SchedulingStatus_Scheduled)),
+			S: new(string(SchedulingStatus_Scheduled)),
 		},
 	}
 
 	if len(event.Participants) == event.MaxParticipants-1 {
 		updateExpr += ", #status = :booked, #discordMessageId = :empty"
-		exprAttrNames["#status"] = aws.String("status")
+		exprAttrNames["#status"] = new("status")
 		exprAttrValues[":booked"] = &dynamodb.AttributeValue{
-			S: aws.String(string(SchedulingStatus_Booked)),
+			S: new(string(SchedulingStatus_Booked)),
 		}
-		exprAttrNames["#discordMessageId"] = aws.String("discordMessageId")
-		exprAttrValues[":empty"] = &dynamodb.AttributeValue{S: aws.String("")}
+		exprAttrNames["#discordMessageId"] = new("discordMessageId")
+		exprAttrValues[":empty"] = &dynamodb.AttributeValue{S: new("")}
 	}
 
 	if event.Type == EventType_Availability && event.MaxParticipants == 1 {
-		exprAttrNames["#time"] = aws.String("bookedStartTime")
+		exprAttrNames["#time"] = new("bookedStartTime")
 		exprAttrValues[":time"] = &dynamodb.AttributeValue{
-			S: aws.String(startTime),
+			S: new(startTime),
 		}
-		exprAttrNames["#type"] = aws.String("bookedType")
+		exprAttrNames["#type"] = new("bookedType")
 		exprAttrValues[":type"] = &dynamodb.AttributeValue{
-			S: aws.String(string(aType)),
+			S: new(string(aType)),
 		}
 		updateExpr += ", #time = :time, #type = :type"
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression:       aws.String("attribute_exists(id) AND #status = :scheduled AND size(#p) < :maxP"),
+		ConditionExpression:       new("attribute_exists(id) AND #status = :scheduled AND size(#p) < :maxP"),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				S: aws.String(event.Id),
+				S: new(event.Id),
 			},
 		},
-		UpdateExpression: aws.String(updateExpr),
-		ReturnValues:     aws.String("ALL_NEW"),
-		TableName:        aws.String(eventTable),
+		UpdateExpression: new(updateExpr),
+		ReturnValues:     new("ALL_NEW"),
+		TableName:        new(eventTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -547,22 +546,22 @@ func (repo *dynamoRepository) MarkParticipantPaid(eventId, participant string, c
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(eventId)},
+			"id": {S: new(eventId)},
 		},
-		ConditionExpression: aws.String("attribute_exists(id) AND attribute_exists(#p.#u)"),
-		UpdateExpression:    aws.String("SET #p.#u.#hasPaid = :true, #p.#u.#checkout = :checkout"),
+		ConditionExpression: new("attribute_exists(id) AND attribute_exists(#p.#u)"),
+		UpdateExpression:    new("SET #p.#u.#hasPaid = :true, #p.#u.#checkout = :checkout"),
 		ExpressionAttributeNames: map[string]*string{
-			"#p":        aws.String("participants"),
-			"#u":        aws.String(participant),
-			"#hasPaid":  aws.String("hasPaid"),
-			"#checkout": aws.String("checkoutSession"),
+			"#p":        new("participants"),
+			"#u":        new(participant),
+			"#hasPaid":  new("hasPaid"),
+			"#checkout": new("checkoutSession"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":true":     {BOOL: aws.Bool(true)},
+			":true":     {BOOL: new(true)},
 			":checkout": {M: checkout},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(eventTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(eventTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -593,15 +592,15 @@ func (repo *dynamoRepository) LeaveEvent(event *Event, participant *Participant,
 
 	updateExpr := "SET #status = :scheduled, #time = :empty, #type = :empty"
 	exprAttrNames := map[string]*string{
-		"#status": aws.String("status"),
-		"#time":   aws.String("bookedStartTime"),
-		"#type":   aws.String("bookedType"),
-		"#owner":  aws.String("owner"),
+		"#status": new("status"),
+		"#time":   new("bookedStartTime"),
+		"#type":   new("bookedType"),
+		"#owner":  new("owner"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
-		":scheduled":     {S: aws.String(string(SchedulingStatus_Scheduled))},
-		":empty":         {S: aws.String("")},
-		":originalOwner": {S: aws.String(event.Owner)},
+		":scheduled":     {S: new(string(SchedulingStatus_Scheduled))},
+		":empty":         {S: new("")},
+		":originalOwner": {S: new(event.Owner)},
 	}
 
 	if participant == nil {
@@ -612,38 +611,38 @@ func (repo *dynamoRepository) LeaveEvent(event *Event, participant *Participant,
 
 		updateExpr += ", #owner = :owner, #ownerDisplayName = :ownerDisplayName, #ownerCohort = :ownerCohort, #ownerPreviousCohort = :ownerPreviousCohort"
 
-		exprAttrNames["#ownerDisplayName"] = aws.String("ownerDisplayName")
-		exprAttrNames["#ownerCohort"] = aws.String("ownerCohort")
-		exprAttrNames["#ownerPreviousCohort"] = aws.String("ownerPreviousCohort")
+		exprAttrNames["#ownerDisplayName"] = new("ownerDisplayName")
+		exprAttrNames["#ownerCohort"] = new("ownerCohort")
+		exprAttrNames["#ownerPreviousCohort"] = new("ownerPreviousCohort")
 
-		exprAttrValues[":owner"] = &dynamodb.AttributeValue{S: aws.String(participant.Username)}
-		exprAttrValues[":ownerDisplayName"] = &dynamodb.AttributeValue{S: aws.String(participant.DisplayName)}
-		exprAttrValues[":ownerCohort"] = &dynamodb.AttributeValue{S: aws.String(string(participant.Cohort))}
-		exprAttrValues[":ownerPreviousCohort"] = &dynamodb.AttributeValue{S: aws.String(string(participant.PreviousCohort))}
+		exprAttrValues[":owner"] = &dynamodb.AttributeValue{S: new(participant.Username)}
+		exprAttrValues[":ownerDisplayName"] = &dynamodb.AttributeValue{S: new(participant.DisplayName)}
+		exprAttrValues[":ownerCohort"] = &dynamodb.AttributeValue{S: new(string(participant.Cohort))}
+		exprAttrValues[":ownerPreviousCohort"] = &dynamodb.AttributeValue{S: new(string(participant.PreviousCohort))}
 	}
 
 	updateExpr += " REMOVE #p.#u"
-	exprAttrNames["#p"] = aws.String("participants")
-	exprAttrNames["#u"] = aws.String(participant.Username)
+	exprAttrNames["#p"] = new("participants")
+	exprAttrNames["#u"] = new(participant.Username)
 
 	conditionExpr := "attribute_exists(id) AND #owner = :originalOwner AND attribute_exists(#p.#u)"
 
 	if requireNoPayment {
 		conditionExpr += " AND #p.#u.#hasPaid <> :true"
-		exprAttrNames["#hasPaid"] = aws.String("hasPaid")
-		exprAttrValues[":true"] = &dynamodb.AttributeValue{BOOL: aws.Bool(true)}
+		exprAttrNames["#hasPaid"] = new("hasPaid")
+		exprAttrValues[":true"] = &dynamodb.AttributeValue{BOOL: new(true)}
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression:       aws.String(conditionExpr),
+		ConditionExpression:       new(conditionExpr),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(event.Id)},
+			"id": {S: new(event.Id)},
 		},
-		UpdateExpression: aws.String(updateExpr),
-		ReturnValues:     aws.String("ALL_NEW"),
-		TableName:        aws.String(eventTable),
+		UpdateExpression: new(updateExpr),
+		ReturnValues:     new("ALL_NEW"),
+		TableName:        new(eventTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -669,22 +668,22 @@ func (repo *dynamoRepository) CancelEvent(event *Event) (*Event, error) {
 
 	updateExpr := "SET #status = :canceled"
 	exprAttrNames := map[string]*string{
-		"#status": aws.String("status"),
+		"#status": new("status"),
 	}
 	exprAttrValues := map[string]*dynamodb.AttributeValue{
-		":canceled": {S: aws.String(string(SchedulingStatus_Canceled))},
+		":canceled": {S: new(string(SchedulingStatus_Canceled))},
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression:       aws.String("attribute_exists(id)"),
+		ConditionExpression:       new("attribute_exists(id)"),
 		ExpressionAttributeNames:  exprAttrNames,
 		ExpressionAttributeValues: exprAttrValues,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(event.Id)},
+			"id": {S: new(event.Id)},
 		},
-		UpdateExpression: aws.String(updateExpr),
-		ReturnValues:     aws.String("ALL_NEW"),
-		TableName:        aws.String(eventTable),
+		UpdateExpression: new(updateExpr),
+		ReturnValues:     new("ALL_NEW"),
+		TableName:        new(eventTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)
@@ -714,19 +713,19 @@ func (repo *dynamoRepository) ScanEvents(public bool, startKey string) ([]*Event
 	input := &dynamodb.ScanInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":statistics": {
-				S: aws.String("STATISTICS"),
+				S: new("STATISTICS"),
 			},
 		},
-		FilterExpression: aws.String(filterExpression),
-		TableName:        aws.String(eventTable),
+		FilterExpression: new(filterExpression),
+		TableName:        new(eventTable),
 	}
 
 	if public {
 		input.ExpressionAttributeValues[":availability"] = &dynamodb.AttributeValue{
-			S: aws.String(string(EventType_Availability)),
+			S: new(string(EventType_Availability)),
 		}
 		input.ExpressionAttributeNames = map[string]*string{
-			"#type": aws.String("type"),
+			"#type": new("type"),
 		}
 	}
 
@@ -748,28 +747,28 @@ func (repo *dynamoRepository) CreateEventMessage(id string, message *Comment) (*
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ConditionExpression: aws.String("#owner = :u OR (attribute_exists(#p.#u) AND (#type <> :coaching OR #p.#u.#paid = :true))"),
-		UpdateExpression:    aws.String("SET #m = list_append(if_not_exists(#m, :empty_list), :m)"),
+		ConditionExpression: new("#owner = :u OR (attribute_exists(#p.#u) AND (#type <> :coaching OR #p.#u.#paid = :true))"),
+		UpdateExpression:    new("SET #m = list_append(if_not_exists(#m, :empty_list), :m)"),
 		ExpressionAttributeNames: map[string]*string{
-			"#p":     aws.String("participants"),
-			"#u":     aws.String(message.Owner),
-			"#owner": aws.String("owner"),
-			"#type":  aws.String("type"),
-			"#paid":  aws.String("hasPaid"),
-			"#m":     aws.String("messages"),
+			"#p":     new("participants"),
+			"#u":     new(message.Owner),
+			"#owner": new("owner"),
+			"#type":  new("type"),
+			"#paid":  new("hasPaid"),
+			"#m":     new("messages"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":u":          {S: aws.String(message.Owner)},
-			":coaching":   {S: aws.String(string(EventType_Coaching))},
-			":true":       {BOOL: aws.Bool(true)},
+			":u":          {S: new(message.Owner)},
+			":coaching":   {S: new(string(EventType_Coaching))},
+			":true":       {BOOL: new(true)},
 			":empty_list": {L: []*dynamodb.AttributeValue{}},
 			":m":          {L: []*dynamodb.AttributeValue{{M: item}}},
 		},
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
+			"id": {S: new(id)},
 		},
-		ReturnValues: aws.String("ALL_NEW"),
-		TableName:    aws.String(eventTable),
+		ReturnValues: new("ALL_NEW"),
+		TableName:    new(eventTable),
 	}
 
 	result, err := repo.svc.UpdateItem(input)

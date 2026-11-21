@@ -1,7 +1,6 @@
 'use client';
 
 import { useApi } from '@/api/Api';
-import { axiosService } from '@/api/axiosService';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { encodeFileToBase64 } from '@/components/profile/edit/PersonalInfoEditor';
 import { useRouter } from '@/hooks/useRouter';
@@ -22,21 +21,9 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { fetchOpenClassicalLichessGame } from './lichessGame';
 
 const MAX_SCREENSHOT_SIZE_MB = 6;
-
-interface LichessGameResponse {
-    players: {
-        white: {
-            userId: string;
-        };
-        black: {
-            userId: string;
-        };
-    };
-    status: string;
-    winner: string;
-}
 
 function gamePlayed(result: string): boolean {
     return result !== '1/2-1/2F' && result !== '1-0F' && result !== '0-1F';
@@ -69,29 +56,22 @@ const SubmitResultsPage = () => {
             });
             return;
         }
-        const gameId = gameUrl.replace('https://lichess.org/', '').split('/')[0]?.split('#')[0];
 
-        axiosService
-            .get<LichessGameResponse>(`https://lichess.org/api/game/${gameId}`)
-            .then((resp) => {
-                setErrors({ ...errors, gameUrl: '' });
-                setWhite(resp.data.players.white.userId);
-                setBlack(resp.data.players.black.userId);
-                const status = resp.data.status;
-                if (status === 'stalemate' || status === 'draw') {
-                    setResult('1/2-1/2');
-                } else if (resp.data.winner === 'white') {
-                    setResult('1-0');
-                } else if (resp.data.winner === 'black') {
-                    setResult('0-1');
-                }
-            })
-            .catch(() => {
+        void fetchOpenClassicalLichessGame(gameUrl).then((game) => {
+            if (!game) {
                 setErrors({
                     ...errors,
                     gameUrl: t('errorFetchLichess'),
                 });
-            });
+                return;
+            }
+            setErrors({ ...errors, gameUrl: '' });
+            setWhite(game.white);
+            setBlack(game.black);
+            if (game.result) {
+                setResult(game.result);
+            }
+        });
     };
 
     const onChangeScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {

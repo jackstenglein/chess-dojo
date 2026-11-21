@@ -4,6 +4,8 @@ import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { useAuth } from '@/auth/Auth';
 import { useReconcile } from '@/board/Board';
+import { restorePgn } from '@/board/pgn/restorePgn';
+import { useUndoDelete } from '@/board/pgn/UndoDelete';
 import { toDojoDateString, toDojoTimeString } from '@/components/calendar/displayDate';
 import useGame from '@/context/useGame';
 import { Game } from '@/database/game';
@@ -59,12 +61,14 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
     const initialPgnRef = useRef(chess?.renderPgn() || '');
     const saveInFlightRef = useRef(false);
     const pendingSaveRef = useRef<PendingSave>(undefined);
+    const restoringRef = useRef(false);
     const [hasChanges, setHasChanges] = useState(false);
     const [undoLog, setUndoLog] = useState<UndoLog[]>([]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { user } = useAuth();
     const { updatedAtRef, setHasUnsavedGameChanges } = useGame();
     const reconcile = useReconcile();
+    const { savePgnRef } = useUndoDelete();
 
     const processSaveQueue = async () => {
         if (saveInFlightRef.current) {
@@ -130,6 +134,13 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
 
     const debouncedOnSave = useDebounce(onSave);
 
+    const onSaveUndo = (pgnText: string) => {
+        // Drop the pending autosave of the state we are undoing.
+        debouncedOnSave.cancel();
+        restoringRef.current = true;
+        onSave(game.cohort, game.id, pgnText, true);
+    };
+
     useEffect(() => {
         if (chess) {
             const observer = {
@@ -148,7 +159,13 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
                 handler: (event: Event) => {
                     if (event.type === ChessEventType.Initialized) {
                         const pgn = chess.renderPgn();
-                        initialPgnRef.current = pgn;
+                        if (restoringRef.current) {
+                            // A restored PGN only counts as saved once its pending save succeeds.
+                            restoringRef.current = false;
+                            setHasChanges(pgn !== initialPgnRef.current);
+                        } else {
+                            initialPgnRef.current = pgn;
+                        }
                     } else {
                         const pgn = chess.renderPgn();
                         setHasChanges(pgn !== initialPgnRef.current);
@@ -167,31 +184,23 @@ const StatusIcon: React.FC<StatusIconProps> = ({ game }) => {
         return () => setHasUnsavedGameChanges?.(false);
     }, [hasChanges, setHasUnsavedGameChanges]);
 
+    useEffect(() => {
+        savePgnRef.current = onSaveUndo;
+        return () => {
+            savePgnRef.current = null;
+        };
+    });
+
     const onRestore = () => {
         setAnchorEl(null);
         const undo = undoLog[undoLog.length - 1];
-        if (!undo?.pgn) {
+        if (!undo?.pgn || !chess) {
             return;
         }
 
-        onSave(game.cohort, game.id, undo.pgn, true);
+        onSaveUndo(undo.pgn);
         setUndoLog(undoLog.slice(0, -1));
-
-        let currentMove = chess?.currentMove();
-        chess?.loadPgn(undo.pgn);
-        chess?.seek(null, true);
-
-        const moves = [];
-        while (currentMove) {
-            moves.push(currentMove);
-            currentMove = currentMove.previous;
-        }
-
-        for (let i = moves.length - 1; i >= 0; i--) {
-            if (!chess?.move(moves[i].san, { existingOnly: true })) {
-                break;
-            }
-        }
+        restorePgn(chess, undo.pgn);
         reconcile();
     };
 
