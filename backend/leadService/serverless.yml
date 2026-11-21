@@ -30,6 +30,9 @@ functions:
         - emailTemplates/classLead/n1-class-link.minified.html
         - emailTemplates/classLead/n1-class-link.subject
         - emailTemplates/classLead/n1-class-link.txt
+        - emailTemplates/wcPrediction/confirmation.minified.html
+        - emailTemplates/wcPrediction/confirmation.subject
+        - emailTemplates/wcPrediction/confirmation.txt
     events:
       - httpApi:
           path: /public/lead

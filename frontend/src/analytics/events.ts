@@ -47,6 +47,13 @@ export enum EventType {
     CreateSparringLink = 'create_sparring_link',
     CopyFen = 'copy_fen',
 
+    // World Championship prediction contest
+    WcPickStart = 'wc_pick_start',
+    WcPickStep = 'wc_pick_step',
+    WcPredictionSubmit = 'wc_prediction_submit',
+    WcShare = 'wc_share',
+    WcOfferClick = 'wc_offer_click',
+
     // Class landing page
     ClassLead = 'class_lead',
 
