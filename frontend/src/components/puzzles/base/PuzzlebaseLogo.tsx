@@ -54,7 +54,6 @@ export function PuzzlebaseLogo() {
                         display: 'block',
                         fontSize: '1.15rem',
                         letterSpacing: '0.12em',
-                        color: 'text.secondary',
                     }}
                 >
                     ChessDojo
