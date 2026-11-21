@@ -1,4 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
+import { Bebas_Neue } from 'next/font/google';
+
+const bebasNeue = Bebas_Neue({ weight: '400', subsets: ['latin'], display: 'swap' });
 
 /**
  * The PuzzleBase mark: a 2x2 board where one square is the move to find, in the primary color.
@@ -36,16 +39,32 @@ export function PuzzlebaseMark({ size = 36 }: { size?: number }) {
     );
 }
 
-/** The mark beside "ChessDojo PuzzleBase", in the site's own heading font. */
+/** The mark beside "ChessDojo" over "PuzzleBase", both in Bebas Neue. */
 export function PuzzlebaseLogo() {
     return (
         <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5 }}>
-            <PuzzlebaseMark />
-            <Typography variant='h4' component='h1' sx={{ fontWeight: 'bold' }}>
-                <Box component='span' sx={{ fontWeight: 400, color: 'text.secondary' }}>
-                    ChessDojo{' '}
+            <PuzzlebaseMark size={50} />
+            <Typography
+                component='h1'
+                sx={{ fontFamily: bebasNeue.style.fontFamily, lineHeight: 0.9, m: 0 }}
+            >
+                <Box
+                    component='span'
+                    sx={{
+                        display: 'block',
+                        fontSize: '1.15rem',
+                        letterSpacing: '0.12em',
+                        color: 'text.secondary',
+                    }}
+                >
+                    ChessDojo
                 </Box>
-                PuzzleBase
+                <Box
+                    component='span'
+                    sx={{ display: 'block', fontSize: '2.6rem', letterSpacing: '0.02em' }}
+                >
+                    PuzzleBase
+                </Box>
             </Typography>
         </Stack>
     );
