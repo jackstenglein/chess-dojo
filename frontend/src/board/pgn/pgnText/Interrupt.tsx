@@ -12,6 +12,7 @@ import {
     ShowInlineCommentsInPgn,
     ShowSuggestedVariations,
 } from '../boardTools/underboard/settings/ViewerSettings';
+import { commentTarget, useInlineComment } from '../InlineCommentEditor';
 import { useChess } from '../PgnBoard';
 import { Comments } from './Comments';
 import { Ellipsis } from './Ellipsis';
@@ -45,6 +46,8 @@ interface InterruptProps {
 const Interrupt: React.FC<InterruptProps> = ({ move, handleScroll, forceInline }) => {
     const { user } = useAuth();
     const { chess } = useChess();
+    const { editing } = useInlineComment();
+    const target = chess && editing ? commentTarget(chess, editing) : null;
     const { game } = useGame();
     const [showSuggestedVariations] = useLocalStorage<boolean>(
         ShowSuggestedVariations.key,
@@ -58,7 +61,10 @@ const Interrupt: React.FC<InterruptProps> = ({ move, handleScroll, forceInline }
         ? getInlineCommentsForMove(game, chess, move)
         : [];
 
-    if (!hasInterrupt(move, showSuggestedVariations, user?.username, inlineComments.length > 0)) {
+    if (
+        target?.move !== move &&
+        !hasInterrupt(move, showSuggestedVariations, user?.username, inlineComments.length > 0)
+    ) {
         return null;
     }
 

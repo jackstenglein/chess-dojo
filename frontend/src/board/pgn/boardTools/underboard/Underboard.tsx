@@ -1,5 +1,6 @@
 import useGame from '@/context/useGame';
 import { useLightMode } from '@/style/useLightMode';
+import { CommentType } from '@jackstenglein/chess';
 import {
     AccessAlarm,
     Article,
@@ -38,13 +39,13 @@ import React, {
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import { useLocalStorage } from 'usehooks-ts';
 import { AuthStatus, useAuth } from '../../../../auth/Auth';
+import { useInlineComment } from '../../InlineCommentEditor';
 import { useChess } from '../../PgnBoard';
 import ResizeHandle from '../../ResizeHandle';
 import Explorer from '../../explorer/Explorer';
 import { PlayerOpeningTreeProvider } from '../../explorer/player/PlayerOpeningTree';
 import { UnderboardPgnText } from '../../pgnText/PgnText';
 import { ResizableData } from '../../resize';
-import Editor from './Editor';
 import ClockUsage from './clock/ClockUsage';
 import Comments from './comments/Comments';
 import { Directories } from './directories/Directories';
@@ -78,7 +79,7 @@ function getTabName(tab: UnderboardTab): string {
 
 export interface UnderboardApi {
     switchTab: (tab: DefaultUnderboardTab) => void;
-    focusEditor: () => void;
+    focusEditor: (commentType?: CommentType) => void;
     focusCommenter: () => void;
 }
 
@@ -116,7 +117,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
         const auth = useAuth();
         const { chess } = useChess();
         const { game, isOwner } = useGame();
-        const [focusEditor, setFocusEditor] = useState(false);
+        const { start: startComment } = useInlineComment();
         const [focusCommenter, setFocusCommenter] = useState(false);
         const [moreAnchor, setMoreAnchor] = useState<HTMLElement>();
         const [keyBindings] = useLocalStorage(ShortcutBindings.key, ShortcutBindings.default);
@@ -215,7 +216,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
         const fallbackTab = useMemo(
             () =>
                 isOwner
-                    ? DefaultUnderboardTab.Editor
+                    ? DefaultUnderboardTab.Tags
                     : game
                       ? DefaultUnderboardTab.Tags
                       : DefaultUnderboardTab.Explorer,
@@ -269,11 +270,9 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                         setUnderboard(tab);
                     }
                 },
-                focusEditor() {
-                    if (isOwner && tabs.includes(DefaultUnderboardTab.Editor)) {
-                        onReveal?.();
-                        setUnderboard(DefaultUnderboardTab.Editor);
-                        setFocusEditor(true);
+                focusEditor(commentType = CommentType.After) {
+                    if (isOwner) {
+                        startComment(commentType);
                     } else if (!isOwner && tabs.includes(DefaultUnderboardTab.Comments)) {
                         onReveal?.();
                         setUnderboard(DefaultUnderboardTab.Comments);
@@ -288,7 +287,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                     }
                 },
             };
-        }, [tabs, setUnderboard, isOwner, setFocusEditor, setFocusCommenter, onReveal]);
+        }, [tabs, setUnderboard, isOwner, setFocusCommenter, onReveal, startComment]);
 
         const handleResize = (_: React.SyntheticEvent, data: ResizeCallbackData) => {
             onResize(Math.floor(data.size.width), Math.floor(data.size.height));
@@ -306,6 +305,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
 
         return (
             <Resizable
+                axis='x'
                 width={resizeData.width}
                 height={resizeData.height}
                 onResize={handleResize}
@@ -317,7 +317,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                     sx={{
                         display: hidden ? 'none' : 'flex',
                         flexDirection: 'column',
-                        mt: { xs: 1, xl: 0 },
+                        mt: { xs: 1, md: 0 },
                         width: `${resizeData.width}px`,
                         height: `${resizeData.height}px`,
                         order: resizeData.order,
@@ -450,12 +450,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                                 {underboard === DefaultUnderboardTab.Tags && (
                                     <Tags game={game} allowEdits={isOwner} />
                                 )}
-                                {underboard === DefaultUnderboardTab.Editor && (
-                                    <Editor
-                                        focusEditor={focusEditor && !hidden}
-                                        setFocusEditor={setFocusEditor}
-                                    />
-                                )}
+
                                 {underboard === DefaultUnderboardTab.Explorer && (
                                     <PlayerOpeningTreeProvider>
                                         <Explorer storageKey={explorerStorageKey} />

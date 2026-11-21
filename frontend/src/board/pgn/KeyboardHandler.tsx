@@ -4,6 +4,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { useReconcile } from '../Board';
 import { BlockBoardKeyboardShortcuts, useChess } from './PgnBoard';
 import VariationDialog from './VariationDialog';
+import { DeletePrompt, useDeletePrompt } from './boardTools/underboard/DeletePrompt';
 import { UnderboardApi } from './boardTools/underboard/Underboard';
 import {
     keyboardShortcutHandlers,
@@ -26,9 +27,18 @@ interface KeyboardHandlerProps {
 }
 
 const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
-    const { chess, board, boardRef, keydownMap, toggleOrientation, solitaire, addEngineMoveRef } =
-        useChess();
+    const {
+        chess,
+        config,
+        board,
+        boardRef,
+        keydownMap,
+        toggleOrientation,
+        solitaire,
+        addEngineMoveRef,
+    } = useChess();
     const reconcile = useReconcile();
+    const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess);
     const [variationBehavior] = useLocalStorage(VariationBehaviorKey, VariationBehavior.Dialog);
     const [variationDialogMove, setVariationDialogMove] = useState<Move | null>(null);
     const [keyboardShortcutsDialogOpen, setKeyboardShortcutsDialogOpen] = useState<boolean>(false);
@@ -86,6 +96,8 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
 
             if (
                 activeElement?.tagName === 'INPUT' ||
+                activeElement?.tagName === 'TEXTAREA' ||
+                (activeElement instanceof HTMLElement && activeElement.isContentEditable) ||
                 activeElement?.id === BlockBoardKeyboardShortcuts ||
                 activeElement?.classList.contains(BlockBoardKeyboardShortcuts) ||
                 ancestorBlockingKeyboardInput
@@ -99,6 +111,18 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                 return;
             }
 
+            if (
+                matchedAction === ShortcutAction.DeleteRemainingMoves &&
+                (event.repeat ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.altKey ||
+                    deleteAction ||
+                    document.querySelector('[role="dialog"]'))
+            ) {
+                return;
+            }
+
             event.preventDefault();
             event.stopPropagation();
 
@@ -107,6 +131,15 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
                 board,
                 reconcile,
                 opts: {
+                    deleteRemainingMoves: () => {
+                        const move = chess.currentMove();
+                        const takebacksDisabled =
+                            config?.disableTakebacks === 'both' ||
+                            (Boolean(move) && config?.disableTakebacks?.[0] === move?.color);
+                        if (config?.allowMoveDeletion && !takebacksDisabled) {
+                            onDelete(chess.nextMove(), 'after');
+                        }
+                    },
                     underboardApi: underboardRef.current,
                     toggleOrientation,
                     setKeyboardShortcutsDialogOpen,
@@ -131,6 +164,9 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
             reconcile,
             addEngineMoveRef,
             solitaire,
+            config,
+            onDelete,
+            deleteAction,
         ],
     );
 
@@ -204,6 +240,7 @@ const KeyboardHandler: React.FC<KeyboardHandlerProps> = ({ underboardRef }) => {
 
     return (
         <>
+            {deleteAction && <DeletePrompt deleteAction={deleteAction} onClose={onCloseDelete} />}
             {variationDialogMove && (
                 <VariationDialog move={variationDialogMove} setMove={setVariationDialogMove} />
             )}

@@ -35,7 +35,6 @@ const gameUrlRegex = /^\/games\/.*\/.*/;
 const analysisTabs = [
     DefaultUnderboardTab.PgnText,
     DefaultUnderboardTab.Tags,
-    DefaultUnderboardTab.Editor,
     DefaultUnderboardTab.Explorer,
     DefaultUnderboardTab.Clocks,
     DefaultUnderboardTab.Share,

@@ -22,6 +22,7 @@ const borderWidth = 1.5; // px
 const lineInset = 8; // px
 
 interface LineProps {
+    suppressRootVariations?: boolean;
     line: Move[];
     depth: number;
     handleScroll: (child: HTMLElement | null) => void;
@@ -34,6 +35,7 @@ interface LineProps {
 }
 
 export const Line: React.FC<LineProps> = ({
+    suppressRootVariations,
     line,
     depth,
     handleScroll,
@@ -89,6 +91,7 @@ export const Line: React.FC<LineProps> = ({
                 <Lines
                     key={`line-${i}`}
                     lines={[line.slice(i), ...move.variations]}
+                    rootVariationsRendered
                     depth={depth + 1}
                     handleScroll={handleScroll}
                     expandParent={onExpand}
@@ -121,6 +124,22 @@ export const Line: React.FC<LineProps> = ({
                 />
             </Fragment>,
         );
+        // The first move can itself have a forced continuation. It is already
+        // rendered above, so only render its nested lines here.
+        if (i === 0 && !suppressRootVariations && move.variations.length > 0) {
+            result.push(
+                <Lines
+                    key='root-variations'
+                    lines={move.variations}
+                    depth={depth + 1}
+                    handleScroll={handleScroll}
+                    expandParent={onExpand}
+                    forceShowSuggestedVariations={forceShowSuggestedVariations}
+                    showInlinePositionComments={showInlinePositionComments}
+                    slotProps={slotProps}
+                />,
+            );
+        }
     }
 
     return (
@@ -151,6 +170,7 @@ export const Line: React.FC<LineProps> = ({
 const SCROLL_EXPANSION_INTO_VIEW_Y = 110;
 
 interface LinesProps {
+    rootVariationsRendered?: boolean;
     lines: Move[][];
     depth?: number;
     handleScroll: (child: HTMLElement | null) => void;
@@ -163,6 +183,7 @@ interface LinesProps {
 }
 
 const Lines: React.FC<LinesProps> = ({
+    rootVariationsRendered,
     lines,
     depth = 0,
     handleScroll,
@@ -307,6 +328,7 @@ const Lines: React.FC<LinesProps> = ({
                 {lines.map((l, idx) => (
                     <Line
                         key={idx}
+                        suppressRootVariations={idx === 0 && rootVariationsRendered}
                         line={l}
                         depth={depth}
                         handleScroll={handleScroll}

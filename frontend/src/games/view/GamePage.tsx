@@ -101,7 +101,6 @@ const GamePage = ({ cohort: initialCohort, id: initialId }: { cohort: string; id
         ...(user ? [DefaultUnderboardTab.Directories] : []),
         DefaultUnderboardTab.PgnText,
         DefaultUnderboardTab.Tags,
-        ...(isOwner ? [DefaultUnderboardTab.Editor] : []),
         DefaultUnderboardTab.Comments,
         DefaultUnderboardTab.Explorer,
         DefaultUnderboardTab.Clocks,

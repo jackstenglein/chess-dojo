@@ -102,7 +102,8 @@ function shouldRerender(event: Event, chess: Chess): boolean {
             return Boolean(event.mainlineMove);
 
         case EventType.PromoteVariation:
-            return chess.isInMainline(event.variantRoot);
+            // Nested promotions also change the line structure shown below each move.
+            return true;
 
         default:
             return false;

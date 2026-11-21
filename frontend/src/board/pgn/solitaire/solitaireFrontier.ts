@@ -66,6 +66,7 @@ export function solitaireBlocksAction(
             const target = move ? move.variation[move.variation.length - 1] : null;
             return isBeyondSolitaireFrontier(chess, frontier, target);
         }
+        case ShortcutAction.NextVariation:
         case ShortcutAction.InsertEngineMove:
             // The engine's move is the answer.
             return true;
