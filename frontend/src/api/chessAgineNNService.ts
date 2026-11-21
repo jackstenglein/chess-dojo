@@ -1,13 +1,13 @@
 /**
  * ChessAgine Neural Network Service
  *
- * Calls the ChessAgine NN server for Maia3 position analysis.
+ * Calls the ChessDojo Cloud Run NN server for Maia3 position analysis.
  */
 
 import { MaiaEvalResult, MaiaRating } from '@/components/playbot/maiaengine';
 import { axiosService } from './axiosService';
 
-const NN_BASE_URL = 'https://www.chessagine.com/api/nn';
+const NN_BASE_URL = 'https://nn-analyze-service-994091266539.us-central1.run.app';
 
 // ── Wire types ─────────────────────────────────────────────────────────────────
 
@@ -57,12 +57,14 @@ export class ChessAgineNNService {
         if (!fen) return { error: 'Missing required argument: fen' };
 
         try {
-            const response = await axiosService.post<NNAnalyzeResponse>(NN_BASE_URL, {
-                endpoint: 'analyze',
-                fen,
-                engine: 'maia3',
-                rating,
-            });
+            const response = await axiosService.post<NNAnalyzeResponse>(
+                `${NN_BASE_URL}/nn-analyze`,
+                {
+                    fen,
+                    engine: 'maia3',
+                    rating,
+                },
+            );
 
             if (!response.data.success) {
                 return { error: 'NN server returned success: false' };
@@ -94,10 +96,10 @@ export class ChessAgineNNService {
         if (!fen) return { error: 'Missing required argument: fen' };
 
         try {
-            const response = await axiosService.post<NNBatchResponse>(NN_BASE_URL, {
-                endpoint: 'batch-maia3',
-                fen,
-            });
+            const response = await axiosService.post<NNBatchResponse>(
+                `${NN_BASE_URL}/nn-batch-maia3`,
+                { fen },
+            );
 
             if (!response.data.success) {
                 return { error: 'NN server returned success: false' };
