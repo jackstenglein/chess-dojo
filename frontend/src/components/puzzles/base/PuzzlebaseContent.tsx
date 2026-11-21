@@ -195,9 +195,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                             justifyContent: 'space-between',
                         }}
                     >
-                        <Stack
-                            sx={{ justifyContent: 'space-between', gap: 3, minWidth: 0, py: 0.5 }}
-                        >
+                        <Stack sx={{ justifyContent: 'center', gap: 2.5, minWidth: 0 }}>
                             <PuzzlebaseLogo />
                             <Stack
                                 direction='row'
