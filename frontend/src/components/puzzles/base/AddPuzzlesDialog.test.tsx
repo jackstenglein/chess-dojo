@@ -137,21 +137,61 @@ describe('AddPuzzlesDialog', () => {
         expect(onAdded).toHaveBeenCalledWith([puzzle], []);
     });
 
-    it('imports every game of an uploaded PGN file', async () => {
-        const { importStudy } = setup();
+    const upload = async (text: string) => {
         fireEvent.click(screen.getByRole('tab', { name: 'Upload a file' }));
-        const text = `${pgnWith('')}\n\n${pgnWith('')}`;
         const file = new File([text], 'my-puzzles.pgn', { type: 'application/x-chess-pgn' });
         fireEvent.change(screen.getByTestId('pgn-file-input'), { target: { files: [file] } });
-
         expect(await screen.findByText('my-puzzles.pgn')).toBeTruthy();
+    };
+    const apiError = (status: number, message: string) =>
+        Object.assign(new Error(message), { response: { status, data: { message } } });
+
+    it('adds every game of an uploaded PGN file as its own puzzle', async () => {
+        const { createPuzzle, onAdded } = setup();
+        await upload(`${pgnWith('')}\n\n${pgnWith('')}`);
         expect(screen.getByText('2 games found')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Import 2 puzzles' }));
 
         expect(await screen.findByText('Import finished')).toBeTruthy();
-        expect(importStudy).toHaveBeenCalledWith({ pgn: text, rating: 1000 });
-        // Notes are reported per game, not per chapter, for a file.
-        expect(screen.getByText(/Game 3/)).toBeTruthy();
+        expect(createPuzzle).toHaveBeenCalledTimes(2);
+        expect(createPuzzle).toHaveBeenCalledWith({
+            pgn: pgnWith(''),
+            rating: 1000,
+            themes: [],
+            buckets: [],
+        });
+        expect(onAdded).toHaveBeenCalledWith([puzzle, puzzle], []);
+        // Notes are reported per game.
+        expect(screen.getByText(/Game 2/)).toBeTruthy();
+    });
+
+    it('skips games that are not puzzles and carries on', async () => {
+        const createPuzzle = vi
+            .fn()
+            .mockRejectedValueOnce(apiError(400, 'This looks like a full game.'))
+            .mockResolvedValueOnce({ puzzle, warnings: [] });
+        setup({ createPuzzle });
+        await upload(`[Event "Full game"]\n\n1. e4 e5 *\n\n${pgnWith('')}`);
+        fireEvent.click(screen.getByRole('button', { name: 'Import 2 puzzles' }));
+
+        expect(await screen.findByText(/Added 1 puzzle/)).toBeTruthy();
+        expect(screen.getByText('This looks like a full game.')).toBeTruthy();
+        expect(screen.getByText(/Game 1: Full game/)).toBeTruthy();
+    });
+
+    it('stops at an error that is not about the game, and lists what was not added', async () => {
+        const createPuzzle = vi
+            .fn()
+            .mockResolvedValueOnce({ puzzle, warnings: [] })
+            .mockRejectedValueOnce(apiError(500, 'Try again later'));
+        setup({ createPuzzle });
+        await upload([pgnWith(''), pgnWith(''), pgnWith('')].join('\n\n'));
+        fireEvent.click(screen.getByRole('button', { name: 'Import 3 puzzles' }));
+
+        expect(await screen.findByText(/Added 1 puzzle/)).toBeTruthy();
+        expect(createPuzzle).toHaveBeenCalledTimes(2);
+        expect(screen.getByText('Try again later')).toBeTruthy();
+        expect(screen.getByText(/upload stopped at an earlier error/)).toBeTruthy();
     });
 
     it('offers a guide whose examples fill the field and are accepted as puzzles', async () => {

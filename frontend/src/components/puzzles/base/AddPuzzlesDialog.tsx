@@ -3,7 +3,6 @@
 import Board from '@/board/Board';
 import {
     ImportLichessStudyResponse,
-    MAX_PGN_FILE_LENGTH,
     PuzzlebasePuzzle,
     PuzzlebaseTaxonomy,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
@@ -33,7 +32,7 @@ import { bucketColor, tagChipSx } from './bucketStyle';
 import { checkPuzzlePgn } from './editPuzzle';
 import { PgnGuide } from './PgnGuide';
 import { PuzzlebaseClient } from './puzzlebaseClient';
-import { errorMessage } from './puzzlebaseErrors';
+import { errorMessage, errorStatus } from './puzzlebaseErrors';
 import { MAX_PUZZLE_RATING, parseRating } from './ratingBins';
 
 interface AddPuzzlesDialogProps {
@@ -52,6 +51,13 @@ type Source = 'pgn' | 'file' | 'study';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
+/** The biggest PGN file that can be uploaded, in bytes, and the most games it can hold. */
+const MAX_FILE_BYTES = 2_000_000;
+const MAX_FILE_GAMES = 100;
+
+/** Returns a game's title from its [Event] header, for reporting games that were skipped. */
+const gameTitle = (pgn: string) => /\[Event "([^"]*)"\]/.exec(pgn)?.[1];
+
 const monoSx = { fontFamily: 'monospace', fontSize: '0.85rem' } as const;
 
 /**
@@ -68,16 +74,20 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     const [study, setStudy] = useState('');
     const [ratingText, setRatingText] = useState('1000');
     const [working, setWorking] = useState(false);
+    /** How many games of an uploaded file have been sent so far. */
+    const [progress, setProgress] = useState<number>();
     const [error, setError] = useState<string>();
     const [imported, setImported] = useState<ImportLichessStudyResponse>();
 
     const rating = parseRating(ratingText);
-    const fileGames = useMemo(() => (file ? splitPgnFile(file.text).length : 0), [file]);
+    const fileGameTexts = useMemo(() => (file ? splitPgnFile(file.text) : []), [file]);
+    const fileGames = fileGameTexts.length;
+    const tooManyGames = fileGames > MAX_FILE_GAMES;
 
     const readFile = (picked: File | undefined) => {
         if (!picked) return;
         setError(undefined);
-        if (picked.size > MAX_PGN_FILE_LENGTH) {
+        if (picked.size > MAX_FILE_BYTES) {
             setFile(undefined);
             setError('That file is too big. Split it into files of under 2 MB.');
             return;
@@ -106,7 +116,11 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
 
     const canAdd =
         ratingToUse !== undefined &&
-        (tab === 'pgn' ? check.ok : tab === 'file' ? fileGames > 0 : study.trim().length > 0) &&
+        (tab === 'pgn'
+            ? check.ok
+            : tab === 'file'
+              ? fileGames > 0 && !tooManyGames
+              : study.trim().length > 0) &&
         !working;
 
     const add = async () => {
@@ -123,12 +137,12 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                 });
                 onAdded([puzzle], warnings);
                 onClose();
+            } else if (tab === 'file') {
+                const result = await addFileGames(ratingToUse);
+                onAdded(result.puzzles, []);
+                setImported(result);
             } else {
-                const result = await client.importStudy(
-                    tab === 'file' && file
-                        ? { pgn: file.text, rating: ratingToUse }
-                        : { study, rating: ratingToUse },
-                );
+                const result = await client.importStudy({ study, rating: ratingToUse });
                 onAdded(result.puzzles, []);
                 setImported(result);
             }
@@ -136,7 +150,47 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
             setError(errorMessage(err));
         } finally {
             setWorking(false);
+            setProgress(undefined);
         }
+    };
+
+    /**
+     * Adds each game of the uploaded file as its own puzzle, in order. A game the server turns down
+     * as not a puzzle is skipped and reported. Any other failure (signed out, server down) stops
+     * the upload, and the games not yet sent are reported as not added.
+     */
+    const addFileGames = async (fallbackRating: number): Promise<ImportLichessStudyResponse> => {
+        const result: ImportLichessStudyResponse = { puzzles: [], skipped: [], warnings: [] };
+        for (const [index, game] of fileGameTexts.entries()) {
+            const chapter = index + 1;
+            const title = gameTitle(game);
+            setProgress(index);
+            try {
+                const { puzzle, warnings } = await client.createPuzzle({
+                    pgn: game,
+                    rating: fallbackRating,
+                    themes: [],
+                    buckets: [],
+                });
+                result.puzzles.push(puzzle);
+                for (const message of warnings) {
+                    result.warnings.push({ chapter, title, message });
+                }
+            } catch (err) {
+                result.skipped.push({ chapter, title, reason: errorMessage(err) });
+                if (errorStatus(err) !== 400) {
+                    fileGameTexts.slice(index + 1).forEach((rest, i) =>
+                        result.skipped.push({
+                            chapter: chapter + 1 + i,
+                            title: gameTitle(rest),
+                            reason: 'Not added: the upload stopped at an earlier error.',
+                        }),
+                    );
+                    break;
+                }
+            }
+        }
+        return result;
     };
 
     if (imported) {
@@ -336,10 +390,18 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                             {file ? (
                                 <>
                                     <Typography sx={{ fontWeight: 'bold' }}>{file.name}</Typography>
-                                    <Typography color={fileGames > 0 ? 'text.secondary' : 'error'}>
+                                    <Typography
+                                        color={
+                                            fileGames > 0 && !tooManyGames
+                                                ? 'text.secondary'
+                                                : 'error'
+                                        }
+                                    >
                                         {fileGames === 0
                                             ? 'No games found in this file.'
-                                            : `${fileGames} ${fileGames === 1 ? 'game' : 'games'} found`}
+                                            : tooManyGames
+                                              ? `${fileGames} games found. You can upload at most ${MAX_FILE_GAMES} at a time.`
+                                              : `${fileGames} ${fileGames === 1 ? 'game' : 'games'} found`}
                                     </Typography>
                                 </>
                             ) : (
@@ -414,9 +476,11 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                     {tab === 'pgn'
                         ? 'Add puzzle'
                         : tab === 'file'
-                          ? fileGames > 0
-                              ? `Import ${fileGames} ${fileGames === 1 ? 'puzzle' : 'puzzles'}`
-                              : 'Import file'
+                          ? progress !== undefined
+                              ? `Adding ${progress + 1} of ${fileGames}…`
+                              : fileGames > 0
+                                ? `Import ${fileGames} ${fileGames === 1 ? 'puzzle' : 'puzzles'}`
+                                : 'Import file'
                           : 'Import study'}
                 </Button>
             </DialogActions>

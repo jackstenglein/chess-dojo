@@ -347,32 +347,6 @@ describe('importing a Lichess study', () => {
         expect(body.puzzles.map((p: any) => p.id)).toEqual(['005', '006', '007']);
     });
 
-    it('imports every game of an uploaded PGN file', async () => {
-        // Puzzle PGNs often have no result, so games are split on their headers.
-        const file = [PUZZLE_PGN, FULL_GAME_PGN, PUZZLE_PGN].join('\n\n');
-        const { status, body } = await call(
-            importStudy,
-            event('approved', { pgn: file, rating: 700 }),
-        );
-
-        expect(status).toBe(200);
-        expect(body.puzzles).toHaveLength(2);
-        expect(body.puzzles[0].rating).toBe(700);
-        expect(body.puzzles[0].lichessStudyUrl).toBeUndefined();
-        expect(body.skipped.map((s: any) => s.chapter)).toEqual([2]);
-        expect(getLichessStudyMock).not.toHaveBeenCalled();
-    });
-
-    it('needs either a study or a file, not both', async () => {
-        const both = await call(
-            importStudy,
-            event('approved', { study: 'abcd1234', pgn: PUZZLE_PGN, rating: 500 }),
-        );
-        const neither = await call(importStudy, event('approved', { rating: 500 }));
-        expect(both.status).toBe(400);
-        expect(neither.status).toBe(400);
-    });
-
     it('does not let strangers import', async () => {
         expect(
             (await call(importStudy, event('stranger', { study: 'abcd1234', rating: 500 }))).status,

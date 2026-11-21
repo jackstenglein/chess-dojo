@@ -189,22 +189,13 @@ export const CreatePuzzleRequestSchema = z.object({
 });
 export type CreatePuzzleRequest = z.infer<typeof CreatePuzzleRequestSchema>;
 
-/** The most text an uploaded PGN file may have (about 2 MB). */
-export const MAX_PGN_FILE_LENGTH = 2_000_000;
-
 /** Verifies a request to import every chapter of a public Lichess study as its own puzzle. */
-export const ImportLichessStudyRequestSchema = z
-    .object({
-        /** The URL or id of the Lichess study. */
-        study: z.string().min(1).optional(),
-        /** The text of an uploaded PGN file; every game in it becomes a puzzle. */
-        pgn: z.string().min(1).max(MAX_PGN_FILE_LENGTH).optional(),
-        /** Default rating applied to every imported puzzle. */
-        rating: z.number().int().min(0).max(3500),
-    })
-    .refine((request) => Boolean(request.study) !== Boolean(request.pgn), {
-        message: 'Send either a Lichess study or a PGN file.',
-    });
+export const ImportLichessStudyRequestSchema = z.object({
+    /** The URL or id of the Lichess study. */
+    study: z.string().min(1),
+    /** Default rating applied to every imported puzzle. */
+    rating: z.number().int().min(0).max(3500),
+});
 export type ImportLichessStudyRequest = z.infer<typeof ImportLichessStudyRequestSchema>;
 
 /**
