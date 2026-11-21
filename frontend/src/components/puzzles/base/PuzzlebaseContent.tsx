@@ -39,7 +39,6 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { AddPuzzlesDialog } from './AddPuzzlesDialog';
-import { AdminLogPanel } from './AdminLogPanel';
 import { ApplicationsPanel } from './ApplicationsPanel';
 import { bucketColor, tagChipSx } from './bucketStyle';
 import { BucketThemeMenu } from './BucketThemeMenu';
@@ -86,7 +85,6 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
     } = usePuzzlebaseData(client);
     const [adding, setAdding] = useState(false);
     const [showContributors, setShowContributors] = useState(false);
-    const [showLog, setShowLog] = useState(false);
     // How many contributor applications are waiting, for the badge on the Contributors button.
     const [waiting, setWaiting] = useState(0);
     // How many puzzles have tags waiting for review, for the badge on the Review tags button.
@@ -220,10 +218,11 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                             )}
                                         </Button>
                                         <Button
+                                            component={Link}
+                                            href='/puzzles/base/admin-log'
                                             size='small'
                                             color='inherit'
                                             startIcon={<History />}
-                                            onClick={() => setShowLog(true)}
                                         >
                                             Admin log
                                         </Button>
@@ -545,19 +544,12 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
             </Container>
 
             {status.isAdmin && (
-                <>
-                    <ApplicationsPanel
-                        client={client}
-                        open={showContributors}
-                        onClose={() => setShowContributors(false)}
-                        onWaiting={setWaiting}
-                    />
-                    <AdminLogPanel
-                        client={client}
-                        open={showLog}
-                        onClose={() => setShowLog(false)}
-                    />
-                </>
+                <ApplicationsPanel
+                    client={client}
+                    open={showContributors}
+                    onClose={() => setShowContributors(false)}
+                    onWaiting={setWaiting}
+                />
             )}
 
             {editingPuzzle && (
