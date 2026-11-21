@@ -173,7 +173,7 @@ test.describe('Import Games Page - Import Online Games', () => {
         await importUrl(page, testUrls.chesscomAnalysisGame);
         await verifyGame(page, {
             white: 'bestieboots',
-            black: 'David71401',
+            black: 'cented66',
             lastMove: 'Nf3',
             lastMoveClock: {
                 white: '0:08:14',
