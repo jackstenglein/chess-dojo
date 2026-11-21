@@ -21,6 +21,7 @@ import {
     withStarterPlanStarted,
     withStarterTask,
     withStarterTaskCredited,
+    withStarterTaskUndone,
 } from './starterProgress';
 
 const cohort = '1000-1100';
@@ -277,6 +278,28 @@ describe('getStarterSteps', () => {
         const classicalStep = step(user, StarterStepId.ClassicalGame);
         expect(classicalStep?.complete).toBe(true);
         expect(classicalStep?.tasks[0].record).toBeUndefined();
+    });
+
+    it('shows a task done in real progress as not done once undone, until redone', () => {
+        const realProgress = {
+            [CLASSICAL_GAMES_TASK_ID]: progress(CLASSICAL_GAMES_TASK_ID, 1),
+        };
+        const undone = createUser({
+            progress: realProgress,
+            tutorials: withStarterTaskUndone({}, CLASSICAL_GAMES_TASK_ID),
+        });
+        expect(step(undone, StarterStepId.ClassicalGame)?.complete).toBe(false);
+
+        const redone = createUser({
+            progress: realProgress,
+            tutorials: withStarterTask(
+                undone.tutorials,
+                CLASSICAL_GAMES_TASK_ID,
+                30,
+                new Date('2026-11-21T10:00:00.000Z'),
+            ),
+        });
+        expect(step(redone, StarterStepId.ClassicalGame)?.complete).toBe(true);
     });
 
     it('ignores real progress when previewing as a new member', () => {

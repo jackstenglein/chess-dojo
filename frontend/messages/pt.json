@@ -239,7 +239,7 @@
             },
             "starter": {
                 "title": "Tutorial",
-                "planName": "Plano de treino inicial do Dojo",
+                "planName": "Plano de treino do Dojo",
                 "subtitle": "Três etapas curtas para aprender como funciona o treino aqui. Tudo o que concluíres passa para o teu plano de treino completo, que é desbloqueado quando terminares.",
                 "progress": "{done} de {total} tarefas concluídas",
                 "stepNumber": "Passo {number}",

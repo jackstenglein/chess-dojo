@@ -11,7 +11,7 @@ import {
 import { CategoryColors } from '@/style/ThemeProvider';
 import { getSubscriptionTier } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { School } from '@mui/icons-material';
-import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, CardContent, Stack, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import { TrainingPlanContext } from '../TrainingPlanTab';
@@ -72,31 +72,39 @@ export function StarterPlanSuggestion({ force = false }: { force?: boolean }) {
                 background: `linear-gradient(135deg, ${color}1f 0%, transparent 60%)`,
             }}
         >
-            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    sx={{ alignItems: { xs: 'start', sm: 'center' }, gap: 2 }}
-                >
-                    <School sx={{ fontSize: '2.25rem', color }} />
-                    <Stack spacing={0.5} sx={{ flexGrow: 1 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                            {t('title')}
-                        </Typography>
-                        <Typography variant='body2' color='text.secondary'>
-                            {t('description')}
-                        </Typography>
-                    </Stack>
-                    <Button
-                        variant='contained'
-                        disableElevation
-                        loading={request.isLoading()}
-                        onClick={() => void onStart()}
-                        sx={{ flexShrink: 0, textTransform: 'none', fontWeight: 600 }}
+            {/* The whole banner starts the plan; the button inside only shows where to click. */}
+            <CardActionArea
+                disabled={request.isLoading()}
+                onClick={() => void onStart()}
+                sx={{ borderRadius: 'inherit' }}
+            >
+                <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        sx={{ alignItems: { xs: 'start', sm: 'center' }, gap: 2 }}
                     >
-                        {t('start')}
-                    </Button>
-                </Stack>
-            </CardContent>
+                        <School sx={{ fontSize: '2.25rem', color }} />
+                        <Stack spacing={0.5} sx={{ flexGrow: 1 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                                {t('title')}
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                                {t('description')}
+                            </Typography>
+                        </Stack>
+                        <Button
+                            component='span'
+                            variant='contained'
+                            disableElevation
+                            loading={request.isLoading()}
+                            tabIndex={-1}
+                            sx={{ flexShrink: 0, textTransform: 'none', fontWeight: 600 }}
+                        >
+                            {t('start')}
+                        </Button>
+                    </Stack>
+                </CardContent>
+            </CardActionArea>
         </Card>
     );
 }

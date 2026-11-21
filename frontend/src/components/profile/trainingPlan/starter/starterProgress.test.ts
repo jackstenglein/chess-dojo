@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
     getStarterResetAt,
+    getStarterRushUndoneAt,
     getStarterTasks,
     isStarterPlanFinished,
     isStarterPlanStarted,
+    isStarterTaskUndone,
     withoutStarterProgress,
     withoutStarterTask,
     withStarterPlanFinished,
     withStarterPlanStarted,
     withStarterReset,
+    withStarterRushUndone,
     withStarterTask,
     withStarterTaskCredited,
+    withStarterTaskUndone,
 } from './starterProgress';
 
 const taskId = '38f46441-7a4e-4506-8632-166bcbe78baf';
@@ -95,6 +99,29 @@ describe('starter progress storage', () => {
         // Finishing it ends the started state.
         expect(isStarterPlanStarted(withStarterPlanFinished(tutorials))).toBe(false);
         expect(isStarterPlanStarted(withoutStarterProgress(tutorials))).toBe(false);
+    });
+
+    it('undoes a task, and marking it done again clears the undo', () => {
+        let tutorials = withStarterTaskUndone(withStarterTask({}, taskId, 45, date), taskId);
+        expect(getStarterTasks(tutorials)).toEqual({});
+        expect(isStarterTaskUndone(tutorials, taskId)).toBe(true);
+
+        tutorials = withStarterTask(tutorials, taskId, 10, date);
+        expect(isStarterTaskUndone(tutorials, taskId)).toBe(false);
+        expect(getStarterTasks(tutorials)[taskId].minutes).toBe(10);
+    });
+
+    it('undoes Dojo Rush from a given time, keeping only the latest', () => {
+        const later = new Date('2026-11-22T10:00:00.000Z');
+        const tutorials = withStarterRushUndone(withStarterRushUndone({}, date), later);
+        expect(getStarterRushUndoneAt(tutorials)).toBe(later.getTime());
+        expect(Object.keys(tutorials)).toHaveLength(1);
+        expect(getStarterRushUndoneAt({})).toBeUndefined();
+    });
+
+    it('clears undos along with the rest of the starter progress', () => {
+        const tutorials = withStarterRushUndone(withStarterTaskUndone({}, taskId), date);
+        expect(withoutStarterProgress(tutorials)).toEqual({});
     });
 
     it('marks the starter plan finished', () => {

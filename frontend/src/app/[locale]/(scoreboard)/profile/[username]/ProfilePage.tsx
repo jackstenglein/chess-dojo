@@ -24,20 +24,14 @@ import LoadingPage from '@/loading/LoadingPage';
 import ClubsTab from '@/profile/clubs/ClubsTab';
 import CoachTab from '@/profile/coach/CoachTab';
 import ProfileCreatorPage from '@/profile/creator/ProfileCreatorPage';
+import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { PawnIcon } from '@/style/ChessIcons';
 import { PresenterIcon } from '@/style/PresenterIcon';
 import {
     getSubscriptionTier,
     SubscriptionTier,
 } from '@jackstenglein/chess-dojo-common/src/database/user';
-import {
-    AdminPanelSettings,
-    Groups,
-    PieChart,
-    RocketLaunch,
-    Star,
-    Timeline,
-} from '@mui/icons-material';
+import { AdminPanelSettings, Groups, PieChart, RocketLaunch, Timeline } from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
 import { Box, Chip, Container, Stack, Tab, Tabs, useMediaQuery } from '@mui/material';
 import { useTranslations } from 'next-intl';
@@ -209,7 +203,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     id='training-plan-tab'
                                     label={t('tabTrainingPlan')}
                                     value='progress'
-                                    icon={<Star fontSize='small' />}
+                                    icon={<ChessDojoIcon fontSize='small' />}
                                 />
                                 <ProfileTab
                                     label={t('tabActivity')}

@@ -10,6 +10,7 @@ import { useTimelineContext } from '@/components/profile/activity/useTimeline';
 import { getTimeControl } from '@/components/tournaments/round-robin/TimeControlChip';
 import { formatTime, Requirement, RequirementCategory } from '@/database/requirement';
 import LoadingPage from '@/loading/LoadingPage';
+import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { DiscordIcon } from '@/style/SocialMediaIcons';
 import { CategoryColors } from '@/style/ThemeProvider';
 import { useTranslatedRequirement } from '@/translation/useTranslatedRequirement';
@@ -69,12 +70,14 @@ import {
 import { StarterPreviewMode } from './starterPreview';
 import {
     getStarterResetAt,
+    getStarterRushUndoneAt,
     Tutorials,
-    withoutStarterTask,
     withStarterPlanFinished,
     withStarterReset,
+    withStarterRushUndone,
     withStarterTask,
     withStarterTaskCredited,
+    withStarterTaskUndone,
 } from './starterProgress';
 
 /** The minutes suggested for a task that has no expected time. */
@@ -129,10 +132,13 @@ export function StarterTrainingPlan({
     const { onNewEntry } = useTimelineContext();
     const { user, requirements, timeline, isLoading } = use(TrainingPlanContext);
     const isPreview = preview !== StarterPreviewMode.Off;
-    // In the preview, Dojo Rush runs from before the last reset do not count.
-    const hasDojoRushRun = useHasDojoRushRun(
-        isPreview ? getStarterResetAt(user.tutorials) : undefined,
+    // Dojo Rush runs from before the member last undid the step do not count, nor, in
+    // the preview, runs from before the last reset.
+    const rushSince = Math.max(
+        getStarterRushUndoneAt(user.tutorials) ?? 0,
+        (isPreview ? getStarterResetAt(user.tutorials) : undefined) ?? 0,
     );
+    const hasDojoRushRun = useHasDojoRushRun(rushSince || undefined);
     const request = useRequest();
 
     const [detailsTask, setDetailsTask] = useState<{ task: Requirement; name?: string }>();
@@ -213,12 +219,15 @@ export function StarterTrainingPlan({
             .catch((err: unknown) => request.onFailure(err));
     };
 
-    const onUndo = (task: Requirement) => {
+    // Undoing only changes the starter plan; the member's real progress is untouched.
+    const saveUndo = (tutorials: Tutorials) => {
         request.onStart();
-        saveTutorials(withoutStarterTask(user.tutorials, task.id))
+        saveTutorials(tutorials)
             .then(() => request.onSuccess())
             .catch((err: unknown) => request.onFailure(err));
     };
+    const onUndo = (task: Requirement) => saveUndo(withStarterTaskUndone(user.tutorials, task.id));
+    const onUndoRush = () => saveUndo(withStarterRushUndone(user.tutorials, new Date()));
 
     /**
      * Credits every starter task to the member's real progress, then marks the starter
@@ -361,6 +370,7 @@ export function StarterTrainingPlan({
                         onDetails={(task, name) => setDetailsTask({ task, name })}
                         onMarkDone={(task, name) => setMarkDoneTask({ task, name })}
                         onUndo={onUndo}
+                        onUndoRush={onUndoRush}
                     />
                 ))}
             </Stack>
@@ -505,12 +515,21 @@ function StarterHero({
             >
                 <Stack spacing={3}>
                     <Stack spacing={1}>
-                        <Typography
-                            variant='h4'
-                            sx={{ fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}
-                        >
-                            {t('title')}
-                        </Typography>
+                        <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5 }}>
+                            <ChessDojoIcon
+                                aria-hidden
+                                sx={{
+                                    fontSize: { xs: '2.5rem', sm: '3rem' },
+                                    color: 'text.primary',
+                                }}
+                            />
+                            <Typography
+                                variant='h4'
+                                sx={{ fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}
+                            >
+                                {t('title')}
+                            </Typography>
+                        </Stack>
                         <Typography
                             sx={{
                                 fontWeight: 700,
@@ -669,6 +688,7 @@ function StarterStageRow({
     onDetails: (task: Requirement, name?: string) => void;
     onMarkDone: (task: Requirement, name?: string) => void;
     onUndo: (task: Requirement) => void;
+    onUndoRush: () => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter');
     const complete = stage.done >= stage.total;
@@ -795,12 +815,14 @@ function StarterStepCard({
     onDetails,
     onMarkDone,
     onUndo,
+    onUndoRush,
 }: {
     step: StarterStep;
     disabled: boolean;
     onDetails: (task: Requirement, name?: string) => void;
     onMarkDone: (task: Requirement, name?: string) => void;
     onUndo: (task: Requirement) => void;
+    onUndoRush: () => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter');
     const category = step.tasks[0]?.task.category ?? STEP_CATEGORIES[step.id];
@@ -851,6 +873,7 @@ function StarterStepCard({
                 onDetails={onDetails}
                 onMarkDone={onMarkDone}
                 onUndo={onUndo}
+                onUndoRush={onUndoRush}
             />
         </Card>
     );
@@ -914,12 +937,14 @@ function StepActions({
     onDetails,
     onMarkDone,
     onUndo,
+    onUndoRush,
 }: {
     step: StarterStep;
     disabled: boolean;
     onDetails: (task: Requirement, name?: string) => void;
     onMarkDone: (task: Requirement, name?: string) => void;
     onUndo: (task: Requirement) => void;
+    onUndoRush: () => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter.actions');
     const tStep = useTranslations('profile.trainingPlan.starter.steps');
@@ -983,12 +1008,13 @@ function StepActions({
                     {t(link.label)}
                 </Button>
             )}
-            {stepTask?.record && (
+            {/* Any completed step can be undone, however it was completed. */}
+            {step.complete && (stepTask || step.id === StarterStepId.DojoRush) && (
                 <Button
                     size='small'
                     color='inherit'
                     disabled={disabled}
-                    onClick={() => onUndo(stepTask.task)}
+                    onClick={() => (stepTask ? onUndo(stepTask.task) : onUndoRush())}
                     sx={{ textTransform: 'none', color: 'text.secondary' }}
                 >
                     {t('undo')}
@@ -1161,7 +1187,7 @@ function WelcomeTaskCard({
     onUndo: (task: Requirement) => void;
 }) {
     const t = useTranslations('profile.trainingPlan.starter');
-    const { task, done, record } = stepTask;
+    const { task, done } = stepTask;
     const translated = useTranslatedRequirement(task) ?? task;
     const kind = getWelcomeKind(task);
 
@@ -1227,7 +1253,7 @@ function WelcomeTaskCard({
                 direction='row'
                 sx={{ alignItems: 'center', gap: 1, px: 1.75, pb: 1.5, minHeight: 40 }}
             >
-                {record ? (
+                {done ? (
                     <>
                         <Typography
                             variant='caption'
@@ -1245,8 +1271,6 @@ function WelcomeTaskCard({
                             {t('actions.undo')}
                         </Button>
                     </>
-                ) : done ? (
-                    <Check fontSize='small' color='success' />
                 ) : (
                     <Button
                         size='small'

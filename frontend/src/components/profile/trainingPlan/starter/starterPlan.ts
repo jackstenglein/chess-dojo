@@ -16,6 +16,7 @@ import {
     getStarterTasks,
     isStarterPlanFinished,
     isStarterPlanStarted,
+    isStarterTaskUndone,
     StarterTaskRecord,
 } from './starterProgress';
 
@@ -191,7 +192,12 @@ export function getStarterSteps({
     const toStepTask = (task: Requirement): StarterStepTask => ({
         task,
         record: records[task.id],
-        done: !!records[task.id] || (!ignoreRealProgress && isDoneInProgress(user, task, timeline)),
+        done:
+            !!records[task.id] ||
+            (!ignoreRealProgress &&
+                // A task the member undid here stays open, whatever their real progress.
+                !isStarterTaskUndone(user.tutorials, task.id) &&
+                isDoneInProgress(user, task, timeline)),
     });
 
     const step = (id: StarterStepId, tasks: StarterStepTask[]): StarterStep => {
