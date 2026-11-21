@@ -137,6 +137,23 @@ describe('AddPuzzlesDialog', () => {
         expect(onAdded).toHaveBeenCalledWith([puzzle], []);
     });
 
+    it('imports every game of an uploaded PGN file', async () => {
+        const { importStudy } = setup();
+        fireEvent.click(screen.getByRole('tab', { name: 'Upload a file' }));
+        const text = `${pgnWith('')} *\n\n${pgnWith('')} *`;
+        const file = new File([text], 'my-puzzles.pgn', { type: 'application/x-chess-pgn' });
+        fireEvent.change(screen.getByTestId('pgn-file-input'), { target: { files: [file] } });
+
+        expect(await screen.findByText('my-puzzles.pgn')).toBeTruthy();
+        expect(screen.getByText('2 games found')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Import 2 puzzles' }));
+
+        expect(await screen.findByText('Import finished')).toBeTruthy();
+        expect(importStudy).toHaveBeenCalledWith({ pgn: text, rating: 1000 });
+        // Notes are reported per game, not per chapter, for a file.
+        expect(screen.getByText(/Game 3/)).toBeTruthy();
+    });
+
     it('offers a guide whose examples fill the field and are accepted as puzzles', async () => {
         const { createPuzzle } = setup();
         fireEvent.click(screen.getByText('How to write a puzzle PGN'));

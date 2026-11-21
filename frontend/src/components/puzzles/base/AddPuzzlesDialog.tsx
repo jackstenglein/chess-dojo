@@ -1,8 +1,10 @@
 'use client';
 
 import Board from '@/board/Board';
+import { splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import {
     ImportLichessStudyResponse,
+    MAX_PGN_FILE_LENGTH,
     PuzzlebasePuzzle,
     PuzzlebaseTaxonomy,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
@@ -10,6 +12,7 @@ import {
     describeUnknownTag,
     resolveTagNames,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/pgnTags';
+import { UploadFile } from '@mui/icons-material';
 import {
     Alert,
     Box,
@@ -25,7 +28,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { bucketColor, tagChipSx } from './bucketStyle';
 import { checkPuzzlePgn } from './editPuzzle';
 import { PgnGuide } from './PgnGuide';
@@ -45,14 +48,20 @@ interface AddPuzzlesDialogProps {
     onAdded: (puzzles: PuzzlebasePuzzle[], notes: string[]) => void;
 }
 
+type Source = 'pgn' | 'file' | 'study';
+
 const monoSx = { fontFamily: 'monospace', fontSize: '0.85rem' } as const;
 
 /**
- * Adds puzzles: either one from a pasted PGN, or one per chapter of a public Lichess study.
+ * Adds puzzles: one from a pasted PGN, one per game of an uploaded PGN file, or one per chapter
+ * of a public Lichess study.
  * Tags can be added on the list afterwards.
  */
 export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzzlesDialogProps) {
-    const [tab, setTab] = useState<'pgn' | 'study'>('pgn');
+    const [tab, setTab] = useState<Source>('pgn');
+    const [file, setFile] = useState<{ name: string; text: string }>();
+    const [dragging, setDragging] = useState(false);
+    const fileInput = useRef<HTMLInputElement>(null);
     const [pgn, setPgn] = useState('');
     const [study, setStudy] = useState('');
     const [ratingText, setRatingText] = useState('1000');
@@ -61,6 +70,21 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     const [imported, setImported] = useState<ImportLichessStudyResponse>();
 
     const rating = parseRating(ratingText);
+    const fileGames = useMemo(() => (file ? splitPgns(file.text).length : 0), [file]);
+
+    const readFile = (picked: File | undefined) => {
+        if (!picked) return;
+        setError(undefined);
+        if (picked.size > MAX_PGN_FILE_LENGTH) {
+            setFile(undefined);
+            setError('That file is too big. Split it into files of under 2 MB.');
+            return;
+        }
+        picked
+            .text()
+            .then((text) => setFile({ name: picked.name, text }))
+            .catch(() => setError('Could not read that file.'));
+    };
     const check = useMemo(() => checkPuzzlePgn(pgn), [pgn]);
     const blackToMove = check.ok && check.fen.split(' ')[1] === 'b';
 
@@ -80,7 +104,7 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
 
     const canAdd =
         ratingToUse !== undefined &&
-        (tab === 'pgn' ? check.ok : study.trim().length > 0) &&
+        (tab === 'pgn' ? check.ok : tab === 'file' ? fileGames > 0 : study.trim().length > 0) &&
         !working;
 
     const add = async () => {
@@ -98,7 +122,11 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                 onAdded([puzzle], warnings);
                 onClose();
             } else {
-                const result = await client.importStudy({ study, rating: ratingToUse });
+                const result = await client.importStudy(
+                    tab === 'file' && file
+                        ? { pgn: file.text, rating: ratingToUse }
+                        : { study, rating: ratingToUse },
+                );
                 onAdded(result.puzzles, []);
                 setImported(result);
             }
@@ -110,6 +138,7 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     };
 
     if (imported) {
+        const unit = tab === 'file' ? 'Game' : 'Chapter';
         return (
             <Dialog open onClose={onClose} fullWidth maxWidth='sm'>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Import finished</DialogTitle>
@@ -137,7 +166,7 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                 {imported.warnings.map((note, i) => (
                                     <Alert key={i} severity='info' icon={false}>
                                         <strong>
-                                            Chapter {note.chapter}
+                                            {unit} {note.chapter}
                                             {note.title ? `: ${note.title}` : ''}
                                         </strong>
                                         <br />
@@ -152,12 +181,12 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                     variant='overline'
                                     sx={{ color: 'text.secondary', lineHeight: 1.4 }}
                                 >
-                                    Skipped chapters · {imported.skipped.length}
+                                    Skipped {unit.toLowerCase()}s · {imported.skipped.length}
                                 </Typography>
                                 {imported.skipped.map((chapter) => (
                                     <Alert key={chapter.chapter} severity='warning' icon={false}>
                                         <strong>
-                                            Chapter {chapter.chapter}
+                                            {unit} {chapter.chapter}
                                             {chapter.title ? `: ${chapter.title}` : ''}
                                         </strong>
                                         <br />
@@ -183,13 +212,14 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
             <DialogContent>
                 <Tabs
                     value={tab}
-                    onChange={(_, value: 'pgn' | 'study') => {
+                    onChange={(_, value: Source) => {
                         setTab(value);
                         setError(undefined);
                     }}
                     sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
                 >
                     <Tab value='pgn' label='Paste a PGN' />
+                    <Tab value='file' label='Upload a file' />
                     <Tab value='study' label='Lichess study' />
                 </Tabs>
 
@@ -275,6 +305,70 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                 ))}
                             </Stack>
                         </Stack>
+                    ) : tab === 'file' ? (
+                        <Stack
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setDragging(true);
+                            }}
+                            onDragLeave={() => setDragging(false)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setDragging(false);
+                                readFile(e.dataTransfer.files[0]);
+                            }}
+                            sx={{
+                                alignItems: 'center',
+                                gap: 1.5,
+                                py: 4,
+                                px: 2,
+                                border: 2,
+                                borderStyle: 'dashed',
+                                borderRadius: 2,
+                                borderColor: dragging ? 'primary.main' : 'divider',
+                                bgcolor: dragging ? 'action.hover' : undefined,
+                                textAlign: 'center',
+                            }}
+                        >
+                            <UploadFile sx={{ fontSize: 40, color: 'text.secondary' }} />
+                            {file ? (
+                                <>
+                                    <Typography sx={{ fontWeight: 'bold' }}>{file.name}</Typography>
+                                    <Typography color={fileGames > 0 ? 'text.secondary' : 'error'}>
+                                        {fileGames === 0
+                                            ? 'No games found in this file.'
+                                            : `${fileGames} ${fileGames === 1 ? 'game' : 'games'} found`}
+                                    </Typography>
+                                </>
+                            ) : (
+                                <Typography color='text.secondary'>
+                                    Drop a .pgn file here
+                                </Typography>
+                            )}
+                            <Button variant='outlined' onClick={() => fileInput.current?.click()}>
+                                {file ? 'Choose another file' : 'Choose a file'}
+                            </Button>
+                            <input
+                                ref={fileInput}
+                                type='file'
+                                accept='.pgn,.txt,application/x-chess-pgn,text/plain'
+                                hidden
+                                data-testid='pgn-file-input'
+                                onChange={(e) => {
+                                    readFile(e.target.files?.[0]);
+                                    e.target.value = '';
+                                }}
+                            />
+                            <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ maxWidth: 520 }}
+                            >
+                                Every game in the file becomes its own puzzle, so each needs a [FEN]
+                                header. Games that are not puzzles are skipped and listed
+                                afterwards.
+                            </Typography>
+                        </Stack>
                     ) : (
                         <TextField
                             label='Lichess study link'
@@ -299,7 +393,9 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                                   ? `A whole number from 0 to ${MAX_PUZZLE_RATING}.`
                                   : tab === 'study'
                                     ? 'Used for chapters that do not set their own rating.'
-                                    : 'You can change it later.'
+                                    : tab === 'file'
+                                      ? 'Used for games that do not set their own rating.'
+                                      : 'You can change it later.'
                         }
                         slotProps={{ htmlInput: { min: 0, max: MAX_PUZZLE_RATING, step: 50 } }}
                         sx={{ width: 220 }}
@@ -313,7 +409,13 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
                     Cancel
                 </Button>
                 <Button variant='contained' disabled={!canAdd} onClick={add}>
-                    {tab === 'pgn' ? 'Add puzzle' : 'Import study'}
+                    {tab === 'pgn'
+                        ? 'Add puzzle'
+                        : tab === 'file'
+                          ? fileGames > 0
+                              ? `Import ${fileGames} ${fileGames === 1 ? 'puzzle' : 'puzzles'}`
+                              : 'Import file'
+                          : 'Import study'}
                 </Button>
             </DialogActions>
         </Dialog>

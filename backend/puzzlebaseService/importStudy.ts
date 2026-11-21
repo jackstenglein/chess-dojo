@@ -1,5 +1,6 @@
 'use strict';
 
+import { splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import {
     ImportLichessStudyRequestSchema,
     ImportLichessStudyResponse,
@@ -58,7 +59,8 @@ function chapterTitle(pgn: string): string | undefined {
 }
 
 /**
- * Handles requests to import a public Lichess study. Every chapter becomes its own puzzle, and
+ * Handles requests to import a public Lichess study or an uploaded PGN file. Every chapter (or
+ * game in the file) becomes its own puzzle, and
  * every puzzle gets the requested rating. Chapters that are not puzzles (no starting position, no
  * moves, or an illegal move) are skipped and reported rather than failing the whole import.
  * The caller must be a Puzzle Contributor or an admin.
@@ -70,12 +72,21 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const contributor = await requireContributor(userInfo.username);
         const request = parseBody(event, ImportLichessStudyRequestSchema);
 
-        const studyUrl = lichessStudyUrl(request.study);
-        const chapters = await getLichessStudy(studyUrl);
+        // A study's chapters come from Lichess; an uploaded file is split into its games.
+        const studyUrl = request.study ? lichessStudyUrl(request.study) : undefined;
+        const chapters = studyUrl ? await getLichessStudy(studyUrl) : splitPgns(request.pgn ?? '');
+        if (chapters.length === 0) {
+            throw new ApiError({
+                statusCode: 400,
+                publicMessage: 'No games were found in this PGN file.',
+            });
+        }
         if (chapters.length > MAX_PUZZLES_PER_REQUEST) {
             throw new ApiError({
                 statusCode: 400,
-                publicMessage: `This study has ${chapters.length} chapters. You can import at most ${MAX_PUZZLES_PER_REQUEST} at a time.`,
+                publicMessage: studyUrl
+                    ? `This study has ${chapters.length} chapters. You can import at most ${MAX_PUZZLES_PER_REQUEST} at a time.`
+                    : `This file has ${chapters.length} games. You can import at most ${MAX_PUZZLES_PER_REQUEST} at a time.`,
             });
         }
 
