@@ -348,7 +348,8 @@ describe('importing a Lichess study', () => {
     });
 
     it('imports every game of an uploaded PGN file', async () => {
-        const file = [`${PUZZLE_PGN} *`, FULL_GAME_PGN, `${PUZZLE_PGN} 1-0`].join('\n\n');
+        // Puzzle PGNs often have no result, so games are split on their headers.
+        const file = [PUZZLE_PGN, FULL_GAME_PGN, PUZZLE_PGN].join('\n\n');
         const { status, body } = await call(
             importStudy,
             event('approved', { pgn: file, rating: 700 }),

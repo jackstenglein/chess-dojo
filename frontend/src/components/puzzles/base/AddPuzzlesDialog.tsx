@@ -1,7 +1,6 @@
 'use client';
 
 import Board from '@/board/Board';
-import { splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import {
     ImportLichessStudyResponse,
     MAX_PGN_FILE_LENGTH,
@@ -12,6 +11,7 @@ import {
     describeUnknownTag,
     resolveTagNames,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/pgnTags';
+import { splitPgnFile } from '@jackstenglein/chess-dojo-common/src/puzzlebase/splitPgnFile';
 import { UploadFile } from '@mui/icons-material';
 import {
     Alert,
@@ -70,7 +70,7 @@ export function AddPuzzlesDialog({ client, taxonomy, onClose, onAdded }: AddPuzz
     const [imported, setImported] = useState<ImportLichessStudyResponse>();
 
     const rating = parseRating(ratingText);
-    const fileGames = useMemo(() => (file ? splitPgns(file.text).length : 0), [file]);
+    const fileGames = useMemo(() => (file ? splitPgnFile(file.text).length : 0), [file]);
 
     const readFile = (picked: File | undefined) => {
         if (!picked) return;

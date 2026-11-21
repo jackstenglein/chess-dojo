@@ -1,6 +1,5 @@
 'use strict';
 
-import { splitPgns } from '@jackstenglein/chess-dojo-common/src/pgn/pgn';
 import {
     ImportLichessStudyRequestSchema,
     ImportLichessStudyResponse,
@@ -14,6 +13,7 @@ import {
     ParsedPuzzlePgn,
     parsePuzzlePgn,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/parse';
+import { splitPgnFile } from '@jackstenglein/chess-dojo-common/src/puzzlebase/splitPgnFile';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import {
     ApiError,
@@ -74,7 +74,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         // A study's chapters come from Lichess; an uploaded file is split into its games.
         const studyUrl = request.study ? lichessStudyUrl(request.study) : undefined;
-        const chapters = studyUrl ? await getLichessStudy(studyUrl) : splitPgns(request.pgn ?? '');
+        const chapters = studyUrl
+            ? await getLichessStudy(studyUrl)
+            : splitPgnFile(request.pgn ?? '');
         if (chapters.length === 0) {
             throw new ApiError({
                 statusCode: 400,

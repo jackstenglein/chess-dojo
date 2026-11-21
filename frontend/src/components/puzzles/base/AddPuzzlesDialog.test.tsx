@@ -140,7 +140,7 @@ describe('AddPuzzlesDialog', () => {
     it('imports every game of an uploaded PGN file', async () => {
         const { importStudy } = setup();
         fireEvent.click(screen.getByRole('tab', { name: 'Upload a file' }));
-        const text = `${pgnWith('')} *\n\n${pgnWith('')} *`;
+        const text = `${pgnWith('')}\n\n${pgnWith('')}`;
         const file = new File([text], 'my-puzzles.pgn', { type: 'application/x-chess-pgn' });
         fireEvent.change(screen.getByTestId('pgn-file-input'), { target: { files: [file] } });
 
