@@ -34,7 +34,7 @@ export function GraduationTask() {
     const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
     const [showGraduationDialog, setShowGraduationDialog] = useState(false);
 
-    if (!shouldGraduate || skippedTaskIds?.includes(GRADUATION_SKIP_ID)) {
+    if (!isCurrentUser || !shouldGraduate || skippedTaskIds?.includes(GRADUATION_SKIP_ID)) {
         return null;
     }
 

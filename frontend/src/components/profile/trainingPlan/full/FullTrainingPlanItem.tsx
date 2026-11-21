@@ -83,7 +83,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Hidden:
         case ScoreboardDisplay.Checkbox:
             UpdateElement = (
-                <Tooltip title={tCommon('logTraining')}>
+                <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                     <Checkbox
                         aria-label={t('checkboxAriaLabel', { name: requirement.name })}
                         checked={currentCount >= totalCount}
@@ -100,7 +100,7 @@ export const FullTrainingPlanItem = ({
         case ScoreboardDisplay.Yearly:
             UpdateElement =
                 currentCount >= totalCount && !isMinimumTask ? (
-                    <Tooltip title={tCommon('logTraining')}>
+                    <Tooltip title={isCurrentUser ? tCommon('logTraining') : ''}>
                         <Checkbox
                             checked
                             onClick={() => setTaskDialogView(TaskDialogView.Progress)}
@@ -121,7 +121,7 @@ export const FullTrainingPlanItem = ({
             break;
 
         case ScoreboardDisplay.NonDojo:
-            UpdateElement = (
+            UpdateElement = !isCurrentUser ? null : (
                 <Tooltip title={tCommon('logTraining')}>
                     <IconButton
                         aria-label={`Update ${requirement.name}`}

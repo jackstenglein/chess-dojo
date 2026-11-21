@@ -6,6 +6,7 @@ import {
     SubmitPuzzleRushSessionResponse,
     submitPuzzleRushSessionSchema,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
+import { puzzleRushLeaderboardWrites } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/leaderboard';
 import { computePuzzleRushStats } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/rating';
 import {
     applyPuzzleRushSummary,
@@ -24,6 +25,7 @@ import {
     success,
 } from '../../directoryService/api';
 import { dynamo } from '../../directoryService/database';
+import { loadPuzzleRushPlayer, puzzleRushLeaderboardTable } from './leaderboard';
 import { listPuzzleRushScores, loadPuzzleRushSummary, requireTimeZone } from './summary';
 
 const puzzleRushResultsTable = `${process.env.stage}-puzzle-rush-results`;
@@ -37,6 +39,8 @@ const MAX_SUMMARY_ATTEMPTS = 5;
  * computes its statistics server-side, and persists the run. The player's summary
  * is updated in the same transaction: best solved-puzzle counts for all time, this
  * week, and today, plus the counts used to rank the run among the player's own runs.
+ * The same transaction updates the Dojo leaderboard: the player's all-time score, their
+ * score for the run's UTC month, and the number of runs completed in each window.
  *
  * @param event The API Gateway proxy event.
  * @returns The saved run and its standing among the player's runs.
@@ -62,8 +66,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             day: periods.day,
             week: periods.week,
         };
+        const player = await loadPuzzleRushPlayer(userInfo.username);
 
-        const standing = await saveSession(session, update, timeZone);
+        const standing = await saveSession(session, update, timeZone, player);
         const response: SubmitPuzzleRushSessionResponse = { session, standing };
         return success(response);
     } catch (err) {
@@ -77,17 +82,20 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
  * @param session The run to save.
  * @param update The score and calendar period used to update the summary.
  * @param timeZone IANA timezone used to place saved runs when building the first summary.
+ * @param player The display name and cohort to publish on the leaderboard.
  * @returns The run's standing after the summary includes it.
  */
 async function saveSession(
     session: PuzzleRushSession,
     update: PuzzleRushSummaryUpdate,
     timeZone: string,
+    player: { displayName?: string; cohort?: string },
 ): Promise<PuzzleRushStanding> {
     for (let attempt = 1; attempt <= MAX_SUMMARY_ATTEMPTS; attempt++) {
         const stored = await loadPuzzleRushSummary(update.username);
         const current = stored ?? (await backfillSummary(update, timeZone));
         const { summary, standing } = applyPuzzleRushSummary(current, update);
+        const leaderboardWrites = puzzleRushLeaderboardWrites(summary, player);
 
         try {
             await dynamo.send(
@@ -107,6 +115,15 @@ async function saveSession(
                                 ...summaryCondition(stored),
                             },
                         },
+                        ...leaderboardWrites.map((write) => ({
+                            Put: {
+                                TableName: puzzleRushLeaderboardTable,
+                                Item: marshall(
+                                    { ...write.row, period: write.period },
+                                    { removeUndefinedValues: true },
+                                ),
+                            },
+                        })),
                     ],
                 }),
             );

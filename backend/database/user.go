@@ -384,6 +384,9 @@ type User struct {
 
 	// The user's aggregate time management rating, computed from games in their mygames folder
 	TimeManagementRating *TimeManagementRating `dynamodbav:"timeManagementRating,omitempty" json:"timeManagementRating,omitempty"`
+
+	// Daily aggregate time management ratings, dated by the games played.
+	TimeManagementRatingHistory []RatingHistory `dynamodbav:"timeManagementRatingHistory,omitempty" json:"timeManagementRatingHistory,omitempty"`
 }
 
 // TimeManagementRating holds the user's aggregate time management rating.

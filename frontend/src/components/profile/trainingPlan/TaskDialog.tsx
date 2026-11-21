@@ -100,8 +100,13 @@ function getRequirementName(task: Requirement | CustomTask, cohort: string) {
 }
 
 export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskDialogProps) {
-    const [view, setView] = useState(initialView);
+    const { user } = useAuth();
+    const { owner } = useTimelineContext();
+    const isOwner = !!user && user.username === owner;
+    const [selectedView, setView] = useState(initialView);
+    const view = isOwner ? selectedView : TaskDialogView.Details;
     const task = useTranslatedRequirement(rawTask) ?? rawTask;
+
     return (
         <Dialog
             open={open}
@@ -115,7 +120,7 @@ export function TaskDialog({ open, initialView, task: rawTask, ...props }: TaskD
             fullWidth
         >
             {view === TaskDialogView.Details && (
-                <DetailsDialog {...props} task={task} setView={setView} />
+                <DetailsDialog {...props} task={task} setView={setView} isOwner={isOwner} />
             )}
             {(view === TaskDialogView.Progress || view === TaskDialogView.History) && (
                 <ProgressDialog {...props} task={task} view={view} setView={setView} />
@@ -182,9 +187,17 @@ function ProgressDialog({
 
 type DetailsDialogProps = Pick<TaskDialogProps, 'task' | 'onClose' | 'cohort' | 'starterMode'> & {
     setView: (view: TaskDialogView) => void;
+    isOwner: boolean;
 };
 
-function DetailsDialog({ task, onClose, cohort, setView, starterMode }: DetailsDialogProps) {
+function DetailsDialog({
+    task,
+    onClose,
+    cohort,
+    setView,
+    isOwner,
+    starterMode,
+}: DetailsDialogProps) {
     const t = useTranslations('profile.trainingPlan.taskDialog');
     const tCommon = useTranslations('profile.trainingPlan.common');
     const { user } = useAuth();
@@ -296,7 +309,7 @@ function DetailsDialog({ task, onClose, cohort, setView, starterMode }: DetailsD
                             )
                         )}
 
-                        {!isRequirement(task) && task.owner === user?.username && (
+                        {isOwner && !isRequirement(task) && task.owner === user?.username && (
                             <>
                                 <Button variant='contained' onClick={() => setShowEditor(true)}>
                                     {t('editTask')}
@@ -378,72 +391,75 @@ function DetailsDialog({ task, onClose, cohort, setView, starterMode }: DetailsD
                         ))}
                 </Stack>
             </DialogContent>
-            <TaskDialogFooter
-                view={TaskDialogView.Details}
-                setView={starterMode ? undefined : setView}
-                extra={
-                    starterMode ? undefined : timerRunning ? (
-                        <Button
-                            color='warning'
-                            size='small'
-                            startIcon={<Pause />}
-                            onClick={() => {
-                                onPauseTimer();
-                                setView(TaskDialogView.Progress);
-                            }}
-                            sx={{ textTransform: 'none', ml: 1 }}
-                        >
-                            {t('pauseTimer', { time: formatTime(timerSeconds) })}
-                        </Button>
+            {/* Only the profile owner can log progress; the starter plan is always theirs. */}
+            {isOwner && (
+                <TaskDialogFooter
+                    view={TaskDialogView.Details}
+                    setView={starterMode ? undefined : setView}
+                    extra={
+                        starterMode ? undefined : timerRunning ? (
+                            <Button
+                                color='warning'
+                                size='small'
+                                startIcon={<Pause />}
+                                onClick={() => {
+                                    onPauseTimer();
+                                    setView(TaskDialogView.Progress);
+                                }}
+                                sx={{ textTransform: 'none', ml: 1 }}
+                            >
+                                {t('pauseTimer', { time: formatTime(timerSeconds) })}
+                            </Button>
+                        ) : (
+                            <Button
+                                color={timerIsOtherTask ? 'error' : 'warning'}
+                                size='small'
+                                startIcon={<PlayArrow />}
+                                onClick={() => onStartTimer(task.id)}
+                                sx={{ textTransform: 'none', ml: 1 }}
+                            >
+                                {getTimerLabel(task.id)}
+                            </Button>
+                        )
+                    }
+                >
+                    <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
+                        {tCommon('cancel')}
+                    </Button>
+                    {starterMode ? (
+                        <>
+                            {starterMode.link && (
+                                <Button
+                                    component={Link}
+                                    href={starterMode.link.href}
+                                    sx={{ textTransform: 'none' }}
+                                >
+                                    {starterMode.link.label}
+                                </Button>
+                            )}
+                            {starterMode.onMarkComplete && (
+                                <Button
+                                    variant='contained'
+                                    disableElevation
+                                    onClick={starterMode.onMarkComplete}
+                                    sx={taskDialogPrimaryButtonSx}
+                                >
+                                    {starterMode.label}
+                                </Button>
+                            )}
+                        </>
                     ) : (
                         <Button
-                            color={timerIsOtherTask ? 'error' : 'warning'}
-                            size='small'
-                            startIcon={<PlayArrow />}
-                            onClick={() => onStartTimer(task.id)}
-                            sx={{ textTransform: 'none', ml: 1 }}
+                            variant='contained'
+                            disableElevation
+                            onClick={() => setView(TaskDialogView.Progress)}
+                            sx={taskDialogPrimaryButtonSx}
                         >
-                            {getTimerLabel(task.id)}
+                            {tCommon('logTraining')}
                         </Button>
-                    )
-                }
-            >
-                <Button color='inherit' onClick={onClose} sx={{ textTransform: 'none' }}>
-                    {tCommon('cancel')}
-                </Button>
-                {starterMode ? (
-                    <>
-                        {starterMode.link && (
-                            <Button
-                                component={Link}
-                                href={starterMode.link.href}
-                                sx={{ textTransform: 'none' }}
-                            >
-                                {starterMode.link.label}
-                            </Button>
-                        )}
-                        {starterMode.onMarkComplete && (
-                            <Button
-                                variant='contained'
-                                disableElevation
-                                onClick={starterMode.onMarkComplete}
-                                sx={taskDialogPrimaryButtonSx}
-                            >
-                                {starterMode.label}
-                            </Button>
-                        )}
-                    </>
-                ) : (
-                    <Button
-                        variant='contained'
-                        disableElevation
-                        onClick={() => setView(TaskDialogView.Progress)}
-                        sx={taskDialogPrimaryButtonSx}
-                    >
-                        {tCommon('logTraining')}
-                    </Button>
-                )}
-            </TaskDialogFooter>
+                    )}
+                </TaskDialogFooter>
+            )}
         </>
     );
 }
