@@ -243,7 +243,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     )}
                                 </Button>
                                 <IconButton
-                                    aria-label='More'
+                                    aria-label='More puzzle actions'
                                     onClick={(e) => setMoreAnchor(e.currentTarget)}
                                 >
                                     <Badge color='primary' variant='dot' invisible={waiting === 0}>
