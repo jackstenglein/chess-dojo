@@ -790,7 +790,7 @@ function showHome() {
 
   const HERO = {
     tactics: ['', ''], // the app name lives in the left column
-    endgames: ['Endgame tactics', `${index.themes.length} endgame ladders: by material (pawn, rook, minor-piece and queen endgames) and by skill (passed pawns, tactics, mates). Each is its own ladder of 50-point stages from ${index.minRating} to ${index.maxRating ?? 2000}.`],
+    endgames: ['', ''],
   };
   const page = el(`<div class="home">
     <section class="hero">

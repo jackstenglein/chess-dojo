@@ -150,35 +150,17 @@ export function rankIcon(key, size = 24) {
 }
 
 // Logo: a knight on an amber badge with a lightning bolt and three rising bars.
-// Logo: a black shield with a silver bevel, a fading blue checkerboard and a polished steel knight
-// with blue rim light — sleek, strong, chess. Also used (bigger) as the favicon.
-export const LOGO_SVG = `<svg class="logo-svg" viewBox="0 0 64 64" width="36" height="36" aria-hidden="true">
+// Logo: the ChessDojo logo (gi with the chessboard square, from the site's ChessDojoIcon) in icy
+// blue — frosted white at the top fading to glacier blue, with a cold glow. Also the favicon.
+export const LOGO_SVG = `<svg class="logo-svg" viewBox="-12 -12 409.44 338.15" width="36" height="36" aria-hidden="true">
   <defs>
-    <linearGradient id="lg-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2433"/><stop offset="1" stop-color="#04060a"/></linearGradient>
-    <linearGradient id="lg-steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7f9fc"/><stop offset=".42" stop-color="#b7c0cd"/><stop offset=".52" stop-color="#eef2f7"/><stop offset="1" stop-color="#6b7686"/></linearGradient>
-    <linearGradient id="lg-rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset=".5" stop-color="#8b96a6"/><stop offset="1" stop-color="#d9dfe7"/></linearGradient>
-    <linearGradient id="lg-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd0ff"/><stop offset="1" stop-color="#1f6fe5"/></linearGradient>
-    <radialGradient id="lg-glow" cx=".5" cy=".45" r=".5"><stop offset="0" stop-color="#2f80ff" stop-opacity=".55"/><stop offset="1" stop-color="#2f80ff" stop-opacity="0"/></radialGradient>
-    <pattern id="lg-check" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#4b9bff"/><rect x="4" y="4" width="4" height="4" fill="#4b9bff"/></pattern>
-    <linearGradient id="lg-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
-    <mask id="lg-mask"><rect width="64" height="64" fill="url(#lg-fade)"/></mask>
-    <clipPath id="lg-clip"><path d="M32 3 L57 11 V30 C57 46 46 56 32 61 C18 56 7 46 7 30 V11 Z"/></clipPath>
+    <linearGradient id="lg-ice" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#f4fbff"/><stop offset=".45" stop-color="#a8dcff"/><stop offset="1" stop-color="#3b8dff"/></linearGradient>
+    <filter id="lg-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#4aa8ff" flood-opacity=".55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
-  <path d="M32 3 L57 11 V30 C57 46 46 56 32 61 C18 56 7 46 7 30 V11 Z" fill="url(#lg-bg)"/>
-  <g clip-path="url(#lg-clip)">
-    <rect width="64" height="64" fill="url(#lg-check)" opacity=".32" mask="url(#lg-mask)"/>
-    <circle cx="32" cy="29" r="22" fill="url(#lg-glow)"/>
+  <g fill="url(#lg-ice)" filter="url(#lg-glow)">
+    <path d="m339.83,167.44l-64.34-51.44c-2.31-1.87-5.43-2.05-8.01-.62-2.58,1.42-3.92,4.36-3.47,7.21l10.77,70.12h-122.8l46.63-71.72,66.74-102.6,103.67,90.68-29.19,58.38Zm-245.61,132.06l14.24-92.55h70.39l-27.59,38.62,11.57,8.28,29.81-41.74,29.81,41.74,11.57-8.28-27.59-38.62h70.39l14.24,92.55H94.22Zm-48.59-132.06l-29.19-58.38L120.03,18.39l64.25,98.69-49.21,75.64h-24.38l10.77-70.12c.44-2.94-.98-5.78-3.47-7.21-2.58-1.42-5.7-1.25-8.01.62l-64.34,51.44ZM250.75,14.74l-58.02,89.34L134.71,14.74h116.04Zm131.79,87.21L268.64,2.28c-1.33-1.16-2.94-1.78-4.72-1.78H121.54c-1.69,0-3.38.62-4.72,1.78L2.92,101.95c-2.4,2.14-3.11,5.61-1.69,8.54l35.6,71.19c.98,1.96,2.76,3.29,4.81,3.74,2.05.44,4.27-.09,5.96-1.42l56.95-45.56-25.72,167.03c-.27,2.05.27,4.09,1.6,5.7,1.33,1.6,3.29,2.49,5.43,2.49h213.57c2.05,0,4-.89,5.43-2.49,1.33-1.6,1.96-3.65,1.6-5.7l-25.63-166.94,56.95,45.56c1.69,1.33,3.92,1.87,5.96,1.42,2.14-.44,3.92-1.87,4.81-3.74l35.6-71.19c1.51-2.94.8-6.5-1.6-8.63Z"/>
+    <path d="m213.43,154.3v-22.22h22.22v-22.22h22.22v22.22h-22.22v22.22h-22.22Zm47.22,1.39v-47.22c0-.37-.15-.72-.41-.98-.26-.26-.61-.41-.98-.41h-47.22c-.37,0-.72.15-.98.41-.26.26-.41.61-.41.98v47.22c0,.37.15.72.41.98.26.26.61.41.98.41h47.22c.37,0,.72-.15.98-.41.26-.26.41-.61.41-.98Z"/>
   </g>
-  <path d="M32 6.5 L54 13.5 V30 C54 44 44.5 52.5 32 57.5 C19.5 52.5 10 44 10 30 V13.5 Z" fill="none" stroke="#3e8ef7" stroke-width=".9" opacity=".7"/>
-  <path d="M32 3 L57 11 V30 C57 46 46 56 32 61 C18 56 7 46 7 30 V11 Z" fill="none" stroke="url(#lg-rim)" stroke-width="2.6" stroke-linejoin="round"/>
-  <g transform="translate(8 7) scale(.82)">
-    <path d="M17 54 L43 54 L41 46 Q49 37 46 25 Q42 12 27 12 L25 7 L21 13 Q13 18 11 29 Q11 33 15 33 L21 30 Q25 31 24 35 Q15 42 17 54Z" fill="url(#lg-steel)" stroke="#0a0e15" stroke-width="1.6" stroke-linejoin="round"/>
-    <path d="M27 12 Q42 12 46 25 Q49 37 41 46" fill="none" stroke="url(#lg-blue)" stroke-width="2.6" stroke-linecap="round"/>
-    <path d="M28.5 16 Q37 17 40 26" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>
-    <circle cx="22.5" cy="21" r="2" fill="#0a0e15"/><circle cx="23" cy="20.5" r=".7" fill="#8fd0ff"/>
-  </g>
-  <rect x="17" y="50.5" width="30" height="4.2" rx="1.6" fill="url(#lg-steel)" stroke="#0a0e15" stroke-width="1"/>
-  <path d="M18.5 51.6 H45.5" stroke="#3e8ef7" stroke-width=".8" opacity=".9"/>
 </svg>`;
 
 export const LOGO_DATA_URI = `data:image/svg+xml,${encodeURIComponent(LOGO_SVG.replace('width="36" height="36"', 'width="64" height="64"').replace(' class="logo-svg"', ' xmlns="http://www.w3.org/2000/svg"'))}`;
