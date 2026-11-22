@@ -893,13 +893,16 @@ html.embed .nav { margin-left: 0; }
 
 /* ---------- Phones: puzzles first ----------
    Categories (tier tabs + one row per theme, tap to play) come straight under the tabs; the rank card
-   shrinks to one line and the ring, stat tiles and big per-theme cards are left out. */
+   shrinks to one line; the ring stays (tap a slice to play), stat tiles and big per-theme cards are left out. */
 @media (max-width: 700px) {
   main { padding: 10px 10px 40px; }
   .home .hero { display: flex; flex-direction: column; gap: 10px; }
   .home .ring-hero { order: -1; margin: 0; padding: 12px; }
-  .ring-hero .ring-wrap, .ring-legend h2 { display: none; }
-  .ring-body { display: block; }
+  .ring-legend h2 { display: none; }
+  .ring-body { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+  .ring-hero .ring-wrap { align-self: center; }
+  .ring-hero .ring-wrap.big > .rings { width: min(300px, 82vw); height: min(300px, 82vw); }
+  .ring-hero .ring-wrap.big .ring-center b { font-size: 26px; }
   .ring-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 6px; margin-bottom: 6px; }
   .ring-tab { flex: none; padding: 6px 11px; font-size: 13px; }
   .slice-list { max-height: none; overflow: visible; gap: 4px; }
