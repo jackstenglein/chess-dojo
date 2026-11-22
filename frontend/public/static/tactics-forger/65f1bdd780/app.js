@@ -1432,8 +1432,8 @@ function practiceScopes() {
   }
   return out;
 }
-async function loadPool(scope, theme) {
-  const keys = theme ? [theme] : scope.keys;
+async function loadPool(scope, picked = []) {
+  const keys = picked.length ? picked : scope.keys;
   const themes = await Promise.all(keys.map((k) => loadTheme(k, scope.track)));
   return themes.flatMap((t) => t.sets.flatMap((st) => st.puzzles.map((p) => ({ ...p, key: t.key, track: scope.track }))));
 }
@@ -1446,14 +1446,15 @@ const shuffle = (a) => {
 };
 async function showPractice() {
   const scopes = practiceScopes();
-  const ps = (progress.settings.practice ??= { scope: 't0', theme: '', min: 400, max: 1000, unsolved: true });
+  const ps = (progress.settings.practice ??= { scope: 't0', themes: [], min: 400, max: 1000, unsolved: true });
+  if (!Array.isArray(ps.themes)) ps.themes = ps.theme ? [ps.theme] : []; // older saves had one theme
   const page = el(`<div class="practice-page">
     <div class="sessions-head"><h1>Custom</h1></div>
     <p class="page-intro">Random puzzles from any range, ten at a time. Everything you solve here counts toward your
       unique puzzles solved and is marked as done in its ladder set.</p>
     <section class="panel practice-form">
       <label>Range of puzzles <select id="pScope">${scopes.map((sc) => `<option value="${sc.id}">${esc(sc.label)} · ${sc.range[0]}–${sc.range[1]}</option>`).join('')}</select></label>
-      <label>Theme <select id="pTheme"></select></label>
+      <div class="theme-pick"><span class="tp-label">Themes <small>pick one or more · none picked = all</small></span><div class="chips pick" id="pThemes"></div></div>
       <div class="rating-range">
         <label>Rating from <input id="pMin" type="number" step="50"></label>
         <label>to <input id="pMax" type="number" step="50"></label>
@@ -1465,7 +1466,8 @@ async function showPractice() {
   </div>`);
   $app.replaceChildren(page);
   const $scope = page.querySelector('#pScope');
-  const $theme = page.querySelector('#pTheme');
+  const $themes = page.querySelector('#pThemes');
+  let chosen = new Set();
   const $min = page.querySelector('#pMin');
   const $max = page.querySelector('#pMax');
   const $uns = page.querySelector('#pUnsolved');
@@ -1477,8 +1479,17 @@ async function showPractice() {
   let token = 0;
   const fillThemes = () => {
     const sc = scopeOf();
-    $theme.innerHTML = `<option value="">All ${sc.keys.length} in this range</option>` +
-      sc.keys.map((k) => `<option value="${k}">${esc(shortName(catalog(sc.track).themes.find((t) => t.key === k)))}</option>`).join('');
+    $themes.innerHTML = `<button type="button" class="chip-btn ${chosen.size ? '' : 'on'}" data-k="">All ${sc.keys.length}</button>` +
+      sc.keys.map((k) => `<button type="button" class="chip-btn ${chosen.has(k) ? 'on' : ''}" data-k="${k}">${esc(shortName(catalog(sc.track).themes.find((t) => t.key === k)))}</button>`).join('');
+    $themes.querySelectorAll('button').forEach((b) => {
+      b.onclick = () => {
+        if (!b.dataset.k) chosen.clear();
+        else if (chosen.has(b.dataset.k)) chosen.delete(b.dataset.k);
+        else chosen.add(b.dataset.k);
+        fillThemes();
+        reload();
+      };
+    });
   };
   const refilter = () => {
     const lo = Number($min.value) || 0;
@@ -1489,30 +1500,31 @@ async function showPractice() {
     $count.innerHTML = `<b>${inRange.length.toLocaleString()}</b> puzzles in range · <b>${done.toLocaleString()}</b> solved · <b>${(inRange.length - done).toLocaleString()}</b> to go`;
     $start.disabled = filtered.length === 0;
     $start.textContent = filtered.length ? `Start ${Math.min(SET_SIZE, filtered.length)} random puzzles` : 'Nothing left in this range';
-    Object.assign(ps, { scope: $scope.value, theme: $theme.value, min: lo, max: hi, unsolved: $uns.checked });
+    Object.assign(ps, { scope: $scope.value, themes: [...chosen], min: lo, max: hi, unsolved: $uns.checked });
+    delete ps.theme;
     saveProgress();
   };
   const reload = async () => {
     const my = ++token;
     $count.textContent = 'Loading puzzles…';
     $start.disabled = true;
-    const p2 = await loadPool(scopeOf(), $theme.value);
+    const p2 = await loadPool(scopeOf(), [...chosen]);
     if (my !== token) return;
     pool = p2;
     refilter();
   };
   $scope.value = scopes.some((sc) => sc.id === ps.scope) ? ps.scope : scopes[0].id;
+  chosen = new Set(ps.themes.filter((k) => scopeOf().keys.includes(k)));
   fillThemes();
-  $theme.value = ps.theme && scopeOf().keys.includes(ps.theme) ? ps.theme : '';
   $min.value = ps.min;
   $max.value = ps.max;
   $uns.checked = ps.unsolved;
   $scope.onchange = () => {
+    chosen = new Set();
     fillThemes();
     [$min.value, $max.value] = scopeOf().range;
     reload();
   };
-  $theme.onchange = reload;
   $min.oninput = $max.oninput = refilter;
   $uns.onchange = refilter;
   $start.onclick = () => startPracticeRun(scopeOf(), filtered);
@@ -1527,7 +1539,7 @@ function startPracticeRun(scope, candidates) {
     puzzles: pick,
     backHref: '#/custom',
     backLabel: 'Custom settings',
-    head: `<h2>Custom</h2><div class="set-sub">${esc(scope.label)}${ps.theme ? ` · ${esc(themeName(sessionKey(ps.theme, scope.track)))}` : ''} · ${ps.min}–${ps.max}${ps.unsolved ? ' · unsolved only' : ''}</div>`,
+    head: `<h2>Custom</h2><div class="set-sub">${esc(scope.label)}${ps.themes.length ? ` · ${ps.themes.slice(0, 3).map((k) => esc(themeName(sessionKey(k, scope.track)))).join(', ')}${ps.themes.length > 3 ? ` +${ps.themes.length - 3} more` : ''}` : ''} · ${ps.min}–${ps.max}${ps.unsolved ? ' · unsolved only' : ''}</div>`,
     rule: 'Random puzzles. Solving one marks it done in its ladder set too.',
     finish: (sum) => runResult(sum, pick, {
       title: 'Custom run done',

@@ -875,3 +875,13 @@ html.embed .nav { margin-left: 0; }
 @media (max-width: 860px) { .side-brand { display: none; } }
 @media (min-width: 861px) { .topbar .brand { display: none; } }
 @media (min-width: 1100px) { .topbar { display: none; } .side-nav, .today-panel { top: 16px; } }
+
+/* Custom: pick several themes */
+.theme-pick { display: flex; flex-direction: column; gap: 8px; }
+.tp-label { font-size: 14px; color: var(--text); }
+.tp-label small { color: var(--muted); margin-left: 6px; }
+.chips.pick { margin-top: 0; }
+.chip-btn { font: inherit; font-size: 13px; padding: 5px 11px; border-radius: 999px; cursor: pointer; color: rgba(255,255,255,.75);
+  background: var(--panel-2); border: 1px solid var(--line); transition: background .12s, border-color .12s, color .12s; }
+.chip-btn:hover { border-color: var(--muted); color: var(--text); }
+.chip-btn.on { color: var(--text); background: rgba(144,202,249,.16); border-color: var(--primary); }
