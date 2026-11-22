@@ -15,6 +15,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { DeletePuzzleButton } from './DeletePuzzleButton';
 import { splitPuzzlePgn, validatePuzzleEdit } from './editPuzzle';
 import { EditSolutionDialog } from './EditSolutionDialog';
 
@@ -22,6 +23,8 @@ interface EditPuzzleDialogProps {
     puzzle: PuzzlebasePuzzle;
     onClose: () => void;
     onSave: (fen: string, solutionPgn: string) => void;
+    /** Deletes the puzzle. Only passed for its author and admins. */
+    onDelete?: () => Promise<void>;
 }
 
 /** Returns true if the given FEN describes a legal position. */
@@ -40,7 +43,7 @@ const monoSx = { fontFamily: 'monospace', fontSize: '0.85rem' } as const;
  * Edits a puzzle's starting position (FEN) and its solution (PGN moves). Saving is only possible
  * when the FEN is legal and every move in the solution is legal from it.
  */
-export function EditPuzzleDialog({ puzzle, onClose, onSave }: EditPuzzleDialogProps) {
+export function EditPuzzleDialog({ puzzle, onClose, onSave, onDelete }: EditPuzzleDialogProps) {
     const [fen, setFen] = useState(puzzle.fen);
     const [movetext, setMovetext] = useState(() => splitPuzzlePgn(puzzle.solutionPgn).movetext);
     const [annotating, setAnnotating] = useState(false);
@@ -148,6 +151,11 @@ export function EditPuzzleDialog({ puzzle, onClose, onSave }: EditPuzzleDialogPr
                 />
             )}
             <DialogActions sx={{ px: 3, pb: 2 }}>
+                {onDelete && (
+                    <Box sx={{ mr: 'auto' }}>
+                        <DeletePuzzleButton puzzleId={puzzle.id} onDelete={onDelete} />
+                    </Box>
+                )}
                 <Button color='inherit' onClick={onClose}>
                     Cancel
                 </Button>

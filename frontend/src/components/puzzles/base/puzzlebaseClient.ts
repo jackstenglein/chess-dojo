@@ -4,6 +4,7 @@ import {
     approveContributor,
     createPuzzle,
     createTheme,
+    deletePuzzle,
     deleteTheme,
     denyContributor,
     getContributorProfile,
@@ -47,8 +48,8 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import {
     AttemptSubmission,
-    PuzzleAttempt,
     DashboardAttemptsResponse,
+    PuzzleAttempt,
     PuzzleRunsResponse,
     PuzzleStatsResponse,
     TrainingTagSet,
@@ -95,6 +96,8 @@ export interface PuzzlebaseClient {
     createPuzzle(request: CreatePuzzleRequest): Promise<CreatePuzzleResponse>;
     importStudy(request: ImportLichessStudyRequest): Promise<ImportLichessStudyResponse>;
     updatePuzzle(request: UpdatePuzzleRequest): Promise<PuzzlebasePuzzle>;
+    /** Deletes a puzzle. Its author can, and so can any admin. */
+    deletePuzzle(id: string): Promise<void>;
 
     getTaxonomy(): Promise<PuzzlebaseTaxonomy>;
     createTheme(request: CreateThemeRequest): Promise<PuzzlebaseTaxonomy>;
@@ -135,7 +138,10 @@ export interface PuzzlebaseClient {
         range?: { from?: string; to?: string },
     ): Promise<PuzzleRunsResponse>;
     /** Everyone's attempts in a stretch of time, for the stats dashboard. */
-    getDashboardAttempts(range?: { from?: string; to?: string }): Promise<DashboardAttemptsResponse>;
+    getDashboardAttempts(range?: {
+        from?: string;
+        to?: string;
+    }): Promise<DashboardAttemptsResponse>;
 }
 
 /** The client that talks to the real puzzlebase API. */
@@ -155,6 +161,9 @@ export const apiPuzzlebaseClient: PuzzlebaseClient = {
     createPuzzle: async (request) => (await createPuzzle(request)).data,
     importStudy: async (request) => (await importLichessStudy(request)).data,
     updatePuzzle: async (request) => (await updatePuzzle(request)).data,
+    deletePuzzle: async (id) => {
+        await deletePuzzle(id);
+    },
 
     getTaxonomy: async () => (await getTaxonomy()).data,
     createTheme: async (request) => (await createTheme(request)).data,

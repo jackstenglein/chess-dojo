@@ -153,6 +153,13 @@ export function updatePuzzle({
     });
 }
 
+/** Deletes a puzzle. Its author can, and so can any admin. */
+export function deletePuzzle(id: string): Promise<AxiosResponse<{ id: string }>> {
+    return axiosService.post<{ id: string }>(`/puzzlebase/puzzles/${id}/delete`, undefined, {
+        functionName: 'deletePuzzle',
+    });
+}
+
 /** Fetches the buckets and their themes. */
 export function getTaxonomy(): Promise<AxiosResponse<PuzzlebaseTaxonomy>> {
     return axiosService.get<PuzzlebaseTaxonomy>('/puzzlebase/taxonomy', {

@@ -130,6 +130,28 @@ export async function getPuzzle(id: string): Promise<PuzzlebasePuzzle | undefine
  * Saves a puzzle. With `previousUpdatedAt`, the save only succeeds if the puzzle has not changed
  * since it was read, otherwise a 409 error is thrown. Without it, the puzzle must be new.
  */
+/**
+ * Deletes a puzzle, if it is still there.
+ * @returns False if there was no such puzzle.
+ */
+export async function deletePuzzle(id: string): Promise<boolean> {
+    try {
+        await dynamo.send(
+            new DeleteItemCommand({
+                TableName: puzzlebaseTable,
+                Key: marshall({ pk: PUZZLE, sk: id }),
+                ConditionExpression: 'attribute_exists(pk)',
+            }),
+        );
+        return true;
+    } catch (err) {
+        if (err instanceof ConditionalCheckFailedException) {
+            return false;
+        }
+        throw err;
+    }
+}
+
 export async function putPuzzle(puzzle: PuzzlebasePuzzle, previousUpdatedAt?: string) {
     try {
         await dynamo.send(
@@ -380,12 +402,12 @@ export async function revokeContributor(username: string): Promise<PuzzlebaseCon
 /**
  * Requires the caller to be allowed to add and edit puzzles: a Puzzle Contributor or a Dojo
  * admin.
- * @returns The caller's username and display name.
+ * @returns The caller's username, display name and whether they are an admin.
  * @throws ApiError 403 if the caller is not allowed.
  */
 export async function requireContributor(
     username: string,
-): Promise<{ username: string; displayName: string }> {
+): Promise<{ username: string; displayName: string; isAdmin: boolean }> {
     const user = await getUser(username);
     if (!user.isAdmin) {
         const contributor = await getContributor(username);
@@ -397,7 +419,7 @@ export async function requireContributor(
             });
         }
     }
-    return { username: user.username, displayName: user.displayName };
+    return { username: user.username, displayName: user.displayName, isAdmin: !!user.isAdmin };
 }
 
 /**
