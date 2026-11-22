@@ -856,7 +856,6 @@ function showHome() {
         </div>
         <div class="ring-legend">
           <h2>${esc(STAGES[si].name)}</h2>
-          <p>${esc(STAGES[si].blurb)}</p>
           <div class="slice-list">${rows}</div>
           ${nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextFlat)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
         </div>
