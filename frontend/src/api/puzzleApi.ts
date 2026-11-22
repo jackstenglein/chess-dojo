@@ -21,6 +21,12 @@ import {
     SubmitPuzzleRushSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
+    GetTacticsForgerLeaderboardResponse,
+    GetTacticsForgerProgressResponse,
+    SaveTacticsForgerProgressRequest,
+    SaveTacticsForgerProgressResponse,
+} from '@jackstenglein/chess-dojo-common/src/puzzles/tacticsForger/api';
+import {
     SubmitSquareColorSessionRequest,
     SubmitSquareColorSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
@@ -167,4 +173,45 @@ export function listPuzzleRushSessions(
         params: request,
         functionName: 'listPuzzleRushSessions',
     });
+}
+
+/**
+ * Fetches the current user's saved Dojo Tactics Forger progress.
+ * @returns The saved progress (null if never saved) and its version.
+ */
+export function getTacticsForgerProgress(): Promise<
+    AxiosResponse<GetTacticsForgerProgressResponse>
+> {
+    return axiosService.get<GetTacticsForgerProgressResponse>(`/puzzle/tactics-forger/progress`, {
+        functionName: 'getTacticsForgerProgress',
+    });
+}
+
+/**
+ * Saves the current user's Dojo Tactics Forger progress and leaderboard numbers.
+ * Fails with 409 if another device saved since `baseVersion`.
+ * @param request The progress, the version it is based on, and the leaderboard summary.
+ * @returns The new version.
+ */
+export function saveTacticsForgerProgress(
+    request: SaveTacticsForgerProgressRequest,
+): Promise<AxiosResponse<SaveTacticsForgerProgressResponse>> {
+    return axiosService.put<SaveTacticsForgerProgressResponse>(
+        `/puzzle/tactics-forger/progress`,
+        request,
+        { functionName: 'saveTacticsForgerProgress' },
+    );
+}
+
+/**
+ * Fetches the Dojo Tactics Forger leaderboard: every player who has saved progress.
+ * @returns All leaderboard rows.
+ */
+export function getTacticsForgerLeaderboard(): Promise<
+    AxiosResponse<GetTacticsForgerLeaderboardResponse>
+> {
+    return axiosService.get<GetTacticsForgerLeaderboardResponse>(
+        `/puzzle/tactics-forger/leaderboard`,
+        { functionName: 'getTacticsForgerLeaderboard' },
+    );
 }

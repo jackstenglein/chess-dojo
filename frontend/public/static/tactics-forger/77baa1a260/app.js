@@ -14,6 +14,11 @@ const xpForLevel = (lvl) => (lvl - 1) ** 2 * 100;
 
 // ---- Storage (per-viewer, best effort) ---------------------------------
 const STORE_KEY = 'tacticsLadder.v1';
+// Inside chessdojo.club (/tactics-forger) the app runs in a frame and saves to the player's Dojo
+// account through the page around it; on its own it only uses this browser's storage.
+if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed'); // for scripts/host-test.html
+const HOSTED = window.parent !== window && document.documentElement.classList.contains('embed');
+const cloud = { ready: false, version: 0, username: null, timer: 0, saving: false, again: false };
 function loadProgress() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -22,9 +27,11 @@ function loadProgress() {
   return { xp: 0, themes: {}, streak: 0, lastDay: null, solved: 0 };
 }
 function saveProgress() {
+  progress.savedAt = Date.now();
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(progress));
   } catch {}
+  if (cloud.ready) cloudSaveSoon();
 }
 let progress = loadProgress();
 // Your place on a ladder is always the lowest set you haven't cleared yet.
@@ -1647,7 +1654,25 @@ const COHORT_SOURCES = {
       return [{ id: 'me', me: true, name: progress.settings.name || 'You', ...myProfile() }];
     },
   },
-  // dojo: { label: 'ChessDojo members', async load() { return fetchDojoCohort(); } },
+  // Everyone who has saved Tactics Forger progress on chessdojo.club. Your own row uses this
+  // device's numbers (fresher than the last save) with your Dojo name and cohort.
+  dojo: {
+    label: 'ChessDojo members',
+    async load() {
+      const [me] = await COHORT_SOURCES.local.load();
+      const res = await askHost('leaderboard').catch(() => null);
+      if (!res?.ok) return [me];
+      const rows = res.data.players;
+      const mine = rows.find((p) => p.username === res.username);
+      const others = rows.filter((p) => p.username !== res.username).map((p) => ({
+        id: p.username, name: p.displayName, cohort: p.cohort,
+        solved: p.solved, setsCleared: p.setsCleared, stars: p.stars, accuracy: p.accuracy, avgMs: p.avgMs,
+        rating: p.tracks?.tactics?.rating ?? null, openingsRating: p.tracks?.openings?.rating ?? null,
+        endgamesRating: p.tracks?.endgames?.rating ?? null, attempts: p.attempts, xp: p.xp,
+      }));
+      return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort }, ...others];
+    },
+  },
   // Preview only: 1,000 made-up Dojoers so the page can be seen with a real-sized cohort.
   demo: {
     label: 'Demo cohort (fake data)',
@@ -1670,7 +1695,7 @@ const COHORT_SOURCES = {
     },
   },
 };
-const COHORT_SOURCE = new URLSearchParams(location.search).has('demo-cohort') ? 'demo' : 'local';
+const COHORT_SOURCE = new URLSearchParams(location.search).has('demo-cohort') ? 'demo' : HOSTED ? 'dojo' : 'local';
 
 // Your stats in the shape every cohort member will have.
 function myProfile() {
@@ -1719,24 +1744,32 @@ function topLabel(st) {
   const top = Math.max(0.1, (1 - st.pctAhead) * 100);
   return `#${st.rank} of ${st.n.toLocaleString()} · top ${top < 1 ? top.toFixed(1) : Math.round(top)}%`;
 }
+const standingView = { cohortOnly: false };
 async function showStanding() {
   const src = COHORT_SOURCES[COHORT_SOURCE];
-  const cohort = await src.load();
+  const everyone = await src.load();
+  const meAll = everyone.find((p) => p.me);
+  const cohortOnly = standingView.cohortOnly && !!meAll.cohort;
+  const cohort = cohortOnly ? everyone.filter((p) => p.me || p.cohort === meAll.cohort) : everyone;
   const me = cohort.find((p) => p.me);
   const others = cohort.length - 1;
   const main = standingFor(cohort, me, METRICS[0]);
   const page = el(`<div class="standing-page">
     <div class="sessions-head"><h1>Leaderboard</h1>
-      <span class="source-chip" title="Where the comparison data comes from">Compared against: <b>${esc(src.label)}</b> · ${cohort.length.toLocaleString()} Dojoer${cohort.length === 1 ? '' : 's'}</span></div>
+      <span class="source-chip" title="Where the comparison data comes from">Compared against: <b>${esc(src.label)}</b> · ${cohort.length.toLocaleString()} Dojoer${cohort.length === 1 ? '' : 's'}</span>
+      ${meAll.cohort ? `<div class="seg-tabs" id="cohortTabs"><button type="button" data-c="0" class="${cohortOnly ? '' : 'on'}">All Dojoers</button><button type="button" data-c="1" class="${cohortOnly ? 'on' : ''}">My cohort (${esc(meAll.cohort)})</button></div>` : ''}</div>
     <section class="standing-hero">
       <div class="sh-rank"><small>Puzzles solved</small><b>#${main.rank}</b><span>of ${main.n.toLocaleString()} Dojoer${main.n === 1 ? '' : 's'}</span></div>
       <div class="sh-text">
         ${others
           ? `<h2>You've solved more puzzles than <b>${Math.round(main.pctAhead * 100)}%</b> of Dojoers</h2>
              <p>${topLabel(main)} — ahead of ${main.behind.toLocaleString()} of ${others.toLocaleString()} others.</p>`
-          : `<h2>You're out in front — so far you're the only Dojoer here.</h2>
-             <p>Right now this compares you against the data on this device, which is just you. When ChessDojo member data is
-             connected, this page will show your rank and percentile (like “top 0.1%”) across real Dojoers, using the same stats below.</p>`}
+          : HOSTED
+            ? `<h2>You're out in front — no other Dojoer${cohortOnly ? ' in your cohort' : ''} has saved Tactics Forger progress yet.</h2>
+               <p>As more Dojoers train here, this page shows your rank and percentile (like “top 0.1%”) using the same stats below.</p>`
+            : `<h2>You're out in front — so far you're the only Dojoer here.</h2>
+             <p>Right now this compares you against the data on this device, which is just you. Open the Tactics Forger on
+             chessdojo.club to save your progress to your account and compare against other Dojoers.</p>`}
         <div class="sh-bar"><div style="width:${others ? Math.max(2, main.pctAhead * 100) : 100}%"></div></div>
         <div class="sh-axis"><span>Fewest puzzles</span><span>Most puzzles</span></div>
       </div>
@@ -1744,7 +1777,7 @@ async function showStanding() {
     <section class="metric-grid"></section>
     <section class="panel"><h2>Top Dojoers <span class="h2-meta">by puzzles solved</span></h2>
       <table class="theme-table lb"><thead><tr><th>#</th><th>Dojoer</th><th>Solved</th><th>Sets</th><th>Accuracy</th><th>Avg time</th><th>Tactics</th><th>Openings</th><th>Endgames</th></tr></thead><tbody></tbody></table>
-      <label class="name-edit">Your display name <input id="dname" maxlength="24" placeholder="You" value="${esc(progress.settings.name || '')}"></label>
+      ${HOSTED ? '' : `<label class="name-edit">Your display name <input id="dname" maxlength="24" placeholder="You" value="${esc(progress.settings.name || '')}"></label>`}
     </section>
   </div>`);
   const grid = page.querySelector('.metric-grid');
@@ -1771,11 +1804,16 @@ async function showStanding() {
       <td>${p.avgMs == null ? '–' : fmtSec(p.avgMs)}</td><td>${p.rating ?? '–'}</td><td>${p.openingsRating ?? '–'}</td><td>${p.endgamesRating ?? '–'}</td></tr>`));
   });
   const dn = page.querySelector('#dname');
-  dn.onchange = () => {
-    progress.settings.name = dn.value.trim();
-    saveProgress();
-    showStanding();
-  };
+  if (dn) {
+    dn.onchange = () => {
+      progress.settings.name = dn.value.trim();
+      saveProgress();
+      showStanding();
+    };
+  }
+  page.querySelectorAll('#cohortTabs button').forEach((b) => {
+    b.onclick = () => { standingView.cohortOnly = b.dataset.c === '1'; showStanding(); };
+  });
   $app.replaceChildren(page);
 }
 
@@ -2687,6 +2725,163 @@ function playRun(run) {
   startPuzzle();
 }
 
+// ---- Saving to your Dojo account (only inside chessdojo.club) --------------------------------
+// The page around the frame (TacticsForgerFrame on the site) makes the signed-in API calls; the app
+// asks it over postMessage. Progress is loaded once at start, merged with this browser's copy, and
+// saved a few seconds after each change. If another device saved in between (409), the app loads
+// that copy, merges and saves again.
+let hostSeq = 0;
+function askHost(type, body) {
+  return new Promise((resolve, reject) => {
+    const id = ++hostSeq;
+    const done = (e) => {
+      if (e.origin !== location.origin || e.source !== window.parent) return;
+      if (e.data?.source !== 'tactics-forger-host' || e.data.id !== id) return;
+      window.removeEventListener('message', done);
+      clearTimeout(timer);
+      resolve(e.data);
+    };
+    const timer = setTimeout(() => {
+      window.removeEventListener('message', done);
+      reject(new Error(`host ${type} timed out`));
+    }, 20000);
+    window.addEventListener('message', done);
+    window.parent.postMessage({ source: 'tactics-forger', id, type, body }, location.origin);
+  });
+}
+
+// Combines two copies of progress (this browser's and the saved one) without losing anything:
+// best stars per set, every puzzle record (most plays, any first-try solve, fastest time), every
+// session (by id), the higher XP, and settings from whichever copy was saved last.
+function mergeProgress(a, b) {
+  const newer = (a.savedAt ?? 0) >= (b.savedAt ?? 0) ? a : b;
+  const older = newer === a ? b : a;
+  const out = { ...older, ...newer };
+  out.xp = Math.max(a.xp ?? 0, b.xp ?? 0);
+  for (const st of ['themes', 'openings', 'endgames']) {
+    const merged = {};
+    for (const src of [older[st] ?? {}, newer[st] ?? {}]) {
+      for (const [key, tp] of Object.entries(src)) {
+        const m = (merged[key] ??= { ...tp, stars: {} });
+        for (const [f, n] of Object.entries(tp.stars ?? {})) m.stars[f] = Math.max(m.stars[f] ?? 0, n);
+        m.start = Math.min(m.start ?? 0, tp.start ?? 0);
+        m.frontier = Math.min(m.frontier ?? 0, tp.frontier ?? 0);
+      }
+    }
+    out[st] = merged;
+  }
+  const puzzles = { ...(older.puzzles ?? {}) };
+  for (const [id, r] of Object.entries(newer.puzzles ?? {})) {
+    const o = puzzles[id];
+    if (!o) { puzzles[id] = r; continue; }
+    const best = [o.best, r.best].filter((x) => x != null);
+    const later = (r.last ?? 0) >= (o.last ?? 0) ? r : o;
+    puzzles[id] = { ...o, ...r, n: Math.max(o.n ?? 0, r.n ?? 0), ok: Math.max(o.ok ?? 0, r.ok ?? 0),
+      best: best.length ? Math.min(...best) : null, last: later.last, rev: later.rev };
+  }
+  out.puzzles = puzzles;
+  const sessions = new Map();
+  for (const s of [...(older.sessions ?? []), ...(newer.sessions ?? [])]) {
+    const o = sessions.get(s.id);
+    if (!o || (s.attempts?.length ?? 0) + (s.sets?.length ?? 0) >= (o.attempts?.length ?? 0) + (o.sets?.length ?? 0)) sessions.set(s.id, s);
+  }
+  out.sessions = [...sessions.values()].sort((x, y) => x.start - y.start);
+  return out;
+}
+
+// Swaps in a new progress object and refreshes everything computed from it.
+function setProgress(next) {
+  progress = next;
+  progress.puzzles ??= {};
+  progress.sessions ??= [];
+  progress.settings ??= { board: 'standard', pieces: 'standard', sound: true };
+  for (const tr of Object.keys(TRACKS)) {
+    for (const [key, tp] of Object.entries(progress[TRACKS[tr].store] || {})) {
+      const meta = catalog(tr)?.themes.find((t) => t.key === key);
+      if (meta) tp.frontier = lowestUncleared(tp, meta.sets);
+    }
+  }
+  puzzlesVersion++;
+  engineCache = { n: -1 };
+  statsMemo = { n: -1 };
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch {}
+}
+
+// The frame can start before the site page is listening, so say hello until it answers.
+async function waitForHost(timeoutMs = 15000) {
+  const end = Date.now() + timeoutMs;
+  while (Date.now() < end) {
+    try {
+      await Promise.race([askHost('hello'), new Promise((_, no) => setTimeout(no, 700))]);
+      return true;
+    } catch {}
+  }
+  return false;
+}
+
+// Loads the saved progress at start. This browser's copy is merged in unless it belongs to a
+// different Dojo account (then the account's copy replaces it).
+async function cloudLoad() {
+  if (!HOSTED || !(await waitForHost())) return false;
+  const res = await askHost('load').catch(() => null);
+  if (!res?.ok) return false;
+  cloud.username = res.username ?? null;
+  cloud.version = res.data.version;
+  const remote = res.data.progress;
+  const mine = !progress.owner || progress.owner === cloud.username;
+  const next = !remote ? (mine ? progress : loadDefaults()) : mine ? mergeProgress(progress, remote) : remote;
+  next.owner = cloud.username;
+  setProgress(next);
+  cloud.ready = true;
+  if (!remote || JSON.stringify(next) !== JSON.stringify(remote)) cloudSaveSoon(0);
+  return true;
+}
+const loadDefaults = () => ({ xp: 0, themes: {}, streak: 0, lastDay: null, solved: 0 });
+
+function cloudSaveSoon(delay = 4000) {
+  clearTimeout(cloud.timer);
+  cloud.timer = setTimeout(() => void cloudSave(), delay);
+}
+
+// The leaderboard numbers that go with each save.
+function cloudSummary() {
+  const p = myProfile();
+  const track = (tr) => ({ solved: solvedCount(tr), rating: trackRating(tr).games ? trackRating(tr).rating : null, rank: userRank(tr)[2] });
+  return {
+    solved: p.solved, setsCleared: p.setsCleared, stars: p.stars, attempts: p.attempts,
+    accuracy: p.accuracy, avgMs: p.avgMs, xp: Math.max(0, p.xp),
+    tracks: { tactics: track('tactics'), openings: track('openings'), endgames: track('endgames') },
+  };
+}
+
+async function cloudSave(retry = true) {
+  if (!cloud.ready) return;
+  if (cloud.saving) { cloud.again = true; return; }
+  cloud.saving = true;
+  try {
+    const res = await askHost('save', { progress, baseVersion: cloud.version, summary: cloudSummary() });
+    if (res.ok) {
+      cloud.version = res.data.version;
+    } else if (res.status === 409 && retry) {
+      const latest = await askHost('load');
+      if (latest?.ok && latest.data.progress) {
+        setProgress({ ...mergeProgress(progress, latest.data.progress), owner: cloud.username });
+        cloud.version = latest.data.version;
+        renderStats();
+      }
+      cloud.saving = false;
+      return cloudSave(false);
+    } else {
+      console.warn('Tactics Forger: save failed', res.status);
+    }
+  } catch (err) {
+    console.warn('Tactics Forger: save failed', err);
+  } finally {
+    cloud.saving = false;
+  }
+  if (cloud.again) { cloud.again = false; cloudSaveSoon(1000); }
+}
+
 // ---- Boot ----------------------------------------------------------------------
 (async () => {
   document.querySelector('.brand-mark').outerHTML = LOGO_SVG;
@@ -2719,6 +2914,11 @@ function playRun(run) {
   saveProgress();
   renderStats();
   route();
+  // On chessdojo.club: bring in the progress saved to the account, then redraw with it.
+  if (await cloudLoad()) {
+    renderStats();
+    if (!location.hash.includes('/play/')) route(); // don't restart a puzzle already in progress
+  }
 })();
 
 // Set numbers are positions in a theme's ladder, so saved stars and your place must be
