@@ -1,6 +1,6 @@
 import { ExamCard } from '@/components/exams/ExamCard';
 import { KingIcon, QueenIcon, RookIcon } from '@/style/ChessIcons';
-import { Bolt, EmojiEvents, Visibility } from '@mui/icons-material';
+import { Bolt, EmojiEvents, Hardware, Visibility } from '@mui/icons-material';
 import { Chip, Container, Grid } from '@mui/material';
 import { useTranslations } from 'next-intl';
 
@@ -18,6 +18,14 @@ export default function ExamLandingPage() {
                     description={t('allRatings')}
                     href='/puzzles/rush'
                     icon={Bolt}
+                    badge={<Chip label={t('beta')} color='success' />}
+                />
+
+                <ExamCard
+                    name={t('tacticsForger')}
+                    description={t('tacticsForgerDescription')}
+                    href='/tactics-forger'
+                    icon={Hardware}
                     badge={<Chip label={t('beta')} color='success' />}
                 />
 
