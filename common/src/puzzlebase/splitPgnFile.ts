@@ -10,7 +10,7 @@ export function splitPgnFile(text: string): string[] {
     let seenMoves = false;
     let commentDepth = 0;
 
-    for (const line of text.replace(/^﻿/, '').split(/\r?\n/)) {
+    for (const line of text.replace(/^\uFEFF/, '').split(/\r?\n/)) {
         const trimmed = line.trim();
         const isHeader = commentDepth === 0 && /^\[[A-Za-z0-9_]+\s+"/.test(trimmed);
 

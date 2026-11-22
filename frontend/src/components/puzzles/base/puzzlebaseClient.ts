@@ -47,8 +47,8 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import {
     AttemptSubmission,
-    PuzzleAttempt,
     DashboardAttemptsResponse,
+    PuzzleAttempt,
     PuzzleRunsResponse,
     PuzzleStatsResponse,
     TrainingTagSet,
@@ -135,7 +135,10 @@ export interface PuzzlebaseClient {
         range?: { from?: string; to?: string },
     ): Promise<PuzzleRunsResponse>;
     /** Everyone's attempts in a stretch of time, for the stats dashboard. */
-    getDashboardAttempts(range?: { from?: string; to?: string }): Promise<DashboardAttemptsResponse>;
+    getDashboardAttempts(range?: {
+        from?: string;
+        to?: string;
+    }): Promise<DashboardAttemptsResponse>;
 }
 
 /** The client that talks to the real puzzlebase API. */
