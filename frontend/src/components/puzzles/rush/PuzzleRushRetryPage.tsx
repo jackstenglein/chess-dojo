@@ -3,6 +3,7 @@
 import { RequestSnackbar } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
 import { formatTime } from '@/board/pgn/boardTools/underboard/clock/ClockUsage';
+import ViewerSettings from '@/board/pgn/boardTools/underboard/settings/ViewerSettings';
 import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard, { PgnBoardApi, useChess } from '@/board/pgn/PgnBoard';
 import { InProgressAfterPgnText } from '@/board/pgn/solitaire/SolitaireAfterPgnText';
@@ -15,8 +16,30 @@ import {
     PuzzleRushAttempt,
     PuzzleRushSession,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
-import { Bolt, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { Box, Button, CardContent, Container, Divider, Stack, Typography } from '@mui/material';
+import {
+    Bolt,
+    ChevronLeft,
+    ChevronRight,
+    Close,
+    FormatListBulleted,
+    KeyboardDoubleArrowLeft,
+    KeyboardDoubleArrowRight,
+    Settings as SettingsIcon,
+} from '@mui/icons-material';
+import {
+    Box,
+    Button,
+    CardContent,
+    Container,
+    Divider,
+    Drawer,
+    IconButton,
+    Paper,
+    Stack,
+    Theme,
+    Typography,
+    useMediaQuery,
+} from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { ReactNode, useMemo, useRef, useState } from 'react';
 import { puzzleRushRetryHref, puzzleRushReviewHref } from './PuzzleRushSummary';
@@ -75,6 +98,9 @@ function RetryBoard({
     index: number;
 }) {
     const t = useTranslations('puzzles.rush');
+    // On phones Settings is in the MobileActionBar, so the panel keeps only the puzzle
+    // tab, which also hides its tab strip.
+    const isPhone = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
     const pgnRef = useRef<PgnBoardApi>(null);
     const [complete, setComplete] = useState(false);
     const [wrongMoves, setWrongMoves] = useState(0);
@@ -98,9 +124,20 @@ function RetryBoard({
         index < session.attempts.length - 1
             ? puzzleRushRetryHref(session.createdAt, index + 1)
             : undefined;
+    const { prevWrongHref, nextWrongHref } = getWrongHrefs(session, index);
 
     return (
-        <Container maxWidth={false} sx={{ py: 4 }}>
+        // On phones the action bar is fixed to the bottom of the screen, so leave room for it.
+        <Container maxWidth={false} sx={{ pt: 4, pb: { xs: 18, sm: 4 } }}>
+            <MobileActionBar
+                session={session}
+                index={index}
+                complete={complete}
+                prevHref={prevHref}
+                nextHref={nextHref}
+                prevWrongHref={prevWrongHref}
+                nextWrongHref={nextWrongHref}
+            />
             <PgnBoard
                 ref={pgnRef}
                 pgn={puzzlePGN}
@@ -120,10 +157,12 @@ function RetryBoard({
                                 wrongMoves={wrongMoves}
                                 prevHref={prevHref}
                                 nextHref={nextHref}
+                                prevWrongHref={prevWrongHref}
+                                nextWrongHref={nextWrongHref}
                             />
                         ),
                     },
-                    DefaultUnderboardTab.Settings,
+                    ...(isPhone ? [] : [DefaultUnderboardTab.Settings]),
                 ]}
                 initialUnderboardTab='puzzleRushRetry'
                 disableNullMoves={!complete}
@@ -162,6 +201,8 @@ function RetryUnderboard({
     wrongMoves,
     prevHref,
     nextHref,
+    prevWrongHref,
+    nextWrongHref,
 }: {
     session: PuzzleRushSession;
     attempt: PuzzleRushAttempt;
@@ -171,32 +212,20 @@ function RetryUnderboard({
     wrongMoves: number;
     prevHref?: string;
     nextHref?: string;
+    prevWrongHref?: string;
+    nextWrongHref?: string;
 }) {
     const t = useTranslations('puzzles.rush');
     const originalMovetext = useMemo(() => stripPgnHeaders(attempt.pgn), [attempt.pgn]);
 
-    let prevWrongHref: string | undefined;
-    let nextWrongHref: string | undefined;
-
-    for (let i = index - 1; i >= 0; i--) {
-        if (session.attempts[i].result !== 'win') {
-            prevWrongHref = puzzleRushRetryHref(session.createdAt, i);
-            break;
-        }
-    }
-    for (let i = index + 1; i < session.attempts.length; i++) {
-        if (session.attempts[i].result !== 'win') {
-            nextWrongHref = puzzleRushRetryHref(session.createdAt, i);
-            break;
-        }
-    }
-
     return (
         <CardContent sx={{ minHeight: 1 }}>
             <Stack sx={{ minHeight: 1, gap: 2 }}>
+                {/* On phones previous/next are in the pinned MobileActionBar instead. */}
                 <Stack
                     direction='row'
                     sx={{
+                        display: { xs: 'none', sm: 'flex' },
                         justifyContent: 'space-between',
                         alignItems: 'center',
                     }}
@@ -296,9 +325,11 @@ function RetryUnderboard({
 
                 <Box sx={{ flexGrow: 1 }} />
 
+                {/* On phones these actions are in the pinned MobileActionBar instead. */}
                 <Stack
                     direction='row'
                     sx={{
+                        display: { xs: 'none', sm: 'flex' },
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 2,
@@ -337,6 +368,203 @@ function RetryUnderboard({
     );
 }
 
+/** Returns links to the closest wrong puzzles before and after the given index. */
+function getWrongHrefs(session: PuzzleRushSession, index: number) {
+    let prevWrongHref: string | undefined;
+    let nextWrongHref: string | undefined;
+
+    for (let i = index - 1; i >= 0; i--) {
+        if (session.attempts[i].result !== 'win') {
+            prevWrongHref = puzzleRushRetryHref(session.createdAt, i);
+            break;
+        }
+    }
+    for (let i = index + 1; i < session.attempts.length; i++) {
+        if (session.attempts[i].result !== 'win') {
+            nextWrongHref = puzzleRushRetryHref(session.createdAt, i);
+            break;
+        }
+    }
+    return { prevWrongHref, nextWrongHref };
+}
+
+/**
+ * On phones the board fills the screen width, which pushes the navigation buttons
+ * below the fold. This bar keeps them fixed to the bottom of the screen instead:
+ * previous/next puzzle on top, and the wrong-puzzle, run and new-run actions
+ * below as a row of icon tabs.
+ */
+function MobileActionBar({
+    session,
+    index,
+    complete,
+    prevHref,
+    nextHref,
+    prevWrongHref,
+    nextWrongHref,
+}: {
+    session: PuzzleRushSession;
+    index: number;
+    complete: boolean;
+    prevHref?: string;
+    nextHref?: string;
+    prevWrongHref?: string;
+    nextWrongHref?: string;
+}) {
+    const t = useTranslations('puzzles.rush');
+    const [settingsOpen, setSettingsOpen] = useState(false);
+
+    return (
+        <Paper
+            square
+            elevation={8}
+            data-testid='puzzle-rush-mobile-actions'
+            sx={{
+                display: { xs: 'flex', sm: 'none' },
+                flexDirection: 'column',
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: (theme) => theme.zIndex.appBar,
+                gap: 0.5,
+                px: 1,
+                pt: 1.5,
+                pb: 'calc(4px + env(safe-area-inset-bottom))',
+                borderTop: '1px solid',
+                borderColor: 'divider',
+            }}
+        >
+            <Stack direction='row' sx={{ alignItems: 'center', gap: 1.5 }}>
+                <Button
+                    variant='outlined'
+                    startIcon={<ChevronLeft />}
+                    disabled={!prevHref}
+                    component={Link}
+                    href={prevHref ?? '#'}
+                    sx={{ flex: 1, whiteSpace: 'nowrap' }}
+                >
+                    {t('previous')}
+                </Button>
+                <Typography
+                    variant='body2'
+                    sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', color: 'text.secondary' }}
+                >
+                    {index + 1} / {session.attempts.length}
+                </Typography>
+                <Button
+                    variant={complete ? 'contained' : 'outlined'}
+                    endIcon={<ChevronRight />}
+                    disabled={!nextHref}
+                    component={Link}
+                    href={nextHref ?? '#'}
+                    sx={{ flex: 1, whiteSpace: 'nowrap' }}
+                >
+                    {t('next')}
+                </Button>
+            </Stack>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)' }}>
+                <MobileTab
+                    icon={<KeyboardDoubleArrowLeft />}
+                    label={t('prevWrongShort')}
+                    href={prevWrongHref}
+                />
+                <MobileTab
+                    icon={<KeyboardDoubleArrowRight />}
+                    label={t('nextWrongShort')}
+                    href={nextWrongHref}
+                />
+                <MobileTab
+                    icon={<FormatListBulleted />}
+                    label={t('backToRun')}
+                    href={puzzleRushReviewHref(session.createdAt)}
+                />
+                <MobileTab icon={<Bolt />} label={t('newRun')} href='/puzzles/rush' />
+                <MobileTab
+                    icon={<SettingsIcon />}
+                    label={t('tooltipSettings')}
+                    onClick={() => setSettingsOpen(true)}
+                />
+            </Box>
+            <Drawer
+                anchor='bottom'
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            maxHeight: '80vh',
+                            borderTopLeftRadius: 12,
+                            borderTopRightRadius: 12,
+                            pb: 'env(safe-area-inset-bottom)',
+                        },
+                    },
+                }}
+            >
+                <IconButton
+                    aria-label={t('close')}
+                    onClick={() => setSettingsOpen(false)}
+                    sx={{ position: 'absolute', top: 8, right: 8 }}
+                >
+                    <Close />
+                </IconButton>
+                <CardContent>
+                    <ViewerSettings />
+                </CardContent>
+            </Drawer>
+        </Paper>
+    );
+}
+
+/** A bottom-navigation style link: an icon above a one-line caption. */
+function MobileTab({
+    icon,
+    label,
+    href,
+    onClick,
+}: {
+    icon: ReactNode;
+    label: string;
+    href?: string;
+    onClick?: () => void;
+}) {
+    const linkProps = onClick
+        ? { onClick }
+        : { component: Link, href: href ?? '#', disabled: !href };
+    return (
+        <Button
+            color='inherit'
+            {...linkProps}
+            sx={{
+                minWidth: 0,
+                px: 0,
+                py: 0.75,
+                flexDirection: 'column',
+                gap: 0.25,
+                color: 'text.secondary',
+                textTransform: 'none',
+                fontSize: '0.6875rem',
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                '& .MuiSvgIcon-root': { fontSize: '1.375rem' },
+            }}
+        >
+            {icon}
+            <Box
+                component='span'
+                sx={{
+                    maxWidth: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                }}
+            >
+                {label}
+            </Box>
+        </Button>
+    );
+}
+
 function DetailRow({ label, value }: { label: ReactNode; value: ReactNode }) {
     return (
         <Stack
@@ -368,13 +596,24 @@ function RetryAfterPgnText({ nextHref, reviewHref }: { nextHref?: string; review
             <Stack>
                 <Divider sx={{ width: 1 }} />
                 {solitaire?.complete && (
-                    <Typography color='success' sx={{ fontWeight: 'bold', ml: 2, mt: 1.5 }}>
+                    <Typography
+                        color='success'
+                        sx={{ fontWeight: 'bold', ml: 2, mt: 1.5, mb: { xs: 1.5, sm: 0 } }}
+                    >
                         {t('solved')}
                     </Typography>
                 )}
+                {/* On phones these actions are in the pinned MobileActionBar instead. */}
                 <Stack
                     direction='row'
-                    sx={{ my: 1, px: 1, gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
+                    sx={{
+                        display: { xs: 'none', sm: 'flex' },
+                        my: 1,
+                        px: 1,
+                        gap: 1,
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                    }}
                 >
                     {nextHref && (
                         <Button component={Link} href={nextHref}>
