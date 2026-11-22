@@ -603,7 +603,9 @@ function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, 
         label = `<text class="seg-label ${frac >= 1 ? 'done' : cl ? 'started' : ''}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="${base}">${esc(nm)}</text>`;
       }
       const attrs = `data-key="${key}" data-name="${esc(shortName(t))}" data-cl="${cl}" data-sets="${t.sets}"`;
-      out += links ? `<a href="${hrefTheme(key)}" class="seg-link" ${attrs}>${seg}${label}</a>` : `<g ${attrs}>${seg}${label}</g>`;
+      // Clicking a slice starts that theme's next set (its ladder once complete).
+      const go = frac >= 1 ? hrefTheme(key) : hrefPlay(key, Math.min(store()[key]?.frontier ?? 0, t.sets - 1));
+      out += links ? `<a href="${go}" class="seg-link" ${attrs}>${seg}${label}</a>` : `<g ${attrs}>${seg}${label}</g>`;
     });
     out += '</g>';
   });
@@ -848,11 +850,18 @@ function showHome() {
       const t = themeMeta(k);
       const cl = clearedCount(k);
       const f = cl / t.sets;
-      return `<a class="slice-row ${f >= 1 ? 'done' : cl ? 'started' : ''}" href="${hrefTheme(k)}" data-key="${k}">
-        <span class="slice-name">${esc(shortName(t))}</span>
-        <span class="slice-bar" style="--c:${color}"><i style="width:${f > 0 ? Math.max(f * 100, 1.5) : 0}%"></i></span>
-        <span class="slice-left" title="${t.bands} stages (${t.min}–${t.max}) · ${t.sets} sets of ${SET_SIZE}">${f >= 1 ? 'Done ✓' : `${((t.sets - cl) * SET_SIZE).toLocaleString()} puzzles · ${t.bands} stages`}</span>
-      </a>`;
+      // Tapping a category starts its next set; the ☰ button opens its full ladder.
+      const flat = Math.min(store()[k]?.frontier ?? 0, t.sets - 1);
+      const b = bandOfFlat(t, flat);
+      return `<div class="slice-row ${f >= 1 ? 'done' : cl ? 'started' : ''}" data-key="${k}">
+        <a class="slice-go" href="${f >= 1 ? hrefTheme(k) : hrefPlay(k, flat)}" title="${f >= 1 ? 'Ladder complete' : `Play ${esc(shortName(t))} ${b.min}–${b.max}`}">
+          <span class="slice-name">${esc(shortName(t))}</span>
+          <span class="slice-bar" style="--c:${color}"><i style="width:${f > 0 ? Math.max(f * 100, 1.5) : 0}%"></i></span>
+          <span class="slice-left">${f >= 1 ? 'Done ✓' : `${b.min}–${b.max}`}</span>
+          <span class="slice-play" aria-hidden="true">${f >= 1 ? '' : '▶'}</span>
+        </a>
+        <a class="slice-ladder" href="${hrefTheme(k)}" title="${esc(shortName(t))} ladder: ${t.bands} stages, ${t.sets} sets" aria-label="${esc(shortName(t))} ladder">☰</a>
+      </div>`;
     }).join('');
     hero.innerHTML = `
       <div class="ring-tabs" role="tablist">
