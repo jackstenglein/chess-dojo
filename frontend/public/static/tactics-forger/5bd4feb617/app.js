@@ -477,7 +477,7 @@ const sum = (a) => a.reduce((x, y) => x + y, 0);
 const TACTIC_STAGES = [
   {
     name: 'Basic Tactics', icon: '🌱',
-    blurb: 'The core tactics every player needs — win loose pieces, fork, pin and skewer.',
+    blurb: 'The core tactics every player needs.',
     tactics: ['hangingPiece', 'fork', 'pin', 'skewer', 'discoveredAttack', 'attackingF2F7'],
     mates: ['mateIn1', 'backRankMate', 'smotheredMate'],
   },
@@ -856,8 +856,7 @@ function showHome() {
         </div>
         <div class="ring-legend">
           <h2>${esc(STAGES[si].name)}</h2>
-          <p>${esc(STAGES[si].blurb)} Each slice fills as you clear its sets — the faded part is the ground still to cover.
-          ${(() => { const ms = sp.keys.map(themeMeta); const lo = Math.min(...ms.map((t) => t.min)); const hi = Math.max(...ms.map((t) => t.max)); const per = Math.max(...ms.flatMap((t) => t.bandSets.map(([, n]) => n))) * SET_SIZE; return `Each ladder here runs ${lo}–${hi} in 50-point stages of up to ${per} puzzles.`; })()}</p>
+          <p>${esc(STAGES[si].blurb)}</p>
           <div class="slice-list">${rows}</div>
           ${nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextFlat)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
         </div>
