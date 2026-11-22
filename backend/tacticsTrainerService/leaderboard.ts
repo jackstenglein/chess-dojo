@@ -3,14 +3,14 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     GetTacticsForgerLeaderboardResponse,
     TacticsForgerLeaderboardRow,
-} from '@jackstenglein/chess-dojo-common/src/puzzles/tacticsForger/api';
+} from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { errToApiGatewayProxyResultV2, requireUserInfo, success } from '../../directoryService/api';
-import { dynamo } from '../../directoryService/database';
+import { errToApiGatewayProxyResultV2, requireUserInfo, success } from '../directoryService/api';
+import { dynamo } from '../directoryService/database';
 import { tacticsForgerLeaderboardTable } from './progress';
 
 /**
- * Handles GET /puzzle/tactics-forger/leaderboard. Returns every player who has saved
+ * Handles GET /tactics-trainer/leaderboard. Returns every player who has saved
  * Tactics Forger progress, with their cohort, so the app can rank the caller overall and
  * within their cohort.
  * @param event The API Gateway proxy event.

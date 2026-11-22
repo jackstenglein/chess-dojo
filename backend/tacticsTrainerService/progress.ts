@@ -3,13 +3,13 @@ import {
     GetItemCommand,
     PutItemCommand,
 } from '@aws-sdk/client-dynamodb';
-import { marshall } from '@aws-sdk/util-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import {
     GetTacticsForgerProgressResponse,
     SaveTacticsForgerProgressResponse,
     saveTacticsForgerProgressSchema,
     TacticsForgerLeaderboardRow,
-} from '@jackstenglein/chess-dojo-common/src/puzzles/tacticsForger/api';
+} from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import {
     ApiError,
@@ -17,18 +17,17 @@ import {
     parseEvent,
     requireUserInfo,
     success,
-} from '../../directoryService/api';
-import { dynamo } from '../../directoryService/database';
-import { loadPuzzleRushPlayer } from '../puzzleRush/leaderboard';
+} from '../directoryService/api';
+import { dynamo, USER_TABLE } from '../directoryService/database';
 import { packProgress, ProgressTooLargeError, unpackProgress } from './storage';
 
 /** One row per player: the app's whole saved state, gzipped. */
-export const tacticsForgerProgressTable = `${process.env.stage}-tactics-forger-progress`;
+export const tacticsForgerProgressTable = `${process.env.stage}-tactics-trainer-progress`;
 /** One row per player: the numbers shown on the leaderboard. */
-export const tacticsForgerLeaderboardTable = `${process.env.stage}-tactics-forger-leaderboard`;
+export const tacticsForgerLeaderboardTable = `${process.env.stage}-tactics-trainer-leaderboard`;
 
 /**
- * Handles GET /puzzle/tactics-forger/progress. Returns the caller's saved Tactics Forger
+ * Handles GET /tactics-trainer/progress. Returns the caller's saved Tactics Forger
  * progress, or null progress with version 0 when they have never saved.
  * @param event The API Gateway proxy event.
  * @returns The saved progress and its version.
@@ -59,7 +58,7 @@ export const getHandler: APIGatewayProxyHandlerV2 = async (event) => {
 };
 
 /**
- * Handles PUT /puzzle/tactics-forger/progress. Saves the caller's progress if it is based on
+ * Handles PUT /tactics-trainer/progress. Saves the caller's progress if it is based on
  * the latest saved version (409 otherwise, so the app can load, merge and retry), then updates
  * their leaderboard row.
  * @param event The API Gateway proxy event.
@@ -116,11 +115,11 @@ export const saveHandler: APIGatewayProxyHandlerV2 = async (event) => {
             throw err;
         }
 
-        const player = await loadPuzzleRushPlayer(username);
+        const player = await loadPlayer(username);
         const row: TacticsForgerLeaderboardRow = {
             ...request.summary,
             username,
-            displayName: player.displayName ?? username,
+            displayName: player.displayName,
             cohort: player.cohort,
             updatedAt,
         };
@@ -137,3 +136,23 @@ export const saveHandler: APIGatewayProxyHandlerV2 = async (event) => {
         return errToApiGatewayProxyResultV2(err);
     }
 };
+
+/**
+ * Loads the display name and cohort shown on the leaderboard. A missing user falls back to the
+ * username and no cohort.
+ * @param username The player to load.
+ * @returns The player's display name and Dojo cohort.
+ */
+async function loadPlayer(username: string): Promise<{ displayName: string; cohort?: string }> {
+    const output = await dynamo.send(
+        new GetItemCommand({
+            TableName: USER_TABLE,
+            Key: { username: { S: username } },
+            ProjectionExpression: 'displayName, dojoCohort',
+        }),
+    );
+    const user = output.Item
+        ? (unmarshall(output.Item) as { displayName?: string; dojoCohort?: string })
+        : {};
+    return { displayName: user.displayName?.trim() || username, cohort: user.dojoCohort };
+}

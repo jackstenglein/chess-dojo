@@ -21,15 +21,15 @@ import {
     SubmitPuzzleRushSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
 import {
+    SubmitSquareColorSessionRequest,
+    SubmitSquareColorSessionResponse,
+} from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+import {
     GetTacticsForgerLeaderboardResponse,
     GetTacticsForgerProgressResponse,
     SaveTacticsForgerProgressRequest,
     SaveTacticsForgerProgressResponse,
-} from '@jackstenglein/chess-dojo-common/src/puzzles/tacticsForger/api';
-import {
-    SubmitSquareColorSessionRequest,
-    SubmitSquareColorSessionResponse,
-} from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+} from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -182,7 +182,7 @@ export function listPuzzleRushSessions(
 export function getTacticsForgerProgress(): Promise<
     AxiosResponse<GetTacticsForgerProgressResponse>
 > {
-    return axiosService.get<GetTacticsForgerProgressResponse>(`/puzzle/tactics-forger/progress`, {
+    return axiosService.get<GetTacticsForgerProgressResponse>(`/tactics-trainer/progress`, {
         functionName: 'getTacticsForgerProgress',
     });
 }
@@ -197,7 +197,7 @@ export function saveTacticsForgerProgress(
     request: SaveTacticsForgerProgressRequest,
 ): Promise<AxiosResponse<SaveTacticsForgerProgressResponse>> {
     return axiosService.put<SaveTacticsForgerProgressResponse>(
-        `/puzzle/tactics-forger/progress`,
+        `/tactics-trainer/progress`,
         request,
         { functionName: 'saveTacticsForgerProgress' },
     );
@@ -210,8 +210,7 @@ export function saveTacticsForgerProgress(
 export function getTacticsForgerLeaderboard(): Promise<
     AxiosResponse<GetTacticsForgerLeaderboardResponse>
 > {
-    return axiosService.get<GetTacticsForgerLeaderboardResponse>(
-        `/puzzle/tactics-forger/leaderboard`,
-        { functionName: 'getTacticsForgerLeaderboard' },
-    );
+    return axiosService.get<GetTacticsForgerLeaderboardResponse>(`/tactics-trainer/leaderboard`, {
+        functionName: 'getTacticsForgerLeaderboard',
+    });
 }

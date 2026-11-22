@@ -6,7 +6,7 @@ import {
     saveTacticsForgerProgress,
 } from '@/api/puzzleApi';
 import { useAuth } from '@/auth/Auth';
-import { SaveTacticsForgerProgressRequest } from '@jackstenglein/chess-dojo-common/src/puzzles/tacticsForger/api';
+import { SaveTacticsForgerProgressRequest } from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { Box } from '@mui/material';
 import { AxiosError } from 'axios';
 import { useEffect, useRef } from 'react';
