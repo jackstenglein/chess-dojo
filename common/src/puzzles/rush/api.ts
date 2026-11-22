@@ -212,3 +212,38 @@ export interface ListPuzzleRushSessionsResponse {
     /** The last evaluated key to use for pagination. */
     lastEvaluatedKey?: string;
 }
+
+/**
+ * One player's position on the Dojo puzzle rush leaderboard.
+ * `score` is the number of puzzles solved in that player's best run for the window.
+ * Rows are ordered by score descending, then by the earlier best, then by username.
+ */
+export interface PuzzleRushLeaderboardRow {
+    /** The player's username. */
+    username: string;
+    /** The name shown on the leaderboard. */
+    displayName: string;
+    /** The player's current Dojo cohort. Omitted when the player is not in a cohort. */
+    cohort?: string;
+    /** Puzzles solved in the player's best run for this window. */
+    score: number;
+    /** Runs the player has completed in this window. */
+    runs: number;
+    /** The createdAt timestamp of the run that set `score`. */
+    sessionCreatedAt: string;
+}
+
+/** The response to a request for the Dojo puzzle rush leaderboard. */
+export interface GetPuzzleRushLeaderboardResponse {
+    /** The UTC month (`YYYY-MM`) the monthly board covers. */
+    month: string;
+    /** Every player with a saved run, highest score first. */
+    allTime: PuzzleRushLeaderboardRow[];
+    /** Every player with a saved run in `month`, highest score first. */
+    monthly: PuzzleRushLeaderboardRow[];
+    /**
+     * False while runs saved before the leaderboard existed are still being added.
+     * A caller should request the leaderboard again until this is true.
+     */
+    complete: boolean;
+}

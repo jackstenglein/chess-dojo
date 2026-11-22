@@ -5,8 +5,9 @@ import {
     TimeManagementRating,
 } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { Grid, Stack, SxProps, Theme, Tooltip, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
+import { JSX } from 'react';
 
 function gameCountLabel(numGames: number): string {
     return `(${numGames} ${numGames === 1 ? 'game' : 'games'})`;
@@ -15,7 +16,25 @@ function gameCountLabel(numGames: number): string {
 const fastTooltip = 'You tend to play faster than the ideal clock curve on average.';
 const slowTooltip = 'You tend to play slower than the ideal clock curve on average.';
 
-function TimeManagementDirectionIcon({ area }: { area?: number }) {
+export function TimeManagementDirectionTooltip({
+    area,
+    children,
+}: {
+    area?: number;
+    children: JSX.Element;
+}) {
+    return <Tooltip title={!area ? '' : area > 0 ? fastTooltip : slowTooltip}>{children}</Tooltip>;
+}
+
+export function TimeManagementDirectionIcon({
+    area,
+    sx = [],
+}: {
+    area?: number;
+    sx?: SxProps<Theme>;
+}) {
+    const iconSx = [{ fontSize: 17, color: 'text.secondary', mt: '3px' }, sx].flat();
+
     if (!area) {
         return null;
     }
@@ -23,20 +42,14 @@ function TimeManagementDirectionIcon({ area }: { area?: number }) {
     if (area > 0) {
         return (
             <span>
-                <RabbitIcon
-                    data-testid='time-management-fast-icon'
-                    sx={{ fontSize: 17, color: 'text.secondary', mt: '3px' }}
-                />
+                <RabbitIcon data-testid='time-management-fast-icon' sx={iconSx} />
             </span>
         );
     }
 
     return (
         <span>
-            <TurtleIcon
-                data-testid='time-management-slow-icon'
-                sx={{ fontSize: 17, color: 'text.secondary', mt: '3px' }}
-            />
+            <TurtleIcon data-testid='time-management-slow-icon' sx={iconSx} />
         </span>
     );
 }
@@ -49,12 +62,6 @@ export function TimeManagementRatingRow({
     const t = useTranslations('profile.info');
     const numGames = timeManagementRating.numGames ?? 0;
     const provisional = numGames < MIN_GAMES_FOR_ELO;
-
-    const tooltip = !timeManagementRating.area
-        ? ''
-        : timeManagementRating.area > 0
-          ? fastTooltip
-          : slowTooltip;
 
     return (
         <Grid size={12}>
@@ -84,7 +91,7 @@ export function TimeManagementRatingRow({
                     </Typography>
                 </Tooltip>
 
-                <Tooltip title={tooltip}>
+                <TimeManagementDirectionTooltip area={timeManagementRating.area}>
                     <Stack
                         direction='row'
                         sx={{
@@ -113,7 +120,7 @@ export function TimeManagementRatingRow({
                             {gameCountLabel(numGames)}
                         </Typography>
                     </Stack>
-                </Tooltip>
+                </TimeManagementDirectionTooltip>
             </Stack>
         </Grid>
     );

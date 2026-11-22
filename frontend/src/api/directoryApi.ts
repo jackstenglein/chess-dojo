@@ -15,6 +15,7 @@ import {
     ShareDirectoryResponse,
     UpdateDirectoryRequestV2,
 } from '@jackstenglein/chess-dojo-common/src/database/directory';
+import { TimeManagementRating } from '@jackstenglein/chess-dojo-common/src/ratings/timeManagement';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -132,6 +133,9 @@ export interface GetDirectoryResponse {
 export interface GetDirectoryStatsResponse {
     /** The performance stats for the requested user. */
     stats: PerformanceStats;
+
+    /** The time management rating for the requested player in this directory. */
+    timeManagementRating: TimeManagementRating;
 }
 
 /**

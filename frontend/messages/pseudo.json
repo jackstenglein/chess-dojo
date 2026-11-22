@@ -237,6 +237,117 @@
                 "graduate": "[T] Graduate",
                 "success": "[T] Congratulations! You have successfully graduated!"
             },
+            "starter": {
+                "title": "[T] Tutorial",
+                "planName": "[T] Dojo Training Plan",
+                "subtitle": "[T] Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
+                "progress": "[T] {done} of {total} tasks done",
+                "stepNumber": "[T] Step {number}",
+                "stepProgress": "[T] {done} of {total} done",
+                "steps": {
+                    "welcome": {
+                        "title": "[T] Complete the Welcome to the Dojo tasks",
+                        "description": "[T] Short intro tasks that show you around the Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "[T] Play 1 classical game",
+                        "description": "[T] Play a slow game, online or over the board. Classical games are the heart of the Dojo training program.",
+                        "timeControl": "[T] Suggested time control: {timeControl} or longer"
+                    },
+                    "annotateGame": {
+                        "title": "[T] Annotate 1 game",
+                        "description": "[T] Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "dojoRush": {
+                        "title": "[T] Try the Dojo Rush trainer",
+                        "description": "[T] Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
+                    },
+                    "masterGame": {
+                        "title": "[T] Study 1 master game",
+                        "description": "[T] Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "[T] Play 1 endgame algorithm position",
+                        "description": "[T] Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
+                    }
+                },
+                "actions": {
+                    "details": "[T] Details",
+                    "markDone": "[T] Mark completed",
+                    "undo": "[T] Undo",
+                    "minutesSpent": "[T] {minutes} min",
+                    "importGame": "[T] Import a game",
+                    "viewTournaments": "[T] View tournaments",
+                    "startRush": "[T] Start Dojo Rush",
+                    "firstPosition": "[T] {name}, position 1",
+                    "completed": "[T] Completed",
+                    "playBot": "[T] Play bot"
+                },
+                "markDone": {
+                    "title": "[T] Mark task completed",
+                    "minutesLabel": "[T] Minutes spent",
+                    "minutesHelper": "[T] Roughly how long it took. It's added to your training time when you finish the starter plan.",
+                    "minutesInvalid": "[T] Enter a whole number of minutes.",
+                    "save": "[T] Mark completed",
+                    "cancel": "[T] Cancel"
+                },
+                "complete": {
+                    "title": "[T] Starter plan complete!",
+                    "description": "[T] Nice work. When you continue, everything you did here is checked off in your full training plan."
+                },
+                "continue": "[T] Continue to the full training plan",
+                "locked": {
+                    "title": "[T] Full training plan locked",
+                    "description": "[T] Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
+                },
+                "skip": "[T] Already know the Dojo? Skip to the full training plan",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "[T] Guide",
+                        "action": "[T] Read the guide"
+                    },
+                    "video": {
+                        "label": "[T] Video",
+                        "action": "[T] Watch"
+                    },
+                    "community": {
+                        "label": "[T] Community",
+                        "action": "[T] Join"
+                    },
+                    "task": {
+                        "label": "[T] Task",
+                        "action": "[T] Open"
+                    }
+                },
+                "botGame": {
+                    "completed": "[T] Starter plan step completed!",
+                    "backToPlan": "[T] Back to plan"
+                },
+                "sensei": {
+                    "name": "[T] Sensei Jesse",
+                    "greeting": "[T] Welcome to the Dojo! I'm Sensei Jesse. Before you start your full training plan, let's make sure you know your way around. Finish these three stages and I'll see you on the other side."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "[T] Welcome",
+                        "description": "[T] Get to know the Dojo and the community."
+                    },
+                    "training": {
+                        "title": "[T] Train",
+                        "description": "[T] Try the kinds of training you will do every week."
+                    },
+                    "games": {
+                        "title": "[T] Games & Analysis",
+                        "description": "[T] Play a slow game, then learn from it."
+                    }
+                },
+                "stageNumber": "[T] Stage {number}",
+                "suggestion": {
+                    "title": "[T] New to Dojo? Start here",
+                    "description": "[T] A short tutorial that shows you how training works here. Anything you have already done stays completed.",
+                    "start": "[T] Start here"
+                }
+            },
             "graduationTask": {
                 "title": "[T] Graduate from {cohort}",
                 "descriptionBase": "[T] Congrats on reaching {rating} {system}! Use this task to move to the next cohort, add a badge to your profile, and get one of your annotated games reviewed on stream!",
@@ -664,6 +775,7 @@
             "whenPlayWhite": "[T] When You Play White",
             "whenPlayBlack": "[T] When You Play Black",
             "normalizedRatingTooltip": "[T] The rating normalized to the Dojo system",
+            "timeManagementTooltip": "[T] Calculated from games in this folder that include clock times.",
             "performanceByCohort": "[T] Performance by Opponent Cohort",
             "colOpponentCohort": "[T] Opponent Cohort",
             "colPerformance": "[T] Performance",
@@ -3313,7 +3425,21 @@
             "loadMore": "[T] Load More",
             "incorrectMoveComment": "[T] Incorrect guess",
             "incorrectMoveCommentDuringRun": "[T] Incorrect guess during the run",
-            "tooltipSettings": "[T] Settings"
+            "tooltipSettings": "[T] Settings",
+            "prevWrong": "[T] Previous Wrong Puzzle",
+            "nextWrong": "[T] Next Wrong Puzzle",
+            "leaderboardTitle": "[T] Leaderboard",
+            "leaderboardAllTime": "[T] All-time",
+            "leaderboardMonth": "[T] This month",
+            "leaderboardOverall": "[T] Overall",
+            "leaderboardCohort": "[T] Cohort",
+            "leaderboardMonthCaption": "[T] {month} (UTC)",
+            "columnRank": "[T] Rank",
+            "columnPlayer": "[T] Player",
+            "columnScore": "[T] Score",
+            "columnRuns": "[T] Runs",
+            "leaderboardEmpty": "[T] No completed runs yet.",
+            "leaderboardPartial": "[T] Earlier runs are still being added."
         },
         "squareColors": {
             "title": "[T] Square Color Drill",
