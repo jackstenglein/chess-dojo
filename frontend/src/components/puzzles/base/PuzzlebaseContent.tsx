@@ -11,6 +11,7 @@ import { canManagePuzzle } from '@jackstenglein/chess-dojo-common/src/puzzlebase
 import {
     Add,
     Clear,
+    ContentCopy,
     Download,
     GridView,
     Groups,
@@ -276,6 +277,14 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     sx={toolSx}
                                 >
                                     Solve stats
+                                </Button>
+                                <Button
+                                    component={Link}
+                                    href='/puzzles/base/duplicates'
+                                    startIcon={<ContentCopy />}
+                                    sx={toolSx}
+                                >
+                                    Find duplicates
                                 </Button>
                                 <Button
                                     startIcon={<Download />}
