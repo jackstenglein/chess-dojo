@@ -724,7 +724,9 @@ function renderStats() {
   // Same stats in the top bar (narrow screens) and at the top of the right column (wide screens).
   document.getElementById('stats').innerHTML = statsHtml;
   const side = document.getElementById('sideStats');
-  if (side) side.innerHTML = statsHtml;
+  // Own SVG ids for the side copy: the top-bar copy is display:none on wide screens, and icons that
+  // point at gradients inside a hidden element render blank.
+  if (side) side.innerHTML = statsHtml.replace(/(["#(])(bg|clip)-/g, '$1s$2-');
 }
 
 // ---- Router ----------------------------------------------------------------
@@ -787,16 +789,16 @@ function showHome() {
   const lvl = levelFromXp(progress.xp);
 
   const HERO = {
-    tactics: ['Dojo Tactics Forger', ''],
+    tactics: ['', ''], // the app name lives in the left column
     endgames: ['Endgame tactics', `${index.themes.length} endgame ladders: by material (pawn, rook, minor-piece and queen endgames) and by skill (passed pawns, tactics, mates). Each is its own ladder of 50-point stages from ${index.minRating} to ${index.maxRating ?? 2000}.`],
   };
   const page = el(`<div class="home">
     <section class="hero">
-      <div class="hero-text">
+      ${HERO[track][0] ? `<div class="hero-text">
         <h1>${HERO[track][0]}</h1>
         ${track === 'tactics' ? '' : `<p>${HERO[track][1]}
         Get <b>${PASS_SCORE}/${SET_SIZE}</b> on the first try to clear a set and unlock the next one.</p>`}
-      </div>
+      </div>` : ''}
       ${rankRoad()}
       <div class="ring-hero"></div>
       <div class="dash">
@@ -2676,6 +2678,9 @@ function playRun(run) {
 // ---- Boot ----------------------------------------------------------------------
 (async () => {
   document.querySelector('.brand-mark').outerHTML = LOGO_SVG;
+  const sideLogo = document.querySelector('.side-logo');
+  // Own gradient ids: the header copy can be display:none, and shared ids would render blank here.
+  if (sideLogo) sideLogo.innerHTML = LOGO_SVG.replace('width="36" height="36"', 'width="76" height="76"').replaceAll('lg-', 'lgs-');
   const fav = document.createElement('link');
   fav.rel = 'icon';
   fav.href = LOGO_DATA_URI;
