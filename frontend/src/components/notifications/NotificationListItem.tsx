@@ -3,6 +3,8 @@
 import { useApi } from '@/api/Api';
 import { Request, RequestSnackbar, useRequest } from '@/api/Request';
 import { useCache } from '@/api/cache/Cache';
+import { Link } from '@/components/navigation/Link';
+import { logger } from '@/logging/logger';
 import {
     Notification,
     NotificationTypes,
@@ -23,16 +25,20 @@ import NotificationDescription from './NotificationDescription';
 interface NotificationListItemProps {
     notification: Notification;
     menuItem?: boolean;
+    /** Called when the user clicks the notification to open it. */
+    onClick?: () => void;
 }
 
 interface DeletableNotification {
     onDelete: (e: React.MouseEvent) => void;
+    onOpen: () => void;
     deleteRequest: Request<never>;
 }
 
 export const NotificationListItem: React.FC<NotificationListItemProps> = ({
     notification,
     menuItem,
+    onClick,
 }) => {
     const api = useApi();
     const cache = useCache();
@@ -53,6 +59,19 @@ export const NotificationListItem: React.FC<NotificationListItemProps> = ({
             });
     };
 
+    // Opening a notification dismisses it. The multi-game explorer notification
+    // links to its own detail page, which needs the notification to exist, so
+    // it is kept until the user deletes it.
+    const onOpenNotification = () => {
+        onClick?.();
+        if (isDetailPageLink(notification)) {
+            return;
+        }
+        api.deleteNotification(notification.id)
+            .then(() => cache.notifications.remove(notification.id))
+            .catch((err: unknown) => logger.error?.('deleteNotification: ', err));
+    };
+
     return (
         <>
             <RequestSnackbar request={request} />
@@ -60,11 +79,13 @@ export const NotificationListItem: React.FC<NotificationListItemProps> = ({
                 <NotificationMenuItem
                     notification={notification}
                     onDelete={onDeleteNotification}
+                    onOpen={onOpenNotification}
                     deleteRequest={request}
                 />
             ) : (
                 <NotificationItem
                     onDelete={onDeleteNotification}
+                    onOpen={onOpenNotification}
                     notification={notification}
                     deleteRequest={request}
                 />
@@ -76,6 +97,7 @@ export const NotificationListItem: React.FC<NotificationListItemProps> = ({
 const NotificationItem: React.FC<NotificationListItemProps & DeletableNotification> = ({
     notification,
     onDelete,
+    onOpen,
     deleteRequest,
 }) => {
     const t = useTranslations('notifications');
@@ -94,7 +116,9 @@ const NotificationItem: React.FC<NotificationListItemProps & DeletableNotificati
                 <NotificationDescription notification={notification} menuItem />
 
                 <Stack direction='row' spacing={2}>
-                    <Button href={href}>{t('view')}</Button>
+                    <Button component={Link} href={href} onClick={onOpen}>
+                        {t('view')}
+                    </Button>
 
                     {deleteRequest.isLoading() ? (
                         <CircularProgress />
@@ -116,13 +140,14 @@ const NotificationItem: React.FC<NotificationListItemProps & DeletableNotificati
 const NotificationMenuItem: React.FC<NotificationListItemProps & DeletableNotification> = ({
     notification,
     onDelete,
+    onOpen,
     deleteRequest,
 }) => {
     const t = useTranslations('notifications');
     const href = getLink(notification);
     return (
         <Stack>
-            <MenuItem component='a' href={href}>
+            <MenuItem component={Link} href={href} onClick={onOpen}>
                 <Stack
                     direction='row'
                     spacing={2}
@@ -149,6 +174,10 @@ const NotificationMenuItem: React.FC<NotificationListItemProps & DeletableNotifi
         </Stack>
     );
 };
+
+function isDetailPageLink(notification: Notification): boolean {
+    return getLink(notification).startsWith('/notifications/');
+}
 
 function getLink(notification: Notification): string {
     switch (notification.type) {
