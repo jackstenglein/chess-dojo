@@ -10,6 +10,7 @@ import {
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
 import {
+    GetPuzzleRushLeaderboardResponse,
     GetPuzzleRushPuzzleRequest,
     GetPuzzleRushPuzzleResponse,
     GetPuzzleRushSessionResponse,
@@ -129,6 +130,20 @@ export function getPuzzleRushSummary(
     return axiosService.get<GetPuzzleRushSummaryResponse>(`/puzzle/rush/summary`, {
         params: { timeZone },
         functionName: 'getPuzzleRushSummary',
+    });
+}
+
+/**
+ * Fetches the Dojo puzzle rush leaderboard.
+ * The monthly board is the current UTC month. `complete` is false while runs saved
+ * before the leaderboard existed are still being added; call again until it is true.
+ * @returns Every player's all-time and monthly high score, with completed-run counts.
+ */
+export function getPuzzleRushLeaderboard(): Promise<
+    AxiosResponse<GetPuzzleRushLeaderboardResponse>
+> {
+    return axiosService.get<GetPuzzleRushLeaderboardResponse>(`/puzzle/rush/leaderboard`, {
+        functionName: 'getPuzzleRushLeaderboard',
     });
 }
 

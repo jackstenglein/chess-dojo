@@ -3,6 +3,7 @@
 import { BoardApi, PrimitiveMove, reconcile } from '@/board/Board';
 import { CustomUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard, { PgnBoardApi } from '@/board/pgn/PgnBoard';
+import { StarterBotGameTracker } from '@/components/profile/trainingPlan/starter/StarterBotGameTracker';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { Chess, FEN } from '@jackstenglein/chess';
 import { SmartToy } from '@mui/icons-material';
@@ -176,6 +177,7 @@ export function PlayBotPage() {
                     setInitKey={setInitKey}
                     autoStartedRef={autoStartedRef}
                 />
+                <StarterBotGameTracker finished={view === 'playing' && maiaGame.result !== null} />
             </Suspense>
 
             <PgnBoard

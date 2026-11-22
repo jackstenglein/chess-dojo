@@ -40,6 +40,8 @@ import {
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef } from 'react';
+import { PuzzleRushCountdown } from './PuzzleRushCountdown';
+import { PuzzleRushLeaderboard } from './PuzzleRushLeaderboard';
 import { PuzzleRushBests, PuzzleRushIndexes } from './PuzzleRushStanding';
 import {
     PuzzleRushAttemptsTable,
@@ -74,6 +76,15 @@ function PuzzleRush() {
         );
     }
 
+    if (rush.phase === 'countdown') {
+        return (
+            <>
+                <PuzzleRushCountdown key={rush.createdAt} onComplete={rush.completeCountdown} />
+                <RequestSnackbar request={rush.fetchRequest} />
+            </>
+        );
+    }
+
     if (rush.phase === 'loading') {
         return (
             <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
@@ -101,7 +112,7 @@ function IdleScreen({ onStart }: { onStart: () => void }) {
     const bestsRequest = usePuzzleRushBests();
 
     return (
-        <Container maxWidth='sm' sx={{ py: 8, textAlign: 'center' }}>
+        <Container maxWidth='md' sx={{ py: 8, textAlign: 'center' }}>
             <Bolt color='primary' sx={{ fontSize: '5rem' }} />
             <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 2 }}>
                 {t('title')}
@@ -148,6 +159,10 @@ function IdleScreen({ onStart }: { onStart: () => void }) {
                     {t('viewHistory')}
                 </Button>
             </Stack>
+
+            <Box sx={{ mt: 6, textAlign: 'initial' }}>
+                <PuzzleRushLeaderboard />
+            </Box>
         </Container>
     );
 }

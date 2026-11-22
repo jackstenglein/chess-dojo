@@ -237,6 +237,117 @@
                 "graduate": "Graduar-se",
                 "success": "Parabéns! Você se formou com sucesso!"
             },
+            "starter": {
+                "title": "Tutorial",
+                "planName": "Plano de treino do Dojo",
+                "subtitle": "Três etapas curtas para aprender como funciona o treino aqui. Tudo o que concluíres passa para o teu plano de treino completo, que é desbloqueado quando terminares.",
+                "progress": "{done} de {total} tarefas concluídas",
+                "stepNumber": "Passo {number}",
+                "stepProgress": "{done} de {total} concluídas",
+                "steps": {
+                    "welcome": {
+                        "title": "Conclui as tarefas de Bem-vindo ao Dojo",
+                        "description": "Tarefas curtas de introdução que te mostram o Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "Joga 1 partida clássica",
+                        "description": "Joga uma partida lenta, online ou no tabuleiro. As partidas clássicas são o centro do programa de treino do Dojo.",
+                        "timeControl": "Ritmo de jogo sugerido: {timeControl} ou mais longo"
+                    },
+                    "annotateGame": {
+                        "title": "Anota 1 partida",
+                        "description": "Importa uma das tuas partidas e analisa-a antes de usar um motor. Regista o que pensavas, as decisões-chave e os teus erros."
+                    },
+                    "dojoRush": {
+                        "title": "Experimenta o treinador Dojo Rush",
+                        "description": "Resolve o maior número de problemas possível contra o relógio. Este passo fica marcado sozinho depois da tua primeira sessão."
+                    },
+                    "masterGame": {
+                        "title": "Estuda 1 partida de mestres",
+                        "description": "Analisa uma partida clássica do estudo de partidas de mestres da tua coorte. Procura os planos e as ideias por trás dos lances."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Joga 1 posição de um algoritmo de finais",
+                        "description": "Joga a primeira posição do primeiro algoritmo de finais da tua coorte até a ganhares. O tempo que gastares passa para o algoritmo completo."
+                    }
+                },
+                "actions": {
+                    "details": "Detalhes",
+                    "markDone": "Marcar como feita",
+                    "undo": "Desfazer",
+                    "minutesSpent": "{minutes} min",
+                    "importGame": "Importar uma partida",
+                    "viewTournaments": "Ver torneios",
+                    "startRush": "Começar Dojo Rush",
+                    "firstPosition": "{name}, posição 1",
+                    "completed": "Concluída",
+                    "playBot": "Jogar contra o bot"
+                },
+                "markDone": {
+                    "title": "Marcar tarefa como feita",
+                    "minutesLabel": "Minutos gastos",
+                    "minutesHelper": "Mais ou menos quanto tempo levou. É somado ao teu tempo de treino quando concluis o plano inicial.",
+                    "minutesInvalid": "Introduz um número inteiro de minutos.",
+                    "save": "Marcar como feita",
+                    "cancel": "Cancelar"
+                },
+                "complete": {
+                    "title": "Plano inicial concluído!",
+                    "description": "Bom trabalho. Ao continuar, tudo o que fizeste aqui fica marcado no teu plano de treino completo."
+                },
+                "continue": "Continuar para o plano de treino completo",
+                "locked": {
+                    "title": "Plano de treino completo bloqueado",
+                    "description": "Conclui o plano inicial para desbloquear o teu plano de treino completo. Tudo o que marcares aqui ficará marcado lá."
+                },
+                "skip": "Já conheces o Dojo? Salta para o plano de treino completo",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guia",
+                        "action": "Ler o guia"
+                    },
+                    "video": {
+                        "label": "Vídeo",
+                        "action": "Ver"
+                    },
+                    "community": {
+                        "label": "Comunidade",
+                        "action": "Entrar"
+                    },
+                    "task": {
+                        "label": "Tarefa",
+                        "action": "Abrir"
+                    }
+                },
+                "botGame": {
+                    "completed": "Passo do plano inicial concluído!",
+                    "backToPlan": "Voltar ao plano"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Bem-vindo ao Dojo! Sou o Sensei Jesse. Antes de começares o teu plano de treino completo, vamos garantir que conheces o lugar. Conclui estas três etapas e vemo-nos do outro lado."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Boas-vindas",
+                        "description": "Conhece o Dojo e a comunidade."
+                    },
+                    "training": {
+                        "title": "Treina",
+                        "description": "Experimenta os tipos de treino que vais fazer todas as semanas."
+                    },
+                    "games": {
+                        "title": "Partidas e análise",
+                        "description": "Joga uma partida lenta e aprende com ela."
+                    }
+                },
+                "stageNumber": "Etapa {number}",
+                "suggestion": {
+                    "title": "Novo no Dojo? Comece aqui",
+                    "description": "Um tutorial curto que mostra como o treino funciona aqui. O que você já fez continua concluído.",
+                    "start": "Comece aqui"
+                }
+            },
             "graduationTask": {
                 "title": "Forme-se em {cohort}",
                 "descriptionBase": "Parabéns por alcançar {rating} {system}! Use esta tarefa para passar para a próxima coorte, adicionar uma insígnia ao seu perfil e conseguir que uma das suas partidas comentadas seja analisada ao vivo!",
@@ -664,6 +775,7 @@
             "whenPlayWhite": "Quando você joga de brancas",
             "whenPlayBlack": "Quando você joga de pretas",
             "normalizedRatingTooltip": "O rating normalizado para o sistema do Dojo",
+            "timeManagementTooltip": "Calculado a partir dos jogos nesta pasta que incluem tempos de relógio.",
             "performanceByCohort": "Desempenho por coorte do adversário",
             "colOpponentCohort": "Coorte do adversário",
             "colPerformance": "Performance",
@@ -3313,7 +3425,21 @@
             "loadMore": "Carregar mais",
             "incorrectMoveComment": "Palpite incorreto",
             "incorrectMoveCommentDuringRun": "Palpite incorreto durante a corrida",
-            "tooltipSettings": "Configurações"
+            "tooltipSettings": "Configurações",
+            "prevWrong": "Quebra-cabeça errado anterior",
+            "nextWrong": "Próximo quebra-cabeça errado",
+            "leaderboardTitle": "Classificação",
+            "leaderboardAllTime": "Todos os tempos",
+            "leaderboardMonth": "Este mês",
+            "leaderboardOverall": "Geral",
+            "leaderboardCohort": "Coorte",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Posição",
+            "columnPlayer": "Jogador",
+            "columnScore": "Pontuação",
+            "columnRuns": "Partidas",
+            "leaderboardEmpty": "Ainda não há partidas concluídas.",
+            "leaderboardPartial": "Partidas anteriores ainda estão sendo adicionadas."
         },
         "squareColors": {
             "title": "Treino de cor das casas",

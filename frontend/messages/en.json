@@ -249,6 +249,117 @@
                 "graduate": "Graduate",
                 "success": "Congratulations! You have successfully graduated!"
             },
+            "starter": {
+                "title": "Tutorial",
+                "planName": "Dojo Training Plan",
+                "subtitle": "Three short stages to learn how training works here. Everything you complete carries over to your full training plan, which unlocks when you finish.",
+                "progress": "{done} of {total} tasks done",
+                "stepNumber": "Step {number}",
+                "stepProgress": "{done} of {total} done",
+                "steps": {
+                    "welcome": {
+                        "title": "Complete the Welcome to the Dojo tasks",
+                        "description": "Short intro tasks that show you around the Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "Play 1 classical game",
+                        "description": "Play a slow game, online or over the board. Classical games are the heart of the Dojo training program.",
+                        "timeControl": "Suggested time control: {timeControl} or longer"
+                    },
+                    "annotateGame": {
+                        "title": "Annotate 1 game",
+                        "description": "Import one of your games and go through it before using an engine. Note what you were thinking, your key decisions and your mistakes."
+                    },
+                    "dojoRush": {
+                        "title": "Try the Dojo Rush trainer",
+                        "description": "Solve as many puzzles as you can against the clock. This step ticks off by itself after your first run."
+                    },
+                    "masterGame": {
+                        "title": "Study 1 master game",
+                        "description": "Go through one classical game from your cohort's master games study. Look for the plans and ideas behind the moves."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Play 1 endgame algorithm position",
+                        "description": "Play the first position of your cohort's first endgame algorithm until you can win it. The time you spend carries over to the full algorithm."
+                    }
+                },
+                "actions": {
+                    "details": "Details",
+                    "markDone": "Mark completed",
+                    "undo": "Undo",
+                    "minutesSpent": "{minutes} min",
+                    "importGame": "Import a game",
+                    "viewTournaments": "View tournaments",
+                    "startRush": "Start Dojo Rush",
+                    "firstPosition": "{name}, position 1",
+                    "completed": "Completed",
+                    "playBot": "Play bot"
+                },
+                "markDone": {
+                    "title": "Mark task completed",
+                    "minutesLabel": "Minutes spent",
+                    "minutesHelper": "Roughly how long it took. It's added to your training time when you finish the starter plan.",
+                    "minutesInvalid": "Enter a whole number of minutes.",
+                    "save": "Mark completed",
+                    "cancel": "Cancel"
+                },
+                "complete": {
+                    "title": "Starter plan complete!",
+                    "description": "Nice work. When you continue, everything you did here is checked off in your full training plan."
+                },
+                "continue": "Continue to the full training plan",
+                "locked": {
+                    "title": "Full training plan locked",
+                    "description": "Finish the starter plan to unlock your full training plan. Everything you mark done here will be checked off for you."
+                },
+                "skip": "Already know the Dojo? Skip to the full training plan",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guide",
+                        "action": "Read the guide"
+                    },
+                    "video": {
+                        "label": "Video",
+                        "action": "Watch"
+                    },
+                    "community": {
+                        "label": "Community",
+                        "action": "Join"
+                    },
+                    "task": {
+                        "label": "Task",
+                        "action": "Open"
+                    }
+                },
+                "botGame": {
+                    "completed": "Starter plan step completed!",
+                    "backToPlan": "Back to plan"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Welcome to the Dojo! I'm Sensei Jesse. Before you start your full training plan, let's make sure you know your way around. Finish these three stages and I'll see you on the other side."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Welcome",
+                        "description": "Get to know the Dojo and the community."
+                    },
+                    "training": {
+                        "title": "Train",
+                        "description": "Try the kinds of training you will do every week."
+                    },
+                    "games": {
+                        "title": "Games & Analysis",
+                        "description": "Play a slow game, then learn from it."
+                    }
+                },
+                "stageNumber": "Stage {number}",
+                "suggestion": {
+                    "title": "New to Dojo? Start here",
+                    "description": "A short tutorial that shows you how training works here. Anything you have already done stays completed.",
+                    "start": "Start here"
+                }
+            },
             "graduationTask": {
                 "title": "Graduate from {cohort}",
                 "descriptionBase": "Congrats on reaching {rating} {system}! Use this task to move to the next cohort, add a badge to your profile, and get one of your annotated games reviewed on stream!",
@@ -664,6 +775,7 @@
             "whenPlayWhite": "When You Play White",
             "whenPlayBlack": "When You Play Black",
             "normalizedRatingTooltip": "The rating normalized to the Dojo system",
+            "timeManagementTooltip": "Calculated from games in this folder that include clock times.",
             "performanceByCohort": "Performance by Opponent Cohort",
             "colOpponentCohort": "Opponent Cohort",
             "colPerformance": "Performance",
@@ -3313,7 +3425,21 @@
             "loadMore": "Load More",
             "incorrectMoveComment": "Incorrect guess",
             "incorrectMoveCommentDuringRun": "Incorrect guess during the run",
-            "tooltipSettings": "Settings"
+            "tooltipSettings": "Settings",
+            "prevWrong": "Previous Wrong Puzzle",
+            "nextWrong": "Next Wrong Puzzle",
+            "leaderboardTitle": "Leaderboard",
+            "leaderboardAllTime": "All-time",
+            "leaderboardMonth": "This month",
+            "leaderboardOverall": "Overall",
+            "leaderboardCohort": "Cohort",
+            "leaderboardMonthCaption": "{month} (UTC)",
+            "columnRank": "Rank",
+            "columnPlayer": "Player",
+            "columnScore": "Score",
+            "columnRuns": "Runs",
+            "leaderboardEmpty": "No completed runs yet.",
+            "leaderboardPartial": "Earlier runs are still being added."
         },
         "squareColors": {
             "title": "Square Color Drill",

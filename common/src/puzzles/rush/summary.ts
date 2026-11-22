@@ -33,12 +33,16 @@ export interface PuzzleRushSummaryRecord {
     week?: PuzzleRushPeriodBest;
     /** The player's best run in `day.period`. */
     day?: PuzzleRushPeriodBest;
+    /** The player's best run in `month.period`, a UTC month (`YYYY-MM`). */
+    month?: PuzzleRushPeriodBest;
     /** Counts across every saved run. */
     allTimeCounts: PuzzleRushScoreCounts;
     /** Counts for the week in `weekCounts.period`. Replaced when a new week starts. */
     weekCounts?: PuzzleRushPeriodCounts;
     /** Counts for the day in `dayCounts.period`. Replaced when a new day starts. */
     dayCounts?: PuzzleRushPeriodCounts;
+    /** Counts for the UTC month in `monthCounts.period`. Replaced when a new month starts. */
+    monthCounts?: PuzzleRushPeriodCounts;
 }
 
 /** The calendar day and ISO week a run belongs to, in one timezone. */
@@ -75,6 +79,39 @@ export function isValidTimeZone(timeZone: string): boolean {
     } catch {
         return false;
     }
+}
+
+/**
+ * Returns the UTC month of `instant` as `YYYY-MM`.
+ * The Dojo leaderboard uses one shared month, so a run is placed by UTC rather than
+ * the player's local timezone.
+ * @param instant The moment the run was created.
+ * @returns The UTC month key.
+ */
+export function puzzleRushUtcMonth(instant: Date): string {
+    if (Number.isNaN(instant.getTime())) {
+        throw new Error('Invalid date');
+    }
+    return `${instant.getUTCFullYear()}-${pad(instant.getUTCMonth() + 1)}`;
+}
+
+/**
+ * Returns how many runs are recorded in `counts`.
+ * Non-numeric counts are ignored.
+ * @param counts Solved-puzzle count to the number of runs with that count.
+ * @returns The total number of runs.
+ */
+export function puzzleRushRunCount(counts: PuzzleRushScoreCounts | undefined): number {
+    if (!counts) {
+        return 0;
+    }
+    let total = 0;
+    for (const count of Object.values(counts)) {
+        if (Number.isFinite(count) && count > 0) {
+            total += count;
+        }
+    }
+    return total;
 }
 
 /**
@@ -177,6 +214,8 @@ export function applyPuzzleRushSummary(
     const allTimeCounts = incrementCount(current?.allTimeCounts ?? {}, update.score);
     const weekCounts = incrementPeriod(current?.weekCounts, update.week, update.score);
     const dayCounts = incrementPeriod(current?.dayCounts, update.day, update.score);
+    const month = puzzleRushUtcMonth(new Date(update.createdAt));
+    const monthCounts = incrementPeriod(current?.monthCounts, month, update.score);
     const slot = { score: update.score, sessionCreatedAt: update.createdAt };
 
     const summary: PuzzleRushSummaryRecord = {
@@ -185,9 +224,11 @@ export function applyPuzzleRushSummary(
         allTime: higherScore(current?.allTime, slot),
         week: periodBest(current?.week, update.week, slot),
         day: periodBest(current?.day, update.day, slot),
+        month: periodBest(current?.month, month, slot),
         allTimeCounts,
         weekCounts,
         dayCounts,
+        monthCounts,
     };
 
     return { summary, standing: puzzleRushStanding(summary, update) };

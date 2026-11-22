@@ -153,6 +153,14 @@ functions:
           - dynamodb:GetItem
           - dynamodb:PutItem
         Resource: !GetAtt PuzzleRushSummariesTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt PuzzleRushLeaderboardTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
   getPuzzleRushSummary:
     handler: puzzleRush/summary.getHandler
@@ -203,6 +211,35 @@ functions:
         Action:
           - dynamodb:GetItem
         Resource: !GetAtt PuzzleRushResultsTable.Arn
+
+  getPuzzleRushLeaderboard:
+    handler: puzzleRush/leaderboard.getHandler
+    timeout: 25
+    events:
+      - httpApi:
+          path: /puzzle/rush/leaderboard
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:Query
+          - dynamodb:BatchGetItem
+        Resource: !GetAtt PuzzleRushLeaderboardTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+          - dynamodb:Query
+        Resource: !GetAtt PuzzleRushResultsTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
 
 resources:
   Conditions:
@@ -314,3 +351,25 @@ resources:
         KeySchema:
           - AttributeName: username
             KeyType: HASH
+
+    PuzzleRushLeaderboardTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-puzzle-rush-leaderboard
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+        AttributeDefinitions:
+          - AttributeName: period
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: period
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: RANGE
