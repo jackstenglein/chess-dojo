@@ -18,7 +18,7 @@ describe('splitPgnFile', () => {
     });
 
     it('handles Windows line endings and a byte order mark', () => {
-        const text = `﻿${game('A')}\r\n\r\n${game('B')}\r\n`;
+        const text = `\uFEFF${game('A')}\r\n\r\n${game('B')}\r\n`;
         expect(splitPgnFile(text)).toHaveLength(2);
     });
 
