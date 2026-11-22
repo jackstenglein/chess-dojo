@@ -670,7 +670,7 @@ function todayChip() {
 }
 // The Today box beside every page: puzzles, time, accuracy, new solves, sets and rating moves.
 function renderToday() {
-  const box = document.getElementById('todayPanel');
+  const box = document.getElementById('todayBox');
   if (!box) return;
   const key = ymd(new Date());
   const { attempts, sets } = statsModel();
@@ -712,7 +712,7 @@ function renderStats() {
   const lvl = levelFromXp(progress.xp);
   const cur = progress.xp - xpForLevel(lvl);
   const need = xpForLevel(lvl + 1) - xpForLevel(lvl);
-  document.getElementById('stats').innerHTML = `
+  const statsHtml = `
     ${Object.entries(TRACKS).filter(([tr]) => indexes[tr]).map(([tr, t]) => `<a class="stat rank-stat ${tr === track ? 'cur' : ''}" href="${hrefHome(tr)}" title="${t.label}: ${userRank(tr)[2]} · rating ${trackRating(tr).rating} · ${solvedCount(tr).toLocaleString()} solved">${rankIcon(userRank(tr)[1], 22)}<span class="rs-txt"><small>${t.label}</small><b>${trackRating(tr).rating}</b></span></a>`).join('')}
     ${todayChip()}
     <div class="stat" title="Day streak">🔥 <b>${progress.streak || 0}</b></div>
@@ -721,6 +721,10 @@ function renderStats() {
       <span>Lv ${lvl}</span>
       <div class="xpbar"><div style="width:${Math.round((cur / need) * 100)}%"></div></div>
     </div>`;
+  // Same stats in the top bar (narrow screens) and at the top of the right column (wide screens).
+  document.getElementById('stats').innerHTML = statsHtml;
+  const side = document.getElementById('sideStats');
+  if (side) side.innerHTML = statsHtml;
 }
 
 // ---- Router ----------------------------------------------------------------
@@ -783,15 +787,15 @@ function showHome() {
   const lvl = levelFromXp(progress.xp);
 
   const HERO = {
-    tactics: ['Climb the ladder', 'Build up your tactical mastery, one puzzle at a time.'],
+    tactics: ['Dojo Tactics Trainer', ''],
     endgames: ['Endgame tactics', `${index.themes.length} endgame ladders: by material (pawn, rook, minor-piece and queen endgames) and by skill (passed pawns, tactics, mates). Each is its own ladder of 50-point stages from ${index.minRating} to ${index.maxRating ?? 2000}.`],
   };
   const page = el(`<div class="home">
     <section class="hero">
       <div class="hero-text">
         <h1>${HERO[track][0]}</h1>
-        <p>${HERO[track][1]}${track === 'tactics' ? '' : `
-        Get <b>${PASS_SCORE}/${SET_SIZE}</b> on the first try to clear a set and unlock the next one.`}</p>
+        ${track === 'tactics' ? '' : `<p>${HERO[track][1]}
+        Get <b>${PASS_SCORE}/${SET_SIZE}</b> on the first try to clear a set and unlock the next one.</p>`}
       </div>
       ${rankRoad()}
       <div class="ring-hero"></div>

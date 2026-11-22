@@ -39,7 +39,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; min-width: 0;
 @media (min-width: 1100px) {
   .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 4px; align-items: start; padding-right: 16px; }
   main { margin: 0; max-width: none; }
-  .today-panel { display: block; position: sticky; top: 96px; margin-top: 160px; } /* level with the rank card, not the page title */
+  .today-panel { display: block; position: sticky; top: 76px; margin-top: 20px; }
   .today-stat { display: none !important; }
 }
 .loading { padding: 60px 0; text-align: center; color: var(--muted); }
@@ -820,3 +820,39 @@ h1 { font-weight: 400 !important; font-size: 2.125rem !important; line-height: 1
 html.embed .brand { display: none; }
 html.embed .nav { margin-left: 0; }
 .topbar .stats { padding: 6px 0; }
+
+/* The 8 tabs as a vertical sidebar on the left (MUI vertical-tabs look: indicator on the right). */
+.topbar .stats { margin-left: auto; }
+.layout { max-width: 1700px; display: grid; grid-template-columns: 200px minmax(0, 1fr); align-items: start; gap: 4px; }
+@media (min-width: 1100px) { .layout { grid-template-columns: 200px minmax(0, 1fr) 300px; } }
+.side-nav { position: sticky; top: 60px; padding: 20px 0 20px 12px; }
+.side-nav .nav { flex-direction: column; gap: 0; margin: 0; border-right: 1px solid var(--line); }
+.side-nav .nav a { justify-content: flex-start; min-height: 46px; padding: 0 18px; border-bottom: 0; border-right: 2px solid transparent; margin-right: -1px; border-radius: 6px 0 0 6px; }
+.side-nav .nav a:hover { background: rgba(255,255,255,.04); }
+.side-nav .nav a.active { border-right-color: var(--primary); background: rgba(144,202,249,.08); }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side-nav { position: static; padding: 0 8px; }
+  .side-nav .nav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .side-nav .nav a { border-right: 0; border-bottom: 2px solid transparent; margin: 0 0 -1px; border-radius: 0; }
+  .side-nav .nav a.active { border-bottom-color: var(--primary); }
+}
+
+/* Ranks, streak, solved and level at the top of the right column (wide screens); top bar keeps them below 1100px. */
+.side-stats { display: none; }
+@media (min-width: 1100px) {
+  .topbar .stats { display: none; }
+  html.embed .topbar { display: none; }
+  .side-nav { top: 16px; }
+  .today-panel { top: 16px; }
+  .side-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; padding: 12px 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px; font-size: 14px; color: var(--muted); }
+  .side-stats b { color: var(--text); }
+  .side-stats .rank-stat { flex: 1 1 100%; opacity: 1; padding: 6px 8px; border-radius: 10px; }
+  .side-stats .rank-stat .rs-txt { flex-direction: row; align-items: baseline; justify-content: space-between; flex: 1; }
+  .side-stats .rank-stat .rs-txt small { font-size: 11px; }
+  .side-stats .rank-stat .rs-txt b { font-size: 16px; }
+  .side-stats .rank-stat.cur { background: rgba(144,202,249,.08); }
+  .side-stats .level { flex: 1 1 auto; }
+  .side-stats .xpbar { flex: 1; }
+}
