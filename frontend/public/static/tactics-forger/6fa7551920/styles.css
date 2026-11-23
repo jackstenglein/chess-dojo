@@ -988,3 +988,14 @@ html.embed .nav { margin-left: 0; }
   .start-opts { grid-template-columns: 1fr; }
   .home .start-link { order: -1; padding: 0; }
 }
+
+/* A missed set: practice only for 24 hours */
+.wait-badge { display: inline-block; margin: 4px 0 2px; font-size: 12px; font-weight: 700; color: #ffb74d; background: #2a1f0e; border: 1px solid #6b4a16; padding: 2px 9px; border-radius: 999px; }
+.node.wait { border-color: #6b4a16; color: #ffb74d; border-style: dashed; }
+/* Phones: Next up sits right under the ring, above the category list, so it's on the first screen. */
+@media (max-width: 700px) {
+  .ring-hero .ring-legend { display: contents; }
+  .ring-hero .ring-wrap { order: 0; }
+  .ring-hero .next-up { order: 1; margin-top: 0; font-size: 16px; padding: 12px 14px; }
+  .ring-hero .slice-list { order: 2; }
+}

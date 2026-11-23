@@ -54,10 +54,18 @@ const lowestUncleared = (tp, total) => {
 };
 // Every stage is open to everyone. Your place (tp.at) is the last set you played; the next set is the
 // first uncleared one from there, wrapping back to the lowest uncleared set once the top is done.
+// Failing a set you haven't cleared (under PASS_SCORE) starts a 24-hour wait: you can still play
+// it as practice, but it can't be cleared until the wait is over. tp.failed[set] = when it failed.
+const CLEAR_WAIT_MS = 24 * 3600e3;
+const waitLeft = (tp, flat) => (!tp || tp.stars?.[flat] > 0 ? 0 : Math.max(0, (tp.failed?.[flat] ?? 0) + CLEAR_WAIT_MS - Date.now()));
+const fmtWait = (ms) => {
+  const m = Math.ceil(ms / 60000);
+  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+};
 const nextSet = (tp, total) => {
   if (!tp) return 0;
   let f = Math.max(0, Math.min(tp.at ?? tp.frontier ?? 0, total));
-  while (f < total && tp.stars[f] > 0) f++;
+  while (f < total && (tp.stars[f] > 0 || waitLeft(tp, f) > 0)) f++; // skip sets you're waiting on
   return f < total ? f : lowestUncleared(tp, total);
 };
 const nextFlat = (tp, total) => Math.min(nextSet(tp, total), total - 1);
@@ -2379,12 +2387,13 @@ async function showLadder(key) {
     const wrap = rung.querySelector('.rung-sets');
     for (const f of flats) {
       const st = tp.stars[f] || 0;
-      const state = st ? 'done' : f === here ? 'next' : 'open';
+      const wait = st ? 0 : waitLeft(tp, f);
+      const state = st ? 'done' : wait ? 'wait' : f === here ? 'next' : 'open';
       const known = theme.sets[f].puzzles.filter((pz) => isSolved(pz.id)).length;
       const node = el(`<button class="node ${state}"
-        title="Set ${theme.sets[f].n + 1} · ${b.min}–${b.max} · ${known}/${theme.sets[f].puzzles.length} puzzles solved">
+        title="Set ${theme.sets[f].n + 1} · ${b.min}–${b.max} · ${known}/${theme.sets[f].puzzles.length} puzzles solved${wait ? ` · practice only, clear it in ${fmtWait(wait)}` : ''}">
         <span class="node-n">${theme.sets[f].n + 1}</span>
-        <span class="node-stars">${st ? starStr(st) : state === 'next' ? 'GO' : ''}</span>
+        <span class="node-stars">${st ? starStr(st) : state === 'next' ? 'GO' : state === 'wait' ? '🔒' : ''}</span>
         ${known && !st ? `<span class="node-known">${known}/${theme.sets[f].puzzles.length}</span>` : ''}
       </button>`);
       node.onclick = () => (location.hash = hrefPlay(key, f));
@@ -2446,6 +2455,7 @@ async function showPlay(key, flat) {
   const set = theme.sets[flat];
   if (!set) return (location.hash = hrefTheme(key));
   const tryingAhead = flat > lowestUncleared(tp, theme.sets.length);
+  const waitMs = waitLeft(tp, flat); // > 0: practice only, can't clear it yet
   tp.at = flat; // your place is wherever you play
   const cleared = Object.values(tp.stars).filter((s) => s > 0).length;
   const known = set.puzzles.filter((p) => isSolved(p.id)).length;
@@ -2456,22 +2466,27 @@ async function showPlay(key, flat) {
     backHref: hrefTheme(key),
     backLabel: `${theme.name} ladder`,
     head: `<h2>${esc(theme.name)}</h2>
-      ${tryingAhead ? `<div class="ahead-badge" title="You've skipped ahead of sets you haven't cleared. Clearing this one saves its stars and fills your ring; the lower sets stay open.">🚀 Trying ahead</div>` : ''}
+      ${waitMs ? `<div class="wait-badge" title="You missed this set. Play it as much as you like; it can be cleared again in ${fmtWait(waitMs)}.">🔒 Practice only · clear it in ${fmtWait(waitMs)}</div>` : ''}
+      ${tryingAhead && !waitMs ? `<div class="ahead-badge" title="You've skipped ahead of sets you haven't cleared. Clearing this one saves its stars and fills your ring; the lower sets stay open.">🚀 Trying ahead</div>` : ''}
       <div class="set-sub">${set.min}–${set.max} · Stage ${set.band + 1} of ${theme.bands.length} · Set ${set.n + 1} of ${theme.sets.filter((s) => s.band === set.band).length}</div>
       ${known ? `<div class="known-note">You've already solved ${known} of these ${set.puzzles.length} puzzles — they're marked with a dot.</div>` : ''}`,
     progress: `<div class="theme-progress">
         <div class="tp-row"><span>${esc(theme.name)} ladder</span><span>${cleared}/${theme.sets.length} sets cleared</span></div>
         <div class="bar"><div style="width:${pct(cleared, theme.sets.length)}%"></div></div>
       </div>`,
-    rule: `Clear the set with ${PASS_SCORE}/${SET_SIZE} first-try solves.`,
+    rule: waitMs ? `Practice run: this set can be cleared again in ${fmtWait(waitMs)}.` : `Clear the set with ${PASS_SCORE}/${SET_SIZE} first-try solves. Miss and you wait 24 hours to clear it.`,
     passScore: PASS_SCORE,
     finish: finishSet,
   });
 
   function finishSet({ results, puzzleMs, runId, runStart, runMs, snapAtStart, newlySolved }) {
     const score = results.filter(Boolean).length;
-    const stars = starsFor(score);
     const prev = tp.stars[flat] || 0;
+    const practice = waitMs > 0 && prev === 0; // started while waiting: can't clear it this time
+    const stars = practice ? 0 : starsFor(score);
+    if (!practice && stars === 0 && prev === 0) (tp.failed ??= {})[flat] = Date.now(); // start the wait
+    if (stars > 0 && tp.failed) delete tp.failed[flat];
+    const waitNow = waitLeft(tp, flat);
     const si = stageOf(key);
     const beforeFrac = clearedCount(key) / theme.sets.length;
     const stageBefore = si >= 0 ? stageProgress(si).frac : 0;
@@ -2514,7 +2529,7 @@ async function showPlay(key, flat) {
     const panel = el(`<div class="result ${passed ? 'pass' : 'fail'} ${stars === 3 ? 'perfect' : ''}">
       <div class="result-card">
         <div class="result-stars">${starStr(stars)}</div>
-        <h1>${passed ? (stars === 3 ? 'Perfect set!' : 'Set cleared!') : 'Not quite'}</h1>
+        <h1>${passed ? (stars === 3 ? 'Perfect set!' : 'Set cleared!') : practice && score >= PASS_SCORE ? 'Nice practice!' : 'Not quite'}</h1>
         <div class="result-score"><b>${score}</b>/${SET_SIZE}</div>
         <div class="pips big">${results.map((r) => `<span class="pip ${r ? 'ok' : 'bad'}"></span>`).join('')}</div>
         <div class="result-time">
@@ -2525,7 +2540,8 @@ async function showPlay(key, flat) {
         </div>
         <p>${passed
           ? newRung ? `🎉 New stage unlocked: <b>${next.min}–${next.max}</b>` : bonus ? `<span class="xp">+${bonus} bonus XP</span>` : 'Stars updated.'
-          : `You need ${PASS_SCORE}/${SET_SIZE} to clear this set. Run it back!`}</p>
+          : practice ? `Practice run. You can clear this set in <b>${fmtWait(waitNow)}</b>.`
+          : `You need ${PASS_SCORE}/${SET_SIZE} to clear this set. You can practice it now and clear it in <b>24 hours</b>.`}</p>
         ${solvedNote}
         ${changes}
         ${si >= 0 ? `<div class="result-ring">
@@ -2552,8 +2568,10 @@ async function showPlay(key, flat) {
       ctr.append(b);
     };
     const replay = () => (route());
-    if (passed && nextSet(tp, theme.sets.length) < theme.sets.length) btn('Next set →', () => (location.hash = hrefPlay(key, nextSet(tp, theme.sets.length))), 'primary');
-    btn(passed ? 'Replay set' : 'Retry set', replay, passed ? 'ghost' : 'primary');
+    const nx = nextSet(tp, theme.sets.length);
+    const canNext = nx < theme.sets.length && nx !== flat;
+    if (canNext) btn('Next set →', () => (location.hash = hrefPlay(key, nx)), 'primary');
+    btn(passed ? 'Replay set' : waitNow ? 'Practice again' : 'Retry set', replay, passed || canNext ? 'ghost' : 'primary');
     btn('Ladder', () => (location.hash = hrefTheme(key)), 'ghost');
     $app.replaceChildren(panel);
     animateRings(panel);
@@ -2907,11 +2925,12 @@ function mergeProgress(a, b) {
     const merged = {};
     for (const src of [older[st] ?? {}, newer[st] ?? {}]) {
       for (const [key, tp] of Object.entries(src)) {
-        const m = (merged[key] ??= { ...tp, stars: {} });
+        const m = (merged[key] ??= { ...tp, stars: {}, failed: { ...(tp.failed ?? {}) } });
         for (const [f, n] of Object.entries(tp.stars ?? {})) m.stars[f] = Math.max(m.stars[f] ?? 0, n);
         m.start = Math.min(m.start ?? 0, tp.start ?? 0);
         m.frontier = Math.min(m.frontier ?? 0, tp.frontier ?? 0);
         if (tp.at != null) m.at = tp.at; // newer copy's place wins
+        for (const [f, t] of Object.entries(tp.failed ?? {})) (m.failed ??= {})[f] = Math.max(m.failed?.[f] ?? 0, t);
       }
     }
     out[st] = merged;
