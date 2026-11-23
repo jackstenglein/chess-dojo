@@ -88,6 +88,9 @@ function BeltIcon() {
 }
 
 /** Ticks on both sides of equal, on the same curve as the fill. */
+/** The eval bar's width. The player bars leave the same space, so they line up with the board. */
+export const EVAL_BAR_WIDTH = { xs: 28, sm: 38 };
+
 /** ±10 is not marked: it sits right at the ends of the bar. */
 const TICKS = [1, 2, 3, 5].flatMap((v) => [v, -v]);
 
@@ -123,7 +126,7 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
             data-testid='sensei-eval-bar'
             sx={{
                 position: 'relative',
-                width: { xs: 28, sm: 38 },
+                width: EVAL_BAR_WIDTH,
                 flexShrink: 0,
                 alignSelf: 'stretch',
             }}

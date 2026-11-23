@@ -33,6 +33,10 @@ import {
     TEST_GAME_NUMBER,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import AddIcon from '@mui/icons-material/Add';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -73,7 +77,7 @@ import { useActAs } from './localTesting';
 import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
-import { EvalBar, SenseiStrip } from './SenseiEval';
+import { EVAL_BAR_WIDTH, EvalBar, SenseiStrip } from './SenseiEval';
 import { SenseiPanel } from './SenseiPanel';
 import { TwitchEmbed } from './TwitchEmbed';
 import {
@@ -763,20 +767,42 @@ export function LiveMatchPage() {
                         running={clocks.running === bottomColor}
                     />
                     <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
-                        <Button size='small' onClick={() => goTo(tree)} disabled={node.ply === 0}>
-                            Start
-                        </Button>
-                        <Button size='small' onClick={stepBack} disabled={node.ply === 0}>
-                            Back
-                        </Button>
+                        <Tooltip title='Start'>
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    aria-label='Start'
+                                    onClick={() => goTo(tree)}
+                                    disabled={node.ply === 0}
+                                >
+                                    <FirstPageIcon />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                        <Tooltip title='Back'>
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    aria-label='Back'
+                                    onClick={stepBack}
+                                    disabled={node.ply === 0}
+                                >
+                                    <ChevronLeftIcon />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
                         <Typography
                             data-testid='last-move'
                             sx={{
                                 flexGrow: 1,
                                 textAlign: 'center',
                                 fontWeight: 800,
-                                fontSize: '1.25rem',
+                                fontSize: { xs: '1rem', sm: '1.25rem' },
                                 fontVariantNumeric: 'tabular-nums',
+                                minWidth: 0,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                             }}
                         >
                             {node.ply > 0 ? moveLabel(node.ply, node.san) : 'No moves yet'}
@@ -790,16 +816,31 @@ export function LiveMatchPage() {
                                 </Typography>
                             )}
                         </Typography>
-                        <Button size='small' onClick={stepNext} disabled={!nextOf(node)}>
-                            Next
-                        </Button>
-                        <Button
-                            size='small'
-                            variant={atLive ? 'text' : 'contained'}
-                            onClick={() => goTo(null)}
-                        >
-                            Live
-                        </Button>
+                        <Tooltip title='Next'>
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    aria-label='Next'
+                                    onClick={stepNext}
+                                    disabled={!nextOf(node)}
+                                >
+                                    <ChevronRightIcon />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                        <Tooltip title='Live'>
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    aria-label='Live'
+                                    onClick={() => goTo(null)}
+                                    disabled={atLive}
+                                    color={atLive ? 'default' : 'primary'}
+                                >
+                                    <LastPageIcon />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
                         <Tooltip title={sounds.enabled ? 'Mute move sounds' : 'Play move sounds'}>
                             <IconButton
                                 size='small'
@@ -901,49 +942,54 @@ function PlayerBar({
     running: boolean;
 }) {
     return (
-        <Stack
-            direction='row'
-            sx={{
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                // The eval bar's width plus the gap, so the photo starts at the board's edge.
-                pl: { xs: '36px', sm: '46px' },
-            }}
-        >
-            <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-                <PlayerPhoto name={player?.name} size={36} />
-                <Typography sx={{ fontWeight: 700 }} noWrap>
-                    {player?.title && (
-                        <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
-                            {player.title}
-                        </Box>
-                    )}
-                    {player?.name ?? '…'}
-                    {player?.rating && (
-                        <Box
-                            component='span'
-                            sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
-                        >
-                            {player.rating}
-                        </Box>
-                    )}
-                </Typography>
-            </Stack>
-            <Paper
-                elevation={0}
+        // The same row as the board: a space as wide as the eval bar, the same
+        // gap, then the player, so the photo starts exactly at the board's edge.
+        <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+            <Box sx={{ width: EVAL_BAR_WIDTH, flexShrink: 0 }} />
+            <Stack
+                direction='row'
                 sx={{
-                    px: 1.5,
-                    py: 0.5,
-                    fontWeight: 800,
-                    fontSize: '1.15rem',
-                    fontVariantNumeric: 'tabular-nums',
-                    bgcolor: running ? 'text.primary' : 'action.hover',
-                    color: running ? 'background.paper' : 'text.primary',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexGrow: 1,
+                    minWidth: 0,
                 }}
-                data-testid='player-clock'
             >
-                {formatClock(seconds)}
-            </Paper>
+                <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
+                    <PlayerPhoto name={player?.name} size={36} />
+                    <Typography sx={{ fontWeight: 700 }} noWrap>
+                        {player?.title && (
+                            <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
+                                {player.title}
+                            </Box>
+                        )}
+                        {player?.name ?? '…'}
+                        {player?.rating && (
+                            <Box
+                                component='span'
+                                sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
+                            >
+                                {player.rating}
+                            </Box>
+                        )}
+                    </Typography>
+                </Stack>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        px: 1.5,
+                        py: 0.5,
+                        fontWeight: 800,
+                        fontSize: '1.15rem',
+                        fontVariantNumeric: 'tabular-nums',
+                        bgcolor: running ? 'text.primary' : 'action.hover',
+                        color: running ? 'background.paper' : 'text.primary',
+                    }}
+                    data-testid='player-clock'
+                >
+                    {formatClock(seconds)}
+                </Paper>
+            </Stack>
         </Stack>
     );
 }

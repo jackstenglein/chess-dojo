@@ -74,14 +74,9 @@ export function SenseiPanel({
                 direction='row'
                 sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1 }}
             >
-                <Box>
-                    <Typography variant='subtitle1' sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-                        Sensei evals
-                    </Typography>
-                    <Typography variant='caption' color='text.secondary'>
-                        After {positionLabel}
-                    </Typography>
-                </Box>
+                <Typography variant='subtitle1' sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                    Sensei evals
+                </Typography>
                 <Button
                     variant='contained'
                     size='small'

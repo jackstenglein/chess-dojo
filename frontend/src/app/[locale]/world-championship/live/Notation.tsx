@@ -3,18 +3,8 @@
 import { AnalysisNode } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
 import PromoteIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import {
-    Box,
-    IconButton,
-    ListItemIcon,
-    Menu,
-    MenuItem,
-    Paper,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import PlayIcon from '@mui/icons-material/PlayArrow';
+import { Box, ListItemIcon, Menu, MenuItem, Paper, Stack, Typography } from '@mui/material';
 import { Fragment, ReactNode, useEffect, useRef, useState } from 'react';
 import { formatSpent, LiveMove } from './lichessFeed';
 
@@ -271,7 +261,7 @@ export function Notation({
     rows.push(variationBlock(mainline[mainline.length - 1] ?? root));
 
     return (
-        <Paper variant='outlined' sx={{ p: 1.5 }}>
+        <Paper variant='outlined' sx={{ p: 1.5, pb: onLive ? 0 : 1.5, overflow: 'hidden' }}>
             <Stack
                 direction='row'
                 sx={{
@@ -284,19 +274,6 @@ export function Notation({
                 <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
                     Moves
                 </Typography>
-                {onLive && (
-                    <Tooltip title='Back to live'>
-                        <IconButton
-                            size='small'
-                            color='error'
-                            aria-label='Back to live'
-                            data-testid='back-to-live'
-                            onClick={onLive}
-                        >
-                            <RefreshIcon fontSize='small' />
-                        </IconButton>
-                    </Tooltip>
-                )}
             </Stack>
             {mainline.length === 0 && variationsFrom(root).length === 0 ? (
                 <Typography variant='body2' color='text.secondary'>
@@ -315,6 +292,39 @@ export function Notation({
                     }}
                 >
                     {rows}
+                </Box>
+            )}
+            {onLive && (
+                // Across the bottom of the notation, as on Lichess.
+                <Box
+                    component='button'
+                    type='button'
+                    data-testid='back-to-live'
+                    onClick={onLive}
+                    sx={{
+                        all: 'unset',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1,
+                        mx: -1.5,
+                        mt: 1,
+                        width: 'calc(100% + 24px)',
+                        py: 1,
+                        bgcolor: '#d35400',
+                        color: '#fff',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                        '&:hover': { bgcolor: '#e8650c' },
+                        '&:focus-visible': { outline: '2px solid #fff', outlineOffset: -4 },
+                    }}
+                >
+                    <PlayIcon fontSize='small' />
+                    Back to live move
                 </Box>
             )}
             <Menu
