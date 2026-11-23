@@ -224,7 +224,7 @@ interface MoveMenuProps {
 }
 
 const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
-    const { chess, config } = useChess();
+    const { chess, config, slots } = useChess();
     const { game, onUpdateGame } = useGame();
     const { onDelete, deleteAction, onClose: onCloseDelete } = useDeletePrompt(chess, onClose);
     const [showMerge, setShowMerge] = useState(false);
@@ -351,6 +351,8 @@ const MoveMenu = ({ anchor, move, onClose }: MoveMenuProps) => {
                         </ListItemIcon>
                         <ListItemText>{t('mergeLineIntoGame')}</ListItemText>
                     </MenuItem>
+
+                    {slots?.moveMenuItems && <slots.moveMenuItems move={move} onClose={onClose} />}
 
                     {game && isUnsavedVariation(move) && (
                         <MenuItem

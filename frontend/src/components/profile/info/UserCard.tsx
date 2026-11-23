@@ -24,6 +24,7 @@ import CoachChip from './CoachChip';
 import CreatedAtChip from './CreatedAtChip';
 import DiscordChip from './DiscordChip';
 import InactiveChip from './InactiveChip';
+import PuzzleContributorChip from './PuzzleContributorChip';
 import TimezoneChip from './TimezoneChip';
 
 const BASE_URL = getConfig().baseUrl;
@@ -218,6 +219,7 @@ export function UserCard({
                         }}
                     >
                         <CoachChip user={user} />
+                        <PuzzleContributorChip username={user.username} />
                         <InactiveChip user={user} />
                         <DiscordChip username={user.discordUsername} id={user.discordId} />
                         <TimezoneChip timezone={user.timezoneOverride} />

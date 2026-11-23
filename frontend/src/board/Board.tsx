@@ -248,7 +248,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, onMove }) => {
-    const { chess, config: chessConfig, orientation } = useChess();
+    const { chess, config: chessConfig, slotProps, orientation } = useChess();
     const [board, setBoard] = useState<BoardApi | null>(null);
     const boardRef = useRef<HTMLDivElement>(null);
     // Last initialized key, fen and pgn. A ref rather than state, so a changed
@@ -263,7 +263,7 @@ const Board: React.FC<BoardProps> = ({ config, onInitialize, onInitializeBoard, 
     );
     const [coordinateSize] = useLocalStorage<CoordinateSize>(
         CoordinateSizeKey,
-        CoordinateSize.Standard,
+        slotProps?.board?.defaultCoordinateSize ?? CoordinateSize.Standard,
     );
     const [showLegalMoves] = useLocalStorage(ShowLegalMovesKey, true);
     const [showGlyphs] = useLocalStorage(ShowGlyphsKey, false);
