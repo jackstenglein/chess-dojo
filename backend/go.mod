@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/sajari/regression v1.0.1
 	github.com/stripe/stripe-go/v81 v81.4.0
-	go.mongodb.org/mongo-driver v1.17.9
+	go.mongodb.org/mongo-driver v1.17.10
 	golang.org/x/sync v0.24.0
 	google.golang.org/api v0.295.0
 )
