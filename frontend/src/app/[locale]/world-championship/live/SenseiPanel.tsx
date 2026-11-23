@@ -238,15 +238,6 @@ function SenseiCard({
                             }}
                         >
                             {sensei.name}
-                            {sensei.guest && (
-                                <Typography
-                                    component='span'
-                                    color='text.secondary'
-                                    sx={{ ml: 0.75 }}
-                                >
-                                    guest
-                                </Typography>
-                            )}
                         </Typography>
                     )}
                 </Box>
