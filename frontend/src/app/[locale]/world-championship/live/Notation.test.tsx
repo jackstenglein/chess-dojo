@@ -1,5 +1,9 @@
 import { Chess } from '@jackstenglein/chess';
-import { buildTree, findNode } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
+import {
+    AnalysisNode,
+    buildTree,
+    findNode,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LiveMove } from './lichessFeed';
@@ -37,7 +41,7 @@ describe('Notation', () => {
     ]);
 
     it('writes variations ChessBase style, under the move they branch from', () => {
-        const current = findNode(tree, ['e4', 'e5', 'Nf3', 'Nc6'])!;
+        const current = findNode(tree, ['e4', 'e5', 'Nf3', 'Nc6']) ?? tree;
         render(
             <Notation
                 root={tree}
@@ -62,7 +66,7 @@ describe('Notation', () => {
     });
 
     it('opens a variation move when it is clicked', () => {
-        const onSelect = vi.fn();
+        const onSelect = vi.fn<(node: AnalysisNode) => void>();
         render(
             <Notation root={tree} current={tree} moves={moves} guesses={{}} onSelect={onSelect} />,
         );
