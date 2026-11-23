@@ -78,7 +78,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; min-width: 0;
   padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
 }
 .rung.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.rung.locked { opacity: .45; }
 .rung-label b { font-size: 18px; font-variant-numeric: tabular-nums; }
 .rung-label small { color: var(--muted); }
 .rung-count { text-align: right; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -473,8 +472,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; min-width: 0;
 }
 
 /* ---- Trying ahead ---- */
-.rung.locked { opacity: .6; transition: opacity .15s; }
-.rung.locked:hover { opacity: 1; }
 .node.ahead { border-color: var(--locked); color: var(--muted); }
 .node.ahead:hover { border-color: #8a7a55; color: var(--text); background: #262218; }
 .node.ahead:hover .node-stars::after { content: 'TRY'; color: var(--accent); font-weight: 800; letter-spacing: 0; }

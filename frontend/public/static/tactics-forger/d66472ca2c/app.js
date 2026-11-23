@@ -40,6 +40,15 @@ const lowestUncleared = (tp, total) => {
   while (f < total && tp.stars[f] > 0) f++;
   return f;
 };
+// Every stage is open to everyone. Your place (tp.at) is the last set you played; the next set is the
+// first uncleared one from there, wrapping back to the lowest uncleared set once the top is done.
+const nextSet = (tp, total) => {
+  if (!tp) return 0;
+  let f = Math.max(0, Math.min(tp.at ?? tp.frontier ?? 0, total));
+  while (f < total && tp.stars[f] > 0) f++;
+  return f < total ? f : lowestUncleared(tp, total);
+};
+const nextFlat = (tp, total) => Math.min(nextSet(tp, total), total - 1);
 const themeProgress = (key) =>
   (store()[key] ??= { frontier: 0, stars: {}, start: 0 });
 
@@ -604,7 +613,7 @@ function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, 
       }
       const attrs = `data-key="${key}" data-name="${esc(shortName(t))}" data-cl="${cl}" data-sets="${t.sets}"`;
       // Clicking a slice starts that theme's next set (its ladder once complete).
-      const go = frac >= 1 ? hrefTheme(key) : hrefPlay(key, Math.min(store()[key]?.frontier ?? 0, t.sets - 1));
+      const go = frac >= 1 ? hrefTheme(key) : hrefPlay(key, nextFlat(store()[key], t.sets));
       out += links ? `<a href="${go}" class="seg-link" ${attrs}>${seg}${label}</a>` : `<g ${attrs}>${seg}${label}</g>`;
     });
     out += '</g>';
@@ -788,7 +797,7 @@ function showHome() {
       cleared: tp ? Object.values(tp.stars).filter((s) => s > 0).length : 0,
       stars: tp ? sum(Object.values(tp.stars)) : 0,
       started: !!tp,
-      rating: tp ? bandOfFlat(t, Math.min(tp.frontier, t.sets - 1)).min : 0,
+      rating: tp ? bandOfFlat(t, nextFlat(tp, t.sets)).min : 0,
     };
   });
   const allSets = sum(totals.map((t) => t.sets));
@@ -839,8 +848,8 @@ function showHome() {
     const color = STAGE_COLORS[si];
     const nextKey = sp.keys.find((k) => clearedCount(k) < themeMeta(k).sets);
     const nextT = nextKey && themeMeta(nextKey);
-    const nextFlat = nextKey ? Math.min(store()[nextKey]?.frontier ?? 0, nextT.sets - 1) : 0;
-    const nextB = nextT && bandOfFlat(nextT, nextFlat);
+    const nextF = nextKey ? nextFlat(store()[nextKey], nextT.sets) : 0;
+    const nextB = nextT && bandOfFlat(nextT, nextF);
     const left = sp.sets - sp.cleared;
     const centerDefault = `<small>${esc(STAGES[si].name)}</small>
       <b style="color:${color}">${ringPct(sp.frac)}%</b>
@@ -851,7 +860,7 @@ function showHome() {
       const cl = clearedCount(k);
       const f = cl / t.sets;
       // Tapping a category starts its next set; the ☰ button opens its full ladder.
-      const flat = Math.min(store()[k]?.frontier ?? 0, t.sets - 1);
+      const flat = nextFlat(store()[k], t.sets);
       const b = bandOfFlat(t, flat);
       return `<div class="slice-row ${f >= 1 ? 'done' : cl ? 'started' : ''}" data-key="${k}">
         <a class="slice-go" href="${f >= 1 ? hrefTheme(k) : hrefPlay(k, flat)}" title="${f >= 1 ? 'Ladder complete' : `Play ${esc(shortName(t))} ${b.min}–${b.max}`}">
@@ -879,7 +888,7 @@ function showHome() {
         <div class="ring-legend">
           <h2>${esc(STAGES[si].name)}</h2>
           <div class="slice-list">${rows}</div>
-          ${nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextFlat)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
+          ${nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextF)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
         </div>
       </div>`;
     hero.querySelectorAll('.ring-tab').forEach((b) => {
@@ -923,7 +932,7 @@ function showHome() {
     const frontier = tp?.frontier ?? 0;
     const done = frontier >= t.sets;
     const tot = totals[index.themes.indexOf(t)];
-    const b = bandOfFlat(t, Math.min(frontier, t.sets - 1));
+    const b = bandOfFlat(t, nextFlat(tp, t.sets));
     const rungNo = t.bandSets.findIndex(([m]) => m === b.min) + 1;
     const segs = Array.from({ length: b.count }, (_, i) =>
       `<span class="seg ${done || i < b.n ? 'on' : i === b.n ? 'cur' : ''}"></span>`).join('');
@@ -999,7 +1008,7 @@ function repCard(t, slot) {
   const tp = store('openings')[t.key];
   const cleared = openingSets(t.key);
   const stars = sum(Object.values(tp?.stars || {}));
-  const frontier = Math.min(tp?.frontier ?? 0, t.sets - 1);
+  const frontier = nextFlat(tp, t.sets);
   const done = (tp?.frontier ?? 0) >= t.sets;
   const b = bandOfFlat(t, frontier);
   const rungNo = t.bandSets.findIndex(([m]) => m === b.min) + 1;
@@ -1270,7 +1279,7 @@ function showSpecialtyPicker(opts = {}) {
       };
       page.querySelector('#startTraining').onclick = () => {
         saveWhite();
-        const f = Math.min(store('openings')[t.key]?.frontier ?? 0, t.sets - 1);
+        const f = nextFlat(store('openings')[t.key], t.sets);
         location.hash = hrefPlay(t.key, f, 'openings');
       };
       page.querySelector('#explore').onclick = () => {
@@ -2212,7 +2221,8 @@ async function showLadder(key) {
   const cleared = Object.values(tp.stars).filter((s) => s > 0).length;
   const stars = sum(Object.values(tp.stars));
   const perfect = Object.values(tp.stars).filter((s) => s === 3).length;
-  const curSet = theme.sets[Math.min(tp.frontier, total - 1)];
+  const here = nextSet(tp, total);
+  const curSet = theme.sets[Math.min(here, total - 1)];
   const rungNo = curSet.band + 1;
   const ltr = trackRating();
   const lrp = rankProgress(ltr.rating, solvedCount(track), track);
@@ -2231,10 +2241,10 @@ async function showLadder(key) {
     const b = theme.bands[bi];
     const rungCleared = flats.filter((f) => tp.stars[f] > 0).length;
     const rungStars = sum(flats.map((f) => tp.stars[f] || 0));
-    const unlocked = flats[0] <= tp.frontier;
-    const isCurrent = flats.includes(tp.frontier);
+    const unlocked = flats[0] <= here;
+    const isCurrent = flats.includes(here);
     const complete = rungCleared === flats.length;
-    const rung = el(`<div class="rung ${unlocked ? '' : 'locked'} ${isCurrent ? 'current' : ''} ${complete ? 'complete' : ''}">
+    const rung = el(`<div class="rung ${isCurrent ? 'current' : ''} ${complete ? 'complete' : ''}">
       <div class="rung-label"><b>${b.min}</b><small>–${b.max}</small><span class="rung-no">Stage ${bi + 1}</span></div>
       <div class="rung-sets"></div>
       <div class="rung-count"><b>${rungCleared}/${flats.length}</b><small>sets</small><span>★ ${rungStars}/${flats.length * 3}</span></div>
@@ -2242,10 +2252,10 @@ async function showLadder(key) {
     const wrap = rung.querySelector('.rung-sets');
     for (const f of flats) {
       const st = tp.stars[f] || 0;
-      const state = st ? 'done' : f === tp.frontier ? 'next' : f < tp.frontier ? 'open' : 'ahead';
+      const state = st ? 'done' : f === here ? 'next' : 'open';
       const known = theme.sets[f].puzzles.filter((pz) => isSolved(pz.id)).length;
       const node = el(`<button class="node ${state}"
-        title="Set ${theme.sets[f].n + 1} · ${b.min}–${b.max} · ${known}/${theme.sets[f].puzzles.length} puzzles solved${state === 'ahead' ? ' · try ahead (your place on the ladder stays put)' : ''}">
+        title="Set ${theme.sets[f].n + 1} · ${b.min}–${b.max} · ${known}/${theme.sets[f].puzzles.length} puzzles solved">
         <span class="node-n">${theme.sets[f].n + 1}</span>
         <span class="node-stars">${st ? starStr(st) : state === 'next' ? 'GO' : ''}</span>
         ${known && !st ? `<span class="node-known">${known}/${theme.sets[f].puzzles.length}</span>` : ''}
@@ -2261,15 +2271,15 @@ async function showLadder(key) {
     ladder.append(rung);
   });
   page.querySelector('#cont').onclick = () => {
-    if (tp.frontier < theme.sets.length) location.hash = hrefPlay(key, tp.frontier);
+    if (tp.frontier < theme.sets.length) location.hash = hrefPlay(key, here);
   };
   const jump = page.querySelector('#jump');
-  const curBand = theme.sets[Math.min(tp.frontier, theme.sets.length - 1)].band;
-  jump.value = String(theme.sets.findIndex((s) => s.band === curBand));
+  jump.value = String(theme.sets.findIndex((s) => s.band === curSet.band));
   jump.onchange = () => {
-    // Just jumps to that stage; play any set there whenever you like.
-    const f = Number(jump.value);
-    ladder.querySelectorAll('.rung')[theme.sets[f].band]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // Moves your place to that stage: Continue and Next up carry on from there.
+    tp.at = Number(jump.value);
+    saveProgress();
+    showLadder(key).then(() => document.querySelector('.rung.current')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
   };
 
   $app.replaceChildren(page);
@@ -2308,7 +2318,7 @@ async function showPlay(key, flat) {
   const tp = themeProgress(key);
   const set = theme.sets[flat];
   if (!set) return (location.hash = hrefTheme(key));
-  const tryingAhead = flat > tp.frontier;
+  tp.at = flat; // your place is wherever you play
   const cleared = Object.values(tp.stars).filter((s) => s > 0).length;
   const known = set.puzzles.filter((p) => isSolved(p.id)).length;
   const tr = track;
@@ -2318,7 +2328,6 @@ async function showPlay(key, flat) {
     backHref: hrefTheme(key),
     backLabel: `${theme.name} ladder`,
     head: `<h2>${esc(theme.name)}</h2>
-      ${tryingAhead ? `<div class="ahead-badge" title="Clearing it saves its stars and fills your ring; your place on the ladder stays at set ${tp.frontier + 1}">🚀 Trying ahead</div>` : ''}
       <div class="set-sub">${set.min}–${set.max} · Stage ${set.band + 1} of ${theme.bands.length} · Set ${set.n + 1} of ${theme.sets.filter((s) => s.band === set.band).length}</div>
       ${known ? `<div class="known-note">You've already solved ${known} of these ${set.puzzles.length} puzzles — they're marked with a dot.</div>` : ''}`,
     progress: `<div class="theme-progress">
@@ -2338,13 +2347,11 @@ async function showPlay(key, flat) {
     const beforeFrac = clearedCount(key) / theme.sets.length;
     const stageBefore = si >= 0 ? stageProgress(si).frac : 0;
     let bonus = 0;
-    const firstClear = stars > 0 && flat === tp.frontier;
+    const firstClear = stars > 0 && prev === 0;
     if (stars > 0) {
       if (stars > prev) tp.stars[flat] = stars;
       if (prev === 0) bonus += SET_CLEAR_XP;
-      if (firstClear) {
-        tp.frontier = flat + 1;
-      }
+      tp.at = flat;
       tp.frontier = lowestUncleared(tp, theme.sets.length);
       if (stars === 3 && prev < 3) bonus += PERFECT_XP;
       const d = today();
@@ -2416,7 +2423,7 @@ async function showPlay(key, flat) {
       ctr.append(b);
     };
     const replay = () => (route());
-    if (passed && next) btn('Next set →', () => (location.hash = hrefPlay(key, flat + 1)), 'primary');
+    if (passed && nextSet(tp, theme.sets.length) < theme.sets.length) btn('Next set →', () => (location.hash = hrefPlay(key, nextSet(tp, theme.sets.length))), 'primary');
     btn(passed ? 'Replay set' : 'Retry set', replay, passed ? 'ghost' : 'primary');
     btn('Ladder', () => (location.hash = hrefTheme(key)), 'ghost');
     $app.replaceChildren(panel);
@@ -2775,6 +2782,7 @@ function mergeProgress(a, b) {
         for (const [f, n] of Object.entries(tp.stars ?? {})) m.stars[f] = Math.max(m.stars[f] ?? 0, n);
         m.start = Math.min(m.start ?? 0, tp.start ?? 0);
         m.frontier = Math.min(m.frontier ?? 0, tp.frontier ?? 0);
+        if (tp.at != null) m.at = tp.at; // newer copy's place wins
       }
     }
     out[st] = merged;
