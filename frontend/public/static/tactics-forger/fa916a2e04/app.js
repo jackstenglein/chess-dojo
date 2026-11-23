@@ -327,13 +327,13 @@ const today = () => new Date().toISOString().slice(0, 10);
 // need RANK_SCALE of the Tactics count (Wizard: Tactics 10,000, Endgames 6,000).
 const RANKS = [
   [0, 'grasshopper', 'Grasshopper', 'Starting out', 0],
-  [600, 'jester', 'Jester', 'Knows some tricks', 200],
-  [800, 'apprentice', 'Apprentice', 'Learning the craft', 500],
-  [1000, 'squire', 'Squire', 'Getting better', 1000],
-  [1200, 'ninja', 'Ninja', 'Strikes from the shadows', 2000],
-  [1400, 'warrior', 'Warrior', 'Battle-tested', 3000],
-  [1600, 'beast', 'Beast', 'Ready to pounce', 5000],
-  [1800, 'wizard', 'Wizard', 'Tactical master', 10000],
+  [800, 'jester', 'Jester', 'Knows some tricks', 200],
+  [1000, 'apprentice', 'Apprentice', 'Learning the craft', 500],
+  [1200, 'squire', 'Squire', 'Getting better', 1000],
+  [1400, 'ninja', 'Ninja', 'Strikes from the shadows', 2000],
+  [1600, 'warrior', 'Warrior', 'Battle-tested', 3000],
+  [1800, 'beast', 'Beast', 'Ready to pounce', 5000],
+  [2000, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
 const RANK_SCALE = { tactics: 1, openings: 0.6, endgames: 0.6 };
