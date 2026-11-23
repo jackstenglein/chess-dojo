@@ -10,7 +10,7 @@ import {
     ScoreboardDisplay,
 } from '@/database/requirement';
 import { TimelineEntry } from '@/database/timeline';
-import { User } from '@/database/user';
+import { isFree, User } from '@/database/user';
 import { ANNOTATE_GAMES_TASK_ID, CLASSICAL_GAMES_TASK_ID } from '../suggestedTasks';
 import {
     getStarterTasks,
@@ -186,7 +186,12 @@ export function getStarterSteps({
     /** Count only tasks marked done on the starter plan, as for a brand-new member. */
     ignoreRealProgress?: boolean;
 }): StarterStep[] {
-    const active = requirements.filter((r) => r.status === RequirementStatus.Active);
+    // Free members only get free tasks: the first free endgame algorithm, and no
+    // master games step, since Study Master Games is for paid members.
+    const freeOnly = isFree(user);
+    const active = requirements.filter(
+        (r) => r.status === RequirementStatus.Active && (!freeOnly || r.isFree),
+    );
     const records = getStarterTasks(user.tutorials);
 
     const toStepTask = (task: Requirement): StarterStepTask => ({

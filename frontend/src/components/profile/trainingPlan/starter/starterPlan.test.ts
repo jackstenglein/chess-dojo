@@ -240,6 +240,41 @@ describe('getStarterSteps', () => {
         expect(steps.every((s) => !s.complete)).toBe(true);
     });
 
+    it('gives free members only free tasks: a free algorithm and no master games', () => {
+        const paidAlgorithm = checkbox('algo-0', RequirementCategory.Endgame, {
+            name: 'Complete Algorithm #0',
+            sortPriority: 'endgame.algo.00',
+            isFree: false,
+        });
+        const paidMasterGames = { ...masterGames, isFree: false };
+        const forUser = (subscriptionStatus: SubscriptionStatus) =>
+            getStarterSteps({
+                user: createUser({ subscriptionStatus }),
+                requirements: [
+                    ...requirements.filter((r) => r !== masterGames),
+                    paidAlgorithm,
+                    paidMasterGames,
+                ],
+                timeline: [],
+                hasDojoRushRun: false,
+            });
+
+        const free = forUser(SubscriptionStatus.NotSubscribed);
+        expect(free.find((s) => s.id === StarterStepId.EndgameAlgorithm)?.tasks[0].task.id).toBe(
+            'algo-1',
+        );
+        expect(free.some((s) => s.id === StarterStepId.MasterGame)).toBe(false);
+        expect(free.find((s) => s.id === StarterStepId.ClassicalGame)).toBeDefined();
+
+        const paid = forUser(SubscriptionStatus.Subscribed);
+        expect(paid.find((s) => s.id === StarterStepId.EndgameAlgorithm)?.tasks[0].task.id).toBe(
+            'algo-0',
+        );
+        expect(paid.find((s) => s.id === StarterStepId.MasterGame)?.tasks[0].task.id).toBe(
+            'master-games',
+        );
+    });
+
     it('ignores archived welcome tasks', () => {
         const welcome = step(createUser(), StarterStepId.Welcome);
         expect(welcome?.tasks.map((t) => t.task.id)).toEqual(['welcome-a', 'welcome-b']);
