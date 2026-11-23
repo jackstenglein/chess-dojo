@@ -297,7 +297,8 @@ export function LiveMatchPage() {
     const nextOf = (n: AnalysisNode) => n.children.find((c) => c.mainline) ?? n.children[0];
 
     /** A sensei moves a piece on the analysis board: it is played for all senseis. */
-    const analysisMove = (uci: string) => {
+    /** Plays a sensei's move on the analysis board. Returns whether it was played. */
+    const analysisMove = (uci: string): boolean => {
         try {
             const move = new Chess({ fen: node.fen }).move({
                 from: uci.slice(0, 2) as Square,
@@ -308,10 +309,12 @@ export function LiveMatchPage() {
                 sounds.playSan(move.san);
                 analysisApi.move([...node.path, move.san]);
                 setViewPath(null);
+                return true;
             }
         } catch {
             // Not a legal move; the board puts the piece back.
         }
+        return false;
     };
 
     const sounds = useMoveSounds();
@@ -749,12 +752,16 @@ export function LiveMatchPage() {
                                         ? (uci) => {
                                               if (altHeld.current && canGuess) {
                                                   void onGuess(uci);
-                                              } else {
-                                                  analysisMove(uci);
+                                                  return false;
                                               }
+                                              // The move stays on the board.
+                                              return analysisMove(uci);
                                           }
                                         : canGuess
-                                          ? (uci) => void onGuess(uci)
+                                          ? (uci) => {
+                                                void onGuess(uci);
+                                                return false;
+                                            }
                                           : undefined
                                 }
                                 guessUci={canGuess ? myGuesses[nextPly] : undefined}

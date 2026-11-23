@@ -24,7 +24,11 @@ interface LiveBoardProps {
     lastMove?: [string, string];
     orientation: 'white' | 'black';
     /** When set, the side to move can drag a piece, and the move is passed here instead of played. */
-    onGuess?: (uci: string) => void;
+    /**
+     * Called with each move made on the board. Return true to keep the move on
+     * the board (an analysis move); otherwise the pieces go back (a guess).
+     */
+    onGuess?: (uci: string) => boolean;
     /** The current guess, drawn as an arrow. */
     guessUci?: string;
 }
@@ -83,9 +87,11 @@ export function LiveBoard({ fen, lastMove, orientation, onGuess, guessUci }: Liv
                         const lastRank = dest[1] === '8' || dest[1] === '1';
                         // Guesses promote to a queen.
                         const promotion = piece?.type === 'p' && lastRank ? 'q' : '';
-                        onGuessRef.current?.(`${orig}${dest}${promotion}`);
-                        // Put the pieces back: the guess is shown as an arrow.
-                        board.set({ fen, lastMove: lastMove as Key[] | undefined });
+                        const keep = onGuessRef.current?.(`${orig}${dest}${promotion}`) === true;
+                        if (!keep) {
+                            // Put the pieces back: a guess is shown as an arrow.
+                            board.set({ fen, lastMove: lastMove as Key[] | undefined });
+                        }
                     },
                 },
             },
