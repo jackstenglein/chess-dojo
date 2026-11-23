@@ -1,0 +1,131 @@
+# Deploys the live World Championship service: sensei evals and guess the move.
+
+service: chess-dojo-wc-live
+
+plugins:
+  - serverless-plugin-custom-roles
+  - serverless-esbuild
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  region: us-east-1
+  logRetentionInDays: 14
+  environment:
+    stage: ${sls:stage}
+  httpApi:
+    id: ${param:httpApiId}
+  deploymentMethod: direct
+
+functions:
+  evals:
+    handler: read.evals
+    events:
+      - httpApi:
+          path: /public/wc-live/rounds/{roundId}/evals
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt WcLiveTable.Arn
+
+  leaderboard:
+    handler: read.leaderboard
+    timeout: 20
+    events:
+      - httpApi:
+          path: /public/wc-live/rounds/{roundId}/leaderboard
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt WcLiveTable.Arn
+
+  myGuesses:
+    handler: read.myGuesses
+    events:
+      - httpApi:
+          path: /wc-live/rounds/{roundId}/guesses
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  guess:
+    handler: guess.handler
+    events:
+      - httpApi:
+          path: /wc-live/guess
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+  eval:
+    handler: eval.handler
+    events:
+      - httpApi:
+          path: /wc-live/eval
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
+resources:
+  Conditions:
+    IsProd: !Equals ['${sls:stage}', 'prod']
+
+  Resources:
+    WcLiveTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${sls:stage}-wc-live
+        AttributeDefinitions:
+          - AttributeName: hash
+            AttributeType: S
+          - AttributeName: range
+            AttributeType: S
+        KeySchema:
+          - AttributeName: hash
+            KeyType: HASH
+          - AttributeName: range
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: !If
+            - IsProd
+            - true
+            - false
+
+  Outputs:
+    WcLiveTableArn:
+      Value: !GetAtt WcLiveTable.Arn
