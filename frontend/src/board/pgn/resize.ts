@@ -17,6 +17,7 @@ const margin = 64;
 const defaultMaxPanelWidth = 470;
 
 export interface BoardLayoutOptions {
+    extraControlsHeight?: number;
     showPgn?: boolean;
     showPanelControls?: boolean;
     /** Whether the buttons under the board are hidden. */
@@ -166,7 +167,12 @@ function smSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPgn = true, showPanelControls, hideBoardButtons }: BoardLayoutOptions = {},
+    {
+        showPgn = true,
+        showPanelControls,
+        hideBoardButtons,
+        extraControlsHeight = 0,
+    }: BoardLayoutOptions = {},
 ): AreaSizes {
     const padding = 6;
     const spacing = 4;
@@ -175,11 +181,17 @@ function smSizes(
     const boardSize = showPanelControls
         ? Math.min(
               preferredBoardSize,
-              getMaxBoardHeight(hidePlayerHeaders, showPanelControls, hideBoardButtons),
+              getMaxBoardHeight(
+                  hidePlayerHeaders,
+                  showPanelControls,
+                  hideBoardButtons,
+                  extraControlsHeight,
+              ),
           )
         : preferredBoardSize;
     const pgnWidth = availableWidth - boardSize;
-    const boardAreaHeight = getBoardAreaHeight(boardSize, hidePlayerHeaders, hideBoardButtons);
+    const boardAreaHeight =
+        getBoardAreaHeight(boardSize, hidePlayerHeaders, hideBoardButtons) + extraControlsHeight;
 
     return {
         breakpoint: 'sm',
@@ -220,18 +232,26 @@ function mdSizes(
     parentWidth: number,
     showUnderboard?: boolean,
     hidePlayerHeaders?: boolean,
-    { showPgn = true, showPanelControls, hideBoardButtons }: BoardLayoutOptions = {},
+    {
+        showPgn = true,
+        showPanelControls,
+        hideBoardButtons,
+        extraControlsHeight = 0,
+    }: BoardLayoutOptions = {},
 ): AreaSizes {
     const padding = 24;
     const spacing = 8;
 
     const panelCount = Number(Boolean(showUnderboard)) + Number(showPgn);
     const availableWidth = parentWidth - padding - (showPanelControls ? panelCount : 2) * spacing;
-    const maxBoardWidth = availableWidth * (panelCount === 2 ? 0.4 : panelCount === 1 ? 0.66 : 1);
+    const maxBoardWidth = showPanelControls
+        ? Math.max(1, availableWidth - panelCount * 100)
+        : availableWidth * (panelCount === 2 ? 0.4 : panelCount === 1 ? 0.66 : 1);
     const maxBoardHeight = getMaxBoardHeight(
         hidePlayerHeaders,
         showPanelControls,
         hideBoardButtons,
+        extraControlsHeight,
     );
     const boardSize = Math.min(maxBoardWidth, maxBoardHeight);
 
@@ -293,6 +313,7 @@ export function getNewSizes(
         hidePlayerHeaders,
         options.showPanelControls,
         options.hideBoardButtons,
+        options.extraControlsHeight,
     );
     let maxBoardWidth = currentSizes.availableWidth - currentSizes.pgn.width;
 
@@ -345,7 +366,7 @@ export function getNewSizes(
     };
 }
 
-function getBoardAreaHeight(
+export function getBoardAreaHeight(
     boardSize: number,
     hidePlayerHeaders?: boolean,
     hideBoardButtons?: boolean,
@@ -359,15 +380,46 @@ function getMaxBoardHeight(
     hidePlayerHeaders?: boolean,
     showPanelControls?: boolean,
     hideBoardButtons?: boolean,
+    extraControlsHeight = 0,
 ): number {
     const playerHeadersHeight = hidePlayerHeaders ? 0 : 2 * playerHeaderHeight;
     const effectiveControlsHeight = hideBoardButtons ? 0 : controlsHeight + controlsMargin;
     return Math.max(
         showPanelControls ? 1 : -Infinity,
-        window.innerHeight - navbarHeight - playerHeadersHeight - effectiveControlsHeight - margin,
+        getMaxBoardAreaHeight() -
+            playerHeadersHeight -
+            effectiveControlsHeight -
+            extraControlsHeight -
+            (extraControlsHeight ? 8 : 0),
     );
 }
 
 function getMaxBoardAreaHeight(): number {
-    return window.innerHeight - navbarHeight - margin;
+    const top = document.getElementById(CONTAINER_ID)?.getBoundingClientRect().top;
+    return window.innerHeight - (top ? top + 16 : navbarHeight + margin);
+}
+
+/** Narrow a side panel without changing its height, and give free width to the square board. */
+export function resizeSidePanel(
+    sizes: AreaSizes,
+    area: 'underboard' | 'pgn',
+    width: number,
+    hidePlayerHeaders?: boolean,
+    options: BoardLayoutOptions = {},
+): AreaSizes {
+    const next = getNewSizes(
+        { ...sizes, [area]: { ...sizes[area], width } },
+        hidePlayerHeaders,
+        options,
+    );
+    if (sizes.breakpoint === 'xs' || (area === 'underboard' && sizes.breakpoint === 'sm'))
+        return next;
+    return getNewSizes(
+        {
+            ...next,
+            board: { ...next.board, width: next.board.maxWidth, height: next.board.maxHeight },
+        },
+        hidePlayerHeaders,
+        options,
+    );
 }

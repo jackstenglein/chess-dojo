@@ -106,7 +106,6 @@ describe('AnalysisBoard side tabs', () => {
             allowPanelHiding: true,
             underboardTabs: [
                 DefaultUnderboardTab.Tags,
-                DefaultUnderboardTab.Editor,
                 DefaultUnderboardTab.Explorer,
                 DefaultUnderboardTab.Clocks,
                 DefaultUnderboardTab.Share,
@@ -118,7 +117,6 @@ describe('AnalysisBoard side tabs', () => {
             sidePanelTabs: [
                 DefaultUnderboardTab.PgnText,
                 DefaultUnderboardTab.Tags,
-                DefaultUnderboardTab.Editor,
                 DefaultUnderboardTab.Explorer,
                 DefaultUnderboardTab.Clocks,
                 DefaultUnderboardTab.Share,
@@ -147,11 +145,7 @@ describe('AnalysisBoard side tabs', () => {
                 DefaultUnderboardTab.Share,
                 DefaultUnderboardTab.Settings,
             ],
-            rightTabs: [
-                DefaultUnderboardTab.PgnText,
-                DefaultUnderboardTab.Editor,
-                DefaultUnderboardTab.Explorer,
-            ],
+            rightTabs: [DefaultUnderboardTab.PgnText, DefaultUnderboardTab.Explorer],
         });
     });
 

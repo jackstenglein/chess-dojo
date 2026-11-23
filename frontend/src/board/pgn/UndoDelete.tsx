@@ -49,6 +49,8 @@ export function UndoDeleteProvider({ children }: { children: ReactNode }) {
     const reconcile = useReconcile();
     const t = useTranslations('analysisBoard.underboard');
     const [open, setOpen] = useState(false);
+    const [noticeLeft, setNoticeLeft] = useState<number>();
+    const [noticeBottom, setNoticeBottom] = useState(88);
     const [deleted, setDeleted] = useState<DeletedMoves & { key: number }>();
     const savePgnRef = useRef<((pgn: string) => void) | null>(null);
 
@@ -77,6 +79,30 @@ export function UndoDeleteProvider({ children }: { children: ReactNode }) {
         return () => chess.removeObserver(observer);
     }, [open, chess]);
 
+    useEffect(() => {
+        if (!open) return;
+        const pane = document
+            .getElementById('resize-container')
+            ?.querySelector('[data-notation-pane]')?.firstElementChild;
+        const updatePosition = () => {
+            const rect = pane?.getBoundingClientRect();
+            setNoticeLeft(rect && rect.width > 0 ? rect.left + rect.width / 2 : undefined);
+            setNoticeBottom(
+                rect && rect.width > 0 ? Math.max(88, window.innerHeight - rect.bottom + 12) : 88,
+            );
+        };
+        updatePosition();
+        const observer = new ResizeObserver(updatePosition);
+        if (pane) observer.observe(pane);
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [open]);
+
     const onUndo = () => {
         setOpen(false);
         if (!chess || !deleted) {
@@ -97,13 +123,24 @@ export function UndoDeleteProvider({ children }: { children: ReactNode }) {
                 key={deleted?.key}
                 data-testid='undo-delete-snackbar'
                 open={open}
-                autoHideDuration={10000}
+                autoHideDuration={5000}
+                disableWindowBlurListener
                 onClose={(_, reason) => {
                     if (reason !== 'clickaway') {
                         setOpen(false);
                     }
                 }}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                sx={
+                    noticeLeft === undefined
+                        ? undefined
+                        : {
+                              bottom: { xs: noticeBottom, sm: noticeBottom },
+                              left: { xs: noticeLeft, sm: noticeLeft },
+                              right: { xs: 'auto', sm: 'auto' },
+                              transform: { xs: 'translateX(-50%)', sm: 'translateX(-50%)' },
+                          }
+                }
                 message={deleted ? t('deletedMoves', { count: deleted.moves }) : undefined}
                 action={
                     <Button

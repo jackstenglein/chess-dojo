@@ -1,4 +1,4 @@
-import { Chess, Move } from '@jackstenglein/chess';
+import { Chess, CommentType, Move } from '@jackstenglein/chess';
 import { Help } from '@mui/icons-material';
 import {
     Button,
@@ -59,6 +59,7 @@ interface ShortcutHandlerOptions {
      * Whether to insert the next engine's move when hitting the keybind.
      */
     addEngineMove?: () => void;
+    deleteRemainingMoves?: () => void;
 }
 
 interface ShortcutHandlerProps {
@@ -150,6 +151,68 @@ function handleFirstVariation({ chess, reconcile }: ShortcutHandlerProps) {
     }
     if (nextMove) {
         chess?.seek(nextMove);
+        reconcile?.();
+    }
+}
+
+function handlePreviousNotationLine({ chess }: ShortcutHandlerProps) {
+    if (!chess) return;
+    const buttons = Array.from(
+        document
+            .getElementById('resize-container')
+            ?.querySelectorAll<HTMLButtonElement>('[data-testid="pgn-text-move-button"]') ?? [],
+    ).filter((button) => button.getBoundingClientRect().height > 0);
+    const current = buttons.find((button) => button.dataset.currentMove === 'true');
+    if (!current) return;
+    const rect = current.getBoundingClientRect();
+    const above = buttons.filter((button) => button.getBoundingClientRect().top < rect.top - 4);
+    const top = Math.max(...above.map((button) => button.getBoundingClientRect().top));
+    const row = above.filter((button) => Math.abs(button.getBoundingClientRect().top - top) < 4);
+    row.sort(
+        (a, b) =>
+            Math.abs(a.getBoundingClientRect().left - rect.left) -
+            Math.abs(b.getBoundingClientRect().left - rect.left),
+    );
+    row[0]?.click();
+}
+
+function handleNextVariation({ chess, reconcile }: ShortcutHandlerProps) {
+    if (!chess) return;
+    // Follow rendered rows, including wrapped and nested variation lines.
+    const pane = document.getElementById('resize-container');
+    const buttons = Array.from(
+        pane?.querySelectorAll<HTMLButtonElement>('[data-testid="pgn-text-move-button"]') ?? [],
+    ).filter((button) => button.getBoundingClientRect().height > 0);
+    const current = buttons.find((button) => button.dataset.currentMove === 'true');
+    if (current) {
+        const rect = current.getBoundingClientRect();
+        const below = buttons.filter((button) => button.getBoundingClientRect().top > rect.top + 4);
+        const top = Math.min(...below.map((button) => button.getBoundingClientRect().top));
+        const row = below.filter(
+            (button) => Math.abs(button.getBoundingClientRect().top - top) < 4,
+        );
+        row.sort(
+            (a, b) =>
+                Math.abs(a.getBoundingClientRect().left - rect.left) -
+                Math.abs(b.getBoundingClientRect().left - rect.left),
+        );
+        row[0]?.click();
+        return;
+    }
+    if (buttons.length) {
+        buttons[0].click();
+        return;
+    }
+    const move = chess.currentMove();
+    let next = move?.variations[0]?.[0];
+    if (!next && move) {
+        const parent = chess.getVariantParent(move);
+        const index = parent?.variations.findIndex((line) => line === move.variation) ?? -1;
+        next = parent?.variations[index + 1]?.[0];
+    }
+    if (!next) next = chess.nextMove()?.variations[0]?.[0];
+    if (next) {
+        chess.seek(next);
         reconcile?.();
     }
 }
@@ -263,12 +326,14 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.LastMove]: handleLastMove,
     [ShortcutAction.ToggleOrientation]: handleToggleOrientation,
     [ShortcutAction.FirstVariation]: handleFirstVariation,
+    [ShortcutAction.NextVariation]: handleNextVariation,
+    [ShortcutAction.PreviousNotationLine]: handlePreviousNotationLine,
     [ShortcutAction.FirstMoveVariation]: handleFirstMoveVariation,
     [ShortcutAction.LastMoveVariation]: handleLastMoveVariation,
     [ShortcutAction.OpenFiles]: handleOpenTab(DefaultUnderboardTab.Directories),
     [ShortcutAction.OpenTags]: handleOpenTab(DefaultUnderboardTab.Tags),
     [ShortcutAction.OpenPgnText]: handleOpenTab(DefaultUnderboardTab.PgnText),
-    [ShortcutAction.OpenEditor]: handleOpenTab(DefaultUnderboardTab.Editor),
+    [ShortcutAction.OpenEditor]: handleFocusMainTextField,
     [ShortcutAction.OpenComments]: handleOpenTab(DefaultUnderboardTab.Comments),
     [ShortcutAction.OpenDatabase]: handleOpenTab(DefaultUnderboardTab.Explorer),
     [ShortcutAction.OpenClocks]: handleOpenTab(DefaultUnderboardTab.Clocks),
@@ -277,6 +342,9 @@ export const keyboardShortcutHandlers: Record<ShortcutAction, ShortcutHandler> =
     [ShortcutAction.FocusMainTextField]: handleFocusMainTextField,
     [ShortcutAction.FocusCommentTextField]: handleFocusCommentTextField,
     [ShortcutAction.UnfocusTextField]: handleUnfocusTextField,
+    [ShortcutAction.DeleteRemainingMoves]: ({ opts }) => opts?.deleteRemainingMoves?.(),
+    [ShortcutAction.TextAfterMove]: ({ opts }) =>
+        opts?.underboardApi?.focusEditor(CommentType.After),
     [ShortcutAction.InsertNullMove]: handleInsertNullMove,
     [ShortcutAction.InsertEngineMove]: handleInsertEngineMove,
     [ShortcutAction.ViewShortcuts]: handleViewShortcuts,
@@ -353,6 +421,7 @@ const KeyboardShortcuts = ({
             Escape: t('keyEscape'),
             Tab: t('keyTab'),
             Backspace: t('keyBackspace'),
+            BracketRight: ']',
         }),
         [t],
     );
@@ -410,6 +479,14 @@ const KeyboardShortcuts = ({
                         return t('shortcutFocusCommentTextField');
                     case ShortcutAction.UnfocusTextField:
                         return t('shortcutUnfocusTextField');
+                    case ShortcutAction.DeleteRemainingMoves:
+                        return 'Delete remaining moves';
+                    case ShortcutAction.TextAfterMove:
+                        return 'Add text after move';
+                    case ShortcutAction.PreviousNotationLine:
+                        return 'Previous notation line';
+                    case ShortcutAction.NextVariation:
+                        return 'Next notation line';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMove');
                     case ShortcutAction.InsertEngineMove:
@@ -467,6 +544,14 @@ const KeyboardShortcuts = ({
                         return t('shortcutFocusCommentTextFieldDesc');
                     case ShortcutAction.UnfocusTextField:
                         return t('shortcutUnfocusTextFieldDesc');
+                    case ShortcutAction.DeleteRemainingMoves:
+                        return 'Delete all moves after the current position. The current move is kept.';
+                    case ShortcutAction.TextAfterMove:
+                        return 'Open the editor to add text after the selected move.';
+                    case ShortcutAction.PreviousNotationLine:
+                        return 'Go up one line in the notation, including variations.';
+                    case ShortcutAction.NextVariation:
+                        return 'Go down one line in the notation, including variations.';
                     case ShortcutAction.InsertNullMove:
                         return t('shortcutInsertNullMoveDesc');
                     case ShortcutAction.InsertEngineMove:

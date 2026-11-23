@@ -41,7 +41,7 @@ const BoardButtons = ({
             variant={light ? 'outlined' : 'elevation'}
             sx={{
                 mt: { xs: 0.5, md: 1 },
-                mb: { xs: 0.5, md: 1, xl: 0 },
+                mb: 0,
                 gridArea: 'boardButtons',
                 boxShadow: 'none',
                 visibility: chess ? undefined : 'hidden',
@@ -56,10 +56,14 @@ const BoardButtons = ({
                     position: 'relative',
                     ...(panelControls && {
                         display: 'grid',
+                        ...(boardWidth < 480 && {
+                            '& .MuiIconButton-root': { p: 0.5 },
+                            '& .MuiStack-root': { flexWrap: 'nowrap', gap: 0 },
+                        }),
                         gridTemplateColumns:
-                            boardWidth < 480 ? '1fr 1fr' : 'minmax(0, 1fr) auto minmax(0, 1fr)',
+                            boardWidth < 360 ? '1fr 1fr' : 'minmax(0, 1fr) auto minmax(0, 1fr)',
                         gridTemplateAreas:
-                            boardWidth < 480 ? '"start end" "moves moves"' : '"start moves end"',
+                            boardWidth < 360 ? '"start end" "moves moves"' : '"start moves end"',
                     }),
                 }}
             >

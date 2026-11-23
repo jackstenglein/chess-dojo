@@ -139,7 +139,6 @@ describe('GamePage side tabs', () => {
             underboardTabs: [
                 DefaultUnderboardTab.Directories,
                 DefaultUnderboardTab.Tags,
-                DefaultUnderboardTab.Editor,
                 DefaultUnderboardTab.Comments,
                 DefaultUnderboardTab.Explorer,
                 DefaultUnderboardTab.Clocks,
@@ -153,7 +152,6 @@ describe('GamePage side tabs', () => {
                 DefaultUnderboardTab.Directories,
                 DefaultUnderboardTab.PgnText,
                 DefaultUnderboardTab.Tags,
-                DefaultUnderboardTab.Editor,
                 DefaultUnderboardTab.Comments,
                 DefaultUnderboardTab.Explorer,
                 DefaultUnderboardTab.Clocks,
@@ -176,11 +174,7 @@ describe('GamePage side tabs', () => {
         renderWithIntl(<GamePage cohort='dojo' id='game1' />);
 
         expect(pgnBoardProps[0]).toMatchObject({
-            rightTabs: [
-                DefaultUnderboardTab.PgnText,
-                DefaultUnderboardTab.Editor,
-                DefaultUnderboardTab.Explorer,
-            ],
+            rightTabs: [DefaultUnderboardTab.PgnText, DefaultUnderboardTab.Explorer],
         });
     });
 

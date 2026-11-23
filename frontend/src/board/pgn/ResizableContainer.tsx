@@ -1,3 +1,4 @@
+import useGame from '@/context/useGame';
 import { useWindowSizeEffect } from '@/style/useWindowSizeEffect';
 import { Color } from '@lichess-org/chessground/types';
 import { Stack } from '@mui/material';
@@ -6,10 +7,18 @@ import 'react-resizable/css/styles.css';
 import { onInitializeFunc } from '../Board';
 import KeyboardHandler from './KeyboardHandler';
 import ResizableBoardArea from './ResizableBoardArea';
+import NagControls, { NAG_CONTROLS_HEIGHT } from './boardTools/underboard/NagControls';
 import Underboard, { UnderboardApi } from './boardTools/underboard/Underboard';
 import { DefaultUnderboardTab, UnderboardTab } from './boardTools/underboard/underboardTabs';
 import { PgnTextBanners, ResizablePgnText } from './pgnText/PgnText';
-import { AreaSizes, getFittedSizes, getNewSizes, getSizes } from './resize';
+import {
+    AreaSizes,
+    getBoardAreaHeight,
+    getFittedSizes,
+    getNewSizes,
+    getSizes,
+    resizeSidePanel,
+} from './resize';
 
 export const CONTAINER_ID = 'resize-container';
 
@@ -57,6 +66,13 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     startOrientation,
     onInitialize,
 }) => {
+    const { isOwner } = useGame();
+    const showNagControls =
+        isOwner &&
+        [...underboardTabs, ...(rightTabs ?? [])].some(
+            (tab) => tab === DefaultUnderboardTab.Tags || tab === DefaultUnderboardTab.Editor,
+        );
+
     const underboardRef = useRef<UnderboardApi>(null);
     const hasLeftPanel = underboardTabs.length > 0;
     const hasRightPanel = rightTabs === undefined || rightTabs.length > 0;
@@ -64,8 +80,10 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     const [rightVisible, setRightVisible] = useState(true);
     const showUnderboard = hasLeftPanel && (!allowPanelHiding || leftVisible);
     const showPgn = hasRightPanel && (!allowPanelHiding || rightVisible);
+    const extraControlsHeight = showNagControls && !hasRightPanel ? NAG_CONTROLS_HEIGHT : 0;
     const showPanelControls = allowPanelHiding && (hasLeftPanel || hasRightPanel);
 
+    const [boardAreaHeight, setBoardAreaHeight] = useState<number>();
     const [sizes, setSizes] = useState<AreaSizes | null>(null);
     const [fittedBase, setFittedBase] = useState<AreaSizes | null>(null);
     const barsHidden = allowPanelHiding && fittedBase !== null;
@@ -76,10 +94,18 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
         // Visibility only changes which panels occupy the layout, not their saved dimensions.
         return getSizes(parentWidth, hasLeftPanel, !showPlayerHeaders, {
             hideBoardButtons,
+            extraControlsHeight,
             showPgn: hasRightPanel,
             showPanelControls,
         });
-    }, [hasLeftPanel, showPlayerHeaders, hasRightPanel, showPanelControls, hideBoardButtons]);
+    }, [
+        hasLeftPanel,
+        showPlayerHeaders,
+        hasRightPanel,
+        showPanelControls,
+        hideBoardButtons,
+        extraControlsHeight,
+    ]);
 
     const onWindowResize = useCallback(() => {
         const nextSizes = calcSizes();
@@ -100,13 +126,30 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                 if (!sizes) {
                     sizes = calcSizes();
                 }
+                if (area !== 'board') {
+                    return resizeSidePanel(sizes, area, width, !showPlayerHeaders, {
+                        showPgn: hasRightPanel,
+                        showPanelControls,
+                        hideBoardButtons,
+                        extraControlsHeight,
+                    });
+                }
                 return getNewSizes(
                     {
                         ...sizes,
-                        [area]: { ...sizes[area], width, height },
+                        [area]: {
+                            ...sizes[area],
+                            width,
+                            height,
+                        },
                     },
                     !showPlayerHeaders,
-                    { showPgn: hasRightPanel, showPanelControls, hideBoardButtons },
+                    {
+                        showPgn: hasRightPanel,
+                        showPanelControls,
+                        hideBoardButtons,
+                        extraControlsHeight,
+                    },
                 );
             });
         },
@@ -118,6 +161,7 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
             showPanelControls,
             barsHidden,
             hideBoardButtons,
+            extraControlsHeight,
         ],
     );
 
@@ -129,6 +173,25 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
         ? getFittedSizes(fittedBase, getParentWidth(), showUnderboard, showPgn)
         : sizes;
 
+    const showRightSymbols = showNagControls && hasRightPanel && showPgn && !barsHidden;
+    const notationSize = {
+        ...displayedSizes.pgn,
+        height: Math.max(
+            100,
+            Math.min(
+                displayedSizes.pgn.height,
+                barsHidden
+                    ? displayedSizes.board.height
+                    : (boardAreaHeight ??
+                          getBoardAreaHeight(
+                              displayedSizes.board.height,
+                              !showPlayerHeaders,
+                              hideBoardButtons,
+                          )),
+            ) - (showRightSymbols ? NAG_CONTROLS_HEIGHT : 0),
+        ),
+    };
+
     return (
         <Stack
             direction='row'
@@ -137,6 +200,7 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                 width: 1,
                 maxWidth: 1,
                 justifyContent: 'center',
+                alignItems: 'flex-start',
                 px: { xs: 0, sm: 0 },
                 flexWrap: 'wrap',
                 rowGap: 0.5,
@@ -162,6 +226,8 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
             <ResizableBoardArea
                 {...{
+                    showNagControls: showNagControls && !hasRightPanel,
+                    onHeightChange: setBoardAreaHeight,
                     resizeData: displayedSizes.board,
                     onResize: onResize('board'),
                     hideResize: barsHidden || sizes.breakpoint === 'xs',
@@ -195,27 +261,40 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
                 }}
             />
 
-            {rightTabs ? (
-                <Underboard
-                    hidden={!showPgn}
-                    onReveal={() => setRightVisible(true)}
-                    tabs={rightTabs}
-                    initialTab={initialRightTab}
-                    resizeData={displayedSizes.pgn}
-                    onResize={onResize('pgn')}
-                    storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'right')}
-                    explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'right')}
-                    buttonTestIdPrefix='right-'
-                    header={<PgnTextBanners />}
-                    sidePanelTabs={sidePanelTabs}
-                />
-            ) : (
-                <ResizablePgnText
-                    hidden={!showPgn}
-                    resizeData={displayedSizes.pgn}
-                    onResize={onResize('pgn')}
-                />
-            )}
+            <Stack
+                data-notation-pane
+                sx={{
+                    width: showPgn ? displayedSizes.pgn.width : undefined,
+                    display: showPgn ? 'flex' : 'contents',
+                    height: showPgn ? boardAreaHeight : undefined,
+                    minHeight: 0,
+                    boxSizing: 'border-box',
+                    '& > [data-testid="board-nag-controls"]': { mt: 'auto', flexShrink: 0 },
+                }}
+            >
+                {rightTabs ? (
+                    <Underboard
+                        hidden={!showPgn}
+                        onReveal={() => setRightVisible(true)}
+                        tabs={rightTabs}
+                        initialTab={initialRightTab}
+                        resizeData={notationSize}
+                        onResize={onResize('pgn')}
+                        storageKey={getPanelStorageKey(tabStorageKeyPrefix, 'right')}
+                        explorerStorageKey={getExplorerStorageKey(tabStorageKeyPrefix, 'right')}
+                        buttonTestIdPrefix='right-'
+                        header={<PgnTextBanners />}
+                        sidePanelTabs={sidePanelTabs}
+                    />
+                ) : (
+                    <ResizablePgnText
+                        hidden={!showPgn}
+                        resizeData={notationSize}
+                        onResize={onResize('pgn')}
+                    />
+                )}
+                {showRightSymbols && <NagControls underboardRef={underboardRef} />}
+            </Stack>
         </Stack>
     );
 };
