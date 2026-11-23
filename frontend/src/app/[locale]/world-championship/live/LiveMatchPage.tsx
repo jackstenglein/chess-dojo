@@ -62,9 +62,11 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
+import { useActAs } from './localTesting';
 import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
-import { EvalBar, SenseiPanel, SenseiStrip } from './SenseiEval';
+import { EvalBar, SenseiStrip } from './SenseiEval';
+import { SenseiPanel } from './SenseiPanel';
 import { TwitchEmbed } from './TwitchEmbed';
 import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess, putRoster } from './wcLiveApi';
 
@@ -90,7 +92,10 @@ function writeGameParam(n: number) {
 
 export function LiveMatchPage() {
     const { user, status: authStatus } = useAuth();
-    const username = user?.username;
+    // On a local test run, ?as=<username> acts as that user. Never on the real site.
+    const actAs = useActAs();
+    const username = actAs ?? user?.username;
+    const signedIn = !!actAs || authStatus === AuthStatus.Authenticated;
     const isSensei = isWcSensei(username);
 
     const { rounds: matchRounds, error: roundsError } = useMatchRounds();
@@ -339,7 +344,7 @@ export function LiveMatchPage() {
     useEffect(() => {
         setMyGuesses({});
         setGuessError(undefined);
-        if (!roundId || authStatus !== AuthStatus.Authenticated) {
+        if (!roundId || !signedIn) {
             return;
         }
         let cancelled = false;
@@ -349,18 +354,13 @@ export function LiveMatchPage() {
         return () => {
             cancelled = true;
         };
-    }, [roundId, authStatus]);
+    }, [roundId, signedIn, username]);
 
     // A move that lands clears an error about the previous one.
     useEffect(() => setGuessError(undefined), [moves.length]);
 
     const nextPly = moves.length + 1;
-    const canGuess =
-        authStatus === AuthStatus.Authenticated &&
-        !gameOver &&
-        atLive &&
-        !analyzing &&
-        feed.status === 'ready';
+    const canGuess = signedIn && !gameOver && atLive && !analyzing && feed.status === 'ready';
 
     const onGuess = useCallback(
         async (uci: string) => {
@@ -421,7 +421,7 @@ export function LiveMatchPage() {
     }, [myGuesses, nextPly, moves]);
 
     let guessState: GuessState;
-    if (authStatus !== AuthStatus.Authenticated) {
+    if (!signedIn) {
         guessState = { kind: 'signed-out' };
     } else if (gameOver) {
         guessState = { kind: 'game-over' };
@@ -482,6 +482,12 @@ export function LiveMatchPage() {
 
     return (
         <Container maxWidth='xl' sx={{ py: { xs: 2, md: 3 } }}>
+            {actAs && (
+                <Alert severity='warning' sx={{ mb: 2 }} data-testid='acting-as'>
+                    Local test: acting as <b>{actAs}</b>
+                    {isSensei ? ' (a sensei)' : ' (a fan)'}. Change ?as= in the address to switch.
+                </Alert>
+            )}
             <Stack spacing={0.5} sx={{ mb: 2 }}>
                 <Typography variant='h4' component='h1' sx={{ fontWeight: 800 }}>
                     Gukesh vs Sindarov · Live

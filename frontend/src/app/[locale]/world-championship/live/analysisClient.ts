@@ -6,11 +6,7 @@ import {
     WcAnalysisRequest,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-/** NEXT_PUBLIC_WC_LIVE_API_URL points these at the local wcLive server, as in wcLiveApi. */
-const LOCAL = process.env.NEXT_PUBLIC_WC_LIVE_API_URL
-    ? { baseURL: process.env.NEXT_PUBLIC_WC_LIVE_API_URL }
-    : {};
+import { localRequestConfig } from './localTesting';
 
 /** Senseis see each other's moves this quickly. */
 const POLL_MS = 2000;
@@ -20,7 +16,7 @@ const SELECT_DELAY_MS = 250;
 async function getAnalysis(roundId: string): Promise<WcAnalysis> {
     const resp = await axiosService.get<WcAnalysis>(`/wc-live/rounds/${roundId}/analysis`, {
         functionName: 'wcLiveGetAnalysis',
-        ...LOCAL,
+        ...localRequestConfig(),
     });
     return resp.data;
 }
@@ -28,7 +24,7 @@ async function getAnalysis(roundId: string): Promise<WcAnalysis> {
 async function putAnalysis(request: WcAnalysisRequest): Promise<WcAnalysis> {
     const resp = await axiosService.put<WcAnalysis>('/wc-live/analysis', request, {
         functionName: 'wcLivePutAnalysis',
-        ...LOCAL,
+        ...localRequestConfig(),
     });
     return resp.data;
 }

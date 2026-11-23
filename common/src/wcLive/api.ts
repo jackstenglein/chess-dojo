@@ -47,13 +47,13 @@ export const WC_EVAL_MAX = 10;
 
 /** The chess symbols a sensei can tap instead of stepping. */
 export const WC_EVAL_PRESETS: readonly { symbol: string; value: number; meaning: string }[] = [
-    { symbol: '−+', value: -1.5, meaning: 'Black is winning' },
-    { symbol: '∓', value: -0.8, meaning: 'Black is much better' },
+    { symbol: '-+', value: -1.5, meaning: 'Black is winning' },
+    { symbol: '-/+', value: -0.8, meaning: 'Black is much better' },
     { symbol: '=+', value: -0.3, meaning: 'Black is slightly better' },
     { symbol: '=', value: 0, meaning: 'Equal' },
     { symbol: '+=', value: 0.3, meaning: 'White is slightly better' },
-    { symbol: '±', value: 0.8, meaning: 'White is much better' },
-    { symbol: '+−', value: 1.5, meaning: 'White is winning' },
+    { symbol: '+/-', value: 0.8, meaning: 'White is much better' },
+    { symbol: '+-', value: 1.5, meaning: 'White is winning' },
 ];
 
 /** One pin on the bar: an account sensei or a guest added on the spot. */

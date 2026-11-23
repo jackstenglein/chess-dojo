@@ -6,7 +6,10 @@
  *
  * The page sends its normal Cognito token. This server reads the username from
  * it WITHOUT checking the signature, so it must never run anywhere but
- * localhost. Open ?game=0 to test with the replayed Game 0.
+ * localhost. Open ?game=0 to test with the replayed Game 0, and add
+ * &as=<username> to act as that user, for example as=hellokostya for a sensei
+ * or as=fan1 for a fan. The dev site cannot sign in with production accounts,
+ * so this is how senseis are tested locally.
  */
 process.env.WC_LIVE_STORE = 'memory';
 process.env.stage = process.env.stage || 'local';
@@ -99,7 +102,7 @@ function readBody(req: IncomingMessage): Promise<string> {
 
 function cors(res: ServerResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Wc-Live-As');
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
 }
 
@@ -123,9 +126,14 @@ async function main() {
                 return;
             }
 
+            // X-Wc-Live-As lets the page act as any user, to test senseis and
+            // fans without their logins. It only exists on this local server.
+            const actAs = req.headers['x-wc-live-as'];
             const claims = url.pathname.startsWith('/public/')
                 ? undefined
-                : unverifiedClaims(req.headers.authorization);
+                : typeof actAs === 'string' && /^[A-Za-z0-9_.@+-]{1,64}$/.test(actAs)
+                  ? { 'cognito:username': actAs }
+                  : unverifiedClaims(req.headers.authorization);
             if (!url.pathname.startsWith('/public/') && !claims) {
                 res.writeHead(401, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ message: 'Unauthorized' }));
