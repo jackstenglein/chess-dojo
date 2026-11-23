@@ -4,6 +4,15 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import { Chess } from '@/board/Board';
 import type { Square } from '@jackstenglein/chess';
 import {
+    AnalysisNode,
+    applyAnalysisRequest,
+    buildTree,
+    cursorIsCurrent,
+    findNode,
+    WcAnalysis,
+    WcAnalysisRequest,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
+import {
     barState,
     buildRoster,
     isWcSensei,
@@ -30,19 +39,20 @@ import {
     Stack,
     Tab,
     Tabs,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography,
 } from '@mui/material';
 import { isAxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAnalysis } from './analysisClient';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import {
     clocksAt,
     formatClock,
-    formatSpent,
-    LiveMove,
     LivePlayer,
     MatchRound,
     pickDefaultRound,
@@ -52,6 +62,7 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
+import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EvalBar, SenseiPanel, SenseiStrip } from './SenseiEval';
 import { TwitchEmbed } from './TwitchEmbed';
@@ -117,8 +128,8 @@ export function LiveMatchPage() {
     // When a Game 0 loop ends, follow the next one, which starts with a fresh leaderboard.
     useEffect(() => {
         if (testRoundId && isTestRoundId(roundId) && roundId !== testRoundId) {
+            // The new loop has no moves yet, which also takes the board back to live.
             setRoundId(testRoundId);
-            setViewPly(null);
         }
     }, [testRoundId, roundId]);
 
@@ -137,12 +148,81 @@ export function LiveMatchPage() {
     const moves = feed.moves;
     const gameOver = feed.result !== '*';
 
-    // Null follows the live position.
-    const [viewPly, setViewPly] = useState<number | null>(null);
-    const ply = viewPly === null ? moves.length : Math.min(viewPly, moves.length);
-    const atLive = ply === moves.length;
-    const shownMove: LiveMove | undefined = moves[ply - 1];
-    const fen = shownMove?.fen ?? START_FEN;
+    // ---- Board position and the senseis' analysis -------------------------
+    const mainSans = useMemo(() => moves.map((m) => m.san), [moves]);
+    const [boardMode, setBoardMode] = useState<'analyze' | 'guess'>('analyze');
+    const analyzing = isSensei && boardMode === 'analyze';
+
+    const applyLocal = useCallback(
+        (current: WcAnalysis, request: WcAnalysisRequest): WcAnalysis => {
+            try {
+                return applyAnalysisRequest(current, request, mainSans, username ?? '');
+            } catch {
+                // The API refuses it too and says why.
+                return current;
+            }
+        },
+        [mainSans, username],
+    );
+    // Only senseis load the analysis. Fans only ever see the game itself.
+    const analysisApi = useAnalysis(roundId, isSensei, applyLocal);
+    const analysis = analysisApi.analysis;
+
+    const tree = useMemo(
+        () => buildTree(moves, isSensei ? (analysis?.lines ?? []) : []),
+        [moves, isSensei, analysis?.lines],
+    );
+
+    // A fan's own position; null follows the live position. Senseis share one
+    // position instead: the analysis cursor, until the next move of the game.
+    const [viewPath, setViewPath] = useState<string[] | null>(null);
+    const sharedPath =
+        isSensei && analysis?.cursor && cursorIsCurrent(analysis.cursor, moves.length)
+            ? analysis.cursor.path
+            : null;
+    const node: AnalysisNode =
+        findNode(tree, viewPath ?? sharedPath ?? mainSans) ?? findNode(tree, mainSans) ?? tree;
+
+    // As soon as a move of the game comes in, everyone goes back to the main line.
+    useEffect(() => setViewPath(null), [moves.length]);
+
+    /** The main line ply the position comes from: its evals and clocks. */
+    let ply = 0;
+    while (ply < node.path.length && node.path[ply] === mainSans[ply]) {
+        ply++;
+    }
+    const atLive = node.mainline && node.ply === moves.length;
+    const fen = node.fen;
+
+    /** Shows a position: shared with the other senseis, or just here for fans. Null is live. */
+    const goTo = (target: AnalysisNode | null) => {
+        if (isSensei) {
+            analysisApi.select(target ? target.path : mainSans);
+            setViewPath(null);
+            return;
+        }
+        const live = !target || (target.mainline && target.ply === moves.length);
+        setViewPath(live ? null : target.path);
+    };
+    const parentOf = (n: AnalysisNode) => findNode(tree, n.path.slice(0, -1));
+    const nextOf = (n: AnalysisNode) => n.children.find((c) => c.mainline) ?? n.children[0];
+
+    /** A sensei moves a piece on the analysis board: it is played for all senseis. */
+    const analysisMove = (uci: string) => {
+        try {
+            const move = new Chess({ fen: node.fen }).move({
+                from: uci.slice(0, 2) as Square,
+                to: uci.slice(2, 4) as Square,
+                promotion: uci[4],
+            });
+            if (move) {
+                analysisApi.move([...node.path, move.san]);
+                setViewPath(null);
+            }
+        } catch {
+            // Not a legal move; the board puts the piece back.
+        }
+    };
 
     const [orientation, setOrientation] = useState<'white' | 'black'>('white');
     const now = useNow(atLive && !gameOver && moves.length > 0);
@@ -153,14 +233,34 @@ export function LiveMatchPage() {
 
     const selectRound = (id: string) => {
         setRoundId(id);
-        setViewPly(null);
+        setViewPath(null);
         const r = rounds.find((x) => x.id === id);
         if (r) {
             writeGameParam(r.number);
         }
     };
 
-    // Arrow keys step through the game.
+    // Arrow keys step back to the move before, or on to the next move of the line.
+    const stepBack = () => {
+        const parent = parentOf(node);
+        if (parent && node.ply > 0) {
+            goTo(parent);
+        }
+    };
+    const stepNext = () => {
+        const next = nextOf(node);
+        if (next) {
+            goTo(next);
+        }
+    };
+    // The key listener is added once and reads the latest steps from here.
+    const keys = useRef<{ back: () => void; next: () => void }>({
+        back: () => undefined,
+        next: () => undefined,
+    });
+    useEffect(() => {
+        keys.current = { back: stepBack, next: stepNext };
+    });
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null;
@@ -168,17 +268,14 @@ export function LiveMatchPage() {
                 return;
             }
             if (e.key === 'ArrowLeft') {
-                setViewPly((v) => Math.max(0, (v ?? moves.length) - 1));
+                keys.current.back();
             } else if (e.key === 'ArrowRight') {
-                setViewPly((v) => {
-                    const next = (v ?? moves.length) + 1;
-                    return next >= moves.length ? null : next;
-                });
+                keys.current.next();
             }
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [moves.length]);
+    }, []);
 
     // ---- Sensei evals ----------------------------------------------------
     const [evals, setEvals] = useState<WcEval[]>([]);
@@ -259,7 +356,11 @@ export function LiveMatchPage() {
 
     const nextPly = moves.length + 1;
     const canGuess =
-        authStatus === AuthStatus.Authenticated && !gameOver && atLive && feed.status === 'ready';
+        authStatus === AuthStatus.Authenticated &&
+        !gameOver &&
+        atLive &&
+        !analyzing &&
+        feed.status === 'ready';
 
     const onGuess = useCallback(
         async (uci: string) => {
@@ -449,9 +550,15 @@ export function LiveMatchPage() {
                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <LiveBoard
                                 fen={fen}
-                                lastMove={shownMove ? [shownMove.from, shownMove.to] : undefined}
+                                lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
                                 orientation={orientation}
-                                onGuess={canGuess ? (uci) => void onGuess(uci) : undefined}
+                                onGuess={
+                                    analyzing
+                                        ? analysisMove
+                                        : canGuess
+                                          ? (uci) => void onGuess(uci)
+                                          : undefined
+                                }
                                 guessUci={canGuess ? myGuesses[nextPly] : undefined}
                             />
                         </Box>
@@ -462,14 +569,10 @@ export function LiveMatchPage() {
                         running={clocks.running === bottomColor}
                     />
                     <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
-                        <Button size='small' onClick={() => setViewPly(0)} disabled={ply === 0}>
+                        <Button size='small' onClick={() => goTo(tree)} disabled={node.ply === 0}>
                             Start
                         </Button>
-                        <Button
-                            size='small'
-                            onClick={() => setViewPly(Math.max(0, ply - 1))}
-                            disabled={ply === 0}
-                        >
+                        <Button size='small' onClick={stepBack} disabled={node.ply === 0}>
                             Back
                         </Button>
                         <Typography
@@ -482,28 +585,24 @@ export function LiveMatchPage() {
                                 fontVariantNumeric: 'tabular-nums',
                             }}
                         >
-                            {shownMove ? moveLabel(shownMove.ply, shownMove.san) : 'No moves yet'}
+                            {node.ply > 0 ? moveLabel(node.ply, node.san) : 'No moves yet'}
                             {!atLive && (
                                 <Typography
                                     component='span'
                                     color='text.secondary'
                                     sx={{ ml: 1, fontSize: '0.8rem', fontWeight: 400 }}
                                 >
-                                    (not live)
+                                    {node.mainline ? '(not live)' : '(analysis)'}
                                 </Typography>
                             )}
                         </Typography>
-                        <Button
-                            size='small'
-                            onClick={() => setViewPly(ply + 1 >= moves.length ? null : ply + 1)}
-                            disabled={atLive}
-                        >
+                        <Button size='small' onClick={stepNext} disabled={!nextOf(node)}>
                             Next
                         </Button>
                         <Button
                             size='small'
                             variant={atLive ? 'text' : 'contained'}
-                            onClick={() => setViewPly(null)}
+                            onClick={() => goTo(null)}
                         >
                             Live
                         </Button>
@@ -518,6 +617,44 @@ export function LiveMatchPage() {
                             </IconButton>
                         </Tooltip>
                     </Stack>
+                    {isSensei && (
+                        <Stack
+                            direction='row'
+                            spacing={1}
+                            sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}
+                        >
+                            <ToggleButtonGroup
+                                size='small'
+                                exclusive
+                                value={boardMode}
+                                onChange={(_, mode: 'analyze' | 'guess' | null) =>
+                                    mode && setBoardMode(mode)
+                                }
+                                aria-label='What moving a piece does'
+                            >
+                                <ToggleButton value='analyze' sx={{ textTransform: 'none' }}>
+                                    Analyze with senseis
+                                </ToggleButton>
+                                <ToggleButton value='guess' sx={{ textTransform: 'none' }}>
+                                    Guess the move
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                            {!node.mainline && (
+                                <Button
+                                    size='small'
+                                    color='error'
+                                    onClick={() => analysisApi.remove(node.path)}
+                                >
+                                    Delete variation from here
+                                </Button>
+                            )}
+                            {analysisApi.error && (
+                                <Typography variant='caption' color='error'>
+                                    {analysisApi.error}
+                                </Typography>
+                            )}
+                        </Stack>
+                    )}
                     <CrosstableView
                         table={crosstable}
                         currentNumber={round?.number}
@@ -542,7 +679,9 @@ export function LiveMatchPage() {
                             me={username}
                             roster={roster}
                             values={valuesAtPly}
-                            positionLabel={ply === 0 ? 'the start' : moveLabel(ply, shownMove?.san)}
+                            positionLabel={
+                                ply === 0 ? 'the start' : moveLabel(ply, moves[ply - 1]?.san)
+                            }
                             onScore={scoreSensei}
                             onRoster={changeRoster}
                         />
@@ -550,11 +689,12 @@ export function LiveMatchPage() {
                 </Stack>
 
                 <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
-                    <MoveList
+                    <Notation
+                        root={tree}
+                        current={node}
                         moves={moves}
-                        ply={ply}
                         guesses={myGuesses}
-                        onSelect={(p) => setViewPly(p >= moves.length ? null : p)}
+                        onSelect={goTo}
                     />
                     <SenseiStrip roster={roster} pins={bar.pins} />
                 </Stack>
@@ -565,11 +705,7 @@ export function LiveMatchPage() {
                         leaderboard={shownLeaderboard}
                         username={username}
                     />
-                    <GuessPanel
-                        state={guessState}
-                        onGoLive={() => setViewPly(null)}
-                        score={myScore}
-                    />
+                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                 </Stack>
             </Box>
 
@@ -627,106 +763,5 @@ function PlayerBar({
                 {formatClock(seconds)}
             </Paper>
         </Stack>
-    );
-}
-
-function MoveList({
-    moves,
-    ply,
-    guesses,
-    onSelect,
-}: {
-    moves: LiveMove[];
-    ply: number;
-    guesses: Record<string, string>;
-    onSelect: (ply: number) => void;
-}) {
-    const rows: [LiveMove, LiveMove | undefined][] = [];
-    for (let i = 0; i < moves.length; i += 2) {
-        rows.push([moves[i], moves[i + 1]]);
-    }
-
-    const cell = (m?: LiveMove) => {
-        if (!m) {
-            return <Box />;
-        }
-        const guessedRight = guesses[m.ply] === m.uci;
-        return (
-            <Box
-                component='button'
-                onClick={() => onSelect(m.ply)}
-                sx={{
-                    all: 'unset',
-                    cursor: 'pointer',
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    fontSize: '0.9rem',
-                    fontWeight: m.ply === ply ? 800 : 500,
-                    bgcolor: m.ply === ply ? 'action.selected' : undefined,
-                    color: guessedRight ? 'success.main' : undefined,
-                }}
-                title={guessedRight ? 'You guessed this move' : undefined}
-            >
-                <Stack
-                    direction='row'
-                    sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}
-                >
-                    <span>
-                        {m.san}
-                        {guessedRight ? ' ✓' : ''}
-                    </span>
-                    {m.spent !== undefined && (
-                        <Box
-                            component='span'
-                            data-testid='move-time'
-                            title={`${m.san} took ${formatSpent(m.spent)}`}
-                            sx={{
-                                ml: 0.75,
-                                fontSize: '0.62rem',
-                                fontWeight: 500,
-                                color: 'info.main',
-                            }}
-                        >
-                            {formatSpent(m.spent)}
-                        </Box>
-                    )}
-                </Stack>
-            </Box>
-        );
-    };
-
-    return (
-        <Paper variant='outlined' sx={{ p: 1.5 }}>
-            <Typography variant='subtitle2' sx={{ fontWeight: 700, mb: 0.5 }}>
-                Moves
-            </Typography>
-            {moves.length === 0 ? (
-                <Typography variant='body2' color='text.secondary'>
-                    No moves yet.
-                </Typography>
-            ) : (
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: '36px 1fr 1fr',
-                        rowGap: 0.25,
-                        maxHeight: { xs: 240, md: 460 },
-                        overflowY: 'auto',
-                        fontVariantNumeric: 'tabular-nums',
-                    }}
-                >
-                    {rows.map(([w, b], i) => (
-                        <Box key={i} sx={{ display: 'contents' }}>
-                            <Typography variant='body2' color='text.secondary' sx={{ py: 0.25 }}>
-                                {i + 1}.
-                            </Typography>
-                            {cell(w)}
-                            {cell(b)}
-                        </Box>
-                    ))}
-                </Box>
-            )}
-        </Paper>
     );
 }

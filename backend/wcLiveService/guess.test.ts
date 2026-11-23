@@ -67,3 +67,35 @@ describe('Game 0', () => {
         expect(state.result === '*' || state.result === '1-0').toBe(true);
     });
 });
+
+describe('analysis', () => {
+    it('adds variations, follows the cursor and refuses to delete the game', async () => {
+        const { apply } = await import('./analysis');
+        const main = ['e4', 'e5', 'Nf3'];
+        let state = { roundId: 'xLgOJ6cb', lines: [] as string[][], version: 0 };
+        state = apply(
+            state,
+            { action: 'move', roundId: 'xLgOJ6cb', path: ['e4', 'c5'] },
+            main,
+            'a',
+        );
+        state = apply(
+            state,
+            { action: 'move', roundId: 'xLgOJ6cb', path: ['e4', 'c5', 'Nf3'] },
+            main,
+            'a',
+        );
+        expect(state.lines).toEqual([['e4', 'c5', 'Nf3']]);
+        const after = apply(
+            state,
+            { action: 'delete', roundId: 'xLgOJ6cb', path: ['e4', 'c5'] },
+            main,
+            'a',
+        );
+        expect(after.lines).toEqual([]);
+        expect(after.cursor?.path).toEqual(['e4']);
+        expect(() =>
+            apply(state, { action: 'delete', roundId: 'xLgOJ6cb', path: ['e4', 'e5'] }, main, 'a'),
+        ).toThrow();
+    });
+});

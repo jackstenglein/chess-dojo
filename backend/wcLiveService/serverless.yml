@@ -33,6 +33,37 @@ functions:
           - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
+  getAnalysis:
+    handler: analysis.get
+    events:
+      - httpApi:
+          path: /wc-live/rounds/{roundId}/analysis
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  putAnalysis:
+    handler: analysis.put
+    events:
+      - httpApi:
+          path: /wc-live/analysis
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+
   roster:
     handler: roster.handler
     events:

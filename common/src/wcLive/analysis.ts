@@ -234,3 +234,47 @@ export function findNode(
     }
     return node;
 }
+
+/** A request the analysis rules refuse, with a message for the sensei. */
+export class AnalysisRuleError extends Error {}
+
+/**
+ * The analysis after a sensei's request. The API saves this, and the page
+ * shows it at once while the API is answering.
+ */
+export function applyAnalysisRequest(
+    current: WcAnalysis,
+    request: WcAnalysisRequest,
+    mainline: readonly string[],
+    username: string,
+    now = new Date(),
+): WcAnalysis {
+    const cursor = (movePath: string[]): WcAnalysisCursor => ({
+        path: movePath,
+        mainPlies: mainline.length,
+        by: username,
+        at: now.toISOString(),
+    });
+
+    switch (request.action) {
+        case 'move': {
+            const lines = addLine(current.lines, request.path, mainline);
+            if (lines.length > MAX_LINES) {
+                throw new AnalysisRuleError('The analysis is full. Delete a variation first.');
+            }
+            return { ...current, lines, cursor: cursor(request.path) };
+        }
+        case 'select':
+            return { ...current, cursor: cursor(request.path) };
+        case 'delete': {
+            if (request.path.every((m, i) => mainline[i] === m)) {
+                throw new AnalysisRuleError('Moves of the game cannot be deleted');
+            }
+            return {
+                ...current,
+                lines: deleteFrom(current.lines, request.path, mainline),
+                cursor: cursor(request.path.slice(0, -1)),
+            };
+        }
+    }
+}

@@ -23,6 +23,8 @@ const roundCache = new Map<string, { at: number; state: RoundState }>();
 export interface RoundState {
     /** The UCI of each move played, in order. played[0] is ply 1. */
     played: string[];
+    /** The same moves in SAN, for the senseis' analysis. */
+    sans: string[];
     /** The PGN result, "*" while the game is on. */
     result: string;
     /** The position after the last move played. */
@@ -72,6 +74,7 @@ export function parseRoundPgn(pgn: string): RoundState {
     const history = chess.history();
     return {
         played: history.map((m) => m.uci),
+        sans: history.map((m) => m.san),
         result: chess.header().getRawValue('Result') || '*',
         fen: chess.fen(history[history.length - 1] ?? null),
     };

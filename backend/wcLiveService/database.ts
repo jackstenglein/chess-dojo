@@ -1,4 +1,5 @@
 import {
+    ConditionalCheckFailedException,
     GetItemCommand,
     PutItemCommand,
     QueryCommand,
@@ -6,6 +7,7 @@ import {
     UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { WcAnalysis } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
 import { WcEval, WcGuesses, WcSensei } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import { APIGatewayProxyResultV2 } from 'aws-lambda';
 import { dynamo, getUser } from '../directoryService/database';
@@ -34,6 +36,11 @@ interface Store {
     set(hash: string, range: string, attrs: Item): Promise<void>;
     get(hash: string, range: string): Promise<Item | undefined>;
     query(hash: string): Promise<Item[]>;
+    /**
+     * Writes the item only if its version attribute is still the expected one
+     * (or the item does not exist when expected is 0). Returns false otherwise.
+     */
+    putVersioned(hash: string, range: string, item: Item, expected: number): Promise<boolean>;
 }
 
 const dynamoStore: Store = {
@@ -70,6 +77,32 @@ const dynamoStore: Store = {
             new GetItemCommand({ TableName: WC_LIVE_TABLE, Key: marshall({ hash, range }) }),
         );
         return output.Item ? unmarshall(output.Item) : undefined;
+    },
+
+    async putVersioned(hash, range, item, expected) {
+        try {
+            await dynamo.send(
+                new PutItemCommand({
+                    TableName: WC_LIVE_TABLE,
+                    Item: marshall({ ...item, hash, range }, { removeUndefinedValues: true }),
+                    ConditionExpression:
+                        expected === 0
+                            ? 'attribute_not_exists(#hash) OR #version = :expected'
+                            : '#version = :expected',
+                    ExpressionAttributeNames:
+                        expected === 0
+                            ? { '#hash': 'hash', '#version': 'version' }
+                            : { '#version': 'version' },
+                    ExpressionAttributeValues: marshall({ ':expected': expected }),
+                }),
+            );
+            return true;
+        } catch (err) {
+            if (err instanceof ConditionalCheckFailedException) {
+                return false;
+            }
+            throw err;
+        }
     },
 
     async query(hash) {
@@ -115,6 +148,14 @@ function memoryStore(): Store {
         },
         get(hash, range) {
             return Promise.resolve(partition(hash).get(range));
+        },
+        putVersioned(hash, range, item, expected) {
+            const current = partition(hash).get(range);
+            if (((current?.version as number | undefined) ?? 0) !== expected) {
+                return Promise.resolve(false);
+            }
+            partition(hash).set(range, { ...item, hash, range });
+            return Promise.resolve(true);
         },
         query(hash) {
             const p = partition(hash);
@@ -217,4 +258,28 @@ export async function getGuesses(roundId: string, username: string): Promise<WcG
 
 export async function listGuesses(roundId: string): Promise<WcGuesses[]> {
     return (await store.query(`GUESS#${roundId}`)).map(toGuesses);
+}
+
+/** The senseis' analysis of a game: one item per game. */
+export async function getAnalysis(roundId: string): Promise<WcAnalysis> {
+    const item = await store.get(`ANALYSIS#${roundId}`, 'analysis');
+    if (!item) {
+        return { roundId, lines: [], version: 0 };
+    }
+    return {
+        roundId,
+        lines: (item.lines as string[][] | undefined) ?? [],
+        cursor: item.cursor as WcAnalysis['cursor'],
+        version: (item.version as number | undefined) ?? 0,
+    };
+}
+
+/** Saves the analysis if nobody saved since it was read. Returns false if someone did. */
+export async function saveAnalysis(analysis: WcAnalysis, readVersion: number): Promise<boolean> {
+    return store.putVersioned(
+        `ANALYSIS#${analysis.roundId}`,
+        'analysis',
+        { ...analysis, version: readVersion + 1 },
+        readVersion,
+    );
 }
