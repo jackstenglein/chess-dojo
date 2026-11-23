@@ -44,11 +44,17 @@ export function TacticsForgerFrame({ src }: { src: string }) {
                 switch (msg.type) {
                     case 'hello':
                         // The app says hello until this listener is up, then starts loading.
-                        reply({ ok: true });
+                        // The cohort lets it suggest where to start.
+                        reply({ ok: true, username: user?.username, cohort: user?.dojoCohort });
                         break;
                     case 'load': {
                         const res = await getTacticsForgerProgress();
-                        reply({ ok: true, data: res.data, username: user?.username });
+                        reply({
+                            ok: true,
+                            data: res.data,
+                            username: user?.username,
+                            cohort: user?.dojoCohort,
+                        });
                         break;
                     }
                     case 'save': {

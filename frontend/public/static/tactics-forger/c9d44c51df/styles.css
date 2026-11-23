@@ -965,3 +965,26 @@ html.embed .nav { margin-left: 0; }
   .offline-chip { padding: 3px 8px; }
   .offline-chip:not(.oc-off) b { display: none; } /* just the icon on phones, except when offline */
 }
+/* Starting point: where a tab starts (asked once per tab, changeable) */
+.start-card { background: var(--panel); border: 1px solid var(--primary); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+.start-card h2 { margin: 0 0 4px; font-size: 20px; font-weight: 500; }
+.start-card p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.start-card p b { color: var(--text); }
+.start-opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 4px; }
+.start-opt { position: relative; text-align: left; font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+.start-opt:hover { border-color: var(--primary); }
+.start-opt b { font-size: 15px; font-weight: 600; }
+.start-opt small { color: var(--muted); font-size: 12px; }
+.start-opt em { position: absolute; top: -9px; right: 10px; font-style: normal; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--primary); color: #0b1a2a; }
+.start-opt.sug { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+.start-opt.cur:not(.sug) em { background: var(--line); color: var(--text); }
+.start-card .btn.ghost { margin-top: 8px; }
+.start-link { font: inherit; font-size: 13px; color: var(--muted); background: none; border: 0; padding: 2px 0 10px; cursor: pointer; text-align: left; }
+.start-link b { color: var(--text); font-weight: 600; }
+.start-link:hover { color: var(--primary); }
+.rr-rating .prov { font-style: normal; opacity: .6; margin-left: 1px; }
+@media (max-width: 700px) {
+  .home .start-card { order: -2; margin: 0; padding: 14px; }
+  .start-opts { grid-template-columns: 1fr; }
+  .home .start-link { order: -1; padding: 0; }
+}

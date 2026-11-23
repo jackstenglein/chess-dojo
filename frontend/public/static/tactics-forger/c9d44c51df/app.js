@@ -18,7 +18,7 @@ const STORE_KEY = 'tacticsLadder.v1';
 // account through the page around it; on its own it only uses this browser's storage.
 if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed'); // for scripts/host-test.html
 const HOSTED = window.parent !== window && document.documentElement.classList.contains('embed');
-const cloud = { ready: false, version: 0, username: null, timer: 0, saving: false, again: false };
+const cloud = { ready: false, version: 0, username: null, cohort: null, timer: 0, saving: false, again: false };
 // Offline play (see the Offline section).
 const UNSYNCED_KEY = 'tacticsLadder.unsynced';
 const offline = {
@@ -320,24 +320,92 @@ const el = (html) => {
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const starStr = (n) => '★'.repeat(n) + '☆'.repeat(3 - n);
 const today = () => new Date().toISOString().slice(0, 10);
-// Ranks: [rating needed, icon key (icons.js), name, description, share of the tab's puzzles solved].
+// Ranks: [rating needed, icon key (icons.js), name, description, Tactics puzzles solved].
 // Tactics, Openings and Endgames each have their own rank on this same ladder: a rank needs BOTH
-// that tab's rating and a share of that tab's puzzles solved (first try). The share scales the
-// minimum to each tab's size, e.g. Wizard = 85% of the tab (Tactics 20,000, Endgames 12,000).
+// that tab's rating and a number of that tab's puzzles solved (first try). The counts are fixed,
+// so you can reach any rank from wherever you start; Openings and Endgames are smaller tabs and
+// need RANK_SCALE of the Tactics count (Wizard: Tactics 10,000, Endgames 6,000).
 const RANKS = [
   [0, 'grasshopper', 'Grasshopper', 'Starting out', 0],
-  [600, 'jester', 'Jester', 'Knows some tricks', 0.03],
-  [800, 'apprentice', 'Apprentice', 'Learning the craft', 0.08],
-  [1000, 'squire', 'Squire', 'Getting better', 0.16],
-  [1200, 'ninja', 'Ninja', 'Strikes from the shadows', 0.28],
-  [1400, 'warrior', 'Warrior', 'Battle-tested', 0.45],
-  [1600, 'beast', 'Beast', 'Ready to pounce', 0.65],
-  [1800, 'wizard', 'Wizard', 'Tactical master', 0.85],
+  [600, 'jester', 'Jester', 'Knows some tricks', 200],
+  [800, 'apprentice', 'Apprentice', 'Learning the craft', 500],
+  [1000, 'squire', 'Squire', 'Getting better', 1000],
+  [1200, 'ninja', 'Ninja', 'Strikes from the shadows', 2000],
+  [1400, 'warrior', 'Warrior', 'Battle-tested', 3000],
+  [1600, 'beast', 'Beast', 'Ready to pounce', 5000],
+  [1800, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
-// Puzzles a rank needs in a tab, rounded to 2 significant figures (e.g. 6,689 -> 6,700).
+const RANK_SCALE = { tactics: 1, openings: 0.6, endgames: 0.6 };
+
+// ---- Starting point ---------------------------------------------------------------
+// Each tab asks where you want to start: 400, 1000 or 1500 (the Basic, Intermediate and Advanced
+// Tactics tiers). On chessdojo.club it suggests one from your cohort, on the low side: under
+// 1000 -> 400, 1000-1500 -> 1000, 1500+ -> 1500. Picking one moves your place there (every stage
+// stays open) and, while your rating is still provisional, starts the rating there too.
+// progress.start[tab] = { rating: the point you picked, seed: the rating it started from }.
+const START_POINTS = [400, 1000, 1500];
+const startOpen = {}; // tabs where "change starting point" is open
+function cohortStart(cohort) {
+  const n = parseInt(String(cohort ?? '').match(/\d+/)?.[0] ?? '', 10);
+  if (!Number.isFinite(n)) return null;
+  return n < 1000 ? 400 : n < 1500 ? 1000 : 1500;
+}
+const needsStart = (tr) => !progress.start?.[tr] && trackRating(tr).games === 0;
+const startName = (tr, r) => (tr === 'tactics' ? TACTIC_STAGES[START_POINTS.indexOf(r)].name : `From ${r}`);
+function startCard(tr) {
+  const asked = needsStart(tr);
+  if (!asked && !startOpen[tr]) return '';
+  const sug = cohortStart(cloud.cohort);
+  const cur = progress.start?.[tr]?.rating;
+  const sub = (r) => tr === 'tactics' ? `Puzzles from ${r}` : r === 400 ? 'The whole ladder' : `Skip the stages below ${r}`;
+  return `<section class="start-card">
+    <h2>${asked ? 'Where do you want to start?' : 'Change your starting point'}</h2>
+    <p>${sug ? `Suggested for your cohort (${esc(cloud.cohort)}): <b>${startName(tr, sug)}</b>. ` : ''}Every stage stays open, so you can always go back to the easier ones.</p>
+    <div class="start-opts">${START_POINTS.map((r) => `<button type="button" class="start-opt ${r === sug ? 'sug' : ''} ${r === cur ? 'cur' : ''}" data-start-pick="${tr}:${r}">
+      <b>${startName(tr, r)}</b><small>${sub(r)}</small>${r === sug ? '<em>Suggested</em>' : r === cur ? '<em>Current</em>' : ''}</button>`).join('')}</div>
+    ${asked ? '' : `<button type="button" class="btn small ghost" data-start-cancel="${tr}">Cancel</button>`}
+  </section>`;
+}
+const startLink = (tr) => (needsStart(tr) || startOpen[tr] ? '' :
+  `<button type="button" class="start-link" data-start-open="${tr}">Starting point: <b>${startName(tr, progress.start?.[tr]?.rating ?? 400)}</b> · change</button>`);
+function applyStart(tr, rating) {
+  progress.start ??= {};
+  const prev = progress.start[tr];
+  const r = trackRating(tr);
+  // The rating only restarts while it's still provisional; after that, only your place moves.
+  progress.start[tr] = { rating, seed: r.provisional ? rating : (prev?.seed ?? RATING.r0) };
+  if (tr !== 'tactics') {
+    for (const meta of catalog(tr)?.themes ?? []) {
+      let flat = 0;
+      for (const [min, n] of meta.bandSets) if (min < rating) flat += n;
+      if (flat >= meta.sets) continue;
+      const tp = (store(tr)[meta.key] ??= { frontier: 0, stars: {}, start: 0 });
+      tp.at = flat;
+    }
+  }
+  ringView[tr] = undefined;
+  startOpen[tr] = false;
+  engineCache = { n: -1 };
+  saveProgress();
+  renderStats();
+  route();
+}
+document.addEventListener('click', (e) => {
+  const pick = e.target.closest('[data-start-pick]');
+  const open = e.target.closest('[data-start-open]');
+  const cancel = e.target.closest('[data-start-cancel]');
+  if (pick) {
+    const [tr, r] = pick.dataset.startPick.split(':');
+    applyStart(tr, Number(r));
+  } else if (open || cancel) {
+    startOpen[(open || cancel).dataset[open ? 'startOpen' : 'startCancel']] = !!open;
+    route();
+  }
+});
+// Puzzles a rank needs in a tab, rounded to 2 significant figures.
 function rankNeed(rank, tr = track) {
-  const x = rank[4] * tabPuzzles(tr);
+  const x = rank[4] * (RANK_SCALE[tr] ?? 1);
   if (!x) return 0;
   const m = 10 ** Math.max(0, Math.floor(Math.log10(x)) - 1);
   return Math.round(x / m) * m;
@@ -381,7 +449,16 @@ function ratingChanges(before) {
 // 1000, Intermediate to 1500, Advanced above), the Endgames ladders, and your Openings repertoire.
 // Up to BALANCE.buffer puzzles over your fair share (total / buckets) count fully; past that a win
 // is worth (fair share + buffer) / puzzles played in that bucket. Losses are never scaled.
+//
+// Provisional: your first PROVISIONAL.games puzzles in a tab move the rating fast (K from
+// PROVISIONAL.k0 down to the normal K) so it finds your level quickly, then it settles into the
+// slow climb. The rating starts at the starting point you picked for that tab (400 if none),
+// and shows with a "?" until it's settled.
 const RATING = { r0: 400, k: 0.2 };
+const PROVISIONAL = { games: 30, k0: 40 };
+const kFor = (games) => (games >= PROVISIONAL.games ? RATING.k
+  : RATING.k + (PROVISIONAL.k0 - RATING.k) * (1 - games / PROVISIONAL.games));
+const ratingStart = (tr) => progress.start?.[tr]?.seed ?? RATING.r0;
 const BALANCE = { buffer: 10 };
 const eloExpected = (r, puzzleRating) => 1 / (1 + 10 ** ((puzzleRating - r) / 400));
 function tacticTiers() {
@@ -411,29 +488,35 @@ function balanceFactor(tr, key, counts, r) {
 let engineCache = { n: -1 };
 function ratingEngine() {
   const all = progress.sessions.flatMap((s) => s.attempts);
-  if (engineCache.n === all.length && engineCache.spec === JSON.stringify(progress.specialty || {})) return engineCache.value;
-  const state = Object.fromEntries(Object.keys(TRACKS).map((tr) => [tr, { r: RATING.r0, games: 0, counts: {} }]));
+  const spec = JSON.stringify([progress.specialty || {}, progress.start || {}]);
+  if (engineCache.n === all.length && engineCache.spec === spec) return engineCache.value;
+  const state = Object.fromEntries(Object.keys(TRACKS).map((tr) => [tr, { r: ratingStart(tr), games: 0, counts: {} }]));
   const per = [];
   for (const a of all) {
     const [tr, key] = splitKey(a[0]);
     const st = state[tr];
     const before = st.r;
     const score = a[2] ? 1 : 0;
-    let delta = RATING.k * (score - eloExpected(st.r, a[1]));
-    const f = delta > 0 ? balanceFactor(tr, key, st.counts, st.r) : 1;
+    let delta = kFor(st.games) * (score - eloExpected(st.r, a[1]));
+    const f = delta > 0 && st.games >= PROVISIONAL.games ? balanceFactor(tr, key, st.counts, st.r) : 1;
     delta *= f;
     st.r += delta;
     st.games++;
     st.counts[key] = (st.counts[key] || 0) + 1;
     per.push([tr, before, st.r, f]);
   }
-  engineCache = { n: all.length, spec: JSON.stringify(progress.specialty || {}), value: { state, per } };
+  engineCache = { n: all.length, spec, value: { state, per } };
   return engineCache.value;
 }
 function trackRating(tr = track) {
   const st = ratingEngine().state[tr];
-  return { rating: Math.round(st.r), exact: st.r, games: st.games };
+  return { rating: Math.round(st.r), exact: st.r, games: st.games, provisional: st.games < PROVISIONAL.games };
 }
+// "1430?" while the rating is still provisional.
+const ratingText = (tr = track) => {
+  const r = trackRating(tr);
+  return `${r.rating}${r.provisional ? '?' : ''}`;
+};
 // Where your rating grows at full speed right now, and where it's slowed by over-playing.
 function balanceStatus(tr) {
   const st = ratingEngine().state[tr];
@@ -469,8 +552,8 @@ function rankRoad(trk = track) {
     <div class="rr-head">
       <span class="rank-icon">${rankIcon(rp.rank[1], 64)}</span>
       <div class="rr-title"><small>Your ${L} rank</small><b>${rp.rank[2]}</b><em>${rp.rank[3]}</em></div>
-      <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. It climbs slowly, about 1 point per 10 puzzles solved.">
-        <small>${L} rating</small><b>${tr.rating}</b><span>${tr.games.toLocaleString()} puzzles played</span></div>
+      <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. ${tr.provisional ? `It's provisional (?) for your first ${PROVISIONAL.games} puzzles and moves fast to find your level; after that it` : 'It'} climbs slowly, about 1 point per 10 puzzles solved.">
+        <small>${L} rating</small><b>${tr.rating}${tr.provisional ? '<i class="prov">?</i>' : ''}</b><span>${tr.provisional ? `provisional · ${tr.games}/${PROVISIONAL.games} puzzles` : `${tr.games.toLocaleString()} puzzles played`}</span></div>
       <div class="rr-next">${rp.next
         ? `Next: <b class="inline-rank">${rankIcon(rp.next[1], 22)} ${rp.next[2]}</b><small>${[rp.toGo ? `${rp.toGo} rating points` : '', rp.solvedToGo ? `${rp.solvedToGo.toLocaleString()} more ${L.toLowerCase()} puzzles solved` : ''].filter(Boolean).join(' and ')} to go</small>`
         : '<b>Top rank reached</b>'}</div>
@@ -573,7 +656,10 @@ function stageProgress(si) {
 }
 const stageOf = (key) => STAGES.findIndex((_, si) => stageKeys(si).includes(key));
 const activeStage = () => {
-  const i = STAGES.findIndex((_, si) => stageProgress(si).frac < 1);
+  // Tactics: the ring for the tier you chose to start in, unless it's done.
+  const from = track === 'tactics' ? Math.max(0, START_POINTS.indexOf(progress.start?.tactics?.rating ?? 400)) : 0;
+  let i = STAGES.findIndex((_, si) => si >= from && stageProgress(si).frac < 1);
+  if (i < 0) i = STAGES.findIndex((_, si) => stageProgress(si).frac < 1);
   return i < 0 ? STAGES.length - 1 : i;
 };
 // Ring percentages are tiny early on, so show more precision when small.
@@ -750,7 +836,7 @@ function renderStats() {
   const cur = progress.xp - xpForLevel(lvl);
   const need = xpForLevel(lvl + 1) - xpForLevel(lvl);
   const statsHtml = `
-    ${Object.entries(TRACKS).filter(([tr]) => indexes[tr]).map(([tr, t]) => `<a class="stat rank-stat ${tr === track ? 'cur' : ''}" href="${hrefHome(tr)}" title="${t.label}: ${userRank(tr)[2]} · rating ${trackRating(tr).rating} · ${solvedCount(tr).toLocaleString()} solved">${rankIcon(userRank(tr)[1], 22)}<span class="rs-txt"><small>${t.label}</small><b>${trackRating(tr).rating}</b></span></a>`).join('')}
+    ${Object.entries(TRACKS).filter(([tr]) => indexes[tr]).map(([tr, t]) => `<a class="stat rank-stat ${tr === track ? 'cur' : ''}" href="${hrefHome(tr)}" title="${t.label}: ${userRank(tr)[2]} · rating ${ratingText(tr)}${trackRating(tr).provisional ? ' (provisional)' : ''} · ${solvedCount(tr).toLocaleString()} solved">${rankIcon(userRank(tr)[1], 22)}<span class="rs-txt"><small>${t.label}</small><b>${ratingText(tr)}</b></span></a>`).join('')}
     ${todayChip()}
     ${offlineChip()}
     <div class="stat" title="Day streak">🔥 <b>${progress.streak || 0}</b></div>
@@ -837,7 +923,9 @@ function showHome() {
         ${track === 'tactics' ? '' : `<p>${HERO[track][1]}
         Get <b>${PASS_SCORE}/${SET_SIZE}</b> on the first try to clear a set and unlock the next one.</p>`}
       </div>` : ''}
+      ${startCard(track)}
       ${rankRoad()}
+      ${startLink(track)}
       <div class="ring-hero"></div>
       <div class="dash">
         <div class="dash-tile"><small>Level</small><b>${lvl}</b><span>${progress.xp.toLocaleString()} XP</span></div>
@@ -1081,13 +1169,15 @@ function showOpeningsHome() {
         return t ? repCard(t, slot) : emptyRepCard(slot);
       }).join('')}</div>
       <div class="dash rep-dash">
-        <div class="dash-tile"><small>Openings rating</small><b>${r.rating}</b><span>${r.games.toLocaleString()} puzzles played</span></div>
+        <div class="dash-tile"><small>Openings rating</small><b>${ratingText('openings')}</b><span>${r.games.toLocaleString()} puzzles played</span></div>
         <div class="dash-tile"><small>Sets cleared</small><b>${cleared.toLocaleString()}</b><span>of ${allSets.toLocaleString()} in your repertoire</span></div>
         <div class="dash-tile"><small>Stars</small><b>★ ${stars.toLocaleString()}</b><span>of ${(allSets * 3).toLocaleString()}</span></div>
         <div class="dash-tile"><small>Openings solved</small><b>${solvedCount('openings').toLocaleString()}</b><span>of ${tabPuzzles('openings').toLocaleString()} in your repertoire</span></div>
       </div>
     </section>
+    ${startCard('openings')}
     ${rankRoad()}
+    ${startLink('openings')}
     <section class="try-others">
       <div class="try-head"><h2>🧪 Try other openings</h2>
         <p>Play any ladder without changing your repertoire. Progress is kept and counts toward your Openings rating.</p></div>
@@ -2249,7 +2339,7 @@ async function showLadder(key) {
   const [, rIcon, rTitle] = lrp.rank;
   page.querySelector('.ladder-summary').innerHTML = `
     <div class="sum-rank"><span class="rank-icon">${rankIcon(rIcon, 48)}</span><div class="sum-rank-main"><b>${rTitle}</b>
-      <small>${T().label} rating ${ltr.rating} · ${solvedCount(track).toLocaleString()} solved${lrp.next ? ` · next ${lrp.next[2]}` : ' · top rank'}</small>
+      <small>${T().label} rating ${ratingText(track)} · ${solvedCount(track).toLocaleString()} solved${lrp.next ? ` · next ${lrp.next[2]}` : ' · top rank'}</small>
       <div class="rr-bar small"><div style="width:${lrp.frac > 0 ? Math.max(2, lrp.frac * 100) : 0}%"></div></div></div></div>
     <div class="sum-tile"><small>Current stage</small><b>${curSet.min}–${curSet.max}</b><span>Stage ${rungNo} of ${theme.bands.length}</span></div>
     <div class="sum-tile"><small>Sets cleared</small><b>${cleared}/${total}</b><span>${pct(cleared, total)}% complete</span></div>
@@ -2851,7 +2941,11 @@ async function waitForHost(timeoutMs = 15000) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     try {
-      await Promise.race([askHost('hello'), new Promise((_, no) => setTimeout(no, 700))]);
+      const hi = await Promise.race([askHost('hello'), new Promise((_, no) => setTimeout(no, 700))]);
+      if (hi?.cohort && hi.cohort !== cloud.cohort) {
+        cloud.cohort = hi.cohort; // for the starting-point suggestion
+        if (needsStart(track) && !location.hash.includes('/play/')) route();
+      }
       return true;
     } catch {}
   }
@@ -2865,6 +2959,7 @@ async function cloudLoad() {
   const res = await askHost('load').catch(() => null);
   if (!res?.ok) return false;
   cloud.username = res.username ?? null;
+  cloud.cohort = res.cohort ?? cloud.cohort ?? null;
   cloud.version = res.data.version;
   const remote = res.data.progress;
   const mine = !progress.owner || progress.owner === cloud.username;
