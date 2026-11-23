@@ -2845,7 +2845,7 @@ function playRun(run) {
       : rec.ok ? `<span class="pz-tag done">✓ Solved before · best ${fmtSec(rec.best)}</span>`
       : '<span class="pz-tag miss">Missed before</span>';
     $meta.innerHTML = `Puzzle ${idx + 1}/${N} · rated <b>${p.rating}</b>${run.mode !== 'set' ? ` · ${esc(themeName(sessionKey(p.key, p.track)))}` : ''}<div>${seen}</div>`;
-    status('', `<span class="dot ${player}"></span> Find the best move for <b>${player}</b>`);
+    status('', `<span class="dot ${player}"></span> <b>${player === 'white' ? 'White' : 'Black'} to play</b>`);
     controls([]);
     later(playComputer, 550);
   }
