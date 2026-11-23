@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "eslint": "^10.11.0",
+        "eslint": "^10.13.0",
         "jiti": "^2.7.0",
         "prettier": "^3.9.9",
         "prettier-plugin-organize-imports": "^4.3.0",
