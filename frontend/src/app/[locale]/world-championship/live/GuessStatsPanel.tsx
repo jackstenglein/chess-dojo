@@ -14,7 +14,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { getGuessStats, GuessStats } from './wcLiveApi';
 
 function formatLead(seconds?: number): string {
@@ -39,7 +39,7 @@ function moveLabel(ply: number): string {
  * Admins only: how long before each move people made their right guesses, to
  * spot anyone guessing from a faster feed. The most suspicious come first.
  */
-export function GuessStatsPanel({ roundId }: { roundId?: string }) {
+export function GuessStatsPanel({ roundId, autoLoad }: { roundId?: string; autoLoad?: boolean }) {
     const [stats, setStats] = useState<GuessStats>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -59,6 +59,14 @@ export function GuessStatsPanel({ roundId }: { roundId?: string }) {
             setLoading(false);
         }
     };
+
+    // In the Admin tab the stats load as soon as a game is picked.
+    useEffect(() => {
+        if (autoLoad) {
+            void load();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- once per game.
+    }, [autoLoad, roundId]);
 
     const shown = stats?.roundId === roundId ? stats : undefined;
 

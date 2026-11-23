@@ -88,7 +88,8 @@ function BeltIcon() {
 }
 
 /** Ticks on both sides of equal, on the same curve as the fill. */
-const TICKS = [1, 2, 3, 5, 10].flatMap((v) => [v, -v]);
+/** ±10 is not marked: it sits right at the ends of the bar. */
+const TICKS = [1, 2, 3, 5].flatMap((v) => [v, -v]);
 
 /** Distance from the top of the bar, from 0 to 1, for an eval. */
 function evalFromTop(value: number, orientation: 'white' | 'black'): number {
@@ -113,6 +114,8 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
     const whiteAtBottom = orientation === 'white';
     const fromTop = (value: number) => evalFromTop(value, orientation);
     const boundary = fromTop(average);
+    // The score sits at the bottom of the bar, in whichever color it is on.
+    const bottomIsWhite = whiteAtBottom ? boundary < 0.94 : boundary > 0.94;
     const placed = layoutPins(
         pins.map((p) => ({ ...p, id: p.sensei.id, share: fromTop(p.value) })),
     );
@@ -160,7 +163,7 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                             top: `${fromTop(v) * 100}%`,
                             // In sx a bare 1 means 100%, so this is pixels.
                             height: '1px',
-                            bgcolor: 'rgba(128, 128, 128, 0.8)',
+                            bgcolor: 'rgba(128, 128, 128, 0.45)',
                         }}
                     />
                 ))}
@@ -219,20 +222,18 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                 data-testid='eval-bar-score'
                 sx={{
                     position: 'absolute',
-                    left: 2,
-                    right: 2,
-                    bottom: 3,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
+                    left: 0,
+                    right: 0,
+                    bottom: 6,
                     textAlign: 'center',
-                    fontSize: { xs: '0.65rem', sm: '0.85rem' },
-                    fontWeight: 900,
-                    lineHeight: 1.2,
+                    fontSize: { xs: '0.62rem', sm: '0.75rem' },
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1,
                     fontVariantNumeric: 'tabular-nums',
-                    boxShadow: 2,
+                    color: bottomIsWhite ? '#403d39' : '#f5f5f5',
                     zIndex: 3,
+                    pointerEvents: 'none',
                 }}
             >
                 {formatEval(average)}

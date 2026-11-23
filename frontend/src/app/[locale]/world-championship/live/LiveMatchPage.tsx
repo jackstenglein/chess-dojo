@@ -52,10 +52,10 @@ import {
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AddGameDialog } from './AddGameDialog';
+import { AdminView } from './AdminView';
 import { useAnalysis } from './analysisClient';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
-import { GuessStatsPanel } from './GuessStatsPanel';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import {
     clocksAt,
@@ -107,6 +107,9 @@ function writeGameParam(value: string | number) {
     url.searchParams.set('game', String(value));
     window.history.replaceState(null, '', url.toString());
 }
+
+/** The value of the Admin tab, which no game id can take. */
+const ADMIN_TAB = '__admin';
 
 /** Added games sort after the match, numbered from here, so they never clash with it. */
 const CUSTOM_NUMBER_BASE = 1000;
@@ -323,7 +326,12 @@ export function LiveMatchPage() {
     // Read again when the game on the page finishes, so its result shows at once.
     const crosstable = useCrosstable(`${roundId ?? ''}:${feed.result}`);
 
+    // The Admin tab. The page always opens on a game, never here.
+    const canAdmin = !!user?.isAdmin || (!!actAs && isSensei);
+    const [adminOpen, setAdminOpen] = useState(false);
+
     const selectRound = (id: string) => {
+        setAdminOpen(false);
         setRoundId(id);
         setViewPath(null);
         const r = rounds.find((x) => x.id === id);
@@ -621,12 +629,21 @@ export function LiveMatchPage() {
             {rounds.length > 0 && (
                 <Stack direction='row' sx={{ alignItems: 'center', mb: 2, minWidth: 0 }}>
                     <Tabs
-                        value={roundId ?? false}
-                        onChange={(_, id: string) => selectRound(id)}
+                        value={adminOpen ? ADMIN_TAB : (roundId ?? false)}
+                        onChange={(_, id: string) =>
+                            id === ADMIN_TAB ? setAdminOpen(true) : selectRound(id)
+                        }
                         variant='scrollable'
                         scrollButtons='auto'
                         sx={{ flexGrow: 1, minWidth: 0 }}
                     >
+                        {canAdmin && (
+                            <Tab
+                                value={ADMIN_TAB}
+                                label='Admin'
+                                sx={{ textTransform: 'none', fontWeight: 700 }}
+                            />
+                        )}
                         {rounds.map((r) => (
                             <Tab
                                 key={r.id}
@@ -678,9 +695,11 @@ export function LiveMatchPage() {
                 </Stack>
             )}
 
+            {adminOpen && canAdmin && <AdminView rounds={rounds} initialRoundId={roundId} />}
+
             <Box
                 sx={{
-                    display: 'grid',
+                    display: adminOpen && canAdmin ? 'none' : 'grid',
                     columnGap: 3,
                     rowGap: 1,
                     alignItems: 'start',
@@ -856,9 +875,6 @@ export function LiveMatchPage() {
                         username={username}
                     />
                     <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
-                    {(user?.isAdmin || (actAs && isSensei)) && (
-                        <GuessStatsPanel roundId={roundId} />
-                    )}
                 </Stack>
             </Box>
 
@@ -880,7 +896,12 @@ function PlayerBar({
     return (
         <Stack
             direction='row'
-            sx={{ alignItems: 'center', justifyContent: 'space-between', pl: { xs: 3, sm: 4 } }}
+            sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                // The eval bar's width plus the gap, so the photo starts at the board's edge.
+                pl: { xs: '34px', sm: '42px' },
+            }}
         >
             <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
                 <PlayerPhoto name={player?.name} size={36} />
