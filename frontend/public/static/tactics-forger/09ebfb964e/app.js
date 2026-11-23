@@ -19,6 +19,17 @@ const STORE_KEY = 'tacticsLadder.v1';
 if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed'); // for scripts/host-test.html
 const HOSTED = window.parent !== window && document.documentElement.classList.contains('embed');
 const cloud = { ready: false, version: 0, username: null, timer: 0, saving: false, again: false };
+// Offline play (see the Offline section).
+const UNSYNCED_KEY = 'tacticsLadder.unsynced';
+const offline = {
+  sw: false,
+  online: navigator.onLine,
+  ready: false, // every file in offlineUrls() is cached
+  dl: null, // { done, total } while downloading
+  failed: false,
+  unsynced: (() => { try { return !!localStorage.getItem(UNSYNCED_KEY); } catch { return false; } })(),
+  open: false,
+};
 function loadProgress() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -31,6 +42,7 @@ function saveProgress() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(progress));
   } catch {}
+  if (HOSTED) markUnsynced(true);
   if (cloud.ready) cloudSaveSoon();
 }
 let progress = loadProgress();
@@ -207,15 +219,22 @@ function applyBoardLook(node) {
     }
   }
 }
+// Sounds are fetched whole and played from a blob, so the offline cache can serve them (audio
+// elements ask for byte ranges, which the cache can't answer).
 const sounds = {};
+const loadSound = (name) =>
+  (sounds[name] ??= fetch(`${ASSETS}/sounds/${name}.mp3`)
+    .then((r) => (r.ok ? r.blob() : Promise.reject()))
+    .then((b) => URL.createObjectURL(b))
+    .catch(() => { delete sounds[name]; return null; }));
 function playSound(name) {
   if (!progress.settings.sound) return;
-  try {
-    sounds[name] ??= new Audio(`${ASSETS}/sounds/${name}.mp3`);
-    const a = sounds[name].cloneNode();
+  loadSound(name).then((src) => {
+    if (!src) return;
+    const a = new Audio(src);
     a.volume = 0.6;
     a.play().catch(() => {});
-  } catch {}
+  });
 }
 const fmtDur = (ms) => {
   const m = Math.round(ms / 60000);
@@ -733,6 +752,7 @@ function renderStats() {
   const statsHtml = `
     ${Object.entries(TRACKS).filter(([tr]) => indexes[tr]).map(([tr, t]) => `<a class="stat rank-stat ${tr === track ? 'cur' : ''}" href="${hrefHome(tr)}" title="${t.label}: ${userRank(tr)[2]} · rating ${trackRating(tr).rating} · ${solvedCount(tr).toLocaleString()} solved">${rankIcon(userRank(tr)[1], 22)}<span class="rs-txt"><small>${t.label}</small><b>${trackRating(tr).rating}</b></span></a>`).join('')}
     ${todayChip()}
+    ${offlineChip()}
     <div class="stat" title="Day streak">🔥 <b>${progress.streak || 0}</b></div>
     <div class="stat" title="Puzzles solved">✓ <b>${solvedCount().toLocaleString()}</b></div>
     <div class="level" title="${progress.xp.toLocaleString()} XP">
@@ -2318,6 +2338,7 @@ async function showPlay(key, flat) {
   const tp = themeProgress(key);
   const set = theme.sets[flat];
   if (!set) return (location.hash = hrefTheme(key));
+  const tryingAhead = flat > lowestUncleared(tp, theme.sets.length);
   tp.at = flat; // your place is wherever you play
   const cleared = Object.values(tp.stars).filter((s) => s > 0).length;
   const known = set.puzzles.filter((p) => isSolved(p.id)).length;
@@ -2328,6 +2349,7 @@ async function showPlay(key, flat) {
     backHref: hrefTheme(key),
     backLabel: `${theme.name} ladder`,
     head: `<h2>${esc(theme.name)}</h2>
+      ${tryingAhead ? `<div class="ahead-badge" title="You've skipped ahead of sets you haven't cleared. Clearing this one saves its stars and fills your ring; the lower sets stay open.">🚀 Trying ahead</div>` : ''}
       <div class="set-sub">${set.min}–${set.max} · Stage ${set.band + 1} of ${theme.bands.length} · Set ${set.n + 1} of ${theme.sets.filter((s) => s.band === set.band).length}</div>
       ${known ? `<div class="known-note">You've already solved ${known} of these ${set.puzzles.length} puzzles — they're marked with a dot.</div>` : ''}`,
     progress: `<div class="theme-progress">
@@ -2481,8 +2503,8 @@ function playRun(run) {
   $setPieces.value = progress.settings.pieces;
   const soundLabel = () => ($setSound.textContent = progress.settings.sound ? '🔊 Sound' : '🔇 Muted');
   soundLabel();
-  $setBoard.onchange = () => { progress.settings.board = $setBoard.value; saveProgress(); applyBoardLook($board); };
-  $setPieces.onchange = () => { progress.settings.pieces = $setPieces.value; saveProgress(); applyBoardLook($board); };
+  $setBoard.onchange = () => { progress.settings.board = $setBoard.value; saveProgress(); applyBoardLook($board); checkOfflineReady(); };
+  $setPieces.onchange = () => { progress.settings.pieces = $setPieces.value; saveProgress(); applyBoardLook($board); checkOfflineReady(); };
   $setSound.onclick = () => { progress.settings.sound = !progress.settings.sound; saveProgress(); soundLabel(); };
 
   const $live = page.querySelector('#liveSession');
@@ -2851,10 +2873,23 @@ async function cloudLoad() {
   setProgress(next);
   cloud.ready = true;
   if (!remote || JSON.stringify(next) !== JSON.stringify(remote)) cloudSaveSoon(0);
+  else markUnsynced(false);
   return true;
 }
 const loadDefaults = () => ({ xp: 0, themes: {}, streak: 0, lastDay: null, solved: 0 });
 
+// Offline or a failed save: the progress stays on this device, marked as not yet saved to the
+// account, and goes out when the connection is back (or on the next try, 30 s doubling to 5 min).
+function cloudRetryLater() {
+  cloud.retryMs = Math.min((cloud.retryMs || 15000) * 2, 300000);
+  if (navigator.onLine) cloudSaveSoon(cloud.retryMs);
+}
+function markUnsynced(on) {
+  if (offline.unsynced === on) return;
+  offline.unsynced = on;
+  try { on ? localStorage.setItem(UNSYNCED_KEY, '1') : localStorage.removeItem(UNSYNCED_KEY); } catch {}
+  renderOfflineChip();
+}
 function cloudSaveSoon(delay = 4000) {
   clearTimeout(cloud.timer);
   cloud.timer = setTimeout(() => void cloudSave(), delay);
@@ -2876,9 +2911,12 @@ async function cloudSave(retry = true) {
   if (cloud.saving) { cloud.again = true; return; }
   cloud.saving = true;
   try {
+    const savedAt = progress.savedAt;
     const res = await askHost('save', { progress, baseVersion: cloud.version, summary: cloudSummary() });
     if (res.ok) {
       cloud.version = res.data.version;
+      cloud.retryMs = 0;
+      if (progress.savedAt === savedAt) markUnsynced(false);
     } else if (res.status === 409 && retry) {
       const latest = await askHost('load');
       if (latest?.ok && latest.data.progress) {
@@ -2890,13 +2928,137 @@ async function cloudSave(retry = true) {
       return cloudSave(false);
     } else {
       console.warn('Tactics Forger: save failed', res.status);
+      cloudRetryLater();
     }
   } catch (err) {
     console.warn('Tactics Forger: save failed', err);
+    cloudRetryLater();
   } finally {
     cloud.saving = false;
   }
   if (cloud.again) { cloud.again = false; cloudSaveSoon(1000); }
+}
+
+// ---- Offline ---------------------------------------------------------------------
+// sw.js keeps the app and every puzzle file you've opened, so it loads and plays with no
+// connection. "Download for offline" fetches the rest of Tactics, Endgames and your specialty
+// openings ahead of time. Progress is always saved on this device first; on chessdojo.club it's
+// sent to your account when the connection is back.
+function offlineUrls() {
+  const urls = ['data/index.json', 'data/openings/index.json', 'data/endgames/index.json'];
+  for (const t of indexes.tactics?.themes ?? []) urls.push(`data/${t.key}.json`);
+  for (const t of indexes.endgames?.themes ?? []) urls.push(`data/endgames/${t.key}.json`);
+  for (const k of Object.values(progress.specialty ?? {})) if (k) urls.push(`data/openings/${k}.json`);
+  urls.push(...['move', 'capture', 'check'].map((n) => `${ASSETS}/sounds/${n}.mp3`));
+  // The board and pieces you play with (other looks are kept once you've used them online).
+  const [, bg] = BOARDS[progress.settings.board] ?? BOARDS.standard;
+  const [, dir, ext] = PIECES[progress.settings.pieces] ?? PIECES.standard;
+  urls.push(`${ASSETS}/backgrounds/${bg}`);
+  for (const c of 'wb') for (const p of 'PNBRQK') urls.push(`${ASSETS}/pieces/${dir}/${c}${p}${ext}`);
+  return urls.map((u) => new URL(u, location.href).href);
+}
+async function checkOfflineReady() {
+  if (!offline.sw || !('caches' in window)) return;
+  const hits = await Promise.all(offlineUrls().map((u) => caches.match(u)));
+  offline.ready = hits.every(Boolean);
+  renderOfflineChip();
+}
+async function downloadForOffline() {
+  if (offline.dl || !offline.sw) return;
+  const urls = [];
+  for (const u of offlineUrls()) if (!(await caches.match(u))) urls.push(u);
+  // Files only get cached by the service worker once it controls this page (right after install).
+  if (!navigator.serviceWorker.controller) {
+    await new Promise((res) => {
+      navigator.serviceWorker.addEventListener('controllerchange', res, { once: true });
+      setTimeout(res, 3000);
+    });
+  }
+  offline.dl = { done: 0, total: urls.length };
+  offline.failed = false;
+  renderOfflineChip();
+  let next = 0;
+  const worker = async () => {
+    while (next < urls.length) {
+      const u = urls[next++];
+      try {
+        const r = await fetch(u);
+        if (!r.ok) throw new Error(r.status);
+        await r.arrayBuffer(); // the service worker stores it on the way through
+      } catch { offline.failed = true; }
+      offline.dl.done++;
+      renderOfflineChip();
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  offline.dl = null;
+  await checkOfflineReady();
+  if (offline.ready) toast('Ready to play offline ✓');
+  else if (offline.failed) toast('Some puzzles didn\'t download. Try again when the connection is better.');
+}
+function offlineChip() {
+  const st = !offline.online ? ['off', '⚡', 'Offline']
+    : offline.dl ? ['dl', '⬇', `${Math.round((offline.dl.done / Math.max(1, offline.dl.total)) * 100)}%`]
+    : offline.ready ? ['ready', '✓', 'Offline']
+    : offline.sw ? ['get', '⬇', 'Offline'] : null;
+  if (!st) return '<button type="button" class="stat offline-chip" data-offline hidden></button>'; // filled in once the worker is ready
+  return `<button type="button" class="stat offline-chip oc-${st[0]}" data-offline title="Offline play">${st[1]} <b>${st[2]}</b></button>`;
+}
+function renderOfflineChip() {
+  const html = offlineChip();
+  document.querySelectorAll('[data-offline]').forEach((b) => (b.outerHTML = html));
+  if (offline.open) renderOfflineCard();
+}
+function renderOfflineCard() {
+  let card = document.getElementById('offlineCard');
+  if (!offline.open) return card?.remove();
+  if (!card) {
+    card = el('<div id="offlineCard" class="offline-card" role="dialog" aria-label="Offline play"></div>');
+    document.body.append(card);
+  }
+  const acct = !HOSTED ? 'Your progress is saved on this device.'
+    : !offline.online ? 'Your progress is saved on this device and goes to your Dojo account when you\'re back online.'
+    : cloud.ready && !offline.unsynced ? 'Your progress is saved to your Dojo account.'
+    : cloud.ready ? 'Saving your latest progress to your Dojo account…'
+    : 'Your progress is saved on this device.';
+  const body = !offline.sw
+    ? '<p>This browser can\'t keep the puzzles for offline use.</p>'
+    : offline.dl
+      ? `<p>Downloading puzzles… ${offline.dl.done}/${offline.dl.total}</p><div class="rr-bar small"><div style="width:${(offline.dl.done / Math.max(1, offline.dl.total)) * 100}%"></div></div>`
+      : offline.ready
+        ? '<p><b>✓ Ready to play offline.</b> Tactics, Endgames and your specialty openings are on this device. Other openings work offline once you\'ve opened them.</p>'
+        : `<p>Puzzles you've already opened work offline. Download the rest of Tactics, Endgames and your specialty openings (about 5 MB) to play anywhere.</p>
+           <button type="button" class="btn primary" id="offlineGo" ${offline.online ? '' : 'disabled'}>⬇ Download for offline</button>`;
+  card.innerHTML = `<div class="oc-head"><b>${offline.online ? 'Offline play' : '⚡ You\'re offline'}</b><button type="button" class="oc-close" aria-label="Close">✕</button></div>
+    ${body}<p class="oc-acct">${acct}</p>`;
+  card.querySelector('.oc-close').onclick = () => { offline.open = false; renderOfflineCard(); };
+  const go = card.querySelector('#offlineGo');
+  if (go) go.onclick = () => downloadForOffline();
+}
+function setupOffline() {
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-offline]')) {
+      offline.open = !offline.open;
+      renderOfflineCard();
+    } else if (offline.open && !e.target.closest('#offlineCard')) {
+      offline.open = false;
+      renderOfflineCard();
+    }
+  });
+  const net = () => { offline.online = navigator.onLine; renderOfflineChip(); };
+  window.addEventListener('online', net);
+  window.addEventListener('offline', net);
+  if (progress.settings.sound) ['move', 'capture', 'check'].forEach(loadSound);
+  if (!('serviceWorker' in navigator) || !('caches' in window)) return renderOfflineChip();
+  navigator.serviceWorker.register('sw.js').then(async (reg) => {
+    // Older app versions on the site live in other folders, each with its own worker: drop them.
+    for (const r of await navigator.serviceWorker.getRegistrations()) {
+      if (r !== reg && r.scope.includes('/tactics-forger/') && r.scope !== reg.scope) r.unregister();
+    }
+    await navigator.serviceWorker.ready;
+    offline.sw = true;
+    checkOfflineReady();
+  }).catch((err) => { console.warn('Tactics Forger: offline support unavailable', err); renderOfflineChip(); });
 }
 
 // ---- Boot ----------------------------------------------------------------------
@@ -2931,10 +3093,23 @@ async function cloudSave(retry = true) {
   saveProgress();
   renderStats();
   route();
-  // On chessdojo.club: bring in the progress saved to the account, then redraw with it.
-  if (await cloudLoad()) {
-    renderStats();
-    if (!location.hash.includes('/play/')) route(); // don't restart a puzzle already in progress
+  setupOffline();
+  // On chessdojo.club: bring in the progress saved to the account, then redraw with it. If that
+  // fails (offline), keep playing on this device and try again once the connection is back.
+  const connect = async () => {
+    if (cloud.ready || cloud.connecting) return;
+    cloud.connecting = true;
+    const ok = await cloudLoad().catch(() => false);
+    cloud.connecting = false;
+    if (ok) {
+      renderStats();
+      if (!location.hash.includes('/play/')) route(); // don't restart a puzzle already in progress
+    }
+  };
+  await connect();
+  if (HOSTED) {
+    window.addEventListener('online', () => (cloud.ready ? cloudSaveSoon(500) : connect()));
+    setInterval(() => { if (!cloud.ready && navigator.onLine) connect(); }, 60000);
   }
 })();
 

@@ -944,3 +944,24 @@ html.embed .nav { margin-left: 0; }
   .play .board-settings { order: 3; }
 }
 @media (max-width: 700px) { .play-side { width: 100%; max-width: none; } }
+
+/* Offline play: status button with the other stats, and its card */
+.offline-chip { font: inherit; background: none; border: 1px solid var(--line, #333); border-radius: 999px; padding: 3px 10px; color: var(--muted); cursor: pointer; display: inline-flex; gap: 5px; align-items: center; }
+.offline-chip b { font-weight: 600; font-size: 12px; }
+.offline-chip:hover { color: var(--text); border-color: var(--primary, #90caf9); }
+.offline-chip.oc-ready { color: #81c784; border-color: #2e5130; }
+.offline-chip.oc-off { color: #ffb74d; border-color: #6b4a16; background: #2a1f0e; }
+.offline-chip.oc-dl { color: var(--primary, #90caf9); }
+.offline-card { position: fixed; z-index: 60; top: 64px; right: 16px; width: min(340px, calc(100vw - 32px)); background: var(--panel, #1e1e1e); border: 1px solid var(--line, #333); border-radius: 12px; padding: 14px 16px; box-shadow: 0 12px 32px rgba(0,0,0,.5); font-size: 14px; color: var(--text); }
+.offline-card p { margin: 8px 0; line-height: 1.45; color: var(--muted); }
+.offline-card p b { color: var(--text); }
+.offline-card .btn { width: 100%; margin: 6px 0 2px; }
+.offline-card .oc-acct { font-size: 12px; border-top: 1px solid var(--line, #333); padding-top: 8px; margin-bottom: 0; }
+.oc-head { display: flex; justify-content: space-between; align-items: center; }
+.oc-close { background: none; border: 0; color: var(--muted); font-size: 16px; cursor: pointer; padding: 2px 4px; }
+@media (max-width: 700px) {
+  .topbar .stats { flex-wrap: wrap; white-space: normal; row-gap: 6px; gap: 6px 10px; min-width: 0; max-width: 100%; justify-content: flex-end; }
+  .offline-card { left: 12px; right: 12px; width: auto; top: 56px; }
+  .offline-chip { padding: 3px 8px; }
+  .offline-chip:not(.oc-off) b { display: none; } /* just the icon on phones, except when offline */
+}
