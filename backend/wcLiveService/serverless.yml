@@ -31,6 +31,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
+          - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
   listGames:
@@ -78,6 +79,27 @@ functions:
           - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
+  guessStats:
+    handler: stats.handler
+    events:
+      - httpApi:
+          path: /wc-live/rounds/{roundId}/stats
+          method: get
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   getAnalysis:
     handler: analysis.get
     events:
@@ -109,6 +131,7 @@ functions:
           - dynamodb:GetItem
           - dynamodb:PutItem
           - dynamodb:Query
+          - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
   roster:
@@ -138,6 +161,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
+          - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
   myGuesses:
@@ -170,6 +194,7 @@ functions:
         Action:
           - dynamodb:UpdateItem
           - dynamodb:Query
+          - dynamodb:GetItem
         Resource: !GetAtt WcLiveTable.Arn
       - Effect: Allow
         Action:
@@ -190,6 +215,7 @@ functions:
         Action:
           - dynamodb:PutItem
           - dynamodb:Query
+          - dynamodb:UpdateItem
         Resource: !GetAtt WcLiveTable.Arn
 
 resources:

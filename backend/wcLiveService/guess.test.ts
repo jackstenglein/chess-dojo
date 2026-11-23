@@ -1,4 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The service keeps its data in memory in these tests, as it does locally.
+vi.hoisted(() => {
+    process.env.WC_LIVE_STORE = 'memory';
+});
+
 import { ApiError } from '../directoryService/api';
 import { checkGuess } from './guess';
 import { parseRoundPgn } from './lichess';
@@ -97,5 +103,38 @@ describe('analysis', () => {
         expect(() =>
             apply(state, { action: 'delete', roundId: 'xLgOJ6cb', path: ['e4', 'e5'] }, main, 'a'),
         ).toThrow();
+    });
+});
+
+describe('guess stats', () => {
+    it('flags right guesses made just before the move came in', async () => {
+        const { computeGuessStats } = await import('./stats');
+        const rows = computeGuessStats(
+            ['e2e4', 'c7c5'],
+            { 1: '2026-11-24T14:00:10.000Z', 2: '2026-11-24T14:01:00.000Z' },
+            [
+                {
+                    username: 'early',
+                    displayName: 'Early',
+                    guesses: { 1: 'e2e4', 2: 'c7c5' },
+                    times: { 1: '2026-11-24T13:50:00.000Z', 2: '2026-11-24T14:00:20.000Z' },
+                },
+                {
+                    username: 'late',
+                    displayName: 'Late',
+                    guesses: { 1: 'e2e4', 2: 'c7c5' },
+                    times: { 1: '2026-11-24T14:00:08.000Z', 2: '2026-11-24T14:00:59.500Z' },
+                },
+            ],
+            [
+                { username: 'late', ply: 2, uci: 'd7d6', at: '2026-11-24T14:00:30.000Z' },
+                { username: 'late', ply: 2, uci: 'c7c5', at: '2026-11-24T14:00:59.500Z' },
+            ],
+        );
+        expect(rows.map((r) => [r.username, r.correct, r.closeCalls, r.changes])).toEqual([
+            ['late', 2, 2, 2],
+            ['early', 2, 0, 0],
+        ]);
+        expect(rows[0].details.map((d) => d.leadSeconds)).toEqual([2, 0.5]);
     });
 });

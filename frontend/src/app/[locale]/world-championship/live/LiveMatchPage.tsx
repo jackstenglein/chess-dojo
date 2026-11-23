@@ -55,6 +55,7 @@ import { AddGameDialog } from './AddGameDialog';
 import { useAnalysis } from './analysisClient';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
+import { GuessStatsPanel } from './GuessStatsPanel';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import {
     clocksAt,
@@ -855,6 +856,9 @@ export function LiveMatchPage() {
                         username={username}
                     />
                     <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
+                    {(user?.isAdmin || (actAs && isSensei)) && (
+                        <GuessStatsPanel roundId={roundId} />
+                    )}
                 </Stack>
             </Box>
 

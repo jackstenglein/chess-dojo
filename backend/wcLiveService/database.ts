@@ -35,6 +35,8 @@ interface Store {
     put(hash: string, range: string, item: Item): Promise<void>;
     /** Sets the given attributes, creating the item if needed. */
     set(hash: string, range: string, attrs: Item): Promise<void>;
+    /** Sets each attribute only if the item does not have it yet. */
+    setIfMissing(hash: string, range: string, attrs: Item): Promise<void>;
     get(hash: string, range: string): Promise<Item | undefined>;
     query(hash: string): Promise<Item[]>;
     /**
@@ -62,6 +64,28 @@ const dynamoStore: Store = {
             values[`:v${i}`] = value;
             return `#a${i} = :v${i}`;
         });
+        await dynamo.send(
+            new UpdateItemCommand({
+                TableName: WC_LIVE_TABLE,
+                Key: marshall({ hash, range }),
+                UpdateExpression: `SET ${sets.join(', ')}`,
+                ExpressionAttributeNames: names,
+                ExpressionAttributeValues: marshall(values),
+            }),
+        );
+    },
+
+    async setIfMissing(hash, range, attrs) {
+        const names: Record<string, string> = {};
+        const values: Item = {};
+        const sets = Object.entries(attrs).map(([key, value], i) => {
+            names[`#a${i}`] = key;
+            values[`:v${i}`] = value;
+            return `#a${i} = if_not_exists(#a${i}, :v${i})`;
+        });
+        if (sets.length === 0) {
+            return;
+        }
         await dynamo.send(
             new UpdateItemCommand({
                 TableName: WC_LIVE_TABLE,
@@ -147,6 +171,15 @@ function memoryStore(): Store {
             p.set(range, { ...(p.get(range) ?? { hash, range }), ...attrs });
             return Promise.resolve();
         },
+        setIfMissing(hash, range, attrs) {
+            const p = partition(hash);
+            const current = p.get(range) ?? { hash, range };
+            const missing = Object.fromEntries(
+                Object.entries(attrs).filter(([key]) => current[key] === undefined),
+            );
+            p.set(range, { ...current, ...missing });
+            return Promise.resolve();
+        },
         get(hash, range) {
             return Promise.resolve(partition(hash).get(range));
         },
@@ -230,12 +263,84 @@ export async function putGuess(
     displayName: string,
     ply: number,
     uci: string,
+    at: string,
 ): Promise<void> {
     await store.set(`GUESS#${roundId}`, username, {
         username,
         displayName,
         [`${GUESS_PREFIX}${ply}`]: uci,
+        // When the guess for this move was last set, for the cheating checks.
+        [`t${ply}`]: at,
     });
+    // Every guess and every change, for admins to look back on.
+    await store.put(`GUESSLOG#${roundId}`, `${at}#${username}#${ply}`, {
+        username,
+        ply,
+        uci,
+        at,
+    });
+}
+
+/** One guess as it was made, from the guess log. */
+export interface GuessLogEntry {
+    username: string;
+    ply: number;
+    uci: string;
+    at: string;
+}
+
+export async function listGuessLog(roundId: string): Promise<GuessLogEntry[]> {
+    return (await store.query(`GUESSLOG#${roundId}`)).map((i) => ({
+        username: i.username as string,
+        ply: i.ply as number,
+        uci: i.uci as string,
+        at: i.at as string,
+    }));
+}
+
+/** Every user's guesses with the time each was last set, for the stats. */
+export async function listGuessItems(
+    roundId: string,
+): Promise<
+    {
+        username: string;
+        displayName: string;
+        guesses: Record<string, string>;
+        times: Record<string, string>;
+    }[]
+> {
+    return (await store.query(`GUESS#${roundId}`)).map((item) => {
+        const times: Record<string, string> = {};
+        for (const [key, value] of Object.entries(item)) {
+            if (/^t\d+$/.test(key) && typeof value === 'string') {
+                times[key.slice(1)] = value;
+            }
+        }
+        return { ...toGuesses(item), times };
+    });
+}
+
+/**
+ * When the server first saw each move of a game, by ply. A move's time is
+ * written once and never changed, so it is the earliest any server saw it.
+ */
+export async function recordPlayed(roundId: string, fromPly: number, toPly: number, at: string) {
+    const attrs: Item = {};
+    for (let p = fromPly; p <= toPly; p++) {
+        attrs[`p${p}`] = at;
+    }
+    await store.setIfMissing(`PLAYED#${roundId}`, 'moves', attrs);
+}
+
+export async function getPlayed(roundId: string): Promise<Record<number, string>> {
+    const item = await store.get(`PLAYED#${roundId}`, 'moves');
+    const played: Record<number, string> = {};
+    for (const [key, value] of Object.entries(item ?? {})) {
+        if (/^p\d+$/.test(key) && typeof value === 'string') {
+            played[parseInt(key.slice(1))] = value;
+        }
+    }
+    return played;
 }
 
 function toGuesses(item: Item): WcGuesses {

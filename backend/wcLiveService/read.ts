@@ -35,7 +35,9 @@ export const evals: APIGatewayProxyHandlerV2 = async (event) => {
         if (cached && Date.now() - cached.at < EVALS_TTL_MS) {
             return ok(cached.response);
         }
-        await requireMatchRound(roundId);
+        // Every viewer polls this, so it is also where the server notices new
+        // moves quickly and records when each came in, for the guess timing.
+        await getRoundState(roundId);
         const [list, saved] = await Promise.all([listEvals(roundId), listRoster()]);
         const response: WcEvalsResponse = { roundId, roster: buildRoster(saved), evals: list };
         evalsCache.set(roundId, { at: Date.now(), response });

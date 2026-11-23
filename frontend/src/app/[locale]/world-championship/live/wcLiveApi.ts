@@ -91,3 +91,39 @@ export async function removeCustomGame(id: string): Promise<WcCustomGame[]> {
     );
     return resp.data.games;
 }
+
+export interface GuessStatsDetail {
+    ply: number;
+    uci: string;
+    guessedAt?: string;
+    playedAt?: string;
+    leadSeconds?: number;
+}
+
+export interface GuessStatsRow {
+    username: string;
+    displayName: string;
+    correct: number;
+    guessed: number;
+    changes: number;
+    closeCalls: number;
+    medianLeadSeconds?: number;
+    details: GuessStatsDetail[];
+}
+
+export interface GuessStats {
+    roundId: string;
+    plies: number;
+    closeCallSeconds: number;
+    rows: GuessStatsRow[];
+    guessCount: number;
+}
+
+/** Admins only: when everyone guessed, against when each move came in. */
+export async function getGuessStats(roundId: string): Promise<GuessStats> {
+    const resp = await axiosService.get<GuessStats>(`/wc-live/rounds/${roundId}/stats`, {
+        functionName: 'wcLiveGuessStats',
+        ...localRequestConfig(),
+    });
+    return resp.data;
+}

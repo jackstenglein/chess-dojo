@@ -9,7 +9,7 @@ import {
     testRoundState,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import { ApiError } from '../directoryService/api';
-import { listCustomGames } from './database';
+import { listCustomGames, recordPlayed } from './database';
 
 const LICHESS = 'https://lichess.org';
 
@@ -106,7 +106,25 @@ export function parseRoundPgn(pgn: string): RoundState {
 }
 
 /** The moves played so far in the round, as Lichess broadcasts them. */
+/** The plies this Lambda instance has already recorded as seen, per game. */
+const noted = new Map<string, number>();
+
+/** Writes when each new move was first seen, once per move per Lambda instance. */
+async function notePlayed(roundId: string, plies: number): Promise<void> {
+    const before = noted.get(roundId) ?? 0;
+    if (plies > before) {
+        noted.set(roundId, plies);
+        await recordPlayed(roundId, before + 1, plies, new Date().toISOString());
+    }
+}
+
 export async function getRoundState(roundId: string): Promise<RoundState> {
+    const state = await loadRoundState(roundId);
+    await notePlayed(roundId, state.played.length);
+    return state;
+}
+
+async function loadRoundState(roundId: string): Promise<RoundState> {
     // Game 0 is computed from the clock, not read from Lichess.
     const test = testRoundState(roundId, Date.now());
     if (test) {

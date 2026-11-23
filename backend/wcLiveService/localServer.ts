@@ -30,6 +30,7 @@ async function loadRoutes() {
     const roster = await import('./roster');
     const analysis = await import('./analysis');
     const games = await import('./customGames');
+    const stats = await import('./stats');
     const routes: { method: string; pattern: RegExp; handler: Handler }[] = [
         {
             method: 'GET',
@@ -55,6 +56,11 @@ async function loadRoutes() {
             method: 'PUT',
             pattern: /^\/wc-live\/eval$/,
             handler: evalHandler.handler as unknown as Handler,
+        },
+        {
+            method: 'GET',
+            pattern: /^\/wc-live\/rounds\/(?<roundId>[^/]+)\/stats$/,
+            handler: stats.handler as unknown as Handler,
         },
         {
             method: 'GET',

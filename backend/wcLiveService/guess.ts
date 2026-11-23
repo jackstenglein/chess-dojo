@@ -7,7 +7,7 @@ import {
     parseBody,
     requireUserInfo,
 } from '../directoryService/api';
-import { displayNameFor, ok, putGuess } from './database';
+import { displayNameFor, getPlayed, ok, putGuess } from './database';
 import { getRoundState, RoundState } from './lichess';
 
 /**
@@ -23,8 +23,25 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const state = await getRoundState(request.roundId);
         checkGuess(state, request.ply, request.uci);
 
+        // Another server may have seen the move already, even if this one's
+        // copy of the game is a second or two old.
+        const played = await getPlayed(request.roundId);
+        if (played[request.ply]) {
+            throw new ApiError({
+                statusCode: 409,
+                publicMessage: 'That move has already been played',
+            });
+        }
+
         const displayName = await displayNameFor(username);
-        await putGuess(request.roundId, username, displayName, request.ply, request.uci);
+        await putGuess(
+            request.roundId,
+            username,
+            displayName,
+            request.ply,
+            request.uci,
+            new Date().toISOString(),
+        );
         return ok({ roundId: request.roundId, ply: request.ply, uci: request.uci });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
