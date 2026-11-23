@@ -706,7 +706,8 @@ const visFrac = (f) => (f > 0 ? Math.max(f, 0.035) : 0); // keep a sliver visibl
  * stages: stage indexes, innermost first. before: {themeKey: fraction} to start from
  * (for the fill-up animation); highlight: theme key to mark.
  */
-function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, before = null, links = true, dim = [], labels = false, pad = 3 }) {
+function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, before = null, links = true, dim = [], labels = false, pad = 3, mode = 'progress' }) {
+  const sg = mode === 'strengths' ? strengths() : null;
   const c = size / 2;
   const rOuter = c - stroke / 2 - pad;
   let out = `<svg class="rings" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Progress rings">`;
@@ -723,14 +724,17 @@ function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, 
       const a1 = (j + 1) * span - gapDeg / 2;
       const len = (r * (a1 - a0) * Math.PI) / 180;
       const cl = clearedCount(key);
-      const frac = cl / t.sets;
+      const st = sg?.[key];
+      // Strengths: a scored slice is filled in its score's colour; no score yet = empty track.
+      const frac = sg ? (st?.score != null ? 1 : 0) : cl / t.sets;
+      const col = sg ? (st?.score != null ? strengthColor(st.score) : '#5a6272') : color;
       const start = before && key in before ? before[key] : frac;
       const d = arcD(c, r, a0, a1);
-      const seg = `<path class="track" d="${d}" stroke="${color}" stroke-width="${stroke}"/>
-        <path class="fill ${frac >= 1 ? 'full' : ''}" d="${d}" stroke="${color}" stroke-width="${stroke}"
+      const seg = `<path class="track" d="${d}" stroke="${col}" stroke-width="${stroke}"/>
+        <path class="fill ${frac >= 1 ? 'full' : ''}" d="${d}" stroke="${col}" stroke-width="${stroke}"
           data-len="${len.toFixed(2)}" data-frac="${visFrac(frac)}" stroke-dasharray="${(len * visFrac(start)).toFixed(2)} ${(len + 2).toFixed(2)}"/>
         ${key === highlight ? `<path class="hl" d="${d}" stroke-width="${stroke + 6}"/>` : ''}
-        <title>${esc(t.name)} — ${cl}/${t.sets} sets (${ringPct(frac)}%)</title>`;
+        <title>${esc(t.name)} — ${sg ? (st?.score != null ? `${st.label} (${st.score}) · ${Math.round(st.acc * 100)}% first try · ${fmtSec(st.med)} median` : `not enough puzzles yet (${st?.n ?? 0}/${STRENGTH.min})`) : `${cl}/${t.sets} sets (${ringPct(frac)}%)`}</title>`;
       let label = '';
       if (labels) {
         const mid = (a0 + a1) / 2;
@@ -919,6 +923,48 @@ document.getElementById('homeBtn').onclick = () => (location.hash = '');
 
 // ---- Home -----------------------------------------------------------------------
 const ringView = {}; // which ring each tab is showing
+const ringMode = {}; // 'progress' (default) or 'strengths', per tab
+
+// ---- Strengths ----------------------------------------------------------------------
+// How strong you are in each theme, from your last STRENGTH.recent puzzles in it (any mode):
+//  - accuracy: first-try solves compared with what's expected at those puzzles' ratings for your
+//    rating at the time (so harder themes aren't marked weak just for being harder);
+//  - speed: your median solve time in the theme compared with your median across the whole tab
+//    (twice as fast scores full marks, twice as slow scores zero).
+// Score = 70% accuracy + 30% speed, 0-100. Strong is 60+, weak is under 40. Themes with fewer than
+// STRENGTH.min puzzles have no score yet.
+const STRENGTH = { recent: 60, min: 10, acc: 0.7 };
+let strengthMemo = { n: -1 };
+function strengths(tr = track) {
+  const { attempts } = statsModel();
+  if (strengthMemo.n !== attempts.length) strengthMemo = { n: attempts.length, by: {} };
+  if (strengthMemo.by[tr]) return strengthMemo.by[tr];
+  const mine = attempts.filter((a) => a.tr === tr);
+  const median = (xs) => {
+    if (!xs.length) return 0;
+    const v = [...xs].sort((a, b) => a - b);
+    return v[Math.floor(v.length / 2)];
+  };
+  const allMed = median(mine.filter((a) => a.ok && a.ms > 0).map((a) => a.ms));
+  const byKey = {};
+  for (const a of mine) (byKey[a.key] ??= []).push(a);
+  const out = {};
+  for (const [key, list] of Object.entries(byKey)) {
+    const recent = list.slice(-STRENGTH.recent);
+    if (recent.length < STRENGTH.min) { out[key] = { n: recent.length }; continue; }
+    const acc = recent.filter((a) => a.ok).length / recent.length;
+    const expected = sum(recent.map((a) => eloExpected(a.solver, a.rating))) / recent.length;
+    const accScore = Math.min(1, Math.max(0, 0.5 + (acc - expected)));
+    const med = median(recent.filter((a) => a.ok && a.ms > 0).map((a) => a.ms));
+    const speedScore = med && allMed ? Math.min(1, Math.max(0, 0.5 + 0.5 * Math.log2(allMed / med))) : 0.5;
+    const score = Math.round(100 * (STRENGTH.acc * accScore + (1 - STRENGTH.acc) * speedScore));
+    out[key] = { n: recent.length, acc, med, score, label: score >= 60 ? 'Strong' : score < 40 ? 'Weak' : 'OK' };
+  }
+  strengthMemo.by[tr] = out;
+  return out;
+}
+// Red (weak) -> amber -> green (strong).
+const strengthColor = (score) => `hsl(${Math.round(Math.min(100, Math.max(0, score)) * 1.2)} 62% 52%)`;
 function showHome() {
   if (track === 'openings') return showOpeningsHome();
   const totals = index.themes.map((t) => {
@@ -984,7 +1030,18 @@ function showHome() {
     const nextF = nextKey ? nextFlat(store()[nextKey], nextT.sets) : 0;
     const nextB = nextT && bandOfFlat(nextT, nextF);
     const left = sp.sets - sp.cleared;
-    const centerDefault = `<small>${esc(STAGES[si].name)}</small>
+    const strong = ringMode[track] === 'strengths';
+    const sg = strengths();
+    const scored = sp.keys.filter((k) => sg[k]?.score != null).sort((a, b) => sg[a].score - sg[b].score);
+    const weakest = scored[0];
+    const strongest = scored.at(-1);
+    const centerDefault = strong
+      ? scored.length
+        ? `<small>${esc(STAGES[si].name)}</small>
+          <span>Strongest</span><b style="color:${strengthColor(sg[strongest].score)};font-size:22px">${esc(shortName(themeMeta(strongest)))}</b>
+          <span>Weakest</span><b style="color:${strengthColor(sg[weakest].score)};font-size:22px">${esc(shortName(themeMeta(weakest)))}</b>`
+        : `<small>${esc(STAGES[si].name)}</small><span>Play ${STRENGTH.min}+ puzzles in a theme to see how strong you are in it.</span>`
+      : `<small>${esc(STAGES[si].name)}</small>
       <b style="color:${color}">${ringPct(sp.frac)}%</b>
       <span>${sp.cleared.toLocaleString()} / ${sp.sets.toLocaleString()} sets</span>
       <em>${(left * SET_SIZE).toLocaleString()} puzzles to go</em>`;
@@ -998,14 +1055,21 @@ function showHome() {
       return `<div class="slice-row ${f >= 1 ? 'done' : cl ? 'started' : ''}" data-key="${k}">
         <a class="slice-go" href="${f >= 1 ? hrefTheme(k) : hrefPlay(k, flat)}" title="${f >= 1 ? 'Ladder complete' : `Play ${esc(shortName(t))} ${b.min}–${b.max}`}">
           <span class="slice-name">${esc(shortName(t))}</span>
-          <span class="slice-bar" style="--c:${color}"><i style="width:${f > 0 ? Math.max(f * 100, 1.5) : 0}%"></i></span>
-          <span class="slice-left">${f >= 1 ? 'Done ✓' : `${b.min}–${b.max}`}</span>
+          ${strong
+            ? `<span class="slice-bar" style="--c:${sg[k]?.score != null ? strengthColor(sg[k].score) : '#5a6272'}"><i style="width:${sg[k]?.score ?? 0}%"></i></span>
+          <span class="slice-left ${sg[k]?.label ? `sl-${sg[k].label.toLowerCase()}` : ''}">${sg[k]?.score != null ? `${sg[k].label} · ${Math.round(sg[k].acc * 100)}% · ${fmtSec(sg[k].med)}` : `${sg[k]?.n ?? 0}/${STRENGTH.min} played`}</span>`
+            : `<span class="slice-bar" style="--c:${color}"><i style="width:${f > 0 ? Math.max(f * 100, 1.5) : 0}%"></i></span>
+          <span class="slice-left">${f >= 1 ? 'Done ✓' : `${b.min}–${b.max}`}</span>`}
           <span class="slice-play" aria-hidden="true">${f >= 1 ? '' : '▶'}</span>
         </a>
         <a class="slice-ladder" href="${hrefTheme(k)}" title="${esc(shortName(t))} ladder: ${t.bands} stages, ${t.sets} sets" aria-label="${esc(shortName(t))} ladder">☰</a>
       </div>`;
     }).join('');
     hero.innerHTML = `
+      <div class="ring-mode seg-tabs small" role="tablist" aria-label="Ring shows">
+        <button type="button" data-mode="progress" class="${strong ? '' : 'on'}">Progress</button>
+        <button type="button" data-mode="strengths" class="${strong ? 'on' : ''}">Strengths</button>
+      </div>
       <div class="ring-tabs" role="tablist">
         ${STAGES.map((st, i) => {
           const p2 = stageProgress(i);
@@ -1015,18 +1079,26 @@ function showHome() {
       </div>
       <div class="ring-body">
         <div class="ring-wrap big">
-          ${ringsSvg({ stages: [si], size: 470, stroke: 52, gap: 0, labels: true, pad: 84 })}
+          ${ringsSvg({ stages: [si], size: 470, stroke: 52, gap: 0, labels: true, pad: 84, mode: strong ? 'strengths' : 'progress' })}
           <div class="ring-center">${centerDefault}</div>
         </div>
         <div class="ring-legend">
           <h2>${esc(STAGES[si].name)}</h2>
           <div class="slice-list">${rows}</div>
-          ${nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextF)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
+          ${strong && weakest && sg[weakest].score < 60
+            ? `<a class="btn primary next-up" href="${hrefPlay(weakest, nextFlat(store()[weakest], themeMeta(weakest).sets))}">Train your weakest: ${esc(themeMeta(weakest).name)} →</a>`
+            : nextT ? `<a class="btn primary next-up" href="${hrefPlay(nextKey, nextF)}">Next up: ${esc(nextT.name)} ${nextB.min}–${nextB.max} →</a>` : ''}
         </div>
       </div>`;
     hero.querySelectorAll('.ring-tab').forEach((b) => {
       b.onclick = () => {
         ringView[track] = Number(b.dataset.si);
+        renderRing();
+      };
+    });
+    hero.querySelectorAll('[data-mode]').forEach((b) => {
+      b.onclick = () => {
+        ringMode[track] = b.dataset.mode;
         renderRing();
       };
     });
@@ -1036,7 +1108,15 @@ function showHome() {
       const t = themeMeta(k);
       const cl = clearedCount(k);
       hero.querySelectorAll('[data-key]').forEach((n) => n.classList.toggle('hover', n.dataset.key === k));
-      center.innerHTML = `<small>${esc(t.name)}</small>
+      const st = sg[k];
+      center.innerHTML = strong
+        ? st?.score != null
+          ? `<small>${esc(t.name)}</small>
+            <b style="color:${strengthColor(st.score)}">${st.label}</b>
+            <span>${Math.round(st.acc * 100)}% first try · ${fmtSec(st.med)} median</span>
+            <em>score ${st.score}/100 · last ${st.n} puzzles</em>`
+          : `<small>${esc(t.name)}</small><span>${st?.n ?? 0}/${STRENGTH.min} puzzles played</span><em>Play more to see your strength here</em>`
+        : `<small>${esc(t.name)}</small>
         <b style="color:${color}">${ringPct(cl / t.sets)}%</b>
         <span>${cl} / ${t.sets} sets cleared</span>
         <em>${((t.sets - cl) * SET_SIZE).toLocaleString()} puzzles to go</em>`;

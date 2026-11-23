@@ -999,3 +999,8 @@ html.embed .nav { margin-left: 0; }
   .ring-hero .next-up { order: 1; margin-top: 0; font-size: 16px; padding: 12px 14px; }
   .ring-hero .slice-list { order: 2; }
 }
+
+/* Ring: Progress / Strengths switch */
+.ring-mode { margin: 0 0 8px; }
+.slice-left.sl-strong { color: #81c784; }
+.slice-left.sl-weak { color: #e57373; }
