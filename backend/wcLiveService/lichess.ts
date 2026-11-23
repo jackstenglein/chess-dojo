@@ -1,10 +1,15 @@
 import { Chess } from '@jackstenglein/chess';
 import { WC_LICHESS_TOUR_ID } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import {
+    customGamePgnUrl,
+    WcCustomGame,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/customGames';
+import {
     isTestRoundId,
     testRoundState,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import { ApiError } from '../directoryService/api';
+import { listCustomGames } from './database';
 
 const LICHESS = 'https://lichess.org';
 
@@ -44,7 +49,27 @@ async function getJson(url: string): Promise<unknown> {
 }
 
 /** Throws a 404 unless the round belongs to the World Championship broadcast. */
+/** Added games are read again at most every 10 seconds per Lambda instance. */
+const CUSTOM_TTL_MS = 10_000;
+let customCache: { at: number; games: WcCustomGame[] } | undefined;
+
+/** The added game with this id, if there is one. */
+export async function findCustomGame(id: string): Promise<WcCustomGame | undefined> {
+    if (!customCache || Date.now() - customCache.at > CUSTOM_TTL_MS) {
+        customCache = { at: Date.now(), games: await listCustomGames() };
+    }
+    return customCache.games.find((g) => g.id === id);
+}
+
+/** Forgets the added games, after one is added or removed. */
+export function clearCustomGameCache(): void {
+    customCache = undefined;
+}
+
 export async function requireMatchRound(roundId: string): Promise<void> {
+    if (await findCustomGame(roundId)) {
+        return;
+    }
     if (isTestRoundId(roundId)) {
         if (!testRoundState(roundId, Date.now())) {
             throw new ApiError({ statusCode: 404, publicMessage: 'That test game has not begun' });
@@ -91,9 +116,12 @@ export async function getRoundState(roundId: string): Promise<RoundState> {
     if (cached && Date.now() - cached.at < ROUND_TTL_MS) {
         return cached.state;
     }
-    await requireMatchRound(roundId);
-
-    const url = `${LICHESS}/api/broadcast/round/${roundId}.pgn`;
+    // An added game is read from its own PGN; a match round from the broadcast.
+    const custom = await findCustomGame(roundId);
+    if (!custom) {
+        await requireMatchRound(roundId);
+    }
+    const url = custom ? customGamePgnUrl(custom) : `${LICHESS}/api/broadcast/round/${roundId}.pgn`;
     const resp = await fetch(url);
     if (!resp.ok) {
         throw new ApiError({
@@ -102,7 +130,8 @@ export async function getRoundState(roundId: string): Promise<RoundState> {
             privateMessage: `GET ${url}: ${resp.status}`,
         });
     }
-    // A match round holds one game. Anything after the first game is ignored.
+    // A match round holds one game. Anything after the first game is ignored,
+    // which is also how an added broadcast round follows its first board.
     const pgn = (await resp.text()).split(/\n\s*\n(?=\[Event )/)[0];
     const state = parseRoundPgn(pgn);
     roundCache.set(roundId, { at: Date.now(), state });

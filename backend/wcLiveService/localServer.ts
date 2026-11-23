@@ -29,6 +29,7 @@ async function loadRoutes() {
     const evalHandler = await import('./eval');
     const roster = await import('./roster');
     const analysis = await import('./analysis');
+    const games = await import('./customGames');
     const routes: { method: string; pattern: RegExp; handler: Handler }[] = [
         {
             method: 'GET',
@@ -54,6 +55,21 @@ async function loadRoutes() {
             method: 'PUT',
             pattern: /^\/wc-live\/eval$/,
             handler: evalHandler.handler as unknown as Handler,
+        },
+        {
+            method: 'GET',
+            pattern: /^\/public\/wc-live\/games$/,
+            handler: games.list as unknown as Handler,
+        },
+        {
+            method: 'POST',
+            pattern: /^\/wc-live\/games$/,
+            handler: games.add as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/wc-live\/games\/remove$/,
+            handler: games.remove as unknown as Handler,
         },
         {
             method: 'GET',
@@ -103,7 +119,7 @@ function readBody(req: IncomingMessage): Promise<string> {
 function cors(res: ServerResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Wc-Live-As');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, OPTIONS');
 }
 
 async function main() {
@@ -143,7 +159,8 @@ async function main() {
             const event = {
                 rawPath: url.pathname,
                 pathParameters: route.pattern.exec(url.pathname)?.groups ?? {},
-                body: req.method === 'PUT' ? await readBody(req) : undefined,
+                body:
+                    req.method === 'PUT' || req.method === 'POST' ? await readBody(req) : undefined,
                 headers: req.headers,
                 requestContext: { authorizer: { jwt: { claims } } },
             } as unknown as APIGatewayProxyEventV2;

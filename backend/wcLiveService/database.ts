@@ -9,6 +9,7 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { WcAnalysis } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
 import { WcEval, WcGuesses, WcSensei } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
+import { WcCustomGame } from '@jackstenglein/chess-dojo-common/src/wcLive/customGames';
 import { APIGatewayProxyResultV2 } from 'aws-lambda';
 import { dynamo, getUser } from '../directoryService/database';
 
@@ -282,4 +283,32 @@ export async function saveAnalysis(analysis: WcAnalysis, readVersion: number): P
         { ...analysis, version: readVersion + 1 },
         readVersion,
     );
+}
+
+/** Games senseis added from Lichess links. Removed ones are kept, marked removed. */
+const GAMES = 'GAMES';
+
+export async function listCustomGames(): Promise<WcCustomGame[]> {
+    const items = await store.query(GAMES);
+    return items
+        .filter((i) => !i.removed)
+        .map((i) => ({
+            kind: i.kind as WcCustomGame['kind'],
+            id: i.id as string,
+            gameId: i.gameId as string | undefined,
+            roundId: i.roundId as string | undefined,
+            name: i.name as string,
+            url: i.url as string,
+            addedBy: i.addedBy as string,
+            addedAt: i.addedAt as string,
+        }))
+        .sort((a, b) => a.addedAt.localeCompare(b.addedAt));
+}
+
+export async function saveCustomGame(game: WcCustomGame): Promise<void> {
+    await store.put(GAMES, game.id, { ...game, removed: false });
+}
+
+export async function removeCustomGame(id: string): Promise<void> {
+    await store.set(GAMES, id, { removed: true });
 }

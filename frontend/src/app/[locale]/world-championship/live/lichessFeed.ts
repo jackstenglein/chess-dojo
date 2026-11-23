@@ -23,6 +23,8 @@ export interface MatchRound {
     startsAt?: number;
     ongoing: boolean;
     finished: boolean;
+    /** Set for a game a sensei added from a Lichess link: where its PGN is read from. */
+    pgnUrl?: string;
 }
 
 export interface LiveMove {
@@ -50,16 +52,33 @@ const INCREMENT_FROM_MOVE = 41;
  * How long each move took, from the clock before and after it. The clock
  * after a move includes the time added for it, so that is taken back out.
  */
-export function addTimeSpent(moves: LiveMove[]): LiveMove[] {
+/** A game's clock: the seconds each side starts with, and the increment per move. */
+export interface SimpleTimeControl {
+    initial: number;
+    increment: number;
+}
+
+/**
+ * The time control of an added game, from a PGN TimeControl like "180+2".
+ * The match's multi-stage control ("40/7200:...") returns undefined, so the
+ * match rules above apply.
+ */
+export function parseTimeControl(header: string | undefined): SimpleTimeControl | undefined {
+    const m = /^(\d+)\+(\d+)$/.exec(header ?? '');
+    return m ? { initial: parseInt(m[1]), increment: parseInt(m[2]) } : undefined;
+}
+
+export function addTimeSpent(moves: LiveMove[], tc?: SimpleTimeControl): LiveMove[] {
     return moves.map((m, i) => {
-        const previousOwn = i >= 2 ? moves[i - 2].clock : START_CLOCK_SECONDS;
+        const previousOwn = i >= 2 ? moves[i - 2].clock : (tc?.initial ?? START_CLOCK_SECONDS);
         if (m.clock === undefined || previousOwn === undefined) {
             return m;
         }
         const moveNumber = Math.ceil(m.ply / 2);
-        const added =
-            (moveNumber >= INCREMENT_FROM_MOVE ? INCREMENT_SECONDS : 0) +
-            (moveNumber === 40 ? MOVE_40_BONUS_SECONDS : 0);
+        const added = tc
+            ? tc.increment
+            : (moveNumber >= INCREMENT_FROM_MOVE ? INCREMENT_SECONDS : 0) +
+              (moveNumber === 40 ? MOVE_40_BONUS_SECONDS : 0);
         const spent = previousOwn + added - m.clock;
         // A clock fix by the arbiter can make this negative. Show nothing then.
         return spent >= 0 ? { ...m, spent } : m;
@@ -96,6 +115,8 @@ export interface RoundFeed {
     thinkingSince?: number;
     /** The latest clocks from Lichess, in seconds, if it sent them. */
     liveClocks?: { white: number; black: number; lastMove?: string };
+    /** What each clock starts at: two hours in the match, or an added game's own. */
+    initialClock?: number;
 }
 
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -188,12 +209,17 @@ export function parseGamePgn(pgn: string) {
         fen: m.fen,
         clock: clockToSeconds(m.commentDiag?.clk),
     }));
+    const tc = parseTimeControl(chess.header().getRawValue('TimeControl'));
     return {
         ...parsePlayers(chess),
-        moves: addTimeSpent(moves),
+        moves: addTimeSpent(moves, tc),
         result: chess.header().getRawValue('Result') || '*',
+        initialClock: tc?.initial ?? START_CLOCK_SECONDS,
     };
 }
+
+/** Added games are read this often. Lichess delays ongoing games a little anyway. */
+const CUSTOM_POLL_MS = 3000;
 
 /** A broadcast PGN ends with its result. Until then the stream is mid-game. */
 const COMPLETE_PGN = /(\*|1-0|0-1|1\/2-1\/2)\s*$/;
@@ -203,10 +229,52 @@ const COMPLETE_PGN = /(\*|1-0|0-1|1\/2-1\/2)\s*$/;
  * stream, and the think time of the side to move from the round JSON, so the
  * running clock is right even when the page opens mid-move.
  */
-export function useRoundFeed(roundId: string | undefined): RoundFeed {
+export function useRoundFeed(roundId: string | undefined, pgnUrl?: string): RoundFeed {
     const [feed, setFeed] = useState<RoundFeed>({ status: 'loading', moves: [], result: '*' });
 
     useEffect(() => {
+        // An added Lichess game or board: read its PGN every few seconds.
+        if (roundId && pgnUrl) {
+            let cancelled = false;
+            let lastPgn = '';
+            setFeed({ status: 'loading', moves: [], result: '*' });
+            const load = async () => {
+                try {
+                    const resp = await fetch(pgnUrl);
+                    if (!resp.ok) {
+                        throw new Error(`Lichess answered ${resp.status}`);
+                    }
+                    const pgn = (await resp.text()).split(/\n\s*\n(?=\[Event )/)[0];
+                    if (cancelled || pgn === lastPgn) {
+                        return;
+                    }
+                    lastPgn = pgn;
+                    const parsed = parseGamePgn(pgn);
+                    setFeed((f) => ({
+                        ...f,
+                        status: 'ready',
+                        ...parsed,
+                        thinkingSince:
+                            parsed.result !== '*' || parsed.moves.length === 0
+                                ? undefined
+                                : parsed.moves.length !== f.moves.length
+                                  ? Date.now()
+                                  : f.thinkingSince,
+                    }));
+                } catch {
+                    if (!cancelled) {
+                        setFeed((f) => (f.moves.length ? f : { ...f, status: 'error' }));
+                    }
+                }
+            };
+            void load();
+            const timer = setInterval(() => void load(), CUSTOM_POLL_MS);
+            return () => {
+                cancelled = true;
+                clearInterval(timer);
+            };
+        }
+
         if (!roundId) {
             return;
         }
@@ -360,7 +428,7 @@ export function useRoundFeed(roundId: string | undefined): RoundFeed {
             cancelled = true;
             controller.abort();
         };
-    }, [roundId]);
+    }, [roundId, pgnUrl]);
 
     return feed;
 }
@@ -395,8 +463,8 @@ export function clocksAt(
         }
         return undefined;
     };
-    let white = lastOf(0) ?? START_CLOCK_SECONDS;
-    let black = lastOf(1) ?? START_CLOCK_SECONDS;
+    let white = lastOf(0) ?? feed.initialClock ?? START_CLOCK_SECONDS;
+    let black = lastOf(1) ?? feed.initialClock ?? START_CLOCK_SECONDS;
 
     const isLive = ply === feed.moves.length && feed.result === '*' && feed.moves.length > 0;
     if (!isLive) {

@@ -23,11 +23,16 @@ import {
     WcSensei,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import {
+    customGamePgnUrl,
+    WcCustomGame,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/customGames';
+import {
     currentTestRoundId,
     isTestRoundId,
     TEST_GAME_NAME,
     TEST_GAME_NUMBER,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
+import AddIcon from '@mui/icons-material/Add';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import {
     Alert,
@@ -46,6 +51,7 @@ import {
 } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AddGameDialog } from './AddGameDialog';
 import { useAnalysis } from './analysisClient';
 import { useCrosstable } from './crosstable';
 import { CrosstableView } from './CrosstableView';
@@ -68,7 +74,17 @@ import { PlayerPhoto } from './PlayerPhoto';
 import { EvalBar, SenseiStrip } from './SenseiEval';
 import { SenseiPanel } from './SenseiPanel';
 import { TwitchEmbed } from './TwitchEmbed';
-import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess, putRoster } from './wcLiveApi';
+import {
+    addCustomGame,
+    getLeaderboard,
+    getMyGuesses,
+    listCustomGames,
+    listEvals,
+    putEval,
+    putGuess,
+    putRoster,
+    removeCustomGame,
+} from './wcLiveApi';
 
 const EVALS_POLL_MS = 5000;
 const LEADERBOARD_POLL_MS = 20000;
@@ -79,16 +95,19 @@ function moveLabel(ply: number, san?: string): string {
 }
 
 /** The game number in the address bar, as in ?game=3. */
-function readGameParam(): number | undefined {
-    const n = parseInt(new URLSearchParams(window.location.search).get('game') ?? '');
-    return Number.isFinite(n) ? n : undefined;
+/** ?game=3 for a match game, or ?game=<id> for an added Lichess game. */
+function readGameParam(): string | undefined {
+    return new URLSearchParams(window.location.search).get('game') ?? undefined;
 }
 
-function writeGameParam(n: number) {
+function writeGameParam(value: string | number) {
     const url = new URL(window.location.href);
-    url.searchParams.set('game', String(n));
+    url.searchParams.set('game', String(value));
     window.history.replaceState(null, '', url.toString());
 }
+
+/** Added games sort after the match, numbered from here, so they never clash with it. */
+const CUSTOM_NUMBER_BASE = 1000;
 
 export function LiveMatchPage() {
     const { user, status: authStatus } = useAuth();
@@ -104,7 +123,7 @@ export function LiveMatchPage() {
     // Game 0, a replayed test game, is only listed when the address asks for ?game=0.
     const [testRoundId, setTestRoundId] = useState<string>();
     useEffect(() => {
-        if (readGameParam() !== TEST_GAME_NUMBER) {
+        if (readGameParam() !== String(TEST_GAME_NUMBER)) {
             return;
         }
         const update = () => setTestRoundId(currentTestRoundId(Date.now()));
@@ -113,22 +132,45 @@ export function LiveMatchPage() {
         return () => clearInterval(timer);
     }, []);
 
-    const rounds: MatchRound[] = useMemo(
-        () =>
-            testRoundId
-                ? [
-                      {
-                          id: testRoundId,
-                          name: TEST_GAME_NAME,
-                          number: TEST_GAME_NUMBER,
-                          ongoing: true,
-                          finished: false,
-                      },
-                      ...matchRounds,
-                  ]
-                : matchRounds,
-        [testRoundId, matchRounds],
-    );
+    // Games senseis added from Lichess links, as tabs after the match.
+    const [customGames, setCustomGames] = useState<WcCustomGame[]>();
+    useEffect(() => {
+        let cancelled = false;
+        const load = () =>
+            listCustomGames()
+                .then((g) => !cancelled && setCustomGames(g))
+                .catch(() => !cancelled && setCustomGames((g) => g ?? []));
+        void load();
+        const timer = setInterval(() => void load(), 30_000);
+        return () => {
+            cancelled = true;
+            clearInterval(timer);
+        };
+    }, []);
+    const [addingGame, setAddingGame] = useState(false);
+
+    const rounds: MatchRound[] = useMemo(() => {
+        const test: MatchRound[] = testRoundId
+            ? [
+                  {
+                      id: testRoundId,
+                      name: TEST_GAME_NAME,
+                      number: TEST_GAME_NUMBER,
+                      ongoing: true,
+                      finished: false,
+                  },
+              ]
+            : [];
+        const custom: MatchRound[] = (customGames ?? []).map((g, i) => ({
+            id: g.id,
+            name: g.name,
+            number: CUSTOM_NUMBER_BASE + i,
+            ongoing: false,
+            finished: false,
+            pgnUrl: customGamePgnUrl(g),
+        }));
+        return [...test, ...matchRounds, ...custom];
+    }, [testRoundId, matchRounds, customGames]);
 
     // When a Game 0 loop ends, follow the next one, which starts with a fresh leaderboard.
     useEffect(() => {
@@ -143,13 +185,19 @@ export function LiveMatchPage() {
         if (roundId || rounds.length === 0) {
             return;
         }
-        const n = readGameParam();
-        const round = rounds.find((r) => r.number === n) ?? pickDefaultRound(rounds);
+        const param = readGameParam();
+        // An added game's tab only exists once the added games have loaded.
+        if (param && !/^\d+$/.test(param) && customGames === undefined) {
+            return;
+        }
+        const round =
+            rounds.find((r) => (r.pgnUrl ? r.id === param : String(r.number) === param)) ??
+            pickDefaultRound(rounds.filter((r) => !r.pgnUrl));
         setRoundId(round?.id);
-    }, [rounds, roundId]);
+    }, [rounds, roundId, customGames]);
 
     const round = rounds.find((r) => r.id === roundId);
-    const feed = useRoundFeed(roundId);
+    const feed = useRoundFeed(roundId, round?.pgnUrl);
     const moves = feed.moves;
     const gameOver = feed.result !== '*';
 
@@ -241,7 +289,22 @@ export function LiveMatchPage() {
         setViewPath(null);
         const r = rounds.find((x) => x.id === id);
         if (r) {
-            writeGameParam(r.number);
+            writeGameParam(r.pgnUrl ? r.id : r.number);
+        }
+    };
+
+    const addGame = async (url: string, name: string) => {
+        const { game, games } = await addCustomGame(url, name);
+        setCustomGames(games);
+        setRoundId(game.id);
+        setViewPath(null);
+        writeGameParam(game.id);
+    };
+
+    const removeGame = async (id: string) => {
+        setCustomGames(await removeCustomGame(id));
+        if (roundId === id) {
+            setRoundId(undefined);
         }
     };
 
@@ -425,6 +488,8 @@ export function LiveMatchPage() {
         guessState = { kind: 'signed-out' };
     } else if (gameOver) {
         guessState = { kind: 'game-over' };
+    } else if (analyzing) {
+        guessState = { kind: 'analyzing' };
     } else if (!atLive) {
         guessState = { kind: 'not-live' };
     } else {
@@ -504,22 +569,63 @@ export function LiveMatchPage() {
             )}
 
             {rounds.length > 0 && (
-                <Tabs
-                    value={roundId ?? false}
-                    onChange={(_, id: string) => selectRound(id)}
-                    variant='scrollable'
-                    scrollButtons='auto'
-                    sx={{ mb: 2 }}
-                >
-                    {rounds.map((r) => (
-                        <Tab
-                            key={r.id}
-                            value={r.id}
-                            label={r.ongoing ? `${r.name} · live` : r.name}
-                            sx={{ textTransform: 'none' }}
-                        />
-                    ))}
-                </Tabs>
+                <Stack direction='row' sx={{ alignItems: 'center', mb: 2, minWidth: 0 }}>
+                    <Tabs
+                        value={roundId ?? false}
+                        onChange={(_, id: string) => selectRound(id)}
+                        variant='scrollable'
+                        scrollButtons='auto'
+                        sx={{ flexGrow: 1, minWidth: 0 }}
+                    >
+                        {rounds.map((r) => (
+                            <Tab
+                                key={r.id}
+                                value={r.id}
+                                sx={{ textTransform: 'none' }}
+                                label={
+                                    r.pgnUrl && isSensei ? (
+                                        <Stack direction='row' sx={{ alignItems: 'center' }}>
+                                            {r.name}
+                                            <Box
+                                                component='span'
+                                                role='button'
+                                                aria-label={`Remove ${r.name}`}
+                                                title='Remove this game'
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    void removeGame(r.id);
+                                                }}
+                                                sx={{
+                                                    ml: 0.75,
+                                                    px: 0.5,
+                                                    borderRadius: 0.5,
+                                                    color: 'text.secondary',
+                                                    '&:hover': { bgcolor: 'action.hover' },
+                                                }}
+                                            >
+                                                ×
+                                            </Box>
+                                        </Stack>
+                                    ) : r.ongoing ? (
+                                        `${r.name} · live`
+                                    ) : (
+                                        r.name
+                                    )
+                                }
+                            />
+                        ))}
+                    </Tabs>
+                    {isSensei && (
+                        <Button
+                            size='small'
+                            startIcon={<AddIcon />}
+                            onClick={() => setAddingGame(true)}
+                            sx={{ textTransform: 'none', flexShrink: 0, ml: 1 }}
+                        >
+                            Add game
+                        </Button>
+                    )}
+                </Stack>
             )}
 
             <Box
@@ -533,8 +639,8 @@ export function LiveMatchPage() {
                     // leaderboard all start on the same line. On a phone they stack.
                     gridTemplateColumns: {
                         xs: '1fr',
-                        md: 'minmax(0, 1fr) 260px',
-                        lg: 'minmax(0, 620px) 260px minmax(280px, 1fr)',
+                        md: 'minmax(0, 1fr) 340px',
+                        lg: 'minmax(0, 620px) 340px minmax(280px, 1fr)',
                     },
                     gridTemplateAreas: {
                         xs: '"top" "board" "moves" "leaders"',
@@ -680,7 +786,18 @@ export function LiveMatchPage() {
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
                     )}
-                    {isSensei && username && (
+                </Stack>
+
+                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
+                    <Notation
+                        root={tree}
+                        current={node}
+                        moves={moves}
+                        guesses={myGuesses}
+                        onSelect={goTo}
+                        onLive={atLive ? undefined : () => goTo(null)}
+                    />
+                    {isSensei && username ? (
                         <SenseiPanel
                             me={username}
                             roster={roster}
@@ -691,18 +808,9 @@ export function LiveMatchPage() {
                             onScore={scoreSensei}
                             onRoster={changeRoster}
                         />
+                    ) : (
+                        <SenseiStrip roster={roster} pins={bar.pins} />
                     )}
-                </Stack>
-
-                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
-                    <Notation
-                        root={tree}
-                        current={node}
-                        moves={moves}
-                        guesses={myGuesses}
-                        onSelect={goTo}
-                    />
-                    <SenseiStrip roster={roster} pins={bar.pins} />
                 </Stack>
 
                 <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
@@ -716,6 +824,7 @@ export function LiveMatchPage() {
             </Box>
 
             <TwitchEmbed />
+            <AddGameDialog open={addingGame} onClose={() => setAddingGame(false)} onAdd={addGame} />
         </Container>
     );
 }

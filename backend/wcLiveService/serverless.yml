@@ -33,6 +33,51 @@ functions:
           - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
+  listGames:
+    handler: customGames.list
+    events:
+      - httpApi:
+          path: /public/wc-live/games
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: !GetAtt WcLiveTable.Arn
+
+  addGame:
+    handler: customGames.add
+    timeout: 15
+    events:
+      - httpApi:
+          path: /wc-live/games
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+
+  removeGame:
+    handler: customGames.remove
+    events:
+      - httpApi:
+          path: /wc-live/games/remove
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:UpdateItem
+        Resource: !GetAtt WcLiveTable.Arn
+
   getAnalysis:
     handler: analysis.get
     events:
@@ -46,6 +91,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
   putAnalysis:
@@ -62,6 +108,7 @@ functions:
         Action:
           - dynamodb:GetItem
           - dynamodb:PutItem
+          - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
   roster:
@@ -106,6 +153,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
   guess:
@@ -121,6 +169,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
+          - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
       - Effect: Allow
         Action:

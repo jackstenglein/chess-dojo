@@ -1,7 +1,8 @@
 'use client';
 
 import { AnalysisNode } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
-import { Box, Paper, Stack, Typography } from '@mui/material';
+import LiveIcon from '@mui/icons-material/SensorsOutlined';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 import { Fragment, ReactNode, useEffect, useRef } from 'react';
 import { formatSpent, LiveMove } from './lichessFeed';
 
@@ -14,6 +15,8 @@ interface NotationProps {
     /** The viewer's guesses by ply, to mark the ones they got right. */
     guesses: Record<string, string>;
     onSelect: (node: AnalysisNode) => void;
+    /** Shown when the board is not on the live position: takes it back there. */
+    onLive?: () => void;
 }
 
 function samePath(a: AnalysisNode, b: AnalysisNode): boolean {
@@ -34,7 +37,7 @@ function variationsFrom(node: AnalysisNode): AnalysisNode[] {
  * the time each took, and the senseis' variations as indented lines under
  * the move they branch from, with deeper variations in brackets.
  */
-export function Notation({ root, current, moves, guesses, onSelect }: NotationProps) {
+export function Notation({ root, current, moves, guesses, onSelect, onLive }: NotationProps) {
     const scroller = useRef<HTMLDivElement>(null);
 
     // Keep the move on the board in view.
@@ -236,9 +239,31 @@ export function Notation({ root, current, moves, guesses, onSelect }: NotationPr
 
     return (
         <Paper variant='outlined' sx={{ p: 1.5 }}>
-            <Typography variant='subtitle2' sx={{ fontWeight: 700, mb: 0.5 }}>
-                Moves
-            </Typography>
+            <Stack
+                direction='row'
+                sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 0.5,
+                    minHeight: 30,
+                }}
+            >
+                <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
+                    Moves
+                </Typography>
+                {onLive && (
+                    <Button
+                        size='small'
+                        variant='contained'
+                        color='error'
+                        startIcon={<LiveIcon />}
+                        onClick={onLive}
+                        sx={{ textTransform: 'none', fontWeight: 700, py: 0.25 }}
+                    >
+                        Back to live
+                    </Button>
+                )}
+            </Stack>
             {mainline.length === 0 && variationsFrom(root).length === 0 ? (
                 <Typography variant='body2' color='text.secondary'>
                     No moves yet.

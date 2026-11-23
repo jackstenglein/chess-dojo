@@ -21,6 +21,7 @@ export type GuessState =
     | { kind: 'signed-out' }
     | { kind: 'game-over' }
     | { kind: 'not-live' }
+    | { kind: 'analyzing' }
     | { kind: 'open'; moveLabel: string; guessSan?: string; saving: boolean; error?: string };
 
 interface GuessPanelProps {
@@ -49,6 +50,12 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
             {state.kind === 'game-over' && (
                 <Typography variant='body2' sx={{ mt: 1 }}>
                     This game is over. Guessing opens again for the next game.
+                </Typography>
+            )}
+            {state.kind === 'analyzing' && (
+                <Typography variant='body2' sx={{ mt: 1 }}>
+                    Your board is set to analyse with the senseis. Switch it to{' '}
+                    <b>Guess the move</b> under the board to guess.
                 </Typography>
             )}
             {state.kind === 'not-live' && (
