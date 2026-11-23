@@ -39,6 +39,9 @@ type ProgressUpdateRequest struct {
 	IncrementalMinutesSpent int                 `json:"incrementalMinutesSpent"`
 	Date                    string              `json:"date"`
 	Notes                   string              `json:"notes"`
+
+	// The study item this update is for, if the study page posted it
+	StudyInfo *database.TimelineStudyInfo `json:"studyInfo,omitempty"`
 }
 
 type ProgressUpdateResponse struct {
@@ -165,6 +168,7 @@ func handleTask(event api.Request, request *ProgressUpdateRequest, user *databas
 		Date:                date.Format(time.RFC3339),
 		CreatedAt:           updatedAt,
 		Notes:               request.Notes,
+		StudyInfo:           request.StudyInfo,
 	}
 
 	if err := repository.PutTimelineEntry(timelineEntry); err != nil {

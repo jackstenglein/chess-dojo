@@ -1,9 +1,12 @@
+import { getSubscriptionStatus } from '@jackstenglein/chess-dojo-common/src/database/user';
 import { Position } from './requirement';
+import { SubscriptionStatus, User } from './user';
 
 export enum CourseType {
     Opening = 'OPENING',
     Endgame = 'ENDGAME',
     Workshop = 'WORKSHOP',
+    Study = 'STUDY',
 }
 
 /**
@@ -96,6 +99,11 @@ export interface Course {
      * Whether to hide the module indices in the table of contents.
      */
     hideModuleIndices?: boolean;
+
+    /**
+     * Whether the course's games may be cloned, downloaded or copied as PGN.
+     */
+    allowExport?: boolean;
 }
 
 export enum CourseStatus {
@@ -106,6 +114,31 @@ export enum CourseStatus {
 /** Returns true if the course should be visible to non-admin users. */
 export function isCoursePublished(course: Course): boolean {
     return !course.status || course.status === CourseStatus.Published;
+}
+
+/**
+ * Returns true if the user can open the course. Mirrors the course getter's
+ * access check. Admins can open any course. Everyone else needs a published
+ * course that is included with their subscription or purchased, and a
+ * free-tier user only gets courses available for free users.
+ * @param user The user opening the course.
+ * @param course The course to open.
+ */
+export function canOpenCourse(user: User | undefined, course: Course): boolean {
+    if (user?.isAdmin) {
+        return true;
+    }
+    if (!isCoursePublished(course)) {
+        return false;
+    }
+    const subscribed = getSubscriptionStatus(user) === SubscriptionStatus.Subscribed;
+    if (!course.availableForFreeUsers && !subscribed) {
+        return false;
+    }
+    if (subscribed && course.includedWithSubscription) {
+        return true;
+    }
+    return Boolean(user?.purchasedCourses?.[course.id]);
 }
 
 /** A way to purchase a course. */
