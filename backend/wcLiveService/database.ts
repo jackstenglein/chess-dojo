@@ -299,9 +299,7 @@ export async function listGuessLog(roundId: string): Promise<GuessLogEntry[]> {
 }
 
 /** Every user's guesses with the time each was last set, for the stats. */
-export async function listGuessItems(
-    roundId: string,
-): Promise<
+export async function listGuessItems(roundId: string): Promise<
     {
         username: string;
         displayName: string;

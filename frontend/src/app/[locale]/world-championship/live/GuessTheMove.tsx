@@ -5,21 +5,7 @@ import Avatar from '@/profile/Avatar';
 import { WcLeaderboard } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/InfoOutlined';
-import {
-    Alert,
-    Box,
-    Button,
-    IconButton,
-    Paper,
-    Popover,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import { Alert, Box, Button, IconButton, Paper, Popover, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -132,6 +118,9 @@ interface LeaderboardProps {
 
 const TOP = 50;
 
+/** Gold, silver and bronze for the first three places. */
+const MEDALS = ['#f4c430', '#c0c6cc', '#cd8a4f'];
+
 /** "WHO'S A GM TODAY": right guesses in one game, move 1 included. */
 export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProps) {
     const entries = leaderboard?.entries ?? [];
@@ -147,19 +136,70 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
     const row = (i: number) => {
         const e = entries[i];
         const me = e.username === username;
+        const medal = MEDALS[ranks[i] - 1];
         return (
-            <TableRow key={e.username} selected={me}>
-                <TableCell sx={{ width: 40 }}>{ranks[i]}</TableCell>
-                <TableCell>
-                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-                        <Avatar username={e.username} displayName={e.displayName} size={24} />
-                        <Link href={`/profile/${e.username}`}>{e.username}</Link>
-                    </Stack>
-                </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+            <Stack
+                key={e.username}
+                direction='row'
+                spacing={1.25}
+                data-testid='leaderboard-row'
+                sx={{
+                    alignItems: 'center',
+                    px: 1,
+                    py: 0.75,
+                    borderRadius: 1.5,
+                    bgcolor: me ? 'action.selected' : undefined,
+                    '&:hover': { bgcolor: me ? 'action.selected' : 'action.hover' },
+                }}
+            >
+                <Box
+                    sx={{
+                        width: 24,
+                        height: 24,
+                        flexShrink: 0,
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        bgcolor: medal ?? 'transparent',
+                        color: medal ? '#1a1a1a' : 'text.secondary',
+                    }}
+                >
+                    {ranks[i]}
+                </Box>
+                <Avatar username={e.username} displayName={e.displayName} size={26} />
+                <Typography
+                    noWrap
+                    sx={{
+                        flexGrow: 1,
+                        minWidth: 0,
+                        fontWeight: me ? 800 : 600,
+                        fontSize: '0.9rem',
+                    }}
+                >
+                    <Link href={`/profile/${e.username}`} sx={{ color: 'text.primary' }}>
+                        {e.username}
+                    </Link>
+                </Typography>
+                <Box
+                    sx={{
+                        flexShrink: 0,
+                        minWidth: 32,
+                        px: 1,
+                        py: 0.25,
+                        borderRadius: 5,
+                        textAlign: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        fontVariantNumeric: 'tabular-nums',
+                        bgcolor: 'action.hover',
+                    }}
+                    title={`${e.correct} of ${e.guessed} moves guessed right`}
+                >
                     {e.correct}
-                </TableCell>
-            </TableRow>
+                </Box>
+            </Stack>
         );
     };
 
@@ -180,21 +220,21 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
                     No right guesses yet. Guess the next move to get on the board.
                 </Typography>
             ) : (
-                <Box sx={{ maxHeight: 420, overflowY: 'auto', mt: 1 }}>
-                    <Table size='small' stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>#</TableCell>
-                                <TableCell>Username</TableCell>
-                                <TableCell align='right'>Right</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {shown.map((_, i) => row(i))}
-                            {myIndex >= TOP && row(myIndex)}
-                        </TableBody>
-                    </Table>
-                </Box>
+                <Stack spacing={0.25} sx={{ maxHeight: 420, overflowY: 'auto', mt: 1.5, mx: -1 }}>
+                    {shown.map((_, i) => row(i))}
+                    {myIndex >= TOP && (
+                        <>
+                            <Typography
+                                variant='caption'
+                                color='text.secondary'
+                                sx={{ textAlign: 'center' }}
+                            >
+                                ⋯
+                            </Typography>
+                            {row(myIndex)}
+                        </>
+                    )}
+                </Stack>
             )}
         </Paper>
     );

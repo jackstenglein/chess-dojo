@@ -723,7 +723,8 @@ export function LiveMatchPage() {
                     gridTemplateColumns: {
                         xs: '1fr',
                         md: 'minmax(0, 1fr) 340px',
-                        lg: 'minmax(0, 620px) 340px minmax(280px, 1fr)',
+                        // The leaderboard needs no more than this; wider only spreads it out.
+                        lg: 'minmax(0, 620px) 340px minmax(280px, 360px)',
                     },
                     gridTemplateAreas: {
                         xs: '"top" "board" "moves" "leaders"',
