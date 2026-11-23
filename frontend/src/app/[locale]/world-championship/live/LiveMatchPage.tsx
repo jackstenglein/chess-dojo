@@ -52,6 +52,7 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
+import { PlayerPhoto } from './PlayerPhoto';
 import { EvalBar, SenseiPanel, SenseiStrip } from './SenseiEval';
 import { TwitchEmbed } from './TwitchEmbed';
 import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess, putRoster } from './wcLiveApi';
@@ -389,17 +390,6 @@ export function LiveMatchPage() {
                 </Typography>
             </Stack>
 
-            <CrosstableView
-                table={crosstable}
-                currentNumber={round?.number}
-                onSelectGame={(n) => {
-                    const r = rounds.find((x) => x.number === n);
-                    if (r) {
-                        selectRound(r.id);
-                    }
-                }}
-            />
-
             {roundsError && rounds.length === 0 && (
                 <Alert severity='error' sx={{ mb: 2 }}>
                     Could not reach the Lichess broadcast. Refresh to try again.
@@ -528,6 +518,17 @@ export function LiveMatchPage() {
                             </IconButton>
                         </Tooltip>
                     </Stack>
+                    <CrosstableView
+                        table={crosstable}
+                        currentNumber={round?.number}
+                        liveNumber={rounds.find((r) => r.ongoing && r.number > 0)?.number}
+                        onSelectGame={(n) => {
+                            const r = rounds.find((x) => x.number === n);
+                            if (r) {
+                                selectRound(r.id);
+                            }
+                        }}
+                    />
                     {feed.status === 'error' && (
                         <Alert severity='error'>Could not load this game from Lichess.</Alert>
                     )}
@@ -536,11 +537,6 @@ export function LiveMatchPage() {
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
                     )}
-                    <GuessPanel
-                        state={guessState}
-                        onGoLive={() => setViewPly(null)}
-                        score={myScore}
-                    />
                     {isSensei && username && (
                         <SenseiPanel
                             me={username}
@@ -563,13 +559,18 @@ export function LiveMatchPage() {
                     <SenseiStrip roster={roster} pins={bar.pins} />
                 </Stack>
 
-                <Box sx={{ minWidth: 0, gridArea: 'leaders' }}>
+                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
                     />
-                </Box>
+                    <GuessPanel
+                        state={guessState}
+                        onGoLive={() => setViewPly(null)}
+                        score={myScore}
+                    />
+                </Stack>
             </Box>
 
             <TwitchEmbed />
@@ -591,22 +592,25 @@ function PlayerBar({
             direction='row'
             sx={{ alignItems: 'center', justifyContent: 'space-between', pl: { xs: 3, sm: 4 } }}
         >
-            <Typography sx={{ fontWeight: 700 }} noWrap>
-                {player?.title && (
-                    <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
-                        {player.title}
-                    </Box>
-                )}
-                {player?.name ?? '…'}
-                {player?.rating && (
-                    <Box
-                        component='span'
-                        sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
-                    >
-                        {player.rating}
-                    </Box>
-                )}
-            </Typography>
+            <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
+                <PlayerPhoto name={player?.name} size={36} />
+                <Typography sx={{ fontWeight: 700 }} noWrap>
+                    {player?.title && (
+                        <Box component='span' sx={{ color: 'warning.main', mr: 0.75 }}>
+                            {player.title}
+                        </Box>
+                    )}
+                    {player?.name ?? '…'}
+                    {player?.rating && (
+                        <Box
+                            component='span'
+                            sx={{ color: 'text.secondary', fontWeight: 400, ml: 0.75 }}
+                        >
+                            {player.rating}
+                        </Box>
+                    )}
+                </Typography>
+            </Stack>
             <Paper
                 elevation={0}
                 sx={{
@@ -657,6 +661,7 @@ function MoveList({
                     px: 1,
                     py: 0.25,
                     borderRadius: 0.5,
+                    fontSize: '0.9rem',
                     fontWeight: m.ply === ply ? 800 : 500,
                     bgcolor: m.ply === ply ? 'action.selected' : undefined,
                     color: guessedRight ? 'success.main' : undefined,
@@ -678,7 +683,7 @@ function MoveList({
                             title={`${m.san} took ${formatSpent(m.spent)}`}
                             sx={{
                                 ml: 0.75,
-                                fontSize: '0.72rem',
+                                fontSize: '0.62rem',
                                 fontWeight: 500,
                                 color: 'info.main',
                             }}

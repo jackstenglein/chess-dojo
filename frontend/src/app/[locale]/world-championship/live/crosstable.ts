@@ -24,7 +24,7 @@ export interface Crosstable {
     totals: Record<CrossPlayer, number>;
 }
 
-function playerOf(name: string | undefined): CrossPlayer | undefined {
+export function playerOf(name: string | undefined): CrossPlayer | undefined {
     if (!name) {
         return undefined;
     }

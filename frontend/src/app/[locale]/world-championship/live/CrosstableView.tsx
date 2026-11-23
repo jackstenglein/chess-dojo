@@ -1,12 +1,15 @@
 'use client';
 
 import { Box, Paper, Tooltip, Typography } from '@mui/material';
+import { PlayerPhoto } from './PlayerPhoto';
 import { CROSS_PLAYERS, Crosstable, formatPoints, pointsFor } from './crosstable';
 
 interface CrosstableViewProps {
     table?: Crosstable;
     /** The game open on the page, highlighted in the table. */
     currentNumber?: number;
+    /** The game being played right now, marked with a dot until it has a result. */
+    liveNumber?: number;
     onSelectGame: (number: number) => void;
 }
 
@@ -14,14 +17,19 @@ interface CrosstableViewProps {
  * The running crosstable: Gukesh on the first row, Sindarov on the second,
  * a column per game with each player's points, and the match score.
  */
-export function CrosstableView({ table, currentNumber, onSelectGame }: CrosstableViewProps) {
+export function CrosstableView({
+    table,
+    currentNumber,
+    liveNumber,
+    onSelectGame,
+}: CrosstableViewProps) {
     if (!table || table.games.length === 0) {
         return null;
     }
     const { games, totals } = table;
 
     return (
-        <Paper variant='outlined' sx={{ p: 1.5, mb: 2 }} data-testid='crosstable'>
+        <Paper variant='outlined' sx={{ p: 1.5 }} data-testid='crosstable'>
             <Box sx={{ overflowX: 'auto' }}>
                 <Box
                     component='table'
@@ -77,12 +85,22 @@ export function CrosstableView({ table, currentNumber, onSelectGame }: Crosstabl
                                     component='td'
                                     sx={{ textAlign: 'left !important', fontWeight: 700 }}
                                 >
-                                    {p.name}
+                                    <Box
+                                        component='span'
+                                        sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 0.75,
+                                        }}
+                                    >
+                                        <PlayerPhoto name={p.name} size={24} />
+                                        {p.name}
+                                    </Box>
                                 </Box>
                                 {games.map((g) => {
                                     const points = pointsFor(g, p.id);
                                     const white = g.white === p.id;
-                                    const live = g.result === '*' && g.number === currentNumber;
+                                    const live = g.result === '*' && g.number === liveNumber;
                                     return (
                                         <Tooltip
                                             key={g.number}
