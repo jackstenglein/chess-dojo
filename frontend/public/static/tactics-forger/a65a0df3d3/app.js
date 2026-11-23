@@ -227,21 +227,35 @@ function applyBoardLook(node) {
     }
   }
 }
-// Sounds are fetched whole and played from a blob, so the offline cache can serve them (audio
-// elements ask for byte ranges, which the cache can't answer).
+// Sounds are short effects played through Web Audio, which mixes with music from other apps
+// instead of pausing it (an <audio> element counts as media playback, so phones pause Spotify for
+// it). Safari/iOS also gets audioSession 'ambient' for the same reason. Files are fetched whole,
+// so the offline cache can serve them.
+try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch {}
+let audioCtx = null;
 const sounds = {};
 const loadSound = (name) =>
   (sounds[name] ??= fetch(`${ASSETS}/sounds/${name}.mp3`)
-    .then((r) => (r.ok ? r.blob() : Promise.reject()))
-    .then((b) => URL.createObjectURL(b))
+    .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
     .catch(() => { delete sounds[name]; return null; }));
 function playSound(name) {
   if (!progress.settings.sound) return;
-  loadSound(name).then((src) => {
-    if (!src) return;
-    const a = new Audio(src);
-    a.volume = 0.6;
-    a.play().catch(() => {});
+  try {
+    audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch { return; }
+  loadSound(name).then(async (data) => {
+    if (!data) return;
+    const cache = (playSound.decoded ??= {});
+    try {
+      cache[name] ??= await audioCtx.decodeAudioData(data.slice(0));
+      const src = audioCtx.createBufferSource();
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.6;
+      src.buffer = cache[name];
+      src.connect(gain).connect(audioCtx.destination);
+      src.start();
+    } catch {}
   });
 }
 const fmtDur = (ms) => {
