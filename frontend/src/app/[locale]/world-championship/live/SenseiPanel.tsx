@@ -4,7 +4,6 @@ import {
     formatEval,
     WC_EVAL_MAX,
     WC_EVAL_MIN,
-    WC_EVAL_PRESETS,
     WC_SENSEI_COLORS,
     WcRosterRequest,
     WcSensei,
@@ -24,7 +23,6 @@ import {
     DialogTitle,
     IconButton,
     Popover,
-    Slider,
     Stack,
     TextField,
     Tooltip,
@@ -307,60 +305,6 @@ function SenseiCard({
                     </Tooltip>
                 )}
             </Stack>
-
-            {/* Slider and presets, for senseis this sensei may score */}
-            {canScore && (
-                <>
-                    <Stack direction='row' spacing={1.5} sx={{ alignItems: 'center', px: 0.5 }}>
-                        <Typography variant='caption' color='text.secondary'>
-                            -10
-                        </Typography>
-                        <Slider
-                            size='small'
-                            aria-label={`${sensei.name}'s eval`}
-                            min={WC_EVAL_MIN}
-                            max={WC_EVAL_MAX}
-                            step={STEP}
-                            value={value}
-                            onChange={(_, v) => change(v)}
-                            onChangeCommitted={() => {
-                                if (document.activeElement instanceof HTMLElement) {
-                                    document.activeElement.blur();
-                                }
-                            }}
-                            sx={{
-                                color: 'text.secondary',
-                                '& .MuiSlider-thumb': { color: '#fff' },
-                            }}
-                        />
-                        <Typography variant='caption' sx={{ color: 'success.light' }}>
-                            +10
-                        </Typography>
-                    </Stack>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
-                        {WC_EVAL_PRESETS.map((p) => (
-                            <Tooltip key={p.symbol} title={`${p.meaning} (${formatEval(p.value)})`}>
-                                <Button
-                                    size='small'
-                                    onClick={() => change(p.value)}
-                                    sx={{
-                                        minWidth: 0,
-                                        py: 0.25,
-                                        fontFamily: 'monospace',
-                                        fontWeight: 700,
-                                        textTransform: 'none',
-                                        color: 'text.primary',
-                                        bgcolor:
-                                            value === p.value ? 'action.selected' : 'action.hover',
-                                    }}
-                                >
-                                    {p.symbol}
-                                </Button>
-                            </Tooltip>
-                        ))}
-                    </Box>
-                </>
-            )}
 
             <Popover
                 open={!!colorAnchor}
