@@ -16,7 +16,8 @@ import { getRoundState } from './lichess';
 
 /**
  * Saves an eval of one position. Only the senseis in WC_SENSEIS may call it.
- * A sensei scores themselves, or any guest on the roster.
+ * Any sensei can set the eval of anyone on the roster, themselves, another
+ * sensei or a guest. Each eval records who set it.
  */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
@@ -32,10 +33,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         if (senseiId !== username) {
             const roster = buildRoster(await listRoster());
-            if (!roster.some((s) => s.id === senseiId && s.guest)) {
+            if (!roster.some((s) => s.id === senseiId)) {
                 throw new ApiError({
-                    statusCode: 403,
-                    publicMessage: 'You can score yourself or a guest sensei',
+                    statusCode: 404,
+                    publicMessage: 'That sensei is not on the bar',
                 });
             }
         }

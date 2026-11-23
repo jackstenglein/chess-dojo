@@ -113,7 +113,7 @@ export const WcEvalRequestSchema = z.object({
         .min(WC_EVAL_MIN)
         .max(WC_EVAL_MAX)
         .transform((v) => Math.round(v * 10) / 10),
-    /** Whose eval it is. Defaults to the caller. A sensei may also score any guest. */
+    /** Whose eval it is. Defaults to the caller. Any sensei may set anyone's on the roster. */
     senseiId: senseiId.optional(),
 });
 export type WcEvalRequest = z.input<typeof WcEvalRequestSchema>;

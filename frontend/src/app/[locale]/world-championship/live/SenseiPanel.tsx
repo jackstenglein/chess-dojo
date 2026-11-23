@@ -41,8 +41,6 @@ type SaveStatus = 'idle' | 'pending' | 'saving' | 'error';
 type SenseiColor = (typeof WC_SENSEI_COLORS)[number];
 
 interface SenseiPanelProps {
-    /** The signed-in sensei. */
-    me: string;
     roster: WcSensei[];
     /** Each sensei's eval in force at the shown position. */
     values: Record<string, number | undefined>;
@@ -53,13 +51,11 @@ interface SenseiPanelProps {
 }
 
 /**
- * Only senseis see this: a card per sensei. A sensei scores themselves and any
- * guest; the other senseis' cards show their score. Anyone on the roster can
- * be switched on or off and recolored, and guests can be added, renamed and
- * removed.
+ * Only senseis see this: a card per sensei. Any sensei can set anyone's eval,
+ * switch anyone on or off and recolor them; guests can also be added, renamed
+ * and removed.
  */
 export function SenseiPanel({
-    me,
     roster,
     values,
     positionLabel,
@@ -92,7 +88,7 @@ export function SenseiPanel({
                     <SenseiCard
                         key={s.id}
                         sensei={s}
-                        canScore={s.id === me || s.guest}
+                        canScore
                         saved={values[s.id]}
                         positionLabel={positionLabel}
                         onScore={onScore}

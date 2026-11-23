@@ -909,7 +909,6 @@ export function LiveMatchPage() {
                     />
                     {isSensei && username ? (
                         <SenseiPanel
-                            me={username}
                             roster={roster}
                             values={valuesAtPly}
                             positionLabel={
