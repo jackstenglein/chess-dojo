@@ -327,12 +327,12 @@ const today = () => new Date().toISOString().slice(0, 10);
 // need RANK_SCALE of the Tactics count (Wizard: Tactics 10,000, Endgames 6,000).
 const RANKS = [
   [0, 'grasshopper', 'Grasshopper', 'Starting out', 0],
-  [800, 'jester', 'Jester', 'Knows some tricks', 200],
-  [1000, 'apprentice', 'Apprentice', 'Learning the craft', 500],
-  [1200, 'squire', 'Squire', 'Getting better', 1000],
-  [1400, 'ninja', 'Ninja', 'Strikes from the shadows', 2000],
-  [1600, 'warrior', 'Warrior', 'Battle-tested', 3000],
-  [1800, 'beast', 'Beast', 'Ready to pounce', 5000],
+  [800, 'jester', 'Jester', 'Knows some tricks', 500],
+  [1000, 'apprentice', 'Apprentice', 'Learning the craft', 1000],
+  [1200, 'squire', 'Squire', 'Getting better', 2000],
+  [1400, 'ninja', 'Ninja', 'Strikes from the shadows', 3000],
+  [1600, 'warrior', 'Warrior', 'Battle-tested', 5000],
+  [1800, 'beast', 'Beast', 'Ready to pounce', 7500],
   [2000, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
@@ -412,9 +412,26 @@ function rankNeed(rank, tr = track) {
 }
 // Rating-only lookup (used for labelling rating levels, e.g. ladder milestones).
 const rankFor = (rating) => [...RANKS].reverse().find(([r]) => rating >= r);
+// Rank credit: every puzzle you've solved (first try) in a tab counts toward each rank, and harder
+// puzzles count extra: 4x when the puzzle is rated 400+ above the rank's rating, 2x when 200+
+// above. So a strong player solving puzzles at their level moves through the lower ranks quickly,
+// while easy puzzles (Basic Tactics for them) count the normal 1x.
+const creditWeight = (puzzleRating, rank) => (puzzleRating - rank[0] >= 400 ? 4 : puzzleRating - rank[0] >= 200 ? 2 : 1);
+let creditMemo = { v: -1 };
+function rankCredit(rank, tr = track) {
+  if (creditMemo.v !== puzzlesVersion) {
+    const ratings = { tactics: [], openings: [], endgames: [] };
+    for (const p of Object.values(progress.puzzles)) if (p.ok > 0) ratings[splitKey(p.k)[0]]?.push(p.r ?? 0);
+    creditMemo = { v: puzzlesVersion, by: {} };
+    for (const [t, rs] of Object.entries(ratings)) {
+      creditMemo.by[t] = RANKS.map((rk) => sum(rs.map((x) => creditWeight(x, rk))));
+    }
+  }
+  return creditMemo.by[tr]?.[RANKS.indexOf(rank)] ?? 0;
+}
 // Your actual rank in a tab: the highest one whose rating AND puzzle requirements you meet.
-const userRankFor = (rating, solved, tr = track) => [...RANKS].reverse().find((rk) => rating >= rk[0] && solved >= rankNeed(rk, tr));
-const userRank = (tr = track) => userRankFor(trackRating(tr).rating, solvedCount(tr), tr);
+const userRankFor = (rating, tr = track) => [...RANKS].reverse().find((rk) => rating >= rk[0] && rankCredit(rk, tr) >= rankNeed(rk, tr));
+const userRank = (tr = track) => userRankFor(trackRating(tr).rating, tr);
 // Rating, rank and games per track, taken before a run so the result screen can show what changed.
 const ratingSnap = () => Object.fromEntries(Object.keys(TRACKS).map((tr) => {
   const r = trackRating(tr);
@@ -524,19 +541,19 @@ function balanceStatus(tr) {
   return act.map((k) => ({ key: k, n: st.counts[k] || 0, f: balanceFactor(tr, k, st.counts, st.r) }));
 }
 // How close you are to the next rank on each requirement.
-function rankProgress(rating, solved, tr = track) {
-  const rank = userRankFor(rating, solved, tr);
+function rankProgress(rating, tr = track) {
+  const rank = userRankFor(rating, tr);
   const next = RANKS[RANKS.indexOf(rank) + 1] ?? null;
   if (!next) return { rank, next, frac: 1, ratingFrac: 1, solvedFrac: 1, toGo: 0, solvedToGo: 0 };
   const clamp = (x) => Math.min(1, Math.max(0, x));
   const rFloor = Math.max(rank[0], RATING.r0);
   const ratingFrac = clamp((rating - rFloor) / (next[0] - rFloor));
-  const have = rankNeed(rank, tr);
   const want = rankNeed(next, tr);
-  const solvedFrac = clamp((solved - have) / (want - have));
+  const solved = rankCredit(next, tr); // credit toward the next rank
+  const solvedFrac = clamp(solved / want);
   return {
     rank, next, ratingFrac, solvedFrac, frac: Math.min(ratingFrac, solvedFrac),
-    toGo: Math.max(0, next[0] - rating), solvedToGo: Math.max(0, want - solved), solvedNeed: want,
+    toGo: Math.max(0, next[0] - rating), solvedToGo: Math.max(0, want - solved), solvedNeed: want, credit: solved,
   };
 }
 const reqBar = (label, have, need, frac, done) => `<div class="req ${done ? 'met' : ''}">
@@ -546,7 +563,7 @@ function rankRoad(trk = track) {
   const tr = trackRating(trk);
   const solved = solvedCount(trk);
   const L = TRACKS[trk].label;
-  const rp = rankProgress(tr.rating, solved, trk);
+  const rp = rankProgress(tr.rating, trk);
   const ri = RANKS.indexOf(rp.rank);
   return `<div class="rank-road">
     <div class="rr-head">
@@ -555,15 +572,15 @@ function rankRoad(trk = track) {
       <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. ${tr.provisional ? `It's provisional (?) for your first ${PROVISIONAL.games} puzzles and moves fast to find your level; after that it` : 'It'} climbs slowly, about 1 point per 10 puzzles solved.">
         <small>${L} rating</small><b>${tr.rating}${tr.provisional ? '<i class="prov">?</i>' : ''}</b><span>${tr.provisional ? `provisional · ${tr.games}/${PROVISIONAL.games} puzzles` : `${tr.games.toLocaleString()} puzzles played`}</span></div>
       <div class="rr-next">${rp.next
-        ? `Next: <b class="inline-rank">${rankIcon(rp.next[1], 22)} ${rp.next[2]}</b><small>${[rp.toGo ? `${rp.toGo} rating points` : '', rp.solvedToGo ? `${rp.solvedToGo.toLocaleString()} more ${L.toLowerCase()} puzzles solved` : ''].filter(Boolean).join(' and ')} to go</small>`
+        ? `Next: <b class="inline-rank">${rankIcon(rp.next[1], 22)} ${rp.next[2]}</b><small>${[rp.toGo ? `${rp.toGo} rating points` : '', rp.solvedToGo ? `${rp.solvedToGo.toLocaleString()} more puzzle points` : ''].filter(Boolean).join(' and ')} to go</small>`
         : '<b>Top rank reached</b>'}</div>
     </div>
     ${rp.next ? `<div class="reqs">
       ${reqBar(`${L} rating → ${rp.next[0]}`, tr.rating, rp.next[0], rp.ratingFrac, tr.rating >= rp.next[0])}
-      ${reqBar(`${L} puzzles solved (first try) → ${rp.solvedNeed.toLocaleString()}`, solved, rp.solvedNeed, rp.solvedFrac, solved >= rp.solvedNeed)}
+      <div title="Each ${L.toLowerCase()} puzzle you solve on the first try is 1 point, 2 points if it's rated ${rp.next[0] + 200}+ and 4 points if it's rated ${rp.next[0] + 400}+.">${reqBar(`Puzzle points → ${rp.solvedNeed.toLocaleString()} <small class="req-hint">(${rp.next[0] + 200}+ puzzles ×2, ${rp.next[0] + 400}+ ×4)</small>`, rp.credit, rp.solvedNeed, rp.solvedFrac, rp.credit >= rp.solvedNeed)}</div>
     </div>` : ''}
     <div class="rr-steps">${RANKS.map((rk, i) => [...rk.slice(0, 4), rankNeed(rk, trk)]).map(([r, ic, nm, desc, need], i) => `<div class="rr-step ${i < ri ? 'done' : i === ri ? 'cur' : i === ri + 1 ? 'next' : ''}" title="${nm}: ${desc}">
-      <span>${rankIcon(ic, 40)}</span><small>${nm}</small><i>${desc}</i><em>${Math.max(r, RATING.r0)}+${need ? ` · ${need.toLocaleString()} solved` : ''}</em></div>`).join('')}</div>
+      <span>${rankIcon(ic, 40)}</span><small>${nm}</small><i>${desc}</i><em>${Math.max(r, RATING.r0)}+${need ? ` · ${need.toLocaleString()} pts` : ''}</em></div>`).join('')}</div>
     ${balanceLine(trk)}
   </div>`;
 }
@@ -2335,7 +2352,7 @@ async function showLadder(key) {
   const curSet = theme.sets[Math.min(here, total - 1)];
   const rungNo = curSet.band + 1;
   const ltr = trackRating();
-  const lrp = rankProgress(ltr.rating, solvedCount(track), track);
+  const lrp = rankProgress(ltr.rating, track);
   const [, rIcon, rTitle] = lrp.rank;
   page.querySelector('.ladder-summary').innerHTML = `
     <div class="sum-rank"><span class="rank-icon">${rankIcon(rIcon, 48)}</span><div class="sum-rank-main"><b>${rTitle}</b>
