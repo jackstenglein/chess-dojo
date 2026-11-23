@@ -35,6 +35,8 @@ import {
 } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCrosstable } from './crosstable';
+import { CrosstableView } from './CrosstableView';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import {
     clocksAt,
@@ -51,6 +53,7 @@ import {
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
 import { EvalBar, SenseiPanel, SenseiStrip } from './SenseiEval';
+import { TwitchEmbed } from './TwitchEmbed';
 import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess, putRoster } from './wcLiveApi';
 
 const EVALS_POLL_MS = 5000;
@@ -143,6 +146,9 @@ export function LiveMatchPage() {
     const [orientation, setOrientation] = useState<'white' | 'black'>('white');
     const now = useNow(atLive && !gameOver && moves.length > 0);
     const clocks = clocksAt(feed, ply, now);
+
+    // Read again when the game on the page finishes, so its result shows at once.
+    const crosstable = useCrosstable(`${roundId ?? ''}:${feed.result}`);
 
     const selectRound = (id: string) => {
         setRoundId(id);
@@ -383,6 +389,17 @@ export function LiveMatchPage() {
                 </Typography>
             </Stack>
 
+            <CrosstableView
+                table={crosstable}
+                currentNumber={round?.number}
+                onSelectGame={(n) => {
+                    const r = rounds.find((x) => x.number === n);
+                    if (r) {
+                        selectRound(r.id);
+                    }
+                }}
+            />
+
             {roundsError && rounds.length === 0 && (
                 <Alert severity='error' sx={{ mb: 2 }}>
                     Could not reach the Lichess broadcast. Refresh to try again.
@@ -554,6 +571,8 @@ export function LiveMatchPage() {
                     />
                 </Box>
             </Box>
+
+            <TwitchEmbed />
         </Container>
     );
 }
