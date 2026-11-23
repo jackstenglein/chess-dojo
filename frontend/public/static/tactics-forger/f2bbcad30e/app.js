@@ -933,7 +933,7 @@ const ringMode = {}; // 'progress' (default) or 'strengths', per tab
 //    (twice as fast scores full marks, twice as slow scores zero).
 // Score = 70% accuracy + 30% speed, 0-100. Strong is 60+, weak is under 40. Themes with fewer than
 // STRENGTH.min puzzles have no score yet.
-const STRENGTH = { recent: 60, min: 10, acc: 0.7 };
+const STRENGTH = { recent: 60, min: 30, acc: 0.7 };
 let strengthMemo = { n: -1 };
 function strengths(tr = track) {
   const { attempts } = statsModel();
