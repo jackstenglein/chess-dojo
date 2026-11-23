@@ -37,6 +37,8 @@ export interface AnalysisApi {
     select: (path: string[]) => void;
     /** Deletes the variation from the move at the end of the path. */
     remove: (path: string[]) => void;
+    /** Moves the variation through the move at the end of the path up among its alternatives. */
+    promote: (path: string[]) => void;
     error?: string;
 }
 
@@ -125,5 +127,6 @@ export function useAnalysis(
         select: (path) =>
             withRound((id) => change({ action: 'select', roundId: id, path }, SELECT_DELAY_MS)),
         remove: (path) => withRound((id) => change({ action: 'delete', roundId: id, path })),
+        promote: (path) => withRound((id) => change({ action: 'promote', roundId: id, path })),
     };
 }

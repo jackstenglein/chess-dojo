@@ -2,6 +2,8 @@ import { Chess } from '@jackstenglein/chess';
 import { describe, expect, it } from 'vitest';
 import {
     addLine,
+    AnalysisRuleError,
+    applyAnalysisRequest,
     buildTree,
     cursorIsCurrent,
     deleteFrom,
@@ -88,6 +90,50 @@ describe('buildTree', () => {
         const a6 = findNode(longer, ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6']);
         expect(a6?.mainline).toBe(false);
         expect(findNode(longer, ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'])?.mainline).toBe(true);
+    });
+});
+
+describe('promote', () => {
+    const base = { roundId: 'xLgOJ6cb', version: 0 };
+    const lines = [
+        ['e4', 'c5', 'Nf3', 'd6'],
+        ['e4', 'c5', 'Nf3', 'Nc6'],
+        ['e4', 'e6'],
+    ];
+
+    it('puts a variation first among its alternatives, never before the game', () => {
+        let state = applyAnalysisRequest(
+            { ...base, lines },
+            { action: 'promote', roundId: base.roundId, path: ['e4', 'e6'] },
+            MAIN,
+            'a',
+        );
+        const tree = buildTree(mainlineMoves(MAIN), state.lines);
+        expect(findNode(tree, ['e4'])?.children.map((c) => c.san)).toEqual(['e5', 'e6', 'c5']);
+
+        // Inside a variation, the promoted move becomes its continuation.
+        state = applyAnalysisRequest(
+            state,
+            { action: 'promote', roundId: base.roundId, path: ['e4', 'c5', 'Nf3', 'Nc6'] },
+            MAIN,
+            'a',
+        );
+        const after = buildTree(mainlineMoves(MAIN), state.lines);
+        expect(findNode(after, ['e4', 'c5', 'Nf3'])?.children.map((c) => c.san)).toEqual([
+            'Nc6',
+            'd6',
+        ]);
+    });
+
+    it('refuses to promote a move of the game', () => {
+        expect(() =>
+            applyAnalysisRequest(
+                { ...base, lines },
+                { action: 'promote', roundId: base.roundId, path: ['e4', 'e5'] },
+                MAIN,
+                'a',
+            ),
+        ).toThrow(AnalysisRuleError);
     });
 });
 

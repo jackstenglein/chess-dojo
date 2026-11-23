@@ -244,8 +244,10 @@ export interface WcPin {
 }
 
 /**
- * The active senseis with an eval at the given ply, and their simple average,
- * which is 0 when nobody is active.
+ * Every active sensei on the bar with their eval at the given ply, and the
+ * simple average, which is 0 when nobody is active. A sensei who has not set
+ * an eval yet counts as 0.0, the value their input starts at, so switching
+ * anyone on or off always moves the average.
  */
 export function barState(
     roster: WcSensei[],
@@ -257,7 +259,7 @@ export function barState(
         .filter((s) => s.active)
         .flatMap((sensei) => {
             const e = latest.find((x) => x.senseiId === sensei.id);
-            return e ? [{ sensei, value: e.value }] : [];
+            return [{ sensei, value: e?.value ?? 0 }];
         });
     const average = pins.length ? pins.reduce((sum, p) => sum + p.value, 0) / pins.length : 0;
     return { pins, average };

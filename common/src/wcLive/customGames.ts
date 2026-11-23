@@ -31,7 +31,8 @@ const LICHESS_ID = /^[A-Za-z0-9]{8}$/;
 
 /**
  * Reads a Lichess link:
- * - lichess.org/abcd1234 (or /abcd1234/white, or a 12-character player link): a game
+ * - lichess.org/abcd1234, lichess.org/game/abcd1234/black, an embed or export link,
+ *   or a 12-character player link: a game
  * - lichess.org/broadcast/tour/round/ROUNDID/GAMEID: one board of a broadcast
  * - lichess.org/broadcast/tour/round/ROUNDID: a broadcast round (its first board)
  */
@@ -59,7 +60,10 @@ export function parseLichessLink(link: string): WcLichessLink | undefined {
         return { kind: 'broadcastRound', id: roundId, roundId };
     }
 
-    const first = segments[0] ?? '';
+    // lichess.org/game/ID, /game/export/ID and /embed/game/ID name the game after a prefix.
+    const prefixes = [['game', 'export'], ['embed', 'game'], ['game'], ['embed']];
+    const prefix = prefixes.find((p) => p.every((part, i) => segments[i] === part));
+    const first = segments[prefix?.length ?? 0] ?? '';
     if (/^[A-Za-z0-9]{8}([A-Za-z0-9]{4})?$/.test(first)) {
         const gameId = first.slice(0, 8);
         return { kind: 'game', id: gameId, gameId };

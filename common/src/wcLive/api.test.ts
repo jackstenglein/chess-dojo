@@ -101,8 +101,18 @@ describe('barState', () => {
         expect(state.average).toBe(1.5);
     });
 
+    it('counts an active sensei with no eval yet as 0.0', () => {
+        const state = barState(roster, [e('jessekraai', 0, 3)], 3);
+        expect(state.pins.map((p) => [p.sensei.id, p.value])).toEqual([
+            ['jessekraai', 3],
+            ['hellokostya', 0],
+        ]);
+        expect(state.average).toBe(1.5);
+    });
+
     it('is 0 with nobody active', () => {
-        expect(barState(roster, [], 3)).toEqual({ pins: [], average: 0 });
+        const nobody = roster.map((s) => ({ ...s, active: false }));
+        expect(barState(nobody, [], 3)).toEqual({ pins: [], average: 0 });
     });
 });
 

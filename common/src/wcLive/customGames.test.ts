@@ -10,6 +10,15 @@ describe('parseLichessLink', () => {
         });
         expect(parseLichessLink('lichess.org/q7ZvsdUF/black')?.gameId).toBe('q7ZvsdUF');
         expect(parseLichessLink('https://lichess.org/q7ZvsdUFab12')?.gameId).toBe('q7ZvsdUF');
+        expect(parseLichessLink('https://lichess.org/game/gDDlbmkH/black')?.gameId).toBe(
+            'gDDlbmkH',
+        );
+        expect(parseLichessLink('https://lichess.org/embed/game/gDDlbmkH')?.gameId).toBe(
+            'gDDlbmkH',
+        );
+        expect(parseLichessLink('https://lichess.org/game/export/gDDlbmkH')?.gameId).toBe(
+            'gDDlbmkH',
+        );
     });
 
     it('reads a broadcast board and a broadcast round', () => {

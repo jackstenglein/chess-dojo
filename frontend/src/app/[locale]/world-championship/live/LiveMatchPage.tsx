@@ -34,6 +34,8 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import AddIcon from '@mui/icons-material/Add';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import {
     Alert,
     Box,
@@ -44,8 +46,6 @@ import {
     Stack,
     Tab,
     Tabs,
-    ToggleButton,
-    ToggleButtonGroup,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -69,6 +69,7 @@ import {
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
 import { useActAs } from './localTesting';
+import { useMoveSounds } from './moveSounds';
 import { Notation } from './Notation';
 import { PlayerPhoto } from './PlayerPhoto';
 import { EvalBar, SenseiStrip } from './SenseiEval';
@@ -203,8 +204,28 @@ export function LiveMatchPage() {
 
     // ---- Board position and the senseis' analysis -------------------------
     const mainSans = useMemo(() => moves.map((m) => m.san), [moves]);
-    const [boardMode, setBoardMode] = useState<'analyze' | 'guess'>('analyze');
-    const analyzing = isSensei && boardMode === 'analyze';
+    // A sensei's moves go on the analysis board. Holding Alt makes a move a guess instead.
+    const altHeld = useRef(false);
+    useEffect(() => {
+        const track = (e: KeyboardEvent | PointerEvent) => {
+            altHeld.current = e.altKey;
+        };
+        const release = () => {
+            altHeld.current = false;
+        };
+        window.addEventListener('keydown', track, true);
+        window.addEventListener('keyup', track, true);
+        window.addEventListener('pointerdown', track, true);
+        window.addEventListener('pointerup', track, true);
+        window.addEventListener('blur', release);
+        return () => {
+            window.removeEventListener('keydown', track, true);
+            window.removeEventListener('keyup', track, true);
+            window.removeEventListener('pointerdown', track, true);
+            window.removeEventListener('pointerup', track, true);
+            window.removeEventListener('blur', release);
+        };
+    }, []);
 
     const applyLocal = useCallback(
         (current: WcAnalysis, request: WcAnalysisRequest): WcAnalysis => {
@@ -269,6 +290,7 @@ export function LiveMatchPage() {
                 promotion: uci[4],
             });
             if (move) {
+                sounds.playSan(move.san);
                 analysisApi.move([...node.path, move.san]);
                 setViewPath(null);
             }
@@ -276,6 +298,22 @@ export function LiveMatchPage() {
             // Not a legal move; the board puts the piece back.
         }
     };
+
+    const sounds = useMoveSounds();
+    const heard = useRef<{ roundId?: string; plies: number }>({ plies: 0 });
+    useEffect(() => {
+        const last = heard.current;
+        if (last.roundId === roundId && moves.length > last.plies && feed.status === 'ready') {
+            const san = moves[moves.length - 1]?.san;
+            if (san) {
+                sounds.playSan(san);
+            }
+        }
+        if (feed.status === 'ready' || last.roundId !== roundId) {
+            heard.current = { roundId, plies: moves.length };
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the game moves on.
+    }, [roundId, moves.length, feed.status]);
 
     const [orientation, setOrientation] = useState<'white' | 'black'>('white');
     const now = useNow(atLive && !gameOver && moves.length > 0);
@@ -423,7 +461,7 @@ export function LiveMatchPage() {
     useEffect(() => setGuessError(undefined), [moves.length]);
 
     const nextPly = moves.length + 1;
-    const canGuess = signedIn && !gameOver && atLive && !analyzing && feed.status === 'ready';
+    const canGuess = signedIn && !gameOver && atLive && feed.status === 'ready';
 
     const onGuess = useCallback(
         async (uci: string) => {
@@ -432,6 +470,18 @@ export function LiveMatchPage() {
             }
             const guessPly = nextPly;
             const previous: string | undefined = myGuesses[guessPly];
+            try {
+                const guessed = new Chess({ fen: moves[moves.length - 1]?.fen ?? START_FEN }).move({
+                    from: uci.slice(0, 2) as Square,
+                    to: uci.slice(2, 4) as Square,
+                    promotion: uci[4],
+                });
+                if (guessed) {
+                    sounds.playSan(guessed.san);
+                }
+            } catch {
+                // The API refuses it and says why.
+            }
             setMyGuesses((g) => ({ ...g, [guessPly]: uci }));
             setGuessSaving(true);
             setGuessError(undefined);
@@ -488,13 +538,12 @@ export function LiveMatchPage() {
         guessState = { kind: 'signed-out' };
     } else if (gameOver) {
         guessState = { kind: 'game-over' };
-    } else if (analyzing) {
-        guessState = { kind: 'analyzing' };
     } else if (!atLive) {
         guessState = { kind: 'not-live' };
     } else {
         guessState = {
             kind: 'open',
+            altToGuess: isSensei,
             moveLabel:
                 nextPly === 1
                     ? 'the first move (open until the game starts)'
@@ -665,8 +714,14 @@ export function LiveMatchPage() {
                                 lastMove={node.ply > 0 ? [node.from, node.to] : undefined}
                                 orientation={orientation}
                                 onGuess={
-                                    analyzing
-                                        ? analysisMove
+                                    isSensei
+                                        ? (uci) => {
+                                              if (altHeld.current && canGuess) {
+                                                  void onGuess(uci);
+                                              } else {
+                                                  analysisMove(uci);
+                                              }
+                                          }
                                         : canGuess
                                           ? (uci) => void onGuess(uci)
                                           : undefined
@@ -718,6 +773,17 @@ export function LiveMatchPage() {
                         >
                             Live
                         </Button>
+                        <Tooltip title={sounds.enabled ? 'Mute move sounds' : 'Play move sounds'}>
+                            <IconButton
+                                size='small'
+                                aria-label={
+                                    sounds.enabled ? 'Mute move sounds' : 'Play move sounds'
+                                }
+                                onClick={() => sounds.setEnabled(!sounds.enabled)}
+                            >
+                                {sounds.enabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                            </IconButton>
+                        </Tooltip>
                         <Tooltip title='Flip board'>
                             <IconButton
                                 size='small'
@@ -729,43 +795,10 @@ export function LiveMatchPage() {
                             </IconButton>
                         </Tooltip>
                     </Stack>
-                    {isSensei && (
-                        <Stack
-                            direction='row'
-                            spacing={1}
-                            sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}
-                        >
-                            <ToggleButtonGroup
-                                size='small'
-                                exclusive
-                                value={boardMode}
-                                onChange={(_, mode: 'analyze' | 'guess' | null) =>
-                                    mode && setBoardMode(mode)
-                                }
-                                aria-label='What moving a piece does'
-                            >
-                                <ToggleButton value='analyze' sx={{ textTransform: 'none' }}>
-                                    Analyze with senseis
-                                </ToggleButton>
-                                <ToggleButton value='guess' sx={{ textTransform: 'none' }}>
-                                    Guess the move
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                            {!node.mainline && (
-                                <Button
-                                    size='small'
-                                    color='error'
-                                    onClick={() => analysisApi.remove(node.path)}
-                                >
-                                    Delete variation from here
-                                </Button>
-                            )}
-                            {analysisApi.error && (
-                                <Typography variant='caption' color='error'>
-                                    {analysisApi.error}
-                                </Typography>
-                            )}
-                        </Stack>
+                    {isSensei && analysisApi.error && (
+                        <Typography variant='caption' color='error'>
+                            {analysisApi.error}
+                        </Typography>
                     )}
                     <CrosstableView
                         table={crosstable}
@@ -796,6 +829,8 @@ export function LiveMatchPage() {
                         guesses={myGuesses}
                         onSelect={goTo}
                         onLive={atLive ? undefined : () => goTo(null)}
+                        onPromote={isSensei ? (n) => analysisApi.promote(n.path) : undefined}
+                        onDelete={isSensei ? (n) => analysisApi.remove(n.path) : undefined}
                     />
                     {isSensei && username ? (
                         <SenseiPanel

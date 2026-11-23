@@ -21,8 +21,15 @@ export type GuessState =
     | { kind: 'signed-out' }
     | { kind: 'game-over' }
     | { kind: 'not-live' }
-    | { kind: 'analyzing' }
-    | { kind: 'open'; moveLabel: string; guessSan?: string; saving: boolean; error?: string };
+    | {
+          kind: 'open';
+          moveLabel: string;
+          guessSan?: string;
+          saving: boolean;
+          error?: string;
+          /** Senseis move pieces for analysis, so they hold Alt to guess. */
+          altToGuess?: boolean;
+      };
 
 interface GuessPanelProps {
     state: GuessState;
@@ -52,12 +59,6 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
                     This game is over. Guessing opens again for the next game.
                 </Typography>
             )}
-            {state.kind === 'analyzing' && (
-                <Typography variant='body2' sx={{ mt: 1 }}>
-                    Your board is set to analyse with the senseis. Switch it to{' '}
-                    <b>Guess the move</b> under the board to guess.
-                </Typography>
-            )}
             {state.kind === 'not-live' && (
                 <Stack direction='row' spacing={1} sx={{ mt: 1, alignItems: 'center' }}>
                     <Typography variant='body2'>You can guess from the live position.</Typography>
@@ -69,8 +70,14 @@ export function GuessPanel({ state, onGoLive, score }: GuessPanelProps) {
             {state.kind === 'open' && (
                 <>
                     <Typography variant='body2' sx={{ mt: 1 }}>
-                        Drag a piece to guess <b>{state.moveLabel}</b>. You can change it until the
-                        move is played.
+                        {state.altToGuess ? (
+                            <>
+                                Hold <b>Alt</b> and move a piece to guess
+                            </>
+                        ) : (
+                            'Drag a piece to guess'
+                        )}{' '}
+                        <b>{state.moveLabel}</b>. You can change it until the move is played.
                     </Typography>
                     <Typography sx={{ mt: 1, fontSize: '1.25rem', fontWeight: 800 }}>
                         {state.saving

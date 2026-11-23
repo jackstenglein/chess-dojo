@@ -50,6 +50,11 @@ export const WcAnalysisRequestSchema = z.discriminatedUnion('action', [
     z.object({ action: z.literal('select'), roundId, path }),
     /** Deletes the variation from the move at the end of path. */
     z.object({ action: z.literal('delete'), roundId, path: path.min(1) }),
+    /**
+     * Moves the variation through the move at the end of path up to first
+     * among its alternatives. It never passes the game's own move.
+     */
+    z.object({ action: z.literal('promote'), roundId, path: path.min(1) }),
 ]);
 export type WcAnalysisRequest = z.infer<typeof WcAnalysisRequestSchema>;
 
@@ -266,6 +271,16 @@ export function applyAnalysisRequest(
         }
         case 'select':
             return { ...current, cursor: cursor(request.path) };
+        case 'promote': {
+            if (request.path.every((m, i) => mainline[i] === m)) {
+                throw new AnalysisRuleError('The game itself is always the main line');
+            }
+            // The tree lists a move's children in the order the lines first reach
+            // them, so the lines through this move go first.
+            const through = current.lines.filter((line) => startsWith(line, request.path));
+            const others = current.lines.filter((line) => !startsWith(line, request.path));
+            return { ...current, lines: [...through, ...others], cursor: cursor(request.path) };
+        }
         case 'delete': {
             if (request.path.every((m, i) => mainline[i] === m)) {
                 throw new AnalysisRuleError('Moves of the game cannot be deleted');

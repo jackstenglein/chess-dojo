@@ -1,9 +1,21 @@
 'use client';
 
 import { AnalysisNode } from '@jackstenglein/chess-dojo-common/src/wcLive/analysis';
-import LiveIcon from '@mui/icons-material/SensorsOutlined';
-import { Box, Button, Paper, Stack, Typography } from '@mui/material';
-import { Fragment, ReactNode, useEffect, useRef } from 'react';
+import PromoteIcon from '@mui/icons-material/ArrowUpward';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import {
+    Box,
+    IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
+    Paper,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material';
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react';
 import { formatSpent, LiveMove } from './lichessFeed';
 
 interface NotationProps {
@@ -17,6 +29,9 @@ interface NotationProps {
     onSelect: (node: AnalysisNode) => void;
     /** Shown when the board is not on the live position: takes it back there. */
     onLive?: () => void;
+    /** Senseis only: right-click a variation move to promote or delete it. */
+    onPromote?: (node: AnalysisNode) => void;
+    onDelete?: (node: AnalysisNode) => void;
 }
 
 function samePath(a: AnalysisNode, b: AnalysisNode): boolean {
@@ -37,7 +52,17 @@ function variationsFrom(node: AnalysisNode): AnalysisNode[] {
  * the time each took, and the senseis' variations as indented lines under
  * the move they branch from, with deeper variations in brackets.
  */
-export function Notation({ root, current, moves, guesses, onSelect, onLive }: NotationProps) {
+export function Notation({
+    root,
+    current,
+    moves,
+    guesses,
+    onSelect,
+    onLive,
+    onPromote,
+    onDelete,
+}: NotationProps) {
+    const [menu, setMenu] = useState<{ node: AnalysisNode; x: number; y: number }>();
     const scroller = useRef<HTMLDivElement>(null);
 
     // Keep the move on the board in view.
@@ -114,6 +139,14 @@ export function Notation({ root, current, moves, guesses, onSelect, onLive }: No
                 component='button'
                 data-current={isCurrent}
                 onClick={() => onSelect(node)}
+                onContextMenu={
+                    onPromote || onDelete
+                        ? (e: React.MouseEvent) => {
+                              e.preventDefault();
+                              setMenu({ node, x: e.clientX, y: e.clientY });
+                          }
+                        : undefined
+                }
                 sx={{
                     all: 'unset',
                     cursor: 'pointer',
@@ -252,16 +285,17 @@ export function Notation({ root, current, moves, guesses, onSelect, onLive }: No
                     Moves
                 </Typography>
                 {onLive && (
-                    <Button
-                        size='small'
-                        variant='contained'
-                        color='error'
-                        startIcon={<LiveIcon />}
-                        onClick={onLive}
-                        sx={{ textTransform: 'none', fontWeight: 700, py: 0.25 }}
-                    >
-                        Back to live
-                    </Button>
+                    <Tooltip title='Back to live'>
+                        <IconButton
+                            size='small'
+                            color='error'
+                            aria-label='Back to live'
+                            data-testid='back-to-live'
+                            onClick={onLive}
+                        >
+                            <RefreshIcon fontSize='small' />
+                        </IconButton>
+                    </Tooltip>
                 )}
             </Stack>
             {mainline.length === 0 && variationsFrom(root).length === 0 ? (
@@ -283,6 +317,44 @@ export function Notation({ root, current, moves, guesses, onSelect, onLive }: No
                     {rows}
                 </Box>
             )}
+            <Menu
+                open={!!menu}
+                onClose={() => setMenu(undefined)}
+                anchorReference='anchorPosition'
+                anchorPosition={menu ? { top: menu.y, left: menu.x } : undefined}
+            >
+                {onPromote && (
+                    <MenuItem
+                        onClick={() => {
+                            if (menu) {
+                                onPromote(menu.node);
+                            }
+                            setMenu(undefined);
+                        }}
+                    >
+                        <ListItemIcon>
+                            <PromoteIcon fontSize='small' />
+                        </ListItemIcon>
+                        Promote variation
+                    </MenuItem>
+                )}
+                {onDelete && (
+                    <MenuItem
+                        onClick={() => {
+                            if (menu) {
+                                onDelete(menu.node);
+                            }
+                            setMenu(undefined);
+                        }}
+                        sx={{ color: 'error.main' }}
+                    >
+                        <ListItemIcon>
+                            <DeleteIcon fontSize='small' color='error' />
+                        </ListItemIcon>
+                        Delete variation
+                    </MenuItem>
+                )}
+            </Menu>
         </Paper>
     );
 }

@@ -97,7 +97,6 @@ export function SenseiPanel({
                     <SenseiCard
                         key={s.id}
                         sensei={s}
-                        isMe={s.id === me}
                         canScore={s.id === me || s.guest}
                         saved={values[s.id]}
                         positionLabel={positionLabel}
@@ -118,7 +117,6 @@ export function SenseiPanel({
 
 interface SenseiCardProps {
     sensei: WcSensei;
-    isMe: boolean;
     canScore: boolean;
     saved?: number;
     positionLabel: string;
@@ -128,7 +126,6 @@ interface SenseiCardProps {
 
 function SenseiCard({
     sensei,
-    isMe,
     canScore,
     saved,
     positionLabel,
@@ -241,15 +238,6 @@ function SenseiCard({
                             }}
                         >
                             {sensei.name}
-                            {isMe && (
-                                <Typography
-                                    component='span'
-                                    color='text.secondary'
-                                    sx={{ ml: 0.75 }}
-                                >
-                                    (you)
-                                </Typography>
-                            )}
                             {sensei.guest && (
                                 <Typography
                                     component='span'
