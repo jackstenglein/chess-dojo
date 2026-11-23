@@ -114,8 +114,6 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
     const whiteAtBottom = orientation === 'white';
     const fromTop = (value: number) => evalFromTop(value, orientation);
     const boundary = fromTop(average);
-    // The score sits at the bottom of the bar, in whichever color it is on.
-    const bottomIsWhite = whiteAtBottom ? boundary < 0.94 : boundary > 0.94;
     const placed = layoutPins(
         pins.map((p) => ({ ...p, id: p.sensei.id, share: fromTop(p.value) })),
     );
@@ -222,16 +220,19 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                 data-testid='eval-bar-score'
                 sx={{
                     position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: 6,
+                    left: 3,
+                    right: 3,
+                    bottom: 4,
+                    py: '3px',
+                    borderRadius: '4px',
+                    bgcolor: 'rgba(20, 20, 20, 0.85)',
+                    color: '#fff',
                     textAlign: 'center',
-                    fontSize: { xs: '0.72rem', sm: '0.95rem' },
-                    fontWeight: 900,
-                    letterSpacing: '-0.04em',
+                    fontSize: { xs: '0.68rem', sm: '0.85rem' },
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
                     lineHeight: 1,
                     fontVariantNumeric: 'tabular-nums',
-                    color: bottomIsWhite ? '#403d39' : '#f5f5f5',
                     zIndex: 3,
                     pointerEvents: 'none',
                 }}

@@ -332,6 +332,11 @@ function SenseiCard({
                             step={STEP}
                             value={value}
                             onChange={(_, v) => change(v)}
+                            onChangeCommitted={() => {
+                                if (document.activeElement instanceof HTMLElement) {
+                                    document.activeElement.blur();
+                                }
+                            }}
                             sx={{
                                 color: 'text.secondary',
                                 '& .MuiSlider-thumb': { color: '#fff' },

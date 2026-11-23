@@ -211,22 +211,29 @@ export function LiveMatchPage() {
     // A sensei's moves go on the analysis board. Holding Alt makes a move a guess instead.
     const altHeld = useRef(false);
     useEffect(() => {
-        const track = (e: KeyboardEvent | PointerEvent) => {
-            altHeld.current = e.altKey;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Alt') {
+                altHeld.current = e.type === 'keydown';
+                // Alt on its own opens the browser menu on Windows; keep the page focused.
+                e.preventDefault();
+            }
+        };
+        const onPointer = (e: PointerEvent) => {
+            if (e.altKey) {
+                altHeld.current = true;
+            }
         };
         const release = () => {
             altHeld.current = false;
         };
-        window.addEventListener('keydown', track, true);
-        window.addEventListener('keyup', track, true);
-        window.addEventListener('pointerdown', track, true);
-        window.addEventListener('pointerup', track, true);
+        window.addEventListener('keydown', onKey, true);
+        window.addEventListener('keyup', onKey, true);
+        window.addEventListener('pointerdown', onPointer, true);
         window.addEventListener('blur', release);
         return () => {
-            window.removeEventListener('keydown', track, true);
-            window.removeEventListener('keyup', track, true);
-            window.removeEventListener('pointerdown', track, true);
-            window.removeEventListener('pointerup', track, true);
+            window.removeEventListener('keydown', onKey, true);
+            window.removeEventListener('keyup', onKey, true);
+            window.removeEventListener('pointerdown', onPointer, true);
             window.removeEventListener('blur', release);
         };
     }, []);
