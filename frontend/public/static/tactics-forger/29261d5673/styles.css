@@ -1002,5 +1002,7 @@ html.embed .nav { margin-left: 0; }
 
 /* Ring: Progress / Strengths switch */
 .ring-mode { margin: 0 0 8px; }
-.slice-left.sl-strong { color: #81c784; }
-.slice-left.sl-weak { color: #e57373; }
+.sl-pill { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.sl-pill.sl-strong { color: #81c784; border-color: #2e5130; background: #15241a; }
+.sl-pill.sl-ok { color: #e0c36a; border-color: #5a4c1e; background: #221d0f; }
+.sl-pill.sl-weak { color: #e57373; border-color: #5c2626; background: #2a1414; }

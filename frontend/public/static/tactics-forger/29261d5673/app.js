@@ -743,7 +743,7 @@ function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, 
         const base = mid > 100 && mid < 260 ? 'hanging' : mid < 80 || mid > 280 ? 'auto' : 'middle';
         const sn = shortName(t);
         const nm = sn.length > 17 ? `${sn.slice(0, 16)}…` : sn;
-        label = `<text class="seg-label ${frac >= 1 ? 'done' : cl ? 'started' : ''}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="${base}">${esc(nm)}</text>`;
+        label = `<text class="seg-label ${sg ? '' : frac >= 1 ? 'done' : cl ? 'started' : ''}" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="${base}">${esc(nm)}</text>`;
       }
       const attrs = `data-key="${key}" data-name="${esc(shortName(t))}" data-cl="${cl}" data-sets="${t.sets}"`;
       // Clicking a slice starts that theme's next set (its ladder once complete).
@@ -1037,9 +1037,9 @@ function showHome() {
     const strongest = scored.at(-1);
     const centerDefault = strong
       ? scored.length
-        ? `<small>${esc(STAGES[si].name)}</small>
-          <span>Strongest</span><b style="color:${strengthColor(sg[strongest].score)};font-size:22px">${esc(shortName(themeMeta(strongest)))}</b>
-          <span>Weakest</span><b style="color:${strengthColor(sg[weakest].score)};font-size:22px">${esc(shortName(themeMeta(weakest)))}</b>`
+        ? `<small>Weakest</small>
+          <b style="color:${strengthColor(sg[weakest].score)};font-size:26px">${esc(shortName(themeMeta(weakest)))}</b>
+          <em>Strongest: ${esc(shortName(themeMeta(strongest)))}</em>`
         : `<small>${esc(STAGES[si].name)}</small><span>Play ${STRENGTH.min}+ puzzles in a theme to see how strong you are in it.</span>`
       : `<small>${esc(STAGES[si].name)}</small>
       <b style="color:${color}">${ringPct(sp.frac)}%</b>
@@ -1057,7 +1057,7 @@ function showHome() {
           <span class="slice-name">${esc(shortName(t))}</span>
           ${strong
             ? `<span class="slice-bar" style="--c:${sg[k]?.score != null ? strengthColor(sg[k].score) : '#5a6272'}"><i style="width:${sg[k]?.score ?? 0}%"></i></span>
-          <span class="slice-left ${sg[k]?.label ? `sl-${sg[k].label.toLowerCase()}` : ''}">${sg[k]?.score != null ? `${sg[k].label} · ${Math.round(sg[k].acc * 100)}% · ${fmtSec(sg[k].med)}` : `${sg[k]?.n ?? 0}/${STRENGTH.min} played`}</span>`
+          <span class="slice-left"><i class="sl-pill ${sg[k]?.label ? `sl-${sg[k].label.toLowerCase()}` : 'sl-none'}" title="${sg[k]?.score != null ? `${Math.round(sg[k].acc * 100)}% first try · ${fmtSec(sg[k].med)} median` : `${sg[k]?.n ?? 0} of ${STRENGTH.min} puzzles played`}">${sg[k]?.score != null ? sg[k].label : `${sg[k]?.n ?? 0}/${STRENGTH.min}`}</i></span>`
             : `<span class="slice-bar" style="--c:${color}"><i style="width:${f > 0 ? Math.max(f * 100, 1.5) : 0}%"></i></span>
           <span class="slice-left">${f >= 1 ? 'Done ✓' : `${b.min}–${b.max}`}</span>`}
           <span class="slice-play" aria-hidden="true">${f >= 1 ? '' : '▶'}</span>
