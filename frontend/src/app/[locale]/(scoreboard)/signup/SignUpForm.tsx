@@ -2,6 +2,8 @@
 
 import { RequestSnackbar, useRequest } from '@/api/Request';
 import { AuthStatus, useAuth } from '@/auth/Auth';
+import { ChesscomSignInButton } from '@/components/auth/ChesscomSignInButton';
+import { LichessSignInButton } from '@/components/auth/LichessSignInButton';
 import { Link } from '@/components/navigation/Link';
 import { useNextSearchParams } from '@/hooks/useNextSearchParams';
 import { useRouter } from '@/hooks/useRouter';
@@ -73,6 +75,14 @@ export const SignUpForm = () => {
 
     const onSocialSignIn = (provider: 'Google' | 'Apple') => {
         auth.socialSignin(provider, redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onChesscomSignIn = () => {
+        auth.socialSignin('Chesscom', redirectUri ? decodeURIComponent(redirectUri) : '');
+    };
+
+    const onLichessSignIn = () => {
+        auth.socialSignin('Lichess', redirectUri ? decodeURIComponent(redirectUri) : '');
     };
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -214,6 +224,11 @@ export const SignUpForm = () => {
                     <AppleButton onClick={() => onSocialSignIn('Apple')}>
                         Sign up with Apple
                     </AppleButton>
+                    <ChesscomSignInButton
+                        onClick={onChesscomSignIn}
+                        label='Sign up with Chess.com'
+                    />
+                    <LichessSignInButton onClick={onLichessSignIn} label='Sign up with Lichess' />
                 </Stack>
 
                 <Typography variant='body2' component='div' gutterBottom>
