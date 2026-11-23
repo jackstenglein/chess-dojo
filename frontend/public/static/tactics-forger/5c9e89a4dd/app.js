@@ -2558,14 +2558,13 @@ async function showPlay(key, flat) {
     mode: 'set',
     puzzles: set.puzzles.map((p) => ({ ...p, key, track: tr })),
     backHref: hrefTheme(key),
-    backLabel: `${theme.name} ladder`,
-    head: `<h2>${esc(theme.name)}</h2>
+    backLabel: '', // the title links back to the ladder
+    head: `<a class="set-name" href="${hrefTheme(key)}" title="Back to the ${esc(theme.name)} ladder"><span class="set-back" aria-hidden="true">‹</span><h2>${esc(theme.name)}</h2></a>
       ${waitMs ? `<div class="wait-badge" title="You missed this set. Play it as much as you like; it can be cleared again in ${fmtWait(waitMs)}.">🔒 Practice only · clear it in ${fmtWait(waitMs)}</div>` : ''}
       ${tryingAhead && !waitMs ? `<div class="ahead-badge" title="You've skipped ahead of sets you haven't cleared. Clearing this one saves its stars and fills your ring; the lower sets stay open.">🚀 Trying ahead</div>` : ''}
-      <div class="set-sub">${set.min}–${set.max} · Stage ${set.band + 1} of ${theme.bands.length} · Set ${set.n + 1} of ${theme.sets.filter((s) => s.band === set.band).length}</div>
-      ${known ? `<div class="known-note">You've already solved ${known} of these ${set.puzzles.length} puzzles — they're marked with a dot.</div>` : ''}`,
+      <div class="set-sub"><b>${set.min}–${set.max}</b> · Stage ${set.band + 1}/${theme.bands.length} · Set ${set.n + 1}/${theme.sets.filter((s) => s.band === set.band).length}${known ? ` · <span class="known-note" title="Puzzles you've solved before are underlined in the progress row.">${known}/${set.puzzles.length} seen before</span>` : ''}</div>`,
     progress: `<div class="theme-progress">
-        <div class="tp-row"><span>${esc(theme.name)} ladder</span><span>${cleared}/${theme.sets.length} sets cleared</span></div>
+        <div class="tp-row"><span>Sets cleared</span><span>${cleared}/${theme.sets.length}</span></div>
         <div class="bar"><div style="width:${pct(cleared, theme.sets.length)}%"></div></div>
       </div>`,
     rule: waitMs ? `Practice run: this set can be cleared again in ${fmtWait(waitMs)}.` : `Clear the set with ${PASS_SCORE}/${SET_SIZE} first-try solves. Miss and you wait 24 hours to clear it.`,
@@ -2694,7 +2693,7 @@ function playRun(run) {
       </div>
     </div>
     <aside class="play-side">
-      <a class="back" href="${run.backHref}">← ${esc(run.backLabel)}</a>
+      ${run.backLabel ? `<a class="back" href="${run.backHref}">← ${esc(run.backLabel)}</a>` : ''}
       <div class="set-title">${run.head}</div>
       ${run.progress || ''}
       <div class="pips"></div>

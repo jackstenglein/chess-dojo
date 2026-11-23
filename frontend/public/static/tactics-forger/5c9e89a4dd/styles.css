@@ -1006,3 +1006,21 @@ html.embed .nav { margin-left: 0; }
 .sl-pill.sl-strong { color: #81c784; border-color: #2e5130; background: #15241a; }
 .sl-pill.sl-ok { color: #e0c36a; border-color: #5a4c1e; background: #221d0f; }
 .sl-pill.sl-weak { color: #e57373; border-color: #5c2626; background: #2a1414; }
+
+/* Set header: the title links back to its ladder */
+.set-name { display: inline-flex; align-items: center; gap: 6px; color: var(--text); text-decoration: none; }
+.set-name h2 { margin: 0; }
+.set-back { font-size: 26px; line-height: 1; color: var(--muted); margin-top: -3px; }
+.set-name:hover .set-back, .set-name:hover h2 { color: var(--primary); }
+.set-sub { font-size: 13px; margin-top: 2px; }
+.set-sub b { color: var(--text); font-weight: 600; }
+.set-sub .known-note { font-size: inherit; color: var(--muted); margin: 0; }
+@media (max-width: 700px) {
+  .play-side { gap: 10px; }
+  .play-side .set-title h2 { font-size: 20px; }
+  .play-side .pips { gap: 4px; }
+  .play-side .pip { height: 26px; border-radius: 6px; font-size: 11px; }
+  .play-side .puzzle-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
+  .play-side .puzzle-meta > div { display: contents; }
+  .play-side .rule { font-size: 12px; margin: 0; color: var(--muted); }
+}
