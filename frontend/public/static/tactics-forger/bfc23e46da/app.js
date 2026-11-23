@@ -1040,7 +1040,7 @@ function showHome() {
         ? `<small>Weakest</small>
           <b style="color:${strengthColor(sg[weakest].score)};font-size:26px">${esc(shortName(themeMeta(weakest)))}</b>
           <em>Strongest: ${esc(shortName(themeMeta(strongest)))}</em>`
-        : `<small>${esc(STAGES[si].name)}</small><span>Play ${STRENGTH.min}+ puzzles in a theme to see how strong you are in it.</span>`
+        : `<small>Strengths</small><b style="font-size:30px">${STRENGTH.min}</b><span>puzzles per theme</span><em>to see your strengths</em>`
       : `<small>${esc(STAGES[si].name)}</small>
       <b style="color:${color}">${ringPct(sp.frac)}%</b>
       <span>${sp.cleared.toLocaleString()} / ${sp.sets.toLocaleString()} sets</span>
