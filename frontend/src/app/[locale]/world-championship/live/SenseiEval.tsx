@@ -125,7 +125,7 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
             data-testid='sensei-eval-bar'
             sx={{
                 position: 'relative',
-                width: { xs: 26, sm: 34 },
+                width: { xs: 28, sm: 38 },
                 flexShrink: 0,
                 alignSelf: 'stretch',
             }}
@@ -226,9 +226,9 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                     right: 0,
                     bottom: 6,
                     textAlign: 'center',
-                    fontSize: { xs: '0.62rem', sm: '0.75rem' },
-                    fontWeight: 800,
-                    letterSpacing: '-0.02em',
+                    fontSize: { xs: '0.72rem', sm: '0.95rem' },
+                    fontWeight: 900,
+                    letterSpacing: '-0.04em',
                     lineHeight: 1,
                     fontVariantNumeric: 'tabular-nums',
                     color: bottomIsWhite ? '#403d39' : '#f5f5f5',

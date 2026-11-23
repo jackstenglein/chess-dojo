@@ -900,7 +900,7 @@ function PlayerBar({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 // The eval bar's width plus the gap, so the photo starts at the board's edge.
-                pl: { xs: '34px', sm: '42px' },
+                pl: { xs: '36px', sm: '46px' },
             }}
         >
             <Stack direction='row' spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
