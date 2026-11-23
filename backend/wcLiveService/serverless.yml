@@ -33,6 +33,22 @@ functions:
           - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
 
+  roster:
+    handler: roster.handler
+    events:
+      - httpApi:
+          path: /wc-live/roster
+          method: put
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+        Resource: !GetAtt WcLiveTable.Arn
+
   leaderboard:
     handler: read.leaderboard
     timeout: 20
@@ -93,11 +109,8 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
+          - dynamodb:Query
         Resource: !GetAtt WcLiveTable.Arn
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-        Resource: ${param:UsersTableArn}
 
 resources:
   Conditions:

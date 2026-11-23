@@ -1,6 +1,7 @@
 import {
+    buildRoster,
     scoreGuesses,
-    WcEval,
+    WcEvalsResponse,
     WcLeaderboard,
     WcRoundRequestSchema,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
@@ -10,7 +11,7 @@ import {
     parsePathParameters,
     requireUserInfo,
 } from '../directoryService/api';
-import { getGuesses, listEvals, listGuesses, ok } from './database';
+import { getGuesses, listEvals, listGuesses, listRoster, ok } from './database';
 import { getRoundState, requireMatchRound } from './lichess';
 
 /**
@@ -20,21 +21,25 @@ import { getRoundState, requireMatchRound } from './lichess';
 const EVALS_TTL_MS = 2000;
 const LEADERBOARD_TTL_MS = 15000;
 
-const evalsCache = new Map<string, { at: number; evals: WcEval[] }>();
+const evalsCache = new Map<string, { at: number; response: WcEvalsResponse }>();
 const leaderboardCache = new Map<string, { at: number; leaderboard: WcLeaderboard }>();
 
-/** GET /public/wc-live/rounds/{roundId}/evals: every sensei eval in the game. */
+/**
+ * GET /public/wc-live/rounds/{roundId}/evals: the roster and every sensei eval
+ * in the game, in one call since the page polls it.
+ */
 export const evals: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const { roundId } = parsePathParameters(event, WcRoundRequestSchema);
         const cached = evalsCache.get(roundId);
         if (cached && Date.now() - cached.at < EVALS_TTL_MS) {
-            return ok({ roundId, evals: cached.evals });
+            return ok(cached.response);
         }
         await requireMatchRound(roundId);
-        const result = await listEvals(roundId);
-        evalsCache.set(roundId, { at: Date.now(), evals: result });
-        return ok({ roundId, evals: result });
+        const [list, saved] = await Promise.all([listEvals(roundId), listRoster()]);
+        const response: WcEvalsResponse = { roundId, roster: buildRoster(saved), evals: list };
+        evalsCache.set(roundId, { at: Date.now(), response });
+        return ok(response);
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }

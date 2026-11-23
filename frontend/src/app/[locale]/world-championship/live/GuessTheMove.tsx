@@ -117,7 +117,7 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
                 <TableCell>
                     <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
                         <Avatar username={e.username} displayName={e.displayName} size={24} />
-                        <Link href={`/profile/${e.username}`}>{e.displayName}</Link>
+                        <Link href={`/profile/${e.username}`}>{e.username}</Link>
                     </Stack>
                 </TableCell>
                 <TableCell align='right' sx={{ fontWeight: 700 }}>
@@ -146,7 +146,7 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
                         <TableHead>
                             <TableRow>
                                 <TableCell>#</TableCell>
-                                <TableCell>Player</TableCell>
+                                <TableCell>Username</TableCell>
                                 <TableCell align='right'>Right</TableCell>
                             </TableRow>
                         </TableHead>

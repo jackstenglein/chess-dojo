@@ -3,9 +3,14 @@
 import { Chess } from '@jackstenglein/chess';
 import { clockToSeconds } from '@jackstenglein/chess-dojo-common/src/pgn/clock';
 import { WC_LICHESS_TOUR_ID } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
+import {
+    isTestRoundId,
+    testRoundState,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import { useEffect, useState } from 'react';
 
 const LICHESS = 'https://lichess.org';
+const TOUR_ID = WC_LICHESS_TOUR_ID;
 
 /** Both players start with two hours for the first 40 moves. */
 export const START_CLOCK_SECONDS = 2 * 60 * 60;
@@ -31,6 +36,43 @@ export interface LiveMove {
     fen: string;
     /** The mover's clock after the move, in seconds. */
     clock?: number;
+    /** How long the mover took over the move, in seconds, worked out from the clocks. */
+    spent?: number;
+}
+
+/** Thirty minutes are added after move 40. */
+const MOVE_40_BONUS_SECONDS = 30 * 60;
+/** Thirty seconds are added for each move from move 41. */
+const INCREMENT_SECONDS = 30;
+const INCREMENT_FROM_MOVE = 41;
+
+/**
+ * How long each move took, from the clock before and after it. The clock
+ * after a move includes the time added for it, so that is taken back out.
+ */
+export function addTimeSpent(moves: LiveMove[]): LiveMove[] {
+    return moves.map((m, i) => {
+        const previousOwn = i >= 2 ? moves[i - 2].clock : START_CLOCK_SECONDS;
+        if (m.clock === undefined || previousOwn === undefined) {
+            return m;
+        }
+        const moveNumber = Math.ceil(m.ply / 2);
+        const added =
+            (moveNumber >= INCREMENT_FROM_MOVE ? INCREMENT_SECONDS : 0) +
+            (moveNumber === 40 ? MOVE_40_BONUS_SECONDS : 0);
+        const spent = previousOwn + added - m.clock;
+        // A clock fix by the arbiter can make this negative. Show nothing then.
+        return spent >= 0 ? { ...m, spent } : m;
+    });
+}
+
+/** Time taken over a move: 0:30, 4:23, or 1:02:05 past an hour. */
+export function formatSpent(seconds: number): string {
+    const s = Math.round(seconds);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = String(s % 60).padStart(2, '0');
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }
 
 export interface LivePlayer {
@@ -67,7 +109,7 @@ export function useMatchRounds(): { rounds: MatchRound[]; error: boolean } {
         let cancelled = false;
         const load = async () => {
             try {
-                const resp = await fetch(`${LICHESS}/api/broadcast/${WC_LICHESS_TOUR_ID}`);
+                const resp = await fetch(`${LICHESS}/api/broadcast/${TOUR_ID}`);
                 if (!resp.ok) {
                     throw new Error(`Lichess answered ${resp.status}`);
                 }
@@ -148,7 +190,7 @@ export function parseGamePgn(pgn: string) {
     }));
     return {
         ...parsePlayers(chess),
-        moves,
+        moves: addTimeSpent(moves),
         result: chess.header().getRawValue('Result') || '*',
     };
 }
@@ -168,6 +210,28 @@ export function useRoundFeed(roundId: string | undefined): RoundFeed {
         if (!roundId) {
             return;
         }
+
+        // Game 0 replays a game from the clock, the same way the API does.
+        if (isTestRoundId(roundId)) {
+            let lastPlies = -1;
+            const tick = () => {
+                const state = testRoundState(roundId, Date.now());
+                if (!state || state.sans.length === lastPlies) {
+                    return;
+                }
+                lastPlies = state.sans.length;
+                const parsed = parseGamePgn(state.pgn);
+                setFeed({
+                    status: 'ready',
+                    ...parsed,
+                    thinkingSince: state.result === '*' ? state.lastMoveAt : undefined,
+                });
+            };
+            tick();
+            const timer = setInterval(tick, 1000);
+            return () => clearInterval(timer);
+        }
+
         let cancelled = false;
         const controller = new AbortController();
         let lastPgn = '';

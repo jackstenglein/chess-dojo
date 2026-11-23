@@ -7,8 +7,7 @@ import {
     parseBody,
     requireUserInfo,
 } from '../directoryService/api';
-import { getUser } from '../directoryService/database';
-import { ok, putGuess } from './database';
+import { displayNameFor, ok, putGuess } from './database';
 import { getRoundState, RoundState } from './lichess';
 
 /**
@@ -24,14 +23,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const state = await getRoundState(request.roundId);
         checkGuess(state, request.ply, request.uci);
 
-        const user = await getUser(username);
-        await putGuess(
-            request.roundId,
-            username,
-            user.displayName || username,
-            request.ply,
-            request.uci,
-        );
+        const displayName = await displayNameFor(username);
+        await putGuess(request.roundId, username, displayName, request.ply, request.uci);
         return ok({ roundId: request.roundId, ply: request.ply, uci: request.uci });
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);

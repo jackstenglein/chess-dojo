@@ -1,5 +1,9 @@
 import { Chess } from '@jackstenglein/chess';
 import { WC_LICHESS_TOUR_ID } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
+import {
+    isTestRoundId,
+    testRoundState,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import { ApiError } from '../directoryService/api';
 
 const LICHESS = 'https://lichess.org';
@@ -39,6 +43,12 @@ async function getJson(url: string): Promise<unknown> {
 
 /** Throws a 404 unless the round belongs to the World Championship broadcast. */
 export async function requireMatchRound(roundId: string): Promise<void> {
+    if (isTestRoundId(roundId)) {
+        if (!testRoundState(roundId, Date.now())) {
+            throw new ApiError({ statusCode: 404, publicMessage: 'That test game has not begun' });
+        }
+        return;
+    }
     // An unknown id reloads the list at most once a minute, so made-up ids
     // cannot make every request call Lichess.
     const age = tourCache ? Date.now() - tourCache.at : Infinity;
@@ -69,6 +79,11 @@ export function parseRoundPgn(pgn: string): RoundState {
 
 /** The moves played so far in the round, as Lichess broadcasts them. */
 export async function getRoundState(roundId: string): Promise<RoundState> {
+    // Game 0 is computed from the clock, not read from Lichess.
+    const test = testRoundState(roundId, Date.now());
+    if (test) {
+        return parseRoundPgn(test.pgn);
+    }
     const cached = roundCache.get(roundId);
     if (cached && Date.now() - cached.at < ROUND_TTL_MS) {
         return cached.state;

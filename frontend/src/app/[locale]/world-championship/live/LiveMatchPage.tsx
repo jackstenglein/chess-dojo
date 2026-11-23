@@ -4,12 +4,21 @@ import { AuthStatus, useAuth } from '@/auth/Auth';
 import { Chess } from '@/board/Board';
 import type { Square } from '@jackstenglein/chess';
 import {
+    barState,
+    buildRoster,
     isWcSensei,
     latestEvals,
-    WC_SENSEIS,
     WcEval,
     WcLeaderboard,
+    WcRosterRequest,
+    WcSensei,
 } from '@jackstenglein/chess-dojo-common/src/wcLive/api';
+import {
+    currentTestRoundId,
+    isTestRoundId,
+    TEST_GAME_NAME,
+    TEST_GAME_NUMBER,
+} from '@jackstenglein/chess-dojo-common/src/wcLive/testGame';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import {
     Alert,
@@ -26,13 +35,14 @@ import {
 } from '@mui/material';
 import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocalStorage } from 'usehooks-ts';
 import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
 import {
     clocksAt,
     formatClock,
+    formatSpent,
     LiveMove,
     LivePlayer,
+    MatchRound,
     pickDefaultRound,
     START_FEN,
     useMatchRounds,
@@ -40,15 +50,15 @@ import {
     useRoundFeed,
 } from './lichessFeed';
 import { LiveBoard } from './LiveBoard';
-import { EvalBar, SenseiControl, SenseiStrip } from './SenseiEval';
-import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess } from './wcLiveApi';
+import { EvalBar, SenseiPanel, SenseiStrip } from './SenseiEval';
+import { getLeaderboard, getMyGuesses, listEvals, putEval, putGuess, putRoster } from './wcLiveApi';
 
 const EVALS_POLL_MS = 5000;
 const LEADERBOARD_POLL_MS = 20000;
 
 function moveLabel(ply: number, san?: string): string {
     const number = Math.ceil(ply / 2);
-    return ply % 2 === 1 ? `${number}. ${san ?? '…'}` : `${number}... ${san ?? '…'}`;
+    return ply % 2 === 1 ? `${number}.${san ?? '…'}` : `${number}...${san ?? '…'}`;
 }
 
 /** The game number in the address bar, as in ?game=3. */
@@ -68,8 +78,45 @@ export function LiveMatchPage() {
     const username = user?.username;
     const isSensei = isWcSensei(username);
 
-    const { rounds, error: roundsError } = useMatchRounds();
+    const { rounds: matchRounds, error: roundsError } = useMatchRounds();
     const [roundId, setRoundId] = useState<string>();
+
+    // Game 0, a replayed test game, is only listed when the address asks for ?game=0.
+    const [testRoundId, setTestRoundId] = useState<string>();
+    useEffect(() => {
+        if (readGameParam() !== TEST_GAME_NUMBER) {
+            return;
+        }
+        const update = () => setTestRoundId(currentTestRoundId(Date.now()));
+        update();
+        const timer = setInterval(update, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const rounds: MatchRound[] = useMemo(
+        () =>
+            testRoundId
+                ? [
+                      {
+                          id: testRoundId,
+                          name: TEST_GAME_NAME,
+                          number: TEST_GAME_NUMBER,
+                          ongoing: true,
+                          finished: false,
+                      },
+                      ...matchRounds,
+                  ]
+                : matchRounds,
+        [testRoundId, matchRounds],
+    );
+
+    // When a Game 0 loop ends, follow the next one, which starts with a fresh leaderboard.
+    useEffect(() => {
+        if (testRoundId && isTestRoundId(roundId) && roundId !== testRoundId) {
+            setRoundId(testRoundId);
+            setViewPly(null);
+        }
+    }, [testRoundId, roundId]);
 
     // Open ?game=N if it is in the address bar, else the most recent game.
     useEffect(() => {
@@ -128,10 +175,8 @@ export function LiveMatchPage() {
 
     // ---- Sensei evals ----------------------------------------------------
     const [evals, setEvals] = useState<WcEval[]>([]);
-    const [enabled, setEnabled] = useLocalStorage<Record<string, boolean | undefined>>(
-        'wcLive.senseis',
-        {},
-    );
+    // Shown before the first answer, so the strip and bar have Jesse, David and Kostya at once.
+    const [roster, setRoster] = useState<WcSensei[]>(() => buildRoster([]));
 
     useEffect(() => {
         if (!roundId) {
@@ -141,7 +186,12 @@ export function LiveMatchPage() {
         setEvals([]);
         const load = () =>
             listEvals(roundId)
-                .then((e) => !cancelled && setEvals(e))
+                .then((r) => {
+                    if (!cancelled) {
+                        setEvals(r.evals);
+                        setRoster(r.roster);
+                    }
+                })
                 .catch(() => undefined);
         void load();
         const timer = setInterval(() => void load(), EVALS_POLL_MS);
@@ -151,28 +201,31 @@ export function LiveMatchPage() {
         };
     }, [roundId]);
 
-    const shownEvals = useMemo(() => latestEvals(evals, ply), [evals, ply]);
-    const average = useMemo(() => {
-        const on = shownEvals.filter(
-            (e) =>
-                enabled[e.username] !== false && WC_SENSEIS.some((s) => s.username === e.username),
-        );
-        return on.length ? on.reduce((sum, e) => sum + e.value, 0) / on.length : undefined;
-    }, [shownEvals, enabled]);
+    const bar = useMemo(() => barState(roster, evals, ply), [roster, evals, ply]);
 
-    const submitEval = useCallback(
-        async (value: number) => {
+    /** Every sensei's eval in force at the shown position, active or not, for the panel. */
+    const valuesAtPly = useMemo(
+        () => Object.fromEntries(latestEvals(evals, ply).map((e) => [e.senseiId, e.value])),
+        [evals, ply],
+    );
+
+    const scoreSensei = useCallback(
+        async (senseiId: string, value: number) => {
             if (!roundId) {
                 return;
             }
-            const saved = await putEval({ roundId, ply, value });
+            const saved = await putEval({ roundId, ply, value, senseiId });
             setEvals((list) => [
-                ...list.filter((e) => !(e.username === saved.username && e.ply === saved.ply)),
+                ...list.filter((e) => !(e.senseiId === saved.senseiId && e.ply === saved.ply)),
                 saved,
             ]);
         },
         [roundId, ply],
     );
+
+    const changeRoster = useCallback(async (request: WcRosterRequest) => {
+        setRoster(await putRoster(request));
+    }, []);
 
     // ---- Guess the move --------------------------------------------------
     const [myGuesses, setMyGuesses] = useState<Record<string, string>>({});
@@ -358,24 +411,34 @@ export function LiveMatchPage() {
             <Box
                 sx={{
                     display: 'grid',
-                    gap: 3,
-                    gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 640px) minmax(320px, 1fr)' },
+                    columnGap: 3,
+                    rowGap: 1,
                     alignItems: 'start',
+                    // Board, then the notation, then the leaderboard. The top player
+                    // bar has a row of its own, so the board, the notation and the
+                    // leaderboard all start on the same line. On a phone they stack.
+                    gridTemplateColumns: {
+                        xs: '1fr',
+                        md: 'minmax(0, 1fr) 260px',
+                        lg: 'minmax(0, 620px) 260px minmax(280px, 1fr)',
+                    },
+                    gridTemplateAreas: {
+                        xs: '"top" "board" "moves" "leaders"',
+                        md: '"top ." "board moves" "leaders leaders"',
+                        lg: '"top . ." "board moves leaders"',
+                    },
                 }}
             >
-                <Stack spacing={1} sx={{ minWidth: 0 }}>
-                    <SenseiStrip
-                        evals={shownEvals}
-                        enabled={enabled}
-                        onToggle={(u) => setEnabled((e) => ({ ...e, [u]: e[u] === false }))}
-                    />
+                <Box sx={{ minWidth: 0, gridArea: 'top' }}>
                     <PlayerBar
                         player={player(topColor)}
                         seconds={clocks[topColor]}
                         running={clocks.running === topColor}
                     />
+                </Box>
+                <Stack spacing={1} sx={{ minWidth: 0, gridArea: 'board' }}>
                     <Stack direction='row' spacing={1}>
-                        <EvalBar average={average} orientation={orientation} />
+                        <EvalBar average={bar.average} pins={bar.pins} orientation={orientation} />
                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <LiveBoard
                                 fen={fen}
@@ -391,7 +454,7 @@ export function LiveMatchPage() {
                         seconds={clocks[bottomColor]}
                         running={clocks.running === bottomColor}
                     />
-                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
                         <Button size='small' onClick={() => setViewPly(0)} disabled={ply === 0}>
                             Start
                         </Button>
@@ -402,6 +465,27 @@ export function LiveMatchPage() {
                         >
                             Back
                         </Button>
+                        <Typography
+                            data-testid='last-move'
+                            sx={{
+                                flexGrow: 1,
+                                textAlign: 'center',
+                                fontWeight: 800,
+                                fontSize: '1.25rem',
+                                fontVariantNumeric: 'tabular-nums',
+                            }}
+                        >
+                            {shownMove ? moveLabel(shownMove.ply, shownMove.san) : 'No moves yet'}
+                            {!atLive && (
+                                <Typography
+                                    component='span'
+                                    color='text.secondary'
+                                    sx={{ ml: 1, fontSize: '0.8rem', fontWeight: 400 }}
+                                >
+                                    (not live)
+                                </Typography>
+                            )}
+                        </Typography>
                         <Button
                             size='small'
                             onClick={() => setViewPly(ply + 1 >= moves.length ? null : ply + 1)}
@@ -416,7 +500,6 @@ export function LiveMatchPage() {
                         >
                             Live
                         </Button>
-                        <Box sx={{ flexGrow: 1 }} />
                         <Tooltip title='Flip board'>
                             <IconButton
                                 size='small'
@@ -428,9 +511,6 @@ export function LiveMatchPage() {
                             </IconButton>
                         </Tooltip>
                     </Stack>
-                </Stack>
-
-                <Stack spacing={2} sx={{ minWidth: 0 }}>
                     {feed.status === 'error' && (
                         <Alert severity='error'>Could not load this game from Lichess.</Alert>
                     )}
@@ -439,30 +519,40 @@ export function LiveMatchPage() {
                             {round?.name ?? 'This game'} ended {feed.result.replace('1/2', '½')}.
                         </Alert>
                     )}
-                    {isSensei && (
-                        <SenseiControl
-                            current={shownEvals.find((e) => e.username === username)}
-                            positionLabel={ply === 0 ? 'the start' : moveLabel(ply, shownMove?.san)}
-                            onSubmit={submitEval}
-                        />
-                    )}
                     <GuessPanel
                         state={guessState}
                         onGoLive={() => setViewPly(null)}
                         score={myScore}
                     />
+                    {isSensei && username && (
+                        <SenseiPanel
+                            me={username}
+                            roster={roster}
+                            values={valuesAtPly}
+                            positionLabel={ply === 0 ? 'the start' : moveLabel(ply, shownMove?.san)}
+                            onScore={scoreSensei}
+                            onRoster={changeRoster}
+                        />
+                    )}
+                </Stack>
+
+                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
                     <MoveList
                         moves={moves}
                         ply={ply}
                         guesses={myGuesses}
                         onSelect={(p) => setViewPly(p >= moves.length ? null : p)}
                     />
+                    <SenseiStrip roster={roster} pins={bar.pins} />
+                </Stack>
+
+                <Box sx={{ minWidth: 0, gridArea: 'leaders' }}>
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
                     />
-                </Stack>
+                </Box>
             </Box>
         </Container>
     );
@@ -554,8 +644,30 @@ function MoveList({
                 }}
                 title={guessedRight ? 'You guessed this move' : undefined}
             >
-                {m.san}
-                {guessedRight ? ' ✓' : ''}
+                <Stack
+                    direction='row'
+                    sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}
+                >
+                    <span>
+                        {m.san}
+                        {guessedRight ? ' ✓' : ''}
+                    </span>
+                    {m.spent !== undefined && (
+                        <Box
+                            component='span'
+                            data-testid='move-time'
+                            title={`${m.san} took ${formatSpent(m.spent)}`}
+                            sx={{
+                                ml: 0.75,
+                                fontSize: '0.72rem',
+                                fontWeight: 500,
+                                color: 'info.main',
+                            }}
+                        >
+                            {formatSpent(m.spent)}
+                        </Box>
+                    )}
+                </Stack>
             </Box>
         );
     };
@@ -575,7 +687,7 @@ function MoveList({
                         display: 'grid',
                         gridTemplateColumns: '36px 1fr 1fr',
                         rowGap: 0.25,
-                        maxHeight: 240,
+                        maxHeight: { xs: 240, md: 460 },
                         overflowY: 'auto',
                         fontVariantNumeric: 'tabular-nums',
                     }}

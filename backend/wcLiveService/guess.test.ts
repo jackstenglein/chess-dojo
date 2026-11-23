@@ -55,3 +55,15 @@ describe('checkGuess', () => {
         expect(statusOf(() => checkGuess(over, 2, 'c7c5'))).toBe(409);
     });
 });
+
+describe('Game 0', () => {
+    it('serves the replayed test game without Lichess', async () => {
+        const { currentTestRoundId, testRoundState } =
+            await import('@jackstenglein/chess-dojo-common/src/wcLive/testGame');
+        const { getRoundState } = await import('./lichess');
+        const id = currentTestRoundId(Date.now());
+        const state = await getRoundState(id);
+        expect(state.played.length).toBe(testRoundState(id, Date.now())?.sans.length);
+        expect(state.result === '*' || state.result === '1-0').toBe(true);
+    });
+});

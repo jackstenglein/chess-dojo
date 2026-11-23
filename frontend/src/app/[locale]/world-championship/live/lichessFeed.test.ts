@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { clocksAt, formatClock, parseGamePgn, pickDefaultRound, RoundFeed } from './lichessFeed';
+import {
+    addTimeSpent,
+    clocksAt,
+    formatClock,
+    formatSpent,
+    parseGamePgn,
+    pickDefaultRound,
+    RoundFeed,
+} from './lichessFeed';
 
 /** The shape of a Lichess broadcast PGN, with engine evals and clocks in the comments. */
 const PGN = `[Event "FIDE World Chess Championship 2026"]
@@ -73,5 +81,32 @@ describe('formatClock', () => {
     it('shows hours only when there are some', () => {
         expect(formatClock(7200)).toBe('2:00:00');
         expect(formatClock(65.9)).toBe('01:05');
+    });
+});
+
+describe('time spent', () => {
+    it('works out each move from the clocks', () => {
+        const game = parseGamePgn(PGN);
+        // 2:00:00 to 1:59:50, 2:00:00 to 1:58:00, 1:59:50 to 1:59:20.
+        expect(game.moves.map((m) => m.spent)).toEqual([10, 120, 30]);
+    });
+
+    it('takes the increment and the move 40 bonus back out', () => {
+        const at = (ply: number, clock: number) =>
+            ({ ply, san: 'x', uci: 'x', from: 'a1', to: 'a2', fen: '', clock }) as const;
+        const moves = Array.from({ length: 82 }, (_, i) => at(i + 1, 1000));
+        // Move 40 for White (ply 79): 1000 before, 30 minutes added, 2500 after.
+        moves[78] = at(79, 2500);
+        // Move 41 for White (ply 81): 2500 before, 30 seconds added, 2400 after.
+        moves[80] = at(81, 2400);
+        const result = addTimeSpent(moves);
+        expect(result[78].spent).toBe(1000 + 1800 - 2500);
+        expect(result[80].spent).toBe(2500 + 30 - 2400);
+    });
+
+    it('formats like 0:30 and 4:23', () => {
+        expect(formatSpent(30)).toBe('0:30');
+        expect(formatSpent(263)).toBe('4:23');
+        expect(formatSpent(3725)).toBe('1:02:05');
     });
 });

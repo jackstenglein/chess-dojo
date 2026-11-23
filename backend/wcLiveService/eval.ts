@@ -1,4 +1,5 @@
 import {
+    buildRoster,
     isWcSensei,
     WcEval,
     WcEvalRequestSchema,
@@ -10,11 +11,13 @@ import {
     parseBody,
     requireUserInfo,
 } from '../directoryService/api';
-import { getUser } from '../directoryService/database';
-import { ok, putEval } from './database';
+import { listRoster, ok, putEval } from './database';
 import { getRoundState } from './lichess';
 
-/** Saves a sensei's eval of one position. Only the senseis in WC_SENSEIS may call it. */
+/**
+ * Saves an eval of one position. Only the senseis in WC_SENSEIS may call it.
+ * A sensei scores themselves, or any guest on the roster.
+ */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const { username } = requireUserInfo(event);
@@ -25,6 +28,17 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             });
         }
         const request = parseBody(event, WcEvalRequestSchema);
+        const senseiId = request.senseiId ?? username;
+
+        if (senseiId !== username) {
+            const roster = buildRoster(await listRoster());
+            if (!roster.some((s) => s.id === senseiId && s.guest)) {
+                throw new ApiError({
+                    statusCode: 403,
+                    publicMessage: 'You can score yourself or a guest sensei',
+                });
+            }
+        }
 
         const state = await getRoundState(request.roundId);
         if (request.ply > state.played.length) {
@@ -34,13 +48,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             });
         }
 
-        const user = await getUser(username);
         const item: WcEval = {
-            username,
-            displayName: user.displayName || username,
+            senseiId,
             ply: request.ply,
             value: request.value,
             updatedAt: new Date().toISOString(),
+            updatedBy: username,
         };
         await putEval(request.roundId, item);
         return ok(item);
