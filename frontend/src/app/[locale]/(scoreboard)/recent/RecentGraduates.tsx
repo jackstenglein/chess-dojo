@@ -2,6 +2,7 @@
 
 import { useApi } from '@/api/Api';
 import { RequestSnackbar, useRequest } from '@/api/Request';
+import { DEFAULT_DATE_FORMAT_OPTIONS } from '@/components/calendar/displayDate';
 import { Link } from '@/components/navigation/Link';
 import { Graduation } from '@/database/graduation';
 import { compareCohorts } from '@/database/user';
@@ -48,7 +49,9 @@ function getTimeframeOptions(
         prevGraduation.setUTCDate(prevGraduation.getUTCDate() - 7);
 
         options.push({
-            label: t('graduationOf', { date: currGraduation.toLocaleDateString() }),
+            label: t('graduationOf', {
+                date: currGraduation.toLocaleDateString(undefined, DEFAULT_DATE_FORMAT_OPTIONS),
+            }),
             value: {
                 minDate: prevGraduation.toISOString(),
                 maxDate: currGraduation.toISOString(),
@@ -209,7 +212,8 @@ function getGraduateColumns(t: (key: string) => string): GridColDef<Graduation>[
             headerAlign: 'center',
             align: 'center',
             flex: 1,
-            valueFormatter: (value) => new Date(value).toLocaleDateString(),
+            valueFormatter: (value) =>
+                new Date(value).toLocaleDateString(undefined, DEFAULT_DATE_FORMAT_OPTIONS),
             renderCell: (params) => (
                 <Stack
                     sx={{
