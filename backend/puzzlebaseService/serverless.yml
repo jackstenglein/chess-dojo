@@ -207,6 +207,29 @@ functions:
           - dynamodb:GetItem
         Resource: ${param:UsersTableArn}
 
+  deletePuzzle:
+    handler: deletePuzzle.handler
+    events:
+      - httpApi:
+          path: /puzzlebase/puzzles/{id}/delete
+          method: post
+          authorizer:
+            type: jwt
+            id: ${param:apiAuthorizer}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+        Resource: !GetAtt PuzzlebaseTable.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: ${param:UsersTableArn}
+
   listAdminLog:
     handler: audit.listHandler
     events:

@@ -1,10 +1,12 @@
 'use client';
 
+import { useAuth } from '@/auth/Auth';
 import PgnBoard from '@/board/pgn/PgnBoard';
 import {
     PuzzlebasePuzzle,
     PuzzlebaseTaxonomy,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
+import { canManagePuzzle } from '@jackstenglein/chess-dojo-common/src/puzzlebase/permissions';
 import { ArrowBack, Edit } from '@mui/icons-material';
 import {
     Alert,
@@ -17,8 +19,10 @@ import {
     Typography,
 } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PUZZLE_COORDINATE_SIZE } from '../settings/puzzleSettingsKeys';
+import { DeletePuzzleButton } from './DeletePuzzleButton';
 import { splitPuzzlePgn, validatePuzzleEdit } from './editPuzzle';
 import { EditSolutionDialog } from './EditSolutionDialog';
 import { PuzzlebaseClient } from './puzzlebaseClient';
@@ -33,11 +37,25 @@ import { PuzzleInfoPanel } from './PuzzleInfoPanel';
  */
 export function PuzzleDetailPage({ id }: { id: string }) {
     return (
-        <PuzzlebaseGate>{({ client }) => <PuzzleDetail client={client} id={id} />}</PuzzlebaseGate>
+        <PuzzlebaseGate>
+            {({ client, status }) => (
+                <PuzzleDetail client={client} id={id} isAdmin={status.isAdmin} />
+            )}
+        </PuzzlebaseGate>
     );
 }
 
-function PuzzleDetail({ client, id }: { client: PuzzlebaseClient; id: string }) {
+function PuzzleDetail({
+    client,
+    id,
+    isAdmin,
+}: {
+    client: PuzzlebaseClient;
+    id: string;
+    isAdmin: boolean;
+}) {
+    const { user } = useAuth();
+    const router = useRouter();
     const [loaded, setLoaded] = useState<{
         puzzle: PuzzlebasePuzzle;
         taxonomy: PuzzlebaseTaxonomy;
@@ -106,14 +124,26 @@ function PuzzleDetail({ client, id }: { client: PuzzlebaseClient; id: string }) 
                     >
                         Dojo PuzzleBase
                     </Button>
-                    <Tooltip title='Edit solution on a board'>
-                        <IconButton
-                            aria-label={`Edit puzzle ${puzzle.id}`}
-                            onClick={() => setEditing(true)}
-                        >
-                            <Edit />
-                        </IconButton>
-                    </Tooltip>
+                    {canManagePuzzle(puzzle, { username: user?.username ?? '', isAdmin }) && (
+                        <Stack direction='row'>
+                            <Tooltip title='Edit solution on a board'>
+                                <IconButton
+                                    aria-label={`Edit puzzle ${puzzle.id}`}
+                                    onClick={() => setEditing(true)}
+                                >
+                                    <Edit />
+                                </IconButton>
+                            </Tooltip>
+                            <DeletePuzzleButton
+                                variant='icon'
+                                puzzleId={puzzle.id}
+                                onDelete={async () => {
+                                    await client.deletePuzzle(puzzle.id);
+                                    router.push('/puzzles/base');
+                                }}
+                            />
+                        </Stack>
+                    )}
                 </Stack>
 
                 {saveError && (

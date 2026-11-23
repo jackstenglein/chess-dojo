@@ -181,6 +181,15 @@ export function usePuzzlebaseData(client: PuzzlebaseClient) {
     );
 
     /** Shows puzzles that were just added, and refreshes the leaderboard. */
+    /** Takes a deleted puzzle off the list. */
+    const removePuzzle = useCallback(
+        (id: string) => {
+            setPuzzles((prev) => prev.filter((p) => p.id !== id));
+            void refreshLeaderboard();
+        },
+        [refreshLeaderboard, setPuzzles],
+    );
+
     const addPuzzles = useCallback(
         (added: PuzzlebasePuzzle[]) => {
             setPuzzles((prev) => [...prev, ...added]);
@@ -194,6 +203,7 @@ export function usePuzzlebaseData(client: PuzzlebaseClient) {
         taxonomy,
         /** Takes a taxonomy the server sent back, such as after themes were created. */
         replaceTaxonomy: setTaxonomy,
+        removePuzzle,
         leaderboard,
         loadState,
         loadError,

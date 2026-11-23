@@ -19,7 +19,8 @@ interface PuzzleCardProps {
     counts: TagCounts;
     onChange: (update: (p: PuzzlebasePuzzle) => PuzzlebasePuzzle) => void;
     onCreateTheme: (bucket: string, theme: string) => void;
-    onEdit: () => void;
+    /** Opens the solution editor. Left out when the viewer can't edit this puzzle's solution. */
+    onEdit?: () => void;
 }
 
 /** A puzzle in the grid: board preview and editable tags. */
@@ -63,13 +64,15 @@ export function PuzzleCard({
                         value={puzzle.rating}
                         onChange={(rating) => onChange((p) => ({ ...p, rating }))}
                     />
-                    <IconButton
-                        size='small'
-                        aria-label={`Edit puzzle ${puzzle.id}`}
-                        onClick={onEdit}
-                    >
-                        <Edit fontSize='small' />
-                    </IconButton>
+                    {onEdit && (
+                        <IconButton
+                            size='small'
+                            aria-label={`Edit puzzle ${puzzle.id}`}
+                            onClick={onEdit}
+                        >
+                            <Edit fontSize='small' />
+                        </IconButton>
+                    )}
                 </Stack>
             </Stack>
 

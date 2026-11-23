@@ -35,6 +35,8 @@ interface PuzzleTableProps {
     onChange: (id: string, update: (p: PuzzlebasePuzzle) => PuzzlebasePuzzle) => void;
     onCreateTheme: (id: string, bucket: string, theme: string) => void;
     onEdit: (puzzle: PuzzlebasePuzzle) => void;
+    /** Whether the viewer may edit a puzzle's solution: its author or an admin. Defaults to yes. */
+    canEdit?: (puzzle: PuzzlebasePuzzle) => boolean;
 }
 
 interface Hover {
@@ -58,6 +60,7 @@ export function PuzzleTable({
     onChange,
     onCreateTheme,
     onEdit,
+    canEdit = () => true,
 }: PuzzleTableProps) {
     const router = useRouter();
     const [hover, setHover] = useState<Hover>();
@@ -192,14 +195,16 @@ export function PuzzleTable({
                                         />
                                     </TableCell>
                                     <TableCell sx={{ py: 0, width: 48 }}>
-                                        <IconButton
-                                            data-no-nav
-                                            size='small'
-                                            aria-label={`Edit puzzle ${puzzle.id}`}
-                                            onClick={() => onEdit(puzzle)}
-                                        >
-                                            <Edit fontSize='small' />
-                                        </IconButton>
+                                        {canEdit(puzzle) && (
+                                            <IconButton
+                                                data-no-nav
+                                                size='small'
+                                                aria-label={`Edit puzzle ${puzzle.id}`}
+                                                onClick={() => onEdit(puzzle)}
+                                            >
+                                                <Edit fontSize='small' />
+                                            </IconButton>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             );

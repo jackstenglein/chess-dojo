@@ -11,6 +11,7 @@ const getLichessStudyMock = vi.hoisted(() => vi.fn());
 const USERS: Record<string, any> = {
     admin: { username: 'admin', displayName: 'Admin', isAdmin: true },
     approved: { username: 'approved', displayName: 'Approved One', isAdmin: false },
+    second: { username: 'second', displayName: 'Second One', isAdmin: false },
     pending: { username: 'pending', displayName: 'Pending One', isAdmin: false },
     stranger: { username: 'stranger', displayName: 'Stranger', isAdmin: false },
 };
@@ -33,6 +34,7 @@ import {
     revokeHandler,
 } from './contributors';
 import { handler as create } from './create';
+import { handler as deletePuzzleHandler } from './deletePuzzle';
 import { handler as get } from './get';
 import { handler as importStudy, lichessStudyUrl } from './importStudy';
 import { handler as list } from './list';
@@ -83,6 +85,7 @@ beforeEach(() => {
     getLichessStudyMock.mockReset();
     contributors = {
         approved: { status: 'APPROVED', displayName: 'Approved One', puzzleCount: 2 },
+        second: { status: 'APPROVED', displayName: 'Second One', puzzleCount: 0 },
         pending: { status: 'PENDING', displayName: 'Pending One', puzzleCount: 0 },
     };
     puzzles = {};
@@ -133,6 +136,13 @@ beforeEach(() => {
             return {
                 Items: Object.entries(rows).map(([sk, row]) => marshall({ pk, sk, ...row })),
             };
+        }
+        if (name === 'DeleteItemCommand' && key!.pk === 'PUZZLE') {
+            if (!puzzles[key!.sk]) {
+                throw new ConditionalCheckFailedException({ message: 'gone', $metadata: {} });
+            }
+            delete puzzles[key!.sk];
+            return {};
         }
         if (name === 'PutItemCommand' && item) {
             if (item.pk === 'AUDIT') audit[item.sk] = item;
@@ -456,6 +466,33 @@ describe('editing a puzzle', () => {
         expect((await call(update, event('stranger', { rating: 700 }, { id: '003' }))).status).toBe(
             403,
         );
+    });
+
+    it("lets another contributor change the tags and rating of someone else's puzzle", async () => {
+        const { status, body } = await call(
+            update,
+            event('second', { rating: 900, themes: ['Back rank mate'] }, { id: '003' }),
+        );
+        expect(status).toBe(200);
+        expect(body.rating).toBe(900);
+    });
+
+    it("does not let another contributor change the solution or details of someone else's puzzle", async () => {
+        const { status, body } = await call(
+            update,
+            event('second', { solutionPgn: PUZZLE_PGN, event: 'Open' }, { id: '003' }),
+        );
+        expect(status).toBe(403);
+        expect(body.message).toMatch(/not its solution, event/);
+        expect(sent('PutItemCommand')).toHaveLength(0);
+    });
+
+    it("lets an admin change the solution of anyone's puzzle", async () => {
+        const { status } = await call(
+            update,
+            event('admin', { solutionPgn: PUZZLE_PGN, event: 'Open' }, { id: '003' }),
+        );
+        expect(status).toBe(200);
     });
 
     it('lets a Puzzle Contributor read a puzzle', async () => {
@@ -798,5 +835,62 @@ describe('reading the themes', () => {
 
     it('still needs someone to be signed in', async () => {
         expect((await call(getTaxonomyHandler, event(undefined))).status).toBe(400);
+    });
+});
+
+describe('deleting a puzzle', () => {
+    beforeEach(() => {
+        puzzles['003'] = {
+            id: '003',
+            fen: FEN,
+            solutionPgn: PUZZLE_PGN,
+            annotator: 'approved',
+            annotatorDisplayName: 'Approved One',
+            rating: 600,
+            buckets: [],
+            themes: [],
+            createdAt: 'T0',
+            updatedAt: 'T0',
+        };
+    });
+
+    const remove = (as: string, id = '003') => call(deletePuzzleHandler, event(as, {}, { id }));
+
+    it('lets the author delete their own puzzle, and logs it', async () => {
+        const { status } = await remove('approved');
+        expect(status).toBe(200);
+        expect(puzzles['003']).toBeUndefined();
+
+        const count = sent('UpdateItemCommand').find(
+            (c) => unmarshall(c.input.Key).pk === 'CONTRIBUTOR',
+        );
+        expect(unmarshall(count.input.Key).sk).toBe('approved');
+        expect(unmarshall(count.input.ExpressionAttributeValues)[':count']).toBe(-1);
+        expect(Object.values(audit).map((a: any) => [a.type, a.summary])).toEqual([
+            ['DELETE_PUZZLE', 'Deleted their own puzzle #003'],
+        ]);
+    });
+
+    it("does not let another contributor delete someone else's puzzle", async () => {
+        const { status, body } = await remove('second');
+        expect(status).toBe(403);
+        expect(body.message).toMatch(/only delete puzzles you added/);
+        expect(puzzles['003']).toBeDefined();
+    });
+
+    it('lets an admin delete any puzzle', async () => {
+        expect((await remove('admin')).status).toBe(200);
+        expect(Object.values(audit).map((a: any) => a.summary)).toEqual([
+            "Deleted Approved One's puzzle #003",
+        ]);
+    });
+
+    it('404s for a puzzle that is not there', async () => {
+        expect((await remove('admin', '999')).status).toBe(404);
+    });
+
+    it('does not let strangers delete', async () => {
+        expect((await remove('stranger')).status).toBe(403);
+        expect(puzzles['003']).toBeDefined();
     });
 });
