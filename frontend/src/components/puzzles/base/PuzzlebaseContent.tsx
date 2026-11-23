@@ -1,14 +1,17 @@
 'use client';
 
+import { useAuth } from '@/auth/Auth';
 import {
     ContributorStatusResponse,
     matchesFilters,
     PuzzlebasePuzzle,
 } from '@jackstenglein/chess-dojo-common/src/puzzlebase/api';
 import { puzzlesToPgn } from '@jackstenglein/chess-dojo-common/src/puzzlebase/exportPgn';
+import { canManagePuzzle } from '@jackstenglein/chess-dojo-common/src/puzzlebase/permissions';
 import {
     Add,
     Clear,
+    ContentCopy,
     Download,
     GridView,
     Groups,
@@ -86,7 +89,13 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
         createTheme,
         addPuzzles,
         replaceTaxonomy,
+        removePuzzle,
     } = usePuzzlebaseData(client);
+    const { user } = useAuth();
+    // A puzzle's solution can only be changed, and the puzzle deleted, by its author or an admin.
+    // Tags and the rating are open to every contributor.
+    const canManage = (puzzle: PuzzlebasePuzzle) =>
+        canManagePuzzle(puzzle, { username: user?.username ?? '', isAdmin: status.isAdmin });
     const [adding, setAdding] = useState(false);
     const [showContributors, setShowContributors] = useState(false);
     // How many contributor applications are waiting, for the badge on the Contributors button.
@@ -268,6 +277,14 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     sx={toolSx}
                                 >
                                     Solve stats
+                                </Button>
+                                <Button
+                                    component={Link}
+                                    href='/puzzles/base/duplicates'
+                                    startIcon={<ContentCopy />}
+                                    sx={toolSx}
+                                >
+                                    Find duplicates
                                 </Button>
                                 <Button
                                     startIcon={<Download />}
@@ -536,6 +553,7 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                     onChange={updatePuzzle}
                                     onCreateTheme={createTheme}
                                     onEdit={(puzzle) => setEditingId(puzzle.id)}
+                                    canEdit={canManage}
                                 />
                             ) : (
                                 <Box
@@ -556,7 +574,11 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                                             onCreateTheme={(bucket, theme) =>
                                                 createTheme(puzzle.id, bucket, theme)
                                             }
-                                            onEdit={() => setEditingId(puzzle.id)}
+                                            onEdit={
+                                                canManage(puzzle)
+                                                    ? () => setEditingId(puzzle.id)
+                                                    : undefined
+                                            }
                                         />
                                     ))}
                                 </Box>
@@ -582,6 +604,19 @@ export function PuzzlebaseContent({ client, status }: PuzzlebaseContentProps) {
                     onClose={() => setEditingId(undefined)}
                     onSave={(fen, solutionPgn) =>
                         updatePuzzle(editingPuzzle.id, (p) => ({ ...p, fen, solutionPgn }))
+                    }
+                    onDelete={
+                        canManage(editingPuzzle)
+                            ? async () => {
+                                  await client.deletePuzzle(editingPuzzle.id);
+                                  setEditingId(undefined);
+                                  removePuzzle(editingPuzzle.id);
+                                  setNotice({
+                                      severity: 'success',
+                                      message: `Deleted puzzle #${editingPuzzle.id}.`,
+                                  });
+                              }
+                            : undefined
                     }
                 />
             )}

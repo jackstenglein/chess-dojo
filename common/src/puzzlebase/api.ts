@@ -251,7 +251,8 @@ export type AdminActionType =
     | 'APPROVE_CONTRIBUTOR'
     | 'DENY_CONTRIBUTOR'
     | 'REVOKE_CONTRIBUTOR'
-    | 'ADD_CONTRIBUTOR';
+    | 'ADD_CONTRIBUTOR'
+    | 'DELETE_PUZZLE';
 
 /** One entry of the admin log: something a puzzle admin did. */
 export interface AdminAction {
