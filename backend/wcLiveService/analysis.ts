@@ -50,26 +50,36 @@ export const put: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const username = requireSensei(event);
         const request = parseBody(event, WcAnalysisRequestSchema);
-        if (!isLegalPath(request.path)) {
-            throw new ApiError({ statusCode: 400, publicMessage: 'That move is not legal here' });
-        }
-        const state = await getRoundState(request.roundId);
-
-        for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-            const current = await getAnalysis(request.roundId);
-            const next = apply(current, request, state.sans, username);
-            if (await saveAnalysis(next, current.version)) {
-                return ok({ ...next, version: current.version + 1 });
-            }
-        }
-        throw new ApiError({
-            statusCode: 409,
-            publicMessage: 'Another sensei changed the analysis at the same moment. Try again.',
-        });
+        return ok(await applyAndSave(request, username));
     } catch (err) {
         return errToApiGatewayProxyResultV2(err);
     }
 };
+
+/**
+ * Applies a sensei's (or guest's) request to the saved analysis and saves it,
+ * retrying when another sensei saved at the same moment.
+ */
+export async function applyAndSave(
+    request: WcAnalysisRequest,
+    username: string,
+): Promise<WcAnalysis> {
+    if (!isLegalPath(request.path)) {
+        throw new ApiError({ statusCode: 400, publicMessage: 'That move is not legal here' });
+    }
+    const state = await getRoundState(request.roundId);
+    for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+        const current = await getAnalysis(request.roundId);
+        const next = apply(current, request, state.sans, username);
+        if (await saveAnalysis(next, current.version)) {
+            return { ...next, version: current.version + 1 };
+        }
+    }
+    throw new ApiError({
+        statusCode: 409,
+        publicMessage: 'Another sensei changed the analysis at the same moment. Try again.',
+    });
+}
 
 /** The analysis after the request, with a refused request as a 400. */
 export function apply(

@@ -31,6 +31,8 @@ async function loadRoutes() {
     const analysis = await import('./analysis');
     const games = await import('./customGames');
     const stats = await import('./stats');
+    const invites = await import('./invites');
+    const guest = await import('./guestAccess');
     const routes: { method: string; pattern: RegExp; handler: Handler }[] = [
         {
             method: 'GET',
@@ -91,6 +93,36 @@ async function loadRoutes() {
             method: 'PUT',
             pattern: /^\/wc-live\/roster$/,
             handler: roster.handler as unknown as Handler,
+        },
+        {
+            method: 'GET',
+            pattern: /^\/wc-live\/invites$/,
+            handler: invites.list as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/wc-live\/invites$/,
+            handler: invites.reset as unknown as Handler,
+        },
+        {
+            method: 'POST',
+            pattern: /^\/public\/wc-live\/guest\/me$/,
+            handler: guest.me as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/public\/wc-live\/guest\/eval$/,
+            handler: guest.putEval as unknown as Handler,
+        },
+        {
+            method: 'POST',
+            pattern: /^\/public\/wc-live\/guest\/analysis\/read$/,
+            handler: guest.getAnalysisForGuest as unknown as Handler,
+        },
+        {
+            method: 'PUT',
+            pattern: /^\/public\/wc-live\/guest\/analysis$/,
+            handler: guest.putAnalysis as unknown as Handler,
         },
     ];
     return routes;
