@@ -27,7 +27,12 @@ type Platform = 'twitch' | 'youtube';
 export function StreamEmbed() {
     const [host, setHost] = useState<string>();
     useEffect(() => setHost(window.location.hostname), []);
-    const [platform, setPlatform] = useLocalStorage<Platform>('wcLive.streamPlatform', 'twitch');
+    // The server cannot see the saved choice, so the first render is always
+    // Twitch and the saved choice is read after that. Reading it straight away
+    // would make the first render differ from the server's.
+    const [platform, setPlatform] = useLocalStorage<Platform>('wcLive.streamPlatform', 'twitch', {
+        initializeWithValue: false,
+    });
 
     const src =
         platform === 'youtube'
