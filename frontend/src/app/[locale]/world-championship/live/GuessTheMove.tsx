@@ -118,6 +118,8 @@ interface LeaderboardProps {
     gameName: string;
     leaderboard?: WcLeaderboard;
     username?: string;
+    /** About six players in view, the rest scroll, so what is under it stays in view. */
+    compact?: boolean;
 }
 
 const TOP = 50;
@@ -126,7 +128,7 @@ const TOP = 50;
 const MEDALS = ['#f4c430', '#c0c6cc', '#cd8a4f'];
 
 /** "WHO'S A GM TODAY": right guesses in one game, move 1 included. */
-export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProps) {
+export function Leaderboard({ gameName, leaderboard, username, compact }: LeaderboardProps) {
     const entries = leaderboard?.entries ?? [];
     const myIndex = entries.findIndex((e) => e.username === username);
     const shown = entries.slice(0, TOP);
@@ -226,7 +228,12 @@ export function Leaderboard({ gameName, leaderboard, username }: LeaderboardProp
             ) : (
                 <Stack
                     spacing={0.25}
-                    sx={{ maxHeight: { xs: 420, lg: 260 }, overflowY: 'auto', mt: 1.5, mx: -1 }}
+                    sx={{
+                        maxHeight: compact ? 248 : { xs: 420, lg: 260 },
+                        overflowY: 'auto',
+                        mt: 1.5,
+                        mx: -1,
+                    }}
                 >
                     {shown.map((_, i) => row(i))}
                     {myIndex >= TOP && (

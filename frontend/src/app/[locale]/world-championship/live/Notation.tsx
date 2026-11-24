@@ -22,6 +22,8 @@ interface NotationProps {
     /** Senseis only: right-click a variation move to promote or delete it. */
     onPromote?: (node: AnalysisNode) => void;
     onDelete?: (node: AnalysisNode) => void;
+    /** Short, with its own scroll bar, so what is under it stays in view. */
+    compact?: boolean;
 }
 
 function samePath(a: AnalysisNode, b: AnalysisNode): boolean {
@@ -51,6 +53,7 @@ export function Notation({
     onLive,
     onPromote,
     onDelete,
+    compact,
 }: NotationProps) {
     const [menu, setMenu] = useState<{ node: AnalysisNode; x: number; y: number }>();
     const scroller = useRef<HTMLDivElement>(null);
@@ -286,7 +289,7 @@ export function Notation({
                         display: 'grid',
                         gridTemplateColumns: '36px 1fr 1fr',
                         rowGap: 0.25,
-                        maxHeight: { xs: 240, md: 460, lg: 320 },
+                        maxHeight: compact ? { xs: 200, md: 180 } : { xs: 240, md: 460, lg: 320 },
                         overflowY: 'auto',
                         fontVariantNumeric: 'tabular-nums',
                     }}

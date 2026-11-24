@@ -959,6 +959,9 @@ export function LiveMatchPage() {
                         onLive={atLive ? undefined : () => goTo(null)}
                         onPromote={isSensei ? (n) => analysisApi.promote(n.path) : undefined}
                         onDelete={isSensei ? (n) => analysisApi.remove(n.path) : undefined}
+                        // In the stream view the moves scroll in a short box, so the stream
+                        // under them starts higher up, next to the board.
+                        compact={streamView}
                     />
                     <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                     {!streamView && senseiEvals}
@@ -969,6 +972,7 @@ export function LiveMatchPage() {
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
+                        compact={streamView}
                     />
                 </Stack>
 
