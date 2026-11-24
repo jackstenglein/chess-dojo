@@ -28,13 +28,14 @@ export const WC_SENSEI_COLORS = [
 ] as const;
 
 /**
- * Dojo usernames of the senseis who run the bar. They score themselves, score
+ * Dojo usernames of the senseis who run the bar: the account IDs from their
+ * profile links, not their display names. They score themselves, score
  * guests, and manage the roster. Adding one is a line here and a deploy.
  */
 export const WC_SENSEIS: readonly { username: string; displayName: string; color: string }[] = [
-    { username: 'jessekraai', displayName: 'Jesse', color: WC_SENSEI_COLORS[0] },
-    { username: 'dpruess', displayName: 'David', color: WC_SENSEI_COLORS[1] },
-    { username: 'hellokostya', displayName: 'Kostya', color: WC_SENSEI_COLORS[2] },
+    { username: 'google_108763076343237273295', displayName: 'Jesse', color: WC_SENSEI_COLORS[0] },
+    { username: 'google_105393645715208125191', displayName: 'David', color: WC_SENSEI_COLORS[1] },
+    { username: 'google_111679691028507818183', displayName: 'Kostya', color: WC_SENSEI_COLORS[2] },
 ];
 
 export function isWcSensei(username: string | undefined): boolean {

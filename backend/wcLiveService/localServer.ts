@@ -7,7 +7,7 @@
  * The page sends its normal Cognito token. This server reads the username from
  * it WITHOUT checking the signature, so it must never run anywhere but
  * localhost. Open ?game=0 to test with the replayed Game 0, and add
- * &as=<username> to act as that user, for example as=hellokostya for a sensei
+ * &as=<username> to act as that user, for example as=google_111679691028507818183 (Kostya) for a sensei
  * or as=fan1 for a fan. The dev site cannot sign in with production accounts,
  * so this is how senseis are tested locally.
  */
