@@ -960,11 +960,11 @@ export function LiveMatchPage() {
                         onPromote={isSensei ? (n) => analysisApi.promote(n.path) : undefined}
                         onDelete={isSensei ? (n) => analysisApi.remove(n.path) : undefined}
                     />
+                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                     {!streamView && senseiEvals}
                 </Stack>
 
                 <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
-                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
