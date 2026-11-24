@@ -452,6 +452,7 @@ const Underboard = forwardRef<UnderboardApi, UnderboardProps>(
                                 )}
                                 {underboard === DefaultUnderboardTab.Editor && (
                                     <Editor
+                                        hidden={hidden}
                                         focusEditor={focusEditor && !hidden}
                                         setFocusEditor={setFocusEditor}
                                     />
