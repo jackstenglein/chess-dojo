@@ -24,6 +24,11 @@ interface NotationProps {
     onDelete?: (node: AnalysisNode) => void;
     /** Short, with its own scroll bar, so what is under it stays in view. */
     compact?: boolean;
+    /**
+     * On a wide screen, takes whatever height its column has left, with the
+     * moves scrolling inside. The column beside the board is the board's height.
+     */
+    fill?: boolean;
 }
 
 function samePath(a: AnalysisNode, b: AnalysisNode): boolean {
@@ -54,6 +59,7 @@ export function Notation({
     onPromote,
     onDelete,
     compact,
+    fill,
 }: NotationProps) {
     const [menu, setMenu] = useState<{ node: AnalysisNode; x: number; y: number }>();
     const scroller = useRef<HTMLDivElement>(null);
@@ -264,7 +270,20 @@ export function Notation({
     rows.push(variationBlock(mainline[mainline.length - 1] ?? root));
 
     return (
-        <Paper variant='outlined' sx={{ p: 1.5, pb: onLive ? 0 : 1.5, overflow: 'hidden' }}>
+        <Paper
+            variant='outlined'
+            sx={{
+                p: 1.5,
+                pb: onLive ? 0 : 1.5,
+                overflow: 'hidden',
+                ...(fill && {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: { lg: 1 },
+                    minHeight: 0,
+                }),
+            }}
+        >
             <Stack
                 direction='row'
                 sx={{
@@ -289,7 +308,17 @@ export function Notation({
                         display: 'grid',
                         gridTemplateColumns: '36px 1fr 1fr',
                         rowGap: 0.25,
-                        maxHeight: compact ? { xs: 200, md: 180 } : { xs: 240, md: 460, lg: 320 },
+                        maxHeight: compact
+                            ? { xs: 200, md: 180 }
+                            : fill
+                              ? { xs: 240, md: 460, lg: 'none' }
+                              : { xs: 240, md: 460, lg: 320 },
+                        // Beside the board the moves take whatever height is left.
+                        ...(fill && {
+                            flex: { lg: 1 },
+                            minHeight: 0,
+                            alignContent: 'start',
+                        }),
                         overflowY: 'auto',
                         fontVariantNumeric: 'tabular-nums',
                     }}
