@@ -704,6 +704,23 @@ export function LiveMatchPage() {
             <SenseiStrip roster={roster} pins={bar.pins} />
         );
 
+    const guessPanel = (
+        <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
+    );
+    const crosstableView = (
+        <CrosstableView
+            table={crosstable}
+            currentNumber={round?.number}
+            liveNumber={rounds.find((r) => r.ongoing && r.number > 0)?.number}
+            onSelectGame={(n) => {
+                const r = rounds.find((x) => x.number === n);
+                if (r) {
+                    selectRound(r.id);
+                }
+            }}
+        />
+    );
+
     // ---- Layout ----------------------------------------------------------
     const topColor = orientation === 'white' ? 'black' : 'white';
     const bottomColor = orientation;
@@ -819,16 +836,16 @@ export function LiveMatchPage() {
                             sx={{ flexShrink: 0, ml: 1, display: { xs: 'none', sm: 'flex' } }}
                         >
                             <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
-                                Stream view
+                                Fan view
                             </ToggleButton>
                             <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
-                                Analysis view
+                                Stream view 1
                             </ToggleButton>
                             <ToggleButton
                                 value='analysis2'
                                 sx={{ textTransform: 'none', py: 0.25 }}
                             >
-                                Analysis view 2
+                                Stream view 2
                             </ToggleButton>
                         </ToggleButtonGroup>
                     )}
@@ -863,9 +880,11 @@ export function LiveMatchPage() {
                         ? {
                               xs: '1fr',
                               md: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr)`,
-                              // The player column takes the leaderboard's column, so the
-                              // leaderboard goes under the notation.
-                              lg: `${PLAYER_COLUMN_WIDTH}px minmax(0, 680px) 340px`,
+                              // The notation and the leaderboard sit side by side right of the
+                              // board, a little narrower than in the other views so the board
+                              // keeps its size.
+                              lg: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr) 260px 260px`,
+                              xl: `${PLAYER_COLUMN_WIDTH}px minmax(0, 1fr) 300px 300px`,
                           }
                         : {
                               xs: '1fr',
@@ -883,7 +902,7 @@ export function LiveMatchPage() {
                           ? {
                                 xs: '"top" "board" "moves" "leaders" "twitch"',
                                 md: '"players board" "moves moves" "leaders leaders" "twitch twitch"',
-                                lg: '"players board moves" "players board leaders" "twitch twitch twitch"',
+                                lg: '"players board moves leaders" "twitch twitch twitch twitch"',
                             }
                           : {
                                 xs: '"top" "board" "moves" "leaders" "twitch"',
@@ -891,12 +910,7 @@ export function LiveMatchPage() {
                                 lg: '"top . ." "board moves leaders" "twitch twitch twitch"',
                             },
                     // In the stream view the board spans the stream row and the notation row.
-                    // In analysis view 2 it spans the notation row and the leaderboard row.
-                    gridTemplateRows: streamView
-                        ? { lg: 'auto auto 1fr' }
-                        : playerColumn
-                          ? { lg: 'auto 1fr auto' }
-                          : undefined,
+                    gridTemplateRows: streamView ? { lg: 'auto auto 1fr' } : undefined,
                 }}
             >
                 <Box
@@ -1087,17 +1101,7 @@ export function LiveMatchPage() {
                         </Typography>
                     )}
                     {streamView && senseiEvals}
-                    <CrosstableView
-                        table={crosstable}
-                        currentNumber={round?.number}
-                        liveNumber={rounds.find((r) => r.ongoing && r.number > 0)?.number}
-                        onSelectGame={(n) => {
-                            const r = rounds.find((x) => x.number === n);
-                            if (r) {
-                                selectRound(r.id);
-                            }
-                        }}
-                    />
+                    {crosstableView}
                     {feed.status === 'error' && (
                         <Alert severity='error'>Could not load this game from Lichess.</Alert>
                     )}
@@ -1108,7 +1112,18 @@ export function LiveMatchPage() {
                     )}
                 </Stack>
 
-                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'moves' }}>
+                {/* In the two sensei views the columns beside the board are exactly as
+                    tall as the board. The notation fills the top of its column and the
+                    sensei evals sit at the bottom, level with the board's bottom edge;
+                    next to them the guess panel sits under the leaderboard. */}
+                <Stack
+                    spacing={2}
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'moves',
+                        height: streamView ? undefined : { lg: 'var(---cg-height)' },
+                    }}
+                >
                     <Notation
                         root={tree}
                         current={node}
@@ -1121,18 +1136,29 @@ export function LiveMatchPage() {
                         // In the stream view the moves scroll in a short box, so the stream
                         // under them starts higher up, next to the board.
                         compact={streamView}
+                        fill={!streamView}
                     />
-                    <GuessPanel state={guessState} onGoLive={() => goTo(null)} score={myScore} />
-                    {!streamView && senseiEvals}
+                    {streamView ? guessPanel : senseiEvals}
                 </Stack>
 
-                <Stack spacing={2} sx={{ minWidth: 0, gridArea: 'leaders' }}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        minWidth: 0,
+                        gridArea: 'leaders',
+                        ...(!streamView && {
+                            minHeight: { lg: 'var(---cg-height)' },
+                            justifyContent: 'space-between',
+                        }),
+                    }}
+                >
                     <Leaderboard
                         gameName={round?.name ?? 'This game'}
                         leaderboard={shownLeaderboard}
                         username={username}
                         compact={streamView}
                     />
+                    {!streamView && guessPanel}
                 </Stack>
 
                 <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
