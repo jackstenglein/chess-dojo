@@ -347,30 +347,62 @@ const today = () => new Date().toISOString().slice(0, 10);
 // that tab's rating and a number of that tab's puzzles solved (first try). The counts are fixed,
 // so you can reach any rank from wherever you start; Openings and Endgames are smaller tabs and
 // need RANK_SCALE of the Tactics count (Wizard: Tactics 10,000, Endgames 6,000).
+// The ratings line up with the cohort starting ratings (see Rating start): Ninja 1600 is where a
+// 1500-1600 player starts. Ranks at or below your starting rating are yours from the start.
 const RANKS = [
   [0, 'grasshopper', 'Grasshopper', 'Starting out', 0],
-  [800, 'jester', 'Jester', 'Knows some tricks', 500],
+  [700, 'jester', 'Jester', 'Knows some tricks', 500],
   [1000, 'apprentice', 'Apprentice', 'Learning the craft', 1000],
-  [1200, 'squire', 'Squire', 'Getting better', 2000],
-  [1400, 'ninja', 'Ninja', 'Strikes from the shadows', 3000],
-  [1600, 'warrior', 'Warrior', 'Battle-tested', 5000],
-  [1800, 'beast', 'Beast', 'Ready to pounce', 7500],
-  [2000, 'wizard', 'Wizard', 'Tactical master', 10000],
+  [1300, 'squire', 'Squire', 'Getting better', 2000],
+  [1600, 'ninja', 'Ninja', 'Strikes from the shadows', 3000],
+  [1850, 'warrior', 'Warrior', 'Battle-tested', 5000],
+  [2100, 'beast', 'Beast', 'Ready to pounce', 7500],
+  [2300, 'wizard', 'Wizard', 'Tactical master', 10000],
 ];
 const tabPuzzles = (tr) => sum((indexes[tr]?.themes || []).map((t) => t.puzzles));
 const RANK_SCALE = { tactics: 1, openings: 0.6, endgames: 0.6 };
 
+// ---- Rating start ---------------------------------------------------------------
+// Every tab's rating starts at the top of your ChessDojo cohort, at least 400: 0-300 and 300-400
+// start at 400 (the easiest puzzles), 1200-1300 at 1300, 2400+ at 2500. That's below the Lichess
+// rating conversion for most cohorts, on purpose, so players build their fundamentals first.
+// The optional placement test can only lower it: to the placement result minus 200, at least 400.
+// progress.seed = { cohort } is kept from the first time the cohort is known, so a later cohort
+// change doesn't rewrite the rating history. Off chessdojo.club (no cohort) the start is 400.
+const RATING_FLOOR = 400;
+function cohortTop(cohort) {
+  const s = String(cohort ?? '');
+  const nums = s.match(/\d+/g)?.map(Number) ?? [];
+  if (!nums.length) return null;
+  if (s.includes('+')) return nums[0] + 100; // "2400+"
+  return nums[nums.length - 1]; // "1200-1300" -> 1300
+}
+const cohortSeed = (cohort) => Math.max(RATING_FLOOR, cohortTop(cohort) ?? RATING_FLOOR);
+function keepSeedCohort() {
+  if (!cloud.cohort || progress.seed?.cohort) return;
+  progress.seed = { cohort: cloud.cohort };
+  engineCache = { n: -1 };
+  saveProgress();
+}
+function seedRating() {
+  const fromCohort = cohortSeed(progress.seed?.cohort ?? cloud.cohort);
+  const pl = progress.placement;
+  // Rounded to the nearest 100, like the cohort starts.
+  const fromPlacement = pl ? Math.max(RATING_FLOOR, Math.round((pl.perf - 200) / 100) * 100) : Infinity;
+  return Math.min(fromCohort, fromPlacement);
+}
+
 // ---- Starting point ---------------------------------------------------------------
-// Each tab asks where you want to start: 400, 1000 or 1500 (the Basic, Intermediate and Advanced
-// Tactics tiers). On chessdojo.club it suggests one from your cohort, on the low side: under
+// Each tab asks where in the ladder you want to start: 400, 1000 or 1500 (the Basic, Intermediate
+// and Advanced Tactics tiers). It suggests one from your starting rating, on the low side: under
 // 1000 -> 400, 1000-1500 -> 1000, 1500+ -> 1500. Picking one moves your place there (every stage
-// stays open) and, while your rating is still provisional, starts the rating there too.
-// progress.start[tab] = { rating: the point you picked, seed: the rating it started from }.
+// stays open). It doesn't change your rating, which starts from your cohort (Rating start).
+// progress.start[tab] = { rating: the point you picked }.
 const START_POINTS = [400, 1000, 1500];
 const startOpen = {}; // tabs where "change starting point" is open
 function cohortStart(cohort) {
-  const n = parseInt(String(cohort ?? '').match(/\d+/)?.[0] ?? '', 10);
-  if (!Number.isFinite(n)) return null;
+  if (!cohort) return null;
+  const n = seedRating();
   return n < 1000 ? 400 : n < 1500 ? 1000 : 1500;
 }
 const needsStart = (tr) => !progress.start?.[tr] && trackRating(tr).games === 0;
@@ -393,10 +425,8 @@ const startLink = (tr) => (needsStart(tr) || startOpen[tr] ? '' :
   `<button type="button" class="start-link" data-start-open="${tr}">Starting point: <b>${startName(tr, progress.start?.[tr]?.rating ?? 400)}</b> · change</button>`);
 function applyStart(tr, rating) {
   progress.start ??= {};
-  const prev = progress.start[tr];
-  const r = trackRating(tr);
-  // The rating only restarts while it's still provisional; after that, only your place moves.
-  progress.start[tr] = { rating, seed: r.provisional ? rating : (prev?.seed ?? RATING.r0) };
+  // Only your place moves; the rating starts from your cohort (Rating start).
+  progress.start[tr] = { rating };
   if (tr !== 'tactics') {
     for (const meta of catalog(tr)?.themes ?? []) {
       let flat = 0;
@@ -451,14 +481,20 @@ function rankCredit(rank, tr = track) {
   }
   return creditMemo.by[tr]?.[RANKS.indexOf(rank)] ?? 0;
 }
-// Your actual rank in a tab: the highest one whose rating AND puzzle requirements you meet.
-const userRankFor = (rating, tr = track) => [...RANKS].reverse().find((rk) => rating >= rk[0] && rankCredit(rk, tr) >= rankNeed(rk, tr));
+// Your actual rank in a tab: the highest one whose rating AND puzzle requirements you meet, or
+// that's at or below your starting rating (those are credited, so a strong player doesn't grind
+// through Jester).
+const rankCredited = (rk) => rk[0] <= seedRating();
+const userRankFor = (rating, tr = track) => [...RANKS].reverse().find((rk) =>
+  rankCredited(rk) || (rating >= rk[0] && rankCredit(rk, tr) >= rankNeed(rk, tr)));
 const userRank = (tr = track) => userRankFor(trackRating(tr).rating, tr);
 // Rating, rank and games per track, taken before a run so the result screen can show what changed.
 const ratingSnap = () => Object.fromEntries(Object.keys(TRACKS).map((tr) => {
   const r = trackRating(tr);
-  return [tr, { rating: r.rating, games: r.games, rank: userRank(tr) }];
+  return [tr, { rating: r.rating, exact: r.exact, games: r.games, rank: userRank(tr) }];
 }));
+// "1300.35" / "+0.35": ratings move by small steps, so changes show to 2 decimals.
+const fmtPts = (x) => (Math.round(x * 100) / 100).toLocaleString(undefined, { maximumFractionDigits: 2, useGrouping: false });
 // Rating change lines (and rank-ups) for every track the run touched.
 function ratingChanges(before) {
   let html = '';
@@ -466,8 +502,8 @@ function ratingChanges(before) {
     const b = before[tr];
     const r = trackRating(tr);
     if (!b || r.games === b.games) continue;
-    const d = r.rating - b.rating;
-    html += `<div class="rating-change">${TRACKS[tr].label} rating <b>${r.rating}</b> <span class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : ''}${d}</span></div>`;
+    const d = Math.round((r.exact - b.exact) * 100) / 100;
+    html += `<div class="rating-change">${TRACKS[tr].label} rating <b>${fmtPts(r.exact)}</b> <span class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : ''}${fmtPts(d)}</span></div>`;
     const rk = userRank(tr);
     if (RANKS.indexOf(rk) > RANKS.indexOf(b.rank)) {
       toast(`New ${TRACKS[tr].label} rank: ${rk[2]}!`);
@@ -478,10 +514,13 @@ function ratingChanges(before) {
 }
 // ---- Ratings ----------------------------------------------------------------------
 // Tactics, Openings and Endgames each have their own rating, from the puzzles played in that tab
-// (Custom and Review count toward the puzzle's own tab). It's a slow Elo: every puzzle is a
-// game against the puzzle's rating (first-try solve = win, anything else = loss) with a tiny
-// K-factor, so it climbs about 1 point per 10 puzzles — rating and rank are earned by volume,
-// in step with the rank's puzzle minimums. Recomputed from your saved sessions (no extra storage).
+// (Custom and Review count toward the puzzle's own tab). Points per puzzle, by how hard the
+// puzzle is compared with your rating (its Lichess rating minus yours; see POINTS): a first-try
+// solve at your level is +1, harder ones +2 or +4, easier ones +0.5, +0.25, +0.1 or +0.01. Anything
+// else is a miss and costs points the mirror way: -1 at your level, more for easy puzzles (-2,
+// -4), less for hard ones (-0.5, -0.25). So it goes up and down slowly, and doesn't inflate; the
+// ranks' puzzle minimums are what take time. Recomputed from your saved sessions (no extra
+// storage). Placement test puzzles set the start instead (Rating start) and don't count.
 //
 // Balance: gains shrink in a bucket you've played much more than the others, so grinding one theme
 // gets harder and harder. The buckets are the themes of your current Tactics tier (Basic below
@@ -489,17 +528,29 @@ function ratingChanges(before) {
 // Up to BALANCE.buffer puzzles over your fair share (total / buckets) count fully; past that a win
 // is worth (fair share + buffer) / puzzles played in that bucket. Losses are never scaled.
 //
-// Provisional: your first PROVISIONAL.games puzzles in a tab move the rating fast (K from
-// PROVISIONAL.k0 down to the normal K) so it finds your level quickly, then it settles into the
-// slow climb. The rating starts at the starting point you picked for that tab (400 if none),
-// and shows with a "?" until it's settled.
-const RATING = { r0: 400, k: 0.2 };
-const PROVISIONAL = { games: 30, k0: 40 };
-const kFor = (games) => (games >= PROVISIONAL.games ? RATING.k
-  : RATING.k + (PROVISIONAL.k0 - RATING.k) * (1 - games / PROVISIONAL.games));
-const ratingStart = (tr) => progress.start?.[tr]?.seed ?? RATING.r0;
+const RATING = { r0: RATING_FLOOR };
+// [lowest difficulty (puzzle rating minus yours) for this row, points for a solve, points for a miss].
+const POINTS = [
+  [400, 4, -0.25],
+  [200, 2, -0.5],
+  [-200, 1, -1],
+  [-400, 0.5, -2],
+  [-600, 0.25, -4],
+  [-800, 0.1, -4],
+  [-Infinity, 0.01, -4], // still a little progress, shown as +0.01
+];
+const pointsFor = (rating, puzzleRating, solved) => {
+  const row = POINTS.find(([min]) => puzzleRating - rating >= min);
+  return solved ? row[1] : row[2];
+};
+const ratingStart = () => seedRating();
 const BALANCE = { buffer: 10 };
+// Only for the placement test's performance rating.
 const eloExpected = (r, puzzleRating) => 1 / (1 + 10 ** ((puzzleRating - r) / 400));
+// The overall rating: the average of the three tab ratings. A tab you haven't played counts at
+// your starting rating.
+const overallRating = () => Math.round(sum(Object.keys(TRACKS).map((tr) => trackRating(tr).exact)) / Object.keys(TRACKS).length);
+const isPlacement = (a) => !!a[5]?.pl;
 function tacticTiers() {
   const keys = new Set(indexes.tactics?.themes.map((t) => t.key) ?? []);
   const tiers = TACTIC_STAGES.map((st) => stageGroups(st).flatMap(([, ks]) => ks).filter((k) => keys.has(k)));
@@ -527,7 +578,7 @@ function balanceFactor(tr, key, counts, r) {
 let engineCache = { n: -1 };
 function ratingEngine() {
   const all = progress.sessions.flatMap((s) => s.attempts);
-  const spec = JSON.stringify([progress.specialty || {}, progress.start || {}]);
+  const spec = JSON.stringify([progress.specialty || {}, seedRating()]);
   if (engineCache.n === all.length && engineCache.spec === spec) return engineCache.value;
   const state = Object.fromEntries(Object.keys(TRACKS).map((tr) => [tr, { r: ratingStart(tr), games: 0, counts: {} }]));
   const per = [];
@@ -535,11 +586,15 @@ function ratingEngine() {
     const [tr, key] = splitKey(a[0]);
     const st = state[tr];
     const before = st.r;
-    const score = a[2] ? 1 : 0;
-    let delta = kFor(st.games) * (score - eloExpected(st.r, a[1]));
-    const f = delta > 0 && st.games >= PROVISIONAL.games ? balanceFactor(tr, key, st.counts, st.r) : 1;
+    if (isPlacement(a)) {
+      per.push([tr, before, before, 1]);
+      continue;
+    }
+    let delta = pointsFor(st.r, a[1], !!a[2]);
+    const f = delta > 0 ? balanceFactor(tr, key, st.counts, st.r) : 1;
     delta *= f;
-    st.r += delta;
+    // Kept to 2 decimals so the shown changes add up exactly.
+    st.r = Math.round((st.r + delta) * 100) / 100;
     st.games++;
     st.counts[key] = (st.counts[key] || 0) + 1;
     per.push([tr, before, st.r, f]);
@@ -549,13 +604,10 @@ function ratingEngine() {
 }
 function trackRating(tr = track) {
   const st = ratingEngine().state[tr];
-  return { rating: Math.round(st.r), exact: st.r, games: st.games, provisional: st.games < PROVISIONAL.games };
+  // There's no provisional phase any more: the start comes from your cohort.
+  return { rating: Math.floor(st.r), exact: st.r, games: st.games, provisional: false };
 }
-// "1430?" while the rating is still provisional.
-const ratingText = (tr = track) => {
-  const r = trackRating(tr);
-  return `${r.rating}${r.provisional ? '?' : ''}`;
-};
+const ratingText = (tr = track) => `${trackRating(tr).rating}`;
 // Where your rating grows at full speed right now, and where it's slowed by over-playing.
 function balanceStatus(tr) {
   const st = ratingEngine().state[tr];
@@ -591,8 +643,8 @@ function rankRoad(trk = track) {
     <div class="rr-head">
       <span class="rank-icon">${rankIcon(rp.rank[1], 64)}</span>
       <div class="rr-title"><small>Your ${L} rank</small><b>${rp.rank[2]}</b><em>${rp.rank[3]}</em></div>
-      <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. ${tr.provisional ? `It's provisional (?) for your first ${PROVISIONAL.games} puzzles and moves fast to find your level; after that it` : 'It'} climbs slowly, about 1 point per 10 puzzles solved.">
-        <small>${L} rating</small><b>${tr.rating}${tr.provisional ? '<i class="prov">?</i>' : ''}</b><span>${tr.provisional ? `provisional · ${tr.games}/${PROVISIONAL.games} puzzles` : `${tr.games.toLocaleString()} puzzles played`}</span></div>
+      <div class="rr-rating" title="${L} rating from every ${L.toLowerCase()} puzzle you've played, in any mode. It started at ${seedRating()}${progress.seed?.cohort || cloud.cohort ? `, from your cohort (${esc(progress.seed?.cohort ?? cloud.cohort)})` : ''}${progress.placement ? ' and your placement test' : ''}. A first-try solve at your level is +1 (harder +2 or +4, easier +0.5 down to +0.01); a miss is -1 (easy puzzles cost more, hard ones less). Your overall rating is ${overallRating()}, the average of Tactics, Openings and Endgames.">
+        <small>${L} rating</small><b>${fmtPts(tr.exact)}</b><span>${tr.games.toLocaleString()} puzzles played · overall ${overallRating()}</span></div>
       <div class="rr-next">${rp.next
         ? `Next: <b class="inline-rank">${rankIcon(rp.next[1], 22)} ${rp.next[2]}</b><small>${[rp.toGo ? `${rp.toGo} rating points` : '', rp.solvedToGo ? `${rp.solvedToGo.toLocaleString()} more puzzle points` : ''].filter(Boolean).join(' and ')} to go</small>`
         : '<b>Top rank reached</b>'}</div>
@@ -879,6 +931,7 @@ function renderStats() {
   const cur = progress.xp - xpForLevel(lvl);
   const need = xpForLevel(lvl + 1) - xpForLevel(lvl);
   const statsHtml = `
+    <div class="stat overall-stat" title="Overall rating: the average of your Tactics, Openings and Endgames ratings">Overall <b>${overallRating()}</b></div>
     ${Object.entries(TRACKS).filter(([tr]) => indexes[tr]).map(([tr, t]) => `<a class="stat rank-stat ${tr === track ? 'cur' : ''}" href="${hrefHome(tr)}" title="${t.label}: ${userRank(tr)[2]} · rating ${ratingText(tr)}${trackRating(tr).provisional ? ' (provisional)' : ''} · ${solvedCount(tr).toLocaleString()} solved">${rankIcon(userRank(tr)[1], 22)}<span class="rs-txt"><small>${t.label}</small><b>${ratingText(tr)}</b></span></a>`).join('')}
     ${todayChip()}
     ${offlineChip()}
@@ -918,6 +971,7 @@ function route() {
   if (view === 'stats') return showStats();
   if (view === 'custom') return showPractice();
   if (view === 'review') return showReview();
+  if (view === 'placement') return showPlacement();
   if (!indexes[tr]) tr = 'tactics';
   setTrack(tr);
   renderStats(); // header highlights this tab's rank
@@ -1013,6 +1067,7 @@ function showHome() {
         Get <b>${PASS_SCORE}/${SET_SIZE}</b> on the first try to clear a set and unlock the next one.</p>`}
       </div>` : ''}
       ${startCard(track)}
+      ${placementCard()}
       ${rankRoad()}
       ${startLink(track)}
       <div class="ring-hero"></div>
@@ -1838,6 +1893,113 @@ function runResult(r, puzzles, { title, again, back, extra = '' }) {
   $app.replaceChildren(panel);
 }
 
+// ---- Placement test (route #/placement) ------------------------------------------------
+// Optional: 20 Tactics puzzles that adapt to you (a solve brings a harder one, a miss an easier
+// one), mixed across the three tiers. The result is a performance rating; your rating start
+// becomes the lower of your cohort start and that minus 200 (Rating start), so it never goes
+// above the cohort start. Its puzzles don't count as rating games. You can take it once a week;
+// the latest result counts, so a retake can move your start back up toward the cohort start.
+const PLACEMENT = {
+  n: 20,
+  everyMs: 7 * 24 * 3600e3,
+  keys: ['fork', 'pin', 'hangingPiece', 'mateIn1', 'deflection', 'attraction', 'capturingDefender', 'mateIn2',
+    'clearance', 'intermezzo', 'quietMove', 'mateIn3'],
+};
+const placementWait = () => Math.max(0, (progress.placement?.at ?? -Infinity) + PLACEMENT.everyMs - Date.now());
+const placementOpen = () => placementWait() === 0;
+function placementCard() {
+  if (track !== 'tactics') return '';
+  const cohort = progress.seed?.cohort ?? cloud.cohort;
+  if (progress.placement) {
+    // Taken before: a small line, with a retake link once a week has passed.
+    const wait = placementWait();
+    return `<p class="start-link placement-line">Placement test: ${progress.placement.score}/${progress.placement.n} · ratings start at <b>${seedRating()}</b> · ${wait
+      ? `next test in ${Math.ceil(wait / (24 * 3600e3))} day${wait > 24 * 3600e3 ? 's' : ''}`
+      : '<a href="#/placement">retake it</a>'}</p>`;
+  }
+  return `<section class="start-card placement-card">
+    <h2>Placement test (optional)</h2>
+    <p>Your ratings start at <b>${seedRating()}</b>${cohort ? ` from your cohort (${esc(cohort)})` : ''}. Take ${PLACEMENT.n} puzzles to check it: if they're hard for you, your ratings start lower so you build the fundamentals first. It never starts you above your cohort. You can take it once a week.</p>
+    <a class="btn small" href="#/placement">Take the placement test</a>
+  </section>`;
+}
+// The rating that best explains the results: the maximum-likelihood Elo performance.
+function performanceRating(games) {
+  let best = RATING_FLOOR;
+  let bestLl = -Infinity;
+  const top = Math.max(...games.map(([r]) => r)) + 400;
+  for (let x = 0; x <= top; x += 5) {
+    let ll = 0;
+    for (const [r, ok] of games) {
+      const e = eloExpected(x, r);
+      ll += Math.log(ok ? e : 1 - e);
+    }
+    if (ll > bestLl) { bestLl = ll; best = x; }
+  }
+  return best;
+}
+async function showPlacement() {
+  if (!placementOpen()) {
+    const pl = progress.placement;
+    const days = Math.ceil(placementWait() / (24 * 3600e3));
+    $app.replaceChildren(el(`<div class="result"><div class="result-card">
+      <h1>Placement test done</h1>
+      <p>You scored <b>${pl.score}/${pl.n}</b> (performance ${Math.round(pl.perf)}). Your ratings start at <b>${seedRating()}</b>.</p>
+      <p>You can take it again in ${days} day${days === 1 ? '' : 's'}.</p>
+      <div class="controls center"><a class="btn primary" href="#">Back to Tactics</a></div></div></div>`));
+    return;
+  }
+  $app.replaceChildren(el('<div class="loading">Loading the placement test…</div>'));
+  const pool = (await Promise.all(PLACEMENT.keys.map((k) => loadTheme(k, 'tactics').catch(() => null))))
+    .filter(Boolean)
+    .flatMap((t) => t.sets.flatMap((st) => st.puzzles.map((p) => ({ ...p, key: t.key, track: 'tactics' }))));
+  const used = new Set();
+  const nearest = (target) => {
+    const free = pool.filter((p) => !used.has(p.id));
+    free.sort((a, b) => Math.abs(a.rating - target) - Math.abs(b.rating - target));
+    const p = shuffle(free.slice(0, 15))[0];
+    used.add(p.id);
+    return p;
+  };
+  const lo = Math.min(...pool.map((p) => p.rating));
+  const hi = Math.max(...pool.map((p) => p.rating));
+  const clampR = (r) => Math.min(hi, Math.max(lo, r));
+  // Start just under your cohort start; each answer moves the target by a shrinking step.
+  let target = clampR(seedRating() - 100);
+  let step = 250;
+  const puzzles = [nearest(target)];
+  // Placeholders until picked (their own ids, so the pips don't show them as solved before).
+  for (let i = 1; i < PLACEMENT.n; i++) puzzles.push({ ...puzzles[0], id: `placement-${i}` });
+  cleanupBoard();
+  playRun({
+    mode: 'placement',
+    puzzles,
+    backHref: '#',
+    backLabel: 'Tactics',
+    head: '<h2>Placement test</h2><div class="set-sub">20 puzzles that adapt to you</div>',
+    rule: "Puzzles get harder after a solve and easier after a miss. They don't count toward your rating.",
+    pick: (idx, results, played) => {
+      target = clampR(target + (results[idx - 1] ? step : -step));
+      step = Math.max(60, Math.round(step * 0.8));
+      return nearest(target);
+    },
+    finish: (r) => {
+      const games = puzzles.map((p, i) => [p.rating, !!r.results[i]]);
+      const score = r.results.filter(Boolean).length;
+      progress.placement = { perf: performanceRating(games), score, n: puzzles.length, at: Date.now() };
+      engineCache = { n: -1 };
+      saveProgress();
+      renderStats();
+      runResult(r, puzzles, {
+        title: 'Placement test done',
+        extra: `<p class="solved-note">Performance ${Math.round(progress.placement.perf)} · your ratings start at <b>${seedRating()}</b>.</p>`,
+        again: ['Back to Tactics', () => (location.hash = '#')],
+        back: ['See your stats', () => (location.hash = '#/stats')],
+      });
+    },
+  });
+}
+
 // ---- Review: puzzles you missed on the first try ---------------------------------------
 async function findPuzzle(id) {
   const rec = puzzleRec(id);
@@ -1920,7 +2082,11 @@ const COHORT_SOURCES = {
         solved: p.solved, setsCleared: p.setsCleared, stars: p.stars, accuracy: p.accuracy, avgMs: p.avgMs,
         rating: p.tracks?.tactics?.rating ?? null, openingsRating: p.tracks?.openings?.rating ?? null,
         endgamesRating: p.tracks?.endgames?.rating ?? null, attempts: p.attempts, xp: p.xp,
-      }));
+      })).map((p) => {
+        // Others' starting ratings aren't saved, so their overall averages the tabs they've played.
+        const rs = [p.rating, p.openingsRating, p.endgamesRating].filter((v) => v != null);
+        return { ...p, overallRating: rs.length ? Math.round(sum(rs) / rs.length) : null };
+      });
       return [{ ...me, name: mine?.displayName || me.name, cohort: mine?.cohort }, ...others];
     },
   },
@@ -1962,6 +2128,7 @@ function myProfile() {
     stars: sum(starVals),
     accuracy: n ? ok / n : null,
     avgMs: n ? sum(attempts.map((a) => a[3])) / n : null,
+    overallRating: n ? overallRating() : null,
     rating: rt('tactics'),
     openingsRating: rt('openings'),
     endgamesRating: rt('endgames'),
@@ -1974,6 +2141,7 @@ const METRICS = [
   { key: 'setsCleared', label: 'Sets cleared', fmt: (v) => v.toLocaleString(), better: 'high' },
   { key: 'accuracy', label: 'First-try accuracy', fmt: (v) => `${Math.round(v * 100)}%`, better: 'high' },
   { key: 'avgMs', label: 'Avg time per puzzle', fmt: (v) => fmtSec(v), better: 'low' },
+  { key: 'overallRating', label: 'Overall rating', fmt: (v) => v, better: 'high' },
   { key: 'rating', label: 'Tactics rating', fmt: (v) => v, better: 'high' },
   { key: 'openingsRating', label: 'Openings rating', fmt: (v) => v, better: 'high' },
   { key: 'endgamesRating', label: 'Endgames rating', fmt: (v) => v, better: 'high' },
@@ -2969,12 +3137,17 @@ function playRun(run) {
       recordAttempt(sk, p.rating, results[idx], (tDecided ?? end) - tStart, p.id, {
         run: runId, moves: moveLog, first: moveLog[0]?.[1] ?? null, total,
         solved: solvedLine ? 1 : 0, sol: sawSolution ? 1 : 0, at: Date.now(),
+        ...(run.mode === 'placement' ? { pl: 1 } : {}),
       });
       renderStats();
       renderLive();
     }
     idx++;
-    if (idx < N) return startPuzzle();
+    if (idx < N) {
+      // An adaptive run (the placement test) picks each next puzzle from the answers so far.
+      if (run.pick) run.puzzles[idx] = run.pick(idx, results.slice(0, idx), run.puzzles.slice(0, idx));
+      return startPuzzle();
+    }
     run.finish({
       results, puzzleMs, runId, runStart, runMs: Date.now() - runStart,
       snapAtStart, newlySolved, newBests, solvedAtStart,
@@ -3018,6 +3191,11 @@ function mergeProgress(a, b) {
   const older = newer === a ? b : a;
   const out = { ...older, ...newer };
   out.xp = Math.max(a.xp ?? 0, b.xp ?? 0);
+  // The first cohort kept stays; the latest placement test counts.
+  out.seed = older.seed ?? newer.seed;
+  out.placement = [a.placement, b.placement].filter(Boolean).sort((x, y) => (y.at ?? 0) - (x.at ?? 0))[0];
+  if (!out.seed) delete out.seed;
+  if (!out.placement) delete out.placement;
   for (const st of ['themes', 'openings', 'endgames']) {
     const merged = {};
     for (const src of [older[st] ?? {}, newer[st] ?? {}]) {
@@ -3076,7 +3254,7 @@ async function waitForHost(timeoutMs = 15000) {
     try {
       const hi = await Promise.race([askHost('hello'), new Promise((_, no) => setTimeout(no, 700))]);
       if (hi?.cohort && hi.cohort !== cloud.cohort) {
-        cloud.cohort = hi.cohort; // for the starting-point suggestion
+        cloud.cohort = hi.cohort; // for the rating start and the starting-point suggestion
         if (needsStart(track) && !location.hash.includes('/play/')) route();
       }
       return true;
@@ -3099,6 +3277,7 @@ async function cloudLoad() {
   const next = !remote ? (mine ? progress : loadDefaults()) : mine ? mergeProgress(progress, remote) : remote;
   next.owner = cloud.username;
   setProgress(next);
+  keepSeedCohort();
   cloud.ready = true;
   if (!remote || JSON.stringify(next) !== JSON.stringify(remote)) cloudSaveSoon(0);
   else markUnsynced(false);
