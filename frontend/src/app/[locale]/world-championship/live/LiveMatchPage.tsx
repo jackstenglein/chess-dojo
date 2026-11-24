@@ -629,9 +629,7 @@ export function LiveMatchPage() {
                 <Typography variant='h4' component='h1' sx={{ fontWeight: 800 }}>
                     Gukesh vs Sindarov · Live
                 </Typography>
-                <Typography color='text.secondary'>
-                    2026 World Championship, Geneva. Moves and clocks from the Lichess broadcast.
-                </Typography>
+                <Typography color='text.secondary'>2026 World Championship, Geneva.</Typography>
             </Stack>
 
             {roundsError && rounds.length === 0 && (
