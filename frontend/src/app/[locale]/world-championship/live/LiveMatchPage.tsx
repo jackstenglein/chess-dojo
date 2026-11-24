@@ -1118,6 +1118,12 @@ function PlayerBar({
                     sx={{
                         px: 1.5,
                         py: 0.5,
+                        // Trimming the line box to the digits centers them. The larger
+                        // padding makes up the height the trim removes.
+                        '@supports (text-box: trim-both cap alphabetic)': {
+                            textBox: 'trim-both cap alphabetic',
+                            py: '11px',
+                        },
                         fontWeight: 800,
                         fontSize: '1.15rem',
                         fontVariantNumeric: 'tabular-nums',

@@ -32,6 +32,8 @@ export function SenseiPin({ sensei, size = 22 }: { sensei: WcSensei; size?: numb
                 fontSize: size * 0.5,
                 fontWeight: 900,
                 lineHeight: 1,
+                // Trim the line box to the capital, so the letter sits in the middle.
+                textBox: 'trim-both cap alphabetic',
                 flexShrink: 0,
                 textShadow: '0 1px 1px rgba(0,0,0,0.4)',
             }}
@@ -235,6 +237,12 @@ export function EvalBar({ average, pins, orientation }: EvalBarProps) {
                     fontWeight: 800,
                     letterSpacing: '-0.03em',
                     lineHeight: 1,
+                    // Trimming the line box to the digits centers them. The larger
+                    // padding makes up the height the trim removes.
+                    '@supports (text-box: trim-both cap alphabetic)': {
+                        textBox: 'trim-both cap alphabetic',
+                        py: { xs: '4px', sm: '5px' },
+                    },
                     fontVariantNumeric: 'tabular-nums',
                     zIndex: 3,
                     pointerEvents: 'none',
@@ -275,11 +283,28 @@ export function SenseiStrip({ roster, pins }: { roster: WcSensei[]; pins: WcPin[
                             }}
                         >
                             <SenseiPin sensei={s} size={24} />
-                            <Typography sx={{ fontWeight: 600, flexGrow: 1 }} noWrap>
+                            <Typography
+                                sx={{
+                                    fontWeight: 600,
+                                    flexGrow: 1,
+                                    // The name and the eval are trimmed to the capitals, so
+                                    // both sit in the middle of the row. The padding keeps
+                                    // noWrap from cutting off descenders, and the margin
+                                    // takes that height back out.
+                                    textBox: 'trim-both cap alphabetic',
+                                    py: '4px',
+                                    my: '-4px',
+                                }}
+                                noWrap
+                            >
                                 {s.name}
                             </Typography>
                             <Typography
-                                sx={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}
+                                sx={{
+                                    fontWeight: 800,
+                                    fontVariantNumeric: 'tabular-nums',
+                                    textBox: 'trim-both cap alphabetic',
+                                }}
                             >
                                 {pin ? formatEval(pin.value) : '–'}
                             </Typography>
