@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Paper, Stack, Typography } from '@mui/material';
-import { CrossPlayer, Crosstable, formatPoints, playerOf } from './crosstable';
+import { CrossPlayer, Crosstable, playerOf } from './crosstable';
 import { formatClock, LivePlayer } from './lichessFeed';
 import { PlayerPhoto } from './PlayerPhoto';
 
@@ -133,7 +133,7 @@ function PlayerCard({ player, crosstable }: { player?: LivePlayer; crosstable?: 
                         fontVariantNumeric: 'tabular-nums',
                     }}
                 >
-                    {formatPoints(points)}
+                    {points}
                 </Typography>
             )}
         </Stack>
