@@ -13,7 +13,15 @@ const POLL_MS = 2000;
 /** Stepping through moves sends one "select" after the last step, not one per step. */
 const SELECT_DELAY_MS = 250;
 
-async function getAnalysis(roundId: string): Promise<WcAnalysis> {
+async function getAnalysis(roundId: string, guestToken?: string): Promise<WcAnalysis> {
+    if (guestToken) {
+        const resp = await axiosService.post<WcAnalysis>(
+            '/public/wc-live/guest/analysis/read',
+            { token: guestToken, roundId },
+            { functionName: 'wcLiveGuestGetAnalysis', ...localRequestConfig() },
+        );
+        return resp.data;
+    }
     const resp = await axiosService.get<WcAnalysis>(`/wc-live/rounds/${roundId}/analysis`, {
         functionName: 'wcLiveGetAnalysis',
         ...localRequestConfig(),
@@ -21,7 +29,15 @@ async function getAnalysis(roundId: string): Promise<WcAnalysis> {
     return resp.data;
 }
 
-async function putAnalysis(request: WcAnalysisRequest): Promise<WcAnalysis> {
+async function putAnalysis(request: WcAnalysisRequest, guestToken?: string): Promise<WcAnalysis> {
+    if (guestToken) {
+        const resp = await axiosService.put<WcAnalysis>(
+            '/public/wc-live/guest/analysis',
+            { token: guestToken, request },
+            { functionName: 'wcLiveGuestPutAnalysis', ...localRequestConfig() },
+        );
+        return resp.data;
+    }
     const resp = await axiosService.put<WcAnalysis>('/wc-live/analysis', request, {
         functionName: 'wcLivePutAnalysis',
         ...localRequestConfig(),
@@ -56,6 +72,8 @@ export function useAnalysis(
     enabled: boolean,
     /** The same change the API makes, to show it before the API answers. */
     apply: (current: WcAnalysis, request: WcAnalysisRequest) => WcAnalysis,
+    /** A guest sensei's link token: their calls go through the guest routes. */
+    guestToken?: string,
 ): AnalysisApi {
     const [analysis, setAnalysis] = useState<WcAnalysis>();
     const [error, setError] = useState<string>();
@@ -75,7 +93,7 @@ export function useAnalysis(
         let cancelled = false;
         const load = () => {
             const sentAt = generation.current;
-            getAnalysis(roundId)
+            getAnalysis(roundId, guestToken)
                 .then((a) => {
                     if (!cancelled && pending.current === 0 && generation.current === sentAt) {
                         setAnalysis(a);
@@ -94,23 +112,26 @@ export function useAnalysis(
                 pending.current--;
             }
         };
-    }, [roundId, enabled]);
+    }, [roundId, enabled, guestToken]);
 
-    const send = useCallback((request: WcAnalysisRequest, sentAt: number) => {
-        pending.current++;
-        setError(undefined);
-        putAnalysis(request)
-            .then((saved) => {
-                // A newer change made here since shows already; its own save follows.
-                if (generation.current === sentAt) {
-                    setAnalysis(saved);
-                }
-            })
-            .catch(() => setError('The analysis was not saved. Try again.'))
-            .finally(() => {
-                pending.current--;
-            });
-    }, []);
+    const send = useCallback(
+        (request: WcAnalysisRequest, sentAt: number) => {
+            pending.current++;
+            setError(undefined);
+            putAnalysis(request, guestToken)
+                .then((saved) => {
+                    // A newer change made here since shows already; its own save follows.
+                    if (generation.current === sentAt) {
+                        setAnalysis(saved);
+                    }
+                })
+                .catch(() => setError('The analysis was not saved. Try again.'))
+                .finally(() => {
+                    pending.current--;
+                });
+        },
+        [guestToken],
+    );
 
     const change = useCallback(
         (request: WcAnalysisRequest, delay = 0) => {
