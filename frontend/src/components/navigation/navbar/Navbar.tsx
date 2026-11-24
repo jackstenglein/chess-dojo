@@ -3,6 +3,7 @@
 import { useEvents } from '@/api/cache/Cache';
 import { useAuth } from '@/auth/Auth';
 import { Event, EventStatus, getEventEnd } from '@/database/event';
+import { usePathname } from '@/i18n/navigation';
 import {
     AppBar,
     Container,
@@ -31,6 +32,7 @@ function HideOnScroll(props: HideOnScrollProps) {
 
 const Navbar = () => {
     const auth = useAuth();
+    const pathname = usePathname();
 
     const filterTime = new Date(new Date().getTime()).toISOString();
     const { events } = useEvents();
@@ -44,6 +46,11 @@ const Navbar = () => {
         }
         return e.status !== EventStatus.Canceled && getEventEnd(e).toISOString() >= filterTime;
     }).length;
+
+    // The /class campaign pages have one goal, so they drop the site navigation.
+    if (pathname === '/class') {
+        return null;
+    }
 
     return (
         <HideOnScroll>

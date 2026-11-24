@@ -1,6 +1,6 @@
 'use client';
 
-import { pagesWithVideos } from '@/hooks/useRouter';
+import { isStaticVideoPage } from '@/coep/staticVideoPages';
 import { DEFAULT_LOCALE, LOCALE_CODES } from '@/i18n/locales';
 import { Link as NextLink, usePathname } from '@/i18n/navigation';
 import { LinkProps, Link as MuiLink } from '@mui/material';
@@ -35,8 +35,9 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
     let useNextLink = true;
     let guardNavigation: React.MouseEventHandler<HTMLAnchorElement> | undefined = undefined;
 
-    // Match pagesWithVideos against the unprefixed canonical path, since
-    // those regexes in useRouter.ts have no locale segment.
+    // Static video pages need a full load when leaving or entering an engine
+    // page. Course URLs are not in that list; CoursePage reloads if the
+    // rendered module's isolation does not match the document.
     const rawHref = typeof props.href === 'string' ? props.href : undefined;
     const hrefIsExternal = rawHref !== undefined && isAbsoluteUrl(rawHref);
     const hrefStripped = rawHref && !hrefIsExternal ? stripLocalePrefix(rawHref) : undefined;
@@ -44,17 +45,8 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
     if (!rawHref || hrefIsExternal) {
         useNextLink = false;
     } else {
-        let currentHasVideo = false;
-        let newHasVideo = false;
-
-        for (const page of pagesWithVideos) {
-            if (!currentHasVideo && pathname.match(page)) {
-                currentHasVideo = true;
-            }
-            if (!newHasVideo && hrefStripped?.match(page)) {
-                newHasVideo = true;
-            }
-        }
+        const currentHasVideo = isStaticVideoPage(pathname);
+        const newHasVideo = hrefStripped ? isStaticVideoPage(hrefStripped) : false;
 
         useNextLink = currentHasVideo === newHasVideo;
     }

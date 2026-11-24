@@ -22,6 +22,7 @@ interface ResizableBoardAreaProps {
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
+    hideBoardButtons?: boolean;
     startOrientation?: Color;
     onInitialize: onInitializeFunc;
     underboardRef: React.RefObject<UnderboardApi | null>;
@@ -35,6 +36,7 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
     onResize,
     hideResize,
     showPlayerHeaders = true,
+    hideBoardButtons,
     pgn,
     fen,
     startOrientation = 'white',
@@ -89,15 +91,17 @@ const ResizableBoardArea: React.FC<ResizableBoardAreaProps> = ({
 
                 {showPlayerHeaders && !barsHidden && <PlayerHeader type='footer' />}
 
-                <Box sx={{ display: barsHidden ? 'none' : undefined }}>
-                    <BoardButtons
-                        underboardRef={underboardRef}
-                        panelControls={panelControls}
-                        boardWidth={resizeData.width}
-                        onHideBars={onToggleBars}
-                        hideBarsRef={hideButton}
-                    />
-                </Box>
+                {!hideBoardButtons && (
+                    <Box sx={{ display: barsHidden ? 'none' : undefined }}>
+                        <BoardButtons
+                            underboardRef={underboardRef}
+                            panelControls={panelControls}
+                            boardWidth={resizeData.width}
+                            onHideBars={onToggleBars}
+                            hideBarsRef={hideButton}
+                        />
+                    </Box>
+                )}
             </Stack>
             {barsHidden && (
                 <Stack sx={{ width: RESTORE_GUTTER_WIDTH, pl: '4px', rowGap: 0.5 }}>

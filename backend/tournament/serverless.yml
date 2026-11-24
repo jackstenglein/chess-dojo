@@ -138,6 +138,11 @@ functions:
           - - 'arn:aws:s3:::'
             - ${param:SecretsBucket}
             - /openClassicalServiceAccountKey.json
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource:
+          - arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:chess-dojo-${sls:stage}-lichessApiToken-*
 
   getOpenClassical:
     handler: openClassical/get/main.go

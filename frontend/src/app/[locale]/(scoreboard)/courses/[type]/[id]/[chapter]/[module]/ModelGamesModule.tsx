@@ -1,10 +1,10 @@
+import { DefaultUnderboardTab } from '@/board/pgn/boardTools/underboard/underboardTabs';
 import PgnBoard from '@/board/pgn/PgnBoard';
 import PgnErrorBoundary from '@/games/view/PgnErrorBoundary';
 import { Search } from '@mui/icons-material';
 import { Box, CardContent } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { DefaultUnderboardTab } from 'src/board/pgn/boardTools/underboard/underboardTabs';
 import { ModuleProps } from './Module';
 import PgnSelector from './PgnSelector';
 

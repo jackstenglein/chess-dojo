@@ -10,9 +10,26 @@ import {
     NextPuzzleResponse,
 } from '@jackstenglein/chess-dojo-common/src/puzzles/api';
 import {
+    GetPuzzleRushLeaderboardResponse,
+    GetPuzzleRushPuzzleRequest,
+    GetPuzzleRushPuzzleResponse,
+    GetPuzzleRushSessionResponse,
+    GetPuzzleRushSummaryResponse,
+    ListPuzzleRushSessionsRequest,
+    ListPuzzleRushSessionsResponse,
+    SubmitPuzzleRushSessionRequest,
+    SubmitPuzzleRushSessionResponse,
+} from '@jackstenglein/chess-dojo-common/src/puzzles/rush/api';
+import {
     SubmitSquareColorSessionRequest,
     SubmitSquareColorSessionResponse,
 } from '@jackstenglein/chess-dojo-common/src/squareColors/api';
+import {
+    GetTacticsForgerLeaderboardResponse,
+    GetTacticsForgerProgressResponse,
+    SaveTacticsForgerProgressRequest,
+    SaveTacticsForgerProgressResponse,
+} from '@jackstenglein/chess-dojo-common/src/tacticsTrainer/api';
 import { AxiosResponse } from 'axios';
 import { axiosService } from './axiosService';
 
@@ -74,4 +91,126 @@ export function submitMateInOneSession(
         request,
         { functionName: 'submitMateInOneSession' },
     );
+}
+
+/**
+ * Fetches the next puzzle for a puzzle rush run.
+ * @param request The search rating and the ids of puzzles already used in the run.
+ * @returns A promise that resolves to the next puzzle.
+ */
+export function getPuzzleRushPuzzle(
+    request: GetPuzzleRushPuzzleRequest,
+): Promise<AxiosResponse<GetPuzzleRushPuzzleResponse>> {
+    return axiosService.post<GetPuzzleRushPuzzleResponse>(`/puzzle/rush/next`, request, {
+        functionName: 'getPuzzleRushPuzzle',
+    });
+}
+
+/**
+ * Submits a completed puzzle rush run.
+ * @param request The request containing the run's attempts.
+ * @returns A promise that resolves to the saved run.
+ */
+export function submitPuzzleRushSession(
+    request: SubmitPuzzleRushSessionRequest,
+): Promise<AxiosResponse<SubmitPuzzleRushSessionResponse>> {
+    return axiosService.post<SubmitPuzzleRushSessionResponse>(`/puzzle/rush/session`, request, {
+        functionName: 'submitPuzzleRushSession',
+    });
+}
+
+/**
+ * Fetches the current user's puzzle rush bests.
+ * @param timeZone IANA timezone used to decide which week and day are current.
+ * @returns The all-time, weekly, and daily best solved-puzzle counts.
+ */
+export function getPuzzleRushSummary(
+    timeZone: string,
+): Promise<AxiosResponse<GetPuzzleRushSummaryResponse>> {
+    return axiosService.get<GetPuzzleRushSummaryResponse>(`/puzzle/rush/summary`, {
+        params: { timeZone },
+        functionName: 'getPuzzleRushSummary',
+    });
+}
+
+/**
+ * Fetches the Dojo puzzle rush leaderboard.
+ * The monthly board is the current UTC month. `complete` is false while runs saved
+ * before the leaderboard existed are still being added; call again until it is true.
+ * @returns Every player's all-time and monthly high score, with completed-run counts.
+ */
+export function getPuzzleRushLeaderboard(): Promise<
+    AxiosResponse<GetPuzzleRushLeaderboardResponse>
+> {
+    return axiosService.get<GetPuzzleRushLeaderboardResponse>(`/puzzle/rush/leaderboard`, {
+        functionName: 'getPuzzleRushLeaderboard',
+    });
+}
+
+/**
+ * Fetches a single puzzle rush run belonging to the current user.
+ * @param createdAt The createdAt timestamp of the run.
+ * @returns A promise that resolves to the run.
+ */
+export function getPuzzleRushSession(
+    createdAt: string,
+): Promise<AxiosResponse<GetPuzzleRushSessionResponse>> {
+    return axiosService.get<GetPuzzleRushSessionResponse>(
+        `/puzzle/rush/session/${encodeURIComponent(createdAt)}`,
+        { functionName: 'getPuzzleRushSession' },
+    );
+}
+
+/**
+ * Lists the current user's puzzle rush runs, most recent first.
+ * @param request The optional pagination key.
+ * @returns A promise that resolves to the runs.
+ */
+export function listPuzzleRushSessions(
+    request: ListPuzzleRushSessionsRequest = {},
+): Promise<AxiosResponse<ListPuzzleRushSessionsResponse>> {
+    return axiosService.get<ListPuzzleRushSessionsResponse>(`/puzzle/rush/history`, {
+        params: request,
+        functionName: 'listPuzzleRushSessions',
+    });
+}
+
+/**
+ * Fetches the current user's saved Dojo Tactics Forger progress.
+ * @returns The saved progress (null if never saved) and its version.
+ */
+export function getTacticsForgerProgress(): Promise<
+    AxiosResponse<GetTacticsForgerProgressResponse>
+> {
+    return axiosService.get<GetTacticsForgerProgressResponse>(`/tactics-trainer/progress`, {
+        functionName: 'getTacticsForgerProgress',
+    });
+}
+
+/**
+ * Saves the current user's Dojo Tactics Forger progress and leaderboard numbers.
+ * Fails with 409 if another device saved since `baseVersion`.
+ * @param request The progress, the version it is based on, and the leaderboard summary.
+ * @returns The new version.
+ */
+export function saveTacticsForgerProgress(
+    request: SaveTacticsForgerProgressRequest,
+): Promise<AxiosResponse<SaveTacticsForgerProgressResponse>> {
+    return axiosService.put<SaveTacticsForgerProgressResponse>(
+        `/tactics-trainer/progress`,
+        request,
+        { functionName: 'saveTacticsForgerProgress' },
+    );
+}
+
+/**
+ * Fetches the Dojo Tactics Forger leaderboard: every player who has saved progress.
+ * @returns All leaderboard rows.
+ */
+export function getTacticsForgerLeaderboard(): Promise<
+    AxiosResponse<GetTacticsForgerLeaderboardResponse>
+> {
+    return axiosService.get<GetTacticsForgerLeaderboardResponse>(`/tactics-trainer/leaderboard`, {
+        functionName: 'getTacticsForgerLeaderboard',
+    });
 }

@@ -1,4 +1,9 @@
 import {
+    SOLITAIRE_DEFAULT_CORRECT_SOUND,
+    SOLITAIRE_DEFAULT_INCORRECT_SOUND,
+    SolitaireSound,
+} from '@/board/pgn/solitaire/useSolitaireChess';
+import {
     CORRECT_SOUND_KEY,
     INCORRECT_SOUND_KEY,
 } from '@/components/puzzles/settings/puzzleSettingsKeys';
@@ -146,9 +151,15 @@ export enum ViewerSetting {
 const ViewerSettings = ({
     enabledSettings,
     keyboardShortcutsProps,
+    compact,
+    defaultCoordinateSize = CoordinateSize.Standard,
 }: {
     enabledSettings?: Partial<Record<ViewerSetting, boolean>>;
     keyboardShortcutsProps?: KeyboardShortcutsProps;
+    /** Leaves out the title and the keyboard shortcuts, for when the settings sit in a dialog. */
+    compact?: boolean;
+    /** How big the coordinates are for someone who has not chosen. */
+    defaultCoordinateSize?: CoordinateSize;
 }) => {
     const t = useTranslations('analysisBoard.underboard.settings');
     const [boardStyle, setBoardStyle] = useLocalStorage<string>(BoardStyleKey, BoardStyle.Standard);
@@ -159,7 +170,7 @@ const ViewerSettings = ({
     );
     const [coordinateSize, setCoordinateSize] = useLocalStorage<CoordinateSize>(
         CoordinateSizeKey,
-        CoordinateSize.Standard,
+        defaultCoordinateSize,
     );
     const [goToEndBehavior, setGoToEndBehavior] = useLocalStorage<string>(
         GoToEndButtonBehaviorKey,
@@ -217,12 +228,18 @@ const ViewerSettings = ({
         InlineNotationSetting.default,
     );
 
-    const [correctSound, setCorrectSound] = useLocalStorage(CORRECT_SOUND_KEY, true);
-    const [incorrectSound, setIncorrectSound] = useLocalStorage(INCORRECT_SOUND_KEY, true);
+    const [correctSound, setCorrectSound] = useLocalStorage(
+        CORRECT_SOUND_KEY,
+        SOLITAIRE_DEFAULT_CORRECT_SOUND,
+    );
+    const [incorrectSound, setIncorrectSound] = useLocalStorage(
+        INCORRECT_SOUND_KEY,
+        SOLITAIRE_DEFAULT_INCORRECT_SOUND,
+    );
 
     return (
         <Stack spacing={3}>
-            <Typography variant='h5'>{t('viewerSettingsTitle')}</Typography>
+            {!compact && <Typography variant='h5'>{t('viewerSettingsTitle')}</Typography>}
 
             <Box id='chessdojo-integrations' sx={{ '&:empty': { mt: '0 !important' } }}></Box>
 
@@ -531,32 +548,43 @@ const ViewerSettings = ({
                 )}
 
                 {(!enabledSettings || enabledSettings[ViewerSetting.CorrectSolitaireMoveSound]) && (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={correctSound}
-                                onChange={(e) => setCorrectSound(e.target.checked)}
-                            />
-                        }
-                        label={t('playCorrectSoundLabel')}
-                    />
+                    <TextField
+                        select
+                        label={t('solitaire.correctSoundLabel')}
+                        value={correctSound}
+                        onChange={(e) => setCorrectSound(e.target.value as SolitaireSound)}
+                        sx={{ my: 3 }}
+                    >
+                        <MenuItem value={SolitaireSound.None}>{t('solitaire.none')}</MenuItem>
+                        <MenuItem value={SolitaireSound.Bell}>{t('solitaire.bell')}</MenuItem>
+                        <MenuItem value={SolitaireSound.Rising5th}>
+                            {t('solitaire.rising5th')}
+                        </MenuItem>
+                        <MenuItem value={SolitaireSound.Rising6th}>
+                            {t('solitaire.rising6th')}
+                        </MenuItem>
+                        <MenuItem value={SolitaireSound.WarmChord}>
+                            {t('solitaire.warmChord')}
+                        </MenuItem>
+                        <MenuItem value={SolitaireSound.Boss}>{t('solitaire.boss')}</MenuItem>
+                    </TextField>
                 )}
 
                 {(!enabledSettings ||
                     enabledSettings[ViewerSetting.IncorrectSolitaireMoveSound]) && (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={incorrectSound}
-                                onChange={(e) => setIncorrectSound(e.target.checked)}
-                            />
-                        }
-                        label={t('playIncorrectSoundLabel')}
-                    />
+                    <TextField
+                        select
+                        label={t('solitaire.incorrectSoundLabel')}
+                        value={incorrectSound}
+                        onChange={(e) => setIncorrectSound(e.target.value as SolitaireSound)}
+                    >
+                        <MenuItem value={SolitaireSound.None}>{t('solitaire.none')}</MenuItem>
+                        <MenuItem value={SolitaireSound.Buzz}>{t('solitaire.buzz')}</MenuItem>
+                    </TextField>
                 )}
             </Stack>
 
-            <KeyboardShortcuts {...keyboardShortcutsProps} />
+            {!compact && <KeyboardShortcuts {...keyboardShortcutsProps} />}
         </Stack>
     );
 };

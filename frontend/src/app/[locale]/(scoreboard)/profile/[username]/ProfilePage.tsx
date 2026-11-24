@@ -19,6 +19,7 @@ import { LiveClassesTab } from '@/components/profile/liveClasses/LiveClassesTab'
 import ResultsTab from '@/components/profile/results/ResultsTab';
 import StatsTab from '@/components/profile/stats/StatsTab';
 import { TrainingPlanTab } from '@/components/profile/trainingPlan/TrainingPlanTab';
+import { PuzzleStatsTab } from '@/components/puzzles/stats/PuzzleStatsTab';
 import {
     getRatingUsername,
     hasCreatedProfile,
@@ -31,6 +32,7 @@ import LoadingPage from '@/loading/LoadingPage';
 import ClubsTab from '@/profile/clubs/ClubsTab';
 import CoachTab from '@/profile/coach/CoachTab';
 import ProfileCreatorPage from '@/profile/creator/ProfileCreatorPage';
+import { ChessDojoIcon } from '@/style/ChessDojoIcon';
 import { PawnIcon } from '@/style/ChessIcons';
 import { PresenterIcon } from '@/style/PresenterIcon';
 import {
@@ -39,11 +41,11 @@ import {
 } from '@jackstenglein/chess-dojo-common/src/database/user';
 import {
     AdminPanelSettings,
+    Extension,
     Groups,
     Leaderboard,
     PieChart,
     RocketLaunch,
-    Star,
     Timeline,
 } from '@mui/icons-material';
 import { TabContext, TabPanel } from '@mui/lab';
@@ -97,6 +99,8 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
     }, [api, currentUserProfile, request, username]);
 
     const user = currentUserProfile ? currentUser : request.data;
+    // Puzzle stats are private: only the member, coaches and admins can see them.
+    const canSeePuzzleStats = currentUserProfile || currentUser.isAdmin || currentUser.isCoach;
 
     if (currentUserProfile && !hasCreatedProfile(currentUser)) {
         return <ProfileCreatorPage />;
@@ -224,7 +228,7 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                     id='training-plan-tab'
                                     label={t('tabTrainingPlan')}
                                     value='progress'
-                                    icon={<Star fontSize='small' />}
+                                    icon={<ChessDojoIcon fontSize='small' />}
                                 />
                                 <ProfileTab
                                     label={t('tabActivity')}
@@ -241,6 +245,13 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                                         label={t('tabResults')}
                                         value='results'
                                         icon={<Leaderboard fontSize='small' />}
+                                    />
+                                )}
+                                {canSeePuzzleStats && (
+                                    <ProfileTab
+                                        label='Puzzle Stats'
+                                        value='puzzles'
+                                        icon={<Extension fontSize='small' />}
                                     />
                                 )}
                                 <ProfileTab
@@ -285,6 +296,11 @@ function AuthProfilePage({ currentUser, username }: { currentUser: User; usernam
                         <TabPanel value='results' sx={{ px: 0, pl: { lg: 1 } }}>
                             {showResultsTab && <ResultsTab user={user} />}
                         </TabPanel>
+                        {canSeePuzzleStats && (
+                            <TabPanel value='puzzles' sx={{ px: 0, pl: { lg: 1 } }}>
+                                <PuzzleStatsTab username={user.username} />
+                            </TabPanel>
+                        )}
                         <TabPanel value='clubs' sx={{ px: 0, pl: { lg: 1 } }}>
                             <ClubsTab user={user} />
                         </TabPanel>
