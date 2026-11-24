@@ -39,7 +39,7 @@ export interface WcAnalysis {
     version: number;
 }
 
-const san = z.string().regex(/^[A-Za-z0-9+#=\-]{2,8}$/);
+const san = z.string().regex(/^[A-Za-z0-9+#=-]{2,8}$/);
 const path = z.array(san).max(MAX_PATH);
 const roundId = z.string().regex(/^[A-Za-z0-9]{8}$/);
 
