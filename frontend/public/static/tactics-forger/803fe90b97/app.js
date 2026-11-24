@@ -761,7 +761,7 @@ function ringsSvg({ stages, size = 300, stroke = 20, gap = 8, highlight = null, 
       }
       const attrs = `data-key="${key}" data-name="${esc(shortName(t))}" data-cl="${cl}" data-sets="${t.sets}"`;
       // Clicking a slice starts that theme's next set (its ladder once complete).
-      const go = frac >= 1 ? hrefTheme(key) : hrefPlay(key, nextFlat(store()[key], t.sets));
+      const go = hrefTheme(key); // a slice opens that theme's ladder
       out += links ? `<a href="${go}" class="seg-link" ${attrs}>${seg}${label}</a>` : `<g ${attrs}>${seg}${label}</g>`;
     });
     out += '</g>';
@@ -932,7 +932,11 @@ function route() {
   if (view === 'play' && key) return showPlay(key, Number(flat));
   return showHome();
 }
-window.addEventListener('hashchange', route);
+// A new page starts at the top (e.g. the board, after picking a set far down a ladder).
+window.addEventListener('hashchange', () => {
+  window.scrollTo(0, 0);
+  route();
+});
 document.getElementById('homeBtn').onclick = () => (location.hash = '');
 
 // ---- Home -----------------------------------------------------------------------
