@@ -1132,6 +1132,8 @@ export function LiveMatchPage() {
                         height: streamView ? undefined : { lg: 'var(---cg-height)' },
                     }}
                 >
+                    {/* In the fan view the guess panel comes first, above the moves. */}
+                    {streamView && guessPanel}
                     <Notation
                         root={tree}
                         current={node}
@@ -1146,7 +1148,7 @@ export function LiveMatchPage() {
                         compact={streamView}
                         fill={!streamView}
                     />
-                    {streamView ? guessPanel : senseiEvals}
+                    {!streamView && senseiEvals}
                 </Stack>
 
                 <Stack
@@ -1170,7 +1172,7 @@ export function LiveMatchPage() {
                 </Stack>
 
                 <Box sx={{ minWidth: 0, gridArea: 'twitch' }}>
-                    <StreamEmbed />
+                    <StreamEmbed minimizable={streamView} />
                 </Box>
             </Box>
             <AddGameDialog open={addingGame} onClose={() => setAddingGame(false)} onAdd={addGame} />
