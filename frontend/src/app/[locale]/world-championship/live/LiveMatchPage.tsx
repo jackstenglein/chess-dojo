@@ -37,6 +37,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
+import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
@@ -839,15 +840,20 @@ export function LiveMatchPage() {
                             <ToggleButton value='stream' sx={{ textTransform: 'none', py: 0.25 }}>
                                 Fan view
                             </ToggleButton>
-                            <ToggleButton value='analysis' sx={{ textTransform: 'none', py: 0.25 }}>
-                                Stream view 1
-                            </ToggleButton>
-                            <ToggleButton
-                                value='analysis2'
-                                sx={{ textTransform: 'none', py: 0.25 }}
-                            >
-                                Stream view 2
-                            </ToggleButton>
+                            {/* The two streamer views show a headset, numbered; the tooltip
+                                and the label still name them. */}
+                            {(['analysis', 'analysis2'] as const).map((value, i) => (
+                                <ToggleButton
+                                    key={value}
+                                    value={value}
+                                    aria-label={`Stream view ${i + 1}`}
+                                    title={`Stream view ${i + 1}`}
+                                    sx={{ textTransform: 'none', py: 0.25, gap: 0.5 }}
+                                >
+                                    <HeadsetMicIcon sx={{ fontSize: '1.1rem' }} />
+                                    {i + 1}
+                                </ToggleButton>
+                            ))}
                         </ToggleButtonGroup>
                     )}
                     {isSensei && (
