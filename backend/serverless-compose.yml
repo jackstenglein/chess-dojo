@@ -35,6 +35,13 @@ services:
     params:
       httpApiId: ${chess-dojo-scheduler.HttpApiId}
 
+  wcLiveService:
+    path: wcLiveService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
   discordAuthService:
     path: discordAuthService
     params:
@@ -252,6 +259,13 @@ services:
       apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
 
+  tacticsTrainerService:
+    path: tacticsTrainerService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
+
   liveClassService:
     path: liveClassService
     params:
@@ -277,6 +291,13 @@ services:
       UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
       NotificationEventQueueArn: ${notificationService.NotificationEventQueueArn}
       NotificationEventQueueUrl: ${notificationService.NotificationEventQueueUrl}
+
+  puzzlebaseService:
+    path: puzzlebaseService
+    params:
+      httpApiId: ${chess-dojo-scheduler.HttpApiId}
+      apiAuthorizer: ${chess-dojo-scheduler.serviceAuthorizer}
+      UsersTableArn: ${chess-dojo-scheduler.UsersTableArn}
 
   translationService:
     path: translationService

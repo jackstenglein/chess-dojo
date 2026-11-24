@@ -237,6 +237,117 @@
                 "graduate": "Passa al livello successivo",
                 "success": "Congratulazioni! Sei passato al livello successivo!"
             },
+            "starter": {
+                "title": "Tutorial",
+                "planName": "Piano di allenamento del Dojo",
+                "subtitle": "Tre brevi fasi per imparare come funziona l'allenamento qui. Tutto ciò che completi passa al tuo piano di allenamento completo, che si sblocca quando hai finito.",
+                "progress": "{done} attività su {total} completate",
+                "stepNumber": "Passo {number}",
+                "stepProgress": "{done} su {total} completate",
+                "steps": {
+                    "welcome": {
+                        "title": "Completa le attività Benvenuto nel Dojo",
+                        "description": "Brevi attività introduttive che ti mostrano il Dojo."
+                    },
+                    "classicalGame": {
+                        "title": "Gioca 1 partita classica",
+                        "description": "Gioca una partita lenta, online o alla scacchiera. Le partite classiche sono il cuore del programma di allenamento del Dojo.",
+                        "timeControl": "Cadenza consigliata: {timeControl} o più lunga"
+                    },
+                    "annotateGame": {
+                        "title": "Annota 1 partita",
+                        "description": "Importa una delle tue partite e analizzala prima di usare un motore. Annota cosa pensavi, le decisioni chiave e i tuoi errori."
+                    },
+                    "dojoRush": {
+                        "title": "Prova l'allenatore Dojo Rush",
+                        "description": "Risolvi più problemi che puoi contro il tempo. Questo passo si spunta da solo dopo la tua prima sessione."
+                    },
+                    "masterGame": {
+                        "title": "Studia 1 partita di maestri",
+                        "description": "Ripercorri una partita classica dallo studio di partite di maestri della tua coorte. Cerca i piani e le idee dietro le mosse."
+                    },
+                    "endgameAlgorithm": {
+                        "title": "Gioca 1 posizione di un algoritmo di finale",
+                        "description": "Gioca la prima posizione del primo algoritmo di finale della tua coorte finché non la vinci. Il tempo impiegato passa all'algoritmo completo."
+                    }
+                },
+                "actions": {
+                    "details": "Dettagli",
+                    "markDone": "Segna come fatta",
+                    "undo": "Annulla",
+                    "minutesSpent": "{minutes} min",
+                    "importGame": "Importa una partita",
+                    "viewTournaments": "Vedi i tornei",
+                    "startRush": "Inizia Dojo Rush",
+                    "firstPosition": "{name}, posizione 1",
+                    "completed": "Completata",
+                    "playBot": "Gioca contro il bot"
+                },
+                "markDone": {
+                    "title": "Segna attività come fatta",
+                    "minutesLabel": "Minuti impiegati",
+                    "minutesHelper": "Più o meno quanto ci hai messo. Viene aggiunto al tuo tempo di allenamento quando completi il piano iniziale.",
+                    "minutesInvalid": "Inserisci un numero intero di minuti.",
+                    "save": "Segna come fatta",
+                    "cancel": "Annulla"
+                },
+                "complete": {
+                    "title": "Piano iniziale completato!",
+                    "description": "Ottimo lavoro. Quando continui, tutto ciò che hai fatto qui viene spuntato nel tuo piano di allenamento completo."
+                },
+                "continue": "Continua con il piano di allenamento completo",
+                "locked": {
+                    "title": "Piano di allenamento completo bloccato",
+                    "description": "Completa il piano iniziale per sbloccare il tuo piano di allenamento completo. Tutto ciò che segni qui verrà spuntato lì per te."
+                },
+                "skip": "Conosci già il Dojo? Passa al piano di allenamento completo",
+                "welcomeKinds": {
+                    "guide": {
+                        "label": "Guida",
+                        "action": "Leggi la guida"
+                    },
+                    "video": {
+                        "label": "Video",
+                        "action": "Guarda"
+                    },
+                    "community": {
+                        "label": "Community",
+                        "action": "Unisciti"
+                    },
+                    "task": {
+                        "label": "Attività",
+                        "action": "Apri"
+                    }
+                },
+                "botGame": {
+                    "completed": "Passo del piano iniziale completato!",
+                    "backToPlan": "Torna al piano"
+                },
+                "sensei": {
+                    "name": "Sensei Jesse",
+                    "greeting": "Benvenuto nel Dojo! Sono il Sensei Jesse. Prima di iniziare il tuo piano di allenamento completo, assicuriamoci che tu sappia orientarti. Completa queste tre fasi e ci vediamo dall'altra parte."
+                },
+                "stages": {
+                    "welcome": {
+                        "title": "Benvenuto",
+                        "description": "Conosci il Dojo e la sua community."
+                    },
+                    "training": {
+                        "title": "Allenati",
+                        "description": "Prova i tipi di allenamento che farai ogni settimana."
+                    },
+                    "games": {
+                        "title": "Partite e analisi",
+                        "description": "Gioca una partita lenta, poi impara da essa."
+                    }
+                },
+                "stageNumber": "Fase {number}",
+                "suggestion": {
+                    "title": "Nuovo al Dojo? Inizia da qui",
+                    "description": "Un breve tutorial che ti mostra come funziona l'allenamento qui. Ciò che hai già fatto resta completato.",
+                    "start": "Inizia da qui"
+                }
+            },
             "graduationTask": {
                 "title": "Passa al livello successivo da {cohort}",
                 "descriptionBase": "Congratulazioni per aver raggiunto {rating} {system}! Usa questo compito per passare alla coorte successiva, aggiungere un badge al tuo profilo e far analizzare una delle tue partite commentate in diretta!",
@@ -3415,6 +3526,8 @@
             "puzzleRush": "Dojo Rush",
             "endgameTests": "Test sui finali",
             "squareColorDrill": "Esercizio sul colore delle case",
+            "tacticsForger": "Dojo Tactics Forger",
+            "tacticsForgerDescription": "Tattica, aperture e finali, 400–2000",
             "allRatings": "Tutti i punteggi",
             "beta": "Beta"
         },

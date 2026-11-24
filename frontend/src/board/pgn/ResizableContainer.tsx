@@ -33,6 +33,8 @@ interface ResizableContainerProps {
     initialRightTab?: string;
     tabStorageKeyPrefix?: string;
     sidePanelTabs?: DefaultUnderboardTab[];
+    /** Start with the board as big as the window allows. */
+    largeBoard?: boolean;
     pgn?: string;
     fen?: string;
     showPlayerHeaders?: boolean;
@@ -56,6 +58,7 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
     fen,
     startOrientation,
     onInitialize,
+    largeBoard,
 }) => {
     const underboardRef = useRef<UnderboardApi>(null);
     const hasLeftPanel = underboardTabs.length > 0;
@@ -78,8 +81,16 @@ const ResizableContainer: React.FC<ResizableContainerProps> = ({
             hideBoardButtons,
             showPgn: hasRightPanel,
             showPanelControls,
+            largeBoard,
         });
-    }, [hasLeftPanel, showPlayerHeaders, hasRightPanel, showPanelControls, hideBoardButtons]);
+    }, [
+        hasLeftPanel,
+        showPlayerHeaders,
+        hasRightPanel,
+        showPanelControls,
+        largeBoard,
+        hideBoardButtons,
+    ]);
 
     const onWindowResize = useCallback(() => {
         const nextSizes = calcSizes();
