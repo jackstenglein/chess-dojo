@@ -191,8 +191,10 @@ export function Leaderboard({ gameName, leaderboard, username, compact }: Leader
                         fontSize: '0.9rem',
                     }}
                 >
+                    {/* The name people chose, not the account ID (google_1234…). The
+                        link still goes to the profile by ID. */}
                     <Link href={`/profile/${e.username}`} sx={{ color: 'text.primary' }}>
-                        {e.username}
+                        {e.displayName || e.username}
                     </Link>
                 </Typography>
                 <Box

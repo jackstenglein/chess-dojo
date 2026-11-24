@@ -1,6 +1,14 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { GuessPanel, GuessState } from './GuessTheMove';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { GuessPanel, GuessState, Leaderboard } from './GuessTheMove';
+
+// The avatar loads the user's picture through the app's cache, which a test has not got.
+vi.mock('@/profile/Avatar', () => ({ default: () => null }));
+vi.mock('@/components/navigation/Link', () => ({
+    Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+        <a href={href}>{children}</a>
+    ),
+}));
 
 const open = (guessSan?: string): GuessState => ({
     kind: 'open',
@@ -43,5 +51,36 @@ describe('GuessPanel', () => {
             />,
         );
         expect(howTo()).toBeNull();
+    });
+});
+
+describe('Leaderboard', () => {
+    afterEach(cleanup);
+
+    it('shows the names people chose, not their account IDs', () => {
+        render(
+            <Leaderboard
+                gameName='Game 1'
+                username='google_222'
+                leaderboard={{
+                    roundId: 'r1',
+                    plies: 10,
+                    updatedAt: '2026-11-24T00:00:00Z',
+                    entries: [
+                        {
+                            username: 'google_111',
+                            displayName: 'Magnus Fan',
+                            correct: 3,
+                            guessed: 4,
+                        },
+                        { username: 'google_222', displayName: '', correct: 1, guessed: 4 },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getByText('Magnus Fan')).toBeDefined();
+        expect(screen.queryByText('google_111')).toBeNull();
+        // Someone with no display name keeps their username.
+        expect(screen.getAllByText('google_222').length).toBeGreaterThan(0);
     });
 });
