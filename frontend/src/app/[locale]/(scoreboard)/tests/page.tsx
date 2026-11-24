@@ -68,7 +68,7 @@ export default function ExamLandingPage() {
                     icon={EmojiEvents}
                 />
 
-                <PuzzleBaseCard />
+                {getConfig().isBeta && <PuzzleBaseCard />}
             </Grid>
         </Container>
     );
