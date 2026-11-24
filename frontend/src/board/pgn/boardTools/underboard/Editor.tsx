@@ -41,6 +41,7 @@ import ClockTextField from './clock/ClockTextField';
 import { TimeControlDescription } from './clock/TimeControlDescription';
 import { DeletePrompt, useDeletePrompt } from './DeletePrompt';
 import { TimeControlEditor } from './tags/TimeControlEditor';
+import VoiceAnnotationButton from './VoiceAnnotationButton';
 
 interface NagButtonProps extends ToggleButtonProps {
     text: string;
@@ -81,13 +82,14 @@ const NagButton: React.FC<NagButtonProps> = ({ text, description, ...props }) =>
 };
 
 interface EditorProps {
+    hidden?: boolean;
     focusEditor: boolean;
     setFocusEditor: (v: boolean) => void;
 }
 
 type EditorT = ReturnType<typeof useTranslations<'analysisBoard.underboard'>>;
 
-const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
+const Editor: React.FC<EditorProps> = ({ hidden = false, focusEditor, setFocusEditor }) => {
     const { chess, config } = useChess();
     const reconcile = useReconcile();
     const [, setForceRender] = useState(0);
@@ -253,33 +255,40 @@ const Editor: React.FC<EditorProps> = ({ focusEditor, setFocusEditor }) => {
                         flexGrow: { md: 1 },
                     }}
                 >
-                    <TextField
-                        inputRef={textFieldRef}
-                        label={t('editorComments')}
-                        id={BlockBoardKeyboardShortcuts}
-                        multiline
-                        minRows={isMainline ? 3 : 7}
-                        value={comment}
-                        spellCheck={true}
-                        onChange={(event) =>
-                            chess.setComment(
-                                event.target.value,
-                                isMainline ? CommentType.After : commentType,
-                            )
-                        }
-                        fullWidth
-                        sx={{
-                            flexGrow: { md: 1 },
-                            '& .MuiInputBase-root': {
-                                md: {
-                                    height: '100%',
-                                    '& .MuiInputBase-input': {
-                                        height: '100% !important',
+                    <Stack direction='row' spacing={1} sx={{ flexGrow: { md: 1 } }}>
+                        <TextField
+                            inputRef={textFieldRef}
+                            label={t('editorComments')}
+                            id={BlockBoardKeyboardShortcuts}
+                            multiline
+                            minRows={isMainline ? 3 : 7}
+                            value={comment}
+                            spellCheck={true}
+                            onChange={(event) =>
+                                chess.setComment(
+                                    event.target.value,
+                                    isMainline ? CommentType.After : commentType,
+                                )
+                            }
+                            fullWidth
+                            sx={{
+                                flexGrow: { md: 1 },
+                                '& .MuiInputBase-root': {
+                                    md: {
+                                        height: '100%',
+                                        '& .MuiInputBase-input': {
+                                            height: '100% !important',
+                                        },
                                     },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                        <VoiceAnnotationButton
+                            chess={chess}
+                            commentType={isMainline ? CommentType.After : commentType}
+                            enabled={!hidden}
+                        />
+                    </Stack>
 
                     {!isMainline && (
                         <RadioGroup
