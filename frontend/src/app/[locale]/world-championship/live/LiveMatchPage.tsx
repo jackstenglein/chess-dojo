@@ -738,12 +738,12 @@ export function LiveMatchPage() {
                     {guestAccess.error}
                 </Alert>
             )}
-            <Stack spacing={0.5} sx={{ mb: 2 }}>
-                <Typography variant='h4' component='h1' sx={{ fontWeight: 800 }}>
-                    Gukesh vs Sindarov · Live
-                </Typography>
-                <Typography color='text.secondary'>2026 World Championship, Geneva.</Typography>
-            </Stack>
+            {/* Screen readers and search engines get the title. It is not shown on
+                screen, because its 86px would push the bottom of the page out of view
+                on a laptop. */}
+            <Typography component='h1' sx={visuallyHidden}>
+                Gukesh vs Sindarov · Live. 2026 World Championship, Geneva.
+            </Typography>
 
             {roundsError && rounds.length === 0 && (
                 <Alert severity='error' sx={{ mb: 2 }}>
@@ -1075,6 +1075,16 @@ export function LiveMatchPage() {
         </Container>
     );
 }
+
+/** Keeps an element in the page for screen readers and search engines without showing it. */
+const visuallyHidden = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    overflow: 'hidden',
+    clipPath: 'inset(50%)',
+    whiteSpace: 'nowrap',
+} as const;
 
 function PlayerBar({
     player,
