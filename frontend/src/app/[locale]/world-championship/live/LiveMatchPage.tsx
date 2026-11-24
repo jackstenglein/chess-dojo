@@ -46,6 +46,7 @@ import {
     Box,
     Button,
     Container,
+    GlobalStyles,
     IconButton,
     Paper,
     Stack,
@@ -707,6 +708,9 @@ export function LiveMatchPage() {
 
     return (
         <Container maxWidth='xl' sx={{ py: { xs: 2, md: 3 } }}>
+            {/* The two views differ in height. Reserving room for the scrollbar stops
+                the page from shifting sideways when a switch adds or removes one. */}
+            <GlobalStyles styles={{ html: { scrollbarGutter: 'stable' } }} />
             {actAs && (
                 <Alert severity='warning' sx={{ mb: 2 }} data-testid='acting-as'>
                     Local test: acting as <b>{actAs}</b>
